@@ -78,6 +78,9 @@ async function save() {
               ><UInput v-model.number="settings.maxWaitMs" type="number" min="100" max="60000"
             /></UFormField>
           </div>
+          <UFormField :label="t('learningBatchMs')" :help="t('learningBatchHelp')"
+            ><UInput v-model.number="settings.learningBatchMs" type="number" min="100" max="300000"
+          /></UFormField>
           <UFormField :label="t('modelConcurrency')" :help="t('modelConcurrencyHelp')"
             ><UInput v-model.number="settings.modelConcurrency" type="number" min="1" max="32"
           /></UFormField>

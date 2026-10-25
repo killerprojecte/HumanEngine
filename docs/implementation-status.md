@@ -16,9 +16,10 @@ Configuration, scene participation/learning, models/routes, chat simulation/prev
 
 ## Current runtime and operations
 
-- Sourced scene habits and structured shared bot-expression preferences are integrated with learning, retrieval, feedback, recall, and lock/delete administration.
+- Sourced scene habits and structured shared bot-expression preferences are integrated with learning, retrieval, feedback, recall, and lock/delete administration. Background batches retrieve scoped related memory for semantic corroboration and explicit name/correction supersession. Conservative original-context technical review can promote the same sourced record without increasing factual confidence.
 - Planner may assign one message to several topics and select a main topic. Thinker context narrows to that topic; no conversational-quality or human-likeness benchmark is claimed.
 - Participation-window inclinations are soft hints in the instance timezone. Bounded priority scheduling favors foreground decisions over queued background work; it is not a spending limit.
+- Automatic animated-media intake connects ordered distinct GIF/WebP samples to vision tags, conservative availability/sharing decisions, metadata search, and original-byte guarded sends. Manual choices and source recalls remain authoritative; bounded sampling and model privacy review are not guarantees.
 - Explicit single-model capability probes never silently alter configuration. Vision probes establish input acceptance, not image understanding.
 - Daily usage stores returned token counters and optional request-time configured price estimates. Missing counters, unknown prices, and failed attempts are unpriced, not free; counters are not a provider invoice and canceled/unknown outcomes may still be billed.
 - Technical events have bounded disk rotation without raw chats. Optional visible model previews are disabled by default, bounded in memory, secret-redacted, and cleared on recall, disable, or restart. Hidden protocol reasoning state is never previewed.
@@ -33,3 +34,5 @@ The overview exposes actual registered adapter status, and scene inspection expo
 Representative conversation replay, real provider/QQ compatibility, visual browser QA, and target-machine capacity testing remain external validation work, not successful checks. See operations documentation for measured synthetic vector scope, mixed latency results, and limits.
 
 No fees are capped, no private conversations are proactively initiated, and no pending sends are restored. Missing or offline recall notifications cannot be detected retroactively without platform evidence.
+
+See [completion scope and evidence](completion-matrix.md) for implemented paths, deliberate limits, blocked visual QA, and deployment-side verification needs.

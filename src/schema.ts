@@ -89,6 +89,7 @@ export const SettingsSchema = z
     cacheHours: z.number().min(0.1).max(168),
     debounceMs: z.number().int().min(0).max(30000),
     maxWaitMs: z.number().int().min(100).max(60000),
+    learningBatchMs: z.number().int().min(100).max(300000).default(30000),
     debugModelIO: z.boolean().default(false),
     modelConcurrency: z.number().int().min(1).max(32).default(4),
     participationWindows: z

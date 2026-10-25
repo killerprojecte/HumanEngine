@@ -33,18 +33,15 @@ analysis of one asset shares one promise. Recall, disabling, manual tag edits,
 and learning switch-off are rechecked after model work so late output cannot
 overwrite a newer manual decision or revive withdrawn material.
 
-An imported/analyzed asset is **not automatically usable or public**:
+The Engine supplies the character, structured bot preferences, visible favorite-tag examples, and original-scene source context to the same vision call. No second full-library VLM pass is made during selection.
 
-- `available` is an explicit library inclusion decision after successful analysis.
-- `shared` also requires explicit administrator `privacyReviewed: true`.
-- Without sharing, only scenes with a source relation can retrieve the asset.
-- Setting `disabled` removes availability. Manual tags, favorites, and force
-  reanalysis are supported without sending content to every model invocation.
+- A conservative `selection` result can automatically make an analyzed asset available: usable, at least 0.90 selection confidence, expressive intent/meaning, and no declared personal data or real-person photo.
+- Automatic sharing additionally requires source context still available, an explicit source-independent generic-content decision, no source-specific/private flags, and the OCR screen. Unknown context or uncertain results keep the asset scene-bound or unavailable.
+- These are bounded model-assisted decisions, **not perfect privacy identification or independently verified facts**. Removing a name alone does not make private screenshots or project material public.
+- `selectionOrigin` and `sharingOrigin` distinguish automatic decisions from manual choices. Manual availability/sharing choices, disabled state, manual tags, and favorites take priority; reanalysis cannot silently reverse them. Existing analyzed assets without an origin marker retain their prior choices.
+- No sharing means only scenes with a valid source can retrieve the asset. Shared tool results still omit original source identities and context. Administrator controls remain available for correction.
 
-The administrator must actually review content for private screenshots,
-identifying information, and internal project material. Neither a VLM label nor
-a removed person's name establishes that an image is safe to share. Administrative
-methods must not be exposed as model learning tools.
+Recall and disable cancel applicable pending analysis, and commits recheck current sources/settings. Shutdown aborts and drains analysis before closing storage.
 
 ## Query, send, and feedback
 
@@ -87,7 +84,7 @@ persisting simulated conversation text or learning.
 The focused integration suite uses SQLite and real sharp-generated two-frame GIF
 and animated WebP fixtures. It checks preserved bytes, distinct ordered vision
 frames, reuse without another VLM call, hash deduplication, source isolation,
-manual sharing review, simulation table snapshots, analysis failures, recall
+manual sharing precedence, simulation table snapshots, analysis failures, recall
 races, independent source retention, feedback deduplication, and rejection of bot
 evidence. Model outputs are controlled fixture responses, not live VLM accuracy
 measurements. No QQ delivery or recipient animation was tested.

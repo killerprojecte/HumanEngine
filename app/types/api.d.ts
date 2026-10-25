@@ -2613,6 +2613,8 @@ export interface components {
             cacheHours: number;
             debounceMs: number;
             maxWaitMs: number;
+            /** @default 30000 */
+            learningBatchMs: number;
             /** @default false */
             debugModelIO: boolean;
             /** @default 4 */
@@ -2724,10 +2726,15 @@ export interface components {
                 memeMeaning: string[];
                 ocr: string;
             };
+            tagRevision?: number;
             analyzed: boolean;
             available: boolean;
             shared: boolean;
             privacyReviewed: boolean;
+            /** @enum {string} */
+            selectionOrigin?: "automatic" | "manual";
+            /** @enum {string} */
+            sharingOrigin?: "automatic" | "manual";
             favorite: boolean;
             disabled: boolean;
             preference: number;

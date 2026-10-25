@@ -225,5 +225,9 @@
   "inspectTransientState": "查看临时状态",
   "transientStateHelp": "只读的话题注意力与任务数量，不含聊天正文，也不推断人类情绪；重启会丢弃这些状态。",
   "attention": "注意力",
-  "messageCount": "消息数"
+  "messageCount": "消息数",
+  "learningBatchMs": "后台学习批次窗口（毫秒）",
+  "learningBatchHelp": "合并实时消息后进行场景内学习。窗口越短可能产生更多服务商调用；不设置费用上限。",
+  "automaticPrivacyReview": "已进行保守的自动隐私复核，但不保证完美识别隐私。",
+  "manualPrivacyReview": "人工共享选择优先。"
 }

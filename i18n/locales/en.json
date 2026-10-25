@@ -225,5 +225,9 @@
   "inspectTransientState": "Inspect temporary state",
   "transientStateHelp": "Read-only topic attention and task counts. No chat bodies or inferred human emotions; state is discarded on restart.",
   "attention": "Attention",
-  "messageCount": "Messages"
+  "messageCount": "Messages",
+  "learningBatchMs": "Background learning batch window (ms)",
+  "learningBatchHelp": "Coalesce live messages before scoped learning. Smaller windows may make more provider calls; no spending cap.",
+  "automaticPrivacyReview": "Conservative automated privacy review; not a perfect privacy guarantee.",
+  "manualPrivacyReview": "Manual sharing choice takes priority."
 }

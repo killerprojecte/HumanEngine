@@ -45,6 +45,7 @@ export interface MemoryCandidate {
   occurredAt?: string
   validUntil?: string
   supersedesId?: string
+  mergeIntoId?: string
 }
 export interface VectorSpace {
   providerId: string
@@ -209,12 +210,65 @@ export class MemoryService {
         sceneId: ctx.sceneId,
         ...(candidate.personId ? { personId: candidate.personId } : {}),
       }
+      const merging = candidate.mergeIntoId !== undefined
+      if (merging && (!candidate.mergeIntoId || candidate.supersedesId !== undefined))
+        return { status: 'rejected', reason: 'invalid_merge_request' }
       const fp = fingerprint(scope, candidate.content)
       if (this.store.db.prepare('SELECT 1 FROM memory_deleted WHERE fingerprint=?').get(fp))
         return { status: 'rejected', reason: 'manually_deleted' }
       const existingRow = this.store.db
-        .prepare('SELECT * FROM memories WHERE fingerprint=?')
-        .get(fp) as Row | undefined
+        .prepare(
+          merging
+            ? 'SELECT * FROM memories WHERE id=?'
+            : 'SELECT * FROM memories WHERE fingerprint=?',
+        )
+        .get(merging ? candidate.mergeIntoId : fp) as Row | undefined
+      if (merging) {
+        const target = existingRow ? read(existingRow) : undefined
+        if (
+          !target ||
+          target.locked ||
+          target.origin !== 'learned' ||
+          target.status !== 'active' ||
+          target.scope.kind !== 'scene' ||
+          target.scope.sceneId !== ctx.sceneId ||
+          target.scope.personId !== scope.personId ||
+          (target.validUntil !== undefined && Date.parse(target.validUntil) <= Date.now()) ||
+          target.sources.some((source) => this.store.recalled(source.sceneId, source.messageId)) ||
+          this.store.db
+            .prepare('SELECT 1 FROM memory_deleted WHERE fingerprint=?')
+            .get(existingRow!.fingerprint)
+        )
+          return { status: 'rejected', reason: 'merge_not_allowed' }
+      }
+      let superseded: MemoryRecord | undefined
+      if (candidate.supersedesId) {
+        const previous = this.get(candidate.supersedesId)
+        const sameScene =
+          previous?.scope.kind === 'scene' &&
+          previous.scope.sceneId === ctx.sceneId &&
+          previous.scope.personId === candidate.personId
+        const owningPublicSource =
+          previous?.scope.kind === 'sharedPublicKnowledge' &&
+          previous.origin === 'learned' &&
+          previous.status === 'active' &&
+          previous.sources.length > 0 &&
+          previous.sources.every((source) => source.sceneId === ctx.sceneId)
+        if (
+          !previous ||
+          previous.locked ||
+          previous.origin === 'manual' ||
+          (!sameScene && !owningPublicSource) ||
+          existingRow?.id === previous.id
+        )
+          return { status: 'rejected', reason: 'correction_not_allowed' }
+        superseded = previous
+      }
+      const applyCorrection = () => {
+        if (!superseded) return
+        this.write({ ...superseded, status: 'superseded' })
+        this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(superseded.id)
+      }
       if (existingRow) {
         const existing = read(existingRow)
         if (
@@ -224,6 +278,7 @@ export class MemoryService {
           existing.status === 'invalidated'
         )
           return { status: 'rejected', reason: 'manual_or_invalid_record' }
+        // Both exact and semantic duplicates preserve the target identity, content, and metadata.
         const sources = this.uniqueSources([...existing.sources, ...candidate.sources])
         const independent = new Set(sources.map((source) => source.senderId)).size
         const next = {
@@ -238,21 +293,9 @@ export class MemoryService {
           ),
         }
         this.validate(next)
+        applyCorrection()
         this.write(next)
         return { status: 'saved', memory: this.sanitize(next) }
-      }
-      if (candidate.supersedesId) {
-        const previous = this.get(candidate.supersedesId)
-        if (
-          !previous ||
-          previous.locked ||
-          previous.origin === 'manual' ||
-          scopeKey(previous.scope) !== scopeKey(scope) ||
-          (previous.scope.kind === 'scene' && previous.scope.personId !== candidate.personId)
-        )
-          return { status: 'rejected', reason: 'correction_not_allowed' }
-        this.write({ ...previous, status: 'superseded' })
-        this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(previous.id)
       }
       const memory: MemoryRecord = {
         id: randomUUID(),
@@ -271,8 +314,47 @@ export class MemoryService {
         ...(candidate.supersedesId ? { supersedesId: candidate.supersedesId } : {}),
       }
       this.validate(memory)
+      applyCorrection()
       this.write(memory)
       return { status: 'saved', memory: this.sanitize(memory) }
+    })()
+  }
+
+  /** Internal engine operation only, after conservative public-technical eligibility review. */
+  promotePublic(ctx: MemoryContext, id: string): ProposalResult {
+    if (ctx.simulation) return { status: 'rejected', reason: 'simulation_does_not_learn' }
+    return this.store.db.transaction((): ProposalResult => {
+      if (!this.store.scene(ctx.sceneId)?.learningEnabled)
+        return { status: 'rejected', reason: 'learning_disabled' }
+      const memory = this.get(id)
+      if (
+        !memory ||
+        memory.origin !== 'learned' ||
+        memory.locked ||
+        memory.status !== 'active' ||
+        memory.scope.kind !== 'scene' ||
+        memory.scope.sceneId !== ctx.sceneId ||
+        memory.scope.personId !== undefined ||
+        !['fact', 'term'].includes(memory.kind) ||
+        memory.validUntil !== undefined ||
+        !memory.sources.length ||
+        memory.sources.some(
+          (source) =>
+            source.sceneId !== ctx.sceneId || this.store.recalled(source.sceneId, source.messageId),
+        )
+      )
+        return { status: 'rejected', reason: 'public_promotion_not_allowed' }
+      const scope: MemoryScope = { kind: 'sharedPublicKnowledge' }
+      const fp = fingerprint(scope, memory.content)
+      if (this.store.db.prepare('SELECT 1 FROM memory_deleted WHERE fingerprint=?').get(fp))
+        return { status: 'rejected', reason: 'manually_deleted' }
+      if (this.store.db.prepare('SELECT 1 FROM memories WHERE fingerprint=?').get(fp))
+        return { status: 'rejected', reason: 'public_memory_already_exists' }
+      const promoted: MemoryRecord = { ...memory, scope }
+      this.validate(promoted)
+      this.write(promoted)
+      this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(id)
+      return { status: 'saved', memory: this.sanitize(promoted) }
     })()
   }
 
@@ -364,6 +446,12 @@ export class MemoryService {
       this.store.db
         .prepare('INSERT OR REPLACE INTO memory_deleted VALUES(?,?)')
         .run(fingerprint(memory.scope, memory.content), new Date().toISOString())
+      if (memory.origin === 'learned' && memory.scope.kind === 'sharedPublicKnowledge') {
+        const deletedAt = new Date().toISOString()
+        const insert = this.store.db.prepare('INSERT OR REPLACE INTO memory_deleted VALUES(?,?)')
+        for (const sceneId of new Set(memory.sources.map((source) => source.sceneId)))
+          insert.run(fingerprint({ kind: 'scene', sceneId }, memory.content), deletedAt)
+      }
       this.store.db.prepare('DELETE FROM memories WHERE id=?').run(id)
       return true
     })()

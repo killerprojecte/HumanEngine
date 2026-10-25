@@ -150,6 +150,13 @@ async function saveTags() {
               (value) => patch(asset, { shared: value === true, privacyReviewed: value === true })
             "
           />
+          <p v-if="asset.sharingOrigin" class="text-xs text-muted">
+            {{
+              asset.sharingOrigin === 'automatic'
+                ? t('automaticPrivacyReview')
+                : t('manualPrivacyReview')
+            }}
+          </p>
           <div class="flex gap-2 flex-wrap">
             <UButton
               :icon="asset.favorite ? 'i-lucide-star' : 'i-lucide-star'"

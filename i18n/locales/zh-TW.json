@@ -225,5 +225,9 @@
   "inspectTransientState": "檢視暫存狀態",
   "transientStateHelp": "唯讀的話題注意力與任務數量，不含聊天正文，也不推斷人類情緒；重新啟動會丟棄這些狀態。",
   "attention": "注意力",
-  "messageCount": "訊息數"
+  "messageCount": "訊息數",
+  "learningBatchMs": "背景學習批次視窗（毫秒）",
+  "learningBatchHelp": "合併即時訊息後進行場景內學習。視窗越短可能產生更多服務商呼叫；不設定費用上限。",
+  "automaticPrivacyReview": "已進行保守的自動隱私複核，但不保證完美辨識隱私。",
+  "manualPrivacyReview": "人工共享選擇優先。"
 }

@@ -289,6 +289,12 @@
             "minimum": 100,
             "maximum": 60000
           },
+          "learningBatchMs": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 300000,
+            "default": 30000
+          },
           "debugModelIO": {
             "type": "boolean",
             "default": false
@@ -759,6 +765,9 @@
               "ocr"
             ]
           },
+          "tagRevision": {
+            "type": "integer"
+          },
           "analyzed": {
             "type": "boolean"
           },
@@ -770,6 +779,20 @@
           },
           "privacyReviewed": {
             "type": "boolean"
+          },
+          "selectionOrigin": {
+            "type": "string",
+            "enum": [
+              "automatic",
+              "manual"
+            ]
+          },
+          "sharingOrigin": {
+            "type": "string",
+            "enum": [
+              "automatic",
+              "manual"
+            ]
           },
           "favorite": {
             "type": "boolean"

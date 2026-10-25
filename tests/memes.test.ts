@@ -191,7 +191,7 @@ test('Analysis failure and recall race cannot publish a candidate or revive reca
     await start
     memes.recall('a', 'm1')
     release(JSON.stringify(tags))
-    await assert.rejects(pending, /analysis_failed/)
+    await assert.rejects(pending, /analysis_cancelled/)
     assert.equal(memes.adminList()[0]?.analyzed, false)
     assert.equal(memes.adminList()[0]?.disabled, true)
     await assert.rejects(memes.import(context, bytes, source(context)), /invalid_source_evidence/)

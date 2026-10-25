@@ -111,10 +111,13 @@ const Meme = z
       z.object({ sceneId: z.string(), messageId: z.string(), senderId: z.string() }),
     ),
     tags: MemeTags,
+    tagRevision: z.number().int().optional(),
     analyzed: z.boolean(),
     available: z.boolean(),
     shared: z.boolean(),
     privacyReviewed: z.boolean(),
+    selectionOrigin: z.enum(['automatic', 'manual']).optional(),
+    sharingOrigin: z.enum(['automatic', 'manual']).optional(),
     favorite: z.boolean(),
     disabled: z.boolean(),
     preference: z.number(),
@@ -272,12 +275,9 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
     }),
     async (c) =>
       c.json(
-        await engine.memes.analyze(
-          { sceneId: c.req.valid('json').sceneId, simulation: false },
-          c.req.valid('param').id,
-          engine.router(),
-          { force: true },
-        ),
+        await engine.analyzeMeme(c.req.valid('json').sceneId, c.req.valid('param').id, {
+          force: true,
+        }),
         200,
       ),
   )

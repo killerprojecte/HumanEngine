@@ -19,8 +19,7 @@ not modify code, plugin files, or persona templates.
   re-read inside the committing transaction. This prevents an old model result
   from committing after a switch-off or an observed recall.
 - `create`, `update`, `lock`, `delete`, and `adminList` are **administrator-only**
-  methods. They are not learning tools. Only explicit administrator creation can
-  publish shared knowledge in this version; the administrator must confirm that
+  methods. They are not learning tools. Administrators may explicitly publish shared knowledge and must confirm that
   the content itself is public and contains no private/person facts. Merely
   removing names from an internal project summary does not make it public.
 - `recall(sceneId, messageId)` persists the source tombstone and invalidates or
@@ -316,3 +315,13 @@ the selected winners. Other timing definitions remain unchanged.
 ```
 
 </details>
+
+## Background merge and bounded public promotion
+
+Background batches receive up to eight scoped lexical/vector-related existing records, including read-only/manual/lock metadata. A semantic corroboration may request `mergeIntoId`; the transaction keeps the existing ID and wording and only merges valid evidence. Changed names or explicit corrections use `supersedesId`, not corroboration. This is model-assisted semantic selection, not a guarantee of conflict detection. Exact fingerprints remain a deterministic fallback.
+
+All learning starts scoped. Fact/term candidates without a person or event expiry may request a separate public-technical review for the bounded domains HTTP, JSON, Unicode, Git, SQL, JavaScript, TypeScript, Python, and Linux. Deterministic screens reject private/project markers, credentials, URLs, addresses, and long identifiers. The reviewer sees original source messages and nearby context; merely removing a person's name is not enough. Missing original evidence, uncertainty, source-specific conventions, or personal data leaves the record scoped. A high publicness score does not increase evidence confidence and is not independent factual corroboration.
+
+Successful promotion moves the same learned record ID to `sharedPublicKnowledge`, retaining its real provenance internally and replacing its derived vectors. Shared model-facing results—including `memory.source`—omit source IDs, source scenes, and supersession pointers. Ordinary message/history tools still enforce their current scene. No global person profile is created.
+
+The original owning scene may correct an automatically promoted record only while it remains active, learned, and unlocked and all its sources belong to that scene. Other scenes cannot overwrite it. Correction invalidates the old shared record and vectors; recall removes the matching source or invalidates the final-source record. Deleting a promoted record also tombstones its original scene fingerprints, preventing immediate scoped relearning. Manual records and locks retain precedence. This is a conservative automatic path, not a claim of perfect privacy classification or universally correct knowledge.

@@ -1,7 +1,4 @@
-import { createApp } from '../../src/api'
-import { Store } from '../../src/store'
-let app: ReturnType<typeof createApp> | undefined
-export default defineEventHandler(event => {
-  app ??= createApp(new Store())
-  return app.fetch(toWebRequest(event))
-})
+import { getEngine } from '../utils/engine'
+export default defineEventHandler(async (event) =>
+  (await getEngine()).app.fetch(toWebRequest(event)),
+)

@@ -1,7 +1,66 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
-const {t}=useI18n(),{client}=useApi(),settings=ref<components['schemas']['Settings']>(),error=ref(''),saved=ref(false),busy=ref(false)
-onMounted(async()=>{try{const r=await client.GET('/api/settings');settings.value=r.data;error.value=r.error?.error??''}catch{error.value=t('networkError')}})
-async function save(){if(!settings.value)return;busy.value=true;saved.value=false;try{const r=await client.PUT('/api/settings',{body:settings.value});error.value=r.error?.error??'';saved.value=!!r.data}catch{error.value=t('networkError')}finally{busy.value=false}}
+const { t } = useI18n(),
+  { client } = useApi(),
+  settings = ref<components['schemas']['Settings']>(),
+  error = ref(''),
+  saved = ref(false),
+  busy = ref(false)
+onMounted(async () => {
+  try {
+    const r = await client.GET('/api/settings')
+    settings.value = r.data
+    error.value = r.error?.error ?? ''
+  } catch {
+    error.value = t('networkError')
+  }
+})
+async function save() {
+  if (!settings.value) return
+  busy.value = true
+  saved.value = false
+  try {
+    const r = await client.PUT('/api/settings', { body: settings.value })
+    error.value = r.error?.error ?? ''
+    saved.value = !!r.data
+  } catch {
+    error.value = t('networkError')
+  } finally {
+    busy.value = false
+  }
+}
 </script>
-<template><div class="space-y-6 max-w-3xl"><h1 class="text-2xl font-semibold">{{t('settings')}}</h1><UAlert v-if="error" color="error" :title="error"/><UAlert v-if="saved" color="success" :title="t('savedNextTurn')"/><UCard v-if="settings"><form class="space-y-5" @submit.prevent="save"><UFormField :label="t('name')"><UInput v-model="settings.name" class="w-full"/></UFormField><UFormField :label="t('timezone')"><UInput v-model="settings.timezone" class="w-full"/></UFormField><UFormField :label="t('persona')" :help="t('personaHelp')"><UTextarea v-model="settings.persona" :rows="8" class="w-full"/></UFormField><USwitch v-model="settings.cacheEnabled" :label="t('cacheEnabled')"/><UFormField :label="t('cacheHours')"><UInput v-model.number="settings.cacheHours" type="number" min="0.1" max="168"/></UFormField><div class="grid grid-cols-2 gap-4"><UFormField :label="t('debounceMs')"><UInput v-model.number="settings.debounceMs" type="number" min="0" max="30000"/></UFormField><UFormField :label="t('maxWaitMs')"><UInput v-model.number="settings.maxWaitMs" type="number" min="100" max="60000"/></UFormField></div><UButton type="submit" :loading="busy">{{t('save')}}</UButton></form></UCard></div></template>
+<template>
+  <div class="space-y-6 max-w-3xl">
+    <h1 class="text-2xl font-semibold">{{ t('settings') }}</h1>
+    <UAlert v-if="error" color="error" :title="error" /><UAlert
+      v-if="saved"
+      color="success"
+      :title="t('savedNextTurn')"
+    /><UCard v-if="settings"
+      ><form class="space-y-5" @submit.prevent="save">
+        <UFormField :label="t('name')"><UInput v-model="settings.name" class="w-full" /></UFormField
+        ><UFormField :label="t('timezone')"
+          ><UInput v-model="settings.timezone" class="w-full" /></UFormField
+        ><UFormField :label="t('persona')" :help="t('personaHelp')"
+          ><UTextarea v-model="settings.persona" :rows="8" class="w-full" /></UFormField
+        ><USwitch v-model="settings.cacheEnabled" :label="t('cacheEnabled')" /><UFormField
+          :label="t('cacheHours')"
+          ><UInput v-model.number="settings.cacheHours" type="number" min="0.1" max="168"
+        /></UFormField>
+        <div class="grid grid-cols-2 gap-4">
+          <UFormField :label="t('debounceMs')"
+            ><UInput
+              v-model.number="settings.debounceMs"
+              type="number"
+              min="0"
+              max="30000" /></UFormField
+          ><UFormField :label="t('maxWaitMs')"
+            ><UInput v-model.number="settings.maxWaitMs" type="number" min="100" max="60000"
+          /></UFormField>
+        </div>
+        <UButton type="submit" :loading="busy">{{ t('save') }}</UButton>
+      </form></UCard
+    >
+  </div>
+</template>

@@ -1,5 +1,40 @@
 <script setup lang="ts">
-const {t}=useI18n(),{client}=useApi()
-const {data:result,refresh,status}=await useAsyncData('logs',()=>client.GET('/api/logs'),{server:false})
+const { t } = useI18n(),
+  { client } = useApi()
+const {
+  data: result,
+  refresh,
+  status,
+} = await useAsyncData('logs', () => client.GET('/api/logs'), { server: false })
 </script>
-<template><div class="space-y-6"><div class="flex justify-between"><h1 class="text-2xl font-semibold">{{t('logs')}}</h1><UButton variant="soft" icon="i-lucide-refresh-cw" :loading="status==='pending'" @click="refresh()">{{t('refresh')}}</UButton></div><p class="text-muted">{{t('logsHelp')}}</p><UCard><div v-if="!result?.data?.length" class="text-muted">{{t('emptyLogs')}}</div><div v-for="log in result?.data??[]" :key="log.id" class="py-3 border-b border-default last:border-0 flex flex-wrap items-center gap-3 text-sm"><UBadge :color="log.level==='error'?'error':log.level==='warn'?'warning':'neutral'">{{log.level}}</UBadge><time class="text-muted">{{new Date(log.at).toLocaleString()}}</time><span>{{log.module}}</span><code>{{log.code}}</code><span v-if="log.sceneId" class="text-muted">{{log.sceneId}}</span></div></UCard></div></template>
+<template>
+  <div class="space-y-6">
+    <div class="flex justify-between">
+      <h1 class="text-2xl font-semibold">{{ t('logs') }}</h1>
+      <UButton
+        variant="soft"
+        icon="i-lucide-refresh-cw"
+        :loading="status === 'pending'"
+        @click="refresh()"
+        >{{ t('refresh') }}</UButton
+      >
+    </div>
+    <p class="text-muted">{{ t('logsHelp') }}</p>
+    <UCard
+      ><div v-if="!result?.data?.length" class="text-muted">{{ t('emptyLogs') }}</div>
+      <div
+        v-for="log in result?.data ?? []"
+        :key="log.id"
+        class="py-3 border-b border-default last:border-0 flex flex-wrap items-center gap-3 text-sm"
+      >
+        <UBadge
+          :color="log.level === 'error' ? 'error' : log.level === 'warn' ? 'warning' : 'neutral'"
+          >{{ log.level }}</UBadge
+        ><time class="text-muted">{{ new Date(log.at).toLocaleString() }}</time
+        ><span>{{ log.module }}</span
+        ><code>{{ log.code }}</code
+        ><span v-if="log.sceneId" class="text-muted">{{ log.sceneId }}</span>
+      </div></UCard
+    >
+  </div>
+</template>

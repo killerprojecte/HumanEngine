@@ -1,0 +1,7 @@
+node_modules
+.nuxt
+.output
+app/types/api.d.ts
+openapi.json
+package-lock.json
+data

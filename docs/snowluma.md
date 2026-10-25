@@ -27,16 +27,25 @@ codes without token, URL, upstream wording, or message body.
 ## Public API
 
 ```ts
-const adapter = new OneBotAdapter({
-  id: 'snowluma-main',
-  accountId: '123456789',
-  url: 'ws://127.0.0.1:3001/',
-  credentialEnv: 'SNOWLUMA_TOKEN',
-}, {
-  onMessage(message, scene) { /* Route through the core. */ },
-  onRecall(event, scene) { /* Persist tombstone and invalidate dependencies. */ },
-  isRecalled(sceneId, messageId) { return store.isRecalled(sceneId, messageId) },
-})
+const adapter = new OneBotAdapter(
+  {
+    id: 'snowluma-main',
+    accountId: '123456789',
+    url: 'ws://127.0.0.1:3001/',
+    credentialEnv: 'SNOWLUMA_TOKEN',
+  },
+  {
+    onMessage(message, scene) {
+      /* Route through the core. */
+    },
+    onRecall(event, scene) {
+      /* Persist tombstone and invalidate dependencies. */
+    },
+    isRecalled(sceneId, messageId) {
+      return store.isRecalled(sceneId, messageId)
+    },
+  },
+)
 await adapter.connect()
 ```
 

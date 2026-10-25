@@ -25,7 +25,7 @@ HOST=127.0.0.1 node --env-file=.env .output/server/index.mjs
 
 No public deployment is performed by this project. Keep the interface on loopback or a trusted private network; use TLS and an authenticated reverse proxy before remote access. Do not expose the management token or provider keys to an untrusted plugin or page.
 
-## Foundation
+## Implemented vertical slices
 
 - Nuxt 4 + Nuxt UI 4, theme customization rather than a separate component system.
 - English, Simplified Chinese, and Traditional Chinese locales.
@@ -36,10 +36,21 @@ No public deployment is performed by this project. Keep the interface on loopbac
 - Independent participation and learning switches; no proactive private messaging.
 - Administration bearer authentication, no secret values in configuration responses, bounded technical events.
 
-The initial foundation is not a completed autonomous bot. Runtime, SnowLuma integration, memory, learning, and media are delivered in subsequent coherent commits. No real OpenAI account or QQ/SnowLuma connection has been exercised; protocol tests use local fixtures.
+The runtime starts with the server, independently of browser visits. Enable the SnowLuma plugin after setting its OneBot WebSocket URL, bot account ID, and server token environment variable. Incoming scenes start disabled; explicitly enable participation and/or learning in Scenes.
+
+- Planner participation decisions and Thinker tool-only sends, with batched ingress, bounded topic attention, cancellation, receipt-aware segments, and stale-answer validation.
+- Isolated Web simulation and read-only real history preview with explicit partial/unavailable coverage.
+- Scene/person memory, manual public knowledge, sourced background learning, correction/lock/delete guards, and scoped sqlite-vec search.
+- Durable recall tombstones, in-flight cancellation, derived-source invalidation, and no history resurrection or restart replay.
+- Original GIF/WebP storage, ordered changed-frame vision analysis, metadata search, manual privacy-reviewed sharing, and sourced feedback.
+- Trusted local plugin lifecycle, schema configuration, custom pages, ordered fail-closed send hooks, and cancellation-safe disable.
+
+No real provider account or QQ/SnowLuma connection has been exercised. Integration tests use local HTTP/WebSocket fixtures; animated-media tests use actual encoded GIF/WebP fixtures. Browser interaction testing is blocked by this execution environment's Chromium socket restriction; production HTTP rendering/API smoke checks and Nuxt type/build checks passed. See [verification and remaining work](docs/implementation-status.md).
 
 ## Development
 
-The server schemas in `src/schema.ts` and route definitions in `src/api.ts` are the contract source of truth. After API changes run `npm run contract`, then `npm run check` and `npm run build`. Do not edit generated files. See [model protocols](docs/model-protocols.md) and [architecture boundaries](docs/architecture.md).
+The server schemas in `src/schema.ts` and route definitions in `src/api.ts` are the contract source of truth. After API changes run `npm run contract`, then `npm run check` and `npm run build`. Do not edit generated files. See [model protocols](docs/model-protocols.md), [SnowLuma setup](docs/snowluma.md), [memory](docs/memory.md), [memes](docs/memes.md), and [architecture boundaries](docs/architecture.md), [trusted plugins](docs/plugins.md), and [backup/restore and benchmark operations](docs/operations.md).
 
 Secrets are server environment references. Configuration changes apply to new turns. Temporary chats, pending sends, attention, and simulation sessions are never restored after restart. Recall tombstones are durable provenance metadata, not an outgoing queue.
+
+Dependency audit limitations and the tested esbuild override are documented in [SECURITY.md](SECURITY.md). The remaining upstream node-forge advisory is not represented as a clean audit.

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  /><title>HumanEngine plugin example</title>
+  <style>
+    body {
+      font: 16px system-ui;
+      max-width: 40rem;
+      margin: 5rem auto;
+      padding: 1rem;
+      background: #f8fafc;
+      color: #334155;
+    }
+    input,
+    button {
+      font: inherit;
+      padding: 0.7rem;
+      border-radius: 0.6rem;
+      border: 1px solid #cbd5e1;
+    }
+    form {
+      display: grid;
+      gap: 1rem;
+    }
+    pre {
+      white-space: pre-wrap;
+    }
+  </style>
+  <h1>Trusted local plugin page</h1>
+  <p>
+    This page uses the authenticated plugin API. It never reads database files or provider
+    credentials. The administration token stays in this page's memory.
+  </p>
+  <form id="form">
+    <label
+      >Administration token <input id="token" type="password" autocomplete="off" required /></label
+    ><button>Load plugin status</button>
+  </form>
+  <pre id="output" role="status"></pre>
+  <script type="module">
+    document.querySelector('#form').addEventListener('submit', async (event) => {
+      event.preventDefault()
+      const button = document.querySelector('button')
+      button.disabled = true
+      try {
+        const response = await fetch('/api/plugins/example/actions/status', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${document.querySelector('#token').value}`,
+            'Content-Type': 'application/json',
+          },
+          body: '{}',
+        })
+        document.querySelector('#output').textContent = JSON.stringify(
+          await response.json(),
+          null,
+          2,
+        )
+      } catch {
+        document.querySelector('#output').textContent = 'Request failed'
+      } finally {
+        button.disabled = false
+      }
+    })
+  </script>
+</html>

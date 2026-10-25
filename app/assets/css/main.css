@@ -1,5 +1,14 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
-:root { --ui-radius: 0.8rem; }
-body { background: var(--ui-bg-muted); }
-button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+@import 'tailwindcss';
+@import '@nuxt/ui';
+:root {
+  --ui-radius: 0.8rem;
+}
+body {
+  background: var(--ui-bg-muted);
+}
+button,
+a,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}

@@ -2,7 +2,6 @@ import { probe } from './probes.ts'
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { Router } from './models.ts'
 import { Engine } from './engine.ts'
 import { ErrorSchema } from './schema.ts'
 
@@ -198,7 +197,15 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       },
     }),
     async (c) =>
-      c.json(await probe(store, c.req.valid('param').id, c.req.valid('json').capability), 200),
+      c.json(
+        await probe(
+          store,
+          c.req.valid('param').id,
+          c.req.valid('json').capability,
+          engine.protocols,
+        ),
+        200,
+      ),
   )
 
   app.openapi(
@@ -268,7 +275,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
         await engine.memes.analyze(
           { sceneId: c.req.valid('json').sceneId, simulation: false },
           c.req.valid('param').id,
-          new Router(store.models),
+          engine.router(),
           { force: true },
         ),
         200,

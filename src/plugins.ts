@@ -1,3 +1,10 @@
+import {
+  installAdapter,
+  untilAbort,
+  type AdapterFactory,
+  type AdapterServices,
+} from './plugin-adapters.ts'
+import { ModelProtocolRegistry, type ModelProtocol } from './model-protocols.ts'
 import { pathToFileURL } from 'node:url'
 import { resolve, relative } from 'node:path'
 import { Store } from './store.ts'
@@ -9,10 +16,15 @@ import {
   type RuntimeEvent,
 } from './runtime.ts'
 import type { ToolDefinition } from './models.ts'
+import type { SendResult } from './onebot.ts'
+export interface PluginToolContext extends TurnContext {
+  send(input: unknown): Promise<SendResult[]>
+}
 
 export interface PluginTool extends ToolDefinition {
   effect: 'read' | 'learningCandidate' | 'send'
-  execute(input: Record<string, unknown>, context: TurnContext): Promise<unknown>
+  outputSchema?: Record<string, unknown>
+  execute(input: Record<string, unknown>, context: PluginToolContext): Promise<unknown>
 }
 export interface AdminPage {
   id: string
@@ -31,6 +43,8 @@ export interface PluginContext {
   config: Record<string, unknown>
   signal: AbortSignal
   registerTool(tool: PluginTool): void
+  registerModelProtocol(name: string, label: string, protocol: ModelProtocol): void
+  registerAdapter(name: string, factory: AdapterFactory): void
   beforeSend(hook: Omit<SendHook, 'id'>): void
   registerAdminPage(page: AdminPage): void
   registerAdminAction(name: string, handler: (input: unknown) => Promise<unknown>): void
@@ -62,6 +76,8 @@ export class PluginManager {
   constructor(
     private readonly store: Store,
     private readonly runtime: Runtime,
+    private readonly protocols = new ModelProtocolRegistry(),
+    private readonly adapterServices: AdapterServices = {},
   ) {}
   list() {
     return [...this.loaded.values()].map((p) => ({
@@ -167,6 +183,9 @@ export class PluginManager {
       type: RuntimeEvent['type']
       listener: (event: Readonly<RuntimeEvent>) => void | Promise<void>
     }> = []
+    const protocols: Array<{ name: string; label: string; protocol: ModelProtocol }> = []
+    const adapters: Array<{ name: string; factory: AdapterFactory }> = []
+    const adapterStarts: Array<() => Promise<void>> = []
     const tools: PluginTool[] = [],
       hooks: Array<Omit<SendHook, 'id'>> = [],
       pages: AdminPage[] = [],
@@ -192,6 +211,27 @@ export class PluginManager {
         return item.plugin.setup({
           config: this.store.get(`plugin:${id}`, {}),
           signal: controller.signal,
+          registerModelProtocol: (name, label, protocol) => {
+            guard()
+            if (
+              !item.plugin.manifest.capabilities.includes('model-protocol') ||
+              !/^[a-z0-9-]{1,32}$/.test(name) ||
+              protocols.some((p) => p.name === name)
+            )
+              throw new Error('invalid_protocol_registration')
+            protocols.push({ name, label, protocol })
+          },
+          registerAdapter: (name, factory) => {
+            guard()
+            if (
+              !item.plugin.manifest.capabilities.includes('adapter') ||
+              !/^[a-z0-9-]{1,32}$/.test(name) ||
+              (id + ':' + name).length > 64 ||
+              adapters.some((a) => a.name === name)
+            )
+              throw new Error('invalid_adapter_registration')
+            adapters.push({ name, factory })
+          },
           registerTool: (tool) => {
             guard()
             if (!tool.name.startsWith(`${id}.`) || tools.some((t) => t.name === tool.name))
@@ -240,6 +280,28 @@ export class PluginManager {
       })
       await Promise.race([setup, cancelled])
       guard()
+      for (const entry of protocols)
+        item.cleanups.push(
+          this.protocols.register(
+            id + ':' + entry.name,
+            entry.label,
+            entry.protocol,
+            controller.signal,
+          ),
+        )
+      for (const entry of adapters) {
+        guard()
+        const installed = installAdapter(
+          id + ':' + entry.name,
+          entry.factory,
+          this.runtime,
+          this.store,
+          controller.signal,
+          this.adapterServices,
+        )
+        item.cleanups.push(installed.dispose)
+        adapterStarts.push(installed.start)
+      }
       for (const { type, listener } of listeners)
         item.cleanups.push(
           this.runtime.on(type, async (event) => {
@@ -255,7 +317,13 @@ export class PluginManager {
               const signal = AbortSignal.any([context.signal, controller.signal])
               if (signal.aborted || !current())
                 return { action: 'cancel', reason: 'plugin_disabled' }
-              const result = await hook.handler(segments, { ...context, signal })
+              const result = await hook.handler(segments, {
+                ...context,
+                scene: Object.freeze({ ...context.scene }),
+                dependencies: new Set(context.dependencies),
+                validations: [],
+                signal,
+              })
               return signal.aborted || !current()
                 ? { action: 'cancel', reason: 'plugin_disabled' }
                 : result
@@ -268,19 +336,44 @@ export class PluginManager {
           guard()
           const tool = tools.find((t) => t.name === name)
           if (!tool) throw new Error('tool_missing')
-          if (context.mode === 'simulation' && tool.effect !== 'read')
+          if (context.mode === 'simulation' && tool.effect === 'learningCandidate')
             return { error: 'Simulation does not execute plugin side effects' }
-          if (tool.effect === 'send')
-            throw new Error('Plugins must use the core send pipeline via hooks')
           validateConfig(input, tool.inputSchema)
-          const signal = AbortSignal.any([context.signal, controller.signal])
-          const result = await tool.execute(input, { ...context, signal })
-          if (signal.aborted) throw new Error('plugin_disabled')
-          guard()
-          return result
+          const lease = new AbortController()
+          const signal = AbortSignal.any([context.signal, controller.signal, lease.signal])
+          let executing = true
+          try {
+            const result = await tool.execute(structuredClone(input), {
+              ...context,
+              scene: Object.freeze({ ...context.scene }),
+              dependencies: new Set(context.dependencies),
+              validations: [],
+              signal,
+              send: (request) => {
+                guard()
+                if (!executing || signal.aborted || tool.effect !== 'send')
+                  throw new Error('plugin_send_not_allowed')
+                return this.runtime.sendFromPlugin(context, request, signal)
+              },
+            })
+            if (signal.aborted) throw new Error('plugin_disabled')
+            guard()
+            if (tool.outputSchema) validateConfig(result, tool.outputSchema)
+            const encoded = JSON.stringify(result)
+            if (encoded === undefined || Buffer.byteLength(encoded) > 1024 * 1024)
+              throw new Error('invalid_plugin_output')
+            return JSON.parse(encoded)
+          } finally {
+            executing = false
+            lease.abort('tool_finished')
+          }
         },
       }
       item.cleanups.push(this.runtime.addExtension(extension))
+      for (const start of adapterStarts) {
+        await untilAbort(start(), AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]))
+        guard()
+      }
       item.pages = pages
       item.actions = actions
       item.enabled = true

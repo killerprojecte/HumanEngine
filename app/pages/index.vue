@@ -88,6 +88,10 @@ async function refreshAll() {
           <dd>{{ result?.data?.runningModelRequests ?? 0 }}</dd>
           <dt class="text-muted">{{ t('queuedModelRequests') }}</dt>
           <dd>{{ result?.data?.queuedModelRequests ?? 0 }}</dd>
+          <template v-for="adapter in result?.data?.adapters ?? []" :key="adapter.id"
+            ><dt class="text-muted">{{ adapter.id }}</dt>
+            <dd>{{ adapter.status }}</dd></template
+          >
           <dt class="text-muted">{{ t('version') }}</dt>
           <dd>{{ result?.data?.version ?? '—' }}</dd>
         </dl></UCard

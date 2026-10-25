@@ -58,6 +58,24 @@
           },
           "runningModelRequests": {
             "type": "number"
+          },
+          "adapters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "status"
+              ]
+            }
           }
         },
         "required": [
@@ -73,7 +91,8 @@
           "vectorVersion",
           "version",
           "queuedModelRequests",
-          "runningModelRequests"
+          "runningModelRequests",
+          "adapters"
         ]
       },
       "Error": {
@@ -130,10 +149,8 @@
           },
           "protocol": {
             "type": "string",
-            "enum": [
-              "openai-chat",
-              "openai-responses"
-            ]
+            "maxLength": 100,
+            "pattern": "^(?:openai-chat|openai-responses|[a-z0-9-]+:[a-z0-9-]+)$"
           },
           "baseUrl": {
             "type": "string",
@@ -505,6 +522,51 @@
           "role",
           "input",
           "output"
+        ]
+      },
+      "SceneState": {
+        "type": "object",
+        "properties": {
+          "activeTasks": {
+            "type": "number"
+          },
+          "secondsSinceBotSpoke": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "attention": {
+                  "type": "number"
+                },
+                "ageMs": {
+                  "type": "number"
+                },
+                "messageCount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "id",
+                "attention",
+                "ageMs",
+                "messageCount"
+              ]
+            }
+          }
+        },
+        "required": [
+          "activeTasks",
+          "secondsSinceBotSpoke",
+          "topics"
         ]
       },
       "Habit": {
@@ -1611,6 +1673,135 @@
                   "items": {
                     "$ref": "#/components/schemas/Diagnostic"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/model-protocols": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "operations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "complete",
+                            "embeddings",
+                            "listModels"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "operations"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenes/{id}/state": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SceneState"
                 }
               }
             }

@@ -1,3 +1,4 @@
+import type { ModelProtocolRegistry } from './model-protocols.ts'
 import { Router, ModelError, type ModelInstance } from './models.ts'
 import type { Store } from './store.ts'
 
@@ -18,6 +19,7 @@ export async function probe(
   store: Store,
   modelId: string,
   capability: ProbeCapability,
+  registry?: ModelProtocolRegistry,
 ): Promise<ProbeResult> {
   const started = Date.now()
   const result = (ok: boolean, detail: string): ProbeResult => ({
@@ -47,6 +49,8 @@ export async function probe(
       routes: [{ role, orderedModelIds: [model.id], timeoutMs: 30000 }],
     },
     (entry) => store.recordModel(entry, config),
+    undefined,
+    registry,
   )
   const signal = AbortSignal.timeout(30000)
   try {

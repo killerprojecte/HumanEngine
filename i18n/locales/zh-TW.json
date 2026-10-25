@@ -172,7 +172,7 @@
   "localeTraditional": "繁體中文",
   "complete": "完整涵蓋",
   "partial": "部分涵蓋",
-  "unavailable": "無法取得",
+  "unavailable": "無法使用",
   "newModel": "新模型",
   "probeSaveFirst": "請先儲存或重設修改，再探索模型或探測能力。",
   "probeChargeWarning": "這會使用已儲存的模型傳送真實請求，可能產生服務商費用。是否繼續？",
@@ -221,5 +221,9 @@
   "runningModelRequests": "進行中的模型請求",
   "queuedModelRequests": "排隊中的模型請求",
   "lock": "鎖定",
-  "unlock": "解鎖"
+  "unlock": "解鎖",
+  "inspectTransientState": "檢視暫存狀態",
+  "transientStateHelp": "唯讀的話題注意力與任務數量，不含聊天正文，也不推斷人類情緒；重新啟動會丟棄這些狀態。",
+  "attention": "注意力",
+  "messageCount": "訊息數"
 }

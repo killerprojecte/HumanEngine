@@ -1,9 +1,15 @@
+import {
+  ModelProtocolRegistry,
+  isBuiltinProtocol,
+  type ModelProtocolContext,
+  type ProtocolRegistration,
+} from './model-protocols.ts'
 import { modelScheduler } from './scheduler.ts'
 export type ModelRole = 'planner' | 'thinker' | 'learning' | 'vision' | 'embedding'
 export interface Provider {
   id: string
   name: string
-  protocol: 'openai-chat' | 'openai-responses'
+  protocol: string
   baseUrl: string
   credentialEnv: string
 }
@@ -116,6 +122,10 @@ const abortError = () => new ModelError('request_cancelled')
 /** Protocol state is transient, opaque, and never serialized into logs or persisted messages. */
 export class Router {
   private readonly state = new WeakMap<ChatMessage, { modelId: string; output: unknown[] }>()
+  private readonly continuations = new WeakMap<
+    ChatMessage,
+    { modelId: string; generation: number; value: unknown }
+  >()
   private readonly config: RouterConfig
   constructor(
     config: RouterConfig,
@@ -124,6 +134,7 @@ export class Router {
       entry: ModelDiagnostic,
       credentialValues: readonly string[],
     ) => void = () => {},
+    private readonly protocols?: ModelProtocolRegistry,
   ) {
     this.config = structuredClone(config)
   }
@@ -159,6 +170,16 @@ export class Router {
       attempted = true
       const started = Date.now()
       try {
+        if (!isBuiltinProtocol(provider.protocol))
+          return await this.completeProtocol(
+            provider,
+            model,
+            role,
+            messages,
+            tools,
+            route.timeoutMs,
+            signal,
+          )
         const responses = provider.protocol === 'openai-responses'
         const body = responses
           ? {
@@ -254,6 +275,7 @@ export class Router {
           durationMs: Date.now() - started,
           code: error instanceof ModelError ? error.code : 'provider_request_failed',
         })
+        if (error instanceof ModelError && error.code === 'protocol_disabled') throw error
       }
     }
     throw new ModelError(attempted ? 'all_models_failed' : 'no_compatible_model')
@@ -273,6 +295,8 @@ export class Router {
       this.config.routes.find((route) => route.role === 'embedding')?.timeoutMs ?? 30_000
     const started = Date.now()
     try {
+      if (!isBuiltinProtocol(provider.protocol))
+        return await this.embeddingsProtocol(provider, model, inputs, timeout, signal)
       const result = await modelScheduler.run(1, signal, () =>
         this.request(
           provider,
@@ -317,15 +341,290 @@ export class Router {
         durationMs: Date.now() - started,
         code: error instanceof ModelError ? error.code : 'provider_request_failed',
       })
-      throw error
+      throw error instanceof ModelError ? error : new ModelError('provider_request_failed')
     }
   }
 
   async listModels(providerId: string, signal?: AbortSignal): Promise<string[]> {
     const provider = this.config.providers.find((item) => item.id === providerId)
     if (!provider) throw new ModelError('provider_not_configured')
+    if (!isBuiltinProtocol(provider.protocol)) {
+      const started = Date.now()
+      try {
+        const call = await this.invokeProtocol(
+          provider,
+          undefined,
+          'listModels',
+          15000,
+          1,
+          signal,
+          (context, registration) => registration.adapter.listModels!(context),
+        )
+        const models = array(call.value).map((value) => {
+          const name = string(value)
+          if (!name || name.length > 200) throw new ModelError('invalid_provider_response')
+          return name
+        })
+        if (models.length > 10000) throw new ModelError('invalid_provider_response')
+        this.assertProtocol(call.registration, signal)
+        this.emit({
+          event: 'model.completed',
+          modelId: '',
+          providerId: provider.id,
+          role: 'models',
+          durationMs: Date.now() - started,
+        })
+        return [...new Set(models)].sort()
+      } catch (error) {
+        this.emit({
+          event: 'model.failed',
+          modelId: '',
+          providerId: provider.id,
+          role: 'models',
+          durationMs: Date.now() - started,
+          code: error instanceof ModelError ? error.code : 'provider_request_failed',
+        })
+        throw error instanceof ModelError ? error : new ModelError('provider_request_failed')
+      }
+    }
     const result = await this.request(provider, 'models', undefined, 15_000, signal)
     return [...new Set(array(result.data).map((item) => string(object(item).id)))].sort()
+  }
+
+  private assertProtocol(registration: ProtocolRegistration, signal?: AbortSignal) {
+    if (registration.signal.aborted) throw new ModelError('protocol_disabled')
+    if (signal?.aborted) throw abortError()
+  }
+
+  private async invokeProtocol<T>(
+    provider: Provider,
+    model: ModelInstance | undefined,
+    operation: 'complete' | 'embeddings' | 'listModels',
+    timeoutMs: number,
+    priority: number,
+    parent: AbortSignal | undefined,
+    task: (context: ModelProtocolContext, registration: ProtocolRegistration) => Promise<T>,
+  ): Promise<{ value: T; registration: ProtocolRegistration; secrets: string[] }> {
+    const registration = this.protocols?.lookup(provider.protocol)
+    if (!registration) throw new ModelError('protocol_not_registered')
+    if (!registration.adapter[operation]) throw new ModelError('protocol_operation_unsupported')
+    const timeout = AbortSignal.timeout(Math.max(1, Math.min(timeoutMs, 600000)))
+    const signal = AbortSignal.any([registration.signal, timeout, ...(parent ? [parent] : [])])
+    const secrets: string[] = []
+    const failure = () =>
+      registration.signal.aborted
+        ? new ModelError('protocol_disabled')
+        : parent?.aborted
+          ? abortError()
+          : timeout.aborted
+            ? new ModelError('provider_timeout')
+            : new ModelError('provider_request_failed')
+    let onAbort: () => void = () => {}
+    try {
+      if (signal.aborted) throw failure()
+      const cancelled = new Promise<never>((_, reject) => {
+        onAbort = () => reject(failure())
+        signal.addEventListener('abort', onAbort, { once: true })
+      })
+      const pending = modelScheduler.run(priority, signal, async () => {
+        if (signal.aborted) throw failure()
+        let base: URL
+        try {
+          base = new URL(provider.baseUrl)
+        } catch {
+          throw new ModelError('invalid_provider_url')
+        }
+        if (
+          !['http:', 'https:'].includes(base.protocol) ||
+          base.username ||
+          base.password ||
+          base.search ||
+          base.hash
+        )
+          throw new ModelError('invalid_provider_url')
+        const credential = provider.credentialEnv ? process.env[provider.credentialEnv] : undefined
+        if (provider.credentialEnv && !credential) throw new ModelError('credential_not_configured')
+        if (credential) secrets.push(credential)
+        // The task may ignore cancellation. Race it inside the scheduler so it cannot retain a queue slot.
+        const execution = Promise.resolve().then(() => {
+          if (signal.aborted) throw failure()
+          return task(
+            {
+              provider: structuredClone(provider),
+              ...(model ? { model: structuredClone(model) } : {}),
+              credential,
+              signal,
+            },
+            registration,
+          )
+        })
+        return Promise.race([execution, cancelled])
+      })
+      const value = await Promise.race([pending, cancelled])
+      if (signal.aborted) throw failure()
+      return { value, registration, secrets }
+    } catch (error) {
+      if (signal.aborted) throw failure()
+      // Never trust exception text or even a ModelError thrown by external plugin code.
+      throw new ModelError('provider_request_failed')
+    } finally {
+      signal.removeEventListener('abort', onAbort)
+    }
+  }
+
+  private normalizedUsage(value: unknown): Usage {
+    const usage = object(value)
+    if (usage.known !== undefined && typeof usage.known !== 'boolean')
+      throw new ModelError('invalid_provider_usage')
+    for (const key of ['inputTokens', 'outputTokens', 'totalTokens'])
+      if (
+        typeof usage[key] !== 'number' ||
+        !Number.isSafeInteger(usage[key]) ||
+        (usage[key] as number) < 0
+      )
+        throw new ModelError('invalid_provider_usage')
+    return {
+      inputTokens: usage.inputTokens as number,
+      outputTokens: usage.outputTokens as number,
+      totalTokens: usage.totalTokens as number,
+      ...(usage.known === false ? { known: false } : {}),
+    }
+  }
+
+  private async completeProtocol(
+    provider: Provider,
+    model: ModelInstance,
+    role: Exclude<ModelRole, 'embedding'>,
+    messages: ChatMessage[],
+    tools: ToolDefinition[],
+    timeout: number,
+    signal?: AbortSignal,
+  ): Promise<Completion> {
+    const started = Date.now()
+    const last = messages.findLast((message) => message.role === 'assistant')
+    const previous = last ? this.continuations.get(last) : undefined
+    const call = await this.invokeProtocol(
+      provider,
+      model,
+      'complete',
+      timeout,
+      role === 'planner' || role === 'thinker' ? 0 : 1,
+      signal,
+      (context, registration) =>
+        registration.adapter.complete(
+          context,
+          structuredClone(
+            messages.map((message) => ({
+              role: message.role,
+              content: message.content,
+              ...(message.images ? { images: message.images } : {}),
+              ...(message.toolCalls ? { toolCalls: message.toolCalls } : {}),
+              ...(message.toolCallId ? { toolCallId: message.toolCallId } : {}),
+            })),
+          ),
+          structuredClone(tools),
+          previous?.modelId === model.id && previous.generation === registration.generation
+            ? previous.value
+            : undefined,
+        ),
+    )
+    const value = object(call.value)
+    // Only visible normalized output crosses this boundary. Opaque continuation is never serialized.
+    let encoded: string
+    try {
+      encoded = JSON.stringify({ text: value.text, toolCalls: value.toolCalls, usage: value.usage })
+    } catch {
+      throw new ModelError('invalid_provider_response')
+    }
+    if (Buffer.byteLength(encoded) > 8 * 1024 * 1024)
+      throw new ModelError('provider_response_too_large')
+    const visible = object(JSON.parse(encoded)),
+      text = string(visible.text)
+    const names = new Map(tools.map((tool) => [tool.name, tool.name]))
+    const toolCalls = array(visible.toolCalls).map((item) => {
+      const call = object(item)
+      return this.toolCall(call.id, call.name, JSON.stringify(call.arguments), names)
+    })
+    if (new Set(toolCalls.map((call) => call.id)).size !== toolCalls.length)
+      throw new ModelError('duplicate_tool_call_id')
+    const usage = this.normalizedUsage(visible.usage)
+    const continuation = value.continuation
+    this.assertProtocol(call.registration, signal)
+    const assistant: ChatMessage = { role: 'assistant', content: text, toolCalls }
+    this.continuations.set(assistant, {
+      modelId: model.id,
+      generation: call.registration.generation,
+      value: continuation,
+    })
+    try {
+      this.diagnostic(
+        { role, modelId: model.id, messages, output: { text, toolCalls } },
+        call.secrets,
+      )
+    } catch {
+      /* Diagnostics are optional. */
+    }
+    this.emit({
+      event: 'model.completed',
+      modelId: model.id,
+      providerId: provider.id,
+      role,
+      durationMs: Date.now() - started,
+      usage,
+    })
+    return { text, toolCalls, usage, modelId: model.id, assistant }
+  }
+
+  private async embeddingsProtocol(
+    provider: Provider,
+    model: ModelInstance,
+    inputs: string[],
+    timeout: number,
+    signal?: AbortSignal,
+  ) {
+    const started = Date.now()
+    const call = await this.invokeProtocol(
+      provider,
+      model,
+      'embeddings',
+      timeout,
+      1,
+      signal,
+      (context, registration) => registration.adapter.embeddings!(context, [...inputs]),
+    )
+    let encoded: string
+    try {
+      const raw = object(call.value)
+      encoded = JSON.stringify({ vectors: raw.vectors, usage: raw.usage })
+    } catch {
+      throw new ModelError('invalid_embedding_response')
+    }
+    if (Buffer.byteLength(encoded) > 8 * 1024 * 1024)
+      throw new ModelError('provider_response_too_large')
+    const value = object(JSON.parse(encoded))
+    const vectors = array(value.vectors).map((vector) =>
+      array(vector).map((n) => {
+        if (typeof n !== 'number' || !Number.isFinite(n))
+          throw new ModelError('invalid_embedding_response')
+        return n
+      }),
+    )
+    if (
+      vectors.length !== inputs.length ||
+      vectors.some((vector) => !vector.length || vector.length !== vectors[0]?.length)
+    )
+      throw new ModelError('invalid_embedding_dimensions')
+    const usage = this.normalizedUsage(value.usage)
+    this.assertProtocol(call.registration, signal)
+    this.emit({
+      event: 'model.completed',
+      modelId: model.id,
+      providerId: provider.id,
+      role: 'embedding',
+      durationMs: Date.now() - started,
+      usage,
+    })
+    return { vectors, usage, modelId: model.id }
   }
 
   private emit(entry: ModelLog) {

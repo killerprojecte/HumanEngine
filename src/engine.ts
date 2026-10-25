@@ -1,3 +1,4 @@
+import { ModelProtocolRegistry } from './model-protocols.ts'
 import { HabitService, type HabitInput } from './habits.ts'
 import { modelScheduler, WorkScheduler } from './scheduler.ts'
 import { MemeService } from './memes.ts'
@@ -56,6 +57,7 @@ export interface Rule {
   enabled: boolean
 }
 export class Engine {
+  readonly protocols = new ModelProtocolRegistry()
   readonly runtime: Runtime
   readonly plugins: PluginManager
   readonly memory: MemoryService
@@ -70,8 +72,17 @@ export class Engine {
   private proactiveTimer?: ReturnType<typeof setInterval>
   constructor(readonly store: Store) {
     modelScheduler.configure(store.settings.modelConcurrency)
-    this.runtime = new Runtime(store)
-    this.plugins = new PluginManager(store, this.runtime)
+    this.runtime = new Runtime(store, (config) => this.router(config))
+    this.plugins = new PluginManager(store, this.runtime, this.protocols, {
+      adapterStopped: (id) => {
+        for (const scene of store.scenes())
+          if (scene.adapterId === id) this.cancelLearning(scene.id)
+      },
+      media: (assetId, sceneId) => {
+        const original = this.memes.original({ sceneId, simulation: false }, assetId)
+        return { file: `base64://${readFileSync(original.path).toString('base64')}`, type: 'image' }
+      },
+    })
     this.memory = new MemoryService(store)
     this.memes = new MemeService(store)
     this.habits = new HabitService(store)
@@ -349,7 +360,7 @@ export class Engine {
             onError: (code) => this.store.log('error', 'snowluma', code),
           },
         )
-        this.runtime.addAdapter('snowluma', adapter)
+        this.runtime.addAdapter('snowluma', adapter, adapter.userId(config.accountId))
         context.onDispose(() => {
           this.runtime.removeAdapter('snowluma')
           for (const scene of this.store.scenes())
@@ -396,12 +407,12 @@ export class Engine {
     modelScheduler.configure(this.store.settings.modelConcurrency)
     if (!this.store.settings.debugModelIO) this.store.clearDiagnostics()
   }
-  router() {
-    const config = this.store.models
+  router(config = this.store.models) {
     return new Router(
       config,
       (entry) => this.store.recordModel(entry, config),
       (entry, secrets) => this.store.captureDiagnostic(entry, secrets),
+      this.protocols,
     )
   }
   sceneChanged(scene: Scene) {
@@ -660,9 +671,7 @@ export class Engine {
         model = config.models.find((m) => m.id === route?.orderedModelIds[0]),
         provider = config.providers.find((p) => p.id === model?.providerId)
       if (!model || !provider) return this.memory.search(ctx, query)
-      const embedded = await new Router(config, (entry) =>
-        this.store.recordModel(entry, config),
-      ).embeddings(model.id, [query])
+      const embedded = await this.router(config).embeddings(model.id, [query])
       const vector = embedded.vectors[0]
       if (!vector) return this.memory.search(ctx, query)
       const spaceConfig = {
@@ -690,9 +699,7 @@ export class Engine {
         model = config.models.find((m) => m.id === route?.orderedModelIds[0]),
         provider = config.providers.find((p) => p.id === model?.providerId)
       if (!model || !provider) return
-      const embedded = await new Router(config, (entry) =>
-        this.store.recordModel(entry, config),
-      ).embeddings(model.id, [content])
+      const embedded = await this.router(config).embeddings(model.id, [content])
       const vector = embedded.vectors[0]
       if (!vector) return
       const space = this.memory.registerSpace({

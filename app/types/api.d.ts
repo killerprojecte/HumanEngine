@@ -667,6 +667,136 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/model-protocols": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            label: string;
+                            operations: ("complete" | "embeddings" | "listModels")[];
+                        }[];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Service unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenes/{id}/state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SceneState"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Service unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/habits": {
         parameters: {
             query?: never;
@@ -2439,6 +2569,10 @@ export interface components {
             version: string;
             queuedModelRequests: number;
             runningModelRequests: number;
+            adapters: {
+                id: string;
+                status: string;
+            }[];
         };
         Error: {
             error: string;
@@ -2451,8 +2585,7 @@ export interface components {
         Provider: {
             id: string;
             name: string;
-            /** @enum {string} */
-            protocol: "openai-chat" | "openai-responses";
+            protocol: string;
             /** Format: uri */
             baseUrl: string;
             credentialEnv: string;
@@ -2537,6 +2670,16 @@ export interface components {
             role: string;
             input: string;
             output: string;
+        };
+        SceneState: {
+            activeTasks: number;
+            secondsSinceBotSpoke: number | null;
+            topics: {
+                id: string;
+                attention: number;
+                ageMs: number;
+                messageCount: number;
+            }[];
         };
         Habit: {
             id: string;

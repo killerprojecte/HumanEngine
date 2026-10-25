@@ -84,9 +84,21 @@ function cost(row: components['schemas']['Usage']) {
       }).format(row.estimatedUsd)
     : t('usageUnknownCost')
 }
+const protocols = ref<Array<{ id: string; label: string }>>([])
+const protocolOptions = computed(() => [
+  ...new Map(
+    [
+      ...protocols.value.map((p) => ({ label: p.label, value: p.id })),
+      ...config.value.providers
+        .filter((p) => !protocols.value.some((option) => option.id === p.protocol))
+        .map((p) => ({ label: p.protocol + ' (' + t('unavailable') + ')', value: p.protocol })),
+    ].map((p) => [p.value, p]),
+  ).values(),
+])
 const roles = ['planner', 'thinker', 'learning', 'vision', 'embedding'] as const
 async function load() {
-  const r = await client.GET('/api/models')
+  const [r, p] = await Promise.all([client.GET('/api/models'), client.GET('/api/model-protocols')])
+  protocols.value = p.data ?? []
   if (r.data) {
     config.value = r.data
     captureSaved()
@@ -238,10 +250,7 @@ async function discover(id: string) {
           ><UFormField :label="t('protocol')"
             ><USelect
               v-model="provider.protocol"
-              :items="[
-                { label: 'OpenAI Chat Completions', value: 'openai-chat' },
-                { label: 'OpenAI Responses', value: 'openai-responses' },
-              ]"
+              :items="protocolOptions"
               class="w-full" /></UFormField
           ><UFormField :label="t('baseUrl')"
             ><UInput v-model="provider.baseUrl" class="w-full" /></UFormField

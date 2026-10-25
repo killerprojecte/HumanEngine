@@ -221,5 +221,9 @@
   "runningModelRequests": "Running model requests",
   "queuedModelRequests": "Queued model requests",
   "lock": "Lock",
-  "unlock": "Unlock"
+  "unlock": "Unlock",
+  "inspectTransientState": "Inspect temporary state",
+  "transientStateHelp": "Read-only topic attention and task counts. No chat bodies or inferred human emotions; state is discarded on restart.",
+  "attention": "Attention",
+  "messageCount": "Messages"
 }

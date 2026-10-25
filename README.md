@@ -44,7 +44,7 @@ The runtime starts with the server, independently of browser visits. Enable the 
 - Durable recall tombstones, in-flight cancellation, derived-source invalidation, and no history resurrection or restart replay.
 - Original GIF/WebP storage, ordered changed-frame vision analysis, metadata search, manual privacy-reviewed sharing, and sourced feedback.
 - Sourced low-weight habits, structured shared expression preferences, manual capability probes, optional price estimates, priority scheduling, and soft participation windows.
-- Trusted local plugin lifecycle, schema configuration, custom pages, ordered fail-closed send hooks, readonly events, and cancellation-safe disable.
+- Trusted local plugins: schema forms, custom pages, scoped adapter and model-protocol registration, readonly events, and guarded send tools/hooks with cancellation-safe disable.
 
 No real provider account or QQ/SnowLuma connection has been exercised. Integration tests use local HTTP/WebSocket fixtures; animated-media tests use actual encoded GIF/WebP fixtures. Browser interaction testing is blocked by this execution environment's Chromium socket restriction; production HTTP rendering/API smoke checks and Nuxt type/build checks passed. See [verification and remaining work](docs/implementation-status.md).
 

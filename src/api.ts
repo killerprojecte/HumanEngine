@@ -11,11 +11,11 @@ import {
   SceneSchema,
   LogSchema,
   StatusSchema,
+  SceneStateSchema,
   ErrorSchema,
   UsageSchema,
   DiagnosticSchema,
 } from './schema.ts'
-import { Router } from './models.ts'
 
 const json = <T extends z.ZodType>(schema: T, description = 'Success') => ({
   description,
@@ -82,6 +82,7 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
           version: '0.1.0',
           queuedModelRequests: modelScheduler.status.queued,
           runningModelRequests: modelScheduler.status.running,
+          adapters: engine.runtime.adapterStatuses,
         },
         200,
       )
@@ -117,7 +118,7 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       responses: { 200: json(z.object({ models: z.array(z.string()) })), ...errorResponses },
     }),
     async (c) => {
-      const models = await new Router(store.models).listModels(c.req.valid('param').id)
+      const models = await engine.router().listModels(c.req.valid('param').id)
       return c.json({ models }, 200)
     },
   )
@@ -202,6 +203,37 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       responses: { 200: json(z.array(DiagnosticSchema)), ...errorResponses },
     }),
     (c) => c.json(store.diagnostics(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/model-protocols',
+      responses: {
+        200: json(
+          z.array(
+            z.object({
+              id: z.string(),
+              label: z.string(),
+              operations: z.array(z.enum(['complete', 'embeddings', 'listModels'])),
+            }),
+          ),
+        ),
+        ...errorResponses,
+      },
+    }),
+    (c) => c.json(engine.protocols.list(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/scenes/{id}/state',
+      request: { params: z.object({ id: z.string() }) },
+      responses: { 200: json(SceneStateSchema), ...errorResponses },
+    }),
+    (c) =>
+      store.scene(c.req.valid('param').id)
+        ? c.json(engine.runtime.sceneState(c.req.valid('param').id), 200)
+        : c.json({ error: 'Scene unavailable' }, 400),
   )
   installEngineRoutes(app, engine)
   app.doc('/api/openapi.json', {

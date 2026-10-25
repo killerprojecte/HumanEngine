@@ -24,9 +24,11 @@ Configuration, scene participation/learning, models/routes, chat simulation/prev
 - Technical events have bounded disk rotation without raw chats. Optional visible model previews are disabled by default, bounded in memory, secret-redacted, and cleared on recall, disable, or restart. Hidden protocol reasoning state is never previewed.
 - Consistent SQLite backup/fresh restore, scoped vector benchmarks, read-only versioned plugin events, and cancellation-safe plugin lifecycle are implemented.
 
-## Remaining implementation work
+## Extension SDK and remaining validation
 
-Generic third-party model-protocol and platform-adapter registration remains a documented SDK gap. Builtin OpenAI protocols, the independent SnowLuma adapter, and local plugin tools/hooks/events/pages are implemented; Anthropic and NapCat are not implemented.
+Trusted local plugins can register namespaced model protocols and platform adapters, with engine-local registries, scoped ingress/history/recall, and lifecycle-bound cancellation. Protocol continuation stays private to a model instance and registration generation. Declared send tools use the same core checks as builtin sends, including exact-segment revalidation after hooks and before each segment; invocation completion revokes retained send callbacks. Anthropic and NapCat implementations are intentionally not included.
+
+The overview exposes actual registered adapter status, and scene inspection exposes body-free temporary topic/task state. Bot mentions and history identities are normalized for the Planner; attention decays with time, not with dashboard read frequency. These measured activity signals do not imply real feelings or a human life.
 
 Representative conversation replay, real provider/QQ compatibility, visual browser QA, and target-machine capacity testing remain external validation work, not successful checks. See operations documentation for measured synthetic vector scope, mixed latency results, and limits.
 

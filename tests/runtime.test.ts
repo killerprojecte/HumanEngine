@@ -441,3 +441,63 @@ test('semantic topics narrow thinker context and unrelated secondary recall does
     store.close()
   }
 })
+
+test('a coalesced batch received during a busy silent decision is replanned instead of dropped', async () => {
+  let release!: () => void,
+    started!: () => void,
+    done!: () => void,
+    decisions = 0
+  const gate = new Promise<void>((resolve) => (release = resolve)),
+    waiting = new Promise<void>((resolve) => (started = resolve)),
+    replanned = new Promise<void>((resolve) => (done = resolve))
+  const { store, runtime } = setup(async (role, messages) => {
+    assert.equal(role, 'planner')
+    decisions++
+    if (decisions === 1) {
+      started()
+      await gate
+    } else {
+      assert.ok(messages.some((m) => m.content.includes('new-addressed')))
+      done()
+    }
+    return result([
+      {
+        id: 'd',
+        name: 'participation.decide',
+        arguments: { action: 'silent', reasonCode: 'fixture' },
+      },
+    ])
+  })
+  store.saveScene({
+    ...scene,
+    name: 'Fixture',
+    participationEnabled: true,
+    learningEnabled: false,
+    proactiveEnabled: false,
+  })
+  runtime.addAdapter('fixture', {
+    send: async () => ({ status: 'failed' }),
+    getMessage: async () => ({ items: [], coverage: 'unavailable' }),
+    history: async () => ({ items: [], coverage: 'unavailable' }),
+    dispose() {},
+  })
+  try {
+    runtime.ingest(message('first'), scene)
+    await waiting
+    runtime.ingest(message('new-addressed'), scene)
+    await delay(20)
+    release()
+    await Promise.race([
+      replanned,
+      new Promise((_, reject) => {
+        const timer = setTimeout(() => reject(Error('pending_batch_lost')), 3000)
+        timer.unref()
+      }),
+    ])
+    assert.equal(decisions, 2)
+  } finally {
+    release()
+    runtime.dispose()
+    store.close()
+  }
+})

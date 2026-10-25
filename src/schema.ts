@@ -5,7 +5,10 @@ export const ProviderSchema = z
   .object({
     id: Id,
     name: z.string().min(1).max(100),
-    protocol: z.enum(['openai-chat', 'openai-responses']),
+    protocol: z
+      .string()
+      .max(100)
+      .regex(/^(?:openai-chat|openai-responses|[a-z0-9-]+:[a-z0-9-]+)$/),
     baseUrl: z
       .url()
       .refine(
@@ -148,6 +151,7 @@ export const StatusSchema = z
     version: z.string(),
     queuedModelRequests: z.number(),
     runningModelRequests: z.number(),
+    adapters: z.array(z.object({ id: z.string(), status: z.string() })),
   })
   .openapi('Status')
 export const ErrorSchema = z.object({ error: z.string() }).openapi('Error')
@@ -182,3 +186,18 @@ export const DiagnosticSchema = z
     output: z.string(),
   })
   .openapi('Diagnostic')
+
+export const SceneStateSchema = z
+  .object({
+    activeTasks: z.number(),
+    secondsSinceBotSpoke: z.number().nullable(),
+    topics: z.array(
+      z.object({
+        id: z.string(),
+        attention: z.number(),
+        ageMs: z.number(),
+        messageCount: z.number(),
+      }),
+    ),
+  })
+  .openapi('SceneState')

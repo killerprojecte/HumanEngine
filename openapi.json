@@ -1,0 +1,842 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HumanEngine API",
+    "version": "0.1.0"
+  },
+  "security": [
+    {
+      "adminToken": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "adminToken": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Status": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "startedAt": {
+            "type": "string"
+          },
+          "uptimeSeconds": {
+            "type": "number"
+          },
+          "sceneCount": {
+            "type": "number"
+          },
+          "enabledScenes": {
+            "type": "number"
+          },
+          "providerCount": {
+            "type": "number"
+          },
+          "modelCount": {
+            "type": "number"
+          },
+          "activeTasks": {
+            "type": "number"
+          },
+          "recentErrors": {
+            "type": "number"
+          },
+          "vectorVersion": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "startedAt",
+          "uptimeSeconds",
+          "sceneCount",
+          "enabledScenes",
+          "providerCount",
+          "modelCount",
+          "activeTasks",
+          "recentErrors",
+          "vectorVersion",
+          "version"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ModelConfig": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelInstance"
+            }
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRoute"
+            }
+          }
+        },
+        "required": [
+          "providers",
+          "models",
+          "routes"
+        ],
+        "additionalProperties": false
+      },
+      "Provider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,160}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "openai-chat",
+              "openai-responses"
+            ]
+          },
+          "baseUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "credentialEnv": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "protocol",
+          "baseUrl",
+          "credentialEnv"
+        ],
+        "additionalProperties": false
+      },
+      "ModelInstance": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,160}$"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "providerId": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,160}$"
+          },
+          "apiModelName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "text",
+                "tools",
+                "vision",
+                "embedding"
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "providerId",
+          "apiModelName",
+          "capabilities"
+        ],
+        "additionalProperties": false
+      },
+      "RoleRoute": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "planner",
+              "thinker",
+              "learning",
+              "vision",
+              "embedding"
+            ]
+          },
+          "orderedModelIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_.:-]{1,160}$"
+            }
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 300000
+          }
+        },
+        "required": [
+          "role",
+          "orderedModelIds",
+          "timeoutMs"
+        ],
+        "additionalProperties": false
+      },
+      "Settings": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "persona": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "cacheEnabled": {
+            "type": "boolean"
+          },
+          "cacheHours": {
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 168
+          },
+          "debounceMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30000
+          },
+          "maxWaitMs": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 60000
+          }
+        },
+        "required": [
+          "name",
+          "timezone",
+          "persona",
+          "cacheEnabled",
+          "cacheHours",
+          "debounceMs",
+          "maxWaitMs"
+        ],
+        "additionalProperties": false
+      },
+      "Scene": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,160}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "group",
+              "private"
+            ]
+          },
+          "adapterId": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.:-]{1,160}$"
+          },
+          "accountId": {
+            "type": "string"
+          },
+          "platformSceneId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "participationEnabled": {
+            "type": "boolean"
+          },
+          "learningEnabled": {
+            "type": "boolean"
+          },
+          "proactiveEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "adapterId",
+          "accountId",
+          "platformSceneId",
+          "name",
+          "participationEnabled",
+          "learningEnabled",
+          "proactiveEnabled"
+        ],
+        "additionalProperties": false
+      },
+      "Log": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "error"
+            ]
+          },
+          "module": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "sceneId": {
+            "type": "string"
+          },
+          "turnId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "level",
+          "module",
+          "code"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/status": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/models": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelConfig"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelConfig"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/providers/{id}/models": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "models": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "models"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Settings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Settings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenes": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Scene"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scenes/{id}": {
+      "put": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Scene"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scene"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logs": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Log"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

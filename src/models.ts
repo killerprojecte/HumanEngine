@@ -1,3 +1,4 @@
+import { modelScheduler } from './scheduler.ts'
 export type ModelRole = 'planner' | 'thinker' | 'learning' | 'vision' | 'embedding'
 export interface Provider {
   id: string
@@ -36,6 +37,8 @@ export interface ChatMessage {
   toolCallId?: string
 }
 export interface Usage {
+  /** False when provider counters are missing; zero is not evidence of free usage. */
+  known?: boolean
   inputTokens: number
   outputTokens: number
   totalTokens: number
@@ -51,6 +54,12 @@ export interface RouterConfig {
   providers: Provider[]
   models: ModelInstance[]
   routes: RoleRoute[]
+}
+export interface ModelDiagnostic {
+  role: ModelRole
+  modelId: string
+  messages: ChatMessage[]
+  output: { text: string; toolCalls: ToolCall[] }
 }
 export interface ModelLog {
   event: 'model.completed' | 'model.failed'
@@ -86,11 +95,16 @@ const array = (value: unknown): unknown[] => {
 }
 const tokenCount = (value: unknown): number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : 0
-const usageOf = (value: unknown): Usage => {
+const usageOf = (value: unknown, embedding = false): Usage => {
   const usage = value && typeof value === 'object' ? (value as JsonObject) : {}
   const inputTokens = tokenCount(usage.input_tokens ?? usage.prompt_tokens)
   const outputTokens = tokenCount(usage.output_tokens ?? usage.completion_tokens)
+  const valid = (n: unknown) => typeof n === 'number' && Number.isSafeInteger(n) && n >= 0
+  const known =
+    valid(usage.input_tokens ?? usage.prompt_tokens) &&
+    (embedding || valid(usage.output_tokens ?? usage.completion_tokens))
   return {
+    ...(!known ? { known: false } : {}),
     inputTokens,
     outputTokens,
     totalTokens: tokenCount(usage.total_tokens) || inputTokens + outputTokens,
@@ -106,6 +120,10 @@ export class Router {
   constructor(
     config: RouterConfig,
     private readonly log: (entry: ModelLog) => void = () => {},
+    private readonly diagnostic: (
+      entry: ModelDiagnostic,
+      credentialValues: readonly string[],
+    ) => void = () => {},
   ) {
     this.config = structuredClone(config)
   }
@@ -179,12 +197,19 @@ export class Router {
                   }
                 : {}),
             }
-        const result = await this.request(
-          provider,
-          responses ? 'responses' : 'chat/completions',
-          body,
-          route.timeoutMs,
+        const requestSecrets: string[] = []
+        const result = await modelScheduler.run(
+          role === 'planner' || role === 'thinker' ? 0 : 1,
           signal,
+          () =>
+            this.request(
+              provider,
+              responses ? 'responses' : 'chat/completions',
+              body,
+              route.timeoutMs,
+              signal,
+              (secret) => requestSecrets.push(secret),
+            ),
         )
         if (signal?.aborted) throw abortError()
         const parsed = responses
@@ -197,6 +222,19 @@ export class Router {
         }
         if (responses) this.state.set(assistant, { modelId, output: array(result.output) })
         const completion = { ...parsed, modelId, assistant }
+        try {
+          this.diagnostic(
+            {
+              role,
+              modelId,
+              messages,
+              output: { text: parsed.text, toolCalls: parsed.toolCalls },
+            },
+            requestSecrets,
+          )
+        } catch {
+          /* Optional diagnostics cannot break model execution. */
+        }
         this.emit({
           event: 'model.completed',
           modelId,
@@ -233,28 +271,54 @@ export class Router {
     if (!provider) throw new ModelError('provider_not_configured')
     const timeout =
       this.config.routes.find((route) => route.role === 'embedding')?.timeoutMs ?? 30_000
-    const result = await this.request(
-      provider,
-      'embeddings',
-      { model: model.apiModelName, input: inputs, encoding_format: 'float' },
-      timeout,
-      signal,
-    )
-    const rows = array(result.data)
-      .map(object)
-      .sort((a, b) => Number(a.index) - Number(b.index))
-    if (rows.length !== inputs.length || rows.some((row, index) => row.index !== index))
-      throw new ModelError('invalid_embedding_response')
-    const vectors = rows.map((row) =>
-      array(row.embedding).map((value) => {
-        if (typeof value !== 'number' || !Number.isFinite(value))
-          throw new ModelError('invalid_embedding_response')
-        return value
-      }),
-    )
-    if (vectors.some((vector) => !vector.length || vector.length !== vectors[0]?.length))
-      throw new ModelError('invalid_embedding_dimensions')
-    return { vectors, usage: usageOf(result.usage), modelId }
+    const started = Date.now()
+    try {
+      const result = await modelScheduler.run(1, signal, () =>
+        this.request(
+          provider,
+          'embeddings',
+          { model: model.apiModelName, input: inputs, encoding_format: 'float' },
+          timeout,
+          signal,
+        ),
+      )
+      if (signal?.aborted) throw abortError()
+      const rows = array(result.data)
+        .map(object)
+        .sort((a, b) => Number(a.index) - Number(b.index))
+      if (rows.length !== inputs.length || rows.some((row, index) => row.index !== index))
+        throw new ModelError('invalid_embedding_response')
+      const vectors = rows.map((row) =>
+        array(row.embedding).map((value) => {
+          if (typeof value !== 'number' || !Number.isFinite(value))
+            throw new ModelError('invalid_embedding_response')
+          return value
+        }),
+      )
+      if (vectors.some((vector) => !vector.length || vector.length !== vectors[0]?.length))
+        throw new ModelError('invalid_embedding_dimensions')
+      const usage = usageOf(result.usage, true)
+      this.emit({
+        event: 'model.completed',
+        modelId,
+        providerId: provider.id,
+        role: 'embedding',
+        durationMs: Date.now() - started,
+        usage,
+      })
+      return { vectors, usage, modelId }
+    } catch (error) {
+      if (signal?.aborted) throw abortError()
+      this.emit({
+        event: 'model.failed',
+        modelId,
+        providerId: provider.id,
+        role: 'embedding',
+        durationMs: Date.now() - started,
+        code: error instanceof ModelError ? error.code : 'provider_request_failed',
+      })
+      throw error
+    }
   }
 
   async listModels(providerId: string, signal?: AbortSignal): Promise<string[]> {
@@ -400,6 +464,7 @@ export class Router {
     body: unknown,
     timeoutMs: number,
     parentSignal?: AbortSignal,
+    credentialUsed?: (secret: string) => void,
   ): Promise<JsonObject> {
     if (parentSignal?.aborted) throw abortError()
     let base: URL
@@ -418,6 +483,7 @@ export class Router {
       throw new ModelError('invalid_provider_url')
     const credential = provider.credentialEnv ? process.env[provider.credentialEnv] : undefined
     if (provider.credentialEnv && !credential) throw new ModelError('credential_not_configured')
+    if (credential) credentialUsed?.(credential)
     const timeoutSignal = AbortSignal.timeout(Math.max(1, Math.min(timeoutMs, 600_000)))
     const signal = parentSignal ? AbortSignal.any([parentSignal, timeoutSignal]) : timeoutSignal
     try {

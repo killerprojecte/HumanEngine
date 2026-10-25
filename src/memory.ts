@@ -104,6 +104,18 @@ export class MemoryService {
         embedding BLOB NOT NULL, PRIMARY KEY(memory_id,space_id)
       );
     `)
+    let cachedTermsJson = ''
+    let cachedTerms: string[] = []
+    store.db.function('humanengine_lexical', { deterministic: true }, (content, termsJson) => {
+      if (termsJson !== cachedTermsJson) {
+        cachedTermsJson = String(termsJson)
+        cachedTerms = JSON.parse(cachedTermsJson) as string[]
+      }
+      const lower = String(content).toLowerCase()
+      return cachedTerms.length
+        ? cachedTerms.filter((term) => lower.includes(term)).length / cachedTerms.length
+        : 0
+    })
   }
 
   list(ctx: MemoryContext, personId?: string): MemoryRecord[] {
@@ -124,39 +136,49 @@ export class MemoryService {
     options?: { spaceId: string; vector: number[]; limit?: number },
   ): MemoryRecord[] {
     const terms = [...new Set(query.toLowerCase().match(/[\p{L}\p{N}_:.+-]+/gu) ?? [])]
-    let rows: Row[]
-    if (options) {
-      const vector = this.vector(options.spaceId, options.vector)
-      const scope = this.scopeFilter(ctx, personId)
-      if (!scope) return []
-      rows = this.store.db
-        .prepare(
-          `WITH scoped AS MATERIALIZED (SELECT * FROM memories WHERE ${scope.sql} AND json_extract(value,'$.status') IN ('active','disputed') AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now')))
-        SELECT scoped.*, CASE WHEN v.embedding IS NULL THEN NULL ELSE vec_distance_cosine(v.embedding, ?) END AS distance
-        FROM scoped LEFT JOIN memory_vectors v ON v.memory_id=scoped.id AND v.space_id=?`,
-        )
-        .all(...scope.params, vector, options.spaceId) as Row[]
-    } else rows = this.scopedRows(ctx, personId)
-    return rows
-      .map((row) => {
-        const memory = read(row)
-        const lower = memory.content.toLowerCase()
-        const lexical = terms.length
-          ? terms.filter((term) => lower.includes(term)).length / terms.length
-          : 0
-        const semantic = row.distance == null ? 0 : Math.max(0, 1 - row.distance)
-        const relevance = Math.max(lexical, semantic)
-        const importance = { low: 0.02, medium: 0.06, high: 0.1 }[memory.importance]
-        return {
-          ...this.sanitize(memory),
-          score: relevance * 0.8 + memory.confidence * 0.1 + importance,
-          relevance,
-        }
-      })
-      .filter((item) => !query.trim() || item.relevance > 0)
-      .sort((a, b) => b.score - a.score || b.learnedAt.localeCompare(a.learnedAt))
-      .slice(0, Math.max(1, Math.min(options?.limit ?? 20, 100)))
-      .map(({ relevance: _relevance, ...memory }) => memory)
+    // Validate the selected space even for an empty permitted scope, as before.
+    const vector = options ? this.vector(options.spaceId, options.vector) : undefined
+    const scope = this.scopeFilter(ctx, personId)
+    if (!scope) return []
+    const lexical = terms.length ? 'humanengine_lexical(scoped.content, ?)' : '0.0'
+    const semantic = options
+      ? 'CASE WHEN v.embedding IS NULL THEN 0.0 ELSE max(0.0, 1.0 - vec_distance_cosine(v.embedding, ?)) END'
+      : '0.0'
+    const join = options
+      ? 'LEFT JOIN memory_vectors v ON v.memory_id=scoped.id AND v.space_id=?'
+      : ''
+    const limit = Math.max(1, Math.min(options?.limit ?? 20, 100))
+    const rows = this.store.db
+      .prepare(
+        `
+      WITH scoped AS MATERIALIZED (
+        SELECT rowid AS ordinal, * FROM memories
+        WHERE ${scope.sql} AND json_extract(value,'$.status') IN ('active','disputed')
+          AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now'))
+      ), relevant AS MATERIALIZED (
+        SELECT scoped.value, scoped.ordinal, max(${lexical}, ${semantic}) AS relevance
+        FROM scoped ${join}
+      ), ranked AS (
+        SELECT value, ordinal, relevance,
+          relevance * 0.8 + json_extract(value,'$.confidence') * 0.1 +
+          CASE json_extract(value,'$.importance') WHEN 'low' THEN 0.02 WHEN 'medium' THEN 0.06 ELSE 0.1 END AS score
+        FROM relevant
+      )
+      SELECT value, score FROM ranked WHERE ? = 0 OR relevance > 0
+      ORDER BY score DESC, json_extract(value,'$.learnedAt') DESC, ordinal DESC LIMIT ?
+    `,
+      )
+      .all(
+        ...scope.params,
+        ...(terms.length ? [JSON.stringify(terms)] : []),
+        ...(options ? [vector!, options.spaceId] : []),
+        query.trim() ? 1 : 0,
+        Math.trunc(limit),
+      ) as { value: string; score: number }[]
+    return rows.map((row) => ({
+      ...this.sanitize(JSON.parse(row.value) as MemoryRecord),
+      score: row.score,
+    }))
   }
 
   propose(ctx: MemoryContext, candidate: MemoryCandidate): ProposalResult {

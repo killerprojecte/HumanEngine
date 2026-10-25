@@ -7,3 +7,6 @@ data/
 !.env.example
 *.sqlite*
 coverage/
+
+logs/
+backups/

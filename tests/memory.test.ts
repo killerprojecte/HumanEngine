@@ -267,3 +267,147 @@ test('sqlite-vec exact search filters scope before distance, preserves space ide
     store.close()
   }
 })
+
+test('SQL top-k matches exact hybrid oracle for rare codes, Unicode, person scope, expiry, and vector spaces', () => {
+  const { store, memory } = setup()
+  try {
+    const definition = {
+      providerId: 'p',
+      modelId: 'm',
+      apiModelName: 'v1',
+      deployment: 'local',
+      dimensions: 2,
+      preprocessing: 'plain',
+      normalized: true,
+    }
+    const space = memory.registerSpace(definition)
+    const other = memory.registerSpace({ ...definition, apiModelName: 'v2' })
+    let excludedId = '',
+      expiredId = ''
+    for (let i = 0; i < 65; i++) {
+      const record = memory.create({
+        scope:
+          i % 5 === 0
+            ? { kind: 'sharedPublicKnowledge' }
+            : {
+                kind: 'scene',
+                sceneId: i % 7 === 0 ? 'group-b' : 'group-a',
+                ...(i % 3 === 0 ? { personId: 'person' } : {}),
+              },
+        content: `${i === 64 ? 'Rare-ZX:99 ÉCOLE İSTANBUL ΩMEGA' : `Sample ${i} ${i % 2 ? 'apple' : 'pear'}`}`,
+        kind: 'fact',
+        confidence: (i % 9) / 10,
+        importance: (['low', 'medium', 'high'] as const)[i % 3],
+        ...(i === 62 ? { validUntil: '2000-01-01T00:00:00Z' } : {}),
+      })
+      store.db
+        .prepare("UPDATE memories SET value=json_set(value,'$.learnedAt',?) WHERE id=?")
+        .run(new Date(Date.UTC(2026, 0, 1, 0, 0, i)).toISOString(), record.id)
+      if (i % 4 !== 0) memory.index(record.id, space, [i % 2 ? 1 : 0, i % 2 ? 0 : 1])
+      memory.index(record.id, other, [0, 1])
+      if (i === 7) excludedId = record.id
+      if (i === 62) expiredId = record.id
+      if (i === 61) memory.update(record.id, { status: 'invalidated' })
+    }
+    const contexts = [
+      evidence('group-a'),
+      evidence('group-b'),
+      { ...evidence('group-a'), simulation: true },
+    ]
+    for (const context of contexts)
+      for (const personId of [undefined, 'person'])
+        for (const query of [
+          '',
+          'apple pear',
+          'Rare-ZX:99 école istanbul ωmega',
+          'école',
+          'İSTANBUL',
+          '!!!',
+        ])
+          for (const selected of [undefined, space, other]) {
+            const terms = [...new Set(query.toLowerCase().match(/[\p{L}\p{N}_:.+-]+/gu) ?? [])]
+            const expected = memory
+              .list(context, personId)
+              .map((record) => {
+                const lexical = terms.length
+                  ? terms.filter((term) => record.content.toLowerCase().includes(term)).length /
+                    terms.length
+                  : 0
+                const distance = selected
+                  ? (store.db
+                      .prepare(
+                        'SELECT vec_distance_cosine(embedding,?) AS d FROM memory_vectors WHERE memory_id=? AND space_id=?',
+                      )
+                      .get(Buffer.from(new Float32Array([1, 0]).buffer), record.id, selected) as
+                      { d: number } | undefined)
+                  : undefined
+                const relevance = Math.max(lexical, distance ? Math.max(0, 1 - distance.d) : 0)
+                return {
+                  ...record,
+                  relevance,
+                  score:
+                    relevance * 0.8 +
+                    record.confidence * 0.1 +
+                    { low: 0.02, medium: 0.06, high: 0.1 }[record.importance],
+                }
+              })
+              .filter((record) => !query.trim() || record.relevance > 0)
+              .sort((a, b) => b.score - a.score || b.learnedAt.localeCompare(a.learnedAt))
+              .slice(0, selected ? 7 : 20)
+            const actual = memory.search(
+              context,
+              query,
+              personId,
+              selected ? { spaceId: selected, vector: [1, 0], limit: 7 } : undefined,
+            )
+            assert.deepEqual(
+              actual.map((r) => r.id),
+              expected.map((r) => r.id),
+              JSON.stringify({ context, personId, query, selected }),
+            )
+            actual.forEach((r, i) => assert.ok(Math.abs(r.score! - expected[i]!.score) < 1e-12))
+          }
+    assert.equal(
+      memory.search(evidence('group-a'), 'école')[0]?.content.includes('Rare-ZX:99'),
+      true,
+    )
+    const tied = ['Tie first', 'Tie second'].map((content) =>
+      memory.create({
+        scope: { kind: 'scene', sceneId: 'group-a' },
+        content,
+        kind: 'fact',
+        importance: 'high',
+      }),
+    )
+    for (const item of tied)
+      store.db
+        .prepare("UPDATE memories SET value=json_set(value,'$.learnedAt',?) WHERE id=?")
+        .run('2026-01-01T00:00:00.000Z', item.id)
+    for (const selected of [undefined, space])
+      assert.deepEqual(
+        memory
+          .search(
+            evidence('group-a'),
+            'tie',
+            undefined,
+            selected ? { spaceId: selected, vector: [1, 0], limit: 2 } : undefined,
+          )
+          .slice(0, 2)
+          .map((item) => item.id),
+        [tied[1]!.id, tied[0]!.id],
+      )
+    // Invalid vectors in inaccessible/expired records must never reach sqlite-vec.
+    store.db
+      .prepare('UPDATE memory_vectors SET embedding=? WHERE memory_id IN (?,?)')
+      .run(Buffer.from([1]), excludedId, expiredId)
+    assert.doesNotThrow(() =>
+      memory.search(evidence('group-a'), '', undefined, {
+        spaceId: space,
+        vector: [1, 0],
+        limit: 3,
+      }),
+    )
+  } finally {
+    store.close()
+  }
+})

@@ -1,3 +1,4 @@
+import { modelScheduler } from './scheduler.ts'
 import { Engine } from './engine.ts'
 import { installEngineRoutes } from './admin.ts'
 import { randomUUID } from 'node:crypto'
@@ -11,6 +12,8 @@ import {
   LogSchema,
   StatusSchema,
   ErrorSchema,
+  UsageSchema,
+  DiagnosticSchema,
 } from './schema.ts'
 import { Router } from './models.ts'
 
@@ -77,6 +80,8 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
           recentErrors: store.logs.filter((l) => l.level === 'error').length,
           vectorVersion: store.vectorVersion,
           version: '0.1.0',
+          queuedModelRequests: modelScheduler.status.queued,
+          runningModelRequests: modelScheduler.status.running,
         },
         200,
       )
@@ -146,6 +151,7 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
         store.set('personaVersions', versions)
       }
       store.set('settings', settings)
+      engine.settingsChanged()
       store.log('info', 'config', 'settings_updated')
       return c.json(settings, 200)
     },
@@ -180,6 +186,22 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       responses: { 200: json(z.array(LogSchema)), ...errorResponses },
     }),
     (c) => c.json(store.logs.toReversed(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/usage',
+      responses: { 200: json(z.array(UsageSchema)), ...errorResponses },
+    }),
+    (c) => c.json(store.usage(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/diagnostics',
+      responses: { 200: json(z.array(DiagnosticSchema)), ...errorResponses },
+    }),
+    (c) => c.json(store.diagnostics(), 200),
   )
   installEngineRoutes(app, engine)
   app.doc('/api/openapi.json', {

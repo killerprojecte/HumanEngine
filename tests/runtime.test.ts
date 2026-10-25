@@ -306,3 +306,138 @@ test('new correction validates the exact stale segments and replans rather than 
     store.close()
   }
 })
+
+test('semantic topics narrow thinker context and unrelated secondary recall does not cancel the main reply', async () => {
+  let release: () => void = () => {},
+    started: () => void = () => {}
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const waiting = new Promise<void>((resolve) => {
+    started = resolve
+  })
+  let thinkerSignal: AbortSignal | undefined,
+    thinkerMessages: RuntimeMessage[] = [],
+    thinkerCalls = 0,
+    plannerCalls = 0,
+    sends = 0
+  const store = new Store(':memory:')
+  store.saveScene({
+    ...scene,
+    name: 'Group',
+    participationEnabled: true,
+    learningEnabled: false,
+    proactiveEnabled: true,
+  })
+  const runtime = new Runtime(
+    store,
+    () =>
+      ({
+        complete: async (
+          role: string,
+          messages: ChatMessage[],
+          _tools: unknown,
+          signal?: AbortSignal,
+        ) => {
+          if (role === 'planner') {
+            plannerCalls++
+            const plannerInput = JSON.parse(messages[1]!.content)
+            const incoming = plannerInput.messages as RuntimeMessage[]
+            const collidingSecondaryId = plannerInput.topics[0].id as string
+            assert.notEqual(collidingSecondaryId, 'main')
+            assert.deepEqual(
+              incoming.map((m) => m.id),
+              ['main-message', 'secondary-message'],
+            )
+            return result([
+              {
+                id: 'decision',
+                name: 'participation.decide',
+                arguments: {
+                  action: 'reply',
+                  reasonCode: 'main_topic_addressed',
+                  topicId: 'main',
+                  targetMessageIds: ['main-message'],
+                  topics: [
+                    { topicId: 'main', messageIds: ['main-message'] },
+                    { topicId: collidingSecondaryId, messageIds: ['secondary-message'] },
+                  ],
+                },
+              },
+            ])
+          }
+          if (++thinkerCalls > 1) return result([])
+          thinkerSignal = signal
+          thinkerMessages = JSON.parse(messages[1]!.content).messages as RuntimeMessage[]
+          started()
+          await gate
+          return result([
+            {
+              id: 'send',
+              name: 'messages.send',
+              arguments: {
+                operationId: 'main-reply',
+                segments: [
+                  {
+                    parts: [{ type: 'text', text: 'Main topic answer' }],
+                    replyToId: 'main-message',
+                  },
+                ],
+              },
+            },
+          ])
+        },
+      }) as Router,
+  )
+  runtime.addAdapter('fixture', {
+    send: async () => {
+      sends++
+      return { status: 'sent', messageId: 'main-reply-receipt' }
+    },
+    getMessage: async () => ({ items: [], coverage: 'complete' }),
+    history: async () => ({ items: [], coverage: 'complete' }),
+    dispose() {},
+  })
+  try {
+    runtime.ingest(
+      { ...message('main-message'), parts: [{ type: 'text', text: 'Main question for the bot' }] },
+      scene,
+      false,
+    )
+    runtime.ingest(
+      {
+        ...message('secondary-message'),
+        parts: [{ type: 'text', text: 'Unrelated secondary conversation' }],
+      },
+      scene,
+      false,
+    )
+    const running = runtime.proactive(scene.id)
+    await Promise.race([
+      waiting,
+      running.then(() => {
+        throw new Error('thinker_not_started')
+      }),
+    ])
+    assert.deepEqual(
+      thinkerMessages.map((m) => m.id),
+      ['main-message'],
+    )
+    assert.ok(thinkerSignal)
+    runtime.recall(scene.id, 'secondary-message')
+    assert.equal(thinkerSignal.aborted, false)
+    release()
+    await running
+    assert.equal(sends, 1)
+    assert.equal(plannerCalls, 1, 'secondary recall must not trigger main-topic stale validation')
+    assert.equal(
+      runtime.preview(scene.id).find((m) => m.id === 'secondary-message')?.status,
+      'recalled',
+    )
+    assert.equal(runtime.preview(scene.id).filter((m) => m.id === 'main-reply-receipt').length, 1)
+  } finally {
+    release()
+    runtime.dispose()
+    store.close()
+  }
+})

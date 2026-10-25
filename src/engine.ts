@@ -1,3 +1,5 @@
+import { HabitService, type HabitInput } from './habits.ts'
+import { modelScheduler, WorkScheduler } from './scheduler.ts'
 import { MemeService } from './memes.ts'
 import { fetchQqMedia } from './media-fetch.ts'
 import { readFileSync } from 'node:fs'
@@ -28,6 +30,23 @@ const definition = (name: string, description: string, schema: z.ZodType): ToolD
   description,
   inputSchema: z.toJSONSchema(schema),
 })
+const HabitProposalSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('sceneRule'),
+      content: z.string().min(1).max(1000),
+      sourceMessageIds: z.array(z.string()).min(1).max(20),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('botExpression'),
+      preference: z.enum(['concise', 'detail', 'questions', 'emoji', 'meme_frequency']),
+      direction: z.union([z.literal(1), z.literal(-1)]),
+      sourceMessageIds: z.array(z.string()).min(1).max(20),
+    })
+    .strict(),
+])
 export interface Rule {
   id: string
   scope: 'global' | 'scene'
@@ -41,6 +60,8 @@ export class Engine {
   readonly plugins: PluginManager
   readonly memory: MemoryService
   readonly memes: MemeService
+  readonly habits: HabitService
+  private readonly background = new WorkScheduler(2, 64)
   private readonly mediaTasks = new Map<string, AbortController>()
   private readonly learningBatches = new Map<string, RuntimeMessage[]>()
   private readonly learningTimers = new Map<string, ReturnType<typeof setTimeout>>()
@@ -48,10 +69,23 @@ export class Engine {
   private disposed = false
   private proactiveTimer?: ReturnType<typeof setInterval>
   constructor(readonly store: Store) {
+    modelScheduler.configure(store.settings.modelConcurrency)
     this.runtime = new Runtime(store)
     this.plugins = new PluginManager(store, this.runtime)
     this.memory = new MemoryService(store)
     this.memes = new MemeService(store)
+    this.habits = new HabitService(store)
+    this.runtime.on('message.sent', (event) => {
+      if (event.type !== 'message.sent') return
+      for (const part of event.segment.parts)
+        if (part.type === 'media' && /^[a-f0-9]{64}$/.test(part.assetId)) {
+          try {
+            this.memes.recordUsage({ sceneId: event.scene.id, simulation: false }, part.assetId)
+          } catch {
+            /* Disabled learning does not persist usage. */
+          }
+        }
+    })
     this.runtime.beforeSend({
       id: 'media-scope',
       priority: -100,
@@ -69,6 +103,29 @@ export class Engine {
     })
     this.runtime.addExtension({
       tools: [
+        definition(
+          'habits.feedback',
+          'Strengthen or weaken a known hint using explicit nonbot live feedback, never silence.',
+          z
+            .object({
+              id: z.string(),
+              direction: z.union([z.literal(1), z.literal(-1)]),
+              sourceMessageIds: z.array(z.string()).min(1).max(20),
+            })
+            .strict(),
+        ),
+        definition(
+          'memes.feedback',
+          'Record explicit nonbot reaction to a meme; never infer approval from own usage or silence.',
+          z
+            .object({ assetId: z.string(), positive: z.boolean(), sourceMessageId: z.string() })
+            .strict(),
+        ),
+        definition(
+          'habits.propose',
+          'Propose a low-weight scene habit or structured bot expression preference from explicit live feedback, never silence or bot usage. No personal facts in shared preferences.',
+          HabitProposalSchema,
+        ),
         definition(
           'memes.search',
           'Search analyzed available memes by intent without re-running vision.',
@@ -106,6 +163,7 @@ export class Engine {
         this.rules(context)
           .map((r) => `Manual rule${r.nonOverridable ? ' (non-overridable)' : ''}: ${r.content}`)
           .join('\n'),
+      contextData: (context) => ({ learnedHints: this.learnedHints(context) }),
       execute: async (name, input, context) => {
         const ctx = { sceneId: context.scene.id, simulation: context.mode === 'simulation' }
         if (name === 'memes.search') {
@@ -150,7 +208,50 @@ export class Engine {
               }
             : { error: 'Memory unavailable' }
         }
-        if (name === 'rules.list') return this.rules(context)
+        if (name === 'habits.feedback' || name === 'memes.feedback') {
+          if (ctx.simulation) return { status: 'rejected', reason: 'simulation_does_not_learn' }
+          const messages = this.runtime.preview(ctx.sceneId),
+            sourceIds =
+              name === 'habits.feedback'
+                ? z.array(z.string()).parse(input.sourceMessageIds)
+                : [z.string().parse(input.sourceMessageId)],
+            sources = sourceIds.map((messageId) => ({
+              sceneId: ctx.sceneId,
+              messageId,
+              senderId: messages.find((m) => m.id === messageId)?.senderId ?? '',
+            })),
+            evidence = messages
+              .filter((m) => m.origin !== 'simulation')
+              .map((m) => ({
+                sceneId: m.sceneId,
+                messageId: m.id,
+                senderId: m.senderId,
+                origin: m.origin as 'live' | 'history',
+                available: m.status === 'available',
+                isBot: m.senderId === 'bot',
+              }))
+          if (name === 'habits.feedback')
+            return this.habits.feedback(
+              { ...ctx, sourceEvidence: evidence },
+              z.string().parse(input.id),
+              { direction: z.union([z.literal(1), z.literal(-1)]).parse(input.direction), sources },
+            )
+          this.memes.recordFeedback(
+            { ...ctx, sourceEvidence: evidence },
+            z.string().parse(input.assetId),
+            { source: sources[0]!, positive: z.boolean().parse(input.positive) },
+          )
+          return { ok: true }
+        }
+        if (name === 'habits.propose')
+          return this.proposeHabit(
+            context.scene.id,
+            context.mode === 'simulation',
+            input,
+            this.runtime.preview(context.scene.id),
+          )
+        if (name === 'rules.list')
+          return { manual: this.rules(context), learned: this.learnedHints(context) }
         if (name === 'learning.propose')
           return this.propose(
             context.scene.id,
@@ -174,6 +275,7 @@ export class Engine {
         this.mediaTasks.get(`${sceneId}|${messageId}`)?.abort()
         this.memory.recall(sceneId, messageId)
         this.memes.recall(sceneId, messageId)
+        this.habits.recall({ sceneId, messageId })
         this.learningBatches.set(
           sceneId,
           (this.learningBatches.get(sceneId) ?? []).filter((m) => m.id !== messageId),
@@ -290,6 +392,18 @@ export class Engine {
           (r.scope === 'global' || (context.mode === 'real' && r.sceneId === context.scene.id)),
       )
   }
+  settingsChanged() {
+    modelScheduler.configure(this.store.settings.modelConcurrency)
+    if (!this.store.settings.debugModelIO) this.store.clearDiagnostics()
+  }
+  router() {
+    const config = this.store.models
+    return new Router(
+      config,
+      (entry) => this.store.recordModel(entry, config),
+      (entry, secrets) => this.store.captureDiagnostic(entry, secrets),
+    )
+  }
   sceneChanged(scene: Scene) {
     this.runtime.sceneChanged(scene)
     if (!scene.learningEnabled) this.cancelLearning(scene.id)
@@ -375,14 +489,14 @@ export class Engine {
     const controller = new AbortController()
     this.learningTasks.set(sceneId, controller)
     try {
-      const router = new Router(this.store.models)
+      const router = this.router()
       const response = await router.complete(
         'learning',
         [
           {
             role: 'system',
             content:
-              'Extract only durable useful scene-scoped information with sourceMessageIds. Do not store raw chat transcripts, bot-generated claims, private data as public knowledge, or instructions to modify code/templates. Preserve uncertainty, claims, and message-relative event dates. Use learning.propose only when worthwhile; silence is valid.',
+              'Extract only durable useful scene-scoped information with sourceMessageIds. Do not store raw chat transcripts, bot-generated claims, private data as public knowledge, or instructions to modify code/templates. Preserve uncertainty, claims, and message-relative event dates. Use learning.propose only when worthwhile; silence is valid. Use habits.propose for explicit feedback about the bot expression or repeated scene conventions; never derive preference from silence or own usage. Structured bot preferences cannot include identities or private facts.',
           },
           {
             role: 'user',
@@ -393,10 +507,20 @@ export class Engine {
             }),
           },
         ],
-        [definition('learning.propose', 'Propose a sourced memory candidate', CandidateSchema)],
+        [
+          definition('learning.propose', 'Propose a sourced memory candidate', CandidateSchema),
+          definition(
+            'habits.propose',
+            'Propose sourced soft scene habits or structured bot expression feedback only',
+            HabitProposalSchema,
+          ),
+        ],
         controller.signal,
       )
       if (controller.signal.aborted) return
+      for (const call of response.toolCalls)
+        if (call.name === 'habits.propose')
+          this.proposeHabit(sceneId, false, call.arguments, messages)
       for (const call of response.toolCalls)
         if (call.name === 'learning.propose') {
           const result = this.propose(sceneId, false, call.arguments, messages)
@@ -422,41 +546,99 @@ export class Engine {
       controller = new AbortController()
     this.mediaTasks.set(key, controller)
     try {
-      for (const part of message.parts) {
-        if (part.type !== 'media' || !part.assetId.startsWith('ob:media:')) continue
-        try {
-          const media = JSON.parse(
-            Buffer.from(part.assetId.slice(9), 'base64url').toString('utf8'),
-          ) as { sceneId: string; file: string; type: string }
-          if (media.sceneId !== message.sceneId || media.type !== 'image') continue
-          const bytes = await fetchQqMedia(media.file, controller.signal)
-          const source = {
-            sceneId: message.sceneId,
-            messageId: message.id,
-            senderId: message.senderId,
+      await this.background.run(1, controller.signal, async () => {
+        for (const part of message.parts) {
+          if (part.type !== 'media' || !part.assetId.startsWith('ob:media:')) continue
+          try {
+            const media = JSON.parse(
+              Buffer.from(part.assetId.slice(9), 'base64url').toString('utf8'),
+            ) as { sceneId: string; file: string; type: string }
+            if (media.sceneId !== message.sceneId || media.type !== 'image') continue
+            const bytes = await fetchQqMedia(media.file, controller.signal)
+            const source = {
+              sceneId: message.sceneId,
+              messageId: message.id,
+              senderId: message.senderId,
+            }
+            const context = {
+              sceneId: message.sceneId,
+              simulation: false,
+              sourceEvidence: [
+                {
+                  ...source,
+                  available: !this.store.recalled(message.sceneId, message.id),
+                  isBot: message.senderId === 'bot',
+                },
+              ],
+            }
+            const asset = await this.memes.import(context, bytes, source)
+            await this.memes.analyze(context, asset.id, this.router(), {
+              signal: controller.signal,
+            })
+          } catch {
+            this.store.log('warn', 'media', 'intake_unavailable', { sceneId: message.sceneId })
           }
-          const context = {
-            sceneId: message.sceneId,
-            simulation: false,
-            sourceEvidence: [
-              {
-                ...source,
-                available: !this.store.recalled(message.sceneId, message.id),
-                isBot: message.senderId === 'bot',
-              },
-            ],
-          }
-          const asset = await this.memes.import(context, bytes, source)
-          await this.memes.analyze(context, asset.id, new Router(this.store.models), {
-            signal: controller.signal,
-          })
-        } catch {
-          this.store.log('warn', 'media', 'intake_unavailable', { sceneId: message.sceneId })
         }
-      }
+      })
+    } catch {
+      this.store.log('warn', 'media', 'intake_cancelled_or_busy')
     } finally {
       this.mediaTasks.delete(key)
     }
+  }
+  private learnedHints(context: TurnContext) {
+    const ctx = { sceneId: context.scene.id, simulation: context.mode === 'simulation' },
+      hints = this.habits.list(ctx)
+    for (const hint of hints) {
+      const original = this.habits.adminList().find((h) => h.id === hint.id)
+      if (!original) continue
+      for (const source of original.sources)
+        if (source.sceneId === context.scene.id) context.dependencies.add(source.messageId)
+      context.validations.push(() =>
+        this.habits.list(ctx).some((h) => h.id === hint.id && h.weight === hint.weight),
+      )
+    }
+    return hints
+  }
+  private proposeHabit(
+    sceneId: string,
+    simulation: boolean,
+    input: unknown,
+    messages: RuntimeMessage[],
+  ) {
+    if (simulation) return { status: 'rejected', reason: 'simulation_does_not_learn' }
+    const value = HabitProposalSchema.parse(input),
+      sources = value.sourceMessageIds.map((id) => ({
+        sceneId,
+        messageId: id,
+        senderId: messages.find((m) => m.id === id)?.senderId ?? '',
+      }))
+    const candidate: HabitInput =
+      value.kind === 'sceneRule'
+        ? { kind: 'sceneRule', content: value.content, sources }
+        : {
+            kind: 'botExpression',
+            preference: value.preference,
+            direction: value.direction,
+            sources,
+          }
+    return this.habits.propose(
+      {
+        sceneId,
+        simulation,
+        sourceEvidence: messages
+          .filter((m) => m.origin !== 'simulation')
+          .map((m) => ({
+            sceneId: m.sceneId,
+            messageId: m.id,
+            senderId: m.senderId,
+            origin: m.origin as 'live' | 'history',
+            available: m.status === 'available' && !this.store.recalled(m.sceneId, m.id),
+            isBot: m.senderId === 'bot',
+          })),
+      },
+      candidate,
+    )
   }
   private trackMemory(context: TurnContext, ids: string[]) {
     for (const id of ids) {
@@ -478,7 +660,9 @@ export class Engine {
         model = config.models.find((m) => m.id === route?.orderedModelIds[0]),
         provider = config.providers.find((p) => p.id === model?.providerId)
       if (!model || !provider) return this.memory.search(ctx, query)
-      const embedded = await new Router(config).embeddings(model.id, [query])
+      const embedded = await new Router(config, (entry) =>
+        this.store.recordModel(entry, config),
+      ).embeddings(model.id, [query])
       const vector = embedded.vectors[0]
       if (!vector) return this.memory.search(ctx, query)
       const spaceConfig = {
@@ -506,7 +690,9 @@ export class Engine {
         model = config.models.find((m) => m.id === route?.orderedModelIds[0]),
         provider = config.providers.find((p) => p.id === model?.providerId)
       if (!model || !provider) return
-      const embedded = await new Router(config).embeddings(model.id, [content])
+      const embedded = await new Router(config, (entry) =>
+        this.store.recordModel(entry, config),
+      ).embeddings(model.id, [content])
       const vector = embedded.vectors[0]
       if (!vector) return
       const space = this.memory.registerSpace({

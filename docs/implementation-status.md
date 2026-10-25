@@ -14,14 +14,20 @@ Configuration, scene participation/learning, models/routes, chat simulation/prev
 - The tsx CLI attempted an unavailable Unix IPC socket. Test scripts use the supported `node --import tsx` loader, which does not need that CLI IPC channel.
 - Native dependencies are validated on Linux x64 / Node 24. Other deployment architectures need their own install and smoke check.
 
+## Current runtime and operations
+
+- Sourced scene habits and structured shared bot-expression preferences are integrated with learning, retrieval, feedback, recall, and lock/delete administration.
+- Planner may assign one message to several topics and select a main topic. Thinker context narrows to that topic; no conversational-quality or human-likeness benchmark is claimed.
+- Participation-window inclinations are soft hints in the instance timezone. Bounded priority scheduling favors foreground decisions over queued background work; it is not a spending limit.
+- Explicit single-model capability probes never silently alter configuration. Vision probes establish input acceptance, not image understanding.
+- Daily usage stores returned token counters and optional request-time configured price estimates. Missing counters, unknown prices, and failed attempts are unpriced, not free; counters are not a provider invoice and canceled/unknown outcomes may still be billed.
+- Technical events have bounded disk rotation without raw chats. Optional visible model previews are disabled by default, bounded in memory, secret-redacted, and cleared on recall, disable, or restart. Hidden protocol reasoning state is never previewed.
+- Consistent SQLite backup/fresh restore, scoped vector benchmarks, read-only versioned plugin events, and cancellation-safe plugin lifecycle are implemented.
+
 ## Remaining implementation work
 
-These are tracked gaps, not claims of finished behavior:
+Generic third-party model-protocol and platform-adapter registration remains a documented SDK gap. Builtin OpenAI protocols, the independent SnowLuma adapter, and local plugin tools/hooks/events/pages are implemented; Anthropic and NapCat are not implemented.
 
-- Learned expression habits and weighted soft rules beyond sourced memory extraction.
-- Per-time-window participation preferences, model capability probes, aggregated usage and optional configured price estimates.
-- Bounded background work scheduling. Consistent backup/fresh restore tooling and a synthetic scoped-vector benchmark are implemented; see operations documentation for measured scope and limits.
-- More refined semantic multi-topic assignment and global/local short-term state. Current topic grouping uses reply continuity and recency; no human-like conversational-quality benchmark has been claimed.
-- Optional diagnostic input/output previews and disk log rotation. Current logs are bounded technical events in memory, deliberately excluding raw bodies and secrets.
+Representative conversation replay, real provider/QQ compatibility, visual browser QA, and target-machine capacity testing remain external validation work, not successful checks. See operations documentation for measured synthetic vector scope, mixed latency results, and limits.
 
 No fees are capped, no private conversations are proactively initiated, and no pending sends are restored. Missing or offline recall notifications cannot be detected retroactively without platform evidence.

@@ -28,6 +28,8 @@ export const ModelSchema = z
     providerId: Id,
     apiModelName: z.string().min(1).max(200),
     capabilities: z.array(z.enum(['text', 'tools', 'vision', 'embedding'])).min(1),
+    inputUsdPerMillion: z.number().min(0).optional(),
+    outputUsdPerMillion: z.number().min(0).optional(),
   })
   .strict()
   .openapi('ModelInstance')
@@ -84,6 +86,21 @@ export const SettingsSchema = z
     cacheHours: z.number().min(0.1).max(168),
     debounceMs: z.number().int().min(0).max(30000),
     maxWaitMs: z.number().int().min(100).max(60000),
+    debugModelIO: z.boolean().default(false),
+    modelConcurrency: z.number().int().min(1).max(32).default(4),
+    participationWindows: z
+      .array(
+        z
+          .object({
+            startHour: z.number().int().min(0).max(23),
+            endHour: z.number().int().min(1).max(24),
+            inclination: z.enum(['quiet', 'balanced', 'engaged']),
+          })
+          .strict()
+          .refine((w) => w.startHour < w.endHour, 'Use a non-wrapping time window'),
+      )
+      .max(12)
+      .default([]),
   })
   .strict()
   .openapi('Settings')
@@ -111,6 +128,9 @@ export const LogSchema = z
     code: z.string(),
     sceneId: z.string().optional(),
     turnId: z.string().optional(),
+    modelId: z.string().optional(),
+    providerId: z.string().optional(),
+    durationMs: z.number().optional(),
   })
   .openapi('Log')
 export const StatusSchema = z
@@ -126,6 +146,8 @@ export const StatusSchema = z
     recentErrors: z.number(),
     vectorVersion: z.string(),
     version: z.string(),
+    queuedModelRequests: z.number(),
+    runningModelRequests: z.number(),
   })
   .openapi('Status')
 export const ErrorSchema = z.object({ error: z.string() }).openapi('Error')
@@ -133,3 +155,30 @@ export type ModelConfig = z.infer<typeof ModelConfigSchema>
 export type Settings = z.infer<typeof SettingsSchema>
 export type Scene = z.infer<typeof SceneSchema>
 export type Log = z.infer<typeof LogSchema>
+
+export const UsageSchema = z
+  .object({
+    day: z.string(),
+    modelId: z.string(),
+    providerId: z.string(),
+    apiModelName: z.string(),
+    role: z.string(),
+    calls: z.number(),
+    inputTokens: z.number(),
+    outputTokens: z.number(),
+    durationMs: z.number(),
+    pricedCalls: z.number(),
+    estimatedUsd: z.number(),
+  })
+  .openapi('Usage')
+
+export const DiagnosticSchema = z
+  .object({
+    id: z.string(),
+    at: z.string(),
+    modelId: z.string(),
+    role: z.string(),
+    input: z.string(),
+    output: z.string(),
+  })
+  .openapi('Diagnostic')

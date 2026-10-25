@@ -3,6 +3,7 @@ import type { components } from '~/types/api'
 type Rule = components['schemas']['Rule']
 const { t } = useI18n(),
   { client } = useApi()
+const habits = ref<components['schemas']['Habit'][]>([])
 const rules = ref<Rule[]>([]),
   original = ref<Rule[]>([]),
   scenes = ref<components['schemas']['Scene'][]>([])
@@ -20,16 +21,18 @@ async function load() {
   busy.value = true
   error.value = ''
   try {
-    const [r, s, v] = await Promise.all([
+    const [r, s, v, h] = await Promise.all([
       client.GET('/api/rules'),
       client.GET('/api/scenes'),
       client.GET('/api/persona/versions'),
+      client.GET('/api/habits'),
     ])
-    if (r.error || s.error || v.error) throw new Error('request_failed')
+    if (r.error || s.error || v.error || h.error) throw new Error('request_failed')
     rules.value = r.data ?? []
     original.value = structuredClone(rules.value)
     scenes.value = s.data ?? []
     versions.value = v.data ?? []
+    habits.value = h.data ?? []
     loaded.value = true
   } catch {
     error.value = t('networkError')
@@ -79,10 +82,61 @@ async function save() {
     busy.value = false
   }
 }
+async function lockHabit(id: string, locked: boolean) {
+  if (busy.value) return
+  busy.value = true
+  try {
+    const r = await client.PATCH('/api/habits/{id}', { params: { path: { id } }, body: { locked } })
+    if (r.error) error.value = r.error.error
+    else habits.value = habits.value.map((h) => (h.id === id ? r.data! : h))
+  } catch {
+    error.value = t('networkError')
+  } finally {
+    busy.value = false
+  }
+}
+async function deleteHabit(id: string) {
+  if (busy.value) return
+  busy.value = true
+  try {
+    const r = await client.DELETE('/api/habits/{id}', { params: { path: { id } } })
+    if (r.error) error.value = r.error.error
+    else habits.value = habits.value.filter((h) => h.id !== id)
+  } catch {
+    error.value = t('networkError')
+  } finally {
+    busy.value = false
+  }
+}
 onMounted(load)
 </script>
 <template>
   <div class="space-y-6">
+    <UCard
+      ><template #header
+        ><h2 class="font-semibold">{{ t('learnedHints') }}</h2></template
+      >
+      <p class="text-sm text-muted mb-4">{{ t('learnedHintsHelp') }}</p>
+      <div
+        v-for="habit in habits"
+        :key="habit.id"
+        class="border-b border-default py-3 flex flex-wrap gap-3 items-center"
+      >
+        <div class="flex-1">
+          <p>{{ habit.content ?? habit.preference }}</p>
+          <p class="text-xs text-muted">
+            {{ habit.sceneId ?? t('botExpression') }} · {{ habit.status }} · {{ t('weight') }}
+            {{ habit.weight.toFixed(2) }} · {{ t('confidence') }} {{ habit.confidence.toFixed(2) }}
+          </p>
+        </div>
+        <UButton variant="ghost" :disabled="busy" @click="lockHabit(habit.id, !habit.locked)">{{
+          habit.locked ? t('unlock') : t('lock')
+        }}</UButton
+        ><UButton color="error" variant="ghost" :disabled="busy" @click="deleteHabit(habit.id)">{{
+          t('remove')
+        }}</UButton>
+      </div></UCard
+    >
     <header class="flex flex-wrap justify-between items-start gap-3">
       <div>
         <h1 class="text-2xl font-semibold">{{ t('rulesTitle') }}</h1>

@@ -1,7 +1,13 @@
 import { pathToFileURL } from 'node:url'
 import { resolve, relative } from 'node:path'
 import { Store } from './store.ts'
-import { Runtime, type RuntimeExtension, type SendHook, type TurnContext } from './runtime.ts'
+import {
+  Runtime,
+  type RuntimeExtension,
+  type SendHook,
+  type TurnContext,
+  type RuntimeEvent,
+} from './runtime.ts'
 import type { ToolDefinition } from './models.ts'
 
 export interface PluginTool extends ToolDefinition {
@@ -28,6 +34,10 @@ export interface PluginContext {
   beforeSend(hook: Omit<SendHook, 'id'>): void
   registerAdminPage(page: AdminPage): void
   registerAdminAction(name: string, handler: (input: unknown) => Promise<unknown>): void
+  on(
+    type: RuntimeEvent['type'],
+    listener: (event: Readonly<RuntimeEvent>) => void | Promise<void>,
+  ): void
   onDispose(cleanup: () => void | Promise<void>): void
   log(code: string): void
 }
@@ -153,6 +163,10 @@ export class PluginManager {
     const controller = new AbortController()
     item.controller = controller
     item.error = undefined
+    const listeners: Array<{
+      type: RuntimeEvent['type']
+      listener: (event: Readonly<RuntimeEvent>) => void | Promise<void>
+    }> = []
     const tools: PluginTool[] = [],
       hooks: Array<Omit<SendHook, 'id'>> = [],
       pages: AdminPage[] = [],
@@ -204,6 +218,10 @@ export class PluginManager {
             if (!/^[a-z0-9-]+$/.test(name)) throw new Error('invalid_admin_action')
             actions.set(name, handler)
           },
+          on: (type, listener) => {
+            guard()
+            listeners.push({ type, listener })
+          },
           onDispose,
           log: (code) => {
             if (current())
@@ -222,6 +240,12 @@ export class PluginManager {
       })
       await Promise.race([setup, cancelled])
       guard()
+      for (const { type, listener } of listeners)
+        item.cleanups.push(
+          this.runtime.on(type, async (event) => {
+            if (current()) await listener(event)
+          }),
+        )
       for (const [index, hook] of hooks.entries())
         item.cleanups.push(
           this.runtime.beforeSend({

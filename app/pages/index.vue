@@ -6,6 +6,21 @@ const {
   refresh,
   status,
 } = await useAsyncData('status', () => client.GET('/api/status'), { server: false })
+const { data: usage, refresh: refreshUsage } = await useAsyncData(
+  'usage-overview',
+  () => client.GET('/api/usage'),
+  { server: false },
+)
+const usageSummary = computed(() =>
+  (usage.value?.data ?? []).reduce(
+    (sum, row) => ({
+      calls: sum.calls + row.calls,
+      priced: sum.priced + row.pricedCalls,
+      cost: sum.cost + row.estimatedUsd,
+    }),
+    { calls: 0, priced: 0, cost: 0 },
+  ),
+)
 const metrics = computed(() => [
   {
     label: t('enabledScenes'),
@@ -24,6 +39,9 @@ const metrics = computed(() => [
     icon: 'i-lucide-circle-alert',
   },
 ])
+async function refreshAll() {
+  await Promise.all([refresh(), refreshUsage()])
+}
 </script>
 <template>
   <div class="space-y-6">
@@ -36,7 +54,7 @@ const metrics = computed(() => [
         variant="soft"
         icon="i-lucide-refresh-cw"
         :loading="status === 'pending'"
-        @click="refresh()"
+        @click="refreshAll"
         >{{ t('refresh') }}</UButton
       >
     </div>
@@ -66,11 +84,30 @@ const metrics = computed(() => [
           <dd>{{ result?.data?.uptimeSeconds ?? 0 }} s</dd>
           <dt class="text-muted">SQLite vector</dt>
           <dd>{{ result?.data?.vectorVersion ?? '—' }}</dd>
+          <dt class="text-muted">{{ t('runningModelRequests') }}</dt>
+          <dd>{{ result?.data?.runningModelRequests ?? 0 }}</dd>
+          <dt class="text-muted">{{ t('queuedModelRequests') }}</dt>
+          <dd>{{ result?.data?.queuedModelRequests ?? 0 }}</dd>
           <dt class="text-muted">{{ t('version') }}</dt>
           <dd>{{ result?.data?.version ?? '—' }}</dd>
         </dl></UCard
       >
     </div>
+    <UCard
+      ><template #header
+        ><h2 class="font-semibold">{{ t('usageTitle') }}</h2></template
+      >
+      <p class="text-sm text-muted">{{ t('usageEstimateHelp') }}</p>
+      <p class="mt-3">
+        {{ t('usageCalls') }}: {{ usageSummary.calls }} ·
+        {{ t('usagePriced', { priced: usageSummary.priced, total: usageSummary.calls }) }}
+      </p>
+      <p class="mt-2">
+        {{ t('usageCost') }}:
+        {{ usageSummary.priced ? usageSummary.cost.toFixed(6) : t('usageUnknownCost') }}
+      </p>
+      <UButton to="/models" variant="soft" class="mt-3">{{ t('models') }}</UButton></UCard
+    >
     <UAlert
       icon="i-lucide-shield-check"
       color="neutral"

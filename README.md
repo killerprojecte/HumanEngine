@@ -43,13 +43,14 @@ The runtime starts with the server, independently of browser visits. Enable the 
 - Scene/person memory, manual public knowledge, sourced background learning, correction/lock/delete guards, and scoped sqlite-vec search.
 - Durable recall tombstones, in-flight cancellation, derived-source invalidation, and no history resurrection or restart replay.
 - Original GIF/WebP storage, ordered changed-frame vision analysis, metadata search, manual privacy-reviewed sharing, and sourced feedback.
-- Trusted local plugin lifecycle, schema configuration, custom pages, ordered fail-closed send hooks, and cancellation-safe disable.
+- Sourced low-weight habits, structured shared expression preferences, manual capability probes, optional price estimates, priority scheduling, and soft participation windows.
+- Trusted local plugin lifecycle, schema configuration, custom pages, ordered fail-closed send hooks, readonly events, and cancellation-safe disable.
 
 No real provider account or QQ/SnowLuma connection has been exercised. Integration tests use local HTTP/WebSocket fixtures; animated-media tests use actual encoded GIF/WebP fixtures. Browser interaction testing is blocked by this execution environment's Chromium socket restriction; production HTTP rendering/API smoke checks and Nuxt type/build checks passed. See [verification and remaining work](docs/implementation-status.md).
 
 ## Development
 
-The server schemas in `src/schema.ts` and route definitions in `src/api.ts` are the contract source of truth. After API changes run `npm run contract`, then `npm run check` and `npm run build`. Do not edit generated files. See [model protocols](docs/model-protocols.md), [SnowLuma setup](docs/snowluma.md), [memory](docs/memory.md), [memes](docs/memes.md), and [architecture boundaries](docs/architecture.md), [trusted plugins](docs/plugins.md), and [backup/restore and benchmark operations](docs/operations.md).
+The server schemas in `src/schema.ts` and route definitions in `src/api.ts` are the contract source of truth. After API changes run `npm run contract`, then `npm run check` and `npm run build`. Do not edit generated files. See [model protocols](docs/model-protocols.md), [SnowLuma setup](docs/snowluma.md), [memory](docs/memory.md), [memes](docs/memes.md), [learned habits](docs/habits.md), and [architecture boundaries](docs/architecture.md), [trusted plugins](docs/plugins.md), and [backup/restore and benchmark operations](docs/operations.md).
 
 Secrets are server environment references. Configuration changes apply to new turns. Temporary chats, pending sends, attention, and simulation sessions are never restored after restart. Recall tombstones are durable provenance metadata, not an outgoing queue.
 

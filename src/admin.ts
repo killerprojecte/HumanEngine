@@ -1,3 +1,4 @@
+import { probe } from './probes.ts'
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -126,6 +127,79 @@ const Meme = z
 const Success = z.object({ ok: z.boolean() })
 export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
   const { runtime, store, memory, plugins } = engine
+
+  const Habit = z
+    .object({
+      id: z.string(),
+      kind: z.enum(['sceneRule', 'botExpression']),
+      sceneId: z.string().optional(),
+      content: z.string().optional(),
+      preference: z.string().optional(),
+      weight: z.number(),
+      confidence: z.number(),
+      status: z.enum(['active', 'disputed', 'invalidated']),
+      locked: z.boolean(),
+      learnedAt: z.string(),
+      sources: z.array(
+        z.object({
+          sceneId: z.string(),
+          messageId: z.string(),
+          senderId: z.string(),
+          direction: z.number(),
+        }),
+      ),
+    })
+    .openapi('Habit')
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/habits',
+      responses: { 200: json(z.array(Habit)), ...errors },
+    }),
+    (c) => c.json(engine.habits.adminList(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'patch',
+      path: '/api/habits/{id}',
+      request: { params, body: body(z.object({ locked: z.boolean() }).strict()) },
+      responses: { 200: json(Habit), ...errors },
+    }),
+    (c) => c.json(engine.habits.update(c.req.valid('param').id, c.req.valid('json')), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'delete',
+      path: '/api/habits/{id}',
+      request: { params },
+      responses: { 200: json(Success), ...errors },
+    }),
+    (c) => {
+      engine.habits.delete(c.req.valid('param').id)
+      return c.json({ ok: true }, 200)
+    },
+  )
+  const Capability = z.enum(['text', 'tools', 'vision', 'embedding'])
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/api/models/{id}/probe',
+      request: { params, body: body(z.object({ capability: Capability }).strict()) },
+      responses: {
+        200: json(
+          z.object({
+            ok: z.boolean(),
+            capability: Capability,
+            detail: z.string(),
+            durationMs: z.number(),
+          }),
+        ),
+        ...errors,
+      },
+    }),
+    async (c) =>
+      c.json(await probe(store, c.req.valid('param').id, c.req.valid('json').capability), 200),
+  )
 
   app.openapi(
     createRoute({

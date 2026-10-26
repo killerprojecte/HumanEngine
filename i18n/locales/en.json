@@ -687,5 +687,14 @@
   "cfResetHelp": "End this temporary session and discard its messages and unsent draft, then start a new simulation. Platform history and learned memories are not deleted. Already incurred model charges cannot be undone.",
   "cfLeaveTitle": "Leave the simulation?",
   "cfLeaveHelp": "The unsent draft will be discarded and the temporary session will be ended. Leaving does not undo model calls already accepted.",
-  "cfLeave": "Leave page"
+  "cfLeave": "Leave page",
+  "mcEmbeddingBatchSize": "Embedding inputs per request",
+  "mcEmbeddingBatchHelp": "Default 4, adjustable from 1 to 64. Large input lists are sent in sequential batches; reduce this for providers with a lower limit.",
+  "mcEmbeddingBatchInvalid": "Embedding batch size must be an integer from 1 to 64.",
+  "mePageSize": "Items per page",
+  "meDensity": "Card density",
+  "meCompact": "Compact",
+  "meComfortable": "Comfortable",
+  "meStaticPreview": "Static thumbnails; open details to play the original.",
+  "meJumpPage": "Go to page"
 }

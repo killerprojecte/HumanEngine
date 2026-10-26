@@ -49,6 +49,7 @@ const config = (): ModelConfig => ({
       providerId: 'p',
       apiModelName: 'api-model',
       capabilities: ['text'],
+      embeddingBatchSize: 4,
       inputUsdPerMillion: 2,
       outputUsdPerMillion: 4,
     },

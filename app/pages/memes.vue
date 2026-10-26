@@ -20,9 +20,13 @@ const assets = ref<Meme[]>([]),
   success = ref('')
 const query = ref(''),
   scope = ref('*'),
-  stateFilter = ref('*'),
+  stateFilter = ref<'*' | 'favorite' | 'disabled' | 'available' | 'unanalyzed'>('*'),
   page = ref(1),
-  pageSize = 12
+  pageSize = ref(24),
+  density = ref('comfortable'),
+  total = ref(0),
+  loading = ref(false),
+  jumpPage = ref(1)
 const images = ref<Record<string, string>>({}),
   imageState = ref<Record<string, 'loading' | 'failed'>>({})
 const categories = [
@@ -54,38 +58,24 @@ const status = (asset: Meme) =>
         : asset.available
           ? 'meAvailable'
           : 'meNotSelected'
-const visible = computed(() =>
-  assets.value.filter((asset) => {
-    const scopeMatches =
-      scope.value === '*' ||
-      (scope.value === 'shared'
-        ? asset.shared
-        : scope.value === 'local'
-          ? !asset.shared
-          : asset.sources.some((source) => source.sceneId === scope.value.slice(6)))
-    const stateMatches =
-      stateFilter.value === '*' ||
-      (stateFilter.value === 'favorite'
-        ? asset.favorite
-        : stateFilter.value === 'disabled'
-          ? asset.disabled
-          : stateFilter.value === 'available'
-            ? asset.available && !asset.disabled && asset.analyzed && asset.sources.length > 0
-            : !asset.analyzed)
-    return (
-      scopeMatches &&
-      stateMatches &&
-      [...categories.flatMap((category) => asset.tags[category]), asset.tags.ocr]
-        .join(' ')
-        .toLocaleLowerCase()
-        .includes(query.value.trim().toLocaleLowerCase())
-    )
-  }),
-)
-const pageCount = computed(() => Math.max(1, Math.ceil(visible.value.length / pageSize)))
-const displayed = computed(() =>
-  visible.value.slice((page.value - 1) * pageSize, page.value * pageSize),
-)
+const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+const displayed = computed(() => assets.value)
+const observedIds = ref(new Set<string>())
+let observer: IntersectionObserver | undefined
+const vPreview = {
+  mounted(element: HTMLElement) {
+    observer?.observe(element)
+  },
+  unmounted(element: HTMLElement) {
+    observer?.unobserve(element)
+    const next = new Set(observedIds.value)
+    next.delete(element.dataset.assetId!)
+    observedIds.value = next
+  },
+}
+const originalImage = ref(''),
+  originalFailed = ref(false)
+let originalController: AbortController | undefined
 const modalOpen = ref(false),
   selected = ref<Meme>()
 const fresh = () => ({
@@ -120,6 +110,9 @@ let pendingNavigation: ((allow: boolean) => void) | undefined
 let disposed = false,
   previewGeneration = 0,
   previewController: AbortController | undefined
+let listGeneration = 0,
+  listController: AbortController | undefined
+let searchTimer: ReturnType<typeof setTimeout> | undefined
 class Rejected extends Error {}
 function failResponse(response: Response, message: string): never {
   if (response.status >= 400 && response.status < 500) throw new Rejected(message)
@@ -132,31 +125,57 @@ function failure(cause: unknown, submitted: boolean) {
   }
   return cause instanceof Error ? cause.message : t('networkError')
 }
-async function load(reconcile = false) {
+async function load(reconcile = false, preserveSuccess = false) {
   if (disposed || busy.value || (modalOpen.value && !reconcile)) return
-  busy.value = true
+  listController?.abort()
+  listController = new AbortController()
+  const generation = ++listGeneration
+  loading.value = true
   error.value = ''
-  success.value = ''
+  if (!preserveSuccess) success.value = ''
+  assets.value = []
+  observedIds.value = new Set()
   try {
     const [result, places] = await Promise.all([
-      client.GET('/api/memes'),
-      client.GET('/api/scenes'),
+      client.GET('/api/memes', {
+        params: {
+          query: {
+            page: page.value,
+            pageSize: pageSize.value,
+            query: query.value.trim(),
+            scope: scope.value,
+            state: stateFilter.value,
+          },
+        },
+        signal: listController.signal,
+      }),
+      scenes.value.length
+        ? Promise.resolve(undefined)
+        : client.GET('/api/scenes', { signal: listController.signal }),
     ])
-    if (disposed) return
-    if (!result.data || !places.data)
-      throw new Error(result.error?.error ?? places.error?.error ?? t('networkError'))
-    assets.value = result.data
-    scenes.value = places.data
+    if (disposed || generation !== listGeneration) return
+    if (!result.data || (places && !places.data))
+      throw new Error(result.error?.error ?? places?.error?.error ?? t('networkError'))
+    assets.value = result.data.items
+    total.value = result.data.total
+    page.value = result.data.page
+    jumpPage.value = page.value
+    if (places?.data) scenes.value = places.data
     loaded.value = true
     recoveryRequired.value = false
   } catch (cause) {
-    if (!disposed) {
+    if (!disposed && generation === listGeneration) {
       error.value = failure(cause, false)
       if (confirmation.value) confirmationError.value = error.value
     }
   } finally {
-    if (!disposed) busy.value = false
+    if (!disposed && generation === listGeneration) loading.value = false
   }
+}
+function goPage(next: number) {
+  if (busy.value || modalOpen.value) return
+  page.value = Math.max(1, Math.min(pageCount.value, Math.floor(next) || 1))
+  void load()
 }
 function open(asset: Meme) {
   if (busy.value || recoveryRequired.value) return
@@ -256,9 +275,9 @@ async function save(shareConfirmed = false) {
   error.value = ''
   confirmationError.value = ''
   try {
-    const latest = await client.GET('/api/memes')
+    const latest = await client.GET('/api/memes/{id}', { params: { path: { id: original.id } } })
     if (!latest.data) throw new Error(latest.error?.error ?? t('networkError'))
-    const current = latest.data.find((asset) => asset.id === original.id)
+    const current = latest.data
     if (
       !current ||
       Object.keys(patch).some(
@@ -275,7 +294,7 @@ async function save(shareConfirmed = false) {
       body: patch,
     })
     if (!result.data) failResponse(result.response, result.error?.error ?? t('networkError'))
-    assets.value = latest.data.map((asset) => (asset.id === original.id ? result.data! : asset))
+    assets.value = assets.value.map((asset) => (asset.id === original.id ? result.data! : asset))
     close()
     success.value = t('meSaved')
   } catch (cause) {
@@ -283,6 +302,7 @@ async function save(shareConfirmed = false) {
     if (confirmation.value) confirmationError.value = error.value
   } finally {
     busy.value = false
+    if (!modalOpen.value) await load(false, true)
   }
 }
 async function analyze() {
@@ -302,9 +322,9 @@ async function analyze() {
   confirmationError.value = ''
   error.value = ''
   try {
-    const latest = await client.GET('/api/memes')
+    const latest = await client.GET('/api/memes/{id}', { params: { path: { id: original.id } } })
     if (!latest.data) throw new Error(latest.error?.error ?? t('networkError'))
-    const current = latest.data.find((asset) => asset.id === original.id)
+    const current = latest.data
     if (
       !current ||
       current.disabled ||
@@ -320,15 +340,16 @@ async function analyze() {
     })
     if (!result.data) failResponse(result.response, result.error?.error ?? t('networkError'))
     // Analysis responses can sanitize provenance; reread administrative metadata instead of replacing it with a projection.
-    const refreshed = await client.GET('/api/memes')
+    const refreshed = await client.GET('/api/memes/{id}', { params: { path: { id: original.id } } })
     if (!refreshed.data) throw new Error(refreshed.error?.error ?? t('networkError'))
-    assets.value = refreshed.data
+    assets.value = assets.value.map((asset) => (asset.id === original.id ? refreshed.data! : asset))
     close()
     success.value = t('meAnalyzed')
   } catch (cause) {
     confirmationError.value = failure(cause, submitted)
   } finally {
     busy.value = false
+    if (!modalOpen.value) await load(false, true)
   }
 }
 async function confirm() {
@@ -337,12 +358,9 @@ async function confirm() {
   else if (confirmation.value === 'share') await save(true)
   else await analyze()
 }
-const wantedPreviewIds = computed(() => [
-  ...new Set([
-    ...displayed.value.map((asset) => asset.id),
-    ...(modalOpen.value && selected.value ? [selected.value.id] : []),
-  ]),
-])
+const wantedPreviewIds = computed(() =>
+  displayed.value.filter((asset) => observedIds.value.has(asset.id)).map((asset) => asset.id),
+)
 async function previews(ids: string[]) {
   previewController?.abort()
   const generation = ++previewGeneration
@@ -361,7 +379,7 @@ async function previews(ids: string[]) {
         const id = queue.shift()!
         imageState.value[id] = 'loading'
         try {
-          const result = await client.GET('/api/memes/{id}/file', {
+          const result = await client.GET('/api/memes/{id}/thumbnail', {
             params: { path: { id } },
             parseAs: 'blob',
             signal,
@@ -388,11 +406,50 @@ function imageFailed(id: string) {
 watch(wantedPreviewIds, (ids) => {
   if (import.meta.client) void previews(ids)
 })
-watch([query, scope, stateFilter], () => {
+watch([scope, stateFilter, pageSize], () => {
   page.value = 1
+  void load()
 })
-watch(pageCount, (count) => {
-  if (page.value > count) page.value = count
+watch(query, () => {
+  clearTimeout(searchTimer)
+  listController?.abort()
+  ++listGeneration
+  assets.value = []
+  loading.value = true
+  searchTimer = setTimeout(() => {
+    page.value = 1
+    void load()
+  }, 250)
+})
+function failOriginal() {
+  if (originalImage.value) URL.revokeObjectURL(originalImage.value)
+  originalImage.value = ''
+  originalFailed.value = true
+}
+async function loadOriginal() {
+  originalController?.abort()
+  if (originalImage.value) URL.revokeObjectURL(originalImage.value)
+  originalImage.value = ''
+  originalFailed.value = false
+  if (!modalOpen.value || !selected.value) return
+  const controller = new AbortController(),
+    id = selected.value.id
+  originalController = controller
+  try {
+    const result = await client.GET('/api/memes/{id}/file', {
+      params: { path: { id } },
+      parseAs: 'blob',
+      signal: controller.signal,
+    })
+    if (disposed || controller.signal.aborted) return
+    if (!result.data) throw new Error('preview_failed')
+    originalImage.value = URL.createObjectURL(result.data)
+  } catch {
+    if (!controller.signal.aborted) originalFailed.value = true
+  }
+}
+watch(modalOpen, () => {
+  void loadOriginal()
 })
 onBeforeRouteLeave(() => {
   if (busy.value) return false
@@ -410,12 +467,27 @@ function beforeUnload(event: BeforeUnloadEvent) {
   }
 }
 onMounted(() => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      const next = new Set(observedIds.value)
+      for (const entry of entries)
+        if (entry.isIntersecting) next.add((entry.target as HTMLElement).dataset.assetId!)
+      observedIds.value = next
+    },
+    { rootMargin: '200px' },
+  )
   void load()
   window.addEventListener('beforeunload', beforeUnload)
 })
 onBeforeUnmount(() => {
   disposed = true
   ++previewGeneration
+  ++listGeneration
+  clearTimeout(searchTimer)
+  listController?.abort()
+  originalController?.abort()
+  observer?.disconnect()
+  if (originalImage.value) URL.revokeObjectURL(originalImage.value)
   previewController?.abort()
   Object.values(images.value).forEach((url) => URL.revokeObjectURL(url))
   pendingNavigation?.(false)
@@ -435,7 +507,7 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
         icon="i-lucide-refresh-cw"
         color="neutral"
         variant="outline"
-        :loading="busy && !modalOpen"
+        :loading="loading"
         :disabled="busy || modalOpen"
         @click="load()"
         >{{ t('refresh') }}</UButton
@@ -485,19 +557,51 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
           class="w-full sm:w-44"
         />
       </div>
+      <div class="flex flex-wrap items-end gap-3 px-4 pb-4">
+        <UFormField :label="t('mePageSize')"
+          ><USelect
+            v-model="pageSize"
+            :items="[12, 24, 48, 96]"
+            class="w-28"
+            :disabled="busy || modalOpen"
+        /></UFormField>
+        <UFormField :label="t('meDensity')"
+          ><USelect
+            v-model="density"
+            :items="[
+              { label: t('meComfortable'), value: 'comfortable' },
+              { label: t('meCompact'), value: 'compact' },
+            ]"
+            class="w-36"
+        /></UFormField>
+        <p class="text-xs text-muted pb-2">{{ t('meStaticPreview') }}</p>
+      </div>
       <p class="px-4 pb-4 text-xs text-muted leading-5">{{ t('memePrivacyHelp') }}</p>
     </section>
-    <p v-if="!loaded && busy" class="p-10 text-center text-muted">{{ t('uxLoading') }}</p>
-    <p v-else-if="loaded && !visible.length" class="p-10 text-center text-muted">
-      {{ t(assets.length ? 'uxNoMatches' : 'emptyMemes') }}
+    <p v-if="loading" class="p-10 text-center text-muted">{{ t('uxLoading') }}</p>
+    <p v-else-if="loaded && !assets.length && !error" class="p-10 text-center text-muted">
+      {{ t(query || scope !== '*' || stateFilter !== '*' ? 'uxNoMatches' : 'emptyMemes') }}
     </p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+    <div
+      class="grid gap-4"
+      :class="
+        density === 'compact'
+          ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6'
+          : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
+      "
+      :aria-busy="loading"
+    >
       <article
         v-for="asset in displayed"
         :key="asset.id"
+        v-preview
+        :data-asset-id="asset.id"
         class="surface overflow-hidden flex flex-col"
       >
-        <div class="h-36 bg-elevated/60 flex items-center justify-center p-3">
+        <div
+          class="bg-elevated/60 flex items-center justify-center p-3"
+          :class="density === 'compact' ? 'h-24' : 'h-36'"
+        >
           <img
             v-if="images[asset.id]"
             :src="images[asset.id]"
@@ -545,17 +649,36 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
         </div>
       </article>
     </div>
-    <footer v-if="visible.length" class="flex flex-wrap justify-between items-center gap-3">
+    <footer v-if="total && !loading" class="flex flex-wrap justify-between items-center gap-3">
       <p class="text-sm text-muted">
-        {{ t('mePage', { page, pages: pageCount, total: visible.length }) }}
+        {{ t('mePage', { page, pages: pageCount, total }) }}
       </p>
-      <div class="flex gap-2">
-        <UButton color="neutral" variant="outline" :disabled="page <= 1" @click="page--">{{
-          t('mePrevious')
-        }}</UButton
-        ><UButton color="neutral" variant="outline" :disabled="page >= pageCount" @click="page++">{{
-          t('meNext')
+      <div class="flex flex-wrap items-center gap-2">
+        <UInput
+          v-model.number="jumpPage"
+          type="number"
+          :min="1"
+          :max="pageCount"
+          :aria-label="t('meJumpPage')"
+          class="w-20"
+          @keydown.enter="goPage(jumpPage)"
+        />
+        <UButton color="neutral" variant="ghost" @click="goPage(jumpPage)">{{
+          t('meJumpPage')
         }}</UButton>
+        <UButton
+          color="neutral"
+          variant="outline"
+          :disabled="page <= 1"
+          @click="goPage(page - 1)"
+          >{{ t('mePrevious') }}</UButton
+        ><UButton
+          color="neutral"
+          variant="outline"
+          :disabled="page >= pageCount"
+          @click="goPage(page + 1)"
+          >{{ t('meNext') }}</UButton
+        >
       </div>
     </footer>
     <UModal
@@ -586,23 +709,21 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
         <form v-if="selected" id="meme-editor-form" class="space-y-5" @submit.prevent="save()">
           <div class="h-48 bg-elevated/60 rounded-md flex items-center justify-center p-3">
             <img
-              v-if="images[selected.id]"
-              :src="images[selected.id]"
+              v-if="originalImage"
+              :src="originalImage"
               :alt="title(selected)"
               class="max-h-full max-w-full object-contain"
-              @error="imageFailed(selected.id)"
+              @error="failOriginal()"
             />
             <div v-else class="text-center space-y-2">
               <p class="text-sm text-muted">
-                {{
-                  t(imageState[selected.id] === 'failed' ? 'mePreviewFailed' : 'mePreviewLoading')
-                }}
+                {{ t(originalFailed ? 'mePreviewFailed' : 'mePreviewLoading') }}
               </p>
               <UButton
-                v-if="imageState[selected.id] === 'failed'"
+                v-if="originalFailed"
                 type="button"
                 variant="ghost"
-                @click="previews(wantedPreviewIds)"
+                @click="loadOriginal()"
                 >{{ t('meRetryPreview') }}</UButton
               >
             </div>

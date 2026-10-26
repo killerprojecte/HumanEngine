@@ -687,5 +687,14 @@
   "cfResetHelp": "结束当前临时会话，清除其消息和未发送草稿，再开始新的模拟。不会删除平台历史或已学习的记忆，已产生的模型费用也不会撤销。",
   "cfLeaveTitle": "离开模拟会话？",
   "cfLeaveHelp": "未发送的草稿将被丢弃，临时会话将结束。离开不会撤销已经受理的模型调用。",
-  "cfLeave": "离开页面"
+  "cfLeave": "离开页面",
+  "mcEmbeddingBatchSize": "每批向量文本数",
+  "mcEmbeddingBatchHelp": "默认 4 条，可设为 1–64 条。较长列表会依次分批请求；服务商限制较低时请调小。",
+  "mcEmbeddingBatchInvalid": "每批向量文本数必须是 1–64 的整数。",
+  "mePageSize": "每页数量",
+  "meDensity": "卡片密度",
+  "meCompact": "紧凑",
+  "meComfortable": "舒适",
+  "meStaticPreview": "列表仅显示静态缩略图，打开详情查看原图或动画。",
+  "meJumpPage": "跳转"
 }

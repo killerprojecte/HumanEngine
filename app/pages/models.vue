@@ -263,6 +263,7 @@ function beginEdit(kind: EditorKind, id?: string) {
             providerId: config.value.providers[0]!.id,
             apiModelName: '',
             capabilities: ['text'],
+            embeddingBatchSize: 4,
           },
     )
   }
@@ -330,6 +331,13 @@ async function persist(deleting = false) {
   ) {
     editorError.value = t('priceInvalid')
     return
+  }
+  if (!deleting && modelDraft.value?.capabilities.includes('embedding')) {
+    const size = modelDraft.value.embeddingBatchSize ?? 4
+    if (!Number.isInteger(size) || size < 1 || size > 64) {
+      editorError.value = t('mcEmbeddingBatchInvalid')
+      return
+    }
   }
   busy.value = true
   editorError.value = ''
@@ -933,6 +941,25 @@ watch(section, () => {
                     @update:model-value="(value) => toggleCapability(cap, value)"
                   /></div
               ></UFormField>
+              <UFormField
+                v-if="selectedModel.capabilities.includes('embedding')"
+                :label="t('mcEmbeddingBatchSize')"
+                :help="t('mcEmbeddingBatchHelp')"
+              >
+                <UInput
+                  type="number"
+                  min="1"
+                  max="64"
+                  step="1"
+                  class="w-full"
+                  :model-value="String(selectedModel.embeddingBatchSize ?? 4)"
+                  @update:model-value="
+                    (value) => {
+                      if (selectedModel) selectedModel.embeddingBatchSize = Number(value)
+                    }
+                  "
+                />
+              </UFormField>
               <details class="border-t border-default pt-4">
                 <summary class="cursor-pointer text-sm font-medium">{{ t('mcPricing') }}</summary>
                 <p class="mt-3 text-xs leading-5 text-muted">{{ t('priceOptionalHelp') }}</p>

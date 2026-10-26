@@ -19,6 +19,8 @@ export interface ModelInstance {
   providerId: string
   apiModelName: string
   capabilities: Array<'text' | 'tools' | 'vision' | 'embedding'>
+  /** Maximum inputs per sequential embedding request; defaults to four. */
+  embeddingBatchSize?: number
 }
 export interface RoleRoute {
   role: ModelRole
@@ -282,6 +284,41 @@ export class Router {
   }
 
   async embeddings(
+    modelId: string,
+    inputs: string[],
+    signal?: AbortSignal,
+  ): Promise<{ vectors: number[][]; usage: Usage; modelId: string }> {
+    if (signal?.aborted) throw abortError()
+    const model = this.config.models.find((item) => item.id === modelId)
+    if (!model?.capabilities.includes('embedding'))
+      throw new ModelError('embedding_model_not_configured')
+    const batchSize = model.embeddingBatchSize ?? 4
+    if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 64)
+      throw new ModelError('invalid_embedding_batch_size')
+    // Snapshot inputs so callers cannot change the remaining batches while one is in flight.
+    const pending = [...inputs]
+    const vectors: number[][] = []
+    const usage: Usage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+    for (let offset = 0; offset < pending.length; offset += batchSize) {
+      if (signal?.aborted) throw abortError()
+      const batch = await this.embeddingBatch(
+        modelId,
+        pending.slice(offset, offset + batchSize),
+        signal,
+      )
+      if (signal?.aborted) throw abortError()
+      if (vectors.length && batch.vectors.some((vector) => vector.length !== vectors[0]!.length))
+        throw new ModelError('invalid_embedding_dimensions')
+      vectors.push(...batch.vectors)
+      usage.inputTokens += batch.usage.inputTokens
+      usage.outputTokens += batch.usage.outputTokens
+      usage.totalTokens += batch.usage.totalTokens
+      if (batch.usage.known === false) usage.known = false
+    }
+    return { vectors, usage, modelId }
+  }
+
+  private async embeddingBatch(
     modelId: string,
     inputs: string[],
     signal?: AbortSignal,

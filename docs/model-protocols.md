@@ -55,6 +55,15 @@ protocols rebuilds visible text, function calls, and results, not opaque state.
 `embeddings(modelId, inputs, signal)` explicitly selects one instance and never
 falls back to another embedding space. Returned rows are reordered by input
 index, and missing rows, non-finite values, and mixed dimensions fail validation.
+Each model has an `embeddingBatchSize` setting (default 4, range 1–64), also
+editable in the model dialog when the embedding capability is selected. Larger
+input lists are sent sequentially, yielding the shared scheduler between batches.
+Input order and aggregate usage are preserved across batches. Any failed batch,
+cancellation, or dimension change rejects the operation without returning partial
+vectors or automatically retrying earlier requests. Successful batches may still
+have incurred provider usage, recorded individually in the usage log. An empty
+input list performs no request. Protocol plugins use the same batching boundary.
+
 The memory service additionally owns the space identity (provider, model,
 dimensions, normalization, preprocessing version) and index rebuilding.
 
@@ -68,9 +77,17 @@ against each deployed provider/model combination.
 The focused tests run against a local HTTP fixture: both tool roundtrips,
 Responses continuation, independent same-name instances, ordered fallback,
 partial-call rejection, sanitized errors, cancellation, timeout, model listing,
-and indexed embeddings. These are protocol contract checks, **not** evidence of
-a successful live OpenAI-compatible provider request. No real credential or QQ
-connection was used.
+and indexed embeddings. These are protocol contract checks, not general evidence
+of production provider compatibility or QQ delivery.
+
+A bounded live smoke test on October 26, 2026 used synthetic text with Gitee's
+`Qwen3-Embedding-8B` through this router: five inputs were sent as 4 + 1, producing
+five 1,024-dimensional vectors and reported aggregate usage of 20 input tokens.
+A separate Planner endpoint attempt failed at the transport layer before an HTTP
+response; a credential-free reachability check also failed. Planner/Thinker live
+tool roundtrips, vision, semantic quality, and QQ delivery remain unverified.
+Test credentials were transient and are not part of the repository or saved
+configuration. This smoke result does not establish ongoing service availability.
 
 Protocol references checked during implementation:
 

@@ -687,5 +687,14 @@
   "cfResetHelp": "結束目前臨時會話，清除其訊息和未傳送草稿，再開始新的模擬。不會刪除平台歷史或已學習的記憶，已產生的模型費用也不會撤銷。",
   "cfLeaveTitle": "離開模擬會話？",
   "cfLeaveHelp": "未傳送的草稿將被捨棄，臨時會話將結束。離開不會撤銷已經受理的模型呼叫。",
-  "cfLeave": "離開頁面"
+  "cfLeave": "離開頁面",
+  "mcEmbeddingBatchSize": "每批向量文字數",
+  "mcEmbeddingBatchHelp": "預設 4 筆，可設為 1–64 筆。較長清單會依序分批請求；服務商限制較低時請調小。",
+  "mcEmbeddingBatchInvalid": "每批向量文字數必須是 1–64 的整數。",
+  "mePageSize": "每頁數量",
+  "meDensity": "卡片密度",
+  "meCompact": "緊湊",
+  "meComfortable": "舒適",
+  "meStaticPreview": "列表只顯示靜態縮圖，開啟詳情查看原圖或動畫。",
+  "meJumpPage": "跳轉"
 }

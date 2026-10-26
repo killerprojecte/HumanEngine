@@ -304,3 +304,96 @@ test('Cancellation stops fallback, timeout is bounded, embedding space stays on 
     await service.close()
   }
 })
+
+test('Embedding batches default to four, preserve ordering, sum usage, and honor configuration', async () => {
+  const batches: string[][] = []
+  const service = await fixture((body, _req, res) => {
+    const input = body.input as string[]
+    batches.push(input)
+    res.end(
+      JSON.stringify({
+        data: input.map((text, index) => ({ index, embedding: [Number(text), 1] })).reverse(),
+        usage: { prompt_tokens: input.length, total_tokens: input.length },
+      }),
+    )
+  })
+  try {
+    const cfg = config(service.url, 'openai-chat')
+    const input = Array.from({ length: 9 }, (_, index) => String(index))
+    const result = await new Router(cfg).embeddings('a', input)
+    assert.deepEqual(
+      batches.map((batch) => batch.length),
+      [4, 4, 1],
+    )
+    assert.deepEqual(
+      result.vectors.map((vector) => vector[0]),
+      input.map(Number),
+    )
+    assert.deepEqual(result.usage, { inputTokens: 9, outputTokens: 0, totalTokens: 9 })
+    batches.length = 0
+    cfg.models[0]!.embeddingBatchSize = 2
+    await new Router(cfg).embeddings('a', input.slice(0, 5))
+    assert.deepEqual(
+      batches.map((batch) => batch.length),
+      [2, 2, 1],
+    )
+    batches.length = 0
+    await new Router(cfg).embeddings('a', [])
+    assert.equal(batches.length, 0)
+    cfg.models[0]!.embeddingBatchSize = 0
+    await assert.rejects(new Router(cfg).embeddings('a', ['one']), {
+      message: 'invalid_embedding_batch_size',
+    })
+    assert.equal(batches.length, 0)
+  } finally {
+    await service.close()
+  }
+})
+
+test('Embedding batches stop after failure or cancellation and reject cross-batch dimension drift', async () => {
+  let count = 0
+  let mode = 'failure'
+  const controller = new AbortController()
+  const service = await fixture((body, _req, res) => {
+    count++
+    if (mode === 'failure' && count === 2) {
+      res.statusCode = 503
+      res.end('{}')
+      return
+    }
+    if (mode === 'cancel') controller.abort()
+    const input = body.input as string[]
+    res.end(
+      JSON.stringify({
+        data: input.map((_, index) => ({
+          index,
+          embedding: mode === 'dimensions' && count === 2 ? [1, 2, 3] : [1, 2],
+        })),
+      }),
+    )
+  })
+  try {
+    const cfg = config(service.url, 'openai-chat')
+    const inputs = Array.from({ length: 10 }, () => 'synthetic')
+    await assert.rejects(new Router(cfg).embeddings('a', inputs), { message: 'provider_http_503' })
+    assert.equal(count, 2)
+    count = 0
+    mode = 'dimensions'
+    await assert.rejects(new Router(cfg).embeddings('a', inputs), {
+      message: 'invalid_embedding_dimensions',
+    })
+    assert.equal(count, 2)
+    count = 0
+    mode = 'cancel'
+    await assert.rejects(new Router(cfg).embeddings('a', inputs, controller.signal), {
+      message: 'request_cancelled',
+    })
+    assert.equal(count, 1)
+    count = 0
+    mode = 'unknown-usage'
+    const result = await new Router(cfg).embeddings('a', inputs)
+    assert.equal(result.usage.known, false)
+  } finally {
+    await service.close()
+  }
+})

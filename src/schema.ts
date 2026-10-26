@@ -31,6 +31,7 @@ export const ModelSchema = z
     providerId: Id,
     apiModelName: z.string().min(1).max(200),
     capabilities: z.array(z.enum(['text', 'tools', 'vision', 'embedding'])).min(1),
+    embeddingBatchSize: z.number().int().min(1).max(64).default(4),
     inputUsdPerMillion: z.number().min(0).optional(),
     outputUsdPerMillion: z.number().min(0).optional(),
   })

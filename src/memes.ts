@@ -93,6 +93,8 @@ function validateTags(value: unknown): MemeTags {
 
 export class MemeService {
   readonly mediaRoot: string
+  private readonly thumbnails = new Map<string, Buffer>()
+  private readonly thumbnailTasks = new Map<string, Promise<Buffer>>()
   private readonly analyses = new Map<string, Promise<MemeAsset>>()
   private readonly analysisControllers = new Map<string, AbortController>()
   constructor(
@@ -217,6 +219,100 @@ export class MemeService {
         value: string
       }[]
     ).map((row) => JSON.parse(row.value))
+  }
+  adminGet(id: string): MemeAsset | undefined {
+    return this.get(id)
+  }
+  adminPage(
+    input: {
+      page?: number
+      pageSize?: number
+      query?: string
+      scope?: string
+      state?: string
+    } = {},
+  ) {
+    const pageSize = Math.max(1, Math.min(96, Math.floor(input.pageSize ?? 24)))
+    const clauses: string[] = []
+    const bindings: (string | number)[] = []
+    if (input.scope === 'shared' || input.scope === 'local') {
+      clauses.push("json_extract(value, '$.shared') = ?")
+      bindings.push(input.scope === 'shared' ? 1 : 0)
+    } else if (input.scope?.startsWith('scene:')) {
+      clauses.push(
+        'EXISTS (SELECT 1 FROM meme_sources s WHERE s.asset_id = a.id AND s.scene_id = ?)',
+      )
+      bindings.push(input.scope.slice(6))
+    }
+    const states: Record<string, string> = {
+      favorite: "json_extract(value, '$.favorite') = 1",
+      disabled: "json_extract(value, '$.disabled') = 1",
+      unanalyzed: "json_extract(value, '$.analyzed') = 0",
+      available:
+        "json_extract(value, '$.available') = 1 AND json_extract(value, '$.disabled') = 0 AND json_extract(value, '$.analyzed') = 1 AND EXISTS (SELECT 1 FROM meme_sources s WHERE s.asset_id = a.id)",
+    }
+    if (input.state && states[input.state]) clauses.push(states[input.state]!)
+    const query = input.query?.trim()
+    if (query) {
+      clauses.push(
+        "EXISTS (SELECT 1 FROM json_tree(a.value, '$.tags') tag WHERE tag.type = 'text' AND tag.value LIKE ? ESCAPE '\\')",
+      )
+      bindings.push('%' + query.replace(/[\\%_]/g, '\\$&') + '%')
+    }
+    const where = clauses.length
+      ? ' WHERE ' + clauses.map((clause) => '(' + clause + ')').join(' AND ')
+      : ''
+    const total = (
+      this.store.db
+        .prepare('SELECT COUNT(*) AS total FROM meme_assets a' + where)
+        .get(...bindings) as { total: number }
+    ).total
+    const page = Math.max(
+      1,
+      Math.min(Math.ceil(total / pageSize) || 1, Math.floor(input.page ?? 1)),
+    )
+    const items = (
+      this.store.db
+        .prepare(
+          'SELECT value FROM meme_assets a' + where + ' ORDER BY rowid DESC LIMIT ? OFFSET ?',
+        )
+        .all(...bindings, pageSize, (page - 1) * pageSize) as { value: string }[]
+    ).map((row) => JSON.parse(row.value) as MemeAsset)
+    return { items, total, page, pageSize }
+  }
+  async thumbnail(id: string): Promise<Buffer> {
+    const asset = this.get(id)
+    if (!asset) throw new Error('meme_not_found')
+    const cached = this.thumbnails.get(id)
+    if (cached) {
+      this.thumbnails.delete(id)
+      this.thumbnails.set(id, cached)
+      return cached
+    }
+    const pending = this.thumbnailTasks.get(id)
+    if (pending) return pending
+    const task = (async () => {
+      // Decode only the first frame; grid previews must never animate or fetch full originals.
+      const bytes = await sharp(this.file(id, asset.format), {
+        page: 0,
+        pages: 1,
+        limitInputPixels: MAX_PIXELS,
+      })
+        .rotate()
+        .resize(320, 320, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 75 })
+        .toBuffer()
+      this.thumbnails.set(id, bytes)
+      while (this.thumbnails.size > 128)
+        this.thumbnails.delete(this.thumbnails.keys().next().value!)
+      return bytes
+    })()
+    this.thumbnailTasks.set(id, task)
+    try {
+      return await task
+    } finally {
+      this.thumbnailTasks.delete(id)
+    }
   }
   update(
     id: string,

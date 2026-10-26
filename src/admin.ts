@@ -215,9 +215,65 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
     createRoute({
       method: 'get',
       path: '/api/memes',
-      responses: { 200: json(z.array(Meme)), ...errors },
+      request: {
+        query: z.object({
+          page: z.coerce.number().int().min(1).max(1000000).default(1),
+          pageSize: z.coerce.number().int().min(1).max(96).default(24),
+          query: z.string().max(200).default(''),
+          scope: z
+            .string()
+            .max(300)
+            .refine(
+              (value) => ['*', 'shared', 'local'].includes(value) || value.startsWith('scene:'),
+              'Invalid scope',
+            )
+            .default('*'),
+          state: z.enum(['*', 'favorite', 'disabled', 'available', 'unanalyzed']).default('*'),
+        }),
+      },
+      responses: {
+        200: json(
+          z.object({
+            items: z.array(Meme),
+            total: z.number().int(),
+            page: z.number().int(),
+            pageSize: z.number().int(),
+          }),
+        ),
+        ...errors,
+      },
     }),
-    (c) => c.json(engine.memes.adminList(), 200),
+    (c) => c.json(engine.memes.adminPage(c.req.valid('query')), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/memes/{id}',
+      request: { params },
+      responses: { 200: json(Meme), ...errors },
+    }),
+    (c) => {
+      const asset = engine.memes.adminGet(c.req.valid('param').id)
+      return asset ? c.json(asset, 200) : c.json({ error: 'Asset unavailable' }, 400)
+    },
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/memes/{id}/thumbnail',
+      request: { params },
+      responses: {
+        200: {
+          description: 'Static first-frame thumbnail, at most 320 pixels per side',
+          content: { 'image/webp': { schema: z.string().openapi({ format: 'binary' }) } },
+        },
+        ...errors,
+      },
+    }),
+    async (c) =>
+      new Response(new Uint8Array(await engine.memes.thumbnail(c.req.valid('param').id)), {
+        headers: { 'Content-Type': 'image/webp', 'Cache-Control': 'no-store' },
+      }),
   )
   app.openapi(
     createRoute({
@@ -258,7 +314,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       },
     }),
     async (c) => {
-      const asset = engine.memes.adminList().find((a) => a.id === c.req.valid('param').id)
+      const asset = engine.memes.adminGet(c.req.valid('param').id)
       if (!asset) return c.json({ error: 'Asset unavailable' }, 400)
       const bytes = await readFile(join(engine.memes.mediaRoot, `${asset.id}.${asset.format}`))
       return new Response(bytes, {

@@ -234,3 +234,92 @@ test('Explicit feedback changes shared taste once; own usage and bot evidence do
     await close()
   }
 })
+
+test('Administrative pagination filters in SQL before bounding thousands of records', async () => {
+  const { store, memes, close } = await setup()
+  try {
+    const sample = await memes.import(ctx(), await animated('gif'), source(ctx()))
+    store.db.prepare('DELETE FROM meme_sources').run()
+    store.db.prepare('DELETE FROM meme_assets').run()
+    const insert = store.db.prepare('INSERT INTO meme_assets VALUES (?, ?)')
+    const insertSource = store.db.prepare('INSERT INTO meme_sources VALUES (?, ?, ?, ?)')
+    store.db.transaction(() => {
+      for (let index = 0; index < 5003; index++) {
+        const id = index.toString(16).padStart(64, '0')
+        const sceneId = index % 2 ? 'a' : 'b'
+        const asset = {
+          ...sample,
+          id,
+          analyzed: true,
+          available: true,
+          shared: index % 2 === 0,
+          favorite: index % 5 === 0,
+          tags: { ...tags, ocr: index % 7 === 0 ? '精确 100%_test' : 'ordinary' },
+          sources: [{ sceneId, messageId: id, senderId: 'person' }],
+        }
+        insert.run(id, JSON.stringify(asset))
+        insertSource.run(id, sceneId, id, 'person')
+      }
+    })()
+    const first = memes.adminPage()
+    assert.equal(first.total, 5003)
+    assert.equal(first.items.length, 24)
+    assert.equal(first.items[0]!.id, (5002).toString(16).padStart(64, '0'))
+    const next = memes.adminPage({ page: 2 })
+    assert.equal(next.items.length, 24)
+    assert.equal(
+      next.items.some((item) => first.items.some((prior) => prior.id === item.id)),
+      false,
+    )
+    const filtered = memes.adminPage({
+      scope: 'scene:a',
+      state: 'favorite',
+      query: '100%_test',
+      pageSize: 12,
+      page: 2,
+    })
+    const expected = Array.from({ length: 5003 }, (_, i) => i)
+      .filter((i) => i % 2 === 1 && i % 5 === 0 && i % 7 === 0)
+      .reverse()
+    assert.equal(filtered.total, expected.length)
+    assert.deepEqual(
+      filtered.items.map((item) => item.id),
+      expected.slice(12, 24).map((i) => i.toString(16).padStart(64, '0')),
+    )
+    assert.equal(memes.adminPage({ query: '精确' }).total, 715)
+    assert.equal(memes.adminPage({ query: 'does-not-exist', page: 999 }).page, 1)
+    const last = memes.adminPage({ page: 100000, pageSize: 96 })
+    assert.equal(last.page, 53)
+    assert.equal(last.items.length, 11)
+    assert.equal(memes.adminPage({ scope: 'shared' }).total, 2502)
+    assert.equal(memes.adminPage({ scope: 'local' }).total, 2501)
+    assert.equal(memes.adminGet(first.items[0]!.id)?.id, first.items[0]!.id)
+  } finally {
+    await close()
+  }
+})
+
+test('Administrative thumbnails flatten animations and preserve original files', async () => {
+  const { memes, close } = await setup()
+  try {
+    for (const format of ['gif', 'webp'] as const) {
+      const bytes = await animated(format)
+      const context = ctx('a', format)
+      const asset = await memes.import(context, bytes, source(context))
+      const [first, duplicate] = await Promise.all([
+        memes.thumbnail(asset.id),
+        memes.thumbnail(asset.id),
+      ])
+      assert.deepEqual(first, duplicate)
+      const metadata = await sharp(first, { animated: true }).metadata()
+      assert.equal(metadata.format, 'webp')
+      assert.equal(metadata.pages ?? 1, 1)
+      assert.ok(metadata.width! <= 320 && metadata.height! <= 320)
+      assert.deepEqual(await readFile(join(memes.mediaRoot, `${asset.id}.${asset.format}`)), bytes)
+      assert.deepEqual(await memes.thumbnail(asset.id), first)
+    }
+    await assert.rejects(memes.thumbnail('missing'), /meme_not_found/)
+  } finally {
+    await close()
+  }
+})

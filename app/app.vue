@@ -132,7 +132,7 @@ async function login() {
           body:
             route.path === '/chat'
               ? 'p-0 sm:p-0 gap-0 overflow-hidden'
-              : route.path === '/models'
+              : ['/models', '/scenes', '/memories'].includes(route.path)
                 ? 'p-4 sm:p-6 gap-4'
                 : 'p-4 sm:p-5 gap-4',
         }"

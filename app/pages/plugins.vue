@@ -37,7 +37,20 @@ const fields = computed<Field[]>(() => {
     const entry = object(raw)
     return {
       key,
-      title: typeof entry.title === 'string' ? entry.title : key,
+      title:
+        selected.value?.id === 'snowluma' && ['url', 'accountId', 'credentialEnv'].includes(key)
+          ? t(
+              (
+                {
+                  url: 'pgSnowUrl',
+                  accountId: 'pgSnowAccount',
+                  credentialEnv: 'pgSnowCredential',
+                } as Record<string, string>
+              )[key]!,
+            )
+          : typeof entry.title === 'string'
+            ? entry.title
+            : key,
       description: typeof entry.description === 'string' ? entry.description : '',
       type: typeof entry.type === 'string' ? entry.type : 'string',
       required: required.includes(key),
@@ -53,7 +66,9 @@ const fields = computed<Field[]>(() => {
   })
 })
 const groups = computed(() => [...new Set(fields.value.map((field) => field.group))])
-const dirty = computed(() => JSON.stringify(values.value) !== JSON.stringify(original.value))
+const dirty = computed(
+  () => !!selected.value && JSON.stringify(values.value) !== JSON.stringify(original.value),
+)
 const safePages = computed(() =>
   (selected.value?.pages ?? []).filter(
     (page) =>
@@ -75,53 +90,144 @@ function formValues(config: Record<string, unknown>) {
     else if (field.type === 'boolean') result[field.key] = value === true
     else if (field.type === 'object' || field.type === 'array')
       result[field.key] = value === undefined ? '' : JSON.stringify(value, null, 2)
-    else result[field.key] = typeof value === 'string' || typeof value === 'number' ? value : ''
+    else
+      result[field.key] =
+        typeof value === 'string' || typeof value === 'number' ? String(value) : ''
   }
   return result
+}
+const query = ref(''),
+  configReady = ref(false),
+  uncertain = ref(false),
+  reconciled = ref(false)
+const freshValues = ref<Record<string, string | number | boolean>>()
+const visiblePlugins = computed(() =>
+  plugins.value.filter((p) =>
+    `${p.name} ${p.description} ${p.id}`.toLowerCase().includes(query.value.trim().toLowerCase()),
+  ),
+)
+const blocked = computed(() => busy.value || loading.value || uncertain.value)
+const confirmation = ref(false),
+  confirmationKind = ref<'discard' | 'enable' | 'disable' | 'reload'>('discard')
+const confirmationCopy = ref({ title: '', help: '', action: '' })
+let nextSelection: string | undefined, pendingNavigation: ((allow: boolean) => void) | undefined
+function snapshot() {
+  return JSON.parse(JSON.stringify(values.value)) as Record<string, string | number | boolean>
 }
 async function list() {
   const response = await client.GET('/api/plugins')
   if (!response.data) throw new Error(response.error?.error ?? t('networkError'))
   plugins.value = response.data
 }
-async function load() {
+async function load(recovery = false) {
+  if (busy.value || loading.value || (dirty.value && !recovery)) return
   loading.value = true
   error.value = ''
   try {
     await list()
-  } catch {
-    error.value = t('networkError')
+    if (recovery && selectedId.value) {
+      const response = await client.GET('/api/plugins/{id}/config', {
+        params: { path: { id: selectedId.value } },
+      })
+      if (!response.data) throw new Error(response.error?.error ?? t('networkError'))
+      freshValues.value = formValues(response.data)
+      reconciled.value = true
+    }
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : t('networkError')
   } finally {
     loading.value = false
   }
 }
 async function select(id: string) {
-  if (busy.value || loading.value || dirty.value) return
+  if (blocked.value) return
   loading.value = true
   error.value = ''
   saved.value = false
+  configReady.value = false
   selectedId.value = id
+  values.value = {}
+  original.value = {}
   try {
     const response = await client.GET('/api/plugins/{id}/config', { params: { path: { id } } })
-    if (response.data) {
-      values.value = formValues(response.data)
-      original.value = structuredClone(toRaw(values.value))
-    } else {
-      error.value = response.error?.error ?? t('networkError')
-      selectedId.value = undefined
-    }
-  } catch {
-    error.value = t('networkError')
-    selectedId.value = undefined
+    if (!response.data) throw new Error(response.error?.error ?? t('networkError'))
+    values.value = formValues(response.data)
+    original.value = snapshot()
+    configReady.value = true
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : t('networkError')
   } finally {
     loading.value = false
   }
 }
+function ask(kind: typeof confirmationKind.value) {
+  if (busy.value || loading.value || (kind !== 'discard' && (uncertain.value || dirty.value)))
+    return
+  confirmationKind.value = kind
+  confirmationCopy.value = {
+    title: t(kind === 'discard' ? 'pgDiscardTitle' : 'pgLifecycleTitle', {
+      name: selected.value?.name ?? '',
+    }),
+    help: t(
+      kind === 'discard'
+        ? uncertain.value
+          ? 'pgDiscardUncertain'
+          : 'pgDiscardHelp'
+        : kind === 'reload'
+          ? 'pgReloadHelp'
+          : kind === 'disable'
+            ? 'pgDisableHelp'
+            : 'pgEnableHelp',
+    ),
+    action: t(
+      kind === 'discard'
+        ? 'resetChanges'
+        : kind === 'reload'
+          ? 'pluginReload'
+          : kind === 'disable'
+            ? 'disable'
+            : 'enable',
+    ),
+  }
+  confirmation.value = true
+}
+function choose(id: string) {
+  if (busy.value || loading.value || id === selectedId.value) return
+  if (dirty.value || uncertain.value) {
+    nextSelection = id
+    ask('discard')
+  } else void select(id)
+}
+function cancelConfirmation() {
+  if (busy.value) return
+  confirmation.value = false
+  nextSelection = undefined
+  pendingNavigation?.(false)
+  pendingNavigation = undefined
+}
 function reset() {
-  if (!busy.value) {
-    values.value = structuredClone(toRaw(original.value))
-    error.value = ''
-    saved.value = false
+  if (busy.value || loading.value) return
+  if (uncertain.value && !reconciled.value && !pendingNavigation) return
+  if (pendingNavigation) {
+    confirmation.value = false
+    pendingNavigation(true)
+    pendingNavigation = undefined
+    return
+  }
+  values.value = freshValues.value
+    ? JSON.parse(JSON.stringify(freshValues.value))
+    : JSON.parse(JSON.stringify(original.value))
+  original.value = snapshot()
+  freshValues.value = undefined
+  uncertain.value = false
+  reconciled.value = false
+  confirmation.value = false
+  error.value = ''
+  saved.value = false
+  if (nextSelection) {
+    const id = nextSelection
+    nextSelection = undefined
+    void select(id)
   }
 }
 function configBody(): Record<string, unknown> {
@@ -158,149 +264,291 @@ function configBody(): Record<string, unknown> {
   return body
 }
 async function save() {
-  if (busy.value || loading.value || !selected.value) return
+  if (blocked.value || !selected.value || !configReady.value || !dirty.value) return
   let body: Record<string, unknown>
   try {
     body = configBody()
-  } catch (failure) {
-    error.value = failure instanceof Error ? failure.message : t('networkError')
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : t('networkError')
     return
   }
+  const id = selected.value.id
   busy.value = true
   error.value = ''
   saved.value = false
+  let submitted = false,
+    metadataPending = false
   try {
+    const latest = await client.GET('/api/plugins/{id}/config', { params: { path: { id } } })
+    if (!latest.data) throw new Error(latest.error?.error ?? t('networkError'))
+    if (JSON.stringify(formValues(latest.data)) !== JSON.stringify(original.value)) {
+      freshValues.value = formValues(latest.data)
+      uncertain.value = true
+      reconciled.value = true
+      throw new Error(t('pgConflict'))
+    }
+    // Preserve the latest unrendered fields allowed by extensible plugin schemas.
+    const merged: Record<string, unknown> = { ...latest.data }
+    for (const field of fields.value) delete merged[field.key]
+    Object.assign(merged, body)
+    submitted = true
     const response = await client.PUT('/api/plugins/{id}/config', {
-      params: { path: { id: selected.value.id } },
-      body,
+      params: { path: { id } },
+      body: merged,
     })
     if (!response.data) {
-      error.value = response.error?.error ?? t('networkError')
-      return
+      if (response.response.status >= 400 && response.response.status < 500) submitted = false
+      throw new Error(response.error?.error ?? t('networkError'))
     }
+    submitted = false
     values.value = formValues(response.data)
-    original.value = structuredClone(toRaw(values.value))
+    original.value = snapshot()
     saved.value = true
+    metadataPending = true
     await list()
-  } catch {
-    error.value = t('networkError')
+    metadataPending = false
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : t('networkError')
+    if (submitted || metadataPending) {
+      uncertain.value = true
+      reconciled.value = false
+    }
   } finally {
     busy.value = false
   }
 }
-async function setEnabled(plugin: Plugin, enabled: boolean, reload = false) {
-  if (busy.value || loading.value || dirty.value) return
+async function lifecycle() {
+  if (!confirmation.value || blocked.value || dirty.value || !selected.value) return
+  const id = selected.value.id,
+    kind = confirmationKind.value
+  if (kind === 'discard') return
   busy.value = true
   error.value = ''
   saved.value = false
-  try {
-    if (reload) {
-      const disabled = await client.PUT('/api/plugins/{id}/enabled', {
-        params: { path: { id: plugin.id } },
-        body: { enabled: false },
-      })
-      if (!disabled.data) throw new Error('disable_failed')
-    }
+  let submitted = false,
+    acknowledged = false
+  async function change(enabled: boolean) {
+    submitted = true
     const response = await client.PUT('/api/plugins/{id}/enabled', {
-      params: { path: { id: plugin.id } },
+      params: { path: { id } },
       body: { enabled },
     })
-    if (!response.data) error.value = response.error?.error ?? t('networkError')
+    if (!response.data) {
+      if (response.response.status >= 400 && response.response.status < 500) submitted = false
+      throw new Error(response.error?.error ?? t('networkError'))
+    }
+    submitted = false
+    acknowledged = true
+  }
+  try {
+    if (kind === 'reload') await change(false)
+    await change(kind !== 'disable')
+    confirmation.value = false
     await list()
-  } catch {
-    error.value = t('networkError')
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : t('networkError')
+    if (submitted) {
+      uncertain.value = true
+      reconciled.value = false
+    }
+    confirmation.value = false
     try {
       await list()
     } catch {
-      /* Preserve the original error. */
+      if (acknowledged) {
+        uncertain.value = true
+        reconciled.value = false
+      }
+      /* Keep the operation error and last known state until explicit reconciliation. */
     }
   } finally {
     busy.value = false
   }
 }
-onMounted(load)
+function confirm() {
+  if (!confirmation.value || busy.value || loading.value) return
+  if (confirmationKind.value === 'discard') reset()
+  else void lifecycle()
+}
+onBeforeRouteLeave(() => {
+  if (busy.value || loading.value) return false
+  if (!dirty.value && !uncertain.value) return true
+  ask('discard')
+  return new Promise<boolean>((resolve) => {
+    pendingNavigation?.(false)
+    pendingNavigation = resolve
+  })
+})
+function beforeUnload(event: BeforeUnloadEvent) {
+  if (!dirty.value && !uncertain.value && !busy.value) return
+  event.preventDefault()
+  event.returnValue = ''
+}
+onMounted(() => {
+  void load()
+  window.addEventListener('beforeunload', beforeUnload)
+})
+onBeforeUnmount(() => {
+  pendingNavigation?.(false)
+  window.removeEventListener('beforeunload', beforeUnload)
+})
+const capabilityKeys: Record<string, string> = {
+  adapter: 'pgAdapter',
+  'model-protocol': 'pgProtocol',
+  history: 'pgHistory',
+  recall: 'pgRecall',
+  'schema-form': 'pgSchema',
+  protocol: 'pgProtocol',
+  tool: 'pgTools',
+  tools: 'pgTools',
+  hooks: 'pgHooks',
+  pages: 'pluginCustomPages',
+}
+const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKeys[name]) : name)
 </script>
 <template>
-  <div class="space-y-6">
-    <header>
-      <h1 class="text-2xl font-semibold">{{ t('pluginsTitle') }}</h1>
-      <p class="text-muted mt-1">{{ t('pluginsHelp') }}</p>
+  <div class="space-y-5">
+    <header class="flex justify-between items-start gap-4">
+      <div>
+        <h1 class="page-heading">{{ t('pluginsTitle') }}</h1>
+        <p class="text-sm text-muted mt-2">{{ t('pgIntro') }}</p>
+      </div>
+      <UButton
+        class="shrink-0 whitespace-nowrap"
+        color="neutral"
+        variant="outline"
+        icon="i-lucide-refresh-cw"
+        :loading="loading"
+        :disabled="busy || loading || dirty || uncertain"
+        @click="load()"
+        >{{ t('refresh') }}</UButton
+      >
     </header>
-    <UAlert color="warning" :title="t('pluginsTrust')" /><UAlert
-      v-if="error"
-      color="error"
-      :title="error"
-    /><UAlert v-if="saved" color="success" :title="t('pluginSaved')" /><UAlert
-      v-if="dirty"
-      color="info"
-      :title="t('pluginUnsaved')"
+    <p class="text-sm text-muted rounded-md border border-default px-4 py-3">
+      {{ t('pluginsTrust') }}
+    </p>
+    <UAlert v-if="error" color="error" :title="error" /><UAlert
+      v-if="saved && !dirty"
+      color="success"
+      :title="t('pgSaved')"
     />
-    <div class="grid lg:grid-cols-[minmax(240px,1fr)_2fr] gap-6">
-      <div class="space-y-4">
-        <UCard
-          v-for="plugin in plugins"
+    <section v-if="uncertain" class="rounded-lg border border-warning/40 p-4 space-y-3">
+      <p class="text-sm leading-6">{{ t(reconciled ? 'pgReconciled' : 'pgUncertain') }}</p>
+      <div class="flex flex-wrap gap-2">
+        <UButton
+          color="neutral"
+          variant="outline"
+          :disabled="busy || loading"
+          @click="load(true)"
+          >{{ t('pgReadSaved') }}</UButton
+        ><UButton v-if="reconciled" :disabled="busy || loading" @click="ask('discard')">{{
+          t('pgUseSaved')
+        }}</UButton>
+      </div>
+    </section>
+    <div class="grid lg:grid-cols-[260px_minmax(0,1fr)] gap-5 items-start">
+      <aside class="rounded-lg border border-default bg-default overflow-hidden">
+        <div class="p-3 border-b border-default">
+          <UInput
+            v-model="query"
+            icon="i-lucide-search"
+            :placeholder="t('pgSearch')"
+            :aria-label="t('pgSearch')"
+            class="w-full"
+          />
+        </div>
+        <button
+          v-for="plugin in visiblePlugins"
           :key="plugin.id"
-          :class="selectedId === plugin.id ? 'ring-2 ring-primary' : ''"
-          ><div class="space-y-3">
-            <div class="flex justify-between gap-2">
-              <h2 class="font-semibold">{{ plugin.name }}</h2>
-              <UBadge :color="plugin.enabled ? 'success' : 'neutral'" variant="soft">{{
-                t(plugin.enabled ? 'enabled' : 'disabled')
-              }}</UBadge>
+          type="button"
+          class="plugin-choice w-full text-left p-4 border-b border-default last:border-0"
+          :class="
+            selectedId === plugin.id
+              ? 'bg-primary/5 border-l-2 border-l-primary'
+              : 'hover:bg-elevated/50'
+          "
+          :aria-pressed="selectedId === plugin.id"
+          :disabled="busy || loading"
+          @click="choose(plugin.id)"
+        >
+          <span class="flex items-start justify-between gap-2"
+            ><span class="font-medium break-words">{{ plugin.name }}</span
+            ><span
+              class="text-xs shrink-0"
+              :class="plugin.error ? 'text-error' : plugin.enabled ? 'text-success' : 'text-muted'"
+              >{{
+                t(plugin.error ? 'pgErrorState' : plugin.enabled ? 'enabled' : 'disabled')
+              }}</span
+            ></span
+          ><span class="block text-xs text-muted mt-2 leading-5 line-clamp-2">{{
+            plugin.description
+          }}</span
+          ><span class="block text-xs text-muted mt-2">v{{ plugin.version }}</span>
+        </button>
+        <p v-if="!visiblePlugins.length" class="p-4 text-sm text-muted">
+          {{ t(loading ? 'uxLoading' : plugins.length ? 'uxNoMatches' : 'pluginsEmpty') }}
+        </p>
+      </aside>
+      <section v-if="selected" class="min-w-0 rounded-lg border border-default bg-default">
+        <header class="p-5 border-b border-default space-y-3">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-semibold break-words">{{ selected.name }}</h2>
+              <p class="mt-1 text-xs text-muted break-all">
+                {{ selected.id }} · v{{ selected.version }}
+              </p>
             </div>
-            <p class="text-sm text-muted">{{ plugin.description }}</p>
-            <p class="text-xs text-muted">v{{ plugin.version }} · {{ plugin.id }}</p>
-            <div class="flex flex-wrap gap-1">
-              <UBadge
-                v-for="capability in plugin.capabilities"
-                :key="capability"
+            <div class="flex flex-wrap gap-2">
+              <UButton
                 color="neutral"
                 variant="outline"
                 size="sm"
-                >{{ capability }}</UBadge
-              >
-            </div>
-            <UAlert v-if="plugin.error" color="error" :title="plugin.error" />
-            <div class="flex flex-wrap gap-2">
-              <UButton
-                size="sm"
-                variant="soft"
-                :disabled="busy || loading || dirty"
-                @click="select(plugin.id)"
-                >{{ t('configure') }}</UButton
+                :disabled="blocked || dirty"
+                @click="ask(selected.enabled ? 'disable' : 'enable')"
+                >{{ t(selected.enabled ? 'disable' : 'enable') }}</UButton
               ><UButton
+                v-if="selected.enabled"
+                color="neutral"
+                variant="outline"
                 size="sm"
-                variant="ghost"
-                :disabled="busy || loading || dirty"
-                @click="setEnabled(plugin, !plugin.enabled)"
-                >{{ t(plugin.enabled ? 'disable' : 'enable') }}</UButton
-              ><UButton
-                v-if="plugin.enabled"
-                size="sm"
-                variant="ghost"
-                icon="i-lucide-refresh-cw"
-                :disabled="busy || loading || dirty"
-                @click="setEnabled(plugin, true, true)"
+                :disabled="blocked || dirty"
+                @click="ask('reload')"
                 >{{ t('pluginReload') }}</UButton
               >
             </div>
-          </div></UCard
-        >
-        <p v-if="!loading && !plugins.length" class="text-muted">{{ t('pluginsEmpty') }}</p>
-      </div>
-      <UCard v-if="selected"
-        ><template #header
-          ><h2 class="font-semibold">{{ selected.name }} · {{ t('configure') }}</h2></template
-        >
-        <form class="space-y-5" @submit.prevent="save">
-          <p class="text-sm text-muted">{{ t('pluginReloadHelp') }}</p>
+          </div>
+          <p class="text-sm text-muted">{{ selected.description }}</p>
+          <p class="text-xs text-muted">{{ t('pgStatusHelp') }}</p>
+          <div class="flex flex-wrap gap-2">
+            <UBadge
+              v-for="capability in selected.capabilities"
+              :key="capability"
+              variant="outline"
+              color="neutral"
+              >{{ capabilityLabel(capability) }}</UBadge
+            >
+          </div>
+          <UAlert v-if="selected.error" color="error" :title="selected.error" />
+        </header>
+        <div v-if="!configReady" class="p-5 text-sm text-muted">
+          <p>{{ t(loading ? 'uxLoading' : 'pgConfigUnavailable') }}</p>
+          <UButton v-if="!loading" class="mt-3" @click="select(selected.id)">{{
+            t('refresh')
+          }}</UButton>
+        </div>
+        <form v-else class="p-5 space-y-5" @submit.prevent="save">
+          <div>
+            <h3 class="font-semibold">{{ t('configure') }}</h3>
+            <p class="text-sm text-muted mt-2 leading-6">{{ t('pgSaveHelp') }}</p>
+            <p v-if="dirty" class="mt-2 text-sm text-primary">{{ t('pgDraftHelp') }}</p>
+          </div>
           <fieldset
             v-for="group in groups"
             :key="group"
-            :disabled="busy || loading"
-            class="space-y-4"
+            :disabled="blocked"
+            class="space-y-4 min-w-0 border-t border-default pt-4"
           >
-            <legend class="font-medium mb-3">{{ group }}</legend>
+            <legend class="font-medium text-sm pr-2">{{ group }}</legend>
             <UFormField
               v-for="field in fields.filter((item) => item.group === group)"
               :key="field.key"
@@ -311,23 +559,32 @@ onMounted(load)
                 field.secret
                   ? t('pluginSecretHelp')
                   : field.key === 'credentialEnv'
-                    ? t('credentialHelp')
+                    ? t('pgCredentialHelp')
                     : undefined
               "
-              ><USelect
+            >
+              <USelect
                 v-if="field.options"
                 :model-value="String(values[field.key] ?? '')"
                 :items="field.options"
                 class="w-full"
-                @update:model-value="(value) => setValue(field.key, value)" /><USwitch
+                @update:model-value="(value) => setValue(field.key, value)"
+              />
+              <USwitch
                 v-else-if="field.type === 'boolean'"
+                :id="`plugin-field-${field.key}`"
+                :aria-label="field.title"
                 :model-value="values[field.key] === true"
-                @update:model-value="(value) => setValue(field.key, value)" /><UTextarea
+                @update:model-value="(value) => setValue(field.key, value)"
+              />
+              <UTextarea
                 v-else-if="field.type === 'object' || field.type === 'array'"
                 :model-value="String(values[field.key] ?? '')"
                 :rows="5"
                 class="w-full font-mono"
-                @update:model-value="(value) => setValue(field.key, value)" /><UInput
+                @update:model-value="(value) => setValue(field.key, value)"
+              />
+              <UInput
                 v-else
                 :model-value="String(values[field.key] ?? '')"
                 :type="
@@ -343,32 +600,74 @@ onMounted(load)
                 autocomplete="off"
                 class="w-full"
                 @update:model-value="(value) => setValue(field.key, value)"
-            /></UFormField>
+              />
+            </UFormField>
           </fieldset>
-          <div class="flex gap-2">
-            <UButton type="submit" :loading="busy" :disabled="loading">{{ t('save') }}</UButton
-            ><UButton variant="ghost" :disabled="busy || loading || !dirty" @click="reset">{{
-              t('resetChanges')
+          <p v-if="!fields.length" class="text-sm text-muted">{{ t('pgNoConfig') }}</p>
+          <footer class="flex flex-wrap justify-end gap-2 border-t border-default pt-4">
+            <UButton
+              type="button"
+              color="neutral"
+              variant="outline"
+              :disabled="busy || loading || !dirty || (uncertain && !reconciled)"
+              @click="ask('discard')"
+              >{{ t('resetChanges') }}</UButton
+            ><UButton type="submit" :loading="busy" :disabled="blocked || !dirty">{{
+              t('pgSave')
             }}</UButton>
-          </div>
+          </footer>
         </form>
-        <div v-if="safePages.length" class="mt-6 pt-5 border-t border-default space-y-3">
-          <h3 class="font-medium">{{ t('pluginCustomPages') }}</h3>
-          <UButton
-            v-for="page in safePages"
-            :key="page.id"
-            :href="page.entry"
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="soft"
-            icon="i-lucide-external-link"
-            class="mr-2"
-            >{{ page.title }}</UButton
-          >
-        </div></UCard
-      ><UCard v-else
-        ><p class="text-muted">{{ t('pluginChoose') }}</p></UCard
-      >
+        <section v-if="safePages.length" class="p-5 border-t border-default space-y-3">
+          <h3 class="font-semibold text-sm">{{ t('pluginCustomPages') }}</h3>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="page in safePages"
+              :key="page.id"
+              :href="page.entry"
+              target="_blank"
+              rel="noopener noreferrer"
+              color="neutral"
+              variant="outline"
+              icon="i-lucide-external-link"
+              >{{ page.title }}</UButton
+            >
+          </div>
+        </section>
+      </section>
+      <section v-else class="rounded-lg border border-default bg-default p-8">
+        <h2 class="font-medium">{{ t('pluginChoose') }}</h2>
+        <p class="text-sm text-muted mt-2">{{ t('pgChooseHelp') }}</p>
+      </section>
     </div>
+    <UModal
+      :open="confirmation"
+      :title="confirmationCopy.title"
+      :description="confirmationCopy.help"
+      :dismissible="!busy"
+      :ui="{ content: 'max-w-lg' }"
+      @update:open="
+        (open) => {
+          if (!open) cancelConfirmation()
+        }
+      "
+      ><template #footer
+        ><div class="flex justify-end gap-2 w-full">
+          <UButton color="neutral" variant="outline" :disabled="busy" @click="cancelConfirmation">{{
+            t('cancel')
+          }}</UButton
+          ><UButton
+            :color="confirmationKind === 'disable' ? 'error' : 'primary'"
+            :loading="busy"
+            :disabled="
+              !confirmation ||
+              busy ||
+              (confirmationKind === 'discard' && uncertain && !reconciled && !pendingNavigation)
+            "
+            @click="confirm"
+            >{{ confirmationCopy.action }}</UButton
+          >
+        </div></template
+      ></UModal
+    >
   </div>
 </template>

@@ -1,16 +1,30 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
 type Meme = components['schemas']['Meme']
-const { t } = useI18n(),
-  { client } = useApi(),
-  assets = ref<Meme[]>([]),
-  images = ref<Record<string, string>>({}),
+type Scene = components['schemas']['Scene']
+type Patch = {
+  available?: boolean
+  disabled?: boolean
+  favorite?: boolean
+  shared?: boolean
+  privacyReviewed?: boolean
+  tags?: Meme['tags']
+}
+const { t, locale } = useI18n(),
+  { client } = useApi()
+const assets = ref<Meme[]>([]),
+  scenes = ref<Scene[]>([]),
+  loaded = ref(false),
+  busy = ref(false),
   error = ref(''),
-  busy = ref(''),
-  selected = ref<Meme>(),
-  editOpen = ref(false),
-  tagText = ref<Record<string, string>>({}),
-  ocr = ref('')
+  success = ref('')
+const query = ref(''),
+  scope = ref('*'),
+  stateFilter = ref('*'),
+  page = ref(1),
+  pageSize = 12
+const images = ref<Record<string, string>>({}),
+  imageState = ref<Record<string, 'loading' | 'failed'>>({})
 const categories = [
   'appearance',
   'style',
@@ -21,179 +35,781 @@ const categories = [
   'intensity',
   'memeMeaning',
 ] as const
-async function load() {
-  const r = await client.GET('/api/memes')
-  error.value = r.error?.error ?? ''
-  assets.value = r.data ?? []
-  for (const asset of assets.value.slice(0, 60)) {
-    if (images.value[asset.id]) continue
-    const image = await client.GET('/api/memes/{id}/file', {
-      params: { path: { id: asset.id } },
-      parseAs: 'blob',
-    })
-    if (image.data) images.value[asset.id] = URL.createObjectURL(image.data)
+const tagGroups = [
+  { key: 'meVisualTags', fields: ['appearance', 'style', 'subject'] as const },
+  {
+    key: 'meIntentTags',
+    fields: ['emotion', 'intent', 'tone', 'intensity', 'memeMeaning'] as const,
+  },
+]
+const title = (asset: Meme) => asset.tags.intent[0] || asset.tags.memeMeaning[0] || t('meUntitled')
+const sceneName = (id: string) => scenes.value.find((scene) => scene.id === id)?.name || id
+const status = (asset: Meme) =>
+  asset.disabled
+    ? 'meDisabled'
+    : !asset.analyzed
+      ? 'meUnanalyzed'
+      : !asset.sources.length
+        ? 'meNoSourcesStatus'
+        : asset.available
+          ? 'meAvailable'
+          : 'meNotSelected'
+const visible = computed(() =>
+  assets.value.filter((asset) => {
+    const scopeMatches =
+      scope.value === '*' ||
+      (scope.value === 'shared'
+        ? asset.shared
+        : scope.value === 'local'
+          ? !asset.shared
+          : asset.sources.some((source) => source.sceneId === scope.value.slice(6)))
+    const stateMatches =
+      stateFilter.value === '*' ||
+      (stateFilter.value === 'favorite'
+        ? asset.favorite
+        : stateFilter.value === 'disabled'
+          ? asset.disabled
+          : stateFilter.value === 'available'
+            ? asset.available && !asset.disabled && asset.analyzed && asset.sources.length > 0
+            : !asset.analyzed)
+    return (
+      scopeMatches &&
+      stateMatches &&
+      [...categories.flatMap((category) => asset.tags[category]), asset.tags.ocr]
+        .join(' ')
+        .toLocaleLowerCase()
+        .includes(query.value.trim().toLocaleLowerCase())
+    )
+  }),
+)
+const pageCount = computed(() => Math.max(1, Math.ceil(visible.value.length / pageSize)))
+const displayed = computed(() =>
+  visible.value.slice((page.value - 1) * pageSize, page.value * pageSize),
+)
+const modalOpen = ref(false),
+  selected = ref<Meme>()
+const fresh = () => ({
+  available: false,
+  disabled: false,
+  shared: false,
+  favorite: false,
+  tags: Object.fromEntries(categories.map((key) => [key, ''])) as Record<
+    (typeof categories)[number],
+    string
+  >,
+  ocr: '',
+})
+const draft = ref(fresh()),
+  analysisScene = ref('')
+let openingSnapshot = ''
+const dirty = computed(() => modalOpen.value && JSON.stringify(draft.value) !== openingSnapshot)
+const recoveryRequired = ref(false),
+  editorUncertain = ref(false)
+const blocked = computed(() => busy.value || recoveryRequired.value || editorUncertain.value)
+const sourceScenes = computed(() =>
+  [...new Set(selected.value?.sources.map((source) => source.sceneId) ?? [])].map((id) => ({
+    label: sceneName(id),
+    value: id,
+  })),
+)
+const confirmation = ref<'discard' | 'share' | 'analyze'>(),
+  confirmationKind = ref<'discard' | 'share' | 'analyze'>('discard')
+const confirmationCopy = ref({ title: '', help: '', action: '', preview: '' }),
+  confirmationError = ref('')
+let pendingNavigation: ((allow: boolean) => void) | undefined
+let disposed = false,
+  previewGeneration = 0,
+  previewController: AbortController | undefined
+class Rejected extends Error {}
+function failResponse(response: Response, message: string): never {
+  if (response.status >= 400 && response.status < 500) throw new Rejected(message)
+  throw new Error(message)
+}
+function failure(cause: unknown, submitted: boolean) {
+  if (submitted && !(cause instanceof Rejected)) {
+    recoveryRequired.value = true
+    editorUncertain.value = true
+  }
+  return cause instanceof Error ? cause.message : t('networkError')
+}
+async function load(reconcile = false) {
+  if (disposed || busy.value || (modalOpen.value && !reconcile)) return
+  busy.value = true
+  error.value = ''
+  success.value = ''
+  try {
+    const [result, places] = await Promise.all([
+      client.GET('/api/memes'),
+      client.GET('/api/scenes'),
+    ])
+    if (disposed) return
+    if (!result.data || !places.data)
+      throw new Error(result.error?.error ?? places.error?.error ?? t('networkError'))
+    assets.value = result.data
+    scenes.value = places.data
+    loaded.value = true
+    recoveryRequired.value = false
+  } catch (cause) {
+    if (!disposed) {
+      error.value = failure(cause, false)
+      if (confirmation.value) confirmationError.value = error.value
+    }
+  } finally {
+    if (!disposed) busy.value = false
   }
 }
-onMounted(() => load().catch(() => (error.value = t('networkError'))))
-onBeforeUnmount(() => Object.values(images.value).forEach((url) => URL.revokeObjectURL(url)))
-async function patch(
-  asset: Meme,
-  body: {
-    available?: boolean
-    shared?: boolean
-    privacyReviewed?: boolean
-    favorite?: boolean
-    disabled?: boolean
-    tags?: Meme['tags']
-  },
-) {
+function open(asset: Meme) {
+  if (busy.value || recoveryRequired.value) return
+  selected.value = JSON.parse(JSON.stringify(asset))
+  draft.value = {
+    available: asset.available,
+    disabled: asset.disabled,
+    shared: asset.shared,
+    favorite: asset.favorite,
+    tags: Object.fromEntries(
+      categories.map((key) => [key, asset.tags[key].join(', ')]),
+    ) as typeof draft.value.tags,
+    ocr: asset.tags.ocr,
+  }
+  openingSnapshot = JSON.stringify(draft.value)
+  analysisScene.value = asset.sources[0]?.sceneId ?? ''
+  error.value = ''
+  success.value = ''
+  editorUncertain.value = false
+  modalOpen.value = true
+}
+function close() {
+  modalOpen.value = false
+  confirmation.value = undefined
+  error.value = ''
+}
+function ask(kind: NonNullable<typeof confirmation.value>) {
+  if (busy.value || (kind !== 'discard' && blocked.value) || !selected.value) return
+  confirmationKind.value = kind
+  confirmationCopy.value = {
+    title: t(
+      kind === 'discard' ? 'mcDiscardTitle' : kind === 'share' ? 'meShareTitle' : 'meAnalyzeTitle',
+    ),
+    help: t(
+      kind === 'discard' ? 'meDiscardHelp' : kind === 'share' ? 'meShareHelp' : 'meAnalyzeHelp',
+    ),
+    action: t(
+      kind === 'discard' ? 'mcDiscard' : kind === 'share' ? 'meSaveShared' : 'meAnalyzeConfirm',
+    ),
+    preview:
+      title(selected.value) + (kind === 'analyze' ? ` · ${sceneName(analysisScene.value)}` : ''),
+  }
+  confirmationError.value = ''
+  confirmation.value = kind
+}
+function requestClose(value = false) {
+  if (value || busy.value) return
+  if (dirty.value) ask('discard')
+  else close()
+}
+function cancelConfirmation() {
   if (busy.value) return
-  busy.value = asset.id
+  confirmation.value = undefined
+  pendingNavigation?.(false)
+  pendingNavigation = undefined
+}
+function discard() {
+  close()
+  pendingNavigation?.(true)
+  pendingNavigation = undefined
+}
+function patchBody(): Patch {
+  if (!selected.value) return {}
+  const original = selected.value,
+    patch: Patch = {}
+  for (const field of ['available', 'disabled', 'favorite'] as const)
+    if (draft.value[field] !== original[field]) patch[field] = draft.value[field]
+  if (draft.value.shared !== original.shared) {
+    patch.shared = draft.value.shared
+    patch.privacyReviewed = draft.value.shared
+  }
+  const tags = { ...original.tags }
+  for (const category of categories)
+    if (draft.value.tags[category] !== original.tags[category].join(', '))
+      tags[category] = draft.value.tags[category]
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+  tags.ocr = draft.value.ocr
+  if (JSON.stringify(tags) !== JSON.stringify(original.tags)) patch.tags = tags
+  return patch
+}
+async function save(shareConfirmed = false) {
+  if (blocked.value || !selected.value || !dirty.value) return
+  const patch = patchBody(),
+    original = selected.value
+  if (!Object.keys(patch).length) {
+    close()
+    return
+  }
+  if (patch.shared === true && !shareConfirmed) {
+    ask('share')
+    return
+  }
+  let submitted = false
+  busy.value = true
+  error.value = ''
+  confirmationError.value = ''
+  try {
+    const latest = await client.GET('/api/memes')
+    if (!latest.data) throw new Error(latest.error?.error ?? t('networkError'))
+    const current = latest.data.find((asset) => asset.id === original.id)
+    if (
+      !current ||
+      Object.keys(patch).some(
+        (key) =>
+          JSON.stringify(current[key as keyof Meme]) !==
+          JSON.stringify(original[key as keyof Meme]),
+      ) ||
+      (patch.tags && current.tagRevision !== original.tagRevision)
+    )
+      throw new Error(t('mcConfigChanged'))
+    submitted = true
+    const result = await client.PATCH('/api/memes/{id}', {
+      params: { path: { id: original.id } },
+      body: patch,
+    })
+    if (!result.data) failResponse(result.response, result.error?.error ?? t('networkError'))
+    assets.value = latest.data.map((asset) => (asset.id === original.id ? result.data! : asset))
+    close()
+    success.value = t('meSaved')
+  } catch (cause) {
+    error.value = failure(cause, submitted)
+    if (confirmation.value) confirmationError.value = error.value
+  } finally {
+    busy.value = false
+  }
+}
+async function analyze() {
+  if (
+    blocked.value ||
+    dirty.value ||
+    !selected.value ||
+    !analysisScene.value ||
+    selected.value.disabled ||
+    !sourceScenes.value.some((source) => source.value === analysisScene.value)
+  )
+    return
+  const original = selected.value,
+    sceneId = analysisScene.value
+  let submitted = false
+  busy.value = true
+  confirmationError.value = ''
   error.value = ''
   try {
-    const r = await client.PATCH('/api/memes/{id}', { params: { path: { id: asset.id } }, body })
-    if (r.error) error.value = r.error.error
-    else await load()
-  } catch {
-    error.value = t('networkError')
-  } finally {
-    busy.value = ''
-  }
-}
-async function analyze(asset: Meme) {
-  const source = asset.sources[0]
-  if (!source) return
-  busy.value = asset.id
-  try {
-    const r = await client.POST('/api/memes/{id}/analyze', {
-      params: { path: { id: asset.id } },
-      body: { sceneId: source.sceneId },
+    const latest = await client.GET('/api/memes')
+    if (!latest.data) throw new Error(latest.error?.error ?? t('networkError'))
+    const current = latest.data.find((asset) => asset.id === original.id)
+    if (
+      !current ||
+      current.disabled ||
+      !current.sources.some((source) => source.sceneId === sceneId) ||
+      JSON.stringify(current.tags) !== JSON.stringify(original.tags) ||
+      current.tagRevision !== original.tagRevision
+    )
+      throw new Error(t('mcConfigChanged'))
+    submitted = true
+    const result = await client.POST('/api/memes/{id}/analyze', {
+      params: { path: { id: original.id } },
+      body: { sceneId },
     })
-    error.value = r.error?.error ?? ''
-    await load()
-  } catch {
-    error.value = t('networkError')
+    if (!result.data) failResponse(result.response, result.error?.error ?? t('networkError'))
+    // Analysis responses can sanitize provenance; reread administrative metadata instead of replacing it with a projection.
+    const refreshed = await client.GET('/api/memes')
+    if (!refreshed.data) throw new Error(refreshed.error?.error ?? t('networkError'))
+    assets.value = refreshed.data
+    close()
+    success.value = t('meAnalyzed')
+  } catch (cause) {
+    confirmationError.value = failure(cause, submitted)
   } finally {
-    busy.value = ''
+    busy.value = false
   }
 }
-function edit(asset: Meme) {
-  selected.value = asset
-  for (const key of categories) tagText.value[key] = asset.tags[key].join(', ')
-  ocr.value = asset.tags.ocr
-  editOpen.value = true
+async function confirm() {
+  if (busy.value || !confirmation.value) return
+  if (confirmation.value === 'discard') discard()
+  else if (confirmation.value === 'share') await save(true)
+  else await analyze()
 }
-async function saveTags() {
-  if (!selected.value) return
-  const tags = { ...selected.value.tags, ocr: ocr.value }
-  for (const key of categories)
-    tags[key] = (tagText.value[key] ?? '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-  await patch(selected.value, { tags })
-  if (!error.value) editOpen.value = false
+const wantedPreviewIds = computed(() => [
+  ...new Set([
+    ...displayed.value.map((asset) => asset.id),
+    ...(modalOpen.value && selected.value ? [selected.value.id] : []),
+  ]),
+])
+async function previews(ids: string[]) {
+  previewController?.abort()
+  const generation = ++previewGeneration
+  previewController = new AbortController()
+  const signal = previewController.signal
+  for (const id of Object.keys(images.value))
+    if (!ids.includes(id)) {
+      URL.revokeObjectURL(images.value[id]!)
+      delete images.value[id]
+    }
+  for (const id of Object.keys(imageState.value)) if (!ids.includes(id)) delete imageState.value[id]
+  const queue = ids.filter((id) => !images.value[id])
+  await Promise.all(
+    Array.from({ length: Math.min(3, queue.length) }, async () => {
+      while (queue.length && !disposed && generation === previewGeneration) {
+        const id = queue.shift()!
+        imageState.value[id] = 'loading'
+        try {
+          const result = await client.GET('/api/memes/{id}/file', {
+            params: { path: { id } },
+            parseAs: 'blob',
+            signal,
+          })
+          if (disposed || generation !== previewGeneration) return
+          if (!result.data) {
+            imageState.value[id] = 'failed'
+            continue
+          }
+          images.value[id] = URL.createObjectURL(result.data)
+          delete imageState.value[id]
+        } catch {
+          if (!disposed && generation === previewGeneration) imageState.value[id] = 'failed'
+        }
+      }
+    }),
+  )
 }
+function imageFailed(id: string) {
+  if (images.value[id]) URL.revokeObjectURL(images.value[id]!)
+  delete images.value[id]
+  imageState.value[id] = 'failed'
+}
+watch(wantedPreviewIds, (ids) => {
+  if (import.meta.client) void previews(ids)
+})
+watch([query, scope, stateFilter], () => {
+  page.value = 1
+})
+watch(pageCount, (count) => {
+  if (page.value > count) page.value = count
+})
+onBeforeRouteLeave(() => {
+  if (busy.value) return false
+  if (!dirty.value) return true
+  ask('discard')
+  return new Promise<boolean>((resolve) => {
+    pendingNavigation?.(false)
+    pendingNavigation = resolve
+  })
+})
+function beforeUnload(event: BeforeUnloadEvent) {
+  if (dirty.value || busy.value) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+}
+onMounted(() => {
+  void load()
+  window.addEventListener('beforeunload', beforeUnload)
+})
+onBeforeUnmount(() => {
+  disposed = true
+  ++previewGeneration
+  previewController?.abort()
+  Object.values(images.value).forEach((url) => URL.revokeObjectURL(url))
+  pendingNavigation?.(false)
+  window.removeEventListener('beforeunload', beforeUnload)
+})
+const date = (at: string) => new Date(at).toLocaleString(locale.value)
 </script>
 <template>
-  <div class="space-y-6">
-    <div class="flex justify-between">
-      <h1 class="text-2xl font-semibold">{{ t('memes') }}</h1>
-      <UButton variant="soft" icon="i-lucide-refresh-cw" @click="load">{{ t('refresh') }}</UButton>
+  <div class="space-y-5">
+    <header class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="page-heading">{{ t('meTitle') }}</h1>
+        <p class="mt-2 text-sm text-muted">{{ t('meIntro') }}</p>
+      </div>
+      <UButton
+        class="shrink-0 whitespace-nowrap"
+        icon="i-lucide-refresh-cw"
+        color="neutral"
+        variant="outline"
+        :loading="busy && !modalOpen"
+        :disabled="busy || modalOpen"
+        @click="load()"
+        >{{ t('refresh') }}</UButton
+      >
+    </header>
+    <UAlert v-if="error && !modalOpen" color="error" :title="error" /><UAlert
+      v-if="success"
+      color="success"
+      variant="subtle"
+      :title="success"
+    />
+    <div v-if="recoveryRequired && !modalOpen" class="space-y-3">
+      <UAlert
+        color="warning"
+        :title="t('mrUnknownTitle')"
+        :description="t('meRecoveryHelp')"
+      /><UButton :disabled="busy" @click="load(true)">{{ t('mrReload') }}</UButton>
     </div>
-    <UAlert
-      color="neutral"
-      icon="i-lucide-shield"
-      :title="t('memePrivacy')"
-      :description="t('memePrivacyHelp')"
-    /><UAlert v-if="error" color="error" :title="error" /><UCard v-if="!assets.length"
-      ><p class="text-muted">{{ t('emptyMemes') }}</p></UCard
-    >
-    <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-      <UCard v-for="asset in assets" :key="asset.id"
-        ><div class="h-44 bg-muted rounded-xl flex items-center justify-center mb-4">
+    <section class="surface overflow-hidden">
+      <div class="flex flex-wrap gap-3 p-4">
+        <UInput
+          v-model="query"
+          icon="i-lucide-search"
+          :placeholder="t('meSearch')"
+          :aria-label="t('meSearch')"
+          class="w-full sm:w-64"
+        /><USelect
+          v-model="scope"
+          :aria-label="t('memoryScope')"
+          :items="[
+            { label: t('mmAllScopes'), value: '*' },
+            { label: t('shared'), value: 'shared' },
+            { label: t('sceneOnly'), value: 'local' },
+            ...scenes.map((scene) => ({ label: scene.name, value: 'scene:' + scene.id })),
+          ]"
+          class="w-full sm:w-48"
+        /><USelect
+          v-model="stateFilter"
+          :aria-label="t('meStateFilter')"
+          :items="[
+            { label: t('meAllStates'), value: '*' },
+            { label: t('meAvailable'), value: 'available' },
+            { label: t('meDisabled'), value: 'disabled' },
+            { label: t('favorite'), value: 'favorite' },
+            { label: t('meUnanalyzed'), value: 'unanalyzed' },
+          ]"
+          class="w-full sm:w-44"
+        />
+      </div>
+      <p class="px-4 pb-4 text-xs text-muted leading-5">{{ t('memePrivacyHelp') }}</p>
+    </section>
+    <p v-if="!loaded && busy" class="p-10 text-center text-muted">{{ t('uxLoading') }}</p>
+    <p v-else-if="loaded && !visible.length" class="p-10 text-center text-muted">
+      {{ t(assets.length ? 'uxNoMatches' : 'emptyMemes') }}
+    </p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+      <article
+        v-for="asset in displayed"
+        :key="asset.id"
+        class="surface overflow-hidden flex flex-col"
+      >
+        <div class="h-36 bg-elevated/60 flex items-center justify-center p-3">
           <img
             v-if="images[asset.id]"
             :src="images[asset.id]"
-            :alt="asset.tags.intent.join(', ') || t('media')"
-            class="max-h-full max-w-full object-contain rounded-lg"
-          /><UIcon v-else name="i-lucide-image" class="text-4xl text-muted" />
-        </div>
-        <div class="flex gap-2 flex-wrap mb-4">
-          <UBadge color="neutral">{{ asset.format }} · {{ asset.frames }} {{ t('frames') }}</UBadge
-          ><UBadge :color="asset.shared ? 'warning' : 'neutral'">{{
-            asset.shared ? t('shared') : t('sceneOnly')
-          }}</UBadge
-          ><UBadge
-            v-for="tag in [...asset.tags.intent, ...asset.tags.style].slice(0, 4)"
-            :key="tag"
-            variant="soft"
-            >{{ tag }}</UBadge
-          >
-        </div>
-        <div class="space-y-3">
-          <USwitch
-            :model-value="asset.available"
-            :disabled="!!busy"
-            :label="t('available')"
-            @update:model-value="(value) => patch(asset, { available: value })"
-          /><USwitch
-            :model-value="asset.disabled"
-            :disabled="!!busy"
-            :label="t('disabled')"
-            @update:model-value="(value) => patch(asset, { disabled: value })"
-          /><UCheckbox
-            :model-value="asset.shared && asset.privacyReviewed"
-            :disabled="!!busy"
-            :label="t('reviewedSharing')"
-            @update:model-value="
-              (value) => patch(asset, { shared: value === true, privacyReviewed: value === true })
-            "
+            :alt="title(asset)"
+            class="max-h-full max-w-full object-contain"
+            @error="imageFailed(asset.id)"
           />
-          <p v-if="asset.sharingOrigin" class="text-xs text-muted">
+          <p v-else class="text-xs text-muted text-center">
+            {{ t(imageState[asset.id] === 'failed' ? 'mePreviewFailed' : 'mePreviewLoading') }}
+          </p>
+        </div>
+        <div class="p-3 flex flex-col gap-2 flex-1">
+          <div class="flex justify-between gap-3">
+            <h2 class="text-sm font-medium break-words line-clamp-2">{{ title(asset) }}</h2>
+            <UIcon
+              v-if="asset.favorite"
+              name="i-lucide-star"
+              class="size-4 shrink-0 text-warning"
+              :aria-label="t('favorite')"
+            />
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <UBadge color="neutral" variant="subtle">{{ t(status(asset)) }}</UBadge
+            ><span class="text-muted">{{ t(asset.shared ? 'shared' : 'sceneOnly') }}</span>
+          </div>
+          <p class="text-xs text-muted">
+            {{ asset.format.toUpperCase() }} · {{ asset.frames }} {{ t('frames') }} ·
+            {{ asset.width }} × {{ asset.height }}
+          </p>
+          <p class="text-xs text-muted break-words line-clamp-2">
             {{
-              asset.sharingOrigin === 'automatic'
-                ? t('automaticPrivacyReview')
-                : t('manualPrivacyReview')
+              [...new Set([...asset.tags.intent, ...asset.tags.style])].slice(0, 4).join(' · ') ||
+              t('meNoTags')
             }}
           </p>
-          <div class="flex gap-2 flex-wrap">
+          <div class="mt-auto flex justify-end">
             <UButton
-              :icon="asset.favorite ? 'i-lucide-star' : 'i-lucide-star'"
-              :color="asset.favorite ? 'warning' : 'neutral'"
-              variant="soft"
-              :disabled="!!busy"
-              @click="patch(asset, { favorite: !asset.favorite })"
-              >{{ t('favorite') }}</UButton
-            ><UButton variant="ghost" :disabled="!!busy" @click="edit(asset)">{{
-              t('editTags')
-            }}</UButton
-            ><UButton
               variant="ghost"
-              :loading="busy === asset.id"
-              :disabled="!!busy || !asset.sources.length"
-              @click="analyze(asset)"
-              >{{ t('reanalyze') }}</UButton
+              color="neutral"
+              :disabled="busy || recoveryRequired"
+              @click="open(asset)"
+              >{{ t('meDetails') }}</UButton
             >
           </div>
-          <p v-if="asset.analysisError" class="text-xs text-error">{{ asset.analysisError }}</p>
-        </div></UCard
-      >
+        </div>
+      </article>
     </div>
-    <UModal v-model:open="editOpen" :title="t('editTags')"
-      ><template #body
-        ><div class="space-y-4">
-          <UFormField v-for="category in categories" :key="category" :label="category"
-            ><UInput
-              v-model="tagText[category]"
-              class="w-full"
-              :placeholder="t('commaTags')" /></UFormField
-          ><UFormField label="OCR"
-            ><UTextarea v-model="ocr" class="w-full"
-          /></UFormField></div></template
+    <footer v-if="visible.length" class="flex flex-wrap justify-between items-center gap-3">
+      <p class="text-sm text-muted">
+        {{ t('mePage', { page, pages: pageCount, total: visible.length }) }}
+      </p>
+      <div class="flex gap-2">
+        <UButton color="neutral" variant="outline" :disabled="page <= 1" @click="page--">{{
+          t('mePrevious')
+        }}</UButton
+        ><UButton color="neutral" variant="outline" :disabled="page >= pageCount" @click="page++">{{
+          t('meNext')
+        }}</UButton>
+      </div>
+    </footer>
+    <UModal
+      :open="modalOpen"
+      :title="t('meDetails')"
+      :description="selected ? title(selected) : ''"
+      :dismissible="!busy"
+      :close="!busy"
+      :ui="{
+        content: 'max-w-[760px] max-h-[calc(100dvh-3rem)]',
+        header: 'p-4 sm:p-6 shrink-0',
+        body: 'p-4 sm:p-6 min-h-0 overflow-y-auto',
+        footer: 'p-4 sm:p-6 shrink-0 justify-end',
+      }"
+      @update:open="requestClose"
+    >
+      <template #body
+        ><div v-if="recoveryRequired || editorUncertain" class="space-y-3 mb-4">
+          <UAlert
+            color="warning"
+            :title="t('mrUnknownTitle')"
+            :description="t(recoveryRequired ? 'meRecoveryHelp' : 'meRecoveredHelp')"
+          /><UButton v-if="recoveryRequired" :disabled="busy" @click="load(true)">{{
+            t('mrReload')
+          }}</UButton>
+        </div>
+        <UAlert v-if="error" color="error" :title="error" class="mb-4" />
+        <form v-if="selected" id="meme-editor-form" class="space-y-5" @submit.prevent="save()">
+          <div class="h-48 bg-elevated/60 rounded-md flex items-center justify-center p-3">
+            <img
+              v-if="images[selected.id]"
+              :src="images[selected.id]"
+              :alt="title(selected)"
+              class="max-h-full max-w-full object-contain"
+              @error="imageFailed(selected.id)"
+            />
+            <div v-else class="text-center space-y-2">
+              <p class="text-sm text-muted">
+                {{
+                  t(imageState[selected.id] === 'failed' ? 'mePreviewFailed' : 'mePreviewLoading')
+                }}
+              </p>
+              <UButton
+                v-if="imageState[selected.id] === 'failed'"
+                type="button"
+                variant="ghost"
+                @click="previews(wantedPreviewIds)"
+                >{{ t('meRetryPreview') }}</UButton
+              >
+            </div>
+          </div>
+          <p class="text-xs text-muted">
+            {{ selected.format.toUpperCase() }} · {{ selected.width }} × {{ selected.height }} ·
+            {{ selected.frames }} {{ t('frames') }} · {{ Math.round(selected.bytes / 1024) }} KiB
+          </p>
+          <UAlert
+            v-if="selected.analysisError"
+            color="warning"
+            :title="t('meAnalysisError')"
+            :description="selected.analysisError"
+          />
+          <fieldset :disabled="blocked" class="space-y-5">
+            <section class="space-y-4">
+              <h3 class="font-medium text-sm">{{ t('meUseAndScope') }}</h3>
+              <p class="text-xs text-muted leading-5">{{ t('meDraftHelp') }}</p>
+              <USwitch
+                v-model="draft.disabled"
+                :label="t('meDisableLabel')"
+                :description="t('meDisableHelp')"
+              /><USwitch
+                v-model="draft.available"
+                :disabled="draft.disabled"
+                :label="t('meAvailableLabel')"
+                :description="t('meAvailableHelp')"
+              />
+              <p class="text-xs text-muted">
+                {{ t('meSelectionOrigin') }}:
+                {{
+                  t(
+                    selected.selectionOrigin === 'manual'
+                      ? 'meManual'
+                      : selected.selectionOrigin === 'automatic'
+                        ? 'meAutomatic'
+                        : 'meUnset',
+                  )
+                }}
+              </p>
+              <UCheckbox
+                v-model="draft.shared"
+                :label="t('meSharedLabel')"
+                :description="t('meSharedHelp')"
+              />
+              <p class="text-xs text-muted">
+                {{ t('meSharingOrigin') }}:
+                {{
+                  t(
+                    selected.sharingOrigin === 'manual'
+                      ? 'meManual'
+                      : selected.sharingOrigin === 'automatic'
+                        ? 'meAutomatic'
+                        : 'meUnset',
+                  )
+                }}
+              </p>
+              <USwitch
+                v-model="draft.favorite"
+                :label="t('favorite')"
+                :description="t('meFavoriteHelp')"
+              />
+            </section>
+            <details class="border-t border-default pt-4">
+              <summary class="cursor-pointer font-medium text-sm">{{ t('editTags') }}</summary>
+              <p class="mt-3 text-xs text-muted">{{ t('commaTags') }}</p>
+              <section v-for="group in tagGroups" :key="group.key" class="mt-5 space-y-4">
+                <h3 class="text-xs font-medium text-muted">{{ t(group.key) }}</h3>
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <UFormField
+                    v-for="category in group.fields"
+                    :key="category"
+                    :label="t('meTag_' + category)"
+                    ><UInput v-model="draft.tags[category]" class="w-full"
+                  /></UFormField>
+                </div>
+              </section>
+              <UFormField :label="t('meOcr')" class="mt-5"
+                ><UTextarea v-model="draft.ocr" :rows="3" class="w-full"
+              /></UFormField>
+            </details>
+          </fieldset>
+          <details class="border-t border-default pt-4">
+            <summary class="cursor-pointer font-medium text-sm">{{ t('meAnalysis') }}</summary>
+            <div class="space-y-3 mt-4">
+              <p class="text-xs text-muted leading-5">{{ t('meAnalysisHelp') }}</p>
+              <p v-if="dirty" class="text-xs text-warning">{{ t('meSaveBeforeAnalysis') }}</p>
+              <USelect
+                v-if="sourceScenes.length"
+                v-model="analysisScene"
+                :items="sourceScenes"
+                :disabled="blocked"
+                :aria-label="t('meSourceConversation')"
+                class="w-full"
+              />
+              <p v-else class="text-xs text-muted">{{ t('meNoAnalysisSource') }}</p>
+              <UButton
+                type="button"
+                color="neutral"
+                variant="outline"
+                :disabled="blocked || dirty || selected.disabled || !sourceScenes.length"
+                @click="ask('analyze')"
+                >{{ t('meAnalyzeButton') }}</UButton
+              >
+            </div>
+          </details>
+          <details class="border-t border-default pt-4">
+            <summary class="cursor-pointer text-sm">
+              {{ t('memorySources') }} · {{ selected.sources.length }}
+            </summary>
+            <p class="mt-3 text-xs text-muted">{{ t('memorySourceWarning') }}</p>
+            <ul class="space-y-3 mt-3">
+              <li
+                v-for="source in selected.sources"
+                :key="JSON.stringify([source.sceneId, source.messageId])"
+                class="text-xs break-all"
+              >
+                <p class="font-medium">{{ sceneName(source.sceneId) }}</p>
+                <p>{{ t('scSceneId') }}: {{ source.sceneId }}</p>
+                <p>{{ t('mmMessageId') }}: {{ source.messageId }}</p>
+                <p>{{ t('memoryPerson') }}: {{ source.senderId }}</p>
+              </li>
+            </ul>
+          </details>
+          <details class="border-t border-default pt-4">
+            <summary class="cursor-pointer text-xs text-muted">
+              {{ t('mcInternalDetails') }}
+            </summary>
+            <dl class="mt-3 space-y-2 text-xs text-muted">
+              <div>
+                <dt>ID</dt>
+                <dd class="font-mono break-all">{{ selected.id }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('meCreated') }}</dt>
+                <dd>{{ date(selected.createdAt) }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('meUsageCount') }}</dt>
+                <dd>{{ selected.usageCount }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('meLearnedPreference') }}</dt>
+                <dd>{{ selected.preference.toFixed(2) }}</dd>
+              </div>
+            </dl>
+          </details>
+        </form> </template
       ><template #footer
-        ><UButton variant="ghost" @click="editOpen = false">{{ t('cancel') }}</UButton
-        ><UButton :loading="!!busy" @click="saveTags">{{ t('save') }}</UButton></template
+        ><UButton
+          color="neutral"
+          variant="outline"
+          :aria-label="t(dirty ? 'cancel' : 'scClose')"
+          :disabled="busy"
+          @click="requestClose()"
+          >{{ t(dirty ? 'cancel' : 'scClose') }}</UButton
+        ><UButton
+          type="submit"
+          form="meme-editor-form"
+          :loading="busy"
+          :disabled="blocked || !dirty"
+          >{{ t('meSave') }}</UButton
+        ></template
+      >
+    </UModal>
+    <UModal
+      :open="!!confirmation"
+      :title="confirmationCopy.title"
+      :description="confirmationCopy.help"
+      :dismissible="!busy"
+      :close="!busy"
+      @update:open="
+        (value) => {
+          if (!value) cancelConfirmation()
+        }
+      "
+      ><template #body
+        ><div
+          v-if="confirmationKind !== 'discard' && (recoveryRequired || editorUncertain)"
+          class="mb-4 space-y-3"
+        >
+          <UAlert
+            color="warning"
+            :title="t('mrUnknownTitle')"
+            :description="t(recoveryRequired ? 'meRecoveryHelp' : 'meRecoveredHelp')"
+          /><UButton v-if="recoveryRequired" :disabled="busy" @click="load(true)">{{
+            t('mrReload')
+          }}</UButton>
+        </div>
+        <UAlert v-if="confirmationError" color="error" :title="confirmationError" />
+        <p class="mt-3 text-sm break-words">{{ confirmationCopy.preview }}</p></template
+      ><template #footer
+        ><div class="w-full flex justify-end gap-3">
+          <UButton
+            color="neutral"
+            variant="outline"
+            :disabled="busy || !confirmation"
+            @click="cancelConfirmation"
+            >{{ t(confirmationKind === 'discard' ? 'mcKeepEditing' : 'cancel') }}</UButton
+          ><UButton
+            :color="confirmationKind === 'discard' ? 'error' : 'primary'"
+            :loading="busy"
+            :disabled="busy || !confirmation || (confirmationKind !== 'discard' && blocked)"
+            @click="confirm"
+            >{{ confirmationCopy.action }}</UButton
+          >
+        </div></template
       ></UModal
     >
   </div>

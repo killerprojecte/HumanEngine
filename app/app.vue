@@ -11,17 +11,6 @@ function setCollapsed(value: boolean) {
   collapsed.value = value
   sidebarPreference.value = value
 }
-let stopSidebarQuery: (() => void) | undefined
-onBeforeUnmount(() => stopSidebarQuery?.())
-onMounted(() => {
-  const query = window.matchMedia('(min-width: 1024px) and (max-width: 1279px)')
-  const sync = () => {
-    collapsed.value = sidebarPreference.value ?? query.matches
-  }
-  sync()
-  query.addEventListener('change', sync)
-  stopSidebarQuery = () => query.removeEventListener('change', sync)
-})
 const secret = ref(''),
   error = ref(''),
   busy = ref(false)
@@ -93,10 +82,10 @@ async function login() {
         :collapsed="collapsed"
         @update:collapsed="setCollapsed"
         collapsible
-        :default-size="13.5"
+        :default-size="11.5"
         :collapsed-size="4"
-        :min-size="13.5"
-        :max-size="13.5"
+        :min-size="11.5"
+        :max-size="11.5"
         :ui="{ body: 'px-2 py-3 gap-5', header: 'px-4', footer: 'px-4 py-4' }"
       >
         <template #header="{ collapsed: compact }">
@@ -140,7 +129,12 @@ async function login() {
       </UDashboardSidebar>
       <UDashboardPanel
         :ui="{
-          body: route.path === '/chat' ? 'p-0 sm:p-0 gap-0 overflow-hidden' : 'p-4 sm:p-5 gap-4',
+          body:
+            route.path === '/chat'
+              ? 'p-0 sm:p-0 gap-0 overflow-hidden'
+              : route.path === '/models'
+                ? 'p-4 sm:p-6 gap-4'
+                : 'p-4 sm:p-5 gap-4',
         }"
       >
         <template #header>

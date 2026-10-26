@@ -39,8 +39,8 @@ textarea {
   .page-heading {
     font-size: 1.25rem;
   }
-  button,
-  input:not([type='checkbox']),
+  button:not([role='checkbox']):not([role='radio']):not([role='switch']),
+  input:not([type='checkbox']):not([type='radio']),
   select {
     min-height: 2.75rem;
   }

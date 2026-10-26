@@ -1,0 +1,35 @@
+services:
+  humanengine:
+    image: ${HUMANENGINE_IMAGE:-ghcr.io/killerprojecte/humanengine:latest}
+    build:
+      context: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${HUMANENGINE_PORT:-3000}:3000'
+    env_file:
+      - path: ${HUMANENGINE_ENV_FILE:-.env}
+        required: false
+    environment:
+      HOST: 0.0.0.0
+      PORT: '3000'
+      HUMANENGINE_ADMIN_TOKEN: ${HUMANENGINE_ADMIN_TOKEN:?Set a long random administration token}
+      HUMANENGINE_DB: /app/data/humanengine.sqlite
+      HUMANENGINE_LOG_DIR: /app/data/logs
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SNOWLUMA_TOKEN: ${SNOWLUMA_TOKEN:-}
+      HUMANENGINE_PLUGINS: ${HUMANENGINE_PLUGINS:-}
+    volumes:
+      - humanengine-data:/app/data
+      # Optional trusted local plugins; create this directory before enabling the mount.
+      # - ./plugins:/app/plugins:ro
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+volumes:
+  humanengine-data:

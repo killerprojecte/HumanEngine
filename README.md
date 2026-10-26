@@ -2,6 +2,10 @@
 
 A self-hosted, single-character conversational runtime. Nuxt UI provides a calm administration workspace; scene-scoped learning keeps private and group experiences separate.
 
+## Docker Compose
+
+Use `ghcr.io/killerprojecte/humanengine` with the included `compose.yaml`. Copy `.env.example` to `.env`, configure the local administration token/provider environment references, then run `docker compose pull && docker compose up -d --no-build`. The default published address is `http://127.0.0.1:3000`; configuration and media persist in a named volume. Private GHCR pulls may require your existing authorized registry login. See [container setup, verified tags, persistence and access](docs/containers.md).
+
 ## Run locally
 
 Requires Node.js **24.22.1 or later in the 24 LTS series**, npm, and a local filesystem for SQLite. Native SQLite/vector packages must support your operating system and architecture; Linux x64 is the initial validation target.

@@ -1,68 +1,306 @@
 <script setup lang="ts">
-const { t } = useI18n(),
+import type { components } from '~/types/api'
+type Log = components['schemas']['Log']
+type Diagnostic = components['schemas']['Diagnostic']
+const { t, locale } = useI18n(),
   { client } = useApi()
-const {
-  data: result,
-  refresh,
-  status,
-} = await useAsyncData('logs', () => client.GET('/api/logs'), { server: false })
-const { data: diagnostics, refresh: refreshDiagnostics } = await useAsyncData(
-  'diagnostics',
-  () => client.GET('/api/diagnostics'),
-  { server: false },
-)
-async function refreshAll() {
-  await Promise.all([refresh(), refreshDiagnostics()])
+const latest = ref<Log[]>([])
+const newCount = computed(() => {
+  const shownIds = new Set(logs.value.map((log) => log.id))
+  return latest.value.filter((log) => !shownIds.has(log.id)).length
+})
+const logs = ref<Log[]>([]),
+  diagnostics = ref<Diagnostic[]>([])
+const busy = ref(false),
+  live = ref(true),
+  following = ref(true),
+  error = ref('')
+const search = ref(''),
+  level = ref('all'),
+  moduleFilter = ref('*')
+const consolePanel = ref<HTMLElement>(),
+  expanded = ref(new Set<string>())
+const modules = computed(() => [
+  { label: t('uxLogAllModules'), value: '*' },
+  ...[...new Set(logs.value.map((log) => log.module))]
+    .sort()
+    .map((value) => ({ label: value, value })),
+])
+const levels = computed(() => [
+  { label: t('uxLogAllLevels'), value: 'all' },
+  ...['info', 'warn', 'error'].map((value) => ({ label: value.toUpperCase(), value })),
+])
+const filtered = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  return logs.value.filter(
+    (log) =>
+      (level.value === 'all' || log.level === level.value) &&
+      (moduleFilter.value === '*' || log.module === moduleFilter.value) &&
+      (!query ||
+        [
+          log.at,
+          log.level,
+          log.module,
+          log.code,
+          log.sceneId,
+          log.turnId,
+          log.modelId,
+          log.providerId,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(query)),
+  )
+})
+let timer: ReturnType<typeof setTimeout> | undefined
+let controller: AbortController | undefined
+let generation = 0,
+  disposed = false
+async function jumpToLatest() {
+  live.value = true
+  following.value = true
+  logs.value = latest.value
+  await nextTick()
+  if (consolePanel.value) consolePanel.value.scrollTop = consolePanel.value.scrollHeight
 }
+function onScroll() {
+  const panel = consolePanel.value
+  if (panel && panel.scrollHeight - panel.scrollTop - panel.clientHeight > 100) {
+    following.value = false
+    live.value = false
+  }
+}
+async function refresh(force = false) {
+  if (busy.value || disposed) return
+  clearTimeout(timer)
+  const current = ++generation
+  controller = new AbortController()
+  busy.value = true
+  const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(10000)])
+  try {
+    const [result, detail] = await Promise.all([
+      client.GET('/api/logs', { signal }),
+      client.GET('/api/diagnostics', { signal }),
+    ])
+    if (disposed || current !== generation) return
+    error.value = ''
+    if (result.data) {
+      // The API returns newest first. Keep one bounded snapshot, oldest at the top.
+      latest.value = result.data.slice(0, 500).reverse()
+      if (live.value || force) logs.value = latest.value
+      expanded.value = new Set(
+        [...expanded.value].filter((id) => logs.value.some((log) => log.id === id)),
+      )
+    } else error.value = result.error?.error ?? t('networkError')
+    // Never retain old model I/O when the server clears it or verification fails.
+    diagnostics.value = detail.data?.slice(0, 20) ?? []
+    if (!detail.data) error.value ||= detail.error?.error ?? t('networkError')
+    if (following.value) await jumpToLatest()
+  } catch {
+    if (current === generation && !disposed) {
+      error.value = t('networkError')
+      diagnostics.value = []
+    }
+  } finally {
+    if (current === generation) {
+      busy.value = false
+      controller = undefined
+      if (!disposed) timer = setTimeout(() => void refresh(), 2500)
+    }
+  }
+}
+function toggleLive() {
+  if (live.value) {
+    live.value = false
+    following.value = false
+  } else void jumpToLatest()
+}
+function toggleContext(id: string) {
+  const next = new Set(expanded.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  expanded.value = next
+}
+function context(log: Log) {
+  return Object.fromEntries(
+    Object.entries({
+      id: log.id,
+      sceneId: log.sceneId,
+      turnId: log.turnId,
+      modelId: log.modelId,
+      providerId: log.providerId,
+      durationMs: log.durationMs,
+    }).filter(([, value]) => value !== undefined),
+  )
+}
+const timestamp = (at: string) =>
+  new Date(at).toLocaleString(locale.value, {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+watch([search, level, moduleFilter], () => {
+  if (following.value) void jumpToLatest()
+})
+onMounted(() => void refresh())
+onBeforeUnmount(() => {
+  disposed = true
+  ++generation
+  clearTimeout(timer)
+  controller?.abort()
+  diagnostics.value = []
+})
 </script>
 <template>
-  <div class="space-y-6">
-    <UCard v-if="diagnostics?.data?.length"
-      ><template #header
+  <div class="space-y-4">
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h1 class="page-heading">{{ t('logs') }}</h1>
+        <p class="mt-1 text-sm text-muted">{{ t('logsHelp') }}</p>
+      </div>
+      <div class="flex gap-2">
+        <UButton
+          :icon="live ? 'i-lucide-pause' : 'i-lucide-play'"
+          color="neutral"
+          variant="outline"
+          @click="toggleLive"
+          >{{ t(live ? 'uxLogPause' : 'uxLogResume') }}</UButton
+        ><UButton
+          icon="i-lucide-refresh-cw"
+          variant="soft"
+          :loading="busy"
+          :disabled="busy"
+          @click="refresh(true)"
+          >{{ t('refresh') }}</UButton
+        >
+      </div>
+    </header>
+    <UAlert v-if="error" color="error" :title="error" />
+    <section
+      class="overflow-hidden rounded-lg border border-default"
+      :aria-label="t('uxLogConsole')"
+    >
+      <div class="flex flex-wrap items-center gap-2 bg-default px-3 py-3 border-b border-default">
+        <UInput
+          v-model="search"
+          icon="i-lucide-search"
+          :placeholder="t('uxLogSearch')"
+          :aria-label="t('uxLogSearch')"
+          class="w-full sm:w-72"
+        />
+        <USelect v-model="level" :items="levels" :aria-label="t('uxLogAllLevels')" class="w-36" />
+        <USelect
+          v-model="moduleFilter"
+          :items="modules"
+          :aria-label="t('uxLogAllModules')"
+          class="w-44"
+        />
+        <div class="flex-1" />
+        <span class="text-xs text-muted tabular-nums"
+          >{{ filtered.length }} / {{ logs.length }}</span
+        >
+      </div>
+      <div
+        class="flex items-center justify-between gap-3 bg-slate-900 px-4 h-10 text-xs text-slate-400 border-b border-slate-700"
+      >
+        <span class="flex items-center gap-2"
+          ><span
+            class="size-1.5 rounded-full"
+            :class="live ? 'bg-emerald-400' : 'bg-amber-400'"
+          />{{ t(live ? 'uxLogLive' : 'uxLogPaused') }}<span class="text-slate-500">·</span
+          >{{ t('uxLogBounded') }}</span
+        >
+        <button
+          v-if="!following"
+          class="inline-flex items-center gap-1 text-indigo-300 hover:text-indigo-200"
+          @click="jumpToLatest"
+        >
+          <UIcon name="i-lucide-arrow-down-to-line" class="size-3.5" />{{ t('uxLogFollow')
+          }}<span v-if="newCount" class="ml-1 rounded bg-indigo-400/15 px-1.5 text-indigo-200">{{
+            t('uxLogNewCount', { count: newCount })
+          }}</span></button
+        ><span v-else class="text-slate-400">{{ t('uxLogFollowing') }}</span>
+      </div>
+      <div
+        ref="consolePanel"
+        tabindex="0"
+        :aria-label="t('uxLogConsole')"
+        class="h-[min(62vh,640px)] min-h-72 overflow-auto bg-[#0b1220] text-slate-200 px-3 py-2 font-mono text-xs leading-[22px] focus-visible:outline-2 focus-visible:outline-indigo-400"
+        @scroll.passive="onScroll"
+      >
+        <p v-if="!filtered.length" class="px-2 py-8 text-center text-slate-400">
+          {{ t(logs.length ? 'uxLogNoMatches' : 'emptyLogs') }}
+        </p>
+        <div
+          v-for="log in filtered"
+          :key="log.id"
+          class="border-b border-slate-800/40 last:border-0"
+        >
+          <button
+            class="flex w-full gap-2 text-left items-start rounded-sm px-1 hover:bg-slate-800/50 focus-visible:outline-2 focus-visible:outline-indigo-400"
+            :aria-expanded="expanded.has(log.id)"
+            :aria-label="t('uxLogContext') + ': ' + log.code"
+            @click="toggleContext(log.id)"
+          >
+            <UIcon
+              :name="expanded.has(log.id) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+              class="mt-1.5 size-3 shrink-0 text-slate-500"
+            />
+            <time
+              :datetime="log.at"
+              class="shrink-0 text-slate-500 tabular-nums whitespace-nowrap"
+              >{{ timestamp(log.at) }}</time
+            >
+            <span
+              class="w-10 shrink-0 font-semibold uppercase"
+              :class="
+                log.level === 'error'
+                  ? 'text-rose-400'
+                  : log.level === 'warn'
+                    ? 'text-amber-300'
+                    : 'text-cyan-300'
+              "
+              >{{ log.level }}</span
+            >
+            <span class="shrink-0 text-violet-300">[{{ log.module }}]</span
+            ><code class="break-all">{{ log.code }}</code
+            ><span v-if="log.durationMs !== undefined" class="ml-auto shrink-0 text-slate-500"
+              >{{ log.durationMs }} ms</span
+            >
+          </button>
+          <pre
+            v-if="expanded.has(log.id)"
+            class="ml-6 my-2 border-l border-slate-700 pl-3 whitespace-pre-wrap break-all text-slate-400 leading-5"
+            >{{ JSON.stringify(context(log), null, 2) }}</pre>
+        </div>
+      </div>
+    </section>
+    <UCard v-if="diagnostics.length">
+      <template #header
         ><h2 class="font-semibold">{{ t('visibleDiagnostics') }}</h2></template
       >
       <p class="text-muted text-sm mb-4">{{ t('visibleDiagnosticsHelp') }}</p>
-      <details v-for="entry in diagnostics.data" :key="entry.id" class="mb-4">
-        <summary>
-          {{ entry.role }} · {{ entry.modelId }} · {{ new Date(entry.at).toLocaleString() }}
+      <details
+        v-for="entry in diagnostics"
+        :key="entry.id"
+        class="border-t border-default py-3 first:border-0"
+      >
+        <summary class="cursor-pointer text-sm">
+          {{ entry.role }} · {{ entry.modelId }} · {{ new Date(entry.at).toLocaleString(locale) }}
         </summary>
-        <h3 class="mt-3 font-medium">{{ t('modelInput') }}</h3>
-        <pre class="text-xs whitespace-pre-wrap break-all bg-muted p-3 rounded-lg">{{
-          entry.input
-        }}</pre>
-        <h3 class="mt-3 font-medium">{{ t('modelOutput') }}</h3>
-        <pre class="text-xs whitespace-pre-wrap break-all bg-muted p-3 rounded-lg">{{
-          entry.output
-        }}</pre>
-      </details></UCard
-    >
-    <div class="flex justify-between">
-      <h1 class="text-2xl font-semibold">{{ t('logs') }}</h1>
-      <UButton
-        variant="soft"
-        icon="i-lucide-refresh-cw"
-        :loading="status === 'pending'"
-        @click="refreshAll"
-        >{{ t('refresh') }}</UButton
-      >
-    </div>
-    <p class="text-muted">{{ t('logsHelp') }}</p>
-    <UCard
-      ><div v-if="!result?.data?.length" class="text-muted">{{ t('emptyLogs') }}</div>
-      <div
-        v-for="log in result?.data ?? []"
-        :key="log.id"
-        class="py-3 border-b border-default last:border-0 flex flex-wrap items-center gap-3 text-sm"
-      >
-        <UBadge
-          :color="log.level === 'error' ? 'error' : log.level === 'warn' ? 'warning' : 'neutral'"
-          >{{ log.level }}</UBadge
-        ><time class="text-muted">{{ new Date(log.at).toLocaleString() }}</time
-        ><span>{{ log.module }}</span
-        ><code>{{ log.code }}</code
-        ><span v-if="log.modelId">{{ log.modelId }} · {{ log.durationMs }} ms</span
-        ><span v-if="log.sceneId" class="text-muted">{{ log.sceneId }}</span>
-      </div></UCard
-    >
+        <h3 class="mt-3 font-medium text-sm">{{ t('modelInput') }}</h3>
+        <pre
+          class="text-xs whitespace-pre-wrap break-all bg-muted p-3 rounded-md max-h-80 overflow-auto"
+          >{{ entry.input }}</pre>
+        <h3 class="mt-3 font-medium text-sm">{{ t('modelOutput') }}</h3>
+        <pre
+          class="text-xs whitespace-pre-wrap break-all bg-muted p-3 rounded-md max-h-80 overflow-auto"
+          >{{ entry.output }}</pre>
+      </details>
+    </UCard>
   </div>
 </template>

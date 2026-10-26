@@ -27,3 +27,16 @@ After rebuilding the fixes, browser retests confirmed:
 Screenshots are delivered separately as synthetic QA artifacts, not bundled in the application image. A rendered screenshot demonstrates the observed page state, not untested provider quality, full accessibility certification or every device layout. Live providers/QQ, recipient animation and target-machine performance still require their separate checks.
 
 The fixed frontend passed runtime/Nuxt type checking, contract drift checks, formatting and a fresh production build. Container CI independently runs the full integration checks, builds and tests the final image before GHCR publication.
+
+## Compact workspace pilot
+
+The first redesign covers the shared shell and four pages, not a completed redesign of every settings screen. The official MaiBot dashboard was run locally with synthetic API responses as an information-layout reference; no upstream application code or visual assets were copied.
+
+- Overview groups four status metrics, scene activity, runtime health and ordered model routes instead of a permanent onboarding block.
+- Models separates providers, instances, routes and usage into searchable registries. One bounded drawer edits the selected entry; Cancel restores its opening snapshot, Close retains the draft, and Save persists configuration.
+- Chat uses a scene rail, independently scrolling conversation and pinned composer. Simulation and read-only platform preview remain separate, with the existing isolation rules unchanged.
+- Logs uses a dark monospace console with level/module/search filters and expandable technical context. Polling continues while the displayed snapshot is paused; scrolling upward stops follow, and Jump to latest resumes it. Both retained and displayed buffers are bounded to 500 entries. Temporary sensitive diagnostics remain a separate section.
+
+Real desktop review used seven model instances, three providers, four scenes, long names and a synthetic event stream. It exercised empty search results, editor Save/Cancel/Close behavior, expanded navigation, light/dark layouts, simulation sending, read-only scene switching, log scroll pause and new-entry jump. Collapsed navigation exposed missing accessible link names during review; localized ARIA labels were added and manual sidebar preference is retained across reloads. This is a focused accessibility repair, not an accessibility certification.
+
+The pilot passed the existing 47 integration checks, contract drift checks, runtime/Nuxt type checks, formatting and a fresh production build. The final navigation-only repair was rechecked with types, formatting and a fresh build; it did not change the backend or contract. Warning/error log colors and phone-sized layouts are not claimed as browser-verified by the INFO-only desktop fixture. Screenshots are actual synthetic browser captures, not design mockups, and do not establish live-provider or QQ compatibility.

@@ -1,21 +1,44 @@
 <script setup lang="ts">
 const { t, locale, setLocale } = useI18n()
 const { client, token } = useApi()
+const route = useRoute()
+const sidebarPreference = useCookie<boolean | null>('humanengine-sidebar-collapsed', {
+  default: () => null,
+  sameSite: 'lax',
+})
+const collapsed = ref(sidebarPreference.value ?? false)
+function setCollapsed(value: boolean) {
+  collapsed.value = value
+  sidebarPreference.value = value
+}
+let stopSidebarQuery: (() => void) | undefined
+onBeforeUnmount(() => stopSidebarQuery?.())
+onMounted(() => {
+  const query = window.matchMedia('(min-width: 1024px) and (max-width: 1279px)')
+  const sync = () => {
+    collapsed.value = sidebarPreference.value ?? query.matches
+  }
+  sync()
+  query.addEventListener('change', sync)
+  stopSidebarQuery = () => query.removeEventListener('change', sync)
+})
 const secret = ref(''),
   error = ref(''),
   busy = ref(false)
-const links = computed(() => [
-  { label: t('overview'), icon: 'i-lucide-layout-dashboard', to: '/' },
-  { label: t('models'), icon: 'i-lucide-brain', to: '/models' },
-  { label: t('chat'), icon: 'i-lucide-message-circle', to: '/chat' },
-  { label: t('memories'), icon: 'i-lucide-notebook-pen', to: '/memories' },
-  { label: t('rules'), icon: 'i-lucide-book-open', to: '/rules' },
-  { label: t('memes'), icon: 'i-lucide-images', to: '/memes' },
-  { label: t('plugins'), icon: 'i-lucide-puzzle', to: '/plugins' },
-  { label: t('scenes'), icon: 'i-lucide-messages-square', to: '/scenes' },
-  { label: t('settings'), icon: 'i-lucide-sliders-horizontal', to: '/settings' },
-  { label: t('logs'), icon: 'i-lucide-scroll-text', to: '/logs' },
-])
+const links = computed(() =>
+  [
+    { label: t('overview'), icon: 'i-lucide-layout-dashboard', to: '/' },
+    { label: t('models'), icon: 'i-lucide-brain', to: '/models' },
+    { label: t('chat'), icon: 'i-lucide-message-circle', to: '/chat' },
+    { label: t('memories'), icon: 'i-lucide-notebook-pen', to: '/memories' },
+    { label: t('rules'), icon: 'i-lucide-book-open', to: '/rules' },
+    { label: t('memes'), icon: 'i-lucide-images', to: '/memes' },
+    { label: t('plugins'), icon: 'i-lucide-puzzle', to: '/plugins' },
+    { label: t('scenes'), icon: 'i-lucide-messages-square', to: '/scenes' },
+    { label: t('settings'), icon: 'i-lucide-sliders-horizontal', to: '/settings' },
+    { label: t('logs'), icon: 'i-lucide-scroll-text', to: '/logs' },
+  ].map((item) => ({ ...item, 'aria-label': item.label })),
+)
 async function login() {
   busy.value = true
   error.value = ''
@@ -36,7 +59,7 @@ async function login() {
 </script>
 <template>
   <UApp>
-    <div v-if="!token" class="min-h-screen grid place-items-center p-6">
+    <div v-if="!token || busy" class="min-h-screen grid place-items-center p-6">
       <UCard class="w-full max-w-md">
         <template #header
           ><div class="flex items-center gap-3">
@@ -65,47 +88,95 @@ async function login() {
         </form>
       </UCard>
     </div>
-    <UDashboardGroup v-else>
-      <UDashboardSidebar collapsible resizable>
-        <template #header
-          ><NuxtLink to="/" class="flex items-center gap-2 font-semibold text-lg"
-            ><UIcon name="i-lucide-sparkles" class="text-primary" />HumanEngine</NuxtLink
-          ></template
-        >
-        <UNavigationMenu :items="links" orientation="vertical" />
-        <template #footer
-          ><div class="space-y-3 w-full">
-            <USelect
-              :model-value="locale"
-              :items="[
-                { label: 'English', value: 'en' },
-                { label: t('localeSimplified'), value: 'zh-CN' },
-                { label: t('localeTraditional'), value: 'zh-TW' },
-              ]"
+    <UDashboardGroup v-else unit="rem" :persistent="false">
+      <UDashboardSidebar
+        :collapsed="collapsed"
+        @update:collapsed="setCollapsed"
+        collapsible
+        :default-size="13.5"
+        :collapsed-size="4"
+        :min-size="13.5"
+        :max-size="13.5"
+        :ui="{ body: 'px-2 py-3 gap-5', header: 'px-4', footer: 'px-4 py-4' }"
+      >
+        <template #header="{ collapsed: compact }">
+          <NuxtLink
+            to="/"
+            :aria-label="t('overview')"
+            class="flex items-center gap-2.5 min-w-0 font-semibold text-highlighted"
+          >
+            <span
+              class="size-8 shrink-0 grid place-items-center rounded-lg bg-primary text-inverted"
+              ><UIcon name="i-lucide-sparkles" class="size-[18px]"
+            /></span>
+            <span v-if="!compact" class="tracking-tight">HumanEngine</span>
+          </NuxtLink>
+        </template>
+        <template #default="{ collapsed: compact }">
+          <div
+            v-for="(group, index) in [links.slice(0, 3), links.slice(3, 6), links.slice(6)]"
+            :key="index"
+          >
+            <p
+              v-if="!compact"
+              class="px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-dimmed"
+            >
+              {{ t(['workspace', 'uxKnowledge', 'uxSystem'][index]!) }}
+            </p>
+            <UNavigationMenu
+              :items="group"
+              orientation="vertical"
+              :collapsed="compact"
+              tooltip
               class="w-full"
-              @update:model-value="setLocale($event as 'en' | 'zh-CN' | 'zh-TW')"
             />
-            <div class="flex justify-between">
-              <UColorModeButton /><UButton
-                variant="ghost"
-                icon="i-lucide-log-out"
-                @click="token = ''"
-                >{{ t('disconnect') }}</UButton
-              >
-            </div>
-          </div></template
-        >
+          </div>
+        </template>
+        <template #footer="{ collapsed: compact }">
+          <span v-if="!compact" class="text-xs text-muted flex items-center gap-2"
+            ><UIcon name="i-lucide-user-round" class="size-4" />{{ t('singleRole') }}</span
+          >
+        </template>
       </UDashboardSidebar>
       <UDashboardPanel
-        ><template #header
-          ><UDashboardNavbar :title="t('workspace')"
-            ><template #leading><UDashboardSidebarCollapse /></template
-            ><template #right
-              ><UBadge color="neutral" variant="soft">{{ t('singleRole') }}</UBadge></template
-            ></UDashboardNavbar
-          ></template
-        ><template #body><NuxtPage /></template
-      ></UDashboardPanel>
+        :ui="{
+          body: route.path === '/chat' ? 'p-0 sm:p-0 gap-0 overflow-hidden' : 'p-4 sm:p-5 gap-4',
+        }"
+      >
+        <template #header>
+          <UDashboardNavbar :title="t('workspace')" :toggle="false">
+            <template #leading
+              ><UDashboardSidebarToggle class="lg:hidden" /><UDashboardSidebarCollapse
+                class="hidden lg:flex"
+            /></template>
+            <template #right>
+              <USelect
+                :model-value="locale"
+                :items="[
+                  { label: 'English', value: 'en' },
+                  { label: t('localeSimplified'), value: 'zh-CN' },
+                  { label: t('localeTraditional'), value: 'zh-TW' },
+                ]"
+                :aria-label="t('uxLanguage')"
+                class="w-32"
+                size="sm"
+                variant="ghost"
+                @update:model-value="setLocale($event as 'en' | 'zh-CN' | 'zh-TW')"
+              />
+              <UColorModeButton size="sm" />
+              <UTooltip :text="t('disconnect')"
+                ><UButton
+                  color="neutral"
+                  variant="ghost"
+                  icon="i-lucide-log-out"
+                  :aria-label="t('disconnect')"
+                  @click="token = ''"
+              /></UTooltip>
+            </template>
+          </UDashboardNavbar>
+        </template>
+        <template #body><NuxtPage /></template>
+      </UDashboardPanel>
     </UDashboardGroup>
   </UApp>
 </template>

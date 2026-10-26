@@ -5,6 +5,12 @@ type Diagnostic = components['schemas']['Diagnostic']
 const { t, locale } = useI18n(),
   { client } = useApi()
 const latest = ref<Log[]>([])
+const lastFetched = ref(''),
+  logError = ref('')
+const roleLabel = (role: string) =>
+  ['planner', 'thinker', 'learning', 'vision', 'embedding'].includes(role)
+    ? t('mcRole' + role[0]!.toUpperCase() + role.slice(1))
+    : role
 const newCount = computed(() => {
   const shownIds = new Set(logs.value.map((log) => log.id))
   return latest.value.filter((log) => !shownIds.has(log.id)).length
@@ -86,13 +92,18 @@ async function refresh(force = false) {
     if (disposed || current !== generation) return
     error.value = ''
     if (result.data) {
+      lastFetched.value = new Date().toISOString()
+      logError.value = ''
       // The API returns newest first. Keep one bounded snapshot, oldest at the top.
       latest.value = result.data.slice(0, 500).reverse()
       if (live.value || force) logs.value = latest.value
       expanded.value = new Set(
         [...expanded.value].filter((id) => logs.value.some((log) => log.id === id)),
       )
-    } else error.value = result.error?.error ?? t('networkError')
+    } else {
+      logError.value = result.error?.error ?? t('networkError')
+      error.value = logError.value
+    }
     // Never retain old model I/O when the server clears it or verification fails.
     diagnostics.value = detail.data?.slice(0, 20) ?? []
     if (!detail.data) error.value ||= detail.error?.error ?? t('networkError')
@@ -100,6 +111,7 @@ async function refresh(force = false) {
   } catch {
     if (current === generation && !disposed) {
       error.value = t('networkError')
+      logError.value = error.value
       diagnostics.value = []
     }
   } finally {
@@ -162,22 +174,6 @@ onBeforeUnmount(() => {
         <h1 class="page-heading">{{ t('logs') }}</h1>
         <p class="mt-1 text-sm text-muted">{{ t('logsHelp') }}</p>
       </div>
-      <div class="flex gap-2">
-        <UButton
-          :icon="live ? 'i-lucide-pause' : 'i-lucide-play'"
-          color="neutral"
-          variant="outline"
-          @click="toggleLive"
-          >{{ t(live ? 'uxLogPause' : 'uxLogResume') }}</UButton
-        ><UButton
-          icon="i-lucide-refresh-cw"
-          variant="soft"
-          :loading="busy"
-          :disabled="busy"
-          @click="refresh(true)"
-          >{{ t('refresh') }}</UButton
-        >
-      </div>
     </header>
     <UAlert v-if="error" color="error" :title="error" />
     <section
@@ -200,20 +196,40 @@ onBeforeUnmount(() => {
           class="w-44"
         />
         <div class="flex-1" />
+        <div class="flex gap-2">
+          <UButton
+            :icon="live ? 'i-lucide-pause' : 'i-lucide-play'"
+            color="neutral"
+            variant="outline"
+            @click="toggleLive"
+            >{{ t(live ? 'uxLogPause' : 'uxLogResume') }}</UButton
+          ><UButton
+            icon="i-lucide-refresh-cw"
+            variant="soft"
+            :loading="busy"
+            :disabled="busy"
+            @click="refresh(true)"
+            >{{ t('lgRefreshView') }}</UButton
+          >
+        </div>
         <span class="text-xs text-muted tabular-nums"
           >{{ filtered.length }} / {{ logs.length }}</span
         >
       </div>
       <div
-        class="flex items-center justify-between gap-3 bg-slate-900 px-4 h-10 text-xs text-slate-400 border-b border-slate-700"
+        class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-slate-900 px-4 py-3 text-xs text-slate-400 border-b border-slate-700"
       >
-        <span class="flex items-center gap-2"
-          ><span
-            class="size-1.5 rounded-full"
-            :class="live ? 'bg-emerald-400' : 'bg-amber-400'"
-          />{{ t(live ? 'uxLogLive' : 'uxLogPaused') }}<span class="text-slate-500">·</span
-          >{{ t('uxLogBounded') }}</span
-        >
+        <div class="flex flex-wrap gap-x-4 gap-y-2">
+          <span>{{ t(live ? 'lgFollowing' : 'lgPaused') }}</span
+          ><span :class="logError ? 'text-rose-300' : 'text-slate-400'">{{
+            logError
+              ? t('lgFetchFailed')
+              : lastFetched
+                ? t('lgUpdated', { time: timestamp(lastFetched) })
+                : t(busy ? 'uxLoading' : 'lgNotFetched')
+          }}</span
+          ><span>{{ t('uxLogBounded') }}</span>
+        </div>
         <button
           v-if="!following"
           class="inline-flex items-center gap-1 text-indigo-300 hover:text-indigo-200"
@@ -233,7 +249,17 @@ onBeforeUnmount(() => {
         @scroll.passive="onScroll"
       >
         <p v-if="!filtered.length" class="px-2 py-8 text-center text-slate-400">
-          {{ t(logs.length ? 'uxLogNoMatches' : 'emptyLogs') }}
+          {{
+            t(
+              !lastFetched
+                ? busy
+                  ? 'uxLoading'
+                  : 'lgNotFetched'
+                : logs.length
+                  ? 'uxLogNoMatches'
+                  : 'emptyLogs',
+            )
+          }}
         </p>
         <div
           v-for="log in filtered"
@@ -241,22 +267,22 @@ onBeforeUnmount(() => {
           class="border-b border-slate-800/40 last:border-0"
         >
           <button
-            class="flex w-full gap-2 text-left items-start rounded-sm px-1 hover:bg-slate-800/50 focus-visible:outline-2 focus-visible:outline-indigo-400"
+            class="log-row w-full text-left items-start rounded-sm px-1 hover:bg-slate-800/50 focus-visible:outline-2 focus-visible:outline-indigo-400"
             :aria-expanded="expanded.has(log.id)"
             :aria-label="t('uxLogContext') + ': ' + log.code"
             @click="toggleContext(log.id)"
           >
             <UIcon
               :name="expanded.has(log.id) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
-              class="mt-1.5 size-3 shrink-0 text-slate-500"
+              class="log-chevron mt-1.5 size-3 text-slate-500"
             />
             <time
               :datetime="log.at"
-              class="shrink-0 text-slate-500 tabular-nums whitespace-nowrap"
+              class="log-time text-slate-500 tabular-nums whitespace-nowrap"
               >{{ timestamp(log.at) }}</time
             >
             <span
-              class="w-10 shrink-0 font-semibold uppercase"
+              class="log-level font-semibold uppercase"
               :class="
                 log.level === 'error'
                   ? 'text-rose-400'
@@ -266,9 +292,11 @@ onBeforeUnmount(() => {
               "
               >{{ log.level }}</span
             >
-            <span class="shrink-0 text-violet-300">[{{ log.module }}]</span
-            ><code class="break-all">{{ log.code }}</code
-            ><span v-if="log.durationMs !== undefined" class="ml-auto shrink-0 text-slate-500"
+            <span class="log-module min-w-0 break-all text-violet-300">[{{ log.module }}]</span
+            ><code class="log-code min-w-0 break-all">{{ log.code }}</code
+            ><span
+              v-if="log.durationMs !== undefined"
+              class="log-duration text-right text-slate-500"
               >{{ log.durationMs }} ms</span
             >
           </button>
@@ -279,18 +307,23 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </section>
-    <UCard v-if="diagnostics.length">
-      <template #header
-        ><h2 class="font-semibold">{{ t('visibleDiagnostics') }}</h2></template
-      >
+    <section class="rounded-lg border border-default bg-default p-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <h2 class="font-semibold">{{ t('visibleDiagnostics') }}</h2>
+        <NuxtLink to="/settings#diagnostics" class="text-sm text-primary hover:underline">{{
+          t('lgCaptureSettings')
+        }}</NuxtLink>
+      </div>
       <p class="text-muted text-sm mb-4">{{ t('visibleDiagnosticsHelp') }}</p>
+      <p v-if="!diagnostics.length" class="text-sm text-muted">{{ t('lgNoDiagnostics') }}</p>
       <details
         v-for="entry in diagnostics"
         :key="entry.id"
         class="border-t border-default py-3 first:border-0"
       >
         <summary class="cursor-pointer text-sm">
-          {{ entry.role }} · {{ entry.modelId }} · {{ new Date(entry.at).toLocaleString(locale) }}
+          {{ roleLabel(entry.role) }} · {{ entry.modelId }} ·
+          {{ new Date(entry.at).toLocaleString(locale) }}
         </summary>
         <h3 class="mt-3 font-medium text-sm">{{ t('modelInput') }}</h3>
         <pre
@@ -301,6 +334,65 @@ onBeforeUnmount(() => {
           class="text-xs whitespace-pre-wrap break-all bg-muted p-3 rounded-md max-h-80 overflow-auto"
           >{{ entry.output }}</pre>
       </details>
-    </UCard>
+    </section>
   </div>
 </template>
+
+<style scoped>
+.log-row {
+  display: grid;
+  grid-template-columns: 12px 148px 44px 130px minmax(0, 1fr) 64px;
+  gap: 8px;
+  min-height: 24px;
+}
+.log-chevron {
+  grid-column: 1;
+}
+.log-time {
+  grid-column: 2;
+}
+.log-level {
+  grid-column: 3;
+}
+.log-module {
+  grid-column: 4;
+}
+.log-code {
+  grid-column: 5;
+}
+.log-duration {
+  grid-column: 6;
+}
+@media (max-width: 767px) {
+  .log-row {
+    grid-template-columns: 12px minmax(0, 1fr) 48px;
+    gap: 2px 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .log-chevron {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .log-time {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .log-level {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .log-module {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .log-duration {
+    grid-column: 3;
+    grid-row: 2;
+  }
+  .log-code {
+    grid-column: 2 / 4;
+    grid-row: 3;
+  }
+}
+</style>

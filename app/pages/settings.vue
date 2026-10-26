@@ -355,7 +355,7 @@ const timingFields = [
                   class="w-full"
               /></UFormField>
             </div>
-            <div class="border-t border-default pt-5 space-y-3">
+            <div id="diagnostics" class="border-t border-default pt-5 space-y-3">
               <USwitch
                 id="settings-debug-io"
                 v-model="settings.debugModelIO"

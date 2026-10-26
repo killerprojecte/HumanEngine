@@ -6,9 +6,12 @@ const status = ref<components['schemas']['Status']>(),
   scenes = ref<components['schemas']['Scene'][]>([]),
   logs = ref<components['schemas']['Log'][]>([]),
   config = ref<components['schemas']['ModelConfig']>(),
-  usage = ref<components['schemas']['Usage'][]>([]),
-  loading = ref(false),
-  error = ref('')
+  usage = ref<components['schemas']['Usage'][]>([])
+const loading = ref(false),
+  error = ref(''),
+  lastUpdated = ref('')
+let disposed = false,
+  controller: AbortController | undefined
 const usageSummary = computed(() =>
   usage.value.reduce(
     (sum, row) => ({
@@ -19,308 +22,329 @@ const usageSummary = computed(() =>
     { calls: 0, priced: 0, cost: 0 },
   ),
 )
+const roles = ['planner', 'thinker', 'learning', 'vision', 'embedding'] as const
+const roleLabel = (role: string) => t('mcRole' + role[0]!.toUpperCase() + role.slice(1))
+const routeModels = (role: string) =>
+  config.value?.routes.find((route) => route.role === role)?.orderedModelIds ?? []
+const modelName = (id?: string) =>
+  config.value?.models.find((model) => model.id === id)?.displayName ?? t('uxNotAssigned')
 const configured = computed(() =>
   ['planner', 'thinker'].every((role) =>
-    config.value?.routes.some((route) => route.role === role && route.orderedModelIds.length),
+    routeModels(role).some((id) => config.value?.models.some((model) => model.id === id)),
   ),
 )
-const metrics = computed(() => [
-  {
-    label: t('enabledScenes'),
-    value: status.value?.enabledScenes,
-    detail: t('uxSceneTotal', { count: status.value?.sceneCount ?? 0 }),
-    icon: 'i-lucide-messages-square',
-    to: '/scenes',
-  },
-  {
-    label: t('modelInstances'),
-    value: status.value?.modelCount,
-    detail: t('uxProviderTotal', { count: status.value?.providerCount ?? 0 }),
-    icon: 'i-lucide-brain',
-    to: '/models',
-  },
-  {
-    label: t('activeTasks'),
-    value: status.value?.activeTasks,
-    detail: t('uxQueuedTotal', { count: status.value?.queuedModelRequests ?? 0 }),
-    icon: 'i-lucide-activity',
-    to: '/chat',
-  },
-  {
-    label: t('recentErrors'),
-    value: status.value?.recentErrors,
-    detail: t('uxInspectLogs'),
-    icon: 'i-lucide-circle-alert',
-    to: '/logs',
-  },
-])
 const uptime = computed(() => {
   const seconds = status.value?.uptimeSeconds
   if (seconds === undefined) return '—'
   return seconds >= 3600
-    ? `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
-    : `${Math.floor(seconds / 60)}m ${seconds % 60}s`
+    ? t('ovUptimeHours', {
+        hours: Math.floor(seconds / 3600),
+        minutes: Math.floor((seconds % 3600) / 60),
+      })
+    : t('ovUptimeMinutes', { minutes: Math.floor(seconds / 60), seconds: seconds % 60 })
 })
-function roleLabel(role: string) {
-  return t('uxRole' + role[0]!.toUpperCase() + role.slice(1))
-}
+const metrics = computed(() => [
+  { label: t('activeTasks'), value: status.value?.activeTasks },
+  { label: t('runningModelRequests'), value: status.value?.runningModelRequests },
+  { label: t('queuedModelRequests'), value: status.value?.queuedModelRequests },
+  { label: t('recentErrors'), value: status.value?.recentErrors },
+])
+const adapterLabel = (value: string) =>
+  ['connected', 'connecting', 'disconnected', 'disabled', 'error'].includes(value)
+    ? t('ovAdapter_' + value)
+    : value
+const time = (at: string) =>
+  new Date(at).toLocaleTimeString(locale.value, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
 async function refreshAll() {
-  if (loading.value) return
+  if (loading.value || disposed) return
   loading.value = true
   error.value = ''
+  controller = new AbortController()
+  const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(10000)])
   try {
     const [s, c, l, m, u] = await Promise.all([
-      client.GET('/api/status'),
-      client.GET('/api/scenes'),
-      client.GET('/api/logs'),
-      client.GET('/api/models'),
-      client.GET('/api/usage'),
+      client.GET('/api/status', { signal }),
+      client.GET('/api/scenes', { signal }),
+      client.GET('/api/logs', { signal }),
+      client.GET('/api/models', { signal }),
+      client.GET('/api/usage', { signal }),
     ])
-    if (s.data) status.value = s.data
-    if (c.data) scenes.value = c.data
-    if (l.data) logs.value = l.data
-    if (m.data) config.value = m.data
-    if (u.data) usage.value = u.data
-    error.value =
-      s.error?.error ?? c.error?.error ?? l.error?.error ?? m.error?.error ?? u.error?.error ?? ''
-  } catch {
-    error.value = t('networkError')
+    if (disposed) return
+    if (!s.data || !c.data || !l.data || !m.data || !u.data)
+      throw new Error(
+        s.error?.error ??
+          c.error?.error ??
+          l.error?.error ??
+          m.error?.error ??
+          u.error?.error ??
+          t('networkError'),
+      )
+    status.value = s.data
+    scenes.value = c.data
+    logs.value = l.data
+    config.value = m.data
+    usage.value = u.data
+    lastUpdated.value = new Date().toISOString()
+  } catch (cause) {
+    if (!disposed) error.value = cause instanceof Error ? cause.message : t('networkError')
   } finally {
-    loading.value = false
+    if (!disposed) loading.value = false
   }
 }
 onMounted(refreshAll)
+onBeforeUnmount(() => {
+  disposed = true
+  controller?.abort()
+})
 </script>
 <template>
-  <div class="space-y-4">
-    <header class="flex items-center justify-between gap-4">
+  <div class="space-y-5">
+    <header class="flex justify-between items-start gap-4">
       <div>
         <h1 class="page-heading">{{ t('overview') }}</h1>
-        <p class="text-sm text-muted mt-1">
-          {{ status?.name ?? 'HumanEngine' }} <span class="mx-1.5 text-dimmed">/</span>
-          {{ t('uxOverviewHelp') }}
+        <p class="mt-2 text-sm text-muted">
+          {{ status?.name ?? 'HumanEngine' }} · {{ t('ovIntro') }}
         </p>
       </div>
       <UButton
+        class="shrink-0 whitespace-nowrap"
         color="neutral"
         variant="outline"
         icon="i-lucide-refresh-cw"
         :loading="loading"
+        :disabled="loading"
         @click="refreshAll"
         >{{ t('refresh') }}</UButton
       >
     </header>
-    <UAlert v-if="error" color="error" :title="error" />
-    <div
-      v-if="config && !configured"
-      class="surface flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 border-primary/25 bg-primary/5"
-    >
-      <span class="text-sm flex items-center gap-2"
-        ><UIcon name="i-lucide-route" class="size-4 text-primary" />{{ t('uxSetupRoutes') }}</span
-      ><UButton to="/models" size="sm" variant="soft" trailing-icon="i-lucide-arrow-right">{{
-        t('configureModels')
-      }}</UButton>
-    </div>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <NuxtLink
-        v-for="metric in metrics"
-        :key="metric.label"
-        :to="metric.to"
-        class="surface px-4 py-3.5 transition-colors hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-primary"
-      >
-        <div class="flex items-center justify-between gap-2 text-xs text-muted">
-          <span>{{ metric.label }}</span
-          ><UIcon :name="metric.icon" class="size-4 text-primary" />
-        </div>
-        <div class="flex items-end justify-between gap-2 mt-2">
-          <strong class="text-2xl font-semibold tabular text-highlighted">{{
-            metric.value ?? '—'
-          }}</strong
-          ><span class="text-[11px] text-muted text-right">{{ metric.detail }}</span>
-        </div>
-      </NuxtLink>
-    </div>
-    <div class="grid lg:grid-cols-3 gap-4 items-start">
-      <div class="lg:col-span-2 space-y-4">
-        <section class="surface overflow-hidden">
-          <header class="px-4 py-3 flex items-center justify-between border-b border-default">
-            <h2 class="panel-heading">{{ t('scenes') }}</h2>
-            <UButton
-              to="/scenes"
-              size="xs"
-              color="neutral"
-              variant="ghost"
-              trailing-icon="i-lucide-arrow-up-right"
-              >{{ t('uxViewAll') }}</UButton
-            >
-          </header>
-          <div v-if="!scenes.length" class="px-4 py-8 text-sm text-muted">
-            {{ loading ? t('uxLoading') : t('emptyScenes') }}
-          </div>
-          <div v-else class="divide-y divide-default">
-            <div
-              v-for="scene in scenes.slice(0, 5)"
-              :key="scene.id"
-              class="flex items-center gap-3 px-4 py-3 min-h-14"
-            >
-              <span
-                class="size-8 shrink-0 rounded-md bg-elevated grid place-items-center text-muted"
-                ><UIcon
-                  :name="scene.kind === 'group' ? 'i-lucide-users' : 'i-lucide-user-round'"
-                  class="size-4"
-              /></span>
-              <div class="flex-1 min-w-0">
-                <p
-                  class="text-sm font-medium text-highlighted line-clamp-2 break-words"
-                  :title="scene.name"
-                >
-                  {{ scene.name }}
-                </p>
-                <p class="text-xs text-muted truncate">{{ scene.adapterId }}</p>
-              </div>
-              <div class="flex flex-wrap justify-end gap-1.5">
-                <UBadge
-                  :color="scene.participationEnabled ? 'primary' : 'neutral'"
-                  variant="subtle"
-                  size="sm"
-                  >{{ t(scene.participationEnabled ? 'participation' : 'uxPaused') }}</UBadge
-                ><UBadge v-if="scene.learningEnabled" variant="soft" color="neutral" size="sm">{{
-                  t('learning')
-                }}</UBadge>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section class="surface overflow-hidden">
-          <header class="px-4 py-3 flex items-center justify-between border-b border-default">
-            <h2 class="panel-heading">{{ t('uxRecentActivity') }}</h2>
-            <UButton
-              to="/logs"
-              size="xs"
-              color="neutral"
-              variant="ghost"
-              trailing-icon="i-lucide-arrow-up-right"
-              >{{ t('logs') }}</UButton
-            >
-          </header>
-          <p v-if="!logs.length" class="px-4 py-8 text-sm text-muted">{{ t('uxNoActivity') }}</p>
+    <UAlert
+      v-if="error"
+      color="error"
+      :title="error"
+      :description="t(lastUpdated ? 'ovStale' : 'ovUnavailable')"
+    />
+    <p class="text-xs text-muted" aria-live="polite">
+      {{
+        lastUpdated
+          ? t('ovUpdated', { time: time(lastUpdated) })
+          : t(loading ? 'uxLoading' : 'ovNoSnapshot')
+      }}
+    </p>
+    <template v-if="status">
+      <section class="rounded-lg border border-default bg-default overflow-hidden">
+        <header
+          class="px-5 py-4 flex flex-wrap gap-3 justify-between items-center border-b border-default"
+        >
+          <h2 class="panel-heading">{{ t('ovRuntime') }}</h2>
+          <span class="text-xs text-muted">{{ t('uptime') }} · {{ uptime }}</span>
+        </header>
+        <dl class="grid grid-cols-2 lg:grid-cols-4">
           <div
-            v-for="log in logs.slice(0, 5)"
-            :key="log.id"
-            class="flex items-start gap-3 px-4 py-3 border-b last:border-0 border-default"
+            v-for="metric in metrics"
+            :key="metric.label"
+            class="px-5 py-4 border-b lg:border-b-0 border-r last:border-r-0 border-default"
           >
-            <UIcon
-              :name="log.level === 'error' ? 'i-lucide-circle-alert' : 'i-lucide-circle-check'"
-              :class="log.level === 'error' ? 'text-error' : 'text-muted'"
-              class="size-4 shrink-0 mt-0.5"
-            />
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium break-words">{{ log.code }}</p>
-              <p class="text-xs text-muted">{{ log.module }}</p>
-            </div>
-            <time class="text-xs tabular text-muted whitespace-nowrap">{{
-              new Date(log.at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
-            }}</time>
+            <dt class="text-xs text-muted">{{ metric.label }}</dt>
+            <dd class="mt-2 text-xl font-semibold tabular-nums">{{ metric.value }}</dd>
           </div>
-        </section>
-      </div>
-      <div class="space-y-4">
-        <section class="surface p-4">
-          <h2 class="panel-heading mb-3">{{ t('runtime') }}</h2>
-          <dl class="space-y-2.5 text-sm">
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted">{{ t('uptime') }}</dt>
-              <dd class="tabular">{{ uptime }}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted">{{ t('runningModelRequests') }}</dt>
-              <dd class="tabular">{{ status?.runningModelRequests ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted">{{ t('queuedModelRequests') }}</dt>
-              <dd class="tabular">{{ status?.queuedModelRequests ?? '—' }}</dd>
-            </div>
-            <div
-              v-for="adapter in status?.adapters ?? []"
-              :key="adapter.id"
-              class="flex justify-between gap-3"
-            >
-              <dt class="text-muted truncate" :title="adapter.id">{{ adapter.id }}</dt>
-              <dd>
-                <UBadge color="neutral" variant="subtle" size="sm">{{ adapter.status }}</UBadge>
-              </dd>
-            </div>
-            <div class="flex justify-between gap-3 border-t border-default pt-2.5">
-              <dt class="text-muted">SQLite vector</dt>
-              <dd class="text-xs tabular">{{ status?.vectorVersion ?? '—' }}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted">{{ t('version') }}</dt>
-              <dd class="text-xs tabular">{{ status?.version ?? '—' }}</dd>
-            </div>
-          </dl>
-        </section>
-        <section class="surface p-4">
-          <header class="flex justify-between items-center mb-3">
-            <h2 class="panel-heading">{{ t('roleRoutes') }}</h2>
-            <UButton
-              to="/models"
-              icon="i-lucide-arrow-up-right"
-              :aria-label="t('models')"
-              variant="ghost"
-              color="neutral"
-              size="xs"
-            />
-          </header>
-          <div
-            v-for="role in ['planner', 'thinker', 'learning', 'vision', 'embedding']"
-            :key="role"
-            class="flex justify-between items-baseline gap-3 py-2 border-b last:border-0 border-default text-xs"
-          >
-            <span class="text-muted shrink-0">{{ roleLabel(role) }}</span
-            ><span
-              class="font-medium text-right truncate"
-              :title="
-                config?.models.find(
-                  (m) => m.id === config?.routes.find((r) => r.role === role)?.orderedModelIds[0],
-                )?.displayName
+        </dl>
+        <div
+          class="border-t border-default px-5 py-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm"
+        >
+          <span class="text-muted">{{ t('ovConnections') }}</span
+          ><span
+            v-for="adapter in status.adapters"
+            :key="adapter.id"
+            class="inline-flex flex-wrap gap-2 items-center"
+            ><span class="break-all">{{ adapter.id }}</span
+            ><UBadge
+              :color="
+                adapter.status === 'connected'
+                  ? 'success'
+                  : adapter.status === 'error'
+                    ? 'error'
+                    : 'neutral'
               "
-              >{{
-                config?.models.find(
-                  (m) => m.id === config?.routes.find((r) => r.role === role)?.orderedModelIds[0],
-                )?.displayName ?? t('uxNotAssigned')
-              }}</span
-            >
-          </div>
-        </section>
-        <section class="surface p-4">
-          <h2 class="panel-heading">{{ t('usageTitle') }}</h2>
-          <div class="grid grid-cols-2 gap-3 mt-3">
+              variant="subtle"
+              >{{ adapterLabel(adapter.status) }}</UBadge
+            ></span
+          ><span v-if="!status.adapters.length" class="text-muted">{{ t('ovNoAdapters') }}</span
+          ><NuxtLink to="/plugins" class="text-primary hover:underline ml-auto">{{
+            t('pluginsTitle')
+          }}</NuxtLink>
+        </div>
+      </section>
+      <div class="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-5 items-start">
+        <section class="rounded-lg border border-default bg-default overflow-hidden">
+          <header class="px-5 py-4 border-b border-default flex items-center justify-between gap-3">
             <div>
-              <p class="text-xs text-muted">{{ t('usageCalls') }}</p>
-              <p class="text-xl tabular font-semibold mt-1">{{ usageSummary.calls }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-muted">{{ t('usageCost') }}</p>
-              <p class="text-sm tabular font-semibold mt-2">
+              <h2 class="panel-heading">{{ t('ovConversations') }}</h2>
+              <p class="text-xs text-muted mt-1">
                 {{
-                  usageSummary.priced ? '$' + usageSummary.cost.toFixed(4) : t('usageUnknownCost')
+                  t('ovSceneCounts', { enabled: status.enabledScenes, total: status.sceneCount })
                 }}
               </p>
             </div>
+            <NuxtLink to="/scenes" class="text-sm text-primary shrink-0 hover:underline">{{
+              t('uxViewAll')
+            }}</NuxtLink>
+          </header>
+          <p v-if="!scenes.length" class="p-5 text-sm text-muted">{{ t('emptyScenes') }}</p>
+          <ul class="divide-y divide-default">
+            <li v-for="scene in scenes.slice(0, 5)" :key="scene.id" class="px-5 py-4">
+              <div class="flex items-start gap-3">
+                <UIcon
+                  :name="scene.kind === 'group' ? 'i-lucide-users' : 'i-lucide-user-round'"
+                  class="size-4 shrink-0 text-muted mt-1"
+                />
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium break-words">{{ scene.name }}</p>
+                  <p class="text-xs text-muted mt-1">
+                    {{ t(scene.kind === 'group' ? 'scGroup' : 'scPrivate') }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2 pl-7 text-xs">
+                <span :class="scene.participationEnabled ? 'text-default' : 'text-muted'">{{
+                  t(scene.participationEnabled ? 'ovRepliesOn' : 'ovRepliesOff')
+                }}</span
+                ><span :class="scene.learningEnabled ? 'text-default' : 'text-muted'">{{
+                  t(scene.learningEnabled ? 'ovLearningOn' : 'ovLearningOff')
+                }}</span>
+              </div>
+            </li>
+          </ul>
+        </section>
+        <section class="rounded-lg border border-default bg-default overflow-hidden">
+          <header class="px-5 py-4 border-b border-default flex justify-between items-start gap-3">
+            <div>
+              <h2 class="panel-heading">{{ t('ovModels') }}</h2>
+              <p class="text-xs text-muted mt-1">
+                {{
+                  t('ovModelCounts', { models: status.modelCount, providers: status.providerCount })
+                }}
+              </p>
+            </div>
+            <NuxtLink to="/models" class="text-sm text-primary shrink-0 hover:underline">{{
+              t('configure')
+            }}</NuxtLink>
+          </header>
+          <div
+            class="px-5 py-3 border-b border-default text-xs leading-5"
+            :class="configured ? 'text-muted' : 'text-warning'"
+          >
+            {{ t(configured ? 'ovConfiguredHelp' : 'ovNeedsSetup') }}
           </div>
-          <p class="text-xs text-muted mt-3">
+          <dl class="divide-y divide-default">
+            <div
+              v-for="role in roles"
+              :key="role"
+              class="px-5 py-3 grid grid-cols-[100px_minmax(0,1fr)] gap-3"
+            >
+              <dt class="text-sm text-muted">{{ roleLabel(role) }}</dt>
+              <dd class="text-sm min-w-0">
+                <span class="block break-words font-medium">{{
+                  modelName(routeModels(role)[0])
+                }}</span
+                ><span v-if="routeModels(role).length" class="block mt-1 text-xs text-muted">{{
+                  t('ovPrimaryFallback', { count: Math.max(0, routeModels(role).length - 1) })
+                }}</span>
+              </dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+      <div class="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-5 items-start">
+        <section class="rounded-lg border border-default bg-default overflow-hidden">
+          <header class="px-5 py-4 border-b border-default flex justify-between items-center">
+            <h2 class="panel-heading">{{ t('ovEvents') }}</h2>
+            <NuxtLink to="/logs" class="text-sm text-primary hover:underline">{{
+              t('logs')
+            }}</NuxtLink>
+          </header>
+          <p v-if="!logs.length" class="p-5 text-sm text-muted">{{ t('uxNoActivity') }}</p>
+          <ul class="divide-y divide-default">
+            <li
+              v-for="log in logs.slice(0, 5)"
+              :key="log.id"
+              class="px-5 py-3 flex items-start gap-3"
+            >
+              <UIcon
+                :name="
+                  log.level === 'error'
+                    ? 'i-lucide-circle-alert'
+                    : log.level === 'warn'
+                      ? 'i-lucide-triangle-alert'
+                      : 'i-lucide-info'
+                "
+                :class="
+                  log.level === 'error'
+                    ? 'text-error'
+                    : log.level === 'warn'
+                      ? 'text-warning'
+                      : 'text-info'
+                "
+                class="size-4 shrink-0 mt-1"
+              />
+              <div class="min-w-0 flex-1">
+                <p class="font-mono text-xs break-all leading-5">{{ log.code }}</p>
+                <p class="text-xs text-muted break-all mt-1">
+                  {{ log.level.toUpperCase() }} · {{ log.module }}
+                </p>
+              </div>
+              <time class="text-xs text-muted tabular-nums shrink-0">{{ time(log.at) }}</time>
+            </li>
+          </ul>
+        </section>
+        <section class="rounded-lg border border-default bg-default p-5 space-y-4">
+          <div>
+            <h2 class="panel-heading">{{ t('usageTitle') }}</h2>
+            <p class="text-xs text-muted mt-2 leading-5">{{ t('ovUsageRange') }}</p>
+          </div>
+          <dl class="grid grid-cols-2 gap-4">
+            <div>
+              <dt class="text-xs text-muted">{{ t('usageCalls') }}</dt>
+              <dd class="text-xl font-semibold tabular-nums mt-2">{{ usageSummary.calls }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-muted">{{ t('usageCost') }}</dt>
+              <dd class="text-lg font-semibold tabular-nums mt-2">
+                {{
+                  usageSummary.priced ? '$' + usageSummary.cost.toFixed(4) : t('usageUnknownCost')
+                }}
+              </dd>
+            </div>
+          </dl>
+          <p class="text-xs text-muted">
             {{ t('usagePriced', { priced: usageSummary.priced, total: usageSummary.calls }) }}
           </p>
-          <details class="mt-2 text-xs text-muted">
+          <details class="text-xs text-muted">
             <summary class="cursor-pointer">{{ t('uxEstimateDetails') }}</summary>
-            <p class="mt-2 leading-relaxed">{{ t('usageEstimateHelp') }}</p>
+            <p class="mt-2 leading-6">{{ t('usageEstimateHelp') }}</p>
           </details>
         </section>
       </div>
+      <details class="rounded-lg border border-default bg-default px-5 py-4 text-sm">
+        <summary class="cursor-pointer font-medium">{{ t('ovTechnical') }}</summary>
+        <dl class="grid sm:grid-cols-2 gap-4 mt-4 text-xs">
+          <div>
+            <dt class="text-muted">{{ t('version') }}</dt>
+            <dd class="mt-1 font-mono">{{ status.version }}</dd>
+          </div>
+          <div>
+            <dt class="text-muted">{{ t('ovVectorVersion') }}</dt>
+            <dd class="mt-1 font-mono">{{ status.vectorVersion }}</dd>
+          </div>
+        </dl>
+      </details>
+      <p class="text-xs text-muted leading-5">{{ t('privacyHelp') }}</p>
+    </template>
+    <div v-else class="rounded-lg border border-default bg-default p-8 text-sm text-muted">
+      {{ t(loading ? 'uxLoading' : 'ovUnavailable') }}
     </div>
-    <p class="flex items-start gap-2 text-xs text-muted px-1">
-      <UIcon name="i-lucide-shield-check" class="size-3.5 shrink-0 mt-0.5" />{{ t('privacyHelp') }}
-    </p>
   </div>
 </template>

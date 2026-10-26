@@ -133,6 +133,8 @@ async function login() {
             route.path === '/chat'
               ? 'p-0 sm:p-0 gap-0 overflow-hidden'
               : [
+                    '/',
+                    '/logs',
                     '/models',
                     '/scenes',
                     '/memories',

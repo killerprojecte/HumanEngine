@@ -50,7 +50,7 @@ The runtime starts with the server, independently of browser visits. Enable the 
 - Sourced low-weight habits, structured shared expression preferences, manual capability probes, optional price estimates, priority scheduling, and soft participation windows.
 - Trusted local plugins: schema forms, custom pages, scoped adapter and model-protocol registration, readonly events, and guarded send tools/hooks with cancellation-safe disable.
 
-No real provider account or QQ/SnowLuma connection has been exercised. Integration tests use local HTTP/WebSocket fixtures; animated-media tests use actual encoded GIF/WebP fixtures. Browser interaction testing is blocked by this execution environment's Chromium socket restriction; production HTTP rendering/API smoke checks and Nuxt type/build checks passed. See [verification and remaining work](docs/implementation-status.md) and the [completion matrix](docs/completion-matrix.md).
+No real provider account or QQ/SnowLuma connection has been exercised. Integration tests use local HTTP/WebSocket fixtures; animated-media tests use actual encoded GIF/WebP fixtures. The dashboard has been exercised in the supported cloud browser with safe synthetic data, including real edit/reset/save interactions; see [browser verification and fixes](docs/ui-verification.md). Production HTTP smoke and Nuxt type/build checks are separate verification. See [verification and remaining work](docs/implementation-status.md) and the [completion matrix](docs/completion-matrix.md).
 
 ## Development
 

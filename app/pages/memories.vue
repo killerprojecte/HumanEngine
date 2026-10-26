@@ -280,7 +280,7 @@ onMounted(load)
                 type="number"
                 min="0"
                 max="1"
-                step="0.05"
+                step="any"
                 class="w-full"
             /></UFormField>
           </div>

@@ -105,7 +105,7 @@ async function select(id: string) {
     const response = await client.GET('/api/plugins/{id}/config', { params: { path: { id } } })
     if (response.data) {
       values.value = formValues(response.data)
-      original.value = structuredClone(values.value)
+      original.value = structuredClone(toRaw(values.value))
     } else {
       error.value = response.error?.error ?? t('networkError')
       selectedId.value = undefined
@@ -119,7 +119,7 @@ async function select(id: string) {
 }
 function reset() {
   if (!busy.value) {
-    values.value = structuredClone(original.value)
+    values.value = structuredClone(toRaw(original.value))
     error.value = ''
     saved.value = false
   }
@@ -179,7 +179,7 @@ async function save() {
       return
     }
     values.value = formValues(response.data)
-    original.value = structuredClone(values.value)
+    original.value = structuredClone(toRaw(values.value))
     saved.value = true
     await list()
   } catch {

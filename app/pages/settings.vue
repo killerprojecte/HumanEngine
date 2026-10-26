@@ -65,7 +65,12 @@ async function save() {
             ><UTextarea v-model="settings.persona" :rows="8" class="w-full" /></UFormField
           ><USwitch v-model="settings.cacheEnabled" :label="t('cacheEnabled')" /><UFormField
             :label="t('cacheHours')"
-            ><UInput v-model.number="settings.cacheHours" type="number" min="0.1" max="168"
+            ><UInput
+              v-model.number="settings.cacheHours"
+              type="number"
+              min="0.1"
+              max="168"
+              step="any"
           /></UFormField>
           <div class="grid grid-cols-2 gap-4">
             <UFormField :label="t('debounceMs')"

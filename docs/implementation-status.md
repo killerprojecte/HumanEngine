@@ -9,7 +9,7 @@ Configuration, scene participation/learning, models/routes, chat simulation/prev
 ## Verification boundaries
 
 - No live provider credentials or QQ account were supplied. Live provider behavior, SnowLuma deployment compatibility, client animation playback, and reconnect behavior against a real QQ session remain unverified.
-- Chromium launch failed with a process-singleton socket `EPERM` in this environment. No successful visual screenshot or browser interaction run is claimed. Production HTML/API HTTP smoke checks, Nuxt type checking, and production builds are separate evidence, not a substitute for visual QA.
+- The earlier shell Chromium launch failed with a process-singleton socket `EPERM`; no browser flags or permissions were changed. A later supported cloud CDP browser run reached the local production app through the normal desktop Terminal and verified synthetic UI interactions/screenshots. See [browser verification](ui-verification.md). This does not establish live provider/QQ quality or exhaustive device/accessibility coverage.
 - The initial npm attempt failed because its default `/home/agent/.npm` cache did not exist. The configured cache is in an explicitly writable workspace directory. TypeScript 7 conflicted with the contract generator's peer range; the latest compatible TypeScript 5.9.3 is pinned instead of forcing resolution.
 - The tsx CLI attempted an unavailable Unix IPC socket. Test scripts use the supported `node --import tsx` loader, which does not need that CLI IPC channel.
 - Native dependencies are validated on Linux x64 / Node 24. Other deployment architectures need their own install and smoke check.
@@ -31,8 +31,8 @@ Trusted local plugins can register namespaced model protocols and platform adapt
 
 The overview exposes actual registered adapter status, and scene inspection exposes body-free temporary topic/task state. Bot mentions and history identities are normalized for the Planner; attention decays with time, not with dashboard read frequency. These measured activity signals do not imply real feelings or a human life.
 
-Representative conversation replay, real provider/QQ compatibility, visual browser QA, and target-machine capacity testing remain external validation work, not successful checks. See operations documentation for measured synthetic vector scope, mixed latency results, and limits.
+Representative conversation replay, real provider/QQ compatibility, exhaustive browser/device/accessibility coverage, and target-machine capacity testing remain external validation work, not successful checks. See operations documentation for measured synthetic vector scope, mixed latency results, and limits.
 
 No fees are capped, no private conversations are proactively initiated, and no pending sends are restored. Missing or offline recall notifications cannot be detected retroactively without platform evidence.
 
-See [completion scope and evidence](completion-matrix.md) for implemented paths, deliberate limits, blocked visual QA, and deployment-side verification needs.
+See [completion scope and evidence](completion-matrix.md) for implemented paths, deliberate limits, observed browser QA, and deployment-side verification needs.

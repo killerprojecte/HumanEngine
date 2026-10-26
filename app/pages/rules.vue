@@ -29,7 +29,7 @@ async function load() {
     ])
     if (r.error || s.error || v.error || h.error) throw new Error('request_failed')
     rules.value = r.data ?? []
-    original.value = structuredClone(rules.value)
+    original.value = structuredClone(toRaw(rules.value))
     scenes.value = s.data ?? []
     versions.value = v.data ?? []
     habits.value = h.data ?? []
@@ -54,7 +54,7 @@ function add() {
 }
 function reset() {
   if (!busy.value) {
-    rules.value = structuredClone(original.value)
+    rules.value = structuredClone(toRaw(original.value))
     saved.value = false
     error.value = ''
   }

@@ -81,7 +81,7 @@
   "clearSession": "清空并重新开始",
   "send": "发送",
   "memePrivacy": "保留动画，谨慎共享",
-  "memePrivacyHelp": "共享素材需要人工隐私审查，请勿共享私聊截图、个人信息或群内项目资料。平台动画播放能力尚未实机验证。",
+  "memePrivacyHelp": "通用素材经可共享性判定后可跨场景使用，也可手动调整共享设置。平台动画播放能力尚未实机验证。",
   "emptyMemes": "暂无素材。开启学习并配置视觉路由后，通过 SnowLuma 接收支持的 QQ CDN 图片。",
   "frames": "帧",
   "shared": "共享",

@@ -81,7 +81,7 @@
   "clearSession": "Clear and start over",
   "send": "Send",
   "memePrivacy": "Original animation, careful sharing",
-  "memePrivacyHelp": "Shared media requires manual privacy review. Do not share private screenshots, personal information, or group-specific project material. Platform animation playback remains unverified.",
+  "memePrivacyHelp": "Generic assets can be used across scenes after a shareability assessment; you can adjust sharing manually. Platform animation playback has not been verified live.",
   "emptyMemes": "No media yet. Enable learning and a vision route, then receive supported QQ CDN images through SnowLuma.",
   "frames": "frames",
   "shared": "Shared",

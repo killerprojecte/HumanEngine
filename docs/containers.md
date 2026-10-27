@@ -10,7 +10,7 @@ Install Docker Engine with Docker Compose **2.24 or later**. Obtain `compose.yam
 
 ```sh
 cp .env.example .env
-# Edit .env locally: set a long random HUMANENGINE_ADMIN_TOKEN and provider secrets.
+# Edit .env locally: set a long random HUMANENGINE_ADMIN_TOKEN. Enter provider keys in the UI.
 # Optional: set HUMANENGINE_IMAGE=ghcr.io/killerprojecte/humanengine:sha-<full-commit>
 docker compose pull
 docker compose up -d --no-build
@@ -24,10 +24,10 @@ A new GHCR package is private by default; this project does not change its visib
 ## Configuration and storage
 
 - `.env` stays on the host, excluded from build context and Git. Compose injects it at runtime, including custom provider credential-variable names. Set `HUMANENGINE_ENV_FILE` for a different runtime env-file path; Compose interpolation still uses the shell or its `--env-file` option. Protect env files with owner-only permissions. Docker administrators can inspect container environments; use a trusted host and never share `docker compose config` output containing secrets.
-- The named `humanengine-data` volume holds `/app/data`: SQLite configuration/memory/provenance, original media, and bounded technical logs. Environment secrets are not stored in SQLite or baked into images. The application does not restore raw conversation caches, outgoing queues, or temporary simulations after restart.
+- The named `humanengine-data` volume holds `/app/data`: SQLite configuration/memory/provenance, original media, and bounded technical logs. UI-entered credentials are encrypted in SQLite; the separate `.secrets.key` installation key is persisted in the same private data volume, not inside SQLite or images. See [credential storage and backup recovery](secrets.md). The application does not restore raw conversation caches, outgoing queues, or temporary simulations after restart.
 - The image runs as the unprivileged `node` user, with a read-only root filesystem, writable data volume and temporary directory, dropped capabilities and no privilege escalation. Named volumes receive the image directory's ownership. Existing bind mounts must be writable by UID/GID 1000; do not solve a permission error by running the application as root.
 - The authenticated health check queries `/api/status` without printing its token. Unauthenticated API access remains rejected; no separate unauthenticated management endpoint is added. Compose sends SIGTERM and gives the engine 30 seconds to drain shutdown.
-- Builtin SnowLuma configuration stays in SQLite and secrets remain environment references. A WebSocket URL using `127.0.0.1` refers to the **container**, not the Docker host: configure a reachable private endpoint appropriate to your platform. No host network mode or automatic platform connection is enabled.
+- Builtin SnowLuma configuration and encrypted tokens stay in SQLite; enter tokens directly in its plugin settings. Legacy environment references are optional. A WebSocket URL using `127.0.0.1` refers to the **container**, not the Docker host: configure a reachable private endpoint appropriate to your platform. No host network mode or automatic platform connection is enabled.
 - Trusted local `.mjs` plugins are intentionally excluded from images. To use them, create a host plugin directory, enable the documented read-only `/app/plugins` mount in Compose, and list filenames in `HUMANENGINE_PLUGINS`. Untrusted plugins remain unsupported. Static custom-page assets must be included in a reviewed custom build's `public` directory.
 
 ## Update, stop, and local build

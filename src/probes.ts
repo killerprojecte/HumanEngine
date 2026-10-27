@@ -51,6 +51,7 @@ export async function probe(
     (entry) => store.recordModel(entry, config),
     undefined,
     registry,
+    store.resolveCredential,
   )
   const signal = AbortSignal.timeout(30000)
   try {

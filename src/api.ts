@@ -1,3 +1,4 @@
+import { requestIdFor, requestOperation, sanitizeError } from './diagnostics/errors.ts'
 import { modelScheduler } from './scheduler.ts'
 import { Engine } from './engine.ts'
 import { installEngineRoutes } from './admin.ts'
@@ -7,6 +8,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { Store } from './store.ts'
 import {
   ModelConfigSchema,
+  ModelConfigWriteSchema,
   SettingsSchema,
   SceneSchema,
   LogSchema,
@@ -39,6 +41,7 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
   })
   const startedAt = new Date().toISOString()
   app.use('/api/*', async (c, next) => {
+    c.header('X-Request-ID', requestIdFor(c.req.raw))
     const token = options.token ?? process.env.HUMANENGINE_ADMIN_TOKEN
     if (!token)
       return c.json(
@@ -54,9 +57,16 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
     c.header('Cache-Control', 'no-store')
     c.header('X-Content-Type-Options', 'nosniff')
   })
-  app.onError((_error, c) => {
-    store.log('error', 'api', 'request_failed')
-    return c.json({ error: 'Request failed; inspect server diagnostics' }, 503)
+  app.onError((error, c) => {
+    const requestId = requestIdFor(c.req.raw)
+    c.header('X-Request-ID', requestId)
+    store.log('error', 'api', 'api_unhandled_error', {
+      requestId,
+      operation: requestOperation(c.req.method, c.req.routePath),
+      phase: 'request',
+      ...sanitizeError(error),
+    })
+    return c.json({ error: 'Request failed; inspect server diagnostics', requestId }, 503)
   })
   app.openapi(
     createRoute({
@@ -100,14 +110,14 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
     createRoute({
       method: 'put',
       path: '/api/models',
-      request: { body: body(ModelConfigSchema) },
+      request: { body: body(ModelConfigWriteSchema) },
       responses: { 200: json(ModelConfigSchema), ...errorResponses },
     }),
     (c) => {
-      const config = c.req.valid('json')
-      store.set('models', config)
+      const { credentials, ...config } = c.req.valid('json')
+      store.saveModels(config, credentials)
       store.log('info', 'config', 'models_updated')
-      return c.json(config, 200)
+      return c.json(store.models, 200)
     },
   )
   app.openapi(

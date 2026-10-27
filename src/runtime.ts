@@ -420,6 +420,8 @@ export class Runtime {
         config,
         (entry) => store.recordModel(entry, config),
         (entry, secrets) => store.captureDiagnostic(entry, secrets),
+        undefined,
+        store.resolveCredential,
       ),
   ) {
     this.cleanupTimer = setInterval(() => {

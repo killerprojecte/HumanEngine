@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isPluginStartupErrorCode } from '../../src/plugin-errors'
 import type { components } from '~/types/api'
 type Plugin = components['schemas']['Plugin']
 type Field = {
@@ -24,6 +25,22 @@ const busy = ref(false),
   loading = ref(false),
   error = ref(''),
   saved = ref(false)
+function diagnosticMessage(code: string) {
+  return isPluginStartupErrorCode(code) ? t(`pluginStartupErrors.${code}`) : code
+}
+function diagnosticResponse(value: {
+  error: string
+  requestId?: string
+  systemCode?: string
+  httpStatus?: number
+}) {
+  return (
+    diagnosticMessage(value.error) +
+    (value.systemCode ? ` [${value.systemCode}]` : '') +
+    (value.httpStatus ? ` [HTTP ${value.httpStatus}]` : '') +
+    (value.requestId ? ` (${t('pgDiagnosticRef')}: ${value.requestId})` : '')
+  )
+}
 const selected = computed(() => plugins.value.find((plugin) => plugin.id === selectedId.value))
 function object(value: unknown): Record<string, unknown> {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -36,6 +53,10 @@ const builtinFields: Record<string, Record<string, string>> = {
     url: 'pgSnowUrl',
     accountId: 'pgSnowAccount',
     credentialEnv: 'pgSnowCredential',
+    token: 'pgSnowToken',
+    clearToken: 'pgClearSnowToken',
+    eventToken: 'pgSnowEventToken',
+    clearEventToken: 'pgClearSnowEventToken',
     eventHost: 'pgEventHost',
     eventPort: 'pgEventPort',
     eventPath: 'pgEventPath',
@@ -49,7 +70,10 @@ function builtinFieldTitle(id: string | undefined, key: string) {
 }
 function builtinFieldHelp(id: string | undefined, key: string) {
   if (id === 'typing-delay' && key === 'speedFactor') return t('pgTypingSpeedHelp')
-  if (id === 'snowluma' && key === 'eventCredentialEnv') return t('pgEventHelp')
+  if (id === 'snowluma' && key === 'eventToken') return t('pgEventHelp')
+  if (id === 'snowluma' && key === 'token') return t('pgSnowTokenHelp')
+  if (id === 'snowluma' && key === 'accountId') return t('pgSnowAccountHelp')
+  if (id === 'snowluma' && key.endsWith('Env')) return t('pgLegacyCredentialHelp')
   if (id === 'snowluma' && key === 'eventPort') return ''
   if (id === 'snowluma' && key === 'transport') return t('pgTransportHelp')
 }
@@ -81,9 +105,14 @@ const fields = computed<Field[]>(() => {
         required.includes(key) ||
         (selected.value?.id === 'snowluma' &&
           values.value.transport === 'http' &&
-          ['eventPort', 'eventCredentialEnv'].includes(key)),
+          key === 'eventPort'),
       secret: entry.secret === true,
-      group: typeof entry.group === 'string' ? entry.group : t('pluginGeneral'),
+      group:
+        selected.value?.id === 'snowluma' && key.endsWith('Env')
+          ? t('pgLegacyCredentialGroup')
+          : typeof entry.group === 'string'
+            ? entry.group
+            : t('pluginGeneral'),
       ...(Array.isArray(entry.enum)
         ? { options: entry.enum.map((value) => ({ label: String(value), value: String(value) })) }
         : {}),
@@ -93,11 +122,14 @@ const fields = computed<Field[]>(() => {
     }
   })
 })
+function httpOnlyField(key: string) {
+  return key.startsWith('event') || key === 'clearEventToken'
+}
 const visibleFields = computed(() =>
   fields.value.filter(
     (field) =>
       selected.value?.id !== 'snowluma' ||
-      !field.key.startsWith('event') ||
+      !httpOnlyField(field.key) ||
       values.value.transport === 'http',
   ),
 )
@@ -154,7 +186,8 @@ function snapshot() {
 }
 async function list() {
   const response = await client.GET('/api/plugins')
-  if (!response.data) throw new Error(response.error?.error ?? t('networkError'))
+  if (!response.data)
+    throw new Error(response.error ? diagnosticResponse(response.error) : t('networkError'))
   plugins.value = response.data
 }
 async function load(recovery = false) {
@@ -167,12 +200,13 @@ async function load(recovery = false) {
       const response = await client.GET('/api/plugins/{id}/config', {
         params: { path: { id: selectedId.value } },
       })
-      if (!response.data) throw new Error(response.error?.error ?? t('networkError'))
+      if (!response.data)
+        throw new Error(response.error ? diagnosticResponse(response.error) : t('networkError'))
       freshValues.value = formValues(response.data)
       reconciled.value = true
     }
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : t('networkError')
+    error.value = cause instanceof Error ? diagnosticMessage(cause.message) : t('networkError')
   } finally {
     loading.value = false
   }
@@ -188,12 +222,13 @@ async function select(id: string) {
   original.value = {}
   try {
     const response = await client.GET('/api/plugins/{id}/config', { params: { path: { id } } })
-    if (!response.data) throw new Error(response.error?.error ?? t('networkError'))
+    if (!response.data)
+      throw new Error(response.error ? diagnosticResponse(response.error) : t('networkError'))
     values.value = formValues(response.data)
     original.value = snapshot()
     configReady.value = true
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : t('networkError')
+    error.value = cause instanceof Error ? diagnosticMessage(cause.message) : t('networkError')
   } finally {
     loading.value = false
   }
@@ -274,7 +309,7 @@ function configBody(): Record<string, unknown> {
     // Switching back to WebSocket must not validate hidden, unfinished HTTP drafts.
     const value =
       selected.value?.id === 'snowluma' &&
-      field.key.startsWith('event') &&
+      httpOnlyField(field.key) &&
       values.value.transport !== 'http'
         ? original.value[field.key]
         : values.value[field.key]
@@ -313,7 +348,7 @@ async function save() {
   try {
     body = configBody()
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : t('networkError')
+    error.value = cause instanceof Error ? diagnosticMessage(cause.message) : t('networkError')
     return
   }
   const id = selected.value.id
@@ -342,7 +377,7 @@ async function save() {
     })
     if (!response.data) {
       if (response.response.status >= 400 && response.response.status < 500) submitted = false
-      throw new Error(response.error?.error ?? t('networkError'))
+      throw new Error(response.error ? diagnosticResponse(response.error) : t('networkError'))
     }
     submitted = false
     values.value = formValues(response.data)
@@ -352,7 +387,7 @@ async function save() {
     await list()
     metadataPending = false
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : t('networkError')
+    error.value = cause instanceof Error ? diagnosticMessage(cause.message) : t('networkError')
     if (submitted || metadataPending) {
       uncertain.value = true
       reconciled.value = false
@@ -378,8 +413,12 @@ async function lifecycle() {
       body: { enabled },
     })
     if (!response.data) {
-      if (response.response.status >= 400 && response.response.status < 500) submitted = false
-      throw new Error(response.error?.error ?? t('networkError'))
+      if (
+        (response.response.status >= 400 && response.response.status < 500) ||
+        isPluginStartupErrorCode(response.error?.error)
+      )
+        submitted = false
+      throw new Error(response.error ? diagnosticResponse(response.error) : t('networkError'))
     }
     submitted = false
     acknowledged = true
@@ -390,7 +429,7 @@ async function lifecycle() {
     confirmation.value = false
     await list()
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : t('networkError')
+    error.value = cause instanceof Error ? diagnosticMessage(cause.message) : t('networkError')
     if (submitted) {
       uncertain.value = true
       reconciled.value = false
@@ -399,7 +438,7 @@ async function lifecycle() {
     try {
       await list()
     } catch {
-      if (acknowledged) {
+      if (acknowledged || !submitted) {
         uncertain.value = true
         reconciled.value = false
       }
@@ -575,7 +614,13 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
               >{{ capabilityLabel(capability) }}</UBadge
             >
           </div>
-          <UAlert v-if="selected.error" color="error" :title="selected.error" />
+          <UAlert
+            v-if="selected.error"
+            color="error"
+            :title="
+              diagnosticResponse({ error: selected.error, requestId: selected.errorRequestId })
+            "
+          />
         </header>
         <div v-if="!configReady" class="p-5 text-sm text-muted">
           <p>{{ t(loading ? 'uxLoading' : 'pgConfigUnavailable') }}</p>
@@ -604,7 +649,11 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
               :required="field.required"
               :help="
                 field.secret
-                  ? t('pluginSecretHelp')
+                  ? t(
+                      selected.configuredSecrets[field.key]
+                        ? 'pgCredentialStored'
+                        : 'pgCredentialMissing',
+                    )
                   : field.key === 'credentialEnv'
                     ? t('pgCredentialHelp')
                     : undefined

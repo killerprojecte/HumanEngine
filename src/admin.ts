@@ -1,6 +1,8 @@
+import { requestIdFor } from './diagnostics/errors.ts'
+import { pluginStartupErrorCodes } from './plugin-errors.ts'
 import { SnowLumaConfigSchema } from './builtin-plugins.ts'
 import { TypingDelayConfigSchema } from './typing-delay.ts'
-import { PluginConfigurationError } from './plugins.ts'
+import { PluginConfigurationError, PluginStartupError } from './plugins.ts'
 import { probe } from './probes.ts'
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { readFile } from 'node:fs/promises'
@@ -17,6 +19,14 @@ const body = <T extends z.ZodType>(schema: T) => ({
   content: { 'application/json': { schema } },
 })
 const params = z.object({ id: z.string() })
+const PluginStartupFailure = z
+  .object({
+    error: z.enum(pluginStartupErrorCodes),
+    requestId: z.string().optional(),
+    systemCode: z.string().optional(),
+    httpStatus: z.number().int().optional(),
+  })
+  .openapi('PluginStartupFailure')
 const errors = {
   400: json(ErrorSchema, 'Invalid request'),
   401: json(ErrorSchema, 'Authentication required'),
@@ -76,8 +86,10 @@ const Plugin = z
     capabilities: z.array(z.string()),
     configSchema: z.record(z.string(), z.unknown()),
     builtin: z.boolean(),
+    configuredSecrets: z.record(z.string(), z.boolean()),
     enabled: z.boolean(),
     error: z.string().optional(),
+    errorRequestId: z.string().optional(),
     pages: z.array(z.object({ id: z.string(), title: z.string(), entry: z.string() })),
   })
   .openapi('Plugin')
@@ -180,6 +192,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
           dimensions: z.number().int().optional(),
           spaceId: z.string().optional(),
           error: z.string().optional(),
+          errorRequestId: z.string().optional(),
           requiresRetryConfirmation: z.boolean(),
           expectedActive: z.string().optional(),
           attemptId: z.string().optional(),
@@ -724,14 +737,33 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       method: 'put',
       path: '/api/plugins/{id}/config',
       request: { params, body: body(z.record(z.string(), z.unknown())) },
-      responses: { 200: json(z.record(z.string(), z.unknown())), ...errors },
+      responses: {
+        200: json(z.record(z.string(), z.unknown())),
+        ...errors,
+        503: json(PluginStartupFailure, 'Plugin startup failed with a sanitized diagnostic code'),
+      },
     }),
     async (c) => {
       try {
-        return c.json(await plugins.configure(c.req.valid('param').id, c.req.valid('json')), 200)
+        return c.json(
+          await plugins.configure(
+            c.req.valid('param').id,
+            c.req.valid('json'),
+            requestIdFor(c.req.raw),
+          ),
+          200,
+        )
       } catch (error) {
         if (error instanceof PluginConfigurationError)
-          return c.json({ error: 'invalid_plugin_configuration' }, 400)
+          return c.json(
+            {
+              error: 'invalid_plugin_configuration',
+              ...(error.requestId ? { requestId: error.requestId } : {}),
+            },
+            400,
+          )
+        if (error instanceof PluginStartupError)
+          return c.json({ error: error.code, requestId: error.requestId, ...error.details }, 503)
         throw error
       }
     },
@@ -741,13 +773,33 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       method: 'put',
       path: '/api/plugins/{id}/enabled',
       request: { params, body: body(z.object({ enabled: z.boolean() }).strict()) },
-      responses: { 200: json(Success), ...errors },
+      responses: {
+        200: json(Success),
+        ...errors,
+        503: json(PluginStartupFailure, 'Plugin startup failed with a sanitized diagnostic code'),
+      },
     }),
     async (c) => {
-      const id = c.req.valid('param').id
-      if (c.req.valid('json').enabled) await plugins.enable(id)
-      else await plugins.disable(id)
-      return c.json({ ok: true }, 200)
+      const id = c.req.valid('param').id,
+        requestId = requestIdFor(c.req.raw)
+      c.header('X-Request-ID', requestId)
+      try {
+        if (c.req.valid('json').enabled) await plugins.enable(id, requestId)
+        else await plugins.disable(id, true, requestId)
+        return c.json({ ok: true }, 200)
+      } catch (error) {
+        if (error instanceof PluginConfigurationError)
+          return c.json(
+            {
+              error: 'invalid_plugin_configuration',
+              ...(error.requestId ? { requestId: error.requestId } : {}),
+            },
+            400,
+          )
+        if (error instanceof PluginStartupError)
+          return c.json({ error: error.code, requestId: error.requestId, ...error.details }, 503)
+        throw error
+      }
     },
   )
   app.openapi(

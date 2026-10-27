@@ -1,4 +1,6 @@
 import Database from 'better-sqlite3'
+import { SecretStore, type SecretMutation } from './secrets/store.ts'
+import type { Provider } from './models.ts'
 import * as sqliteVec from 'sqlite-vec'
 import { mkdirSync, appendFileSync, existsSync, statSync, renameSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -15,6 +17,7 @@ import {
 
 export class Store {
   readonly db: Database.Database
+  readonly secrets: SecretStore
   readonly vectorVersion: string
   readonly logs: Log[] = []
   private diagnosticEntries: Array<{
@@ -34,6 +37,10 @@ export class Store {
     this.db = new Database(path)
     this.db.pragma('journal_mode = WAL')
     this.db.pragma('foreign_keys = ON')
+    this.secrets = new SecretStore(
+      this.db,
+      path === ':memory:' ? undefined : join(dirname(path), '.secrets.key'),
+    )
     sqliteVec.load(this.db)
     this.vectorVersion = (
       this.db.prepare('select vec_version() as version').get() as { version: string }
@@ -58,7 +65,37 @@ export class Store {
       .run(key, JSON.stringify(value))
   }
   get models(): ModelConfig {
-    return ModelConfigSchema.parse(this.get('models', { providers: [], models: [], routes: [] }))
+    const config = ModelConfigSchema.parse(
+      this.get('models', { providers: [], models: [], routes: [] }),
+    )
+    return {
+      ...config,
+      providers: config.providers.map((provider) => ({
+        ...provider,
+        credentialConfigured: this.secrets.has('model', provider.id),
+      })),
+    }
+  }
+  resolveCredential = (provider: Provider): string | undefined => {
+    return (
+      this.secrets.get('model', provider.id) ??
+      (provider.credentialEnv ? process.env[provider.credentialEnv] : undefined)
+    )
+  }
+  saveModels(config: ModelConfig, credentials: Record<string, SecretMutation> = {}) {
+    if (Object.keys(credentials).some((id) => !config.providers.some((p) => p.id === id)))
+      throw new Error('unknown_credential_provider')
+    this.db.transaction(() => {
+      for (const provider of this.models.providers)
+        if (!config.providers.some((p) => p.id === provider.id))
+          this.secrets.apply('model', provider.id, { action: 'clear' })
+      for (const [id, mutation] of Object.entries(credentials))
+        this.secrets.apply('model', id, mutation)
+      this.set('models', {
+        ...config,
+        providers: config.providers.map(({ credentialConfigured, ...provider }) => provider),
+      })
+    })()
   }
   get settings(): Settings {
     return SettingsSchema.parse(
@@ -103,11 +140,15 @@ export class Store {
     level: Log['level'],
     module: string,
     code: string,
-    context: Partial<
-      Pick<Log, 'sceneId' | 'turnId' | 'modelId' | 'providerId' | 'durationMs'>
-    > = {},
+    context: Partial<Omit<Log, 'id' | 'at' | 'level' | 'module' | 'code'>> = {},
   ) {
     const row = { id: randomUUID(), at: new Date().toISOString(), level, module, code, ...context }
+    // Emit the same structured, sanitized record to container logs.
+    try {
+      process.stdout.write(JSON.stringify(row) + '\n')
+    } catch {
+      /* Diagnostics must not stop runtime work. */
+    }
     this.logs.push(row)
     if (this.logs.length > 500) this.logs.shift()
     if (this.logDirectory) {
@@ -198,8 +239,9 @@ export class Store {
     if (!this.settings.debugModelIO) return
     const secrets = [
       ...credentialValues,
+      ...this.secrets.redactionValues(),
       ...this.models.providers
-        .map((provider) => process.env[provider.credentialEnv])
+        .map((provider) => this.resolveCredential(provider))
         .filter((value): value is string => !!value),
     ]
       .flatMap((secret) => {

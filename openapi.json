@@ -39,6 +39,22 @@
             "minLength": 1,
             "maxLength": 256
           },
+          "token": {
+            "type": "string",
+            "maxLength": 16384,
+            "secret": true
+          },
+          "clearToken": {
+            "type": "boolean"
+          },
+          "eventToken": {
+            "type": "string",
+            "maxLength": 16384,
+            "secret": true
+          },
+          "clearEventToken": {
+            "type": "boolean"
+          },
           "credentialEnv": {
             "type": "string",
             "minLength": 1,
@@ -73,13 +89,12 @@
             "minLength": 1,
             "maxLength": 128,
             "pattern": "^[A-Z][A-Z0-9_]*$",
-            "description": "Required for HTTP transport; SnowLuma httpClients HMAC signature secret environment variable."
+            "description": "Optional legacy environment reference; prefer the database-backed event signature secret."
           }
         },
         "required": [
           "url",
-          "accountId",
-          "credentialEnv"
+          "accountId"
         ],
         "additionalProperties": false
       },
@@ -178,6 +193,9 @@
         "properties": {
           "error": {
             "type": "string"
+          },
+          "requestId": {
+            "type": "string"
           }
         },
         "required": [
@@ -236,15 +254,18 @@
           },
           "credentialEnv": {
             "type": "string",
-            "pattern": "^[A-Z][A-Z0-9_]*$"
+            "pattern": "^(?:[A-Z][A-Z0-9_]*)?$",
+            "default": ""
+          },
+          "credentialConfigured": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "name",
           "protocol",
-          "baseUrl",
-          "credentialEnv"
+          "baseUrl"
         ],
         "additionalProperties": false
       },
@@ -343,6 +364,96 @@
           "timeoutMs"
         ],
         "additionalProperties": false
+      },
+      "ModelConfigWrite": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelInstance"
+            }
+          },
+          "routes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleRoute"
+            }
+          },
+          "credentials": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SecretMutation"
+            }
+          }
+        },
+        "required": [
+          "providers",
+          "models",
+          "routes"
+        ],
+        "additionalProperties": false
+      },
+      "SecretMutation": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "preserve"
+                ]
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "clear"
+                ]
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "set"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 16384
+              }
+            },
+            "required": [
+              "action",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        ]
       },
       "Settings": {
         "type": "object",
@@ -536,6 +647,62 @@
           },
           "code": {
             "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          },
+          "stackFrames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8
+          },
+          "causes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "errorType": {
+                  "type": "string"
+                },
+                "systemCode": {
+                  "type": "string"
+                },
+                "httpStatus": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 599
+                },
+                "stackFrames": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 8
+                }
+              },
+              "required": [
+                "errorType",
+                "stackFrames"
+              ]
+            },
+            "maxItems": 4
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "systemCode": {
+            "type": "string"
+          },
+          "httpStatus": {
+            "type": "number"
           },
           "sceneId": {
             "type": "string"
@@ -813,6 +980,9 @@
                 "type": "string"
               },
               "error": {
+                "type": "string"
+              },
+              "errorRequestId": {
                 "type": "string"
               },
               "requiresRetryConfirmation": {
@@ -1530,10 +1700,19 @@
           "builtin": {
             "type": "boolean"
           },
+          "configuredSecrets": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          },
           "enabled": {
             "type": "boolean"
           },
           "error": {
+            "type": "string"
+          },
+          "errorRequestId": {
             "type": "string"
           },
           "pages": {
@@ -1567,8 +1746,61 @@
           "capabilities",
           "configSchema",
           "builtin",
+          "configuredSecrets",
           "enabled",
           "pages"
+        ]
+      },
+      "PluginStartupFailure": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "secret_key_unavailable",
+              "secret_key_missing",
+              "secret_key_permissions",
+              "secret_key_invalid",
+              "secret_decryption_failed",
+              "plugin_setup_failed",
+              "plugin_disabled",
+              "invalid_plugin_configuration",
+              "credential_not_configured",
+              "event_credential_not_configured",
+              "account_mismatch",
+              "connection_failed",
+              "connection_closed",
+              "request_timeout",
+              "request_cancelled",
+              "adapter_not_connected",
+              "adapter_disposed",
+              "invalid_websocket_url",
+              "invalid_http_url",
+              "invalid_http_event_configuration",
+              "http_event_listen_failed",
+              "http_action_failed",
+              "http_request_failed",
+              "invalid_http_response",
+              "http_response_too_large",
+              "invalid_payload",
+              "invalid_identifier",
+              "unsupported",
+              "invalid_action_parameters",
+              "platform_action_failed"
+            ]
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "systemCode": {
+            "type": "string"
+          },
+          "httpStatus": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "error"
         ]
       }
     },
@@ -1672,7 +1904,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ModelConfig"
+                "$ref": "#/components/schemas/ModelConfigWrite"
               }
             }
           }
@@ -4544,11 +4776,11 @@
             }
           },
           "503": {
-            "description": "Service unavailable",
+            "description": "Plugin startup failed with a sanitized diagnostic code",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/PluginStartupFailure"
                 }
               }
             }
@@ -4627,11 +4859,11 @@
             }
           },
           "503": {
-            "description": "Service unavailable",
+            "description": "Plugin startup failed with a sanitized diagnostic code",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/PluginStartupFailure"
                 }
               }
             }

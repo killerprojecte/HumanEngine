@@ -4,7 +4,7 @@ A self-hosted, single-character conversational runtime. Nuxt UI provides a calm 
 
 ## Docker Compose
 
-Use `ghcr.io/killerprojecte/humanengine` with the included `compose.yaml`. Copy `.env.example` to `.env`, configure the local administration token/provider environment references, then run `docker compose pull && docker compose up -d --no-build`. The default published address is `http://127.0.0.1:3000`; configuration and media persist in a named volume. Private GHCR pulls may require your existing authorized registry login. See [container setup, verified tags, persistence and access](docs/containers.md).
+Use `ghcr.io/killerprojecte/humanengine` with the included `compose.yaml`. Copy `.env.example` to `.env`, configure the local administration token, then run `docker compose pull && docker compose up -d --no-build`. The default published address is `http://127.0.0.1:3000`; configuration and media persist in a named volume. Private GHCR pulls may require your existing authorized registry login. See [container setup, verified tags, persistence and access](docs/containers.md).
 
 ## Run locally
 
@@ -14,7 +14,7 @@ Requires Node.js **24.22.1 or later in the 24 LTS series**, npm, and a local fil
 npm ci
 cp .env.example .env
 # Set HUMANENGINE_ADMIN_TOKEN to a long random value in .env.
-# Set provider secrets in .env, referenced by variable name in the UI.
+# Enter provider API keys directly in the UI after startup.
 npm run dev
 ```
 
@@ -40,7 +40,7 @@ No public deployment is performed by this project. Keep the interface on loopbac
 - Independent participation and learning switches; no proactive private messaging.
 - Administration bearer authentication, no secret values in configuration responses, bounded technical events.
 
-The runtime starts with the server, independently of browser visits. Enable the SnowLuma plugin after setting its OneBot WebSocket URL, bot account ID, and server token environment variable. Incoming scenes start disabled; explicitly enable participation and/or learning in Scenes.
+The runtime starts with the server, independently of browser visits. Enable the SnowLuma plugin after setting its OneBot WebSocket URL, bot account ID, and access token directly in the UI. Incoming scenes start disabled; explicitly enable participation and/or learning in Scenes.
 
 - Planner participation decisions and Thinker tool-only sends, with batched ingress, bounded topic attention, cancellation, receipt-aware segments, and stale-answer validation.
 - Isolated Web simulation and read-only real history preview with explicit partial/unavailable coverage.
@@ -56,6 +56,6 @@ No real provider account or QQ/SnowLuma connection has been exercised. Integrati
 
 The server schemas in `src/schema.ts` and route definitions in `src/api.ts` are the contract source of truth. After API changes run `npm run contract`, then `npm run check` and `npm run build`. Do not edit generated files. See [model protocols](docs/model-protocols.md), [SnowLuma setup](docs/snowluma.md), [memory](docs/memory.md), [memes](docs/memes.md), [learned habits](docs/habits.md), and [architecture boundaries](docs/architecture.md), [trusted plugins](docs/plugins.md), and [backup/restore and benchmark operations](docs/operations.md).
 
-Secrets are server environment references. Configuration changes apply to new turns. Temporary chats, pending sends, attention, and simulation sessions are never restored after restart. Recall tombstones are durable provenance metadata, not an outgoing queue.
+Secrets entered in the UI are encrypted in SQLite with a separate automatically generated installation key; legacy environment references remain optional. See [credential storage and recovery](docs/secrets.md). Configuration changes apply to new turns. Temporary chats, pending sends, attention, and simulation sessions are never restored after restart. Recall tombstones are durable provenance metadata, not an outgoing queue.
 
 Dependency audit limitations and the tested esbuild override are documented in [SECURITY.md](SECURITY.md). The remaining upstream node-forge advisory is not represented as a clean audit.

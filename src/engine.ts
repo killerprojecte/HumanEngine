@@ -1,3 +1,4 @@
+import { sanitizeError } from './diagnostics/errors.ts'
 import { randomUUID } from 'node:crypto'
 import { EmbeddingIndex } from './embedding-index.ts'
 import {
@@ -418,8 +419,12 @@ export class Engine {
     for (const entry of local) {
       try {
         await this.plugins.loadLocal(entry)
-      } catch {
-        this.store.log('error', 'plugin', 'local_load_failed')
+      } catch (error) {
+        this.store.log('error', 'plugin', 'local_load_failed', {
+          operation: 'plugin.load',
+          phase: 'import',
+          ...sanitizeError(error),
+        })
       }
     }
     for (const plugin of this.plugins.list())
@@ -455,6 +460,7 @@ export class Engine {
       (entry) => this.store.recordModel(entry, config),
       (entry, secrets) => this.store.captureDiagnostic(entry, secrets),
       this.protocols,
+      this.store.resolveCredential,
     )
   }
   sceneChanged(scene: Scene) {

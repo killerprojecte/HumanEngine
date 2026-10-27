@@ -1,6 +1,23 @@
 import { z } from '@hono/zod-openapi'
 
 export const Id = z.string().regex(/^[a-zA-Z0-9_.:-]{1,160}$/)
+export const SecretMutationSchema = z
+  .discriminatedUnion('action', [
+    z.object({ action: z.literal('preserve') }).strict(),
+    z.object({ action: z.literal('clear') }).strict(),
+    z
+      .object({
+        action: z.literal('set'),
+        value: z
+          .string()
+          .min(1)
+          .max(16384)
+          .refine((v) => !!v.trim()),
+      })
+      .strict(),
+  ])
+  .openapi('SecretMutation')
+
 export const ProviderSchema = z
   .object({
     id: Id,
@@ -20,7 +37,11 @@ export const ProviderSchema = z
           !new URL(value).hash,
         'Use an HTTP(S) URL without credentials',
       ),
-    credentialEnv: z.string().regex(/^[A-Z][A-Z0-9_]*$/),
+    credentialEnv: z
+      .string()
+      .regex(/^(?:[A-Z][A-Z0-9_]*)?$/)
+      .default(''),
+    credentialConfigured: z.boolean().optional(),
   })
   .strict()
   .openapi('Provider')
@@ -75,6 +96,10 @@ export const ModelConfigSchema = z
         ctx.addIssue({ code: 'custom', message: 'Invalid route model IDs' })
   })
   .openapi('ModelConfig')
+// Write-only operations are separate from the serializable model configuration.
+export const ModelConfigWriteSchema = ModelConfigSchema.safeExtend({
+  credentials: z.record(Id, SecretMutationSchema).optional(),
+}).openapi('ModelConfigWrite')
 export const SettingsSchema = z
   .object({
     name: z.string().min(1).max(100),
@@ -129,6 +154,12 @@ export const SceneSchema = z
   .strict()
   .refine((s) => s.kind === 'group' || !s.proactiveEnabled, 'Private scenes cannot be proactive')
   .openapi('Scene')
+const ErrorCauseDiagnosticSchema = z.object({
+  errorType: z.string(),
+  systemCode: z.string().optional(),
+  httpStatus: z.number().int().min(100).max(599).optional(),
+  stackFrames: z.array(z.string()).max(8),
+})
 export const LogSchema = z
   .object({
     id: z.string(),
@@ -136,6 +167,14 @@ export const LogSchema = z
     level: z.enum(['info', 'warn', 'error']),
     module: z.string(),
     code: z.string(),
+    operation: z.string().optional(),
+    phase: z.string().optional(),
+    errorType: z.string().optional(),
+    stackFrames: z.array(z.string()).max(8).optional(),
+    causes: z.array(ErrorCauseDiagnosticSchema).max(4).optional(),
+    requestId: z.string().optional(),
+    systemCode: z.string().optional(),
+    httpStatus: z.number().optional(),
     sceneId: z.string().optional(),
     turnId: z.string().optional(),
     modelId: z.string().optional(),
@@ -161,7 +200,9 @@ export const StatusSchema = z
     adapters: z.array(z.object({ id: z.string(), status: z.string() })),
   })
   .openapi('Status')
-export const ErrorSchema = z.object({ error: z.string() }).openapi('Error')
+export const ErrorSchema = z
+  .object({ error: z.string(), requestId: z.string().optional() })
+  .openapi('Error')
 export type ModelConfig = z.infer<typeof ModelConfigSchema>
 export type Settings = z.infer<typeof SettingsSchema>
 export type Scene = z.infer<typeof SceneSchema>

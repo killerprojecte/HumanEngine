@@ -8,7 +8,7 @@ capability declarations are supplied by `OneBotProfile`. This release supplies
 
 ## Built-in plugin and compatibility
 
-SnowLuma is bundled in `src/builtin-plugins.ts` and appears on the Plugins page.
+SnowLuma is bundled in `src/plugins/builtin/snowluma/` and appears on the Plugins page.
 It is disabled on a fresh installation. Existing stored enable state, connection
 configuration and normalized scene/message identifiers are preserved. Configure
 and explicitly enable the plugin; disabled configuration saves do not connect.
@@ -21,9 +21,12 @@ account handshake, never an old send queue.
 1. In the account's SnowLuma network settings, enable a **Universal forward
    WebSocket server** and **array** message format. The default documented
    address is `ws://127.0.0.1:3001/`; use your actual configured address.
-2. Configure an access token in SnowLuma and place the same token in a server
-   environment variable. In HumanEngine, save only that variable's name as
-   `credentialEnv`, never a token in the URL. Use `wss:` on untrusted networks.
+2. Configure an access token in SnowLuma and enter that token in HumanEngine's
+   **SnowLuma access token** password field. It is encrypted in the database and
+   never returned by GET. No environment variable is required. Blank preserves
+   the saved credential; the explicit delete control removes it. Never put a
+   token in the URL. Use `wss:` on untrusted networks. Legacy `credentialEnv`
+   remains optional for existing deployments; a database credential takes precedence.
 3. Supply the exact QQ account ID. HumanEngine calls `get_login_info` before
    allowing actions and rejects an account mismatch. Events with a different
    `self_id` are discarded even on an established connection.
@@ -37,7 +40,7 @@ codes without token, URL, upstream wording, or message body.
 ## HTTP actions and event reporting
 
 Select `transport: "http"`, use an action base URL such as
-`http://127.0.0.1:3000/`, and retain the exact account ID plus `credentialEnv`.
+`http://127.0.0.1:3000/`, and enter the exact account ID plus the database-backed access token.
 The adapter POSTs JSON to `/{action}` with `Authorization: Bearer`, validates
 `get_login_info`, and checks the OneBot envelope rather than HTTP 200 alone.
 There is no redirect following or automatic retry of an uncertain send.
@@ -45,8 +48,9 @@ There is no redirect following or automatic retry of an uncertain send.
 HTTP also requires explicitly configuring:
 
 - `eventPort`: listener port 1–65535.
-- `eventCredentialEnv`: environment variable containing the event signature
-  secret; set the same value as SnowLuma's HTTP client `accessToken`.
+- `eventToken`: HTTP event signature password field; enter the same value as
+  SnowLuma's HTTP client `accessToken`. It is encrypted in the database. The
+  optional legacy `eventCredentialEnv` is a fallback, not a prerequisite.
 - Optional `eventHost`: `127.0.0.1` (default), `::1`, `0.0.0.0`, or `::`.
 - Optional `eventPath`: `/onebot/events` by default.
 
@@ -58,7 +62,7 @@ checks the signature, header account and body account before accepting an event.
 Use a trusted reverse proxy with HTTPS when crossing an untrusted network;
 binding all interfaces intentionally exposes a network listener. The listener
 has no TLS termination of its own and never returns OneBot quick actions.
-Only enable after setting both server environment variables and the SnowLuma
+Only enable after saving both credentials in the plugin page and configuring the SnowLuma
 reporting destination. No token is accepted in an action URL or returned to UI.
 
 The listener starts only after account verification, accepts only JSON POSTs to
@@ -178,3 +182,53 @@ and [HTTP API documentation](https://snowluma.github.io/en/docs/api) on
 2026-10-27. Local HTTP fixtures cover actions, signed ingress, account mismatch,
 recalls, history, malformed/oversized payloads, timeout/cancellation and disposal
 during startup. These are protocol fixtures, **not a live QQ deployment test**.
+
+## When enabling fails
+
+An unsuccessful enable returns a fixed diagnostic code and leaves the plugin
+stopped. The Plugins page translates that code and displays its request ID. The log
+module `plugin:snowluma` records the same ID, operation, phase and safe reason.
+The same structured record reaches container stdout, the Logs page and the
+rotated runtime file. Allowed syscall codes, HTTP status, source stack locations
+and bounded cause types are retained; raw exception messages are not. Arbitrary exceptions, upstream response bodies, URLs and
+credential values are never returned. Fix the indicated setting and explicitly
+retry; failed startup does not leave an active adapter or replay sends.
+
+- `invalid_plugin_configuration`: save the required fields with the selected
+  transport before enabling.
+- `credential_not_configured`: enter and save the access token in the plugin
+  page. No environment variable is necessary. Existing deployments may still
+  use an optional legacy environment reference inside the process/container.
+- `event_credential_not_configured`: HTTP mode also needs the signature secret
+  saved in its password field, matching SnowLuma HTTP reporting `accessToken`.
+- `connection_failed` / `http_request_failed`: verify connectivity from the
+  HumanEngine container, not merely a browser. Container `127.0.0.1` refers to
+  that container; use the appropriate configured service address for SnowLuma.
+  WebSocket mode needs the Universal forward WebSocket endpoint.
+- `account_mismatch`: compare the configured account ID with the SnowLuma
+  instance that answered the handshake; verification is not bypassed.
+- `request_timeout`: the handshake did not complete within the transport timeout.
+- `http_event_listen_failed`: the event listener port may be occupied or the
+  selected bind address unavailable. Use the container listener port and an
+  explicitly configured port mapping; do not blindly expose all interfaces.
+- `http_action_failed` / `invalid_http_response`: check the HTTP action base URL,
+  token and SnowLuma service. An HTTP success status alone is not a valid OneBot
+  account handshake.
+
+These diagnostics identify observed failure classes, not proof of a particular
+network root cause. Share only the fixed code and sanitized service logs when
+asking for help; never share tokens, signed event bodies or real chat content.
+
+## Module boundaries
+
+`src/plugins/manager.ts` owns registration, configuration transactions, enable/
+disable and cleanup; `types.ts` is the SDK, `config.ts` handles schema forms and
+redaction, and `adapters.ts` handles adapter registration. SnowLuma configuration,
+transport implementation and plugin wiring are under `src/plugins/builtin/snowluma/`.
+Typing-delay configuration, dispatch policy and plugin wiring are independent
+under `src/plugins/builtin/typing-delay/`. Root-level files are compatibility
+exports only, preserving existing SDK import paths and persistent identifiers.
+
+Database secrets use the shared `src/secrets/` service; back up the database and
+its separate installation encryption key together. Do not regenerate a missing
+key over an existing secrets database. See [credential storage](secrets.md).

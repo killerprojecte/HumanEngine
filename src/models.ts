@@ -12,6 +12,7 @@ export interface Provider {
   protocol: string
   baseUrl: string
   credentialEnv: string
+  credentialConfigured?: boolean
 }
 export interface ModelInstance {
   id: string
@@ -142,6 +143,8 @@ export class Router {
       credentialValues: readonly string[],
     ) => void = () => {},
     private readonly protocols?: ModelProtocolRegistry,
+    private readonly resolveCredential: (provider: Provider) => string | undefined = (provider) =>
+      provider.credentialEnv ? process.env[provider.credentialEnv] : undefined,
   ) {
     this.config = structuredClone(config)
   }
@@ -509,8 +512,9 @@ export class Router {
           base.hash
         )
           throw new ModelError('invalid_provider_url')
-        const credential = provider.credentialEnv ? process.env[provider.credentialEnv] : undefined
-        if (provider.credentialEnv && !credential) throw new ModelError('credential_not_configured')
+        const credential = this.resolveCredential(provider)
+        if ((provider.credentialEnv || provider.credentialConfigured) && !credential)
+          throw new ModelError('credential_not_configured')
         if (credential) secrets.push(credential)
         // The task may ignore cancellation. Race it inside the scheduler so it cannot retain a queue slot.
         const execution = Promise.resolve().then(() => {
@@ -864,8 +868,9 @@ export class Router {
       base.hash
     )
       throw new ModelError('invalid_provider_url')
-    const credential = provider.credentialEnv ? process.env[provider.credentialEnv] : undefined
-    if (provider.credentialEnv && !credential) throw new ModelError('credential_not_configured')
+    const credential = this.resolveCredential(provider)
+    if ((provider.credentialEnv || provider.credentialConfigured) && !credential)
+      throw new ModelError('credential_not_configured')
     if (credential) credentialUsed?.(credential)
     const timeoutSignal = AbortSignal.timeout(Math.max(1, Math.min(timeoutMs, 600_000)))
     const signal = parentSignal ? AbortSignal.any([parentSignal, timeoutSignal]) : timeoutSignal

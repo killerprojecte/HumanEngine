@@ -11,6 +11,8 @@ type Section = 'providers' | 'models' | 'routes' | 'usage'
 type EditorKind = 'provider' | 'model' | 'route'
 const { t, locale } = useI18n()
 const { client } = useApi()
+const credentialInput = ref(''),
+  credentialClear = ref(false)
 const config = ref<Config>({ providers: [], models: [], routes: [] })
 const loaded = ref(false),
   busy = ref(false),
@@ -70,7 +72,11 @@ const currentDraft = computed(() =>
 )
 let openingSnapshot = ''
 const dirty = computed(
-  () => editorOpen.value && JSON.stringify(currentDraft.value) !== openingSnapshot,
+  () =>
+    editorOpen.value &&
+    (JSON.stringify(currentDraft.value) !== openingSnapshot ||
+      !!credentialInput.value ||
+      credentialClear.value),
 )
 const confirmation = ref<'discard' | 'delete'>()
 const confirmationKind = ref<'discard' | 'delete'>('discard')
@@ -234,6 +240,8 @@ function addFirstProvider() {
 }
 function beginEdit(kind: EditorKind, id?: string) {
   if (operationBusy.value || !loaded.value) return
+  credentialInput.value = ''
+  credentialClear.value = false
   editorKind.value = kind
   isNew.value = !id && kind !== 'route'
   providerDraft.value = undefined
@@ -248,7 +256,7 @@ function beginEdit(kind: EditorKind, id?: string) {
             name: '',
             protocol: 'openai-chat',
             baseUrl: 'https://api.openai.com/v1',
-            credentialEnv: 'OPENAI_API_KEY',
+            credentialEnv: '',
           },
     )
   if (kind === 'model') {
@@ -280,6 +288,8 @@ function beginEdit(kind: EditorKind, id?: string) {
   editorOpen.value = true
 }
 function closeEditor() {
+  credentialInput.value = ''
+  credentialClear.value = false
   editorOpen.value = false
   confirmation.value = undefined
   pendingProbe.value = false
@@ -390,7 +400,15 @@ async function persist(deleting = false) {
       if (index < 0) next.routes.push(draft)
       else next.routes[index] = draft
     }
-    const result = await client.PUT('/api/models', { body: next })
+    const credentials =
+      !deleting && providerDraft.value && (credentialInput.value || credentialClear.value)
+        ? {
+            [providerDraft.value.id]: credentialClear.value
+              ? { action: 'clear' as const }
+              : { action: 'set' as const, value: credentialInput.value },
+          }
+        : undefined
+    const result = await client.PUT('/api/models', { body: { ...next, credentials } })
     if (!result.data) throw new Error(result.error?.error ?? t('networkError'))
     config.value = result.data
     probeResults.value = {}
@@ -871,18 +889,40 @@ watch(section, () => {
                   class="w-full"
                   required
               /></UFormField>
-              <UFormField :label="t('mcCredentialLabel')" :help="t('mcCredentialHelp')" required
-                ><UInput
+              <UFormField :label="t('mcCredentialLabel')" :help="t('mcCredentialHelp')">
+                <UInput
+                  v-model="credentialInput"
+                  type="password"
+                  autocomplete="new-password"
+                  :disabled="credentialClear"
+                  :placeholder="
+                    selectedProvider?.credentialConfigured
+                      ? t('mcCredentialPreserve')
+                      : t('mcCredentialEnter')
+                  "
+                  class="w-full"
+                />
+                <p class="mt-2 text-sm">
+                  {{
+                    selectedProvider?.credentialConfigured
+                      ? t('mcCredentialStored')
+                      : t('mcCredentialMissing')
+                  }}
+                </p>
+                <UCheckbox v-model="credentialClear" :label="t('mcCredentialClear')" class="mt-2" />
+              </UFormField>
+              <UFormField :label="t('mcCredentialEnvLabel')" :help="t('mcCredentialEnvHelp')">
+                <UInput
                   :model-value="selectedProvider?.credentialEnv"
                   @update:model-value="
                     (value: string | number) => setProviderField('credentialEnv', value)
                   "
                   placeholder="OPENAI_API_KEY"
-                  required
                   pattern="[A-Z][A-Z0-9_]*"
                   class="w-full"
                   autocomplete="off"
-              /></UFormField>
+                />
+              </UFormField>
               <details class="border-t border-default pt-4">
                 <summary class="text-sm text-muted cursor-pointer">
                   {{ t('mcInternalDetails') }}

@@ -2,8 +2,7 @@
 
 HumanEngine supports `openai-chat` (`/chat/completions`) and `openai-responses`
 (`/responses`). Provider base URLs include the API prefix, for example
-`https://api.openai.com/v1`. Providers keep only an environment variable name for
-the credential. Empty references support local endpoints without authentication.
+`https://api.openai.com/v1`. Enter provider API keys directly in the UI; they are encrypted in the database, with a separate persisted installation key. Optional legacy environment references remain supported. Empty credentials support local endpoints without authentication. See [credential storage](secrets.md).
 No browser response, diagnostic log, or thrown error contains the credential or
 an upstream error body. Redirects are rejected so authorization cannot silently
 move to another endpoint.

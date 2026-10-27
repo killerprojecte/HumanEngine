@@ -107,6 +107,7 @@ test('API authentication, validated configuration, independent model IDs, SQLite
     store = new Store(join(dir, 'test.sqlite'))
     assert.deepEqual(store.models, {
       ...config,
+      providers: config.providers.map((provider) => ({ ...provider, credentialConfigured: false })),
       models: config.models.map((model) => ({ ...model, embeddingBatchSize: 4 })),
     })
     assert.equal(store.recalled('group-a', 'message-a'), true)

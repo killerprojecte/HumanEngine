@@ -2,7 +2,7 @@ import Database from 'better-sqlite3'
 import { constants } from 'node:fs'
 import { copyFile, mkdir, readFile, writeFile, lstat, rm, chmod } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 export interface BackupManifest {
@@ -61,6 +61,10 @@ export async function backup(options: {
     snapshot = new Database(databasePath, { readonly: true })
     checkIntegrity(snapshot)
     const media = mediaFiles(snapshot)
+    const hasSecrets =
+      !!snapshot
+        .prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='secrets'")
+        .get() && !!snapshot.prepare('SELECT 1 FROM secrets LIMIT 1').get()
     snapshot.close()
     snapshot = undefined
     await mkdir(join(destination, 'media'), { mode: 0o700 })
@@ -76,6 +80,16 @@ export async function backup(options: {
       sha256: digest(dbBytes),
       bytes: dbBytes.length,
     })
+    if (hasSecrets) {
+      const keyPath = join(dirname(options.database), '.secrets.key')
+      const keyStat = await lstat(keyPath)
+      if (!keyStat.isFile() || (keyStat.mode & 0o077) !== 0)
+        throw new Error('secret_key_permissions')
+      const key = await regularFile(keyPath)
+      if (key.length !== 32) throw new Error('secret_key_invalid')
+      await writeFile(join(destination, '.secrets.key'), key, { flag: 'wx', mode: 0o600 })
+      manifest.files.push({ path: '.secrets.key', sha256: digest(key), bytes: key.length })
+    }
     for (const path of media) {
       const original = join(options.mediaRoot, path.slice('media/'.length))
       const bytes = await regularFile(original)

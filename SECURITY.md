@@ -1,6 +1,6 @@
 # Security notes
 
-Keep management on loopback by default. Use your own long administration token and server-side provider credential environment variables. Do not deploy development servers publicly. Trusted local plugins have host privileges; this is not a sandbox for untrusted code.
+Keep management on loopback by default. Use your own long administration token and write-only provider keys stored with authenticated encryption (see [credential storage](docs/secrets.md)). Do not deploy development servers publicly. Trusted local plugins have host privileges; this is not a sandbox for untrusted code.
 
 ## Dependency audit, 2026-10-25
 

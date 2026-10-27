@@ -124,7 +124,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["ModelConfig"];
+                    "application/json": components["schemas"]["ModelConfigWrite"];
                 };
             };
             responses: {
@@ -2842,13 +2842,13 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
-                /** @description Service unavailable */
+                /** @description Plugin startup failed with a sanitized diagnostic code */
                 503: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["Error"];
+                        "application/json": components["schemas"]["PluginStartupFailure"];
                     };
                 };
             };
@@ -2914,13 +2914,13 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
-                /** @description Service unavailable */
+                /** @description Plugin startup failed with a sanitized diagnostic code */
                 503: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["Error"];
+                        "application/json": components["schemas"]["PluginStartupFailure"];
                     };
                 };
             };
@@ -3016,7 +3016,11 @@ export interface components {
             transport: "websocket" | "http";
             url: string;
             accountId: string;
-            credentialEnv: string;
+            token?: string;
+            clearToken?: boolean;
+            eventToken?: string;
+            clearEventToken?: boolean;
+            credentialEnv?: string;
             /**
              * @default 127.0.0.1
              * @enum {string}
@@ -3026,7 +3030,7 @@ export interface components {
             eventPort?: number;
             /** @default /onebot/events */
             eventPath: string;
-            /** @description Required for HTTP transport; SnowLuma httpClients HMAC signature secret environment variable. */
+            /** @description Optional legacy environment reference; prefer the database-backed event signature secret. */
             eventCredentialEnv?: string;
         };
         TypingDelayPluginConfig: {
@@ -3054,6 +3058,7 @@ export interface components {
         };
         Error: {
             error: string;
+            requestId?: string;
         };
         ModelConfig: {
             providers: components["schemas"]["Provider"][];
@@ -3066,7 +3071,9 @@ export interface components {
             protocol: string;
             /** Format: uri */
             baseUrl: string;
+            /** @default  */
             credentialEnv: string;
+            credentialConfigured?: boolean;
         };
         ModelInstance: {
             id: string;
@@ -3085,6 +3092,25 @@ export interface components {
             role: "planner" | "thinker" | "learning" | "vision" | "embedding";
             orderedModelIds: string[];
             timeoutMs: number;
+        };
+        ModelConfigWrite: {
+            providers: components["schemas"]["Provider"][];
+            models: components["schemas"]["ModelInstance"][];
+            routes: components["schemas"]["RoleRoute"][];
+            credentials?: {
+                [key: string]: components["schemas"]["SecretMutation"];
+            };
+        };
+        SecretMutation: {
+            /** @enum {string} */
+            action: "preserve";
+        } | {
+            /** @enum {string} */
+            action: "clear";
+        } | {
+            /** @enum {string} */
+            action: "set";
+            value: string;
         };
         Settings: {
             name: string;
@@ -3135,6 +3161,19 @@ export interface components {
             level: "info" | "warn" | "error";
             module: string;
             code: string;
+            operation?: string;
+            phase?: string;
+            errorType?: string;
+            stackFrames?: string[];
+            causes?: {
+                errorType: string;
+                systemCode?: string;
+                httpStatus?: number;
+                stackFrames: string[];
+            }[];
+            requestId?: string;
+            systemCode?: string;
+            httpStatus?: number;
             sceneId?: string;
             turnId?: string;
             modelId?: string;
@@ -3207,6 +3246,7 @@ export interface components {
                 dimensions?: number;
                 spaceId?: string;
                 error?: string;
+                errorRequestId?: string;
                 requiresRetryConfirmation: boolean;
                 expectedActive?: string;
                 attemptId?: string;
@@ -3385,13 +3425,24 @@ export interface components {
                 [key: string]: unknown;
             };
             builtin: boolean;
+            configuredSecrets: {
+                [key: string]: boolean;
+            };
             enabled: boolean;
             error?: string;
+            errorRequestId?: string;
             pages: {
                 id: string;
                 title: string;
                 entry: string;
             }[];
+        };
+        PluginStartupFailure: {
+            /** @enum {string} */
+            error: "secret_key_unavailable" | "secret_key_missing" | "secret_key_permissions" | "secret_key_invalid" | "secret_decryption_failed" | "plugin_setup_failed" | "plugin_disabled" | "invalid_plugin_configuration" | "credential_not_configured" | "event_credential_not_configured" | "account_mismatch" | "connection_failed" | "connection_closed" | "request_timeout" | "request_cancelled" | "adapter_not_connected" | "adapter_disposed" | "invalid_websocket_url" | "invalid_http_url" | "invalid_http_event_configuration" | "http_event_listen_failed" | "http_action_failed" | "http_request_failed" | "invalid_http_response" | "http_response_too_large" | "invalid_payload" | "invalid_identifier" | "unsupported" | "invalid_action_parameters" | "platform_action_failed";
+            requestId?: string;
+            systemCode?: string;
+            httpStatus?: number;
         };
     };
     responses: never;

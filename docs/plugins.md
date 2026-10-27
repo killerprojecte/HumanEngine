@@ -45,7 +45,7 @@ Put an ECMAScript module in `plugins/`, export the plugin object as default, and
 
 `plugins/example.mjs` and `public/plugins/example/status.html` demonstrate both schema forms and a custom administration page. Add public page assets before the production build. Custom pages use `/api/plugins/{id}/actions/{action}` with the normal administration bearer token; neither a page nor API responses should receive provider keys or database paths.
 
-Supported configuration vocabulary: objects, strings, booleans, numbers/integers, arrays, required fields, defaults, descriptions, groups, enums, basic length/range constraints, string patterns, and recursively redacted `secret` fields. Use environment-variable references for provider/platform credentials. Blank redacted secrets preserve existing values; explicitly submit a replacement to rotate one.
+Supported configuration vocabulary: objects, strings, booleans, numbers/integers, arrays, required fields, defaults, descriptions, groups, enums, basic length/range constraints, string patterns, and recursively redacted `secret` fields. Bundled provider/platform forms support encrypted database credentials. Optional environment-variable references remain for legacy compatibility. Blank redacted secrets preserve existing values; explicitly submit a replacement to rotate one.
 
 Hooks run in declared priority order and receive linked turn/plugin cancellation. Cancel is terminal. Disable removes new registrations, aborts pending work, disposes resources, and prevents late asynchronous setup from re-enabling a plugin. All platform sends remain core-owned; plugins can shape/cancel them via send hooks or request a send through an effect-declared tool invocation. Neither route exposes a raw adapter-send bypass.
 
@@ -114,8 +114,8 @@ JavaScript, remote provider billing, or arbitrary host side effects.
 
 `GET /api/model-protocols` exposes only IDs, labels, and supported operations.
 Provider forms retain configured but currently unavailable custom protocol IDs;
-they do not silently switch to OpenAI. Credentials remain environment references
-in browser configuration and are resolved only on the server. Never put keys in
+they do not silently switch to OpenAI. Credentials are resolved only on the server from encrypted database storage,
+with optional legacy environment references. Browser responses expose only configured status. Never put keys in
 labels, continuation visible output, exceptions, URLs, or custom-page responses.
 
 ## Platform adapter extensions
@@ -241,3 +241,10 @@ These contracts do not grant tools permission to write source code, fixed
 prompts, or global person memory.
 
 Use `senderId: 'bot'` for own historical messages and `userId: 'bot'` in authenticated bot mentions. Live `receive` still requires an explicit `isBot` boolean. This reserved identity avoids learning from the bot itself or mistaking another member's mention for an address to the bot.
+
+Plugin startup failures now log structured operation/phase, a request ID shared
+with the API, safe failure codes and bounded sanitized stack/cause evidence.
+Unknown exceptions remain distinguishable by type/source location without
+printing arbitrary exception messages. Inspect the Logs page using the request
+ID; the same records are emitted to container stdout. Failed setup always
+cleans up and stays disabled until explicitly retried.

@@ -10,3 +10,6 @@ coverage/
 
 logs/
 backups/
+
+# Local installation encryption key
+.secrets.key

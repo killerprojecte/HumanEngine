@@ -25,7 +25,9 @@ export async function restore(options: {
     if (
       !file ||
       typeof file.path !== 'string' ||
-      !/^(humanengine\.sqlite|media\/[a-f0-9]{64}\.(jpeg|png|gif|webp))$/.test(file.path) ||
+      !/^(humanengine\.sqlite|\.secrets\.key|media\/[a-f0-9]{64}\.(jpeg|png|gif|webp))$/.test(
+        file.path,
+      ) ||
       paths.has(file.path) ||
       !/^[a-f0-9]{64}$/.test(file.sha256) ||
       !Number.isSafeInteger(file.bytes) ||
@@ -52,7 +54,20 @@ export async function restore(options: {
     const database = join(destination, 'humanengine.sqlite')
     store = new Store(database)
     checkIntegrity(store.db)
-    const expected = ['humanengine.sqlite', ...mediaFiles(store.db)].sort()
+    const hasSecrets = !!store.db.prepare('SELECT 1 FROM secrets LIMIT 1').get()
+    if (hasSecrets && !paths.has('.secrets.key')) throw new Error('secret_key_missing')
+    if (hasSecrets) {
+      const rows = store.db.prepare('SELECT namespace,name FROM secrets').all() as Array<{
+        namespace: string
+        name: string
+      }>
+      for (const row of rows) store.secrets.get(row.namespace, row.name)
+    }
+    const expected = [
+      'humanengine.sqlite',
+      ...(hasSecrets ? ['.secrets.key'] : []),
+      ...mediaFiles(store.db),
+    ].sort()
     if (JSON.stringify(expected) !== JSON.stringify([...paths].sort()))
       throw new Error('backup_media_manifest_mismatch')
     const vectorVersion = store.vectorVersion

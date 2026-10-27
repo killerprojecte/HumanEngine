@@ -43,7 +43,6 @@ test('bundled plugins default disabled, validate config through API and persist 
       { ...config, url: 'http://127.0.0.1:1' },
       { ...config, url: 'ws://127.0.0.1:1/?access_token=invalid' },
       { ...config, credentialEnv: 'invalid-name' },
-      { ...config, transport: 'http', url: 'http://127.0.0.1:1', eventPort: 8080 },
       {
         ...config,
         transport: 'http',

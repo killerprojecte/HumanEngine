@@ -833,5 +833,22 @@
   "pgCredentialMissing": "尚未保存数据库密钥，请填写后启用；也可沿用旧环境变量引用。",
   "pgLegacyCredentialGroup": "可选：兼容旧环境变量",
   "pgLegacyCredentialHelp": "仅用于兼容旧配置。使用数据库密钥时可留空；数据库中已保存的值优先。",
-  "pgDiagnosticRef": "诊断请求编号"
+  "pgDiagnosticRef": "诊断请求编号",
+  "pgValidation": {
+    "required": "此项必填。",
+    "invalid_type": "请使用此字段要求的数据类型。",
+    "invalid_value": "请检查此字段允许的格式或选项。",
+    "invalid_url": "请输入完整且有效的接口 URL。",
+    "websocket_scheme_required": "WebSocket 地址必须以 ws:// 或 wss:// 开头，例如 ws://127.0.0.1:3001。仅填写 IP:端口不完整。",
+    "http_scheme_required": "HTTP 地址必须以 http:// 或 https:// 开头，例如 http://127.0.0.1:3001。",
+    "url_credentials_forbidden": "URL 中不能包含用户名或密码，请使用独立的令牌字段。",
+    "url_query_forbidden": "请移除 URL 查询参数，令牌应填写到独立字段。",
+    "url_fragment_forbidden": "请移除 URL 的片段部分（#...）。",
+    "invalid_event_path": "路径须以 / 开头，仅包含字母、数字、/、_ 或 -，不能包含 //。",
+    "invalid_port": "端口必须为 1 至 65535 的整数。",
+    "conflicting_credential_change": "填写新密钥和清除旧密钥不能同时选择。"
+  },
+  "pgValidationSummary": "请先修正标红字段，再保存设置。",
+  "pgSnowWsUrlHelp": "填写完整的 Universal 正向 WebSocket 地址，包含 ws:// 或 wss://，不能只填写 IP:端口。",
+  "pgSnowHttpUrlHelp": "填写完整的 HTTP API 地址，包含 http:// 或 https://。"
 }

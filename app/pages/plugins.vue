@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+  getSnowLumaIssues,
+  isSnowLumaIssue,
+  type SnowLumaIssue,
+} from '../../src/plugins/builtin/snowluma/validation'
 import { isPluginStartupErrorCode } from '../../src/plugin-errors'
 import type { components } from '~/types/api'
 type Plugin = components['schemas']['Plugin']
@@ -25,6 +30,35 @@ const busy = ref(false),
   loading = ref(false),
   error = ref(''),
   saved = ref(false)
+const validationShown = ref(false)
+const serverIssues = ref<SnowLumaIssue[]>([])
+function snowValidationValues() {
+  const result: Record<string, unknown> = { ...values.value }
+  for (const field of fields.value) {
+    if (result[field.key] === '') delete result[field.key]
+    else if (
+      result[field.key] !== undefined &&
+      (field.type === 'integer' || field.type === 'number')
+    )
+      result[field.key] = Number(result[field.key])
+  }
+  return result
+}
+const fieldIssues = computed(() => {
+  if (selected.value?.id !== 'snowluma') return []
+  return [
+    ...(validationShown.value ? getSnowLumaIssues(snowValidationValues()) : []),
+    ...serverIssues.value,
+  ]
+})
+function fieldError(key: string) {
+  const issue = fieldIssues.value.find((entry) => entry.field === key)
+  return issue ? t(`pgValidation.${issue.reason}`) : undefined
+}
+function readValidationIssues(response: unknown) {
+  const issues = object(response).issues
+  return Array.isArray(issues) ? issues.filter(isSnowLumaIssue) : []
+}
 function diagnosticMessage(code: string) {
   return isPluginStartupErrorCode(code) ? t(`pluginStartupErrors.${code}`) : code
 }
@@ -70,6 +104,8 @@ function builtinFieldTitle(id: string | undefined, key: string) {
 }
 function builtinFieldHelp(id: string | undefined, key: string) {
   if (id === 'typing-delay' && key === 'speedFactor') return t('pgTypingSpeedHelp')
+  if (id === 'snowluma' && key === 'url')
+    return t(values.value.transport === 'http' ? 'pgSnowHttpUrlHelp' : 'pgSnowWsUrlHelp')
   if (id === 'snowluma' && key === 'eventToken') return t('pgEventHelp')
   if (id === 'snowluma' && key === 'token') return t('pgSnowTokenHelp')
   if (id === 'snowluma' && key === 'accountId') return t('pgSnowAccountHelp')
@@ -147,6 +183,8 @@ const safePages = computed(() =>
   ),
 )
 function setValue(key: string, value: unknown) {
+  serverIssues.value = serverIssues.value.filter((issue) => issue.field !== key)
+  if (key === 'transport') serverIssues.value = []
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
     values.value[key] = value
 }
@@ -213,6 +251,8 @@ async function load(recovery = false) {
 }
 async function select(id: string) {
   if (blocked.value) return
+  validationShown.value = false
+  serverIssues.value = []
   loading.value = true
   error.value = ''
   saved.value = false
@@ -280,6 +320,8 @@ function cancelConfirmation() {
 }
 function reset() {
   if (busy.value || loading.value) return
+  validationShown.value = false
+  serverIssues.value = []
   if (uncertain.value && !reconciled.value && !pendingNavigation) return
   if (pendingNavigation) {
     confirmation.value = false
@@ -306,13 +348,15 @@ function reset() {
 function configBody(): Record<string, unknown> {
   const body: Record<string, unknown> = {}
   for (const field of fields.value) {
-    // Switching back to WebSocket must not validate hidden, unfinished HTTP drafts.
-    const value =
+    // Hidden HTTP settings are not submitted or validated in WebSocket mode.
+    // Stored event secrets remain unchanged because omitted secrets mean preserve.
+    if (
       selected.value?.id === 'snowluma' &&
       httpOnlyField(field.key) &&
       values.value.transport !== 'http'
-        ? original.value[field.key]
-        : values.value[field.key]
+    )
+      continue
+    const value = values.value[field.key]
     if (value === '' || value === undefined) {
       if (field.secret) continue
       if (field.required) throw new Error(t('pluginRequired', { field: field.title }))
@@ -344,6 +388,12 @@ function configBody(): Record<string, unknown> {
 }
 async function save() {
   if (blocked.value || !selected.value || !configReady.value || !dirty.value) return
+  serverIssues.value = []
+  validationShown.value = true
+  if (fieldIssues.value.length) {
+    error.value = t('pgValidationSummary')
+    return
+  }
   let body: Record<string, unknown>
   try {
     body = configBody()
@@ -376,10 +426,17 @@ async function save() {
       body: merged,
     })
     if (!response.data) {
+      serverIssues.value = readValidationIssues(response.error)
+      if (serverIssues.value.length) {
+        submitted = false
+        throw new Error(t('pgValidationSummary'))
+      }
       if (response.response.status >= 400 && response.response.status < 500) submitted = false
       throw new Error(response.error ? diagnosticResponse(response.error) : t('networkError'))
     }
     submitted = false
+    validationShown.value = false
+    serverIssues.value = []
     values.value = formValues(response.data)
     original.value = snapshot()
     saved.value = true
@@ -413,6 +470,12 @@ async function lifecycle() {
       body: { enabled },
     })
     if (!response.data) {
+      serverIssues.value = readValidationIssues(response.error)
+      if (serverIssues.value.length) {
+        submitted = false
+        validationShown.value = true
+        throw new Error(t('pgValidationSummary'))
+      }
       if (
         (response.response.status >= 400 && response.response.status < 500) ||
         isPluginStartupErrorCode(response.error?.error)
@@ -647,6 +710,7 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
               :label="field.title"
               :description="field.description"
               :required="field.required"
+              :error="fieldError(field.key)"
               :help="
                 field.secret
                   ? t(

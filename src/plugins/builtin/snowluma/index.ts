@@ -1,6 +1,7 @@
+import { getSnowLumaIssues, snowLumaFields, type SnowLumaIssue } from './validation.ts'
 import { OneBotAdapter, OneBotError, type OneBotCallbacks } from './transport.ts'
 import { SnowLumaConfigSchema, snowLumaConfigSchema } from './config.ts'
-import { PluginStartupError } from '../../manager.ts'
+import { PluginConfigurationError, PluginStartupError } from '../../manager.ts'
 import type { LocalPlugin } from '../../types.ts'
 import type { Runtime } from '../../../runtime.ts'
 import type { Store } from '../../../store.ts'
@@ -49,6 +50,16 @@ export function snowLumaPlugin(
     }),
     prepareConfiguration: (input) => {
       const config = { ...input }
+      const http = config.transport === 'http'
+      if (!http) {
+        const previous = store.get<Record<string, unknown>>('plugin:snowluma', {})
+        for (const key of ['eventHost', 'eventPort', 'eventPath', 'eventCredentialEnv']) {
+          if (key in previous) config[key] = previous[key]
+          else delete config[key]
+        }
+        delete config.eventToken
+        delete config.clearEventToken
+      }
       for (const [key, clear, legacy] of [
         ['token', 'clearToken', 'credentialEnv'],
         ['eventToken', 'clearEventToken', 'eventCredentialEnv'],
@@ -72,7 +83,28 @@ export function snowLumaPlugin(
       return config
     },
     validateConfiguration: (value) => {
-      SnowLumaConfigSchema.parse(value)
+      const issues = getSnowLumaIssues(value)
+      const parsed = SnowLumaConfigSchema.safeParse(value)
+      if (!parsed.success)
+        for (const issue of parsed.error.issues) {
+          const name = issue.path[0]
+          const field =
+            typeof name === 'string' && snowLumaFields.includes(name as SnowLumaIssue['field'])
+              ? (name as SnowLumaIssue['field'])
+              : 'configuration'
+          if (!issues.some((item) => item.field === field))
+            issues.push({
+              field,
+              reason:
+                issue.code === 'invalid_type'
+                  ? value[field] === undefined
+                    ? 'required'
+                    : 'invalid_type'
+                  : 'invalid_value',
+            })
+        }
+      if (issues.length) throw new PluginConfigurationError(issues)
+      return parsed.success ? parsed.data : undefined
     },
     setup: async (context) => {
       const config = SnowLumaConfigSchema.parse(context.config)

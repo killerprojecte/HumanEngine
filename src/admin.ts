@@ -1,3 +1,8 @@
+import {
+  snowLumaFields,
+  snowLumaReasons,
+  isSnowLumaIssue,
+} from './plugins/builtin/snowluma/validation.ts'
 import { requestIdFor } from './diagnostics/errors.ts'
 import { pluginStartupErrorCodes } from './plugin-errors.ts'
 import { SnowLumaConfigSchema } from './builtin-plugins.ts'
@@ -27,6 +32,15 @@ const PluginStartupFailure = z
     httpStatus: z.number().int().optional(),
   })
   .openapi('PluginStartupFailure')
+const PluginConfigurationFailure = z
+  .object({
+    error: z.literal('invalid_plugin_configuration'),
+    requestId: z.string(),
+    issues: z
+      .array(z.object({ field: z.enum(snowLumaFields), reason: z.enum(snowLumaReasons) }).strict())
+      .max(32),
+  })
+  .openapi('PluginConfigurationFailure')
 const errors = {
   400: json(ErrorSchema, 'Invalid request'),
   401: json(ErrorSchema, 'Authentication required'),
@@ -740,6 +754,10 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       responses: {
         200: json(z.record(z.string(), z.unknown())),
         ...errors,
+        400: json(
+          PluginConfigurationFailure,
+          'Invalid plugin configuration with safe field diagnostics',
+        ),
         503: json(PluginStartupFailure, 'Plugin startup failed with a sanitized diagnostic code'),
       },
     }),
@@ -757,8 +775,12 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
         if (error instanceof PluginConfigurationError)
           return c.json(
             {
-              error: 'invalid_plugin_configuration',
-              ...(error.requestId ? { requestId: error.requestId } : {}),
+              error: 'invalid_plugin_configuration' as const,
+              requestId: error.requestId ?? requestIdFor(c.req.raw),
+              issues: error.issues
+                .filter(isSnowLumaIssue)
+                .slice(0, 32)
+                .map(({ field, reason }) => ({ field, reason })),
             },
             400,
           )
@@ -776,6 +798,10 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       responses: {
         200: json(Success),
         ...errors,
+        400: json(
+          PluginConfigurationFailure,
+          'Invalid plugin configuration with safe field diagnostics',
+        ),
         503: json(PluginStartupFailure, 'Plugin startup failed with a sanitized diagnostic code'),
       },
     }),
@@ -791,8 +817,12 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
         if (error instanceof PluginConfigurationError)
           return c.json(
             {
-              error: 'invalid_plugin_configuration',
-              ...(error.requestId ? { requestId: error.requestId } : {}),
+              error: 'invalid_plugin_configuration' as const,
+              requestId: error.requestId ?? requestIdFor(c.req.raw),
+              issues: error.issues
+                .filter(isSnowLumaIssue)
+                .slice(0, 32)
+                .map(({ field, reason }) => ({ field, reason })),
             },
             400,
           )

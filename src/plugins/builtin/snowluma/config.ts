@@ -1,10 +1,11 @@
+import { snowLumaValidationInput } from './validation.ts'
 import { z } from '@hono/zod-openapi'
 const environmentName = z
   .string()
   .min(1)
   .max(128)
   .regex(/^[A-Z][A-Z0-9_]*$/)
-export const SnowLumaConfigSchema = z
+const RawSnowLumaConfigSchema = z
   .object({
     transport: z
       .enum(['websocket', 'http'])
@@ -49,8 +50,18 @@ export const SnowLumaConfigSchema = z
   })
   .strict()
   .superRefine((value, context) => {
-    if ((value.clearToken && value.token) || (value.clearEventToken && value.eventToken))
-      context.addIssue({ code: 'custom', message: 'conflicting_credential_change' })
+    if (value.clearToken && value.token)
+      context.addIssue({
+        code: 'custom',
+        message: 'conflicting_credential_change',
+        path: ['token'],
+      })
+    if (value.clearEventToken && value.eventToken)
+      context.addIssue({
+        code: 'custom',
+        message: 'conflicting_credential_change',
+        path: ['eventToken'],
+      })
     let url: URL
     try {
       url = new URL(value.url)
@@ -64,6 +75,17 @@ export const SnowLumaConfigSchema = z
     if (value.eventPath?.includes('//'))
       context.addIssue({ code: 'custom', message: 'invalid_event_path', path: ['eventPath'] })
     if (value.transport === 'http' && !value.eventPort)
-      context.addIssue({ code: 'custom', message: 'http_event_configuration_required' })
+      context.addIssue({
+        code: 'custom',
+        message: 'http_event_configuration_required',
+        path: ['eventPort'],
+      })
   })
-export const snowLumaConfigSchema = z.toJSONSchema(SnowLumaConfigSchema, { io: 'input' })
+export const SnowLumaConfigSchema = z.preprocess(
+  (value) =>
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? snowLumaValidationInput(value as Record<string, unknown>)
+      : value,
+  RawSnowLumaConfigSchema,
+)
+export const snowLumaConfigSchema = z.toJSONSchema(RawSnowLumaConfigSchema, { io: 'input' })

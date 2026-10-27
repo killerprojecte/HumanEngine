@@ -46,6 +46,6 @@ export interface LocalPlugin {
   manifest: PluginManifest
   prepareConfiguration?(config: Record<string, unknown>): Record<string, unknown>
   configuredSecrets?(): Record<string, boolean>
-  validateConfiguration?(config: Record<string, unknown>): void
+  validateConfiguration?(config: Record<string, unknown>): void | Record<string, unknown>
   setup(context: PluginContext): void | Promise<void>
 }

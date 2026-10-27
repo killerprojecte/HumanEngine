@@ -232,3 +232,17 @@ exports only, preserving existing SDK import paths and persistent identifiers.
 Database secrets use the shared `src/secrets/` service; back up the database and
 its separate installation encryption key together. Do not regenerate a missing
 key over an existing secrets database. See [credential storage](secrets.md).
+
+## Configuration field errors
+
+Enter the complete endpoint, including its explicit protocol: `ws://` or `wss://`
+for WebSocket, `http://` or `https://` for HTTP. A bare host and port is not an
+endpoint URL; the application does not guess the transport or silently rewrite it.
+Embedded credentials, URL query parameters and fragments are rejected.
+
+The form marks the affected field before saving. API validation failures retain
+`invalid_plugin_configuration` for compatibility and add a bounded `issues` array
+of fixed `field`/`reason` identifiers plus `requestId`; submitted values and unknown
+property names are never reflected. HTTP event fields, including the listener
+port, are validated only in HTTP mode. A WebSocket save ignores hidden HTTP changes
+and preserves previously saved HTTP settings and its signature secret.

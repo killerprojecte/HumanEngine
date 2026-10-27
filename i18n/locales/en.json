@@ -833,5 +833,22 @@
   "pgCredentialMissing": "No database credential is saved. Enter a value before enabling; a legacy environment reference may also be used.",
   "pgLegacyCredentialGroup": "Optional legacy environment references",
   "pgLegacyCredentialHelp": "Compatibility only. Leave blank when using a database-backed credential; a saved database value takes precedence.",
-  "pgDiagnosticRef": "Diagnostic request ID"
+  "pgDiagnosticRef": "Diagnostic request ID",
+  "pgValidation": {
+    "required": "This field is required.",
+    "invalid_type": "Use the expected value type for this field.",
+    "invalid_value": "Check this field’s permitted format or values.",
+    "invalid_url": "Enter a complete valid endpoint URL.",
+    "websocket_scheme_required": "WebSocket requires ws:// or wss://, for example ws://127.0.0.1:3001. An IP:port alone is not a URL.",
+    "http_scheme_required": "HTTP requires http:// or https://, for example http://127.0.0.1:3001.",
+    "url_credentials_forbidden": "Do not put a username or password in the URL. Use the token field.",
+    "url_query_forbidden": "Remove URL query parameters; enter the token in its separate field.",
+    "url_fragment_forbidden": "Remove the URL fragment (#...).",
+    "invalid_event_path": "Use a path beginning with / and only letters, numbers, /, _ or -; do not use //.",
+    "invalid_port": "Use a whole-number port from 1 to 65535.",
+    "conflicting_credential_change": "Choose either a new secret or clear the saved secret, not both."
+  },
+  "pgValidationSummary": "Correct the highlighted fields before saving.",
+  "pgSnowWsUrlHelp": "Enter the complete Universal forward WebSocket URL, including ws:// or wss://. Do not enter only IP:port.",
+  "pgSnowHttpUrlHelp": "Enter the complete HTTP API URL, including http:// or https://."
 }

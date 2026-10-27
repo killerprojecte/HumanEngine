@@ -833,5 +833,22 @@
   "pgCredentialMissing": "尚未儲存資料庫密鑰，請填寫後啟用；也可沿用舊環境變數參照。",
   "pgLegacyCredentialGroup": "選用：相容舊環境變數",
   "pgLegacyCredentialHelp": "僅用於相容舊設定。使用資料庫密鑰時可留空；資料庫中已儲存的值優先。",
-  "pgDiagnosticRef": "診斷請求編號"
+  "pgDiagnosticRef": "診斷請求編號",
+  "pgValidation": {
+    "required": "此項必填。",
+    "invalid_type": "請使用此欄位要求的資料類型。",
+    "invalid_value": "請檢查此欄位允許的格式或選項。",
+    "invalid_url": "請輸入完整且有效的介面 URL。",
+    "websocket_scheme_required": "WebSocket 位址必須以 ws:// 或 wss:// 開頭，例如 ws://127.0.0.1:3001。僅填寫 IP:連接埠不完整。",
+    "http_scheme_required": "HTTP 位址必須以 http:// 或 https:// 開頭，例如 http://127.0.0.1:3001。",
+    "url_credentials_forbidden": "URL 中不能包含使用者名稱或密碼，請使用獨立的權杖欄位。",
+    "url_query_forbidden": "請移除 URL 查詢參數，權杖應填寫到獨立欄位。",
+    "url_fragment_forbidden": "請移除 URL 的片段部分（#...）。",
+    "invalid_event_path": "路徑須以 / 開頭，僅包含字母、數字、/、_ 或 -，不能包含 //。",
+    "invalid_port": "連接埠必須為 1 至 65535 的整數。",
+    "conflicting_credential_change": "填寫新密鑰和刪除舊密鑰不能同時選擇。"
+  },
+  "pgValidationSummary": "請先修正標紅欄位，再儲存設定。",
+  "pgSnowWsUrlHelp": "填寫完整的 Universal 正向 WebSocket 位址，包含 ws:// 或 wss://，不能只填寫 IP:連接埠。",
+  "pgSnowHttpUrlHelp": "填寫完整的 HTTP API 位址，包含 http:// 或 https://。"
 }

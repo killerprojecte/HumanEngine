@@ -43,7 +43,7 @@ interface Loaded {
 }
 export class PluginConfigurationError extends Error {
   requestId?: string
-  constructor() {
+  constructor(readonly issues: Array<{ field: string; reason: string }> = []) {
     super('invalid_plugin_configuration')
     this.name = 'PluginConfigurationError'
   }
@@ -491,9 +491,10 @@ export class PluginManager {
   }
   private validateConfiguration(item: Loaded, config: Record<string, unknown>) {
     try {
-      validateConfig(config, item.plugin.manifest.configSchema)
-      item.plugin.validateConfiguration?.(config)
-    } catch {
+      const normalized = item.plugin.validateConfiguration?.(config)
+      validateConfig(normalized ?? config, item.plugin.manifest.configSchema)
+    } catch (error) {
+      if (error instanceof PluginConfigurationError) throw error
       throw new PluginConfigurationError()
     }
   }

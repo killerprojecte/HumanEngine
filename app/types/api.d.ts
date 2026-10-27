@@ -2824,13 +2824,13 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Invalid request */
+                /** @description Invalid plugin configuration with safe field diagnostics */
                 400: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["Error"];
+                        "application/json": components["schemas"]["PluginConfigurationFailure"];
                     };
                 };
                 /** @description Authentication required */
@@ -2896,13 +2896,13 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Invalid request */
+                /** @description Invalid plugin configuration with safe field diagnostics */
                 400: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["Error"];
+                        "application/json": components["schemas"]["PluginConfigurationFailure"];
                     };
                 };
                 /** @description Authentication required */
@@ -3435,6 +3435,17 @@ export interface components {
                 id: string;
                 title: string;
                 entry: string;
+            }[];
+        };
+        PluginConfigurationFailure: {
+            /** @enum {string} */
+            error: "invalid_plugin_configuration";
+            requestId: string;
+            issues: {
+                /** @enum {string} */
+                field: "configuration" | "transport" | "url" | "accountId" | "token" | "clearToken" | "credentialEnv" | "eventToken" | "clearEventToken" | "eventHost" | "eventPort" | "eventPath" | "eventCredentialEnv";
+                /** @enum {string} */
+                reason: "required" | "invalid_type" | "invalid_value" | "invalid_url" | "websocket_scheme_required" | "http_scheme_required" | "url_credentials_forbidden" | "url_query_forbidden" | "url_fragment_forbidden" | "invalid_event_path" | "invalid_port" | "conflicting_credential_change";
             }[];
         };
         PluginStartupFailure: {

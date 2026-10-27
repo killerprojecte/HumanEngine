@@ -1751,6 +1751,74 @@
           "pages"
         ]
       },
+      "PluginConfigurationFailure": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "invalid_plugin_configuration"
+            ]
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "configuration",
+                    "transport",
+                    "url",
+                    "accountId",
+                    "token",
+                    "clearToken",
+                    "credentialEnv",
+                    "eventToken",
+                    "clearEventToken",
+                    "eventHost",
+                    "eventPort",
+                    "eventPath",
+                    "eventCredentialEnv"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "required",
+                    "invalid_type",
+                    "invalid_value",
+                    "invalid_url",
+                    "websocket_scheme_required",
+                    "http_scheme_required",
+                    "url_credentials_forbidden",
+                    "url_query_forbidden",
+                    "url_fragment_forbidden",
+                    "invalid_event_path",
+                    "invalid_port",
+                    "conflicting_credential_change"
+                  ]
+                }
+              },
+              "required": [
+                "field",
+                "reason"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32
+          }
+        },
+        "required": [
+          "error",
+          "requestId",
+          "issues"
+        ]
+      },
       "PluginStartupFailure": {
         "type": "object",
         "properties": {
@@ -4756,11 +4824,11 @@
             }
           },
           "400": {
-            "description": "Invalid request",
+            "description": "Invalid plugin configuration with safe field diagnostics",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/PluginConfigurationFailure"
                 }
               }
             }
@@ -4839,11 +4907,11 @@
             }
           },
           "400": {
-            "description": "Invalid request",
+            "description": "Invalid plugin configuration with safe field diagnostics",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/PluginConfigurationFailure"
                 }
               }
             }

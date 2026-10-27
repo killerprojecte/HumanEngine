@@ -42,7 +42,14 @@ async function assertApiError(
   assert.equal(body.error, code)
   assert.match(body.requestId, /^[a-f0-9-]{36}$/)
   assert.equal(response.headers.get('X-Request-ID'), body.requestId)
-  assert.deepEqual(body, { error: code, requestId: body.requestId, ...details })
+  assert.deepEqual(body, {
+    error: code,
+    requestId: body.requestId,
+    ...details,
+    ...(code === 'invalid_plugin_configuration'
+      ? { issues: [{ field: 'accountId', reason: 'required' }] }
+      : {}),
+  })
   const log = f.store.logs.find(
     (log) => log.module === `plugin:${id}` && log.code === code && log.requestId === body.requestId,
   )

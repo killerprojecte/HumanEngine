@@ -1,4 +1,43 @@
-# Trusted local plugins
+# Built-in and trusted local plugins
+
+## Built-in plugins
+
+The Plugins page labels bundled plugins as **Built-in** and offers the same
+configure, enable, disable and reload controls as trusted local plugins. They
+cannot be uninstalled from the UI. Both are disabled on a new installation;
+explicit saved enable state is restored on restart. Merely saving a disabled
+plugin's configuration never opens a connection or listener.
+
+- **SnowLuma** (`snowluma`): WebSocket, or HTTP actions with signed HTTP event
+  reporting. See [connection setup](snowluma.md). Extraction from the engine
+  preserves `plugin:snowluma`, `plugin-enabled:snowluma`, adapter ID `snowluma`,
+  and all existing scene/message IDs. An omitted transport means WebSocket;
+  no account, scene participation or learning is automatically enabled.
+- **Typing delay** (`typing-delay`): default off. Configuration `{}` means
+  `speedFactor: 1`; valid factors are **0.1–10**, larger is faster. Each final
+  outgoing message segment waits `(300 + 200 × graphemeCount) / speedFactor`
+  milliseconds, capped at **30 seconds per segment**. Text parts are counted
+  together using Unicode grapheme boundaries, not UTF-16 units or sentences.
+  Media-only segments use the preparation pause. There is no random jitter.
+
+Typing delay runs exactly once per final segment in the core dispatch path,
+including plugin-requested sends, not inside an adapter. Segments remain ordered;
+no content is split into new sentences. Real sends revalidate participation,
+source/quote recalls and grounding after the wait. Simulation previews do not
+sleep. Disabling/reconfiguring the plugin, cancelling the turn or shutting down
+cancels pending work; it never accelerates or replays unsent segments. Already
+confirmed receipts remain sent; an unfinished segment is cancelled. A send
+already transmitted to a platform cannot be retracted by disabling a plugin,
+and ambiguous transport outcomes remain unknown. Pending text is not stored as
+a restart queue or written to diagnostics. Existing model request timeouts are
+unchanged; the delay has its own per-segment cap and honors caller cancellation.
+
+The API returns `builtin` on each plugin. Built-in configuration uses shared
+Zod contracts (`SnowLumaPluginConfig`, `TypingDelayPluginConfig` in OpenAPI),
+the schema-driven form, and server validation; invalid configuration returns
+400 without changing stored settings or stopping the running plugin.
+
+## Trusted local plugins
 
 Only install code you trust with the host process and server credentials. This SDK is not an untrusted-code sandbox.
 
@@ -6,7 +45,7 @@ Put an ECMAScript module in `plugins/`, export the plugin object as default, and
 
 `plugins/example.mjs` and `public/plugins/example/status.html` demonstrate both schema forms and a custom administration page. Add public page assets before the production build. Custom pages use `/api/plugins/{id}/actions/{action}` with the normal administration bearer token; neither a page nor API responses should receive provider keys or database paths.
 
-Supported configuration vocabulary: objects, strings, booleans, numbers/integers, arrays, required fields, defaults, descriptions, groups, enums, basic length/range constraints, and recursively redacted `secret` fields. Use environment-variable references for provider/platform credentials. Blank redacted secrets preserve existing values; explicitly submit a replacement to rotate one.
+Supported configuration vocabulary: objects, strings, booleans, numbers/integers, arrays, required fields, defaults, descriptions, groups, enums, basic length/range constraints, string patterns, and recursively redacted `secret` fields. Use environment-variable references for provider/platform credentials. Blank redacted secrets preserve existing values; explicitly submit a replacement to rotate one.
 
 Hooks run in declared priority order and receive linked turn/plugin cancellation. Cancel is terminal. Disable removes new registrations, aborts pending work, disposes resources, and prevents late asynchronous setup from re-enabling a plugin. All platform sends remain core-owned; plugins can shape/cancel them via send hooks or request a send through an effect-declared tool invocation. Neither route exposes a raw adapter-send bypass.
 

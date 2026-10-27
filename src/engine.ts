@@ -17,7 +17,7 @@ import { z } from '@hono/zod-openapi'
 import { Store } from './store.ts'
 import { Runtime, type RuntimeMessage, type TurnContext } from './runtime.ts'
 import { PluginManager } from './plugins.ts'
-import { OneBotAdapter } from './onebot.ts'
+import { snowLumaPlugin, typingDelayPlugin } from './builtin-plugins.ts'
 import { MemoryService, type MemoryCandidate, type MemoryContext } from './memory.ts'
 import { ModelError, Router, type RouterConfig, type ToolDefinition } from './models.ts'
 import type { Scene } from './schema.ts'
@@ -393,79 +393,24 @@ export class Engine {
     })
   }
   async start() {
-    await this.plugins.register({
-      manifest: {
-        id: 'snowluma',
-        name: 'SnowLuma',
-        version: '0.1.0',
-        description:
-          'Independent OneBot v11 transport with verified SnowLuma history extensions. QQ connection and animation playback require your own deployment test.',
-        capabilities: ['adapter', 'history', 'recall', 'schema-form'],
-        configSchema: {
-          type: 'object',
-          properties: {
-            url: {
-              type: 'string',
-              title: 'WebSocket URL',
-              default: 'ws://127.0.0.1:3001',
-              minLength: 1,
-            },
-            accountId: { type: 'string', title: 'Bot account ID', minLength: 1 },
-            credentialEnv: {
-              type: 'string',
-              title: 'Token environment variable',
-              default: 'SNOWLUMA_TOKEN',
-              minLength: 1,
-            },
-          },
-          required: ['url', 'accountId', 'credentialEnv'],
-          additionalProperties: false,
+    await this.plugins.register(
+      snowLumaPlugin(this.runtime, this.store, {
+        resolveMedia: (assetId, scene) => {
+          if (!/^[a-f0-9]{64}$/.test(assetId)) return undefined
+          const original = this.memes.original({ sceneId: scene.id, simulation: false }, assetId)
+          return {
+            file: `base64://${readFileSync(original.path).toString('base64')}`,
+            type: 'image',
+          }
         },
-      },
-      setup: async (context) => {
-        const config = context.config as { url: string; accountId: string; credentialEnv: string }
-        if (
-          !/^wss?:\/\//.test(config.url) ||
-          !config.accountId ||
-          !/^[A-Z][A-Z0-9_]*$/.test(config.credentialEnv)
-        )
-          throw new Error('invalid_snowluma_configuration')
-        const adapter = new OneBotAdapter(
-          { id: 'snowluma', ...config },
-          {
-            resolveMedia: (assetId, scene) => {
-              if (!/^[a-f0-9]{64}$/.test(assetId)) return undefined
-              const original = this.memes.original(
-                { sceneId: scene.id, simulation: false },
-                assetId,
-              )
-              return {
-                file: `base64://${readFileSync(original.path).toString('base64')}`,
-                type: 'image',
-              }
-            },
-            onMessage: (message, scene) =>
-              this.runtime.ingest(
-                message.senderId === adapter.userId(config.accountId)
-                  ? { ...message, senderId: 'bot' }
-                  : message,
-                scene,
-              ),
-            onRecall: (event) => this.runtime.recall(event.sceneId, event.messageId),
-            isRecalled: (sceneId, messageId) => this.store.recalled(sceneId, messageId),
-            onStatus: (status) => this.store.log('info', 'snowluma', status),
-            onError: (code) => this.store.log('error', 'snowluma', code),
-          },
-        )
-        this.runtime.addAdapter('snowluma', adapter, adapter.userId(config.accountId))
-        context.onDispose(() => {
-          this.runtime.removeAdapter('snowluma')
+        adapterStopped: (id) => {
           for (const scene of this.store.scenes())
-            if (scene.adapterId === 'snowluma') this.cancelLearning(scene.id)
-        })
-        await adapter.connect()
-      },
-    })
+            if (scene.adapterId === id) this.cancelLearning(scene.id)
+        },
+      }),
+      { builtin: true },
+    )
+    await this.plugins.register(typingDelayPlugin(this.runtime), { builtin: true })
     const local =
       process.env.HUMANENGINE_PLUGINS?.split(',')
         .map((entry) => entry.trim())

@@ -17,6 +17,84 @@
       }
     },
     "schemas": {
+      "SnowLumaPluginConfig": {
+        "type": "object",
+        "properties": {
+          "transport": {
+            "type": "string",
+            "enum": [
+              "websocket",
+              "http"
+            ],
+            "default": "websocket",
+            "description": "Omitted means legacy WebSocket."
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "accountId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "credentialEnv": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "eventHost": {
+            "type": "string",
+            "enum": [
+              "127.0.0.1",
+              "::1",
+              "0.0.0.0",
+              "::"
+            ],
+            "default": "127.0.0.1"
+          },
+          "eventPort": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535,
+            "description": "Required for HTTP transport."
+          },
+          "eventPath": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^\\/[a-zA-Z0-9/_-]+$",
+            "default": "/onebot/events"
+          },
+          "eventCredentialEnv": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Z][A-Z0-9_]*$",
+            "description": "Required for HTTP transport; SnowLuma httpClients HMAC signature secret environment variable."
+          }
+        },
+        "required": [
+          "url",
+          "accountId",
+          "credentialEnv"
+        ],
+        "additionalProperties": false
+      },
+      "TypingDelayPluginConfig": {
+        "type": "object",
+        "properties": {
+          "speedFactor": {
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 10,
+            "default": 1
+          }
+        },
+        "additionalProperties": false
+      },
       "Status": {
         "type": "object",
         "properties": {
@@ -1449,6 +1527,9 @@
             "type": "object",
             "additionalProperties": {}
           },
+          "builtin": {
+            "type": "boolean"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -1485,6 +1566,7 @@
           "version",
           "capabilities",
           "configSchema",
+          "builtin",
           "enabled",
           "pages"
         ]

@@ -3007,6 +3007,32 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        SnowLumaPluginConfig: {
+            /**
+             * @description Omitted means legacy WebSocket.
+             * @default websocket
+             * @enum {string}
+             */
+            transport: "websocket" | "http";
+            url: string;
+            accountId: string;
+            credentialEnv: string;
+            /**
+             * @default 127.0.0.1
+             * @enum {string}
+             */
+            eventHost: "127.0.0.1" | "::1" | "0.0.0.0" | "::";
+            /** @description Required for HTTP transport. */
+            eventPort?: number;
+            /** @default /onebot/events */
+            eventPath: string;
+            /** @description Required for HTTP transport; SnowLuma httpClients HMAC signature secret environment variable. */
+            eventCredentialEnv?: string;
+        };
+        TypingDelayPluginConfig: {
+            /** @default 1 */
+            speedFactor: number;
+        };
         Status: {
             name: string;
             startedAt: string;
@@ -3358,6 +3384,7 @@ export interface components {
             configSchema: {
                 [key: string]: unknown;
             };
+            builtin: boolean;
             enabled: boolean;
             error?: string;
             pages: {

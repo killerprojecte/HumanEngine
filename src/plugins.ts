@@ -57,10 +57,12 @@ export interface PluginContext {
 }
 export interface LocalPlugin {
   manifest: PluginManifest
+  validateConfiguration?(config: Record<string, unknown>): void
   setup(context: PluginContext): void | Promise<void>
 }
 interface Loaded {
   plugin: LocalPlugin
+  builtin: boolean
   controller: AbortController
   cleanups: Array<() => void | Promise<void>>
   pages: AdminPage[]
@@ -70,6 +72,11 @@ interface Loaded {
   revision: number
   queue: Promise<void>
   error?: string
+}
+export class PluginConfigurationError extends Error {
+  constructor() {
+    super('invalid_plugin_configuration')
+  }
 }
 export class PluginManager {
   private readonly loaded = new Map<string, Loaded>()
@@ -83,6 +90,7 @@ export class PluginManager {
     return [...this.loaded.values()].map((p) => ({
       ...p.plugin.manifest,
       configSchema: publicSchema(p.plugin.manifest.configSchema),
+      builtin: p.builtin,
       enabled: p.enabled,
       error: p.error,
       pages: structuredClone(p.pages),
@@ -95,11 +103,12 @@ export class PluginManager {
       item.plugin.manifest.configSchema,
     ) as Record<string, unknown>
   }
-  async register(plugin: LocalPlugin) {
+  async register(plugin: LocalPlugin, options: { builtin?: boolean } = {}) {
     if (!/^[a-z0-9-]+$/.test(plugin.manifest.id) || this.loaded.has(plugin.manifest.id))
       throw new Error('invalid_plugin_id')
     this.loaded.set(plugin.manifest.id, {
       plugin,
+      builtin: options.builtin === true,
       controller: new AbortController(),
       cleanups: [],
       pages: [],
@@ -121,13 +130,13 @@ export class PluginManager {
   async configure(id: string, config: Record<string, unknown>) {
     const item = this.require(id)
     const incoming = structuredClone(config)
-    validateConfig(
+    this.validateConfiguration(
+      item,
       preserveSecrets(
         incoming,
         this.store.get(`plugin:${id}`, {}),
         item.plugin.manifest.configSchema,
-      ),
-      item.plugin.manifest.configSchema,
+      ) as Record<string, unknown>,
     )
     const revision = ++item.revision
     item.controller.abort('plugin_reconfigured')
@@ -137,7 +146,7 @@ export class PluginManager {
         this.store.get(`plugin:${id}`, {}),
         item.plugin.manifest.configSchema,
       ) as Record<string, unknown>
-      validateConfig(next, item.plugin.manifest.configSchema)
+      this.validateConfiguration(item, next)
       this.store.set(`plugin:${id}`, next)
       await this.cleanup(item, id)
       if (item.desiredEnabled && item.revision === revision) await this.start(item, id, revision)
@@ -204,7 +213,7 @@ export class PluginManager {
     }
     let abortListener: () => void = () => {}
     try {
-      validateConfig(this.store.get(`plugin:${id}`, {}), item.plugin.manifest.configSchema)
+      this.validateConfiguration(item, this.store.get(`plugin:${id}`, {}))
       guard()
       const setup = Promise.resolve().then(() => {
         guard()
@@ -414,6 +423,14 @@ export class PluginManager {
     )
     return result
   }
+  private validateConfiguration(item: Loaded, config: Record<string, unknown>) {
+    try {
+      validateConfig(config, item.plugin.manifest.configSchema)
+      item.plugin.validateConfiguration?.(config)
+    } catch {
+      throw new PluginConfigurationError()
+    }
+  }
   private require(id: string) {
     const item = this.loaded.get(id)
     if (!item) throw new Error('plugin_not_found')
@@ -434,6 +451,7 @@ export function validateConfig(value: unknown, schema: Record<string, unknown>):
     'enum',
     'minimum',
     'maximum',
+    'pattern',
     'minLength',
     'maxLength',
     'items',
@@ -458,6 +476,7 @@ export function validateConfig(value: unknown, schema: Record<string, unknown>):
   } else if (schema.type === 'string') {
     if (
       typeof value !== 'string' ||
+      (typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(value)) ||
       (typeof schema.minLength === 'number' && value.length < schema.minLength) ||
       (typeof schema.maxLength === 'number' && value.length > schema.maxLength)
     )

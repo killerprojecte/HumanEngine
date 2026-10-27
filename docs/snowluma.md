@@ -6,7 +6,17 @@ copied. The shared transport is `OneBotAdapter`; optional action names and
 capability declarations are supplied by `OneBotProfile`. This release supplies
 `SNOWLUMA_PROFILE` and a conservative `ONEBOT_V11_PROFILE`, not a NapCat plugin.
 
-## Setup
+## Built-in plugin and compatibility
+
+SnowLuma is bundled in `src/builtin-plugins.ts` and appears on the Plugins page.
+It is disabled on a fresh installation. Existing stored enable state, connection
+configuration and normalized scene/message identifiers are preserved. Configure
+and explicitly enable the plugin; disabled configuration saves do not connect.
+Disabling immediately blocks ingress, cancels affected turns and learning, closes
+connections/listeners and invalidates pending actions. Re-enabling starts a new
+account handshake, never an old send queue.
+
+## WebSocket setup
 
 1. In the account's SnowLuma network settings, enable a **Universal forward
    WebSocket server** and **array** message format. The default documented
@@ -23,6 +33,40 @@ capability declarations are supplied by `OneBotProfile`. This release supplies
 The adapter sends `Authorization: Bearer` in the upgrade request. URL credentials,
 query strings, and redirects are rejected. Transport errors are fixed diagnostic
 codes without token, URL, upstream wording, or message body.
+
+## HTTP actions and event reporting
+
+Select `transport: "http"`, use an action base URL such as
+`http://127.0.0.1:3000/`, and retain the exact account ID plus `credentialEnv`.
+The adapter POSTs JSON to `/{action}` with `Authorization: Bearer`, validates
+`get_login_info`, and checks the OneBot envelope rather than HTTP 200 alone.
+There is no redirect following or automatic retry of an uncertain send.
+
+HTTP also requires explicitly configuring:
+
+- `eventPort`: listener port 1–65535.
+- `eventCredentialEnv`: environment variable containing the event signature
+  secret; set the same value as SnowLuma's HTTP client `accessToken`.
+- Optional `eventHost`: `127.0.0.1` (default), `::1`, `0.0.0.0`, or `::`.
+- Optional `eventPath`: `/onebot/events` by default.
+
+Point SnowLuma's **HTTP event reporting client** (`httpClients`) at this listener.
+The authenticated event channel is not a polling/history substitution. SnowLuma
+signs the exact request bytes with **HMAC-SHA1** in `X-Signature: sha1=...` and
+sends `X-Self-ID`; it does **not** send an inbound Bearer header. HumanEngine
+checks the signature, header account and body account before accepting an event.
+Use a trusted reverse proxy with HTTPS when crossing an untrusted network;
+binding all interfaces intentionally exposes a network listener. The listener
+has no TLS termination of its own and never returns OneBot quick actions.
+Only enable after setting both server environment variables and the SnowLuma
+reporting destination. No token is accepted in an action URL or returned to UI.
+
+The listener starts only after account verification, accepts only JSON POSTs to
+the configured path, caps request bodies at 1 MiB and connections at 64. Action
+responses are capped at 8 MiB. Disable/shutdown closes the listener and aborts
+outgoing calls; a transmitted send whose result is lost is **unknown**, not
+cancelled or retried. Event duplication has the same core message-ID handling
+as WebSocket. Receiving offline/late events does not authorize participation.
 
 ## Public API
 
@@ -127,3 +171,10 @@ capability limits. **No real QQ account or live SnowLuma instance was tested.**
 - [Single-message lookup](https://snowluma.github.io/en/docs/api/message/get_msg)
 - [OneBot recall notices](https://github.com/botuniverse/onebot-11/blob/master/event/notice.md)
 - [SnowLuma notice envelopes](https://github.com/SnowLuma/SnowLuma/blob/3bd74acb60e45fed7fa0451be11c54905dee0670/packages/onebot/src/event-converter/to-notice.ts)
+
+HTTP transport was verified against the same official SnowLuma commit's
+[HTTP event reporter](https://github.com/SnowLuma/SnowLuma/blob/3bd74acb60e45fed7fa0451be11c54905dee0670/packages/onebot/src/network/http-post-adapter.ts)
+and [HTTP API documentation](https://snowluma.github.io/en/docs/api) on
+2026-10-27. Local HTTP fixtures cover actions, signed ingress, account mismatch,
+recalls, history, malformed/oversized payloads, timeout/cancellation and disposal
+during startup. These are protocol fixtures, **not a live QQ deployment test**.

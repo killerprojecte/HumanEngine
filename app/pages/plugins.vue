@@ -30,6 +30,39 @@ function object(value: unknown): Record<string, unknown> {
     ? (value as Record<string, unknown>)
     : {}
 }
+const builtinFields: Record<string, Record<string, string>> = {
+  snowluma: {
+    transport: 'pgTransport',
+    url: 'pgSnowUrl',
+    accountId: 'pgSnowAccount',
+    credentialEnv: 'pgSnowCredential',
+    eventHost: 'pgEventHost',
+    eventPort: 'pgEventPort',
+    eventPath: 'pgEventPath',
+    eventCredentialEnv: 'pgEventCredential',
+  },
+  'typing-delay': { speedFactor: 'pgTypingSpeed' },
+}
+function builtinFieldTitle(id: string | undefined, key: string) {
+  const label = id ? builtinFields[id]?.[key] : undefined
+  return label ? t(label) : undefined
+}
+function builtinFieldHelp(id: string | undefined, key: string) {
+  if (id === 'typing-delay' && key === 'speedFactor') return t('pgTypingSpeedHelp')
+  if (id === 'snowluma' && key === 'eventCredentialEnv') return t('pgEventHelp')
+  if (id === 'snowluma' && key === 'eventPort') return ''
+  if (id === 'snowluma' && key === 'transport') return t('pgTransportHelp')
+}
+function pluginName(plugin: Plugin) {
+  return plugin.builtin && plugin.id === 'typing-delay' ? t('pgTypingName') : plugin.name
+}
+function pluginDescription(plugin: Plugin) {
+  return plugin.builtin && plugin.id === 'typing-delay'
+    ? t('pgTypingDescription')
+    : plugin.builtin && plugin.id === 'snowluma'
+      ? t('pgSnowDescription')
+      : plugin.description
+}
 const fields = computed<Field[]>(() => {
   const schema = selected.value?.configSchema ?? {},
     required = Array.isArray(schema.required) ? schema.required : []
@@ -38,22 +71,17 @@ const fields = computed<Field[]>(() => {
     return {
       key,
       title:
-        selected.value?.id === 'snowluma' && ['url', 'accountId', 'credentialEnv'].includes(key)
-          ? t(
-              (
-                {
-                  url: 'pgSnowUrl',
-                  accountId: 'pgSnowAccount',
-                  credentialEnv: 'pgSnowCredential',
-                } as Record<string, string>
-              )[key]!,
-            )
-          : typeof entry.title === 'string'
-            ? entry.title
-            : key,
-      description: typeof entry.description === 'string' ? entry.description : '',
+        builtinFieldTitle(selected.value?.id, key) ??
+        (typeof entry.title === 'string' ? entry.title : key),
+      description:
+        builtinFieldHelp(selected.value?.id, key) ??
+        (typeof entry.description === 'string' ? entry.description : ''),
       type: typeof entry.type === 'string' ? entry.type : 'string',
-      required: required.includes(key),
+      required:
+        required.includes(key) ||
+        (selected.value?.id === 'snowluma' &&
+          values.value.transport === 'http' &&
+          ['eventPort', 'eventCredentialEnv'].includes(key)),
       secret: entry.secret === true,
       group: typeof entry.group === 'string' ? entry.group : t('pluginGeneral'),
       ...(Array.isArray(entry.enum)
@@ -65,7 +93,15 @@ const fields = computed<Field[]>(() => {
     }
   })
 })
-const groups = computed(() => [...new Set(fields.value.map((field) => field.group))])
+const visibleFields = computed(() =>
+  fields.value.filter(
+    (field) =>
+      selected.value?.id !== 'snowluma' ||
+      !field.key.startsWith('event') ||
+      values.value.transport === 'http',
+  ),
+)
+const groups = computed(() => [...new Set(visibleFields.value.map((field) => field.group))])
 const dirty = computed(
   () => !!selected.value && JSON.stringify(values.value) !== JSON.stringify(original.value),
 )
@@ -103,7 +139,9 @@ const query = ref(''),
 const freshValues = ref<Record<string, string | number | boolean>>()
 const visiblePlugins = computed(() =>
   plugins.value.filter((p) =>
-    `${p.name} ${p.description} ${p.id}`.toLowerCase().includes(query.value.trim().toLowerCase()),
+    `${pluginName(p)} ${pluginDescription(p)} ${p.name} ${p.description} ${p.id}`
+      .toLowerCase()
+      .includes(query.value.trim().toLowerCase()),
   ),
 )
 const blocked = computed(() => busy.value || loading.value || uncertain.value)
@@ -166,7 +204,7 @@ function ask(kind: typeof confirmationKind.value) {
   confirmationKind.value = kind
   confirmationCopy.value = {
     title: t(kind === 'discard' ? 'pgDiscardTitle' : 'pgLifecycleTitle', {
-      name: selected.value?.name ?? '',
+      name: selected.value ? pluginName(selected.value) : '',
     }),
     help: t(
       kind === 'discard'
@@ -233,7 +271,13 @@ function reset() {
 function configBody(): Record<string, unknown> {
   const body: Record<string, unknown> = {}
   for (const field of fields.value) {
-    const value = values.value[field.key]
+    // Switching back to WebSocket must not validate hidden, unfinished HTTP drafts.
+    const value =
+      selected.value?.id === 'snowluma' &&
+      field.key.startsWith('event') &&
+      values.value.transport !== 'http'
+        ? original.value[field.key]
+        : values.value[field.key]
     if (value === '' || value === undefined) {
       if (field.secret) continue
       if (field.required) throw new Error(t('pluginRequired', { field: field.title }))
@@ -398,6 +442,7 @@ const capabilityKeys: Record<string, string> = {
   history: 'pgHistory',
   recall: 'pgRecall',
   'schema-form': 'pgSchema',
+  'send-delay': 'pgTypingName',
   protocol: 'pgProtocol',
   tool: 'pgTools',
   tools: 'pgTools',
@@ -472,7 +517,7 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
           @click="choose(plugin.id)"
         >
           <span class="flex items-start justify-between gap-2"
-            ><span class="font-medium break-words">{{ plugin.name }}</span
+            ><span class="font-medium break-words">{{ pluginName(plugin) }}</span
             ><span
               class="text-xs shrink-0"
               :class="plugin.error ? 'text-error' : plugin.enabled ? 'text-success' : 'text-muted'"
@@ -481,9 +526,11 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
               }}</span
             ></span
           ><span class="block text-xs text-muted mt-2 leading-5 line-clamp-2">{{
-            plugin.description
+            pluginDescription(plugin)
           }}</span
-          ><span class="block text-xs text-muted mt-2">v{{ plugin.version }}</span>
+          ><span class="block text-xs text-muted mt-2"
+            >v{{ plugin.version }} · {{ t(plugin.builtin ? 'pgBuiltin' : 'pgLocal') }}</span
+          >
         </button>
         <p v-if="!visiblePlugins.length" class="p-4 text-sm text-muted">
           {{ t(loading ? 'uxLoading' : plugins.length ? 'uxNoMatches' : 'pluginsEmpty') }}
@@ -493,7 +540,7 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
         <header class="p-5 border-b border-default space-y-3">
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 class="text-lg font-semibold break-words">{{ selected.name }}</h2>
+              <h2 class="text-lg font-semibold break-words">{{ pluginName(selected) }}</h2>
               <p class="mt-1 text-xs text-muted break-all">
                 {{ selected.id }} · v{{ selected.version }}
               </p>
@@ -517,7 +564,7 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
               >
             </div>
           </div>
-          <p class="text-sm text-muted">{{ selected.description }}</p>
+          <p class="text-sm text-muted">{{ pluginDescription(selected) }}</p>
           <p class="text-xs text-muted">{{ t('pgStatusHelp') }}</p>
           <div class="flex flex-wrap gap-2">
             <UBadge
@@ -550,7 +597,7 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
           >
             <legend class="font-medium text-sm pr-2">{{ group }}</legend>
             <UFormField
-              v-for="field in fields.filter((item) => item.group === group)"
+              v-for="field in visibleFields.filter((item) => item.group === group)"
               :key="field.key"
               :label="field.title"
               :description="field.description"

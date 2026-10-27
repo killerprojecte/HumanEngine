@@ -1,3 +1,4 @@
+import { createTypingDelay, type TypingDelayConfig } from './typing-delay.ts'
 import { randomUUID } from 'node:crypto'
 import en from '../i18n/locales/en.json' with { type: 'json' }
 import zhCN from '../i18n/locales/zh-CN.json' with { type: 'json' }
@@ -357,6 +358,7 @@ class GroundingError extends Error {
   }
 }
 export class Runtime {
+  private typingDelay?: ReturnType<typeof createTypingDelay>
   private lastReplyAt = 0
   private readonly states = new Map<string, SceneState>()
   private readonly adapters = new Map<string, RuntimeAdapter>()
@@ -491,6 +493,17 @@ export class Runtime {
     return () => {
       const i = this.hooks.indexOf(hook)
       if (i >= 0) this.hooks.splice(i, 1)
+    }
+  }
+  /** Trusted built-in registration; removing it cancels already pending sends. */
+  installTypingDelay(config: TypingDelayConfig, signal: AbortSignal) {
+    if (this.typingDelay && !this.typingDelay.signal.aborted)
+      throw new Error('typing_delay_already_registered')
+    const policy = createTypingDelay(config, signal)
+    this.typingDelay = policy
+    return () => {
+      policy.dispose()
+      if (this.typingDelay === policy) this.typingDelay = undefined
     }
   }
   createSimulation() {
@@ -693,6 +706,8 @@ export class Runtime {
     if (topic) await this.run(scene, topic.id, true)
   }
   dispose() {
+    this.typingDelay?.dispose()
+    this.typingDelay = undefined
     clearInterval(this.cleanupTimer)
     for (const id of this.states.keys()) this.cancel(id)
     for (const adapter of this.adapters.values()) {
@@ -1185,6 +1200,10 @@ export class Runtime {
     if (!guard || guard.context !== context) return [{ status: 'cancelled' as const }]
     if (signal) context = { ...context, signal: AbortSignal.any([context.signal, signal]) }
 
+    const typingDelay = context.mode === 'real' ? this.typingDelay : undefined
+    if (typingDelay)
+      context = { ...context, signal: AbortSignal.any([context.signal, typingDelay.signal]) }
+
     const request = SendSchema.parse(input),
       key = `${context.scene.id}|${context.turnId}|${request.operationId}`
     request.segments = SendSchema.shape.segments.parse(
@@ -1200,7 +1219,10 @@ export class Runtime {
     )
     let segments: SendSegment[] = request.segments
     for (const hook of this.hooks) {
-      if (!this.eligible(context)) return [{ status: 'cancelled' }]
+      if (!this.eligible(context)) {
+        results.push({ status: 'cancelled' })
+        return results
+      }
       const result = await hook.handler(structuredClone(segments), context)
       if (result.action === 'cancel') {
         results.push({ status: 'cancelled', detail: 'hook_cancelled' })
@@ -1229,12 +1251,31 @@ export class Runtime {
         results.push({ status: 'cancelled' })
         break
       }
+      if (typingDelay) {
+        try {
+          await typingDelay.wait(segment, context.signal)
+        } catch {
+          results.push({ status: 'cancelled', detail: 'typing_delay_cancelled' })
+          break
+        }
+      }
+      // Delay is before final validation, so newer conversation, recalls and changed
+      // participation are checked against the exact prepared segment after waiting.
+      if (
+        !this.eligible(context) ||
+        (segment.replyToId && this.isRecalled(context.scene.id, segment.replyToId)) ||
+        guard.grounding.check([segment])
+      ) {
+        results.push({ status: 'cancelled', detail: 'send_invalidated' })
+        break
+      }
       if (
         !(await guard.validate(
           { operationId: request.operationId, segments: [segment] },
           context.signal,
         )) ||
-        !this.eligible(context)
+        !this.eligible(context) ||
+        (segment.replyToId && this.isRecalled(context.scene.id, segment.replyToId))
       ) {
         results.push({ status: 'cancelled' })
         break

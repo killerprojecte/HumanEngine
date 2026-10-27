@@ -1,3 +1,6 @@
+import { SnowLumaConfigSchema } from './builtin-plugins.ts'
+import { TypingDelayConfigSchema } from './typing-delay.ts'
+import { PluginConfigurationError } from './plugins.ts'
 import { probe } from './probes.ts'
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { readFile } from 'node:fs/promises'
@@ -72,6 +75,7 @@ const Plugin = z
     version: z.string(),
     capabilities: z.array(z.string()),
     configSchema: z.record(z.string(), z.unknown()),
+    builtin: z.boolean(),
     enabled: z.boolean(),
     error: z.string().optional(),
     pages: z.array(z.object({ id: z.string(), title: z.string(), entry: z.string() })),
@@ -136,6 +140,8 @@ const Meme = z
   .openapi('Meme')
 const Success = z.object({ ok: z.boolean() })
 export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
+  app.openAPIRegistry.register('SnowLumaPluginConfig', SnowLumaConfigSchema)
+  app.openAPIRegistry.register('TypingDelayPluginConfig', TypingDelayConfigSchema)
   const { runtime, store, memory, plugins } = engine
 
   const EmbeddingIndexStatus = z
@@ -720,7 +726,15 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       request: { params, body: body(z.record(z.string(), z.unknown())) },
       responses: { 200: json(z.record(z.string(), z.unknown())), ...errors },
     }),
-    async (c) => c.json(await plugins.configure(c.req.valid('param').id, c.req.valid('json')), 200),
+    async (c) => {
+      try {
+        return c.json(await plugins.configure(c.req.valid('param').id, c.req.valid('json')), 200)
+      } catch (error) {
+        if (error instanceof PluginConfigurationError)
+          return c.json({ error: 'invalid_plugin_configuration' }, 400)
+        throw error
+      }
+    },
   )
   app.openapi(
     createRoute({

@@ -210,6 +210,11 @@
             "maximum": 64,
             "default": 4
           },
+          "embeddingDimensions": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16384
+          },
           "inputUsdPerMillion": {
             "type": "number",
             "minimum": 0
@@ -300,6 +305,30 @@
             "minimum": 100,
             "maximum": 300000,
             "default": 30000
+          },
+          "learningQueueMaxMessages": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 20000,
+            "default": 2048
+          },
+          "learningQueueMaxTotalMessages": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 100000,
+            "default": 8192
+          },
+          "learningRetryAttempts": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 3
+          },
+          "learningRetryBaseMs": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 30000,
+            "default": 1000
           },
           "debugModelIO": {
             "type": "boolean",
@@ -581,6 +610,248 @@
           "topics"
         ]
       },
+      "EmbeddingIndexStatus": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "unconfigured",
+              "needs_rebuild",
+              "ready"
+            ]
+          },
+          "selected": {
+            "type": "object",
+            "properties": {
+              "modelId": {
+                "type": "string"
+              },
+              "encoderRevision": {
+                "type": "string"
+              },
+              "requestedDimensions": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "modelId",
+              "encoderRevision"
+            ]
+          },
+          "active": {
+            "type": "object",
+            "properties": {
+              "generationId": {
+                "type": "string"
+              },
+              "encoderRevision": {
+                "type": "string"
+              },
+              "modelId": {
+                "type": "string"
+              },
+              "dimensions": {
+                "type": "integer"
+              },
+              "spaceId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "generationId",
+              "encoderRevision",
+              "modelId",
+              "dimensions",
+              "spaceId"
+            ]
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "eligible": {
+                "type": "integer"
+              },
+              "indexed": {
+                "type": "integer"
+              },
+              "pending": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "eligible",
+              "indexed",
+              "pending"
+            ]
+          },
+          "retained": {
+            "type": "object",
+            "properties": {
+              "generations": {
+                "type": "integer"
+              },
+              "vectors": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "generations",
+              "vectors"
+            ]
+          },
+          "job": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "encoderRevision": {
+                "type": "string"
+              },
+              "modelId": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "running",
+                  "paused",
+                  "failed",
+                  "cancelled",
+                  "completed"
+                ]
+              },
+              "processed": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              },
+              "dimensions": {
+                "type": "integer"
+              },
+              "spaceId": {
+                "type": "string"
+              },
+              "error": {
+                "type": "string"
+              },
+              "requiresRetryConfirmation": {
+                "type": "boolean"
+              },
+              "expectedActive": {
+                "type": "string"
+              },
+              "attemptId": {
+                "type": "string"
+              },
+              "ownerId": {
+                "type": "string"
+              },
+              "leaseUntil": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id",
+              "encoderRevision",
+              "modelId",
+              "state",
+              "processed",
+              "total",
+              "requiresRetryConfirmation"
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "coverage",
+          "retained"
+        ]
+      },
+      "LearningStatus": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "number"
+          },
+          "failed": {
+            "type": "number"
+          },
+          "overflow": {
+            "type": "number"
+          },
+          "retried": {
+            "type": "number"
+          },
+          "queued": {
+            "type": "number"
+          },
+          "retrying": {
+            "type": "number"
+          },
+          "active": {
+            "type": "number"
+          },
+          "paused": {
+            "type": "number"
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "sceneId": {
+                  "type": "string"
+                },
+                "attempt": {
+                  "type": "number"
+                },
+                "messageCount": {
+                  "type": "number"
+                },
+                "partial": {
+                  "type": "boolean"
+                },
+                "canRetry": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "sceneId",
+                "attempt",
+                "messageCount",
+                "partial",
+                "canRetry",
+                "createdAt"
+              ]
+            }
+          }
+        },
+        "required": [
+          "accepted",
+          "completed",
+          "failed",
+          "overflow",
+          "retried",
+          "queued",
+          "retrying",
+          "active",
+          "paused",
+          "failures"
+        ]
+      },
       "Habit": {
         "type": "object",
         "properties": {
@@ -602,6 +873,27 @@
           },
           "preference": {
             "type": "string"
+          },
+          "context": {
+            "type": "string",
+            "enum": [
+              "technical"
+            ]
+          },
+          "evidenceVersion": {
+            "type": "number",
+            "enum": [
+              2
+            ]
+          },
+          "sourceCutoff": {
+            "type": "number"
+          },
+          "authorWatermarks": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
           },
           "weight": {
             "type": "number"
@@ -639,6 +931,12 @@
                 },
                 "direction": {
                   "type": "number"
+                },
+                "timestamp": {
+                  "type": "number"
+                },
+                "authorKey": {
+                  "type": "string"
                 }
               },
               "required": [
@@ -811,6 +1109,29 @@
           },
           "usageCount": {
             "type": "number"
+          },
+          "lastUsedAt": {
+            "type": "string"
+          },
+          "analysisState": {
+            "type": "string",
+            "enum": [
+              "running",
+              "retrying",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "interrupted"
+            ]
+          },
+          "analysisAttempts": {
+            "type": "integer"
+          },
+          "analysisNextRetryAt": {
+            "type": "string"
+          },
+          "analysisFailureCode": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string"
@@ -1043,6 +1364,14 @@
             "enum": [
               "manual",
               "learned"
+            ]
+          },
+          "lineageStatus": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "unverified",
+              "quarantined"
             ]
           }
         },
@@ -1831,6 +2160,317 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SceneState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/embedding-index": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbeddingIndexStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/embedding-index/{action}": {
+      "post": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "start",
+                "pause",
+                "cancel",
+                "resume"
+              ]
+            },
+            "required": true,
+            "name": "action",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "confirmUnknownRequest": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "expectedJobId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "expectedEncoderRevision": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "expectedJobId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmbeddingIndexStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/learning/status": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearningStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/learning/failures/{id}/retry": {
+      "post": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/learning/failures/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
                 }
               }
             }

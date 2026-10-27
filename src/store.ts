@@ -2,7 +2,7 @@ import Database from 'better-sqlite3'
 import * as sqliteVec from 'sqlite-vec'
 import { mkdirSync, appendFileSync, existsSync, statSync, renameSync, rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import type { ModelLog, ModelDiagnostic } from './models.ts'
+import type { ModelLog, ModelDiagnostic, RouterConfig } from './models.ts'
 import { randomUUID } from 'node:crypto'
 import {
   ModelConfigSchema,
@@ -129,7 +129,7 @@ export class Store {
     }
     return row
   }
-  recordModel(entry: ModelLog, config: ModelConfig = this.models) {
+  recordModel(entry: ModelLog, config: RouterConfig = this.models) {
     this.log(
       entry.event === 'model.failed' ? 'error' : 'info',
       'model',

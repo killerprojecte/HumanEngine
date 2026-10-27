@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import sharp from 'sharp'
-import type { Router } from './models.ts'
+import { ModelError, type Router } from './models.ts'
+import { setTimeout as delay } from 'node:timers/promises'
 import type { Store } from './store.ts'
 import type { MemorySource, SourceEvidence } from './memory.ts'
 
@@ -34,6 +35,10 @@ export interface MemeAsset {
   tagRevision?: number
   analyzed: boolean
   analysisError?: string
+  analysisState?: 'running' | 'retrying' | 'succeeded' | 'failed' | 'cancelled' | 'interrupted'
+  analysisAttempts?: number
+  analysisNextRetryAt?: string
+  analysisFailureCode?: string
   selectionOrigin?: 'automatic' | 'manual'
   sharingOrigin?: 'automatic' | 'manual'
   available: boolean
@@ -91,6 +96,67 @@ function validateTags(value: unknown): MemeTags {
   return output
 }
 
+// Deliberately finite bilingual vocabulary, not a general multilingual embedding model.
+const CONCEPTS: Record<string, string[]> = {
+  happy: ['happy', 'cheerful', 'joy', 'joyful', '开心', '開心', '高兴', '高興', '快乐', '快樂'],
+  celebrate: [
+    'celebrate',
+    'celebration',
+    'congratulations',
+    'congrats',
+    '庆祝',
+    '慶祝',
+    '祝贺',
+    '祝賀',
+  ],
+  sad: [
+    'sad',
+    'sadness',
+    'unhappy',
+    'not happy',
+    'dejected',
+    '难过',
+    '難過',
+    '伤心',
+    '傷心',
+    '不开心',
+    '不開心',
+  ],
+  confused: ['confused', 'confusion', 'puzzled', '困惑', '疑惑', '迷惑', '不解'],
+  angry: ['angry', 'anger', '生气', '生氣', '愤怒', '憤怒'],
+  thanks: ['thanks', 'thank you', 'gratitude', '感谢', '感謝', '谢谢', '謝謝'],
+  comfort: ['comfort', 'comforting', '安慰', '抱抱'],
+  greeting: ['greeting', 'hello', 'welcome', '问候', '問候', '你好', '欢迎', '歡迎'],
+  love: ['love', 'affection', '喜欢', '喜歡', '爱', '愛'],
+  tired: ['tired', 'sleepy', '疲惫', '疲憊', '困了'],
+  surprise: ['surprise', 'surprised', '惊讶', '驚訝', '震惊', '震驚'],
+}
+const normalized = (value: string) => value.normalize('NFKC').toLowerCase().trim()
+const CONCEPT_ALIASES = Object.entries(CONCEPTS)
+  .flatMap(([concept, words]) => words.map((word) => ({ concept, word })))
+  .sort((a, b) => b.word.length - a.word.length)
+function concepts(value: string): string[] {
+  let remaining = normalized(value)
+  const found = new Set<string>()
+  // Longest phrases first avoid treating "unhappy" or "不开心" as happy.
+  for (const { concept, word } of CONCEPT_ALIASES) {
+    const pattern = /[a-z]/.test(word)
+      ? new RegExp(`(?<![a-z])${word}(?![a-z])`, 'g')
+      : new RegExp(word, 'g')
+    if (pattern.test(remaining)) {
+      found.add(concept)
+      remaining = remaining.replace(pattern, ' '.repeat(word.length))
+    }
+  }
+  return [...found]
+}
+const tagConcepts = (tags: MemeTags) => [
+  ...new Set([
+    ...TAG_CATEGORIES.flatMap((key) => tags[key].flatMap(concepts)),
+    ...concepts(tags.ocr),
+  ]),
+]
+
 export class MemeService {
   readonly mediaRoot: string
   private readonly thumbnails = new Map<string, Buffer>()
@@ -115,7 +181,26 @@ export class MemeService {
         scene_id TEXT NOT NULL, message_id TEXT NOT NULL, positive INTEGER NOT NULL,
         PRIMARY KEY(asset_id,scene_id,message_id)
       );
+      CREATE TABLE IF NOT EXISTS meme_search_concepts (
+        asset_id TEXT NOT NULL REFERENCES meme_assets(id) ON DELETE CASCADE,
+        concept TEXT NOT NULL, PRIMARY KEY(asset_id,concept)
+      );
+      CREATE INDEX IF NOT EXISTS meme_concept_lookup ON meme_search_concepts(concept,asset_id);
     `)
+    // Rebuild from original tags, never mutate evidence to manufacture matching results.
+    store.db.transaction(() => {
+      for (const asset of this.adminList()) {
+        if (['running', 'retrying'].includes(asset.analysisState ?? '')) {
+          asset.analysisState = 'interrupted'
+          delete asset.analysisNextRetryAt
+        }
+        this.indexConcepts(asset)
+        if (asset.analysisState === 'interrupted')
+          store.db
+            .prepare('UPDATE meme_assets SET value=? WHERE id=?')
+            .run(JSON.stringify(asset), asset.id)
+      }
+    })()
   }
 
   async import(ctx: MemeContext, bytes: Buffer, source: MemorySource): Promise<MemeAsset> {
@@ -199,12 +284,16 @@ export class MemeService {
     const signal = options.signal
       ? AbortSignal.any([options.signal, controller.signal])
       : controller.signal
-    const task = this.analyzeOnce(ctx, asset, router, signal, options.selectionContext).finally(
-      () => {
-        this.analyses.delete(key)
-        this.analysisControllers.delete(key)
-      },
-    )
+    const task = this.analyzeWithRetry(
+      ctx,
+      asset,
+      router,
+      signal,
+      options.selectionContext,
+    ).finally(() => {
+      this.analyses.delete(key)
+      this.analysisControllers.delete(key)
+    })
     this.analyses.set(key, task)
     return task
   }
@@ -254,10 +343,18 @@ export class MemeService {
     if (input.state && states[input.state]) clauses.push(states[input.state]!)
     const query = input.query?.trim()
     if (query) {
-      clauses.push(
-        "EXISTS (SELECT 1 FROM json_tree(a.value, '$.tags') tag WHERE tag.type = 'text' AND tag.value LIKE ? ESCAPE '\\')",
-      )
-      bindings.push('%' + query.replace(/[\\%_]/g, '\\$&') + '%')
+      const known = concepts(query)
+      if (known.length) {
+        clauses.push(
+          `EXISTS (SELECT 1 FROM meme_search_concepts c WHERE c.asset_id=a.id AND c.concept IN (${known.map(() => '?').join(',')}))`,
+        )
+        bindings.push(...known)
+      } else {
+        clauses.push(
+          "EXISTS (SELECT 1 FROM json_tree(a.value, '$.tags') tag WHERE tag.type = 'text' AND tag.value LIKE ? ESCAPE '\\')",
+        )
+        bindings.push('%' + query.replace(/[\\%_]/g, '\\$&') + '%')
+      }
     }
     const where = clauses.length
       ? ' WHERE ' + clauses.map((clause) => '(' + clause + ')').join(' AND ')
@@ -350,7 +447,8 @@ export class MemeService {
     return next
   }
   search(ctx: MemeContext, query: string, tags: string[] = []): MemeAsset[] {
-    const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
+    const terms = normalized(query).split(/\s+/).filter(Boolean)
+    const requested = new Set([...concepts(query), ...tags.flatMap(concepts)])
     return this.readVisible(ctx)
       .filter(
         (asset) =>
@@ -362,8 +460,12 @@ export class MemeService {
         )
         const text = `${labels.join(' ')} ${asset.tags.ocr}`.toLowerCase()
         const match =
-          terms.filter((term) => text.includes(term)).length +
-          tags.filter((tag) => labels.includes(tag.toLowerCase())).length
+          terms.filter((term) => {
+            const known = concepts(term)
+            return known.length ? false : text.includes(term)
+          }).length +
+          tags.filter((tag) => labels.includes(normalized(tag))).length +
+          tagConcepts(asset.tags).filter((key) => requested.has(key)).length
         const recent =
           asset.lastUsedAt && Date.now() - Date.parse(asset.lastUsedAt) < 600_000 ? 1 : 0
         return {
@@ -540,7 +642,7 @@ export class MemeService {
         this.write(next)
         return this.sanitize(next)
       })()
-    } catch {
+    } catch (error) {
       const current = this.get(asset.id)
       if (
         current &&
@@ -552,8 +654,78 @@ export class MemeService {
           ...current,
           analysisError: signal?.aborted ? 'analysis_cancelled' : 'analysis_failed',
         })
-      throw new Error(signal?.aborted ? 'analysis_cancelled' : 'analysis_failed')
+      throw error
     }
+  }
+  private async analyzeWithRetry(
+    ctx: MemeContext,
+    asset: MemeAsset,
+    router: Pick<Router, 'complete'>,
+    signal: AbortSignal,
+    selectionContext?: {
+      persona: string
+      preferences: unknown
+      sourceContext: unknown
+      sourceContextKnown: boolean
+    },
+  ): Promise<MemeAsset> {
+    const update = (patch: Partial<MemeAsset>) => {
+      const current = this.get(asset.id)
+      if (current) this.write({ ...current, ...patch })
+    }
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        this.allowWrite(ctx)
+        const current = this.visible(ctx, asset.id, false)
+        if (signal.aborted) throw new Error('analysis_cancelled')
+        if (current.tagRevision !== asset.tagRevision) {
+          update({ analysisState: 'cancelled', analysisNextRetryAt: undefined })
+          return this.sanitize(this.get(asset.id) ?? current)
+        }
+        update({
+          analysisState: 'running',
+          analysisAttempts: attempt,
+          analysisNextRetryAt: undefined,
+          analysisFailureCode: undefined,
+        })
+        const result = await this.analyzeOnce(ctx, asset, router, signal, selectionContext)
+        update({
+          analysisState: 'succeeded',
+          analysisNextRetryAt: undefined,
+          analysisFailureCode: undefined,
+        })
+        return this.sanitize(this.get(asset.id) ?? result)
+      } catch (error) {
+        const retryable = error instanceof ModelError && error.retryable
+        const code =
+          error instanceof ModelError && error.status
+            ? `provider_http_${error.status}`
+            : signal.aborted
+              ? 'analysis_cancelled'
+              : 'analysis_failed'
+        if (!signal.aborted && retryable && attempt < 3) {
+          const waitMs = attempt * 500
+          update({
+            analysisState: 'retrying',
+            analysisFailureCode: code,
+            analysisNextRetryAt: new Date(Date.now() + waitMs).toISOString(),
+          })
+          try {
+            await delay(waitMs, undefined, { signal })
+            continue
+          } catch {
+            /* Cancellation is terminal. */
+          }
+        }
+        update({
+          analysisState: signal.aborted ? 'cancelled' : 'failed',
+          analysisFailureCode: code,
+          analysisNextRetryAt: undefined,
+        })
+        throw new Error(signal.aborted ? 'analysis_cancelled' : 'analysis_failed')
+      }
+    }
+    throw new Error('analysis_failed')
   }
   private readVisible(ctx: MemeContext): MemeAsset[] {
     const sql = ctx.simulation
@@ -619,6 +791,11 @@ export class MemeService {
     asset.preference = Math.max(-5, Math.min(5, row.score * 0.2))
     this.write(asset)
   }
+  private indexConcepts(asset: MemeAsset) {
+    this.store.db.prepare('DELETE FROM meme_search_concepts WHERE asset_id=?').run(asset.id)
+    for (const concept of tagConcepts(asset.tags))
+      this.store.db.prepare('INSERT INTO meme_search_concepts VALUES(?,?)').run(asset.id, concept)
+  }
   private write(asset: MemeAsset) {
     this.store.db.transaction(() => {
       this.store.db
@@ -626,6 +803,7 @@ export class MemeService {
           'INSERT INTO meme_assets VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value',
         )
         .run(asset.id, JSON.stringify(asset))
+      this.indexConcepts(asset)
       this.store.db.prepare('DELETE FROM meme_sources WHERE asset_id=?').run(asset.id)
       for (const source of asset.sources)
         this.store.db

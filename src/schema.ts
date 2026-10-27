@@ -32,6 +32,7 @@ export const ModelSchema = z
     apiModelName: z.string().min(1).max(200),
     capabilities: z.array(z.enum(['text', 'tools', 'vision', 'embedding'])).min(1),
     embeddingBatchSize: z.number().int().min(1).max(64).default(4),
+    embeddingDimensions: z.number().int().min(1).max(16384).optional(),
     inputUsdPerMillion: z.number().min(0).optional(),
     outputUsdPerMillion: z.number().min(0).optional(),
   })
@@ -91,6 +92,10 @@ export const SettingsSchema = z
     debounceMs: z.number().int().min(0).max(30000),
     maxWaitMs: z.number().int().min(100).max(60000),
     learningBatchMs: z.number().int().min(100).max(300000).default(30000),
+    learningQueueMaxMessages: z.number().int().min(60).max(20000).default(2048),
+    learningQueueMaxTotalMessages: z.number().int().min(60).max(100000).default(8192),
+    learningRetryAttempts: z.number().int().min(1).max(5).default(3),
+    learningRetryBaseMs: z.number().int().min(100).max(30000).default(1000),
     debugModelIO: z.boolean().default(false),
     modelConcurrency: z.number().int().min(1).max(32).default(4),
     participationWindows: z

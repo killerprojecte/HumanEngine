@@ -95,3 +95,11 @@ implementation. Relevant official references:
 - [Sharp constructor and frame options](https://sharp.pixelplumbing.com/api-constructor/)
 - [Sharp image metadata](https://sharp.pixelplumbing.com/api-input/)
 - [Sharp output formats](https://sharp.pixelplumbing.com/api-output/)
+
+### Bilingual retrieval and analysis recovery
+
+Runtime search and administrative pagination share a finite Chinese (simplified/traditional) and English concept vocabulary for joy, celebration, sadness, confusion, anger, gratitude, comfort, greetings, affection, tiredness and surprise. It indexes original tags/OCR without modifying them. Longest phrases prevent `unhappy` / `不开心` from becoming joy. Unknown terms retain literal matching. This is **not** universal multilingual semantic search; a zero-result query means no matching visible candidates, not an empty inventory. Runtime results remain capped at 12 with existing feedback/favorite/recency ranking and availability, scope and recall guards. The derived index is rebuilt from existing assets on startup without model calls.
+
+Vision analysis retries at most three attempts, only for explicitly retryable HTTP 429/502/503/504 failures (and only when all routed failures have that classification). Invalid output, authorization errors, uncertain transport failures and timeouts are not retried. Backoff is abortable; recall/disable/disposal stop pending retries. Restart marks unfinished analyses interrupted, never replays them. Administrative asset details expose state, attempt count, safe failure code and scheduled retry time.
+
+The detail page separately displays feedback preference score, actual usage count, last use and source count. Favorite is a manual flag; preference is the existing capped feedback sum, not a vote count. A negative vote adjusts only this asset's ranking and does not permanently disable it or establish a global “use fewer memes” habit.

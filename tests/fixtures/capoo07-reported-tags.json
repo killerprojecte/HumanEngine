@@ -1,0 +1,23 @@
+{
+  "sample": "capoo-07",
+  "assetId": "51924f637b18f0cf8e5c98d5a360e95b960da4c44fee2063ff11da71f4e58bef",
+  "tags": {
+    "appearance": [
+      "chubby blue cartoon cat",
+      "white belly",
+      "closed smiling eyes",
+      "small open mouth",
+      "short legs",
+      "small ears",
+      "rounded body"
+    ],
+    "style": ["simple cartoon", "thick gray outlines", "flat colors", "kawaii"],
+    "subject": ["blue cat-like creature"],
+    "emotion": ["happy", "content", "relaxed", "cheerful"],
+    "intent": ["express happiness", "send a cute reaction"],
+    "tone": ["cute", "playful", "friendly"],
+    "intensity": ["mild"],
+    "memeMeaning": ["wholesome happy reaction", "cute contentment", "friendly agreement"],
+    "ocr": ""
+  }
+}

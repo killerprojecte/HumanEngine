@@ -114,6 +114,13 @@ export async function probe(
         : 'text_response_received',
     )
   } catch (error) {
+    // Preserve the probe API diagnostic; dimension mismatch remains a distinct error.
+    if (
+      capability === 'embedding' &&
+      error instanceof ModelError &&
+      error.code === 'invalid_embedding_vector'
+    )
+      return result(false, 'embedding_validation_failed')
     // Router codes are fixed diagnostics; never relay provider text, credentials, or URLs.
     return result(false, error instanceof ModelError ? error.code : 'probe_failed')
   }

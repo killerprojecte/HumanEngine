@@ -3,6 +3,40 @@ import type { components } from '~/types/api'
 type Settings = components['schemas']['Settings']
 const { t } = useI18n(),
   { client } = useApi()
+const learning = ref<components['schemas']['LearningStatus']>()
+const learningBusy = ref(false),
+  learningError = ref('')
+async function loadLearning() {
+  if (learningBusy.value) return
+  learningBusy.value = true
+  learningError.value = ''
+  try {
+    const result = await client.GET('/api/learning/status')
+    if (!result.data) throw new Error(result.error?.error ?? t('networkError'))
+    learning.value = result.data
+  } catch (cause) {
+    learningError.value = cause instanceof Error ? cause.message : t('networkError')
+  } finally {
+    learningBusy.value = false
+  }
+}
+async function actLearning(id: string, retry: boolean) {
+  if (learningBusy.value) return
+  if (!retry && !window.confirm(t('stLearningDiscardConfirm'))) return
+  learningBusy.value = true
+  learningError.value = ''
+  try {
+    const result = retry
+      ? await client.POST('/api/learning/failures/{id}/retry', { params: { path: { id } } })
+      : await client.DELETE('/api/learning/failures/{id}', { params: { path: { id } } })
+    if (!result.data) throw new Error(result.error?.error ?? t('networkError'))
+  } catch (cause) {
+    learningError.value = cause instanceof Error ? cause.message : t('networkError')
+  } finally {
+    learningBusy.value = false
+  }
+  if (!learningError.value) await loadLearning()
+}
 const settings = ref<Settings>(),
   busy = ref(false),
   error = ref(''),
@@ -142,6 +176,7 @@ function warnBeforeUnload(event: BeforeUnloadEvent) {
 }
 onMounted(() => {
   void load()
+  void loadLearning()
   window.addEventListener('beforeunload', warnBeforeUnload)
 })
 onBeforeUnmount(() => {
@@ -149,6 +184,34 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', warnBeforeUnload)
 })
 const timingFields = [
+  {
+    key: 'learningQueueMaxMessages' as const,
+    label: 'stQueueScene',
+    help: 'stQueueSceneHelp',
+    min: 60,
+    max: 20000,
+  },
+  {
+    key: 'learningQueueMaxTotalMessages' as const,
+    label: 'stQueueTotal',
+    help: 'stQueueTotalHelp',
+    min: 60,
+    max: 100000,
+  },
+  {
+    key: 'learningRetryAttempts' as const,
+    label: 'stRetryAttempts',
+    help: 'stRetryAttemptsHelp',
+    min: 1,
+    max: 5,
+  },
+  {
+    key: 'learningRetryBaseMs' as const,
+    label: 'stRetryBase',
+    help: 'stRetryBaseHelp',
+    min: 100,
+    max: 30000,
+  },
   { key: 'debounceMs' as const, label: 'stDebounce', help: 'stDebounceHelp', min: 0, max: 30000 },
   { key: 'maxWaitMs' as const, label: 'stMaxWait', help: 'stMaxWaitHelp', min: 100, max: 60000 },
   {
@@ -173,6 +236,66 @@ const timingFields = [
       <h1 class="page-heading">{{ t('stTitle') }}</h1>
       <p class="mt-2 text-sm text-muted">{{ t('stIntro') }}</p>
     </header>
+    <section class="settings-section">
+      <div class="settings-heading">
+        <h2>{{ t('stLearningStatus') }}</h2>
+        <UButton
+          :loading="learningBusy"
+          :disabled="learningBusy"
+          variant="outline"
+          @click="loadLearning"
+          >{{ t('refresh') }}</UButton
+        >
+      </div>
+      <div class="settings-body">
+        <p class="text-sm text-muted">{{ t('stLearningStatusHelp') }}</p>
+        <UAlert v-if="learningError" color="error" :title="learningError" />
+        <dl v-if="learning" class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+          <div
+            v-for="key in [
+              'accepted',
+              'completed',
+              'failed',
+              'overflow',
+              'retried',
+              'queued',
+              'retrying',
+              'active',
+              'paused',
+            ] as const"
+            :key="key"
+          >
+            <dt class="text-muted">{{ t(`stLearning_${key}`) }}</dt>
+            <dd>{{ learning[key] }}</dd>
+          </div>
+        </dl>
+        <div
+          v-for="failure in learning?.failures ?? []"
+          :key="failure.id"
+          class="rounded border border-warning/40 p-3 space-y-2 text-sm"
+        >
+          <p class="break-all">{{ failure.sceneId }}</p>
+          <p>
+            {{ t('stLearningFailure', { count: failure.messageCount, attempt: failure.attempt }) }}
+          </p>
+          <p v-if="failure.partial" class="text-warning">{{ t('stLearningPartial') }}</p>
+          <div class="flex gap-2">
+            <UButton
+              v-if="failure.canRetry"
+              :disabled="learningBusy"
+              @click="actLearning(failure.id, true)"
+              >{{ t('stLearningRetry') }}</UButton
+            ><UButton
+              variant="outline"
+              color="error"
+              :disabled="learningBusy"
+              @click="actLearning(failure.id, false)"
+              >{{ t('stLearningDiscard') }}</UButton
+            >
+          </div>
+        </div>
+      </div>
+    </section>
     <UAlert v-if="error" color="error" :title="error" />
     <UAlert v-if="saved && !dirty" color="success" :title="t('stSaved')" />
     <section

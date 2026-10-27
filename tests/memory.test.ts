@@ -23,6 +23,7 @@ function evidence(sceneId: string, messageId = 'm1', senderId = 'person'): Memor
   return {
     sceneId,
     simulation: false,
+    provenance: 'source-only',
     sourceEvidence: [{ sceneId, messageId, senderId, available: true, isBot: false }],
   }
 }

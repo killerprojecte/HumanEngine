@@ -54,8 +54,8 @@ let openingDraft = '',
 const dirty = computed(
   () => modalOpen.value && mode.value !== 'view' && JSON.stringify(draft.value) !== openingDraft,
 )
-const confirmation = ref<'discard' | 'delete' | 'lock'>()
-const confirmationKind = ref<'discard' | 'delete' | 'lock'>('discard')
+const confirmation = ref<'discard' | 'delete' | 'lock' | 'revalidate'>()
+const confirmationKind = ref<'discard' | 'delete' | 'lock' | 'revalidate'>('discard')
 const confirmationPreview = ref('')
 const confirmationCopy = ref({ title: '', description: '', action: '' })
 const confirmationError = ref('')
@@ -192,24 +192,30 @@ function begin(memory?: Memory) {
   confirmation.value = undefined
   modalOpen.value = true
 }
-function ask(kind: 'discard' | 'delete' | 'lock') {
+function ask(kind: 'discard' | 'delete' | 'lock' | 'revalidate') {
   if (busy.value || (kind !== 'discard' && (recoveryRequired.value || editorUncertain.value)))
     return
   confirmationError.value = ''
   confirmationCopy.value =
-    kind === 'discard'
-      ? { title: t('mcDiscardTitle'), description: t('mmDiscardHelp'), action: t('mcDiscard') }
-      : kind === 'delete'
-        ? {
-            title: t('mmDeleteTitle'),
-            description: t('memoryDeleteConfirm'),
-            action: t('confirmDelete'),
-          }
-        : {
-            title: t(selected.value?.locked ? 'mmUnlockTitle' : 'mmLockTitle'),
-            description: t('mmLockHelp'),
-            action: t(selected.value?.locked ? 'memoryUnlock' : 'memoryLock'),
-          }
+    kind === 'revalidate'
+      ? {
+          title: t('memoryRevalidate'),
+          description: t('memoryRevalidateConfirm'),
+          action: t('memoryRevalidate'),
+        }
+      : kind === 'discard'
+        ? { title: t('mcDiscardTitle'), description: t('mmDiscardHelp'), action: t('mcDiscard') }
+        : kind === 'delete'
+          ? {
+              title: t('mmDeleteTitle'),
+              description: t('memoryDeleteConfirm'),
+              action: t('confirmDelete'),
+            }
+          : {
+              title: t(selected.value?.locked ? 'mmUnlockTitle' : 'mmLockTitle'),
+              description: t('mmLockHelp'),
+              action: t(selected.value?.locked ? 'memoryUnlock' : 'memoryLock'),
+            }
   confirmationKind.value = kind
   confirmationPreview.value = selected.value?.content ?? ''
   confirmation.value = kind
@@ -354,7 +360,10 @@ async function confirmAction() {
     } else {
       const response = await client.PATCH('/api/memories/{id}', {
         params: { path: { id: record.id } },
-        body: { locked: !record.locked },
+        body:
+          action === 'revalidate'
+            ? { content: record.content, status: 'active' }
+            : { locked: !record.locked },
       })
       if (!response.data)
         mutationFailure(response.response, response.error?.error ?? t('networkError'))
@@ -488,6 +497,11 @@ function date(value: string) {
                   :color="memory.status === 'active' ? 'neutral' : 'warning'"
                   variant="subtle"
                   >{{ t(`memoryStatus_${memory.status}`) }}</UBadge
+                ><UBadge
+                  v-if="memory.lineageStatus && memory.lineageStatus !== 'verified'"
+                  color="warning"
+                  variant="subtle"
+                  >{{ t(`memoryLineage_${memory.lineageStatus}`) }}</UBadge
                 ><span v-if="memory.locked" class="inline-flex items-center gap-1 text-muted"
                   ><UIcon name="i-lucide-lock-keyhole" class="size-3.5" />{{ t('mmLocked') }}</span
                 >
@@ -561,7 +575,21 @@ function date(value: string) {
               >{{ t('memoryPerson') }}: {{ selected.scope.personId }}</span
             >
           </div>
+          <UAlert
+            v-if="selected.lineageStatus && selected.lineageStatus !== 'verified'"
+            color="warning"
+            :title="t(`memoryLineage_${selected.lineageStatus}`)"
+            :description="t('memoryLineageHelp')"
+          />
           <p class="whitespace-pre-wrap break-words text-sm leading-7">{{ selected.content }}</p>
+          <UButton
+            v-if="selected.lineageStatus && selected.lineageStatus !== 'verified'"
+            :disabled="busy || recoveryRequired || editorUncertain"
+            color="warning"
+            variant="outline"
+            @click="ask('revalidate')"
+            >{{ t('memoryRevalidate') }}</UButton
+          >
           <dl class="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-default pt-5 text-sm">
             <div>
               <dt class="text-xs text-muted">{{ t('memoryKind') }}</dt>

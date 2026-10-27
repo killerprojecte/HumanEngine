@@ -732,6 +732,29 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
             {{ selected.format.toUpperCase() }} · {{ selected.width }} × {{ selected.height }} ·
             {{ selected.frames }} {{ t('frames') }} · {{ Math.round(selected.bytes / 1024) }} KiB
           </p>
+          <section
+            class="rounded border border-default p-3 space-y-2 text-xs"
+            data-testid="meme-feedback-summary"
+          >
+            <h3 class="font-medium">{{ t('meObservedSummary') }}</h3>
+            <p>
+              {{ t('mePreferenceScore') }}: {{ selected.preference }} · {{ t('meUsageCount') }}:
+              {{ selected.usageCount }}
+            </p>
+            <p>
+              {{ t('meLastUsed') }}: {{ selected.lastUsedAt || '—' }} · {{ t('meSourceCount') }}:
+              {{ selected.sources.length }}
+            </p>
+            <p class="text-muted">{{ t('meFeedbackHelp') }}</p>
+            <p v-if="selected.analysisState">
+              {{ t('meRetryState') }}: {{ selected.analysisState }} ·
+              {{ selected.analysisAttempts || 0 }}/3
+            </p>
+            <p v-if="selected.analysisNextRetryAt">
+              {{ t('meNextRetry') }}: {{ selected.analysisNextRetryAt }}
+            </p>
+            <p v-if="selected.analysisFailureCode">{{ selected.analysisFailureCode }}</p>
+          </section>
           <UAlert
             v-if="selected.analysisError"
             color="warning"

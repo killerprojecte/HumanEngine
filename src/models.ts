@@ -19,8 +19,12 @@ export interface ModelInstance {
   providerId: string
   apiModelName: string
   capabilities: Array<'text' | 'tools' | 'vision' | 'embedding'>
+  inputUsdPerMillion?: number
+  outputUsdPerMillion?: number
   /** Maximum inputs per sequential embedding request; defaults to four. */
   embeddingBatchSize?: number
+  /** Omit for provider-native output; explicit values require provider support. */
+  embeddingDimensions?: number
 }
 export interface RoleRoute {
   role: ModelRole
@@ -82,6 +86,7 @@ export class ModelError extends Error {
   constructor(
     public readonly code: string,
     public readonly status?: number,
+    public readonly retryable = status !== undefined && [429, 502, 503, 504].includes(status),
   ) {
     super(code)
     this.name = 'ModelError'
@@ -157,6 +162,8 @@ export class Router {
     )
       throw new ModelError('invalid_tool_names')
     let attempted = false
+    let retryable = true
+    let lastStatus: number | undefined
     for (const modelId of route.orderedModelIds) {
       if (signal?.aborted) throw abortError()
       const model = this.config.models.find((item) => item.id === modelId)
@@ -269,6 +276,8 @@ export class Router {
         return completion
       } catch (error) {
         if (signal?.aborted) throw abortError()
+        retryable &&= error instanceof ModelError && error.retryable
+        lastStatus = error instanceof ModelError ? error.status : undefined
         this.emit({
           event: 'model.failed',
           modelId,
@@ -280,7 +289,11 @@ export class Router {
         if (error instanceof ModelError && error.code === 'protocol_disabled') throw error
       }
     }
-    throw new ModelError(attempted ? 'all_models_failed' : 'no_compatible_model')
+    throw new ModelError(
+      attempted ? 'all_models_failed' : 'no_compatible_model',
+      retryable && attempted ? lastStatus : undefined,
+      attempted && retryable,
+    )
   }
 
   async embeddings(
@@ -292,6 +305,13 @@ export class Router {
     const model = this.config.models.find((item) => item.id === modelId)
     if (!model?.capabilities.includes('embedding'))
       throw new ModelError('embedding_model_not_configured')
+    if (
+      model.embeddingDimensions !== undefined &&
+      (!Number.isSafeInteger(model.embeddingDimensions) ||
+        model.embeddingDimensions < 1 ||
+        model.embeddingDimensions > 16384)
+    )
+      throw new ModelError('invalid_embedding_dimensions_setting')
     const batchSize = model.embeddingBatchSize ?? 4
     if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 64)
       throw new ModelError('invalid_embedding_batch_size')
@@ -307,6 +327,9 @@ export class Router {
         signal,
       )
       if (signal?.aborted) throw abortError()
+      // Request accounting is already complete. Reject unusable output here so a
+      // single paid response cannot also produce a duplicate model.failed event.
+      this.validateEmbeddingVectors(model, batch.vectors)
       if (vectors.length && batch.vectors.some((vector) => vector.length !== vectors[0]!.length))
         throw new ModelError('invalid_embedding_dimensions')
       vectors.push(...batch.vectors)
@@ -338,7 +361,14 @@ export class Router {
         this.request(
           provider,
           'embeddings',
-          { model: model.apiModelName, input: inputs, encoding_format: 'float' },
+          {
+            model: model.apiModelName,
+            input: inputs,
+            encoding_format: 'float',
+            ...(model.embeddingDimensions === undefined
+              ? {}
+              : { dimensions: model.embeddingDimensions }),
+          },
           timeout,
           signal,
         ),
@@ -662,6 +692,23 @@ export class Router {
       usage,
     })
     return { vectors, usage, modelId: model.id }
+  }
+
+  private validateEmbeddingVectors(model: ModelInstance, vectors: number[][]) {
+    if (
+      vectors.some(
+        (vector) =>
+          vector.length > 16384 ||
+          vector.some((n) => !Number.isFinite(Math.fround(n))) ||
+          vector.every((n) => Math.fround(n) === 0),
+      )
+    )
+      throw new ModelError('invalid_embedding_vector')
+    if (
+      model.embeddingDimensions !== undefined &&
+      vectors.some((vector) => vector.length !== model.embeddingDimensions)
+    )
+      throw new ModelError('embedding_dimensions_mismatch')
   }
 
   private emit(entry: ModelLog) {

@@ -84,6 +84,9 @@ test(
       scopeKind: string
       input: { candidate: string; originalContext: unknown[] }
     }> = []
+    const reconciliationInputs: Array<{
+      relatedMemories: Array<{ id: string; canRevise: boolean }>
+    }> = []
     const learningInputs: Array<{
       phase: string
       related: Array<{ id: string; canRevise: boolean }>
@@ -141,6 +144,27 @@ test(
               containsPersonalData: false,
             })
           }
+          if (tools.some((tool) => tool.name === 'learning.reconcile')) {
+            const input = JSON.parse(messages[1]!.content)
+            reconciliationInputs.push(input)
+            const candidate = input.candidates[0]?.candidate
+            const targetId =
+              candidate?.content === groupFact
+                ? groupId
+                : candidate?.content === 'The participant uses the name Blair.'
+                  ? originalNameId
+                  : candidate?.content === 'HTTP status codes classify response outcomes.' ||
+                      candidate?.content === 'HTTP means a different thing here.'
+                    ? publicHttpId
+                    : undefined
+            return targetId
+              ? output('learning.reconcile', {
+                  candidateIndex: 0,
+                  targetId,
+                  action: candidate.content === groupFact ? 'merge' : 'supersede',
+                })
+              : { text: '', toolCalls: [], usage }
+          }
           if (context.model?.id === 'learning') {
             const input = JSON.parse(messages[1]!.content) as {
               messages: RuntimeMessage[]
@@ -155,7 +179,7 @@ test(
                 .map((part) => part.text)
                 .join(' ') ?? ''
             const phase = text.split(':')[0]!
-            learningInputs.push({ phase, related: input.relatedMemories })
+            learningInputs.push({ phase, related: input.relatedMemories ?? [] })
             if (!source) return { text: '', toolCalls: [], usage }
             const common = { sourceMessageIds: [source.id], importance: 'medium', confidence: 0.6 }
             switch (phase) {
@@ -217,7 +241,7 @@ test(
               case 'GROUP_RECALLED':
                 return output('learning.propose', {
                   ...common,
-                  content: 'Amber means release-ready in this group.',
+                  content: groupFact,
                   kind: 'term',
                   mergeIntoId: groupId,
                 })
@@ -243,7 +267,12 @@ test(
             }
             if (!results.length) return output('memes.search', { query: 'greeting' })
             if (results.length === 1) {
-              const assets = JSON.parse(results[0]!.content) as MemeAsset[]
+              const result = JSON.parse(results[0]!.content) as {
+                items: MemeAsset[]
+                coverage: string
+              }
+              assert.equal(result.coverage, 'partial')
+              const assets = result.items
               searchConsumed =
                 assets.length === 2 && assets.every((asset) => asset.sources.length === 0)
               return output('messages.send', {
@@ -428,16 +457,16 @@ test(
       const groupSource = await learn('GROUP_SEED: The group uses amber as a release label.')
       groupId = engine.memory.adminList().find((memory) => memory.content === groupFact)!.id
       const corroborating = await learn(
-        'GROUP_MERGE: Amber means release-ready in this group.',
+        'GROUP_MERGE: The group uses amber as a release label.',
         'person-b',
       )
       const merged = engine.memory.adminList().find((memory) => memory.id === groupId)!
       assert.equal(merged.content, groupFact)
       assert.equal(merged.sources.length, 2)
       assert.ok(
-        learningInputs
-          .find((input) => input.phase === 'GROUP_MERGE')
-          ?.related.some((memory) => memory.id === groupId && memory.canRevise),
+        reconciliationInputs.some((input) =>
+          input.relatedMemories.some((memory) => memory.id === groupId && memory.canRevise),
+        ),
       )
       await learn('NAME_CHANGE: The participant now uses Blair rather than Alex.')
       assert.equal(

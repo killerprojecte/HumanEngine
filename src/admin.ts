@@ -62,6 +62,7 @@ const Memory = MemoryInput.extend({
   learnedAt: z.string(),
   status: z.enum(['active', 'disputed', 'superseded', 'invalidated']),
   origin: z.enum(['manual', 'learned']),
+  lineageStatus: z.enum(['verified', 'unverified', 'quarantined']).optional(),
 }).openapi('Memory')
 const Plugin = z
   .object({
@@ -122,6 +123,13 @@ const Meme = z
     disabled: z.boolean(),
     preference: z.number(),
     usageCount: z.number(),
+    lastUsedAt: z.string().optional(),
+    analysisState: z
+      .enum(['running', 'retrying', 'succeeded', 'failed', 'cancelled', 'interrupted'])
+      .optional(),
+    analysisAttempts: z.number().int().optional(),
+    analysisNextRetryAt: z.string().optional(),
+    analysisFailureCode: z.string().optional(),
     createdAt: z.string(),
     analysisError: z.string().optional(),
   })
@@ -130,6 +138,153 @@ const Success = z.object({ ok: z.boolean() })
 export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
   const { runtime, store, memory, plugins } = engine
 
+  const EmbeddingIndexStatus = z
+    .object({
+      state: z.enum(['unconfigured', 'needs_rebuild', 'ready']),
+      selected: z
+        .object({
+          modelId: z.string(),
+          encoderRevision: z.string(),
+          requestedDimensions: z.number().int().optional(),
+        })
+        .optional(),
+      active: z
+        .object({
+          generationId: z.string(),
+          encoderRevision: z.string(),
+          modelId: z.string(),
+          dimensions: z.number().int(),
+          spaceId: z.string(),
+        })
+        .optional(),
+      coverage: z.object({
+        eligible: z.number().int(),
+        indexed: z.number().int(),
+        pending: z.number().int(),
+      }),
+      retained: z.object({ generations: z.number().int(), vectors: z.number().int() }),
+      job: z
+        .object({
+          id: z.string(),
+          encoderRevision: z.string(),
+          modelId: z.string(),
+          state: z.enum(['running', 'paused', 'failed', 'cancelled', 'completed']),
+          processed: z.number().int(),
+          total: z.number().int(),
+          dimensions: z.number().int().optional(),
+          spaceId: z.string().optional(),
+          error: z.string().optional(),
+          requiresRetryConfirmation: z.boolean(),
+          expectedActive: z.string().optional(),
+          attemptId: z.string().optional(),
+          ownerId: z.string().optional(),
+          leaseUntil: z.number().optional(),
+        })
+        .optional(),
+    })
+    .openapi('EmbeddingIndexStatus')
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/embedding-index',
+      responses: { 200: json(EmbeddingIndexStatus), ...errors },
+    }),
+    (c) => c.json(engine.embeddingIndex.status(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/api/embedding-index/{action}',
+      request: {
+        params: z.object({ action: z.enum(['start', 'pause', 'cancel', 'resume']) }),
+        body: body(
+          z
+            .object({
+              confirmUnknownRequest: z.boolean().default(false),
+              expectedJobId: z.string().nullable(),
+              expectedEncoderRevision: z.string().optional(),
+            })
+            .strict(),
+        ),
+      },
+      responses: { 200: json(EmbeddingIndexStatus), ...errors },
+    }),
+    (c) => {
+      const { action } = c.req.valid('param')
+      const input = c.req.valid('json')
+      try {
+        if (action === 'start') {
+          if (!input.expectedEncoderRevision)
+            return c.json({ error: 'embedding_index_refresh_required' }, 400)
+          engine.embeddingIndex.start(input.expectedJobId, input.expectedEncoderRevision)
+        } else if (action === 'resume')
+          engine.embeddingIndex.resume(input.confirmUnknownRequest, input.expectedJobId)
+        else engine.embeddingIndex[action](input.expectedJobId)
+        return c.json(engine.embeddingIndex.status(), 200)
+      } catch {
+        // Never expose provider messages, endpoints or source contents via action failures.
+        return c.json({ error: 'embedding_index_action_unavailable' }, 400)
+      }
+    },
+  )
+
+  const LearningStatus = z
+    .object({
+      accepted: z.number(),
+      completed: z.number(),
+      failed: z.number(),
+      overflow: z.number(),
+      retried: z.number(),
+      queued: z.number(),
+      retrying: z.number(),
+      active: z.number(),
+      paused: z.number(),
+      failures: z.array(
+        z.object({
+          id: z.string(),
+          sceneId: z.string(),
+          attempt: z.number(),
+          messageCount: z.number(),
+          partial: z.boolean(),
+          canRetry: z.boolean(),
+          createdAt: z.string(),
+        }),
+      ),
+    })
+    .openapi('LearningStatus')
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/learning/status',
+      responses: { 200: json(LearningStatus), ...errors },
+    }),
+    (c) => c.json(engine.learningStatus(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/api/learning/failures/{id}/retry',
+      request: { params },
+      responses: { 200: json(Success), ...errors },
+    }),
+    (c) =>
+      engine.retryLearning(c.req.valid('param').id).ok
+        ? c.json({ ok: true }, 200)
+        : c.json({ error: 'Batch is unavailable or cannot safely retry' }, 400),
+  )
+  app.openapi(
+    createRoute({
+      method: 'delete',
+      path: '/api/learning/failures/{id}',
+      request: { params },
+      responses: { 200: json(Success), ...errors },
+    }),
+    (c) =>
+      engine.discardLearning(c.req.valid('param').id).ok
+        ? c.json({ ok: true }, 200)
+        : c.json({ error: 'Batch is unavailable' }, 400),
+  )
+
   const Habit = z
     .object({
       id: z.string(),
@@ -137,6 +292,10 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       sceneId: z.string().optional(),
       content: z.string().optional(),
       preference: z.string().optional(),
+      context: z.literal('technical').optional(),
+      evidenceVersion: z.literal(2).optional(),
+      sourceCutoff: z.number().optional(),
+      authorWatermarks: z.record(z.string(), z.number()).optional(),
       weight: z.number(),
       confidence: z.number(),
       status: z.enum(['active', 'disputed', 'invalidated']),
@@ -148,6 +307,8 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
           messageId: z.string(),
           senderId: z.string(),
           direction: z.number(),
+          timestamp: z.number().optional(),
+          authorKey: z.string().optional(),
         }),
       ),
     })

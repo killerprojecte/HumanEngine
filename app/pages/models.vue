@@ -23,6 +23,7 @@ const section = ref<Section>('models'),
 const protocols = ref<Array<{ id: string; label: string }>>([])
 const usage = ref<components['schemas']['Usage'][]>([]),
   usageBusy = ref(false)
+const embeddingPanel = ref<{ refresh: () => Promise<void> }>()
 const roles = ['planner', 'thinker', 'learning', 'vision', 'embedding'] as const
 const capabilities: Capability[] = ['text', 'tools', 'vision', 'embedding']
 const capabilityKeys: Record<Capability, string> = {
@@ -203,6 +204,7 @@ async function load() {
     probeResults.value = {}
     protocols.value = available.data ?? []
     loaded.value = true
+    void embeddingPanel.value?.refresh()
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : t('networkError')
   } finally {
@@ -333,6 +335,14 @@ async function persist(deleting = false) {
     return
   }
   if (!deleting && modelDraft.value?.capabilities.includes('embedding')) {
+    const dimensions = modelDraft.value.embeddingDimensions
+    if (
+      dimensions !== undefined &&
+      (!Number.isInteger(dimensions) || dimensions < 1 || dimensions > 16384)
+    ) {
+      editorError.value = t('eiDimensionsInvalid')
+      return
+    }
     const size = modelDraft.value.embeddingBatchSize ?? 4
     if (!Number.isInteger(size) || size < 1 || size > 64) {
       editorError.value = t('mcEmbeddingBatchInvalid')
@@ -385,6 +395,7 @@ async function persist(deleting = false) {
     config.value = result.data
     probeResults.value = {}
     saved.value = true
+    void embeddingPanel.value?.refresh()
     closeEditor()
   } catch (cause) {
     confirmation.value = undefined
@@ -508,6 +519,7 @@ watch(section, () => {
     </header>
     <UAlert v-if="error" color="error" :title="error" />
     <UAlert v-if="saved" color="success" variant="subtle" :title="t('mcSaved')" />
+    <EmbeddingIndexPanel ref="embeddingPanel" :config-busy="operationBusy || editorOpen" />
     <section class="rounded-lg border border-default bg-default overflow-hidden">
       <nav
         class="flex overflow-x-auto border-b border-default px-4 gap-5"
@@ -941,6 +953,29 @@ watch(section, () => {
                     @update:model-value="(value) => toggleCapability(cap, value)"
                   /></div
               ></UFormField>
+              <UFormField
+                v-if="selectedModel.capabilities.includes('embedding')"
+                :label="t('eiDimensions')"
+                :help="t('eiDimensionsHelp')"
+              >
+                <UInput
+                  type="number"
+                  min="1"
+                  max="16384"
+                  step="1"
+                  class="w-full"
+                  :placeholder="t('eiNative')"
+                  :model-value="String(selectedModel.embeddingDimensions ?? '')"
+                  @update:model-value="
+                    (value) => {
+                      if (selectedModel) {
+                        if (value === '') delete selectedModel.embeddingDimensions
+                        else selectedModel.embeddingDimensions = Number(value)
+                      }
+                    }
+                  "
+                />
+              </UFormField>
               <UFormField
                 v-if="selectedModel.capabilities.includes('embedding')"
                 :label="t('mcEmbeddingBatchSize')"

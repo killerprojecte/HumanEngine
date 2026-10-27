@@ -18,7 +18,7 @@ import { z } from '@hono/zod-openapi'
 import { Store } from './store.ts'
 import { Runtime, type RuntimeMessage, type TurnContext } from './runtime.ts'
 import { PluginManager } from './plugins.ts'
-import { snowLumaPlugin, typingDelayPlugin } from './builtin-plugins.ts'
+import { snowLumaPlugin, typingDelayPlugin, webSearchPlugin } from './builtin-plugins.ts'
 import { MemoryService, type MemoryCandidate, type MemoryContext } from './memory.ts'
 import { ModelError, Router, type RouterConfig, type ToolDefinition } from './models.ts'
 import type { Scene } from './schema.ts'
@@ -412,6 +412,7 @@ export class Engine {
       { builtin: true },
     )
     await this.plugins.register(typingDelayPlugin(this.runtime), { builtin: true })
+    await this.plugins.register(webSearchPlugin(this.store), { builtin: true })
     const local =
       process.env.HUMANENGINE_PLUGINS?.split(',')
         .map((entry) => entry.trim())

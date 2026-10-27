@@ -24,6 +24,7 @@ test('bundled plugins default disabled, validate config through API and persist 
       [
         ['snowluma', false, true],
         ['typing-delay', false, true],
+        ['web-search', false, true],
       ],
     )
     const configure = (id: string, value: unknown) =>

@@ -4,6 +4,11 @@ import {
   isSnowLumaIssue,
   type SnowLumaIssue,
 } from '../../src/plugins/builtin/snowluma/validation'
+import {
+  getWebSearchIssues,
+  isWebSearchIssue,
+  type WebSearchIssue,
+} from '../../src/plugins/builtin/web-search/validation'
 import { isPluginStartupErrorCode } from '../../src/plugin-errors'
 import type { components } from '~/types/api'
 type Plugin = components['schemas']['Plugin']
@@ -31,7 +36,7 @@ const busy = ref(false),
   error = ref(''),
   saved = ref(false)
 const validationShown = ref(false)
-const serverIssues = ref<SnowLumaIssue[]>([])
+const serverIssues = ref<Array<SnowLumaIssue | WebSearchIssue>>([])
 function snowValidationValues() {
   const result: Record<string, unknown> = { ...values.value }
   for (const field of fields.value) {
@@ -45,6 +50,11 @@ function snowValidationValues() {
   return result
 }
 const fieldIssues = computed(() => {
+  if (selected.value?.id === 'web-search')
+    return [
+      ...(validationShown.value ? getWebSearchIssues(snowValidationValues()) : []),
+      ...serverIssues.value,
+    ]
   if (selected.value?.id !== 'snowluma') return []
   return [
     ...(validationShown.value ? getSnowLumaIssues(snowValidationValues()) : []),
@@ -57,9 +67,13 @@ function fieldError(key: string) {
 }
 function readValidationIssues(response: unknown) {
   const issues = object(response).issues
-  return Array.isArray(issues) ? issues.filter(isSnowLumaIssue) : []
+  return Array.isArray(issues)
+    ? issues.filter((issue) => isSnowLumaIssue(issue) || isWebSearchIssue(issue))
+    : []
 }
 function diagnosticMessage(code: string) {
+  if (selectedId.value === 'web-search' && code === 'credential_not_configured')
+    return t('pgWebRequiredKeyMissing')
   return isPluginStartupErrorCode(code) ? t(`pluginStartupErrors.${code}`) : code
 }
 function diagnosticResponse(value: {
@@ -97,12 +111,33 @@ const builtinFields: Record<string, Record<string, string>> = {
     eventCredentialEnv: 'pgEventCredential',
   },
   'typing-delay': { speedFactor: 'pgTypingSpeed' },
+  'web-search': {
+    provider: 'pgWebProvider',
+    fallbackProvider: 'pgWebFallback',
+    allowExperimentalHtml: 'pgWebHtml',
+    maxResults: 'pgWebResults',
+    timeoutMs: 'pgWebTimeout',
+    maxResponseBytes: 'pgWebBytes',
+    maxConcurrency: 'pgWebConcurrency',
+    tavilyKey: 'pgWebTavilyKey',
+    clearTavilyKey: 'pgWebClearTavily',
+    youKey: 'pgWebYouKey',
+    clearYouKey: 'pgWebClearYou',
+    deepseekKey: 'pgWebDeepseekKey',
+    clearDeepseekKey: 'pgWebClearDeepseek',
+  },
 }
 function builtinFieldTitle(id: string | undefined, key: string) {
   const label = id ? builtinFields[id]?.[key] : undefined
   return label ? t(label) : undefined
 }
 function builtinFieldHelp(id: string | undefined, key: string) {
+  if (id === 'web-search') {
+    if (key === 'provider') return t('pgWebProviderHelp')
+    if (key === 'fallbackProvider') return t('pgWebFallbackHelp')
+    if (key === 'allowExperimentalHtml') return t('pgWebHtmlHelp')
+    if (key.endsWith('Key')) return t('pgWebKeyHelp')
+  }
   if (id === 'typing-delay' && key === 'speedFactor') return t('pgTypingSpeedHelp')
   if (id === 'snowluma' && key === 'url')
     return t(values.value.transport === 'http' ? 'pgSnowHttpUrlHelp' : 'pgSnowWsUrlHelp')
@@ -114,9 +149,11 @@ function builtinFieldHelp(id: string | undefined, key: string) {
   if (id === 'snowluma' && key === 'transport') return t('pgTransportHelp')
 }
 function pluginName(plugin: Plugin) {
+  if (plugin.builtin && plugin.id === 'web-search') return t('pgWebName')
   return plugin.builtin && plugin.id === 'typing-delay' ? t('pgTypingName') : plugin.name
 }
 function pluginDescription(plugin: Plugin) {
+  if (plugin.builtin && plugin.id === 'web-search') return t('pgWebDescription')
   return plugin.builtin && plugin.id === 'typing-delay'
     ? t('pgTypingDescription')
     : plugin.builtin && plugin.id === 'snowluma'
@@ -276,6 +313,13 @@ async function select(id: string) {
 function ask(kind: typeof confirmationKind.value) {
   if (busy.value || loading.value || (kind !== 'discard' && (uncertain.value || dirty.value)))
     return
+  if (kind === 'enable' && selected.value?.id === 'web-search') {
+    validationShown.value = true
+    if (fieldIssues.value.length) {
+      error.value = t('pgValidationSummary')
+      return
+    }
+  }
   confirmationKind.value = kind
   confirmationCopy.value = {
     title: t(kind === 'discard' ? 'pgDiscardTitle' : 'pgLifecycleTitle', {
@@ -716,7 +760,9 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
                   ? t(
                       selected.configuredSecrets[field.key]
                         ? 'pgCredentialStored'
-                        : 'pgCredentialMissing',
+                        : selected.id === 'web-search'
+                          ? 'pgWebKeyMissing'
+                          : 'pgCredentialMissing',
                     )
                   : field.key === 'credentialEnv'
                     ? t('pgCredentialHelp')

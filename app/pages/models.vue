@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createClientId } from '../utils/create-id'
 import type { components, paths } from '~/types/api'
 type Config = components['schemas']['ModelConfig']
 type Provider = Config['providers'][number]
@@ -239,53 +240,62 @@ function addFirstProvider() {
   beginEdit('provider')
 }
 function beginEdit(kind: EditorKind, id?: string) {
-  if (operationBusy.value || !loaded.value) return
-  credentialInput.value = ''
-  credentialClear.value = false
-  editorKind.value = kind
-  isNew.value = !id && kind !== 'route'
-  providerDraft.value = undefined
-  modelDraft.value = undefined
-  routeDraft.value = undefined
-  if (kind === 'provider')
-    providerDraft.value = clone(
-      id
-        ? config.value.providers.find((p) => p.id === id)!
-        : {
-            id: crypto.randomUUID(),
-            name: '',
-            protocol: 'openai-chat',
-            baseUrl: 'https://api.openai.com/v1',
-            credentialEnv: '',
-          },
-    )
-  if (kind === 'model') {
-    if (!config.value.providers.length) {
-      section.value = 'providers'
-      return
-    }
-    modelDraft.value = clone(
-      id
-        ? config.value.models.find((m) => m.id === id)!
-        : {
-            id: crypto.randomUUID(),
-            displayName: '',
-            providerId: config.value.providers[0]!.id,
-            apiModelName: '',
-            capabilities: ['text'],
-            embeddingBatchSize: 4,
-          },
-    )
+  if (operationBusy.value) return
+  if (!loaded.value) {
+    error.value = t('modelConfigNotReady')
+    return
   }
-  if (kind === 'route') routeDraft.value = clone(getRoute(id as Route['role']))
-  openingSnapshot = JSON.stringify(currentDraft.value)
-  editorError.value = ''
-  saved.value = false
-  discovered.value = undefined
-  discoveryError.value = ''
-  pendingProbe.value = false
-  confirmation.value = undefined
-  editorOpen.value = true
+  try {
+    credentialInput.value = ''
+    credentialClear.value = false
+    editorKind.value = kind
+    isNew.value = !id && kind !== 'route'
+    providerDraft.value = undefined
+    modelDraft.value = undefined
+    routeDraft.value = undefined
+    if (kind === 'provider')
+      providerDraft.value = clone(
+        id
+          ? config.value.providers.find((p) => p.id === id)!
+          : {
+              id: createClientId(),
+              name: '',
+              protocol: 'openai-chat',
+              baseUrl: 'https://api.openai.com/v1',
+              credentialEnv: '',
+            },
+      )
+    if (kind === 'model') {
+      if (!config.value.providers.length) {
+        section.value = 'providers'
+        return
+      }
+      modelDraft.value = clone(
+        id
+          ? config.value.models.find((m) => m.id === id)!
+          : {
+              id: createClientId(),
+              displayName: '',
+              providerId: config.value.providers[0]!.id,
+              apiModelName: '',
+              capabilities: ['text'],
+              embeddingBatchSize: 4,
+            },
+      )
+    }
+    if (kind === 'route') routeDraft.value = clone(getRoute(id as Route['role']))
+    openingSnapshot = JSON.stringify(currentDraft.value)
+    editorError.value = ''
+    saved.value = false
+    discovered.value = undefined
+    discoveryError.value = ''
+    pendingProbe.value = false
+    confirmation.value = undefined
+    editorOpen.value = true
+  } catch {
+    editorOpen.value = false
+    error.value = t('entityEditorUnavailable')
+  }
 }
 function closeEditor() {
   credentialInput.value = ''
@@ -604,12 +614,16 @@ watch(section, () => {
         <div v-if="loaded && !config.providers.length" class="py-12 px-6 text-center space-y-3">
           <h2 class="font-semibold">{{ t('mcNoProviders') }}</h2>
           <p class="text-sm text-muted">{{ t('mcNoProvidersHelp') }}</p>
-          <UButton @click="addFirstProvider">{{ t('mcAddProvider') }}</UButton>
+          <UButton :disabled="operationBusy || !loaded" @click="addFirstProvider">{{
+            t('mcAddProvider')
+          }}</UButton>
         </div>
         <div v-else-if="loaded && !config.models.length" class="py-12 px-6 text-center space-y-3">
           <h2 class="font-semibold">{{ t('mcNoModels') }}</h2>
           <p class="text-sm text-muted">{{ t('mcNoModelsHelp') }}</p>
-          <UButton @click="beginEdit('model')">{{ t('mcAddModel') }}</UButton>
+          <UButton :disabled="operationBusy || !loaded" @click="beginEdit('model')">{{
+            t('mcAddModel')
+          }}</UButton>
         </div>
         <template v-else>
           <table class="model-table hidden md:table w-full table-fixed text-left text-sm">
@@ -692,7 +706,9 @@ watch(section, () => {
         <div v-if="loaded && !config.providers.length" class="py-12 px-6 text-center space-y-3">
           <h2 class="font-semibold">{{ t('mcNoProviders') }}</h2>
           <p class="text-sm text-muted">{{ t('mcNoProvidersHelp') }}</p>
-          <UButton @click="beginEdit('provider')">{{ t('mcAddProvider') }}</UButton>
+          <UButton :disabled="operationBusy || !loaded" @click="beginEdit('provider')">{{
+            t('mcAddProvider')
+          }}</UButton>
         </div>
         <div v-else class="overflow-x-auto">
           <table class="model-table w-full table-fixed text-left text-sm min-w-[620px]">

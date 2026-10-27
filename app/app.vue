@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const { t, locale, setLocale } = useI18n()
-const { client, token } = useApi()
+const { authenticated, authReady, authMessage, restoreSession, loginSession, logoutSession } =
+  useApi()
 const route = useRoute()
 const sidebarPreference = useCookie<boolean | null>('humanengine-sidebar-collapsed', {
   default: () => null,
@@ -11,6 +12,7 @@ function setCollapsed(value: boolean) {
   collapsed.value = value
   sidebarPreference.value = value
 }
+const logoutFailed = ref(false)
 const secret = ref(''),
   error = ref(''),
   busy = ref(false)
@@ -28,27 +30,72 @@ const links = computed(() =>
     { label: t('logs'), icon: 'i-lucide-scroll-text', to: '/logs' },
   ].map((item) => ({ ...item, 'aria-label': item.label })),
 )
+let authChannel: BroadcastChannel | undefined
+function notifyAuthChange() {
+  authChannel?.postMessage('changed')
+}
 async function login() {
+  if (busy.value) return
   busy.value = true
   error.value = ''
-  token.value = secret.value
   try {
-    const result = await client.GET('/api/status')
-    if (result.error) {
-      error.value = result.error.error
-      token.value = ''
-    } else secret.value = ''
+    if (await loginSession(secret.value)) {
+      logoutFailed.value = false
+      notifyAuthChange()
+    }
+  } catch (cause) {
+    error.value = t(
+      cause instanceof Error && cause.message === 'invalid' ? 'authInvalid' : 'networkError',
+    )
+  } finally {
+    secret.value = ''
+    busy.value = false
+  }
+}
+async function logout() {
+  if (busy.value) return
+  busy.value = true
+  error.value = ''
+  try {
+    await logoutSession()
+    logoutFailed.value = false
+    notifyAuthChange()
   } catch {
-    error.value = t('networkError')
-    token.value = ''
+    logoutFailed.value = true
+    error.value = t('authLogoutFailed')
   } finally {
     busy.value = false
   }
 }
+function revalidate() {
+  if (!busy.value && !logoutFailed.value) void restoreSession()
+}
+function onVisibility() {
+  if (document.visibilityState === 'visible') revalidate()
+}
+onMounted(() => {
+  if ('BroadcastChannel' in window) {
+    authChannel = new BroadcastChannel('humanengine-auth')
+    authChannel.onmessage = revalidate
+  }
+  window.addEventListener('pageshow', revalidate)
+  window.addEventListener('focus', revalidate)
+  document.addEventListener('visibilitychange', onVisibility)
+  void restoreSession()
+})
+onBeforeUnmount(() => {
+  authChannel?.close()
+  window.removeEventListener('pageshow', revalidate)
+  window.removeEventListener('focus', revalidate)
+  document.removeEventListener('visibilitychange', onVisibility)
+})
 </script>
 <template>
   <UApp>
-    <div v-if="!token || busy" class="min-h-screen grid place-items-center p-6">
+    <div
+      v-if="!authenticated || !authReady || busy"
+      class="min-h-screen grid place-items-center p-6"
+    >
       <UCard class="w-full max-w-md">
         <template #header
           ><div class="flex items-center gap-3">
@@ -59,8 +106,17 @@ async function login() {
             </div>
           </div></template
         >
-        <form class="space-y-5" @submit.prevent="login">
+        <p v-if="!authReady" role="status">{{ t('authChecking') }}</p>
+        <form v-else class="space-y-5" @submit.prevent="login">
+          <UButton v-if="logoutFailed" :loading="busy" @click="logout">{{
+            t('authRetryLogout')
+          }}</UButton>
           <p class="text-sm text-muted">{{ t('loginHelp') }}</p>
+          <UAlert
+            v-if="authMessage"
+            color="warning"
+            :title="t(authMessage === 'expired' ? 'authExpired' : 'networkError')"
+          />
           <UFormField :label="t('adminToken')"
             ><UInput
               v-model="secret"
@@ -174,7 +230,7 @@ async function login() {
                   variant="ghost"
                   icon="i-lucide-log-out"
                   :aria-label="t('disconnect')"
-                  @click="token = ''"
+                  @click="logout"
               /></UTooltip>
             </template>
           </UDashboardNavbar>

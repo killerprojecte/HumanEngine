@@ -5,7 +5,7 @@
   "settings": "設定",
   "logs": "日誌",
   "tagline": "更懂分寸，也更有溫度。",
-  "loginHelp": "輸入伺服器設定的管理權杖。權杖僅保留於此分頁，不寫入瀏覽器儲存空間。",
+  "loginHelp": "輸入伺服器設定的管理權杖。安全工作階段最長保留 7 天，登出或伺服器重新啟動後失效。管理權杖不會儲存至瀏覽器儲存空間。",
   "adminToken": "管理權杖",
   "connect": "連線",
   "disconnect": "中斷連線",
@@ -850,5 +850,12 @@
   },
   "pgValidationSummary": "請先修正標紅欄位，再儲存設定。",
   "pgSnowWsUrlHelp": "填寫完整的 Universal 正向 WebSocket 位址，包含 ws:// 或 wss://，不能只填寫 IP:連接埠。",
-  "pgSnowHttpUrlHelp": "填寫完整的 HTTP API 位址，包含 http:// 或 https://。"
+  "pgSnowHttpUrlHelp": "填寫完整的 HTTP API 位址，包含 http:// 或 https://。",
+  "authChecking": "正在驗證工作階段…",
+  "authInvalid": "管理權杖不正確。",
+  "authExpired": "工作階段已過期或已登出，請重新登入。",
+  "authLogoutFailed": "無法結束伺服器工作階段。離開此瀏覽器前，請重試登出。",
+  "authRetryLogout": "重試登出",
+  "entityEditorUnavailable": "無法開啟編輯視窗：此瀏覽器無法產生識別碼。請更新瀏覽器或使用 HTTPS 後重試。",
+  "modelConfigNotReady": "模型設定尚未載入，請重新載入設定後重試。"
 }

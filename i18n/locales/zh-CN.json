@@ -5,7 +5,7 @@
   "settings": "配置",
   "logs": "日志",
   "tagline": "更懂分寸，也更有温度。",
-  "loginHelp": "输入服务端配置的管理令牌。令牌仅保留在此标签页，不写入浏览器存储。",
+  "loginHelp": "输入服务器配置的管理令牌。安全会话最长保留 7 天，退出登录或服务器重启后失效。管理令牌不会保存到浏览器存储。",
   "adminToken": "管理令牌",
   "connect": "连接",
   "disconnect": "断开",
@@ -850,5 +850,12 @@
   },
   "pgValidationSummary": "请先修正标红字段，再保存设置。",
   "pgSnowWsUrlHelp": "填写完整的 Universal 正向 WebSocket 地址，包含 ws:// 或 wss://，不能只填写 IP:端口。",
-  "pgSnowHttpUrlHelp": "填写完整的 HTTP API 地址，包含 http:// 或 https://。"
+  "pgSnowHttpUrlHelp": "填写完整的 HTTP API 地址，包含 http:// 或 https://。",
+  "authChecking": "正在验证会话…",
+  "authInvalid": "管理令牌不正确。",
+  "authExpired": "会话已过期或已退出，请重新登录。",
+  "authLogoutFailed": "未能结束服务器会话。离开此浏览器前，请重试退出登录。",
+  "authRetryLogout": "重试退出登录",
+  "entityEditorUnavailable": "无法打开编辑窗口：此浏览器无法生成标识符。请更新浏览器或使用 HTTPS 后重试。",
+  "modelConfigNotReady": "模型设置尚未加载，请重新加载设置后重试。"
 }

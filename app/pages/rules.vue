@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createClientId } from '../utils/create-id'
 import type { components } from '~/types/api'
 type Rule = components['schemas']['Rule']
 type Habit = components['schemas']['Habit']
@@ -119,22 +120,27 @@ async function load(reconcile = false) {
 }
 function begin(rule?: Rule) {
   if (busy.value || recoveryRequired.value) return
-  original = rule ? clone(rule) : undefined
-  draft.value = rule
-    ? clone(rule)
-    : {
-        id: crypto.randomUUID(),
-        scope: 'global',
-        content: '',
-        enabled: true,
-        nonOverridable: false,
-      }
-  isNew.value = !rule
-  openingSnapshot = JSON.stringify(draft.value)
-  editorUncertain.value = false
-  error.value = ''
-  success.value = ''
-  editOpen.value = true
+  try {
+    original = rule ? clone(rule) : undefined
+    draft.value = rule
+      ? clone(rule)
+      : {
+          id: createClientId(),
+          scope: 'global',
+          content: '',
+          enabled: true,
+          nonOverridable: false,
+        }
+    isNew.value = !rule
+    openingSnapshot = JSON.stringify(draft.value)
+    editorUncertain.value = false
+    error.value = ''
+    success.value = ''
+    editOpen.value = true
+  } catch {
+    editOpen.value = false
+    error.value = t('entityEditorUnavailable')
+  }
 }
 function openHint(habit: Habit) {
   if (busy.value || recoveryRequired.value) return

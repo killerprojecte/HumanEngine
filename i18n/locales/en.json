@@ -5,7 +5,7 @@
   "settings": "Settings",
   "logs": "Logs",
   "tagline": "A little more thoughtful. A little more human.",
-  "loginHelp": "Enter the administration token configured on your server. It stays in this tab and is not saved to browser storage.",
+  "loginHelp": "Enter the administration token configured on your server. A protected session keeps you signed in for up to 7 days, until you disconnect or the server restarts. The token is not saved in browser storage.",
   "adminToken": "Administration token",
   "connect": "Connect",
   "disconnect": "Disconnect",
@@ -850,5 +850,12 @@
   },
   "pgValidationSummary": "Correct the highlighted fields before saving.",
   "pgSnowWsUrlHelp": "Enter the complete Universal forward WebSocket URL, including ws:// or wss://. Do not enter only IP:port.",
-  "pgSnowHttpUrlHelp": "Enter the complete HTTP API URL, including http:// or https://."
+  "pgSnowHttpUrlHelp": "Enter the complete HTTP API URL, including http:// or https://.",
+  "authChecking": "Checking your session…",
+  "authInvalid": "The administration token is incorrect.",
+  "authExpired": "Your session has expired or ended. Please sign in again.",
+  "authLogoutFailed": "Could not end the server session. Retry disconnecting before leaving this browser.",
+  "authRetryLogout": "Retry disconnect",
+  "entityEditorUnavailable": "Cannot open the editor because this browser cannot generate an ID. Update the browser or use HTTPS, then retry.",
+  "modelConfigNotReady": "Model configuration has not loaded yet. Reload the configuration and try again."
 }

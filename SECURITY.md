@@ -15,3 +15,28 @@ Audit findings are not ignored or called clean. No forced Nuxt downgrade or prer
 ## Reporting
 
 Avoid including secrets or raw private conversations in issue reports. Reproduce with local fixtures and include only sanitized technical event codes, versions, and affected boundaries.
+
+## Browser administration sessions
+
+The browser exchanges the administration token for a random, HttpOnly, SameSite=Strict
+session cookie; the administration token is never persisted in localStorage, sessionStorage,
+or SSR state. Sessions have an absolute seven-day lifetime (activity does not extend it).
+Disconnect revokes the session on the server, including other tabs using that cookie.
+Sessions are held in server memory: server restarts and administration-token changes
+require a new login. This is a single-process management deployment, not a shared-session
+multi-replica service. The existing bearer-token API remains available to API clients.
+
+HTTP loopback and trusted LAN access work without additional configuration. HTTP does
+not encrypt credentials or cookies: use HTTPS on untrusted networks. Direct TLS requests
+receive Secure cookies. For a TLS-terminating reverse proxy, preserve the original Host
+and set `HUMANENGINE_SECURE_COOKIES=true` on the server; do not use that setting for an
+HTTP-only deployment. Arbitrary `X-Forwarded-Proto` / `X-Forwarded-Host` values are not
+trusted to select the cookie policy. Cookie-authenticated API calls require a same-origin
+custom header and reject cross-origin browser requests; no cross-origin session API is
+exposed. Logout failures are visible and can be retried rather than silently claiming
+that the server session was revoked.
+
+Cookie-changing login/logout requests are serialized within each browser document.
+Other tabs share the cookie and revalidate on authentication notifications or focus.
+Simultaneous independent logins in different tabs are not a globally ordered transaction;
+a later completed explicit login can establish a new session after another tab logs out.

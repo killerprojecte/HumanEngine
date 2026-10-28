@@ -147,6 +147,7 @@ export const SceneSchema = z
     accountId: z.string(),
     platformSceneId: z.string(),
     name: z.string(),
+    avatarUrl: z.string().optional(),
     participationEnabled: z.boolean(),
     learningEnabled: z.boolean(),
     proactiveEnabled: z.boolean(),

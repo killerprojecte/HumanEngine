@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
-type Message = components['schemas']['Message']
+import { humanName } from '~/utils/chatIdentity'
+type Message = components['schemas']['Message'] & {
+  senderDisplayName?: string
+  senderAvatarUrl?: string
+  senderPlatformId?: string
+}
+type Scene = components['schemas']['Scene'] & { avatarUrl?: string }
 const { t, locale } = useI18n(),
   { client } = useApi()
 const mode = ref<'simulation' | 'real'>('simulation')
@@ -11,7 +17,7 @@ const operation = ref<'idle' | 'creating' | 'sending' | 'reading' | 'ending'>('i
 const uncertain = ref(false),
   simulationError = ref(''),
   simulationMessages = ref<Message[]>([])
-const scenes = ref<components['schemas']['Scene'][]>([]),
+const scenes = ref<Scene[]>([]),
   sceneId = ref(''),
   search = ref('')
 const history = ref<Message[]>([]),
@@ -34,9 +40,84 @@ const controller = new AbortController()
 const busy = computed(() => operation.value !== 'idle')
 const resetBlocked = computed(() => ['creating', 'reading', 'ending'].includes(operation.value))
 const selectedScene = computed(() => scenes.value.find((s) => s.id === sceneId.value))
+const mobileList = ref(true),
+  scenesLoading = ref(true),
+  scenesError = ref('')
+const identityMessage = ref<Message>(),
+  identityOpen = ref(false)
+const simulationUnread = ref(0)
+const lastMessages = ref<Record<string, Message | undefined>>({})
+const sceneName = (scene: Scene) =>
+  humanName(scene.name) ||
+  t(scene.kind === 'group' ? 'cwUnnamedGroup' : 'cwUnnamedPrivate', {
+    number: scenes.value.findIndex((item) => item.id === scene.id) + 1,
+  })
+const senderName = (message: Message) =>
+  message.senderId === 'simulation-user'
+    ? t('you')
+    : humanName(message.senderDisplayName) ||
+      t(message.senderId === 'bot' ? 'cfBot' : 'cwUnknownMember')
+const messagePreview = (message?: Message) =>
+  !message
+    ? t('cwHistoryPreview')
+    : message.status !== 'available'
+      ? t('unavailableMessage')
+      : message.parts
+          .map((part) =>
+            part.type === 'text'
+              ? part.text
+              : part.type === 'mention'
+                ? t('cwMention')
+                : t('media'),
+          )
+          .join(' ')
 const filteredScenes = computed(() =>
-  scenes.value.filter((s) => s.name.toLowerCase().includes(search.value.trim().toLowerCase())),
+  scenes.value.filter((scene) =>
+    sceneName(scene).toLowerCase().includes(search.value.trim().toLowerCase()),
+  ),
 )
+const groupedScenes = computed(() =>
+  ['group', 'private'].map((kind) => ({
+    kind,
+    items: filteredScenes.value.filter((scene) => scene.kind === kind),
+  })),
+)
+function selectSimulation() {
+  mode.value = 'simulation'
+  simulationUnread.value = 0
+  mobileList.value = false
+}
+function showIdentity(message: Message) {
+  identityMessage.value = message
+  identityOpen.value = true
+}
+function mentionName(userId: string | undefined) {
+  return (
+    humanName(shown.value.find((message) => message.senderId === userId)?.senderDisplayName) ||
+    t('cwUnknownMember')
+  )
+}
+function replyName(id: string) {
+  const original = shown.value.find((message) => message.id === id)
+  return original
+    ? senderName(original) + '：' + messagePreview(original).slice(0, 80)
+    : t('cwOriginalUnavailable')
+}
+async function loadScenes() {
+  if (disposed) return
+  scenesLoading.value = true
+  scenesError.value = ''
+  try {
+    const result = await client.GET('/api/scenes', { signal: controller.signal })
+    if (disposed) return
+    if (!result.data || result.error) throw new Error('Unavailable')
+    scenes.value = result.data
+  } catch {
+    if (!disposed) scenesError.value = t('networkError')
+  } finally {
+    if (!disposed) scenesLoading.value = false
+  }
+}
 const shown = computed(() =>
   mode.value === 'simulation' ? simulationMessages.value : history.value,
 )
@@ -164,6 +245,7 @@ async function send() {
     if (disposed || version !== operationGeneration) return
     if (r.data && !r.error) {
       simulationMessages.value = r.data
+      if (mode.value !== 'simulation') simulationUnread.value++
       submitted.value = ''
     } else {
       uncertain.value = true
@@ -199,6 +281,7 @@ async function preview() {
       return
     }
     history.value = r.data.items
+    lastMessages.value[sceneId.value] = r.data.items.at(-1)
     coverage.value = r.data.coverage
     historyReason.value = r.data.reason ?? ''
     historyAt.value = new Date().toISOString()
@@ -211,6 +294,7 @@ async function preview() {
 function selectScene(id: string) {
   sceneId.value = id
   mode.value = 'real'
+  mobileList.value = false
 }
 watch([mode, sceneId], () => {
   historyController?.abort()
@@ -253,17 +337,7 @@ function beforeUnload(event: BeforeUnloadEvent) {
 onMounted(() => {
   window.addEventListener('beforeunload', beforeUnload)
   void initialize()
-  void client
-    .GET('/api/scenes', { signal: controller.signal })
-    .then((r) => {
-      if (!disposed) {
-        scenes.value = r.data ?? []
-        if (r.error) historyError.value = r.error.error
-      }
-    })
-    .catch(() => {
-      if (!disposed) historyError.value = t('networkError')
-    })
+  void loadScenes()
 })
 onBeforeUnmount(() => {
   disposed = true
@@ -282,62 +356,135 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <div class="flex flex-1 min-h-0 flex-col overflow-hidden">
-    <header class="shrink-0 border-b border-default p-4 sm:px-6 sm:py-5">
-      <h1 class="page-heading">{{ t('chat') }}</h1>
-      <p class="mt-1 text-sm text-muted">{{ t('cfHelp') }}</p>
-      <div class="mt-4 flex flex-wrap gap-2" role="group" :aria-label="t('cfMode')">
-        <UButton
-          :variant="mode === 'simulation' ? 'solid' : 'outline'"
-          :aria-pressed="mode === 'simulation'"
-          @click="mode = 'simulation'"
-          >{{ t('simulation') }}</UButton
-        >
-        <UButton
-          :variant="mode === 'real' ? 'solid' : 'outline'"
-          :aria-pressed="mode === 'real'"
-          @click="mode = 'real'"
-          >{{ t('cfHistory') }}</UButton
-        >
-      </div>
-    </header>
     <div class="flex flex-1 min-h-0 overflow-hidden">
       <aside
-        v-if="mode === 'real'"
-        class="hidden md:flex w-60 shrink-0 flex-col border-r border-default p-4 gap-3"
+        class="conversation-sidebar shrink-0 flex-col border-r border-default bg-default"
+        :class="mobileList ? 'flex w-full md:w-72' : 'hidden md:flex md:w-72'"
+        :aria-label="t('cwConversations')"
       >
-        <label for="chat-scene-search" class="text-sm font-medium">{{ t('selectScene') }}</label>
-        <UInput id="chat-scene-search" v-model="search" :placeholder="t('uxSearchScenes')" />
-        <div class="overflow-y-auto min-h-0 space-y-1">
+        <div class="px-5 pt-5 pb-4 space-y-4">
+          <div class="flex items-center justify-between">
+            <h1 class="text-lg font-semibold">{{ t('cwConversations') }}</h1>
+            <span class="text-xs text-muted">{{ scenes.length + 1 }}</span>
+          </div>
+          <UInput
+            v-model="search"
+            icon="i-lucide-search"
+            class="w-full"
+            :placeholder="t('cwSearch')"
+            :aria-label="t('cwSearch')"
+          />
+        </div>
+        <div class="px-3 pb-3 border-b border-default">
           <button
-            v-for="scene in filteredScenes"
-            :key="scene.id"
-            class="w-full rounded-md p-3 text-left focus-visible:outline-2 focus-visible:outline-primary"
-            :class="scene.id === sceneId ? 'bg-primary/10' : 'hover:bg-elevated'"
-            :aria-pressed="scene.id === sceneId"
-            @click="selectScene(scene.id)"
+            class="conversation-row"
+            :class="{ 'conversation-selected': mode === 'simulation' }"
+            :aria-pressed="mode === 'simulation'"
+            @click="selectSimulation"
           >
-            <span class="block text-sm break-words">{{ scene.name }}</span
-            ><span class="mt-1 block text-xs text-muted">{{
-              t(scene.kind === 'group' ? 'cfGroup' : 'cfPrivate')
-            }}</span>
+            <span class="simulation-avatar"><UIcon name="i-lucide-sparkles" class="size-5" /></span>
+            <span class="min-w-0 flex-1"
+              ><span class="flex items-center gap-2"
+                ><span class="font-medium truncate">{{ t('cwSimulation') }}</span
+                ><span
+                  v-if="simulationUnread"
+                  class="unread-badge"
+                  :aria-label="t('cwUnread', { count: simulationUnread })"
+                  >{{ simulationUnread }}</span
+                ></span
+              ><span class="block mt-1 text-xs text-muted truncate">{{
+                submitted ? t('thinking') : t('cwSimulationPreview')
+              }}</span></span
+            >
           </button>
-          <p v-if="!filteredScenes.length" class="text-sm text-muted py-4">
-            {{ t('uxNoScenesMatch') }}
+        </div>
+        <div class="flex-1 min-h-0 overflow-y-auto px-3 py-3">
+          <p v-if="scenesLoading" role="status" class="px-3 py-6 text-sm text-muted">
+            {{ t('uxLoading') }}
+          </p>
+          <div v-if="scenesError" role="alert" class="p-3 text-sm text-error">
+            {{ scenesError
+            }}<UButton class="mt-2" size="sm" variant="outline" @click="loadScenes">{{
+              t('refresh')
+            }}</UButton>
+          </div>
+          <template v-for="group in groupedScenes" :key="group.kind">
+            <h2 class="px-3 pt-3 pb-2 text-xs font-medium text-muted">
+              {{ t(group.kind === 'group' ? 'cfGroup' : 'cfPrivate') }}
+              <span class="ml-1 opacity-60">{{ group.items.length }}</span>
+            </h2>
+            <button
+              v-for="scene in group.items"
+              :key="scene.id"
+              class="conversation-row"
+              :class="{ 'conversation-selected': mode === 'real' && scene.id === sceneId }"
+              :aria-pressed="mode === 'real' && scene.id === sceneId"
+              @click="selectScene(scene.id)"
+            >
+              <ChatAvatar
+                :name="sceneName(scene)"
+                :identity="scene.id"
+                :src="scene.avatarUrl"
+                :group="scene.kind === 'group'"
+              />
+              <span class="min-w-0 flex-1"
+                ><span class="block font-medium truncate">{{ sceneName(scene) }}</span
+                ><span class="block mt-1 text-xs text-muted truncate">{{
+                  messagePreview(lastMessages[scene.id])
+                }}</span></span
+              >
+            </button>
+          </template>
+          <p
+            v-if="!scenesLoading && !scenesError && !filteredScenes.length"
+            class="px-3 py-6 text-sm text-muted"
+          >
+            {{ t(search ? 'uxNoScenesMatch' : 'emptyScenes') }}
           </p>
         </div>
+        <p class="p-4 border-t border-default text-[11px] leading-5 text-muted flex gap-2">
+          <UIcon name="i-lucide-shield-check" class="size-4 shrink-0 mt-0.5" />{{
+            t('cwSidebarSafety')
+          }}
+        </p>
       </aside>
-      <section class="flex flex-1 min-h-0 min-w-0 flex-col">
+      <section
+        class="flex-1 min-h-0 min-w-0 flex-col"
+        :class="mobileList ? 'hidden md:flex' : 'flex'"
+      >
         <header
           class="shrink-0 px-4 sm:px-6 py-4 border-b border-default flex flex-wrap items-start justify-between gap-3"
         >
+          <UButton
+            class="md:hidden shrink-0"
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-arrow-left"
+            :aria-label="t('cwBack')"
+            @click="mobileList = true"
+          />
+          <span v-if="mode === 'simulation'" class="simulation-avatar"
+            ><UIcon name="i-lucide-sparkles" class="size-5"
+          /></span>
+          <ChatAvatar
+            v-else-if="selectedScene"
+            :name="sceneName(selectedScene)"
+            :identity="selectedScene.id"
+            :src="selectedScene.avatarUrl"
+            :group="selectedScene.kind === 'group'"
+          />
           <div class="min-w-0 flex-1">
             <h2 class="font-medium break-words">
               {{
-                mode === 'simulation' ? t('simulation') : (selectedScene?.name ?? t('selectScene'))
+                mode === 'simulation'
+                  ? t('cwSimulation')
+                  : selectedScene
+                    ? sceneName(selectedScene)
+                    : t('selectScene')
               }}
             </h2>
             <p class="text-sm text-muted mt-1">
-              {{ t(mode === 'simulation' ? 'cfSimulationHelp' : 'previewBoundary') }}
+              {{ t(mode === 'simulation' ? 'cwSimulationSafety' : 'cwReadOnly') }}
             </p>
           </div>
           <UButton
@@ -359,13 +506,6 @@ onBeforeUnmount(() => {
             @click="preview"
             >{{ t('refresh') }}</UButton
           >
-          <UFormField v-if="mode === 'real'" :label="t('selectScene')" class="w-full md:hidden"
-            ><USelect
-              v-model="sceneId"
-              :items="scenes.map((s) => ({ label: s.name, value: s.id }))"
-              class="w-full"
-              :placeholder="t('selectScene')"
-          /></UFormField>
         </header>
         <div v-if="mode === 'simulation'" class="shrink-0 px-4 sm:px-6 pt-3 space-y-2">
           <UAlert v-if="simulationError" color="error" :title="simulationError" />
@@ -433,54 +573,71 @@ onBeforeUnmount(() => {
             <article
               v-for="message in shown"
               :key="message.id"
-              class="min-w-0"
-              :class="
-                mode === 'simulation' && message.senderId === 'simulation-user'
-                  ? 'ml-auto w-fit max-w-[90%]'
-                  : 'max-w-full'
-              "
+              class="flex items-start gap-3"
+              :class="{
+                'flex-row-reverse': mode === 'simulation' && message.senderId === 'simulation-user',
+              }"
             >
-              <div class="flex flex-wrap gap-x-3 gap-y-1 mb-1.5 text-xs text-muted">
-                <span class="font-medium break-all">{{
-                  message.senderId === 'bot'
-                    ? t('cfBot')
-                    : message.senderId === 'simulation-user'
-                      ? t('you')
-                      : message.senderId
-                }}</span
-                ><time :datetime="message.sentAt">{{ time(message.sentAt) }}</time>
-              </div>
-              <div
-                class="rounded-lg border border-default px-4 py-3 text-sm leading-6"
-                :class="
-                  message.senderId === 'bot'
-                    ? 'bg-default'
-                    : mode === 'real'
-                      ? 'bg-default/60'
-                      : 'bg-primary/5'
-                "
+              <button
+                class="shrink-0 rounded-xl focus-visible:outline-2 focus-visible:outline-primary"
+                :aria-label="t('cwIdentity', { name: senderName(message) })"
+                @click="showIdentity(message)"
               >
-                <p
-                  v-if="message.replyToId"
-                  class="mb-2 border-l-2 border-primary pl-2 text-xs text-muted break-all"
+                <ChatAvatar
+                  :name="senderName(message)"
+                  :identity="message.senderId"
+                  :src="message.senderAvatarUrl"
+                />
+              </button>
+              <div
+                class="min-w-0 max-w-[85%]"
+                :class="{
+                  'text-right': mode === 'simulation' && message.senderId === 'simulation-user',
+                }"
+              >
+                <div
+                  class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1.5 text-xs text-muted"
+                  :class="{
+                    'justify-end': mode === 'simulation' && message.senderId === 'simulation-user',
+                  }"
                 >
-                  {{ t('replyTo') }} {{ message.replyToId }}
-                </p>
-                <p v-if="message.status !== 'available'" class="italic text-muted">
-                  {{ t('unavailableMessage') }}
-                </p>
-                <template v-else
-                  ><template v-for="(part, index) in message.parts" :key="index"
-                    ><span v-if="part.type === 'text'" class="whitespace-pre-wrap break-words">{{
-                      part.text
-                    }}</span
-                    ><span v-else-if="part.type === 'mention'" class="text-primary break-all">
-                      @{{ part.userId }} </span
-                    ><span v-else class="text-muted break-words">
-                      [{{ part.mediaType ?? part.description ?? t('media') }}]
-                    </span></template
-                  ></template
+                  <button
+                    class="font-medium text-default hover:text-primary break-words"
+                    @click="showIdentity(message)"
+                  >
+                    {{ senderName(message) }}</button
+                  ><time :datetime="message.sentAt">{{ time(message.sentAt) }}</time>
+                </div>
+                <div
+                  class="message-bubble text-left rounded-2xl px-4 py-3 text-sm leading-6 border border-default"
+                  :class="
+                    mode === 'simulation' && message.senderId === 'simulation-user'
+                      ? 'bg-primary/10 rounded-tr-sm'
+                      : 'bg-default rounded-tl-sm'
+                  "
                 >
+                  <p
+                    v-if="message.replyToId"
+                    class="mb-2 border-l-2 border-primary pl-2 text-xs text-muted break-words"
+                  >
+                    {{ t('replyTo') }} {{ replyName(message.replyToId) }}
+                  </p>
+                  <p v-if="message.status !== 'available'" class="italic text-muted">
+                    {{ t('unavailableMessage') }}
+                  </p>
+                  <template v-else
+                    ><template v-for="(part, index) in message.parts" :key="index"
+                      ><span v-if="part.type === 'text'" class="whitespace-pre-wrap break-words">{{
+                        part.text
+                      }}</span
+                      ><span v-else-if="part.type === 'mention'" class="text-primary break-words">
+                        @{{ mentionName(part.userId) }} </span
+                      ><span v-else class="text-muted break-words"
+                        >[{{ part.mediaType ?? part.description ?? t('media') }}]</span
+                      ></template
+                    ></template
+                  >
+                </div>
               </div>
             </article>
             <div
@@ -531,8 +688,32 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </form>
+        <div
+          v-if="mode === 'real'"
+          class="shrink-0 border-t border-default px-6 py-5 text-sm text-muted flex items-center justify-center gap-2"
+        >
+          <UIcon name="i-lucide-lock-keyhole" class="size-4" />{{ t('cwReadOnlyComposer') }}
+        </div>
       </section>
     </div>
+    <UModal
+      v-model:open="identityOpen"
+      :title="identityMessage ? senderName(identityMessage) : t('cwUnknownMember')"
+      :description="t('cwIdentityHelp')"
+    >
+      <template #body
+        ><dl v-if="identityMessage" class="space-y-4 text-sm">
+          <div v-if="identityMessage.senderPlatformId">
+            <dt class="text-muted">{{ t('cwPlatformAccount') }}</dt>
+            <dd class="mt-1 break-all">{{ identityMessage.senderPlatformId }}</dd>
+          </div>
+          <div>
+            <dt class="text-muted">{{ t('cwInternalIdentity') }}</dt>
+            <dd class="font-mono text-xs mt-1 break-all">{{ identityMessage.senderId }}</dd>
+          </div>
+        </dl></template
+      >
+    </UModal>
     <UModal
       :open="resetOpen"
       :dismissible="!resetBlocked"
@@ -579,3 +760,51 @@ onBeforeUnmount(() => {
     >
   </div>
 </template>
+
+<style scoped>
+.conversation-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  text-align: left;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: background 120ms;
+}
+.conversation-row:hover {
+  background: var(--ui-bg-elevated);
+}
+.conversation-row:focus-visible {
+  outline: 2px solid var(--ui-primary);
+  outline-offset: -2px;
+}
+.conversation-selected,
+.conversation-selected:hover {
+  background: color-mix(in srgb, var(--ui-primary) 10%, var(--ui-bg));
+}
+.simulation-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  color: var(--ui-primary);
+  background: color-mix(in srgb, var(--ui-primary) 13%, var(--ui-bg));
+  border-radius: 13px;
+}
+.unread-badge {
+  background: var(--ui-primary);
+  color: var(--ui-bg);
+  border-radius: 999px;
+  min-width: 18px;
+  padding: 1px 5px;
+  font-size: 10px;
+  text-align: center;
+}
+.message-bubble {
+  overflow-wrap: anywhere;
+}
+</style>

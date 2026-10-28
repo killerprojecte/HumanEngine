@@ -1,3 +1,4 @@
+import { displayName, qqAvatar } from './profiles.ts'
 import {
   OneBotError,
   object,
@@ -41,11 +42,26 @@ export function normalizeMessage(
         : sender
   const scene = context.scene(kind, peer)
   if (expected && scene.id !== expected.id) throw new OneBotError('scene_mismatch')
+  const senderInfo =
+    event.sender && typeof event.sender === 'object' && !Array.isArray(event.sender)
+      ? (event.sender as Obj)
+      : {}
+  const senderDisplayName = displayName(senderInfo.card) ?? displayName(senderInfo.nickname)
+  scene.displayName =
+    kind === 'group'
+      ? displayName(event.group_name)
+      : sender === peer
+        ? senderDisplayName
+        : undefined
+  scene.avatarUrl = qqAvatar(peer, kind === 'group')
   const id = context.messageId(scene, rawId(event.message_id))
   const message: Message = {
     id,
     sceneId: scene.id,
     senderId: context.userId(sender),
+    senderPlatformId: sender,
+    senderDisplayName,
+    senderAvatarUrl: qqAvatar(sender),
     sentAt: time(event.time),
     receivedAt: new Date().toISOString(),
     origin,

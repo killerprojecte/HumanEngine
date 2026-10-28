@@ -122,6 +122,9 @@ export function snowLumaPlugin(
         { id: 'snowluma', ...config, credentialEnv: config.credentialEnv ?? '', token, eventToken },
         {
           resolveMedia: services.resolveMedia,
+          onProfile: (profile) => {
+            if (active()) store.updateIdentity(profile)
+          },
           onMessage: (message, scene) => {
             if (active())
               runtime.ingest(
@@ -145,12 +148,18 @@ export function snowLumaPlugin(
           },
           onError: (code, details) => {
             if (active())
-              store.log('error', 'snowluma', code, {
-                requestId: context.requestId,
-                operation: 'snowluma.connect',
-                phase: 'transport',
-                ...details,
-              })
+              store.log(
+                code === 'profile_lookup_unavailable' ? 'warn' : 'error',
+                'snowluma',
+                code,
+                {
+                  requestId: context.requestId,
+                  operation:
+                    code === 'profile_lookup_unavailable' ? 'snowluma.profile' : 'snowluma.connect',
+                  phase: code === 'profile_lookup_unavailable' ? 'lookup' : 'transport',
+                  ...details,
+                },
+              )
           },
         },
       )

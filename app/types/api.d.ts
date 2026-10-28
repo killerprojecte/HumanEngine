@@ -3150,6 +3150,7 @@ export interface components {
             accountId: string;
             platformSceneId: string;
             name: string;
+            avatarUrl?: string;
             participationEnabled: boolean;
             learningEnabled: boolean;
             proactiveEnabled: boolean;
@@ -3376,6 +3377,9 @@ export interface components {
             id: string;
             sceneId: string;
             senderId: string;
+            senderDisplayName?: string;
+            senderAvatarUrl?: string;
+            senderPlatformId?: string;
             sentAt: string;
             receivedAt: string;
             /** @enum {string} */

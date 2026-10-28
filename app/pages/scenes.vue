@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
-type Scene = components['schemas']['Scene']
+import { humanName } from '~/utils/chatIdentity'
+type Scene = components['schemas']['Scene'] & { avatarUrl?: string }
 type SceneState = components['schemas']['SceneState']
 type SwitchField = 'participationEnabled' | 'learningEnabled' | 'proactiveEnabled'
 const { t } = useI18n(),
@@ -25,6 +26,11 @@ const visible = computed(() =>
         .includes(query.value.trim().toLocaleLowerCase()),
   ),
 )
+const sceneName = (scene: Scene) =>
+  humanName(scene.name) ||
+  t(scene.kind === 'group' ? 'cwUnnamedGroup' : 'cwUnnamedPrivate', {
+    number: scenes.value.findIndex((item) => item.id === scene.id) + 1,
+  })
 const kindLabel = (value: Scene['kind']) => t(value === 'group' ? 'scGroup' : 'scPrivate')
 const selectedId = ref(''),
   detailOpen = ref(false),
@@ -204,14 +210,21 @@ onBeforeUnmount(() => {
             <template v-for="scene in visible" :key="scene.id"
               ><tr>
                 <td>
-                  <div class="font-medium break-words">{{ scene.name || t('scUnnamed') }}</div>
+                  <div class="flex items-center gap-3">
+                    <ChatAvatar
+                      :name="sceneName(scene)"
+                      :identity="scene.id"
+                      :src="scene.avatarUrl"
+                      :group="scene.kind === 'group'"
+                    /><span class="font-medium break-words">{{ sceneName(scene) }}</span>
+                  </div>
                   <p class="mt-1.5 text-xs text-muted">{{ kindLabel(scene.kind) }}</p>
                 </td>
                 <td>
                   <USwitch
                     :model-value="scene.participationEnabled"
                     :disabled="loading || pending[scene.id] || !!rowErrors[scene.id]"
-                    :aria-label="t('scReplies') + ': ' + scene.name"
+                    :aria-label="t('scReplies') + ': ' + sceneName(scene)"
                     @update:model-value="(value) => update(scene, 'participationEnabled', value)"
                   />
                 </td>
@@ -219,7 +232,7 @@ onBeforeUnmount(() => {
                   <USwitch
                     :model-value="scene.learningEnabled"
                     :disabled="loading || pending[scene.id] || !!rowErrors[scene.id]"
-                    :aria-label="t('scLearning') + ': ' + scene.name"
+                    :aria-label="t('scLearning') + ': ' + sceneName(scene)"
                     @update:model-value="(value) => update(scene, 'learningEnabled', value)"
                   />
                 </td>
@@ -233,7 +246,7 @@ onBeforeUnmount(() => {
                       !!rowErrors[scene.id] ||
                       !scene.participationEnabled
                     "
-                    :aria-label="t('scProactive') + ': ' + scene.name"
+                    :aria-label="t('scProactive') + ': ' + sceneName(scene)"
                     @update:model-value="(value) => update(scene, 'proactiveEnabled', value)"
                   /><span v-else class="text-xs text-muted">{{ t('scPassiveOnly') }}</span>
                 </td>
@@ -273,7 +286,15 @@ onBeforeUnmount(() => {
           <article v-for="scene in visible" :key="scene.id" class="p-4 space-y-4">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h2 class="font-medium break-words">{{ scene.name || t('scUnnamed') }}</h2>
+                <div class="flex items-center gap-3">
+                  <ChatAvatar
+                    :name="sceneName(scene)"
+                    :identity="scene.id"
+                    :src="scene.avatarUrl"
+                    :group="scene.kind === 'group'"
+                  />
+                  <h2 class="font-medium break-words">{{ sceneName(scene) }}</h2>
+                </div>
                 <p class="mt-1 text-xs text-muted">{{ kindLabel(scene.kind) }}</p>
               </div>
               <UButton
@@ -329,7 +350,7 @@ onBeforeUnmount(() => {
     </section>
     <UModal
       v-model:open="detailOpen"
-      :title="selected?.name || t('scDetails')"
+      :title="selected ? sceneName(selected) : t('scDetails')"
       :description="t('scTemporaryHelp')"
       :ui="{
         content: 'max-w-[680px] max-h-[calc(100dvh-3rem)]',

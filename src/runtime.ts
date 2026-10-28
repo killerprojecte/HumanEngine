@@ -580,7 +580,11 @@ export class Runtime {
     if (state && this.scenes.get(id)?.kind !== 'simulation') this.trim(state)
     return structuredClone(
       (state?.messages ?? []).map((m) =>
-        this.isRecalled(id, m.id) ? { ...m, parts: [], status: 'recalled' as const } : m,
+        this.isRecalled(id, m.id)
+          ? { ...m, parts: [], status: 'recalled' as const }
+          : m.origin === 'simulation'
+            ? m
+            : this.store.presentMessage(m as Message),
       ),
     )
   }
@@ -598,7 +602,7 @@ export class Runtime {
     const result = await adapter.history(scene as SceneRef, { limit: 30 })
     result.items = result.items
       .filter((m) => m.sceneId === id && !this.isRecalled(id, m.id))
-      .map((m) => this.normalizeBot(m, scene.adapterId))
+      .map((m) => this.store.presentMessage(this.normalizeBot(m, scene.adapterId)))
     return result
   }
   sceneChanged(scene: Scene) {
@@ -667,13 +671,19 @@ export class Runtime {
       this.scenes.set(scene.id, scene)
       if (scene.kind !== 'simulation' && !this.store.scene(scene.id))
         this.store.saveScene({
-          ...scene,
+          id: scene.id,
+          adapterId: scene.adapterId,
+          accountId: scene.accountId,
+          platformSceneId: scene.platformSceneId,
+          avatarUrl: scene.avatarUrl,
           kind: scene.kind,
-          name: scene.platformSceneId,
+          name: scene.displayName ?? scene.platformSceneId,
           participationEnabled: false,
           learningEnabled: false,
           proactiveEnabled: false,
         })
+      if (scene.kind !== 'simulation')
+        this.store.observeIdentity(scene as SceneRef, message as Message)
       routing.finish('completed', { reason: 'scene_resolved', nextStep: 'queue' })
     } catch (error) {
       routing.finish('failed', { reason: 'scene_routing_failed', nextStep: 'none' }, error)

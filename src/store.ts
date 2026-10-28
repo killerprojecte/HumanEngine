@@ -1,3 +1,10 @@
+import {
+  displayName,
+  qqAvatar,
+  isOneBotScene,
+  type ProfileUpdate,
+} from './plugins/builtin/snowluma/profiles.ts'
+import type { Message, SceneRef } from './onebot.ts'
 import { currentFlowContext } from './diagnostics/flow.ts'
 import { readableLog, stdoutLog } from './diagnostics/format.ts'
 import Database from 'better-sqlite3'
@@ -127,6 +134,60 @@ export class Store {
         'INSERT INTO scenes(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value',
       )
       .run(scene.id, JSON.stringify(scene))
+  }
+  /** Presentation metadata is scene scoped; adapter-owned identity never changes routing IDs. */
+  updateIdentity(profile: ProfileUpdate) {
+    const scene = this.scene(profile.scene.id)
+    if (
+      !scene ||
+      !isOneBotScene(scene) ||
+      scene.adapterId !== profile.scene.adapterId ||
+      scene.accountId !== profile.scene.accountId ||
+      scene.platformSceneId !== profile.scene.platformSceneId
+    )
+      return
+    const name = displayName(profile.scene.displayName)
+    const avatarUrl = qqAvatar(scene.platformSceneId, scene.kind === 'group')
+    if (name || avatarUrl)
+      this.saveScene({ ...scene, ...(name ? { name } : {}), ...(avatarUrl ? { avatarUrl } : {}) })
+    const sender = profile.sender
+    if (sender) {
+      const key = `identity:${scene.id}:${sender.id}`
+      const previous = this.get<{ senderDisplayName?: string }>(key, {})
+      const senderDisplayName = displayName(sender.displayName) ?? previous.senderDisplayName
+      this.set(key, {
+        senderDisplayName,
+        senderPlatformId: sender.platformId,
+        senderAvatarUrl: qqAvatar(sender.platformId),
+      })
+    }
+  }
+  observeIdentity(scene: SceneRef, message: Message) {
+    this.updateIdentity({
+      scene,
+      sender: message.senderPlatformId
+        ? {
+            id: message.senderId,
+            platformId: message.senderPlatformId,
+            displayName: message.senderDisplayName,
+          }
+        : undefined,
+    })
+  }
+  presentMessage<T extends Message>(message: T): T {
+    const scene = this.scene(message.sceneId)
+    if (!scene || !isOneBotScene(scene)) return message
+    const identity = this.get<{ senderDisplayName?: string; senderPlatformId?: string }>(
+      `identity:${message.sceneId}:${message.senderId}`,
+      {},
+    )
+    const senderPlatformId = message.senderPlatformId ?? identity.senderPlatformId
+    return {
+      ...message,
+      senderDisplayName: message.senderDisplayName ?? identity.senderDisplayName,
+      senderPlatformId,
+      senderAvatarUrl: senderPlatformId ? qqAvatar(senderPlatformId) : undefined,
+    }
   }
   recalled(sceneId: string, messageId: string): boolean {
     return !!this.db

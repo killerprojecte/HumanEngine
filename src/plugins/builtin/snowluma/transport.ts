@@ -1,3 +1,4 @@
+import { OneBotProfiles } from './profiles.ts'
 import { sanitizeError } from '../../../diagnostics/errors.ts'
 import { readOneBotImage, type MediaFetcher } from './media.ts'
 import { normalizeMessage } from './normalization.ts'
@@ -30,6 +31,7 @@ export * from './protocol.ts'
 
 /** Reusable OneBot transport; implementation-specific actions live in a profile. */
 export class OneBotAdapter {
+  private readonly profiles: OneBotProfiles
   private readonly http: OneBotHttpTransport
   private socket?: WebSocket
   private reconnectTimer?: ReturnType<typeof setTimeout>
@@ -47,6 +49,11 @@ export class OneBotAdapter {
     private readonly callbacks: OneBotCallbacks = {},
     profile = SNOWLUMA_PROFILE,
   ) {
+    this.profiles = new OneBotProfiles(
+      (name, params, signal) => this.action(name, params, signal),
+      (profile) => this.callbacks.onProfile?.(profile),
+      () => this.emitError('profile_lookup_unavailable'),
+    )
     this.config = structuredClone(config)
     this.profile = structuredClone(profile)
     rawId(config.accountId)
@@ -114,6 +121,7 @@ export class OneBotAdapter {
     this.ready = false
     clearTimeout(this.reconnectTimer)
     this.http.dispose()
+    this.profiles.dispose()
     this.failPending('adapter_disposed')
     this.socket?.terminate()
     this.setStatus('disposed')
@@ -415,7 +423,7 @@ export class OneBotAdapter {
   }
 
   private normalize(event: Obj, origin: Message['origin'], expected?: SceneRef) {
-    return normalizeMessage(
+    const normalized = normalizeMessage(
       {
         accountId: this.config.accountId,
         scene: (kind, peer) => this.scene(kind, peer),
@@ -427,6 +435,8 @@ export class OneBotAdapter {
       origin,
       expected,
     )
+    if (this.callbacks.onProfile) this.profiles.observe(normalized.message, normalized.scene)
+    return normalized
   }
   private isRecalled(sceneId: string, messageId: string) {
     return this.recalled.has(messageId) || this.callbacks.isRecalled?.(sceneId, messageId) === true

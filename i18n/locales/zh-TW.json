@@ -893,5 +893,25 @@
     "cancelled": "取消",
     "partial": "部分完成",
     "cancel_requested": "已請求取消"
-  }
+  },
+  "cwConversations": "会话",
+  "cwSearch": "搜索群聊、联系人",
+  "cwSimulation": "对话（仿真）",
+  "cwSimulationPreview": "独立测试，不发送到真实会话",
+  "cwHistoryPreview": "查看聊天记录",
+  "cwSidebarSafety": "真实会话仅供查看；仿真对话与群聊、私聊完全隔离。",
+  "cwSimulationSafety": "仅在仿真中对话 · 不会向真实群聊或联系人发送消息",
+  "cwReadOnly": "真实会话 · 只读聊天记录",
+  "cwReadOnlyComposer": "当前为只读会话，不会向群聊或联系人发送消息",
+  "cwBack": "返回会话列表",
+  "cwUnknownMember": "未命名成员",
+  "cwUnnamedGroup": "未命名群聊 {number}",
+  "cwUnnamedPrivate": "未命名联系人 {number}",
+  "cwIdentity": "查看 {name} 的资料",
+  "cwIdentityHelp": "昵称仅用于显示；系统使用独立标识区分同名用户。",
+  "cwPlatformAccount": "平台账号",
+  "cwInternalIdentity": "系统内部标识",
+  "cwOriginalUnavailable": "原消息暂不可用",
+  "cwMention": "提及成员",
+  "cwUnread": "{count} 条未读消息"
 }

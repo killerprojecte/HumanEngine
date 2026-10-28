@@ -7,6 +7,8 @@ export interface SceneRef {
   adapterId: string
   accountId: string
   platformSceneId: string
+  displayName?: string
+  avatarUrl?: string
 }
 export type MessagePart =
   | { type: 'text'; text: string }
@@ -17,6 +19,9 @@ export interface Message {
   id: string
   sceneId: string
   senderId: string
+  senderDisplayName?: string
+  senderAvatarUrl?: string
+  senderPlatformId?: string
   sentAt: string
   receivedAt: string
   origin: 'live' | 'history'
@@ -97,6 +102,7 @@ export interface OneBotConfig {
   reconnectMs?: number
 }
 export interface OneBotCallbacks {
+  onProfile?: (profile: import('./profiles.ts').ProfileUpdate) => void
   onMessage?: (message: Message, scene: SceneRef) => void
   onRecall?: (event: RecallEvent, scene: SceneRef) => void
   onStatus?: (status: 'connecting' | 'connected' | 'disconnected' | 'disposed') => void

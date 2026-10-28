@@ -602,6 +602,9 @@
           "name": {
             "type": "string"
           },
+          "avatarUrl": {
+            "type": "string"
+          },
           "participationEnabled": {
             "type": "boolean"
           },
@@ -1498,6 +1501,15 @@
             "type": "string"
           },
           "senderId": {
+            "type": "string"
+          },
+          "senderDisplayName": {
+            "type": "string"
+          },
+          "senderAvatarUrl": {
+            "type": "string"
+          },
+          "senderPlatformId": {
             "type": "string"
           },
           "sentAt": {

@@ -893,5 +893,25 @@
     "cancelled": "Cancelled",
     "partial": "Partially completed",
     "cancel_requested": "Cancellation requested"
-  }
+  },
+  "cwConversations": "Conversations",
+  "cwSearch": "Search groups and contacts",
+  "cwSimulation": "Chat (simulation)",
+  "cwSimulationPreview": "Isolated testing · never sent to live chats",
+  "cwHistoryPreview": "View conversation history",
+  "cwSidebarSafety": "Live conversations are read-only. Simulation is isolated from all groups and contacts.",
+  "cwSimulationSafety": "Simulation only · never sends to real groups or contacts",
+  "cwReadOnly": "Live conversation · read-only history",
+  "cwReadOnlyComposer": "Read-only conversation. No messages will be sent to this group or contact.",
+  "cwBack": "Back to conversations",
+  "cwUnknownMember": "Unnamed member",
+  "cwUnnamedGroup": "Unnamed group {number}",
+  "cwUnnamedPrivate": "Unnamed contact {number}",
+  "cwIdentity": "View {name} profile",
+  "cwIdentityHelp": "Names are for display. Independent identifiers distinguish people with the same name.",
+  "cwPlatformAccount": "Platform account",
+  "cwInternalIdentity": "Internal identifier",
+  "cwOriginalUnavailable": "Original message unavailable",
+  "cwMention": "Mentioned member",
+  "cwUnread": "{count} unread messages"
 }

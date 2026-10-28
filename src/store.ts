@@ -19,6 +19,7 @@ import {
   ModelConfigSchema,
   SettingsSchema,
   type ModelConfig,
+  type ModelConfigInput,
   type Settings,
   type Scene,
   type Log,
@@ -91,7 +92,8 @@ export class Store {
       (provider.credentialEnv ? process.env[provider.credentialEnv] : undefined)
     )
   }
-  saveModels(config: ModelConfig, credentials: Record<string, SecretMutation> = {}) {
+  saveModels(input: ModelConfigInput, credentials: Record<string, SecretMutation> = {}) {
+    const config = ModelConfigSchema.parse(input)
     if (Object.keys(credentials).some((id) => !config.providers.some((p) => p.id === id)))
       throw new Error('unknown_credential_provider')
     this.db.transaction(() => {

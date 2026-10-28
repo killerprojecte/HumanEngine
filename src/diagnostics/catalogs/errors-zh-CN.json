@@ -414,5 +414,21 @@
   "database_schema_changed": {
     "summary": "数据库结构已变化",
     "advice": "确认迁移版本和并发结构修改，重新准备语句前检查兼容性。"
+  },
+  "invalid_provider_request_policy": {
+    "summary": "提供商重试或超时设置无效",
+    "advice": "在提供商设置中填写0–5次额外重试，单次超时100–300000毫秒。"
+  },
+  "protocol_configuration_error": {
+    "summary": "模型协议配置错误",
+    "advice": "检查协议插件及提供商配置；未修正的配置不会自动重试。"
+  },
+  "model_stage_timeout": {
+    "summary": "角色操作总时间预算已耗尽",
+    "advice": "若需要容纳全部配置重试，请增加角色阶段总预算；提供商超时独立限制单次请求，本次没有继续重试。"
+  },
+  "invalid_role_budget": {
+    "summary": "角色时间预算无效",
+    "advice": "检查角色的总时间预算配置。"
   }
 }

@@ -13,6 +13,8 @@ export interface ReadableErrorContext {
   modelId?: string
   providerId?: string
   apiModel?: string
+  stageBudgetMs?: number
+  maxAttempts?: number
   attempt?: number
   timeoutMs?: number
   remainingCandidates?: number
@@ -79,6 +81,9 @@ export function diagnosticLines(log: ReadableLog, locale = 'zh-CN'): string[] {
     result.push(`${w.model}=${context.apiModel ?? context.modelId}`)
   if (context.providerId) result.push(`${w.provider}=${context.providerId}`)
   if (context.attempt !== undefined) result.push(`${w.attempt}=${context.attempt}`)
+  if (context.maxAttempts !== undefined) result.push(`${w.maxAttempts}=${context.maxAttempts}`)
+  if (context.stageBudgetMs !== undefined)
+    result.push(`${w.stageBudget}=${context.stageBudgetMs}ms`)
   if (context.timeoutMs !== undefined) result.push(`${w.timeout}=${context.timeoutMs}ms`)
   if (context.remainingCandidates !== undefined)
     result.push(`${w.remaining}=${context.remainingCandidates}`)

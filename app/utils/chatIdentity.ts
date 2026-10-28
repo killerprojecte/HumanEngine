@@ -18,3 +18,28 @@ export function identityColor(id: string): string {
   for (const character of id) hash = (hash * 31 + character.charCodeAt(0)) | 0
   return ['#477b77', '#8066a4', '#a77446', '#5279a8', '#a35f7d'][Math.abs(hash) % 5]!
 }
+
+/** Presentation labels describe available transport facts, not successful visual recognition. */
+export function mediaLabelKey(part: { mediaType?: string; description?: string }): string {
+  const mime = part.mediaType?.trim().toLowerCase() ?? ''
+  if (/^(?:sticker|mface|emoji)$/.test(mime)) return 'cwMediaSticker'
+  if (mime.startsWith('image/')) return 'cwMediaImage'
+  if (mime.startsWith('audio/')) return 'cwMediaAudio'
+  if (mime.startsWith('video/')) return 'cwMediaVideo'
+  const description = part.description ?? ''
+  if (description.startsWith('Image unavailable:')) return 'cwMediaUnavailable'
+  if (description.startsWith('Native QQ face metadata (untrusted):')) return 'cwMediaFace'
+  const prefix = 'Untrusted platform image metadata: '
+  if (description.startsWith(prefix)) {
+    try {
+      const metadata: unknown = JSON.parse(description.slice(prefix.length))
+      if (metadata && typeof metadata === 'object' && 'kind' in metadata) {
+        if (['sticker', 'mface', 'emoji'].includes(String(metadata.kind))) return 'cwMediaSticker'
+        if (metadata.kind === 'image') return 'cwMediaImageMetadata'
+      }
+    } catch {
+      // Malformed platform hints must not become claims about media contents.
+    }
+  }
+  return 'cwMediaUnknown'
+}

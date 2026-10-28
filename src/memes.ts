@@ -1,3 +1,4 @@
+import { providerAttemptsHandled } from './models/request-policy.ts'
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
@@ -696,7 +697,8 @@ export class MemeService {
         })
         return this.sanitize(this.get(asset.id) ?? result)
       } catch (error) {
-        const retryable = error instanceof ModelError && error.retryable
+        const retryable =
+          error instanceof ModelError && error.retryable && !providerAttemptsHandled(error)
         const code =
           error instanceof ModelError && error.status
             ? `provider_http_${error.status}`
@@ -722,7 +724,7 @@ export class MemeService {
           analysisFailureCode: code,
           analysisNextRetryAt: undefined,
         })
-        throw new Error(signal.aborted ? 'analysis_cancelled' : 'analysis_failed')
+        throw new Error(signal.aborted ? 'analysis_cancelled' : 'analysis_failed', { cause: error })
       }
     }
     throw new Error('analysis_failed')

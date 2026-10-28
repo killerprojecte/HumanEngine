@@ -42,6 +42,8 @@ export const ProviderSchema = z
       .regex(/^(?:[A-Z][A-Z0-9_]*)?$/)
       .default(''),
     credentialConfigured: z.boolean().optional(),
+    retryCount: z.number().int().min(0).max(5).default(2),
+    timeoutMs: z.number().int().min(100).max(300000).default(30000),
   })
   .strict()
   .openapi('Provider')
@@ -163,6 +165,8 @@ const ErrorContextSchema = z.object({
   providerId: z.string().optional(),
   apiModel: z.string().optional(),
   attempt: z.number().optional(),
+  maxAttempts: z.number().optional(),
+  stageBudgetMs: z.number().optional(),
   timeoutMs: z.number().optional(),
   remainingCandidates: z.number().optional(),
   retryable: z.boolean().optional(),
@@ -257,6 +261,7 @@ export const ErrorSchema = z
   .object({ error: z.string(), requestId: z.string().optional() })
   .openapi('Error')
 export type ModelConfig = z.infer<typeof ModelConfigSchema>
+export type ModelConfigInput = z.input<typeof ModelConfigSchema>
 export type Settings = z.infer<typeof SettingsSchema>
 export type Scene = z.infer<typeof SceneSchema>
 export type Log = z.infer<typeof LogSchema>

@@ -6,6 +6,8 @@ export interface ErrorContext {
   modelId?: string
   providerId?: string
   apiModel?: string
+  stageBudgetMs?: number
+  maxAttempts?: number
   attempt?: number
   timeoutMs?: number
   remainingCandidates?: number
@@ -24,7 +26,13 @@ export function safeErrorContext(value: ErrorContext): ErrorContext {
     )
       result[key] = field
   }
-  for (const key of ['attempt', 'timeoutMs', 'remainingCandidates'] as const) {
+  for (const key of [
+    'attempt',
+    'maxAttempts',
+    'stageBudgetMs',
+    'timeoutMs',
+    'remainingCandidates',
+  ] as const) {
     const field = value[key]
     if (typeof field === 'number' && Number.isFinite(field) && field >= 0) result[key] = field
   }

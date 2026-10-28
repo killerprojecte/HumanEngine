@@ -222,7 +222,9 @@ export function sanitizeError(error: unknown, context: ErrorContext = {}): Error
   const candidates: ErrorCauseDiagnostic[] = [result, ...result.causes]
   const root =
     candidates.find((entry) =>
-      ['planner_timeout', 'dialogue_timeout', 'provider_timeout'].includes(entry.errorCode ?? ''),
+      ['planner_timeout', 'dialogue_timeout', 'model_stage_timeout', 'provider_timeout'].includes(
+        entry.errorCode ?? '',
+      ),
     ) ??
     [...candidates]
       .reverse()

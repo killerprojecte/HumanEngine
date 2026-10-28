@@ -414,5 +414,21 @@
   "database_schema_changed": {
     "summary": "Database schema changed",
     "advice": "Check migration versions and concurrent schema changes before preparing statements again."
+  },
+  "invalid_provider_request_policy": {
+    "summary": "Invalid provider retry or timeout setting",
+    "advice": "Use 0–5 extra retries and 100–300000 milliseconds per attempt in provider settings."
+  },
+  "protocol_configuration_error": {
+    "summary": "Model protocol configuration failed",
+    "advice": "Check the protocol plugin and its provider configuration; unchanged configuration is not retried."
+  },
+  "model_stage_timeout": {
+    "summary": "Role operation budget exhausted",
+    "advice": "Increase the role stage budget if all configured attempts should fit; provider timeout applies separately to each attempt. No further retry was started."
+  },
+  "invalid_role_budget": {
+    "summary": "Invalid role time budget",
+    "advice": "Check the configured total role budget."
   }
 }

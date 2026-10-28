@@ -260,3 +260,102 @@ test('file-only image lookup uses the authenticated adapter action channel and r
     await new Promise<void>((resolve) => server.close(() => resolve()))
   }
 })
+
+test('native image, mface, sticker and CQ sources retain real bytes and untrusted metadata', async () => {
+  const bytes = await png()
+  const context = {
+    accountId: '42',
+    scene: () => scene,
+    messageId: (s: typeof scene, id: string) => adapter.messageId(s, id),
+    userId: (id: string) => adapter.userId(id),
+    isRecalled: () => false,
+  }
+  const normalize = (message: unknown) =>
+    normalizeMessage(
+      context,
+      { message_type: 'group', group_id: 9, user_id: 7, message_id: 1, time: 1000, message },
+      'live',
+    ).message
+  for (const type of ['image', 'mface', 'sticker', 'emoji']) {
+    const message = normalize([
+      {
+        type,
+        data: {
+          file: 'unusable-token',
+          url: 'https://expired.qpic.cn/never-fetch',
+          base64: bytes.toString('base64'),
+          summary: '[wave]',
+          sub_type: 1,
+        },
+      },
+    ])
+    const part = message.parts[0]!
+    assert.equal(part.type, 'media')
+    if (part.type !== 'media') throw new Error('missing image')
+    const result = await readOneBotImage(
+      scene,
+      part.assetId,
+      async () => {
+        throw new Error('must not lookup with valid inline bytes')
+      },
+      undefined,
+      async () => {
+        throw new Error('must not download with valid inline bytes')
+      },
+    )
+    assert.deepEqual(result, bytes)
+    assert.match(JSON.stringify(message.parts), /Untrusted platform image metadata/)
+  }
+  const fileOnly = normalize('[CQ:mface,file_id=opaque-id,summary=wave]')
+  const part = fileOnly.parts[0]!
+  if (part.type !== 'media') throw new Error('missing CQ media')
+  let called = false
+  await readOneBotImage(scene, part.assetId, async (action, params) => {
+    called = true
+    assert.equal(action, 'get_image')
+    assert.equal(params.file, 'opaque-id')
+    return { file: `base64://${bytes.toString('base64')}` }
+  })
+  assert.ok(called)
+  const missing = normalize([
+    { type: 'image', data: {} },
+    { type: 'mface', data: { emoji_id: 'metadata-only', summary: 'unavailable sticker' } },
+    { type: 'text', data: { text: 'still retained' } },
+  ])
+  assert.match(JSON.stringify(missing.parts), /Image unavailable/)
+  assert.ok(missing.parts.some((part) => part.type === 'text' && part.text === 'still retained'))
+  const face = normalize([
+    { type: 'face', data: { id: '14', text: 'smile' } },
+    { type: 'face', data: { id: '999999' } },
+  ])
+  assert.match(JSON.stringify(face.parts), /smile/)
+  assert.match(JSON.stringify(face.parts), /meaning.*unavailable/)
+  assert.equal(
+    face.parts.some((part) => part.type === 'media'),
+    false,
+  )
+})
+
+test('animated GIF and WebP conversion intentionally supplies only the first frame', async () => {
+  const pixels = Buffer.concat([
+    Buffer.from(Array(4).fill([255, 0, 0]).flat()),
+    Buffer.from(Array(4).fill([0, 0, 255]).flat()),
+  ])
+  for (const format of ['gif', 'webp'] as const) {
+    const animated = await sharp(pixels, {
+      raw: { width: 2, height: 4, channels: 3, pageHeight: 2 },
+    })
+      .toFormat(format, { loop: 0, delay: [100, 100] })
+      .toBuffer()
+    assert.equal((await sharp(animated, { animated: true }).metadata()).pages, 2)
+    const data = await imageDataUrl(animated)
+    const output = Buffer.from(data.split(',')[1]!, 'base64')
+    const metadata = await sharp(output).metadata()
+    assert.equal(metadata.height, 2)
+    const { data: decoded } = await sharp(output)
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+    assert.ok(decoded[0]! > 200 && decoded[2]! < 30, 'only the red first frame should be sent')
+  }
+})

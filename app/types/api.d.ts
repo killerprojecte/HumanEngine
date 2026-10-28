@@ -3074,6 +3074,10 @@ export interface components {
             /** @default  */
             credentialEnv: string;
             credentialConfigured?: boolean;
+            /** @default 2 */
+            retryCount: number;
+            /** @default 30000 */
+            timeoutMs: number;
         };
         ModelInstance: {
             id: string;
@@ -3199,6 +3203,8 @@ export interface components {
                 providerId?: string;
                 apiModel?: string;
                 attempt?: number;
+                maxAttempts?: number;
+                stageBudgetMs?: number;
                 timeoutMs?: number;
                 remainingCandidates?: number;
                 retryable?: boolean;
@@ -3216,6 +3222,8 @@ export interface components {
                     providerId?: string;
                     apiModel?: string;
                     attempt?: number;
+                    maxAttempts?: number;
+                    stageBudgetMs?: number;
                     timeoutMs?: number;
                     remainingCandidates?: number;
                     retryable?: boolean;
@@ -3237,6 +3245,8 @@ export interface components {
                     providerId?: string;
                     apiModel?: string;
                     attempt?: number;
+                    maxAttempts?: number;
+                    stageBudgetMs?: number;
                     timeoutMs?: number;
                     remainingCandidates?: number;
                     retryable?: boolean;
@@ -3259,6 +3269,8 @@ export interface components {
                     providerId?: string;
                     apiModel?: string;
                     attempt?: number;
+                    maxAttempts?: number;
+                    stageBudgetMs?: number;
                     timeoutMs?: number;
                     remainingCandidates?: number;
                     retryable?: boolean;

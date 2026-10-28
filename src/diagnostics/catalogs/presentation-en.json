@@ -27,7 +27,9 @@
     "no": "no",
     "unknown": "Unmapped state",
     "httpSummary": "Provider returned HTTP {status}",
-    "httpAdvice": "Inspect provider status, API configuration and permissions before retrying."
+    "httpAdvice": "Inspect provider status, API configuration and permissions before retrying.",
+    "maxAttempts": "Maximum attempts",
+    "stageBudget": "Stage time budget"
   },
   "roles": {
     "planner": "Planning, research and complex reasoning",

@@ -76,7 +76,9 @@
     "nonOverridableRules": "优先于学习建议的规则数",
     "byteCount": "媒体字节数",
     "rounds": "已执行推理轮次",
-    "tools": "已执行规划工具数"
+    "tools": "已执行规划工具数",
+    "timeoutMs": "单次超时毫秒",
+    "candidateIndex": "候选模型序号"
   },
   "nextLabels": {
     "none": "本步结束",
@@ -132,7 +134,8 @@
     "wait_for_cleanup": "等待工作清理；不使用迟到结果",
     "planner": "继续回复规划",
     "planner_action": "执行已验证的规划操作",
-    "dialogue": "依据有来源的计划生成对话"
+    "dialogue": "依据有来源的计划生成对话",
+    "retry_same_provider": "在配置次数内重试同一提供商和模型"
   },
   "reasonLabels": {
     "disabled": "功能已停用",
@@ -357,7 +360,9 @@
     "planner_action_failed": "规划操作执行失败",
     "planner_failed": "回复规划失败",
     "dialogue_failed": "根据计划生成对话失败",
-    "turn_tool_failures": "本回合存在未恢复的工具错误；已发生的外部效果仍保留"
+    "turn_tool_failures": "本回合存在未恢复的工具错误；已发生的外部效果仍保留",
+    "provider_attempt_succeeded": "本次提供商请求已完成",
+    "provider_retry_ready": "退避等待结束，开始下一次允许的尝试"
   },
   "stageLabels": {
     "ingress": "接收消息",
@@ -406,7 +411,9 @@
     "media.fetch": "下载并验证媒体",
     "planner": "规划回复与必要资讯",
     "planner_action": "执行规划工具",
-    "dialogue": "按計畫生成对话"
+    "dialogue": "按計畫生成对话",
+    "provider_attempt": "请求提供商（单次尝试）",
+    "provider_retry_wait": "等待后重试同一模型"
   },
   "statusLabels": {
     "started": "开始",

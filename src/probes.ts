@@ -1,5 +1,5 @@
 import type { ModelProtocolRegistry } from './model-protocols.ts'
-import { Router, ModelError, type ModelInstance } from './models.ts'
+import { Router, ModelError, providerOperationBudget, type ModelInstance } from './models.ts'
 import type { Store } from './store.ts'
 
 export type ProbeCapability = ModelInstance['capabilities'][number]
@@ -46,7 +46,7 @@ export async function probe(
           capabilities: [...new Set<ModelInstance['capabilities'][number]>(['text', capability])],
         },
       ],
-      routes: [{ role, orderedModelIds: [model.id], timeoutMs: 30000 }],
+      routes: [{ role, orderedModelIds: [model.id], timeoutMs: providerOperationBudget(provider) }],
     },
     (entry) => store.recordModel(entry, config),
     undefined,
@@ -54,7 +54,7 @@ export async function probe(
     store.resolveCredential,
     store,
   )
-  const signal = AbortSignal.timeout(30000)
+  const signal = AbortSignal.timeout(providerOperationBudget(provider))
   try {
     if (capability === 'embedding') {
       const response = await router.embeddings(model.id, ['HumanEngine capability probe.'], signal)

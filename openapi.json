@@ -259,6 +259,18 @@
           },
           "credentialConfigured": {
             "type": "boolean"
+          },
+          "retryCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5,
+            "default": 2
+          },
+          "timeoutMs": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 300000,
+            "default": 30000
           }
         },
         "required": [
@@ -773,6 +785,12 @@
               "attempt": {
                 "type": "number"
               },
+              "maxAttempts": {
+                "type": "number"
+              },
+              "stageBudgetMs": {
+                "type": "number"
+              },
               "timeoutMs": {
                 "type": "number"
               },
@@ -821,6 +839,12 @@
                     "type": "string"
                   },
                   "attempt": {
+                    "type": "number"
+                  },
+                  "maxAttempts": {
+                    "type": "number"
+                  },
+                  "stageBudgetMs": {
                     "type": "number"
                   },
                   "timeoutMs": {
@@ -894,6 +918,12 @@
                       "type": "string"
                     },
                     "attempt": {
+                      "type": "number"
+                    },
+                    "maxAttempts": {
+                      "type": "number"
+                    },
+                    "stageBudgetMs": {
                       "type": "number"
                     },
                     "timeoutMs": {
@@ -976,6 +1006,12 @@
                       "type": "string"
                     },
                     "attempt": {
+                      "type": "number"
+                    },
+                    "maxAttempts": {
+                      "type": "number"
+                    },
+                    "stageBudgetMs": {
                       "type": "number"
                     },
                     "timeoutMs": {

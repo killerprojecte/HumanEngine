@@ -8,9 +8,13 @@ import { Engine } from '../src/engine.ts'
 import { Store } from '../src/store.ts'
 import { OneBotAdapter } from '../src/onebot.ts'
 
-for (const visionEnabled of [true, false]) {
+for (const [visionEnabled, desiredAction] of [
+  [true, 'reply'],
+  [true, 'silent'],
+  [false, 'reply'],
+] as const) {
   test(
-    `real SnowLuma incoming image reaches current turn with learning disabled (vision route ${visionEnabled ? 'configured' : 'missing'})`,
+    `real SnowLuma incoming image reaches current turn with learning disabled (vision route ${visionEnabled ? 'configured' : 'missing'}, informed decision ${desiredAction})`,
     { timeout: 15000 },
     async () => {
       const bytes = await sharp({
@@ -49,6 +53,18 @@ for (const visionEnabled of [true, false]) {
           (item: { value?: { trust?: string } }) =>
             item.value?.trust === 'untrusted_image_descriptions',
         )
+        const participationInput =
+          body.model === 'planner' && !planning
+            ? JSON.parse(
+                body.messages.find((message: { role: string }) => message.role === 'user').content,
+              )
+            : undefined
+        const observation = participationInput?.imageContext?.find(
+          (item: { trust?: string }) => item.trust === 'untrusted_image_descriptions',
+        )?.images?.[0]
+        const hasVisualEvidence =
+          observation?.status === 'described' &&
+          observation?.description?.includes('VISIBLE_RED_SQUARE_CANARY')
         const calls = planning
           ? [
               tool('reply.plan', {
@@ -74,8 +90,18 @@ for (const visionEnabled of [true, false]) {
           : body.model === 'planner'
             ? [
                 tool('participation.decide', {
-                  action: 'reply',
-                  reasonCode: 'fixture_image_question',
+                  action: visionEnabled
+                    ? hasVisualEvidence
+                      ? desiredAction
+                      : 'silent'
+                    : observation?.reason === 'route_not_configured'
+                      ? 'reply'
+                      : 'silent',
+                  reasonCode: hasVisualEvidence
+                    ? desiredAction === 'silent'
+                      ? 'Saw red square; no conversational need to answer'
+                      : 'Saw red square; relevant to conversation'
+                    : 'Image content unavailable',
                 }),
               ]
             : body.model === 'thinker' && ++thinkerCalls === 1
@@ -198,10 +224,7 @@ for (const visionEnabled of [true, false]) {
             user_id: 7,
             message_id: 1,
             time: Math.floor(Date.now() / 1000),
-            message: [
-              { type: 'text', data: { text: 'What is in this image?' } },
-              { type: 'image', data: { file: 'opaque-image-token-canary' } },
-            ],
+            message: [{ type: 'image', data: { file: 'opaque-image-token-canary' } }],
           }),
         )
         const deadline = Date.now() + 10000
@@ -213,6 +236,32 @@ for (const visionEnabled of [true, false]) {
         ) {
           if (Date.now() > deadline) assert.fail('whole image turn did not finish')
           await new Promise((resolve) => setTimeout(resolve, 10))
+        }
+        const participation = requests.find((request) =>
+          request.tools?.some((tool) => tool.function.name === 'participation__decide'),
+        )
+        assert.ok(participation)
+        const participationContext = JSON.parse(
+          participation.messages.find((message) => message.role === 'user')!.content as string,
+        )
+        assert.equal(participationContext.imageContext[0].framePolicy, 'first_frame_only')
+        const initialImage = participationContext.imageContext[0].images[0]
+        assert.equal(initialImage.messageId, sourceId)
+        assert.equal(initialImage.status, visionEnabled ? 'described' : 'unavailable')
+        if (visionEnabled) {
+          assert.match(initialImage.description, /VISIBLE_RED_SQUARE_CANARY/)
+          assert.ok(
+            requests.findIndex((request) => request.model === 'vision') <
+              requests.indexOf(participation),
+          )
+        } else assert.equal(initialImage.reason, 'route_not_configured')
+        if (desiredAction === 'silent') {
+          assert.equal(requests.filter((request) => request.model === 'vision').length, 1)
+          assert.equal(requests.filter((request) => request.model === 'thinker').length, 0)
+          assert.equal(actions.filter((action) => action.action === 'send_group_msg').length, 0)
+          assert.ok(store.logs.some((log) => log.stage === 'decision' && log.action === 'silent'))
+          assert.ok(store.logs.some((log) => log.stage === 'turn' && log.status === 'skipped'))
+          return
         }
         const thinker = requests.find((request) => request.model === 'thinker')
         assert.ok(thinker, 'current thinker must run')
@@ -257,6 +306,10 @@ for (const visionEnabled of [true, false]) {
         const vision = requests.filter((request) => request.model === 'vision')
         if (visionEnabled) {
           assert.equal(vision.length, 1)
+          assert.match(
+            String(vision[0]!.messages.find((message) => message.role === 'system')!.content),
+            /Only the first frame is provided/,
+          )
           const user = vision[0]!.messages.find((message) => message.role === 'user')!
           assert.ok(Array.isArray(user.content))
           const imagePart = user.content.find((part: { type: string }) => part.type === 'image_url')

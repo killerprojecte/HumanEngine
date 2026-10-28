@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
-import { humanName } from '~/utils/chatIdentity'
+import { humanName, mediaLabelKey } from '~/utils/chatIdentity'
 type Message = components['schemas']['Message'] & {
   senderDisplayName?: string
   senderAvatarUrl?: string
@@ -633,7 +633,7 @@ onBeforeUnmount(() => {
                       ><span v-else-if="part.type === 'mention'" class="text-primary break-words">
                         @{{ mentionName(part.userId) }} </span
                       ><span v-else class="text-muted break-words"
-                        >[{{ part.mediaType ?? part.description ?? t('media') }}]</span
+                        >[{{ t(mediaLabelKey(part)) }}]</span
                       ></template
                     ></template
                   >

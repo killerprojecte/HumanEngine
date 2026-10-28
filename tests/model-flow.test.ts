@@ -83,6 +83,14 @@ test('model fallback logs safe attempt lifecycle, usage and result category with
       writer,
     )
     assertClosed(rows)
+    const candidates = rows.filter(
+      (row) => row.stage === 'model_attempt' && row.status === 'started',
+    )
+    assert.deepEqual(
+      candidates.map((row) => row.counts?.candidateIndex),
+      [1, 2, 3],
+    )
+    assert.ok(candidates.every((row) => row.counts?.attempt === undefined))
     const attempts = rows.filter(
       (row) =>
         row.stage === 'model_attempt' &&
@@ -161,7 +169,11 @@ test('cancelled queued calls close their spans and scheduler callbacks keep dist
     )
     assert.deepEqual(
       cancelled.map((row) => row.status),
-      ['cancelled', 'cancelled', 'cancelled'],
+      ['cancelled', 'cancelled', 'cancelled', 'cancelled'],
+    )
+    assert.deepEqual(
+      new Set(cancelled.map((row) => row.stage)),
+      new Set(['model_request', 'model_attempt', 'provider_attempt', 'model_queue']),
     )
     assert.equal(
       rows.some((row) => row.traceId === 'trace-b' && row.status === 'completed'),

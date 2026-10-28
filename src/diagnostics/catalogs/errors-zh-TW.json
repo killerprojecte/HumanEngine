@@ -414,5 +414,21 @@
   "database_schema_changed": {
     "summary": "資料庫結構已變化",
     "advice": "確認遷移版本和並行結構修改，重新準備語句前檢查相容性。"
+  },
+  "invalid_provider_request_policy": {
+    "summary": "提供商重試或逾時設定無效",
+    "advice": "在提供商設定中填寫0–5次額外重試，單次逾時100–300000毫秒。"
+  },
+  "protocol_configuration_error": {
+    "summary": "模型協議設定錯誤",
+    "advice": "檢查協議外掛及提供商設定；未修正的設定不會自動重試。"
+  },
+  "model_stage_timeout": {
+    "summary": "角色操作總時間預算已耗盡",
+    "advice": "若需要容納全部設定重試，請增加角色階段總預算；提供商逾時獨立限制單次請求，本次沒有繼續重試。"
+  },
+  "invalid_role_budget": {
+    "summary": "角色時間預算無效",
+    "advice": "檢查角色的總時間預算設定。"
   }
 }

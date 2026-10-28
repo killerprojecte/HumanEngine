@@ -88,6 +88,8 @@ for (const scenario of [
             protocol: 'openai-chat',
             baseUrl: `http://127.0.0.1:${port}/v1`,
             credentialEnv: '',
+            retryCount: 0,
+            timeoutMs: 1000,
           },
         ],
         models: [
@@ -160,6 +162,7 @@ for (const scenario of [
       assert.equal(root.errorContext?.providerId, 'provider')
       assert.equal(root.errorContext?.attempt, 1)
       assert.equal(root.errorContext?.timeoutMs, 1000)
+      if (scenario === 'timeout') assert.equal(root.errorContext?.stageBudgetMs, 1000)
       assert.ok(root.adviceCode)
       assert.ok(root.errorMessage)
       assert.doesNotMatch(

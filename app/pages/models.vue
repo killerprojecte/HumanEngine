@@ -55,7 +55,7 @@ const getRoute = (role: Route['role']) =>
   config.value.routes.find((r) => r.role === role) ?? {
     role,
     orderedModelIds: [],
-    timeoutMs: 60000,
+    timeoutMs: 180000,
   }
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value))
 const editorOpen = ref(false),
@@ -263,6 +263,8 @@ function beginEdit(kind: EditorKind, id?: string) {
               protocol: 'openai-chat',
               baseUrl: 'https://api.openai.com/v1',
               credentialEnv: '',
+              retryCount: 2,
+              timeoutMs: 30000,
             },
       )
     if (kind === 'model') {
@@ -340,6 +342,20 @@ onBeforeUnmount(() => {
 })
 async function persist(deleting = false) {
   if (operationBusy.value || !currentDraft.value) return
+  if (!deleting && providerDraft.value) {
+    const { retryCount, timeoutMs } = providerDraft.value
+    if (
+      !Number.isInteger(retryCount) ||
+      retryCount < 0 ||
+      retryCount > 5 ||
+      !Number.isInteger(timeoutMs) ||
+      timeoutMs < 100 ||
+      timeoutMs > 300000
+    ) {
+      editorError.value = t('mcProviderRequestInvalid')
+      return
+    }
+  }
   if (!deleting && modelDraft.value && !modelDraft.value.capabilities.length) {
     editorError.value = t('mcRequiredCapability')
     return
@@ -404,7 +420,7 @@ async function persist(deleting = false) {
       const original = next.routes[index] ?? {
         role: draft.role,
         orderedModelIds: [],
-        timeoutMs: 60000,
+        timeoutMs: 180000,
       }
       if (JSON.stringify(original) !== openingSnapshot) throw new Error(t('mcConfigChanged'))
       if (index < 0) next.routes.push(draft)
@@ -939,6 +955,38 @@ watch(section, () => {
                   autocomplete="off"
                 />
               </UFormField>
+              <UFormField
+                :label="t('mcProviderRetries')"
+                :help="t('mcProviderRetriesHelp')"
+                required
+              >
+                <UInput
+                  v-if="selectedProvider"
+                  v-model.number="selectedProvider.retryCount"
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="1"
+                  required
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField
+                :label="t('mcProviderTimeout')"
+                :help="t('mcProviderTimeoutHelp')"
+                required
+              >
+                <UInput
+                  v-if="selectedProvider"
+                  v-model.number="selectedProvider.timeoutMs"
+                  type="number"
+                  min="100"
+                  max="300000"
+                  step="1"
+                  required
+                  class="w-full"
+                />
+              </UFormField>
               <details class="border-t border-default pt-4">
                 <summary class="text-sm text-muted cursor-pointer">
                   {{ t('mcInternalDetails') }}
@@ -1200,7 +1248,7 @@ watch(section, () => {
                 <summary class="cursor-pointer text-sm font-medium">
                   {{ t('mcAdvanced') }}
                 </summary>
-                <UFormField :label="t('mcTimeout')" class="mt-4"
+                <UFormField :label="t('mcTimeout')" :help="t('mcRouteBudgetHelp')" class="mt-4"
                   ><UInput
                     v-model.number="selectedRoute.timeoutMs"
                     type="number"

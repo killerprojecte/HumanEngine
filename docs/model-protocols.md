@@ -13,6 +13,27 @@ from the first configured instance. Each attempt has a bounded timeout; caller
 cancellation stops the route immediately. There is no fee limit, automatic
 provider discovery, or implicit fallback outside that list.
 
+## Provider retries and time budgets
+
+Configure **extra retries** (`retryCount`, integer 0–5, default 2) and **timeout per
+attempt** (`timeoutMs`, integer 100–300000 milliseconds, default 30000) on the
+provider, not individual models. A retry count of 2 permits at most 3 attempts;
+0 disables retries. These settings are inherited by that provider's operations.
+
+Existing providers missing either field receive its default when read. Saving
+configuration persists normalized defaults; explicit existing values are preserved.
+No credentials are changed by this normalization.
+
+Role-route `timeoutMs` is a **total stage budget**, shared across model calls,
+retry waits, fallback candidates and tool rounds for Planner/Dialogue. Other
+roles enforce the retained role value across one complete operation (including
+all retries/fallbacks or embedding batches). It is not another per-model
+request timeout. Existing route values are preserved exactly, even when shorter
+than the provider's potential retry sequence. Newly created routes use 180000 ms.
+Each attempt is capped by both the provider timeout and the remaining stage
+budget; consequently not every configured retry is guaranteed to run. Allow room
+for retry backoff and tool work when choosing a stage budget.
+
 ## Tool loop
 
 ```ts
@@ -94,3 +115,36 @@ Protocol references checked during implementation:
 - [OpenAI reasoning models](https://developers.openai.com/api/docs/guides/reasoning)
 - [Create embeddings](https://developers.openai.com/api/reference/resources/embeddings/methods/create)
 - [List models](https://developers.openai.com/api/reference/resources/models/methods/list)
+
+## Retry classification and protocol extensions
+
+The router has one retry boundary per completion, embedding batch or discovery
+operation. It exhausts the selected instance before moving to the next explicit
+completion fallback. Embeddings never change model space. Retryable failures are
+HTTP 429/5xx, known transient network failures and per-attempt timeouts. HTTP
+401/403, malformed output, schema/configuration errors and caller cancellation
+are not retried. Model retries do not execute or retry tool actions or sends.
+
+Backoff starts at 250 ms and doubles, with an overall 10-second wait cap. A
+valid Retry-After duration or HTTP date can extend that wait up to the same cap.
+The wait is abortable. A model request can be charged even when its response is
+lost; automatic retries are not a claim of provider-side exactly-once billing.
+
+Trusted protocol plugins inherit the same provider policy. They must not add an
+independent retry loop. Throw `ModelProtocolError` from `src/model-protocols.ts`
+with kind `http` and a numeric status, or kind `network`/`timeout`, to explicitly
+classify a transient failure. Optional numeric `retryAfterMs` is bounded. Kind
+`configuration` is never retryable; arbitrary plugin exception text does not
+grant retry eligibility and is not logged verbatim. The router bounds plugin
+execution even if it ignores cancellation, but cannot undo an upstream request.
+
+Provider attempt and retry-wait logs show the actual attempt, maximum attempts,
+per-attempt timeout, wait and eventual root failure. Capability probes inherit
+provider policy and use its full maximum request-plus-backoff budget. These are
+explicit administrator-triggered calls; retries may increase their cost.
+
+The existing background-task recovery settings remain stored for compatibility.
+A private, nonserialized marker identifies errors already handled by the central
+provider policy; learning and meme services never replay those exhausted model
+operations through their older outer recovery loops. Manual administrator retry
+is a separate explicit action.

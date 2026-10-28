@@ -1,5 +1,6 @@
+import { providerAttemptsHandled } from './models/request-policy.ts'
 import { describeCurrentImages, ImageDescriptionCache } from './vision-context.ts'
-import { startFlow, withFlowContext } from './diagnostics/flow.ts'
+import { startFlow, withFlowContext, currentFlowContext } from './diagnostics/flow.ts'
 import { learningStep, learningSkipped, learningResultReason } from './diagnostics/learning.ts'
 import { modelFailureReason } from './diagnostics/model-flow.ts'
 import { sanitizeError } from './diagnostics/errors.ts'
@@ -1384,6 +1385,7 @@ export class Engine {
               !applying &&
               error instanceof ModelError &&
               error.retryable &&
+              !providerAttemptsHandled(error) &&
               attempt < this.store.settings.learningRetryAttempts
             ) {
               const delay = Math.min(
@@ -1470,7 +1472,15 @@ export class Engine {
                   : !applying && error instanceof ModelError && error.retryable
                     ? 'learning_retry_exhausted'
                     : 'learning_failed',
-                { sceneId },
+                {
+                  sceneId,
+                  ...currentFlowContext(),
+                  ...sanitizeError(error, {
+                    operation: 'learning.batch',
+                    stage: 'learning.batch',
+                    role: 'learning',
+                  }),
+                },
               )
             }
           } finally {

@@ -27,7 +27,9 @@
     "no": "否",
     "unknown": "未映射状态",
     "httpSummary": "提供商返回 HTTP {status}",
-    "httpAdvice": "重试前检查提供商状态、API 配置与权限。"
+    "httpAdvice": "重试前检查提供商状态、API 配置与权限。",
+    "maxAttempts": "最多尝试",
+    "stageBudget": "阶段总时间预算"
   },
   "roles": {
     "planner": "规划、检索及复杂推理",

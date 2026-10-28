@@ -81,6 +81,8 @@ test('Engine-local protocol fixture isolates opaque state, validates results, an
         protocol: 'fixture:protocol',
         baseUrl: 'https://example.invalid/v1',
         credentialEnv: 'HUMANENGINE_PROTOCOL_FIXTURE_KEY',
+        retryCount: 0,
+        timeoutMs: 1000,
       },
     ],
     models: ['a', 'b'].map((id) => ({
@@ -188,7 +190,11 @@ test('Engine-local protocol fixture isolates opaque state, validates results, an
     mode = 'pending'
     const timeoutLogs: ModelLog[] = []
     const timedRouter = new Router(
-      { ...config, routes: [{ role: 'planner', orderedModelIds: ['a'], timeoutMs: 15 }] },
+      {
+        ...config,
+        providers: config.providers.map((p) => ({ ...p, timeoutMs: 100 })),
+        routes: [{ role: 'planner', orderedModelIds: ['a'], timeoutMs: 1000 }],
+      },
       (entry) => timeoutLogs.push(entry),
       undefined,
       registry,

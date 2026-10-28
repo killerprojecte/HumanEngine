@@ -7,6 +7,28 @@ import type {
   Usage,
 } from './models.ts'
 
+/** Explicit retry-safe failure contract; response bodies and URLs are not accepted. */
+export class ModelProtocolError extends Error {
+  readonly status?: number
+  readonly retryAfterMs?: number
+  constructor(
+    readonly kind: 'network' | 'timeout' | 'http' | 'configuration',
+    options: { status?: number; retryAfterMs?: number; cause?: unknown } = {},
+  ) {
+    super('model_protocol_failure', { cause: options.cause })
+    if (!['network', 'timeout', 'http', 'configuration'].includes(kind))
+      throw new Error('invalid_protocol_failure_kind')
+    if (
+      kind === 'http' &&
+      (!Number.isInteger(options.status) || options.status! < 400 || options.status! > 599)
+    )
+      throw new Error('invalid_protocol_failure_status')
+    if (kind === 'http') this.status = options.status
+    if (typeof options.retryAfterMs === 'number' && Number.isFinite(options.retryAfterMs))
+      this.retryAfterMs = Math.max(0, Math.min(10000, options.retryAfterMs))
+  }
+}
+
 export interface ModelProtocolContext {
   provider: Provider
   model?: ModelInstance

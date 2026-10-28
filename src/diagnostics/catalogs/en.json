@@ -76,7 +76,9 @@
     "nonOverridableRules": "Non overridable rules",
     "byteCount": "Byte count",
     "rounds": "Completed reasoning rounds",
-    "tools": "Executed planning tools"
+    "tools": "Executed planning tools",
+    "timeoutMs": "Per-attempt timeout (ms)",
+    "candidateIndex": "Candidate model index"
   },
   "nextLabels": {
     "none": "Step finished",
@@ -132,7 +134,8 @@
     "wait_for_cleanup": "Wait for pending work to settle; ignore late results",
     "planner": "Continue response planning",
     "planner_action": "Execute validated planning actions",
-    "dialogue": "Compose dialogue from the grounded plan"
+    "dialogue": "Compose dialogue from the grounded plan",
+    "retry_same_provider": "Retry the same provider/model within its configured limit"
   },
   "reasonLabels": {
     "disabled": "Disabled",
@@ -357,7 +360,9 @@
     "planner_action_failed": "Planning action failed",
     "planner_failed": "Response planning failed",
     "dialogue_failed": "Planned dialogue composition failed",
-    "turn_tool_failures": "The turn contains unresolved tool failures; prior external effects remain"
+    "turn_tool_failures": "The turn contains unresolved tool failures; prior external effects remain",
+    "provider_attempt_succeeded": "The provider request completed",
+    "provider_retry_ready": "Retry backoff finished; starting the next allowed attempt"
   },
   "stageLabels": {
     "ingress": "Receive message",
@@ -406,7 +411,9 @@
     "media.fetch": "Fetch and validate media",
     "planner": "Plan response and gather information",
     "planner_action": "Execute planning tool",
-    "dialogue": "Compose planned dialogue"
+    "dialogue": "Compose planned dialogue",
+    "provider_attempt": "Provider request attempt",
+    "provider_retry_wait": "Wait before provider retry"
   },
   "statusLabels": {
     "started": "Started",

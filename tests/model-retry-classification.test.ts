@@ -27,6 +27,8 @@ test('Router preserves sanitized transient retry eligibility only when every att
           protocol: 'openai-chat',
           baseUrl: `http://127.0.0.1:${address.port}/v1`,
           credentialEnv: '',
+          retryCount: 0,
+          timeoutMs: 1000,
         },
       ],
       models: statuses.map((_status, index) => ({
@@ -49,7 +51,7 @@ test('Router preserves sanitized transient retry eligibility only when every att
         new Router(config).complete('learning', [{ role: 'user', content: 'Synthetic fixture' }]),
         (error: unknown) => {
           assert.ok(error instanceof ModelError)
-          const transient = statuses.every((status) => [429, 502, 503, 504].includes(status))
+          const transient = statuses.every((status) => status === 429 || status >= 500)
           assert.equal(error.retryable, transient)
           assert.equal(error.status, transient ? statuses.at(-1) : undefined)
           assert.equal(error.code, 'all_models_failed')

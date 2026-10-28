@@ -1,3 +1,4 @@
+import { imageParts, facePart } from './image-segments.ts'
 import { displayName, qqAvatar } from './profiles.ts'
 import {
   OneBotError,
@@ -88,16 +89,14 @@ export function normalizeMessage(
         userId: data.qq === 'all' ? 'all' : context.userId(rawId(data.qq)),
       })
     else if (segment.type === 'reply') message.replyToId = context.messageId(scene, rawId(data.id))
-    else if (['image', 'record', 'video'].includes(String(segment.type)))
+    else if (['image', 'mface', 'sticker', 'emoji'].includes(String(segment.type)))
+      message.parts.push(...imageParts(scene.id, String(segment.type), data))
+    else if (segment.type === 'face') message.parts.push(facePart(data))
+    else if (['record', 'video'].includes(String(segment.type)))
       message.parts.push({
         type: 'media',
         assetId: `ob:media:${encode({ sceneId: scene.id, type: segment.type, file: rawIdOrUrl(data.url || data.file || data.file_id || (typeof data.base64 === 'string' ? `base64://${data.base64}` : undefined)), ...(typeof (data.file_id ?? data.file) === 'string' ? { fileId: data.file_id ?? data.file } : {}) })}`,
-        mediaType:
-          segment.type === 'image'
-            ? 'image/unknown'
-            : segment.type === 'record'
-              ? 'audio/unknown'
-              : 'video/unknown',
+        mediaType: segment.type === 'record' ? 'audio/unknown' : 'video/unknown',
       })
     else
       message.parts.push({

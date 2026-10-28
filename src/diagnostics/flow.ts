@@ -175,6 +175,7 @@ export function startFlow(
                   providerId: merged.providerId,
                   apiModel: merged.apiModel,
                   attempt: merged.counts?.attempt,
+                  maxAttempts: merged.counts?.maxAttempts,
                   timeoutMs: merged.counts?.timeoutMs,
                   remainingCandidates: merged.counts?.remainingCandidates,
                 })),

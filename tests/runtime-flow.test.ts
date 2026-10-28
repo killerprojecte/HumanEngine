@@ -362,7 +362,7 @@ test('typing cancellation and router setup failure close every started span with
   }
 })
 
-test('image hooks run only after a reply decision and receive the planner-selected topic sources', async () => {
+test('image hooks prepare incoming topic context before participation, while text-only silence does not fetch images', async () => {
   let hookCalls = 0,
     observed: string[] = []
   const f = fixture(async (role) =>
@@ -412,7 +412,7 @@ test('image hooks run only after a reply decision and receive the planner-select
       f.store.logs.some((row) => row.stage === 'turn' && row.status === 'completed'),
     )
     assert.equal(hookCalls, 1)
-    assert.deepEqual(observed, ['text'])
+    assert.deepEqual(observed, ['old-image', 'text'])
   } finally {
     f.end()
   }

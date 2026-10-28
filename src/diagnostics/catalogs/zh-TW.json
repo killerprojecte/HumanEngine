@@ -76,7 +76,9 @@
     "nonOverridableRules": "優先於學習建議的規則數",
     "byteCount": "媒體位元組數",
     "rounds": "已執行推理輪次",
-    "tools": "已執行規劃工具數"
+    "tools": "已執行規劃工具數",
+    "timeoutMs": "單次逾時毫秒",
+    "candidateIndex": "候選模型序號"
   },
   "nextLabels": {
     "none": "本步結束",
@@ -132,7 +134,8 @@
     "wait_for_cleanup": "等待工作清理；不使用遲到結果",
     "planner": "繼續回覆規劃",
     "planner_action": "執行已驗證的規劃操作",
-    "dialogue": "依據有來源的計畫生成對話"
+    "dialogue": "依據有來源的計畫生成對話",
+    "retry_same_provider": "在設定次數內重試同一提供商與模型"
   },
   "reasonLabels": {
     "disabled": "功能已停用",
@@ -357,7 +360,9 @@
     "planner_action_failed": "規劃操作執行失敗",
     "planner_failed": "回覆規劃失敗",
     "dialogue_failed": "依計畫生成對話失敗",
-    "turn_tool_failures": "本回合存在未恢復的工具錯誤；已發生的外部效果仍保留"
+    "turn_tool_failures": "本回合存在未恢復的工具錯誤；已發生的外部效果仍保留",
+    "provider_attempt_succeeded": "本次提供商請求已完成",
+    "provider_retry_ready": "退避等待結束，開始下一次允許的嘗試"
   },
   "stageLabels": {
     "ingress": "接收訊息",
@@ -406,7 +411,9 @@
     "media.fetch": "下載並驗證媒體",
     "planner": "規劃回覆與必要資訊",
     "planner_action": "執行規劃工具",
-    "dialogue": "按計畫生成對話"
+    "dialogue": "按計畫生成對話",
+    "provider_attempt": "請求提供商（單次嘗試）",
+    "provider_retry_wait": "等待後重試同一模型"
   },
   "statusLabels": {
     "started": "開始",

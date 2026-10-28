@@ -55,7 +55,17 @@ async function fixture(
 }
 function config(baseUrl: string, protocol: Provider['protocol']): RouterConfig {
   return {
-    providers: [{ id: 'p', name: 'Fixture', protocol, baseUrl, credentialEnv: '' }],
+    providers: [
+      {
+        id: 'p',
+        name: 'Fixture',
+        protocol,
+        baseUrl,
+        credentialEnv: '',
+        retryCount: 0,
+        timeoutMs: 10000,
+      },
+    ],
     models: [
       {
         id: 'a',
@@ -66,7 +76,7 @@ function config(baseUrl: string, protocol: Provider['protocol']): RouterConfig {
       },
     ],
     // Successful local protocol fixtures have a realistic bounded startup budget.
-    // The explicit 20ms timeout assertion below remains unchanged.
+    // Provider timeouts are independent from the role stage budget.
     routes: [{ role: 'thinker', orderedModelIds: ['a'], timeoutMs: 10000 }],
   }
 }
@@ -295,7 +305,7 @@ test('Cancellation stops fallback, timeout is bounded, embedding space stays on 
     controller.abort()
     await assert.rejects(pending, { message: 'request_cancelled' })
     assert.equal(paths.length, 1)
-    cfg.routes[0]!.timeoutMs = 20
+    cfg.providers[0]!.timeoutMs = 100
     cfg.routes[0]!.orderedModelIds = ['a']
     const logs: ModelLog[] = []
     const short = new Router(cfg, (entry) => logs.push(entry))

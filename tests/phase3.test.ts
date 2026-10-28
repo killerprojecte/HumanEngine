@@ -4,8 +4,14 @@ import test from 'node:test'
 import { WorkScheduler } from '../src/scheduler.ts'
 import { Store } from '../src/store.ts'
 import { Runtime, type RuntimeEvent, type RuntimeMessage } from '../src/runtime.ts'
-import type { ChatMessage, Completion, ModelDiagnostic, ModelLog, Router } from '../src/models.ts'
-import type { ModelConfig } from '../src/schema.ts'
+import type {
+  ChatMessage,
+  Completion,
+  ModelDiagnostic,
+  ModelLog,
+  Router,
+  RouterConfig,
+} from '../src/models.ts'
 import type { SceneRef } from '../src/onebot.ts'
 
 const tick = () => new Promise<void>((resolve) => setImmediate(resolve))
@@ -33,7 +39,7 @@ const completion = (toolCalls: Completion['toolCalls']): Completion => ({
   usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
   assistant: { role: 'assistant', content: '', toolCalls },
 })
-const config = (): ModelConfig => ({
+const config = (): RouterConfig => ({
   providers: [
     {
       id: 'p',

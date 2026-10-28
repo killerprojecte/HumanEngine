@@ -90,7 +90,7 @@ export async function observeModel<T>(
 ): Promise<T> {
   const span = startFlow(writer ?? currentFlowWriter(), stage, details)
   const releaseContext =
-    stage === 'model_attempt'
+    stage === 'model_attempt' || stage === 'provider_attempt'
       ? bindAbortErrorContext(signal, {
           operation: 'model.request',
           stage,
@@ -100,6 +100,7 @@ export async function observeModel<T>(
           apiModel: details.apiModel,
           attempt: details.counts?.attempt,
           timeoutMs: details.counts?.timeoutMs,
+          maxAttempts: details.counts?.maxAttempts,
           remainingCandidates: details.counts?.remainingCandidates,
         })
       : () => {}
@@ -123,6 +124,7 @@ export async function observeModel<T>(
         apiModel: details.apiModel,
         attempt: details.counts?.attempt,
         timeoutMs: details.counts?.timeoutMs,
+        maxAttempts: details.counts?.maxAttempts,
         remainingCandidates: details.counts?.remainingCandidates,
       })
       const reason = modelFailureReason(error)

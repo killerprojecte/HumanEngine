@@ -84,6 +84,10 @@ test('current images become actual image model inputs even when learning is disa
     calls = 0
   const runtime = {
     preview: () => messages,
+    imageSourceAvailable: (_context: unknown, id: string, assetId: string) =>
+      messages.some(
+        (m) => m.id === id && m.parts.some((p) => p.type === 'media' && p.assetId === assetId),
+      ),
     readImage: async () => {
       reads++
       return png
@@ -96,6 +100,9 @@ test('current images become actual image model inputs even when learning is disa
         calls++
         assert.match(input[1]!.images![0]!, /^data:image\/png;base64,/)
         assert.match(input[0]!.content, /untrusted data/)
+        assert.match(input[0]!.content, /possible common meme or sticker uses/)
+        assert.match(input[0]!.content, /does not prove the sender feels/)
+        assert.match(input[0]!.content, /Only the first frame/)
         return completed()
       },
     }) as unknown as Router
@@ -104,6 +111,7 @@ test('current images become actual image model inputs even when learning is disa
     const result = await describeCurrentImages(store, runtime, router, context, messages, cache)
     assert.equal(store.scene('scene')!.learningEnabled, false)
     assert.equal(result.images.length, 4)
+    assert.equal(result.omitted.length, 2)
     assert.deepEqual(
       result.images.map((image) => image.messageId),
       ['image-2', 'image-3', 'image-4', 'image-5'],
@@ -111,7 +119,14 @@ test('current images become actual image model inputs even when learning is disa
     assert.equal(result.trust, 'untrusted_image_descriptions')
     assert.equal(calls, 4)
     assert.equal(reads, 4)
-    await describeCurrentImages(store, runtime, router, context, messages, cache)
+    await describeCurrentImages(
+      store,
+      runtime,
+      router,
+      { ...context, dependencies: new Set(), validations: [] },
+      messages,
+      cache,
+    )
     assert.equal(calls, 4)
     assert.equal(reads, 4)
     assert.ok(store.logs.some((row) => row.reason === 'image_description_cached'))
@@ -150,6 +165,10 @@ test('unavailable vision route is explicit and no media is fetched; cancellation
     .toBuffer()
   const runtime = {
     preview: () => messages,
+    imageSourceAvailable: (_context: unknown, id: string, assetId: string) =>
+      messages.some(
+        (m) => m.id === id && m.parts.some((p) => p.type === 'media' && p.assetId === assetId),
+      ),
     readImage: async () => {
       reads++
       return png
@@ -228,3 +247,109 @@ test('background legacy image fallback never fetches an unavailable or recalled 
     store.close()
   }
 })
+
+test('quoted image outranks newer images; four unique assets cover duplicate provenance and bound later history', async () => {
+  const { store, context } = fixture()
+  const messages = Array.from({ length: 6 }, (_, i) => imageMessage(i))
+  const duplicate = { ...messages[0]!, id: 'duplicate', origin: 'history' as const }
+  messages.push(duplicate)
+  context.imagePriorityIds = ['image-0', ...messages.toReversed().map((m) => m.id)]
+  const bytes = await sharp({ create: { width: 1, height: 1, channels: 3, background: '#abc' } })
+    .png()
+    .toBuffer()
+  let calls = 0
+  const runtime = {
+    imageSourceAvailable: () => true,
+    readImage: async () => bytes,
+  } as unknown as Runtime
+  const router = () =>
+    ({
+      complete: async () => {
+        calls++
+        return completed('Visible smile; possibly playful, not certain sender intent.')
+      },
+    }) as unknown as Router
+  const cache = new ImageDescriptionCache()
+  try {
+    const result = await describeCurrentImages(store, runtime, router, context, messages, cache)
+    assert.equal(calls, 4)
+    assert.deepEqual(
+      result.images.map((m) => m.messageId),
+      ['image-0', 'image-3', 'image-4', 'image-5', 'duplicate'],
+    )
+    assert.deepEqual(result.omitted.map((m) => m.messageId).sort(), ['image-1', 'image-2'])
+    const later = await describeCurrentImages(
+      store,
+      runtime,
+      router,
+      { ...context },
+      [imageMessage(8)],
+      cache,
+    )
+    assert.equal(
+      calls,
+      4,
+      'history tools share the same per-turn budget, even through a context clone',
+    )
+    assert.equal(later.omitted[0]?.reason, 'image_budget_exhausted')
+    assert.equal(later.images.length, 0)
+  } finally {
+    store.close()
+  }
+})
+
+for (const failure of ['empty', 'download'] as const) {
+  test(`duplicate ${failure} failures attempt once per turn, retain attribution and retry only in a new turn`, async () => {
+    const { store, context } = fixture()
+    const first = imageMessage(0),
+      second = { ...first, id: 'other-message' }
+    const bytes = await sharp({ create: { width: 1, height: 1, channels: 3, background: '#abc' } })
+      .png()
+      .toBuffer()
+    let reads = 0,
+      calls = 0
+    const runtime = {
+      imageSourceAvailable: () => true,
+      readImage: async () => {
+        reads++
+        if (failure === 'download') throw new Error('public_http_403')
+        return bytes
+      },
+    } as unknown as Runtime
+    const router = () =>
+      ({
+        complete: async () => {
+          calls++
+          return completed('')
+        },
+      }) as unknown as Router
+    try {
+      const result = await describeCurrentImages(store, runtime, router, context, [first, second])
+      assert.equal(reads, 1)
+      assert.equal(calls, failure === 'empty' ? 1 : 0)
+      assert.deepEqual(
+        result.images.map((image) => image.messageId),
+        [first.id, second.id],
+      )
+      assert.ok(
+        result.images.every(
+          (image) =>
+            image.status === 'unavailable' &&
+            image.reason === (failure === 'empty' ? 'empty_image_description' : 'public_http_403'),
+        ),
+      )
+      await describeCurrentImages(store, runtime, router, { ...context }, [second])
+      assert.equal(reads, 1)
+      await describeCurrentImages(
+        store,
+        runtime,
+        router,
+        { ...context, dependencies: new Set(), validations: [] },
+        [first],
+      )
+      assert.equal(reads, 2)
+    } finally {
+      store.close()
+    }
+  })
+}

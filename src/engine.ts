@@ -20,6 +20,7 @@ import { modelScheduler, WorkScheduler } from './scheduler.ts'
 import { MemeService } from './memes.ts'
 import { fetchQqMedia } from './media-fetch.ts'
 import { readFileSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import { z } from '@hono/zod-openapi'
 import { Store } from './store.ts'
 import { Runtime, type RuntimeMessage, type TurnContext } from './runtime.ts'
@@ -144,7 +145,22 @@ export class Engine {
     private readonly options: { fetchMedia?: typeof fetchQqMedia } = {},
   ) {
     modelScheduler.configure(store.settings.modelConcurrency)
-    this.runtime = new Runtime(store, (config) => this.router(config))
+    this.runtime = new Runtime(
+      store,
+      (config) => this.router(config),
+      (sceneId, assetId) => ({
+        available: () => {
+          try {
+            this.memes.original({ sceneId, simulation: false }, assetId)
+            return true
+          } catch {
+            return false
+          }
+        },
+        read: async () =>
+          readFile(this.memes.original({ sceneId, simulation: false }, assetId).path),
+      }),
+    )
     this.plugins = new PluginManager(store, this.runtime, this.protocols, {
       adapterStopped: (id) => {
         for (const scene of store.scenes())

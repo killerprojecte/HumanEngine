@@ -77,6 +77,7 @@ export interface TurnContext {
   signal: AbortSignal
   dependencies: Set<string>
   validations: Array<() => boolean>
+  imagePriorityIds?: string[]
 }
 export interface SendHook {
   id: string
@@ -391,6 +392,11 @@ class GroundingError extends Error {
   }
 }
 export class Runtime {
+  // Authority is per turn (shared dependencies survive tool signal clones), never live ingestion.
+  private readonly imageSources = new WeakMap<
+    Set<string>,
+    Map<string, { message: RuntimeMessage; adapter: RuntimeAdapter }>
+  >()
   private typingDelay?: ReturnType<typeof createTypingDelay>
   private lastReplyAt = 0
   private readonly states = new Map<string, SceneState>()
@@ -460,6 +466,13 @@ export class Runtime {
         store.resolveCredential,
         store,
       ),
+    private readonly managedImage?: (
+      sceneId: string,
+      assetId: string,
+    ) => {
+      available: () => boolean
+      read: () => Promise<Buffer>
+    },
   ) {
     this.cleanupTimer = setInterval(() => {
       for (const [id, state] of this.states)
@@ -1125,11 +1138,31 @@ export class Runtime {
             const projection = new ContextProjection(scene.id)
             projection.project(recent)
             const imageContext: unknown[] = []
-            const imageSourceIds = new Set(topic.messageIds)
-            for (const message of recent)
-              if (imageSourceIds.has(message.id) && message.replyToId)
-                imageSourceIds.add(message.replyToId)
-            const imageMessages = recent.filter((message) => imageSourceIds.has(message.id))
+            // Quoted sources outrank the current topic, then recent context fills the budget.
+            const current = recent.filter((message) => topic.messageIds.includes(message.id))
+            context.imagePriorityIds = [
+              ...new Set([
+                ...current
+                  .toReversed()
+                  .flatMap((message) => (message.replyToId ? [message.replyToId] : [])),
+                ...current.toReversed().map((message) => message.id),
+                ...recent.toReversed().map((message) => message.id),
+              ]),
+            ]
+            const imageMessages = [...recent]
+            const missingQuotes = current
+              .toReversed()
+              .flatMap((message) =>
+                message.replyToId && !recent.some((item) => item.id === message.replyToId)
+                  ? [message.replyToId]
+                  : [],
+              )
+            if (mode === 'real' && missingQuotes.length) {
+              const quoted = await this.read(context, 'messages.get', {
+                ids: [...new Set(missingQuotes)].slice(0, 4),
+              })
+              imageMessages.push(...quoted.items)
+            }
             if (
               imageMessages.some((message) =>
                 message.parts.some(
@@ -1379,15 +1412,37 @@ export class Runtime {
                     })
                     operation.bindSignal(signal)
                     try {
-                      const output = await operation.run(() =>
+                      let output = await operation.run(() =>
                         name.startsWith('messages.')
                           ? this.read(toolContext, name, args)
                           : this.extensions
                               .find((e) => e.tools.some((t) => t.name === name))!
                               .execute(name, args, toolContext),
                       )
-                      if (name.startsWith('messages.'))
-                        grounding.observeCoreHistory(output as HistoryResult, scene.id, mode)
+                      if (name.startsWith('messages.')) {
+                        const history = output as HistoryResult
+                        grounding.observeCoreHistory(history, scene.id, mode)
+                        const observations: unknown[] = []
+                        const historyContext = {
+                          ...context,
+                          imagePriorityIds: [
+                            ...(Array.isArray(args.ids)
+                              ? args.ids.filter((id): id is string => typeof id === 'string')
+                              : []),
+                            ...(typeof args.messageId === 'string' ? [args.messageId] : []),
+                            ...history.items.toReversed().map((item) => item.id),
+                          ],
+                        }
+                        for (const extension of this.extensions) {
+                          const observation = await extension.describeImages?.(
+                            historyContext,
+                            structuredClone(history.items),
+                          )
+                          if (observation) observations.push(observation)
+                        }
+                        output = { ...history, imageContext: observations }
+                        imageContext.push(...observations)
+                      }
                       grounding.observeTool(name, output)
                       const outcome = toolOutcome(output)
                       operation.finish(
@@ -1577,6 +1632,8 @@ export class Runtime {
                   sceneKind: scene.kind,
                   plan,
                   messages: selectedMessages,
+                  // Visual observations stay available for affective replies without factual citations.
+                  imageContext,
                   evidence: planned.evidence.filter(
                     (e) =>
                       plan.facts.some((f) => f.evidenceIds.includes(e.id)) ||
@@ -1994,24 +2051,90 @@ export class Runtime {
     if (!available()) throw new Error('image_source_unavailable')
     return bytes
   }
-  async readImage(context: TurnContext, assetId: string): Promise<Buffer> {
+  /** Register only results returned by trusted, scene-scoped history/getMessage paths. */
+  registerImageSources(context: TurnContext, messages: RuntimeMessage[]) {
+    if (context.mode !== 'real' || !this.eligible(context)) return
+    const adapter = this.adapters.get(context.scene.adapterId)
+    if (!adapter) return
+    let sources = this.imageSources.get(context.dependencies)
+    if (!sources) {
+      sources = new Map()
+      this.imageSources.set(context.dependencies, sources)
+    }
+    for (const message of messages) {
+      if (
+        message.sceneId !== context.scene.id ||
+        message.status !== 'available' ||
+        this.isRecalled(context.scene.id, message.id)
+      )
+        continue
+      sources.set(message.id, { message: structuredClone(message), adapter })
+      while (sources.size > 64) sources.delete(sources.keys().next().value!)
+    }
+  }
+  imageSourceAvailable(context: TurnContext, messageId: string, assetId: string): boolean {
+    if (
+      context.mode !== 'real' ||
+      context.signal.aborted ||
+      this.isRecalled(context.scene.id, messageId)
+    )
+      return false
+    const matches = (message: RuntimeMessage) =>
+      message.id === messageId &&
+      message.sceneId === context.scene.id &&
+      message.status === 'available' &&
+      message.parts.some((part) => part.type === 'media' && part.assetId === assetId)
+    const live = this.states.get(context.scene.id)?.messages.some(matches)
+    const source = this.imageSources.get(context.dependencies)?.get(messageId)
+    const authorized =
+      live ||
+      (!!source &&
+        source.adapter === this.adapters.get(context.scene.adapterId) &&
+        matches(source.message))
+    if (!authorized) return false
+    if (/^[a-f0-9]{64}$/.test(assetId)) {
+      try {
+        return this.managedImage?.(context.scene.id, assetId).available() ?? false
+      } catch {
+        return false
+      }
+    }
+    return true
+  }
+  async readImage(context: TurnContext, assetId: string, source?: RuntimeMessage): Promise<Buffer> {
     if (context.mode !== 'real' || !this.eligible(context))
       throw new Error('image_context_unavailable')
-    const sources =
-      this.states
-        .get(context.scene.id)
-        ?.messages.filter(
-          (message) =>
-            message.status === 'available' &&
-            !this.isRecalled(context.scene.id, message.id) &&
-            message.parts.some((part) => part.type === 'media' && part.assetId === assetId),
-        ) ?? []
-    if (!sources.length) throw new Error('image_source_unavailable')
-    for (const message of sources) context.dependencies.add(message.id)
-    const adapter = this.adapters.get(context.scene.adapterId)
-    if (!adapter?.readImage) throw new Error('image_read_unsupported')
-    const bytes = await adapter.readImage(context.scene as SceneRef, assetId, context.signal)
-    if (!this.eligible(context)) throw new Error('image_context_cancelled')
+    const candidates = source ? [source] : (this.states.get(context.scene.id)?.messages ?? [])
+    const message = candidates.find(
+      (item) =>
+        item.sceneId === context.scene.id && this.imageSourceAvailable(context, item.id, assetId),
+    )
+    if (!message) throw new Error('image_source_unavailable')
+    const partIndex = message.parts.findIndex(
+      (part) => part.type === 'media' && part.assetId === assetId,
+    )
+    if (partIndex < 0) throw new Error('image_source_unavailable')
+    // A caller-provided snapshot cannot pick a different slot than the authorized source.
+    const authorized =
+      this.states.get(context.scene.id)?.messages.find((item) => item.id === message.id) ??
+      this.imageSources.get(context.dependencies)?.get(message.id)?.message
+    if (
+      authorized?.parts[partIndex]?.type !== 'media' ||
+      authorized.parts[partIndex].assetId !== assetId
+    )
+      throw new Error('image_source_unavailable')
+    const resolved = await this.resolveDisplayImage(
+      context.scene.id,
+      message.id,
+      partIndex,
+      context.signal,
+      this.managedImage ? (id) => this.managedImage!(context.scene.id, id) : undefined,
+    )
+    if (!resolved || !this.eligible(context)) throw new Error('image_source_unavailable')
+    context.dependencies.add(message.id)
+    context.validations.push(resolved.available)
+    const bytes = await resolved.read()
+    if (!this.eligible(context) || !resolved.available()) throw new Error('image_context_cancelled')
     return bytes
   }
   sendFromPlugin(context: TurnContext, input: unknown, signal: AbortSignal) {
@@ -2261,7 +2384,7 @@ export class Runtime {
         if (cached) result.items.push({ ...cached, origin: 'history' })
         else if (context.mode === 'real' && adapter) {
           const fetched = await adapter.getMessage(context.scene as SceneRef, id, context.signal)
-          result.items.push(...fetched.items)
+          result.items.push(...fetched.items.filter((item) => item.id === id))
         }
       }
       result.coverage = result.items.length === ids.length ? 'complete' : 'partial'
@@ -2299,6 +2422,7 @@ export class Runtime {
       .map((m) => this.normalizeBot(m, context.scene.adapterId))
     if (!this.eligible(context))
       return { items: [], coverage: 'unavailable', reason: 'context_cancelled' }
+    this.registerImageSources(context, result.items)
     return result
   }
 }

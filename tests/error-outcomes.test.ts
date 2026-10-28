@@ -270,6 +270,7 @@ for (const phase of ['download', 'vision'] as const)
       .toBuffer()
     const runtime = {
       preview: () => [message],
+      imageSourceAvailable: () => true,
       readImage: async () => {
         if (phase === 'vision') return png
         throw Object.assign(

@@ -21,7 +21,7 @@ const latest = ref<Log[]>([])
 const lastFetched = ref(''),
   logError = ref('')
 const roleLabel = (role: string) =>
-  ['planner', 'thinker', 'learning', 'vision', 'embedding'].includes(role)
+  ['planner', 'replyer', 'thinker', 'learning', 'vision', 'embedding'].includes(role)
     ? t('mcRole' + role[0]!.toUpperCase() + role.slice(1))
     : role
 const newCount = computed(() => {

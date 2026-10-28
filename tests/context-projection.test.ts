@@ -143,7 +143,7 @@ test('actual planner outbound mocks see compact receipts; historical targets, ev
         facts: [{ text: 'Historical body intact.', evidenceIds: [receipts[0].id] }],
         assets: [{ assetId: asset, evidenceId: receipts[1].id }],
         emoji: [],
-        draftGoals: [],
+        expressionGoals: [],
         actions: [
           {
             toolName: 'memes.feedback',

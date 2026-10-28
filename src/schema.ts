@@ -1,3 +1,4 @@
+import { MODEL_ROLE_INPUTS, canonicalModelRole } from './model-roles.ts'
 import { z } from '@hono/zod-openapi'
 
 export const Id = z.string().regex(/^[a-zA-Z0-9_.:-]{1,160}$/)
@@ -61,7 +62,7 @@ export const ModelSchema = z
   })
   .strict()
   .openapi('ModelInstance')
-export const RoleSchema = z.enum(['planner', 'thinker', 'learning', 'vision', 'embedding'])
+export const RoleSchema = z.enum(MODEL_ROLE_INPUTS)
 export const RouteSchema = z
   .object({
     role: RoleSchema,
@@ -85,7 +86,7 @@ export const ModelConfigSchema = z
       if (new Set(rows.map((r) => r.id)).size !== rows.length)
         ctx.addIssue({ code: 'custom', message: `Duplicate ${name} IDs` })
     }
-    if (new Set(c.routes.map((r) => r.role)).size !== c.routes.length)
+    if (new Set(c.routes.map((r) => canonicalModelRole(r.role))).size !== c.routes.length)
       ctx.addIssue({ code: 'custom', message: 'Duplicate role routes' })
     for (const m of c.models)
       if (!c.providers.some((p) => p.id === m.providerId))
@@ -115,6 +116,7 @@ export const SettingsSchema = z
     }, 'Invalid timezone'),
     persona: z.string().min(1).max(20000),
     cacheEnabled: z.boolean(),
+    replySuggestionsEnabled: z.boolean().default(false),
     cacheHours: z.number().min(0.1).max(168),
     debounceMs: z.number().int().min(0).max(30000),
     maxWaitMs: z.number().int().min(100).max(60000),

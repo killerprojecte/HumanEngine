@@ -1,3 +1,5 @@
+import { canonicalModelRole, normalizeRoleRoutes, type ModelRole } from './model-roles.ts'
+export type { ModelRole, CanonicalModelRole } from './model-roles.ts'
 import {
   providerPolicy,
   providerAttemptsHandled,
@@ -23,7 +25,6 @@ import {
   modelUsageCounts,
   scheduleModel,
 } from './diagnostics/model-flow.ts'
-export type ModelRole = 'planner' | 'thinker' | 'learning' | 'vision' | 'embedding'
 export interface Provider {
   id: string
   name: string
@@ -215,7 +216,7 @@ export class Router {
       provider.credentialEnv ? process.env[provider.credentialEnv] : undefined,
     private readonly flowWriter?: FlowWriter,
   ) {
-    this.config = structuredClone(config)
+    this.config = structuredClone({ ...config, routes: normalizeRoleRoutes(config.routes) })
   }
 
   async complete(
@@ -224,6 +225,7 @@ export class Router {
     tools: ToolDefinition[] = [],
     signal?: AbortSignal,
   ): Promise<Completion> {
+    role = canonicalModelRole(role)
     return observeModel(
       this.flowWriter,
       'model_request',
@@ -368,7 +370,7 @@ export class Router {
                     }
                 const requestSecrets: string[] = []
                 const result = await scheduleModel(
-                  role === 'planner' || role === 'thinker' ? 0 : 1,
+                  role === 'planner' || role === 'replyer' ? 0 : 1,
                   signal,
                   () =>
                     this.request(
@@ -922,7 +924,7 @@ export class Router {
       model,
       'complete',
       timeout,
-      role === 'planner' || role === 'thinker' ? 0 : 1,
+      role === 'planner' || role === 'replyer' ? 0 : 1,
       signal,
       (context, registration) =>
         registration.adapter.complete(

@@ -1,3 +1,4 @@
+import { canonicalModelRole, normalizeRoleRoutes } from './model-roles.ts'
 import {
   displayName,
   qqAvatar,
@@ -80,6 +81,7 @@ export class Store {
     )
     return {
       ...config,
+      routes: normalizeRoleRoutes(config.routes),
       providers: config.providers.map((provider) => ({
         ...provider,
         credentialConfigured: this.secrets.has('model', provider.id),
@@ -104,6 +106,7 @@ export class Store {
         this.secrets.apply('model', id, mutation)
       this.set('models', {
         ...config,
+        routes: normalizeRoleRoutes(config.routes),
         providers: config.providers.map(({ credentialConfigured, ...provider }) => provider),
       })
     })()
@@ -216,6 +219,7 @@ export class Store {
       ...currentFlowContext(),
       ...context,
     }
+    if (row.role) row.role = canonicalModelRole(row.role)
     row.message = readableLog(row)
     // Emit the same structured, sanitized record to container logs.
     try {
@@ -283,7 +287,7 @@ export class Store {
         entry.modelId,
         entry.providerId,
         model?.apiModelName ?? 'unknown',
-        entry.role,
+        canonicalModelRole(entry.role),
         usage.inputTokens,
         usage.outputTokens,
         entry.durationMs,
@@ -294,7 +298,7 @@ export class Store {
   usage() {
     return this.db
       .prepare(
-        'SELECT day,model_id AS modelId,provider_id AS providerId,api_model AS apiModelName,role,calls,input_tokens AS inputTokens,output_tokens AS outputTokens,duration_ms AS durationMs,priced_calls AS pricedCalls,estimated_usd AS estimatedUsd FROM model_usage ORDER BY day DESC,model_id',
+        "SELECT day,model_id AS modelId,provider_id AS providerId,api_model AS apiModelName,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END AS role,SUM(calls) AS calls,SUM(input_tokens) AS inputTokens,SUM(output_tokens) AS outputTokens,SUM(duration_ms) AS durationMs,SUM(priced_calls) AS pricedCalls,SUM(estimated_usd) AS estimatedUsd FROM model_usage GROUP BY day,model_id,provider_id,api_model,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END ORDER BY day DESC,model_id",
       )
       .all() as Array<{
       day: string
@@ -356,7 +360,7 @@ export class Store {
       id: randomUUID(),
       at: new Date().toISOString(),
       modelId: entry.modelId,
-      role: entry.role,
+      role: canonicalModelRole(entry.role),
       input: redact(
         entry.messages.slice(-12).map((message) => ({
           role: message.role,

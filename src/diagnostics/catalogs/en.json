@@ -78,7 +78,9 @@
     "rounds": "Completed reasoning rounds",
     "tools": "Executed planning tools",
     "timeoutMs": "Per-attempt timeout (ms)",
-    "candidateIndex": "Candidate model index"
+    "candidateIndex": "Candidate model index",
+    "queryCount": "Memory queries",
+    "selectedCount": "Selected receipts"
   },
   "nextLabels": {
     "none": "Step finished",
@@ -129,13 +131,15 @@
     "manual_retry": "Keep the failed batch for manual retry",
     "use_memory_results": "Use memory results",
     "learning_failure_policy": "Learning failure policy",
-    "thinker_with_image_unavailable": "Thinker with image unavailable",
+    "thinker_with_image_unavailable": "Replyer with image unavailable",
     "next_image": "Next image",
     "wait_for_cleanup": "Wait for pending work to settle; ignore late results",
     "planner": "Continue response planning",
     "planner_action": "Execute validated planning actions",
     "dialogue": "Compose dialogue from the grounded plan",
-    "retry_same_provider": "Retry the same provider/model within its configured limit"
+    "retry_same_provider": "Retry the same provider/model within its configured limit",
+    "replyer": "Continue natural reply composition",
+    "replyer_with_image_unavailable": "Replyer with image unavailable"
   },
   "reasonLabels": {
     "disabled": "Disabled",
@@ -372,7 +376,10 @@
     "image_library_recognized": "Matched verified image bytes to stored meme interpretation",
     "image_cache_busy": "Image read concurrency limit reached; retry later",
     "media_content_hash_mismatch": "Local image bytes do not match the verified content identity",
-    "analysis_failed_recently": "Recent image analysis failed; waiting before retrying"
+    "analysis_failed_recently": "Recent image analysis failed; waiting before retrying",
+    "memory_not_requested": "This reply did not request memory retrieval",
+    "memory_evidence_selected": "Selected authorized memory excerpts for expression",
+    "memory_evidence_not_selected": "Memory was queried but no excerpts were selected for this reply"
   },
   "stageLabels": {
     "ingress": "Receive message",
@@ -423,7 +430,8 @@
     "planner_action": "Execute planning tool",
     "dialogue": "Compose planned dialogue",
     "provider_attempt": "Provider request attempt",
-    "provider_retry_wait": "Wait before provider retry"
+    "provider_retry_wait": "Wait before provider retry",
+    "memory.handoff": "Select memory excerpts for Replyer"
   },
   "statusLabels": {
     "started": "Started",

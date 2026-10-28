@@ -83,7 +83,7 @@ for (const [visionEnabled, desiredAction] of [
                 ],
                 assets: [],
                 emoji: [],
-                draftGoals: ['Answer the image question briefly.'],
+                expressionGoals: ['Answer the image question briefly.'],
                 actions: [],
               }),
             ]
@@ -290,13 +290,16 @@ for (const [visionEnabled, desiredAction] of [
         const selectedEvidence = thinkerContext.evidence.find(
           (item: { id: string }) => item.id === plannedEvidence.id,
         )
+        assert.equal(selectedEvidence.id, plannedEvidence.id)
+        assert.equal(selectedEvidence.trust, plannedEvidence.value.trust)
+        assert.equal(selectedEvidence.framePolicy, plannedEvidence.value.framePolicy)
         assert.deepEqual(
-          selectedEvidence,
-          plannedEvidence,
-          'dialogue receives the selected authoritative vision evidence unchanged',
+          selectedEvidence.images,
+          plannedEvidence.value.images,
+          'Replyer retains selected image attribution, observations, uncertainty and frame policy without the raw receipt wrapper',
         )
         assert.equal(thinkerContext.plan.facts[0].evidenceIds[0], plannedEvidence.id)
-        const attributed = selectedEvidence.value
+        const attributed = selectedEvidence
         assert.ok(requests.indexOf(planner) < requests.indexOf(thinker))
         assert.deepEqual(
           thinker.tools?.map((tool) => tool.function.name),

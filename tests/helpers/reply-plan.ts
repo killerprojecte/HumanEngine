@@ -24,7 +24,8 @@ export function fixtureReplyPlan(
     facts: [],
     assets: [],
     emoji: [],
-    draftGoals: ['Compose a concise fixture reply.'],
+    memorySelections: [],
+    expressionGoals: ['Compose a concise fixture reply.'],
     actions: [],
     ...patch,
   }

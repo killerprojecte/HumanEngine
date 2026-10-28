@@ -3300,7 +3300,7 @@ export interface components {
         };
         RoleRoute: {
             /** @enum {string} */
-            role: "planner" | "thinker" | "learning" | "vision" | "embedding";
+            role: "planner" | "replyer" | "thinker" | "learning" | "vision" | "embedding";
             orderedModelIds: string[];
             timeoutMs: number;
         };
@@ -3328,6 +3328,8 @@ export interface components {
             timezone: string;
             persona: string;
             cacheEnabled: boolean;
+            /** @default false */
+            replySuggestionsEnabled: boolean;
             cacheHours: number;
             debounceMs: number;
             maxWaitMs: number;

@@ -240,7 +240,7 @@ test('actual mock group lifecycle includes real Router calls, memory tool, confi
         (row) =>
           row.stage === 'model_attempt' &&
           row.status === 'completed' &&
-          row.role === 'thinker' &&
+          row.role === 'replyer' &&
           row.counts?.totalTokens === 80,
       ),
     )

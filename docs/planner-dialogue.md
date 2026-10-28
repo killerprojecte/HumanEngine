@@ -2,7 +2,7 @@
 
 ## Independently configured responsibilities
 
-The existing `planner` route owns participation, reasoning, research and response planning. The existing `thinker` route is labelled Dialogue and owns quick, natural composition from that plan. Configure each ordered model route independently in Models; both need text and tool-call capabilities. A useful selection criterion is reliable structured planning/tool use for Planner and responsive instruction-following composition for Dialogue. These are requirements, not a verified recommendation for a particular model. No new model, credential, paid call or routing choice is introduced automatically.
+The existing `planner` route owns participation, reasoning, research and response planning. The existing `replyer` route is labelled Dialogue and owns quick, natural composition from that plan. Configure each ordered model route independently in Models; both need text and tool-call capabilities. A useful selection criterion is reliable structured planning/tool use for Planner and responsive instruction-following composition for Dialogue. These are requirements, not a verified recommendation for a particular model. No new model, credential, paid call or routing choice is introduced automatically.
 
 Participation remains a small first Planner call, preserving passive/private and proactive/group policy and topic assignment. Image attribution and manual/learned context are prepared before research. Research uses core scoped history, memory lookup, meme lookup, rules, and explicitly declared trusted `effect: read` plugin tools. The built-in `web-search.search` participates only when its plugin is enabled and configured; it retains its provider settings, output attribution, untrusted-content markers and cancellation checks. Unknown-effect tools are not inferred safe.
 
@@ -12,7 +12,7 @@ Participation remains a small first Planner call, preserving passive/private and
 
 - `action`: `reply` or `noReply`.
 - `targetMessageIds` and `contextMessageIds`: supplied message identifiers, with explicitly retrieved available core history allowed as additional sources.
-- `strategy`, `constraints`, `draftGoals`: bounded public composition instructions, not internal reasoning.
+- `strategy`, `constraints`, `expressionGoals`: bounded public composition instructions, not internal reasoning.
 - `facts`: necessary fact text with nonempty `evidenceIds` references to actual input or tool receipts.
 - `assets`: meme asset IDs bound to the exact `memes.search` receipt that returned them.
 - `emoji`: selected expression choices.
@@ -38,3 +38,5 @@ After any settled send, composition stops. The core send guard also rejects a se
 ## Verification
 
 Tests use injected completions or local mocked HTTP endpoints, not paid/real model calls. Coverage includes independently routed Planner search, receipt/URL retention, disabled search, forbidden Dialogue search, vision-before-planning, strict plan validation, noReply, cancellation and recall around awaits, stale corrections, independent deadlines, feedback receipt normalization, plugin send guards, action budgets, and distinct-operation duplicate suppression. Production model quality, external provider availability and actual latency are not established by these mocks.
+
+Current role compatibility, selected memory excerpts and the optional reply-suggestion switch are documented in [Planner, Replyer and memory](planner-replyer-memory.md).

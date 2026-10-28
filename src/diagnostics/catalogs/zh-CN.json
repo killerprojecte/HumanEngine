@@ -78,7 +78,9 @@
     "rounds": "已执行推理轮次",
     "tools": "已执行规划工具数",
     "timeoutMs": "单次超时毫秒",
-    "candidateIndex": "候选模型序号"
+    "candidateIndex": "候选模型序号",
+    "queryCount": "记忆查询数",
+    "selectedCount": "选中来源数"
   },
   "nextLabels": {
     "none": "本步结束",
@@ -135,7 +137,9 @@
     "planner": "继续回复规划",
     "planner_action": "执行已验证的规划操作",
     "dialogue": "依据有来源的计划生成对话",
-    "retry_same_provider": "在配置次数内重试同一提供商和模型"
+    "retry_same_provider": "在配置次数内重试同一提供商和模型",
+    "replyer": "交给 Replyer 组织语言",
+    "replyer_with_image_unavailable": "将图片不可用状态交给回复模型"
   },
   "reasonLabels": {
     "disabled": "功能已停用",
@@ -372,7 +376,10 @@
     "image_library_recognized": "已根据验证后的图片内容取得表情理解",
     "image_cache_busy": "图片读取并发已满，请稍后重试",
     "media_content_hash_mismatch": "本地图片内容与已验证的身份不一致",
-    "analysis_failed_recently": "图片分析刚刚失败，正在等待后续重试"
+    "analysis_failed_recently": "图片分析刚刚失败，正在等待后续重试",
+    "memory_not_requested": "本次回复未请求记忆检索",
+    "memory_evidence_selected": "已选择有权限的记忆摘录交给语言模块",
+    "memory_evidence_not_selected": "已检索记忆，但本次回复未选择记忆摘录"
   },
   "stageLabels": {
     "ingress": "接收消息",
@@ -423,7 +430,8 @@
     "planner_action": "执行规划工具",
     "dialogue": "按計畫生成对话",
     "provider_attempt": "请求提供商（单次尝试）",
-    "provider_retry_wait": "等待后重试同一模型"
+    "provider_retry_wait": "等待后重试同一模型",
+    "memory.handoff": "选择交给 Replyer 的记忆摘录"
   },
   "statusLabels": {
     "started": "开始",

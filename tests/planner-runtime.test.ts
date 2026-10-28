@@ -109,7 +109,7 @@ for (const outcome of ['noReply', 'missing', 'invalid'] as const) {
     let dialogueCalls = 0
     const fixture = setup(async (role, messages, tools) => {
       if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
-      if (role === 'thinker') {
+      if (role === 'replyer') {
         dialogueCalls++
         return result([send('must-not-send')])
       }
@@ -148,7 +148,7 @@ for (const invalidation of ['cancel', 'recall'] as const) {
       dialogueCalls = 0
     const fixture = setup(async (role, _messages, tools) => {
       if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
-      if (role === 'thinker') {
+      if (role === 'replyer') {
         dialogueCalls++
         return result([send('must-not-send')])
       }
@@ -195,7 +195,7 @@ test('recall during a pending planner read prevents late evidence reaching dialo
     dialogueCalls = 0
   const fixture = setup(async (role, messages, tools) => {
     if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
-    if (role === 'thinker') {
+    if (role === 'replyer') {
       dialogueCalls++
       return result([send('must-not-send')])
     }
@@ -248,7 +248,7 @@ test('new correction during planning requires exact-send revalidation and reject
       assert.deepEqual(data.originalTarget, ['source'])
       return result([{ id: 'validation', name: 'reply.validate', arguments: { valid: false } }])
     }
-    if (role === 'thinker') return result([send('stale-send')])
+    if (role === 'replyer') return result([send('stale-send')])
     started.resolve()
     await release.promise
     return plan(messages)
@@ -294,7 +294,7 @@ test('two send calls with different operation IDs in one dialogue completion emi
   }
 })
 
-for (const stalledRole of ['planner', 'thinker'] as const) {
+for (const stalledRole of ['planner', 'replyer'] as const) {
   test(
     `${stalledRole} stage timeout bounds an uncooperative completion without retry or send`,
     { timeout: 3000 },
@@ -323,7 +323,7 @@ for (const stalledRole of ['planner', 'thinker'] as const) {
           {
             role: 'thinker',
             orderedModelIds: [],
-            timeoutMs: stalledRole === 'thinker' ? 100 : 1000,
+            timeoutMs: stalledRole === 'replyer' ? 100 : 1000,
           },
         ],
       })
@@ -332,7 +332,7 @@ for (const stalledRole of ['planner', 'thinker'] as const) {
       try {
         await fixture.runtime.proactive(scene.id)
         assert.equal(plannerCalls, 1)
-        assert.equal(dialogueCalls, stalledRole === 'thinker' ? 1 : 0)
+        assert.equal(dialogueCalls, stalledRole === 'replyer' ? 1 : 0)
         assert.equal(fixture.sends(), 0)
         assert.equal(fixture.runtime.activeTasks, 0)
       } finally {
@@ -508,6 +508,60 @@ test('uncooperative pre-send hook is bounded and diagnosed as dialogue timeout w
     assert.match(JSON.stringify(terminal), /dialogue_timeout/)
   } finally {
     release.resolve()
+    fixture.close()
+  }
+})
+
+for (const enabled of [false, true]) {
+  test(`actual Planner→Replyer optional suggestion switch ${enabled ? 'ON' : 'OFF'} keeps expression independent`, async () => {
+    let composed = 0
+    const fixture = setup(async (role, messages, tools) => {
+      if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+      if (role === 'planner') {
+        const schema = tools.find((tool) => tool.name === 'reply.plan')!.inputSchema as {
+          properties: Record<string, unknown>
+        }
+        assert.equal('replySuggestion' in schema.properties, enabled)
+        assert.doesNotMatch(messages[0]!.content, /Plan the exact response/)
+        return plan(messages, enabled ? { replySuggestion: 'OPTIONAL_WORDING_CANARY' } : {})
+      }
+      assert.equal(role, 'replyer')
+      composed++
+      const input = JSON.parse(messages.find((message) => message.role === 'user')!.content)
+      assert.equal(input.plan.replySuggestion, enabled ? 'OPTIONAL_WORDING_CANARY' : undefined)
+      assert.equal(input.plan.actions, undefined, 'raw action arguments are not language input')
+      assert.equal(input.plan.draftGoals, undefined)
+      assert.match(messages[0]!.content, /Independently phrase/)
+      assert.equal(tools.length, 1)
+      return result([send('independently-worded')])
+    })
+    fixture.store.set('settings', { ...fixture.store.settings, replySuggestionsEnabled: enabled })
+    try {
+      await fixture.runtime.proactive(scene.id)
+      assert.equal(composed, 1)
+      assert.equal(fixture.sends(), 1)
+    } finally {
+      fixture.close()
+    }
+  })
+}
+
+test('disabled suggestions reject a planner-supplied draft before any Replyer invocation or send', async () => {
+  let composed = 0
+  const fixture = setup(async (role, messages, tools) => {
+    if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+    if (role === 'planner') return plan(messages, { replySuggestion: 'FORBIDDEN_DRAFT' })
+    composed++
+    return result([send('must-not-send')])
+  })
+  try {
+    await fixture.runtime.proactive(scene.id)
+    assert.equal(composed, 0)
+    assert.equal(fixture.sends(), 0)
+    assert.ok(
+      fixture.store.logs.some((log) => JSON.stringify(log).includes('planner_invalid_plan')),
+    )
+  } finally {
     fixture.close()
   }
 })

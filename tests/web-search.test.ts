@@ -256,7 +256,7 @@ test('planner invokes enabled web search through real routed requests; dialogue 
             facts: [{ text: 'Fixture title', evidenceIds: [JSON.parse(receipt.content).id] }],
             assets: [],
             emoji: [],
-            draftGoals: ['Cite the result URL.'],
+            expressionGoals: ['Cite the result URL.'],
             actions: [],
           }),
         ]
@@ -392,8 +392,16 @@ test('planner invokes enabled web search through real routed requests; dialogue 
       dialogue[0]!.messages.find((message) => message.role === 'user')!.content,
     )
     assert.equal(composed.plan.facts[0].evidenceIds[0], receipt.id)
-    assert.deepEqual(composed.evidence[0], receipt)
-    assert.equal(composed.evidence[0].value.results[0].url, row.url)
+    assert.equal(composed.evidence[0].id, receipt.id)
+    assert.equal(composed.evidence[0].toolName, receipt.toolName)
+    assert.equal(composed.evidence[0].trust, 'untrusted_web_content')
+    assert.deepEqual(composed.evidence[0].sources[0], {
+      title: row.title,
+      url: row.url,
+      snippet: row.snippet,
+    })
+    assert.equal(composed.evidence[0].attemptedProviders, undefined)
+    assert.equal(composed.evidence[0].value, undefined)
     maliciousDialogue = true
     ingest('malicious-dialogue')
     await runtime.proactive(scene.id)

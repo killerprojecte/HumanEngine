@@ -35,7 +35,7 @@ export async function probe(
   const provider = config.providers.find((p) => p.id === model.providerId)
   if (!provider) return result(false, 'provider_not_configured')
   const role =
-    capability === 'vision' ? 'vision' : capability === 'embedding' ? 'embedding' : 'thinker'
+    capability === 'vision' ? 'vision' : capability === 'embedding' ? 'embedding' : 'replyer'
   // Advertised capability flags are hypotheses being tested, not permission to fallback.
   const router = new Router(
     {
@@ -68,7 +68,7 @@ export async function probe(
       return result(true, 'embedding_vector_validated')
     }
     const completion = await router.complete(
-      capability === 'vision' ? 'vision' : 'thinker',
+      capability === 'vision' ? 'vision' : 'replyer',
       [
         {
           role: 'user',

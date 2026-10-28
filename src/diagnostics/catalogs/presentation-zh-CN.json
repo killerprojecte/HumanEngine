@@ -37,7 +37,8 @@
     "learning": "背景学习",
     "vision": "图片辨识",
     "embedding": "记忆向量",
-    "models": "探索模型"
+    "models": "探索模型",
+    "replyer": "Replyer — 按计划组织回复"
   },
   "outputs": {
     "text": "文字",

@@ -37,7 +37,8 @@
     "learning": "Background learning",
     "vision": "Image understanding",
     "embedding": "Memory embeddings",
-    "models": "Model discovery"
+    "models": "Model discovery",
+    "replyer": "Replyer — planned response composition"
   },
   "outputs": {
     "text": "Text",

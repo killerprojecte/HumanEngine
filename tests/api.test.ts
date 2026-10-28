@@ -114,6 +114,7 @@ test('API authentication, validated configuration, independent model IDs, SQLite
         timeoutMs: 30000,
       })),
       models: config.models.map((model) => ({ ...model, embeddingBatchSize: 4 })),
+      routes: config.routes.map((route) => ({ ...route, role: 'replyer' })),
     })
     assert.equal(store.recalled('group-a', 'message-a'), true)
     assert.equal(store.recalled('group-b', 'message-a'), false)

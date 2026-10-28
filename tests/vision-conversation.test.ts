@@ -111,6 +111,12 @@ for (const source of ['recent', 'history', 'quoted-history'] as const) {
               const receipt = JSON.parse(messages.find((item) => item.role === 'tool')!.content)
               assert.match(JSON.stringify(receipt), /VISIBLE: upturned mouth/)
               assert.doesNotMatch(JSON.stringify(receipt), /private-pixel-reference/)
+              return fixturePlanCompletion(role, messages, {
+                contextMessageIds: [
+                  ...data.planContract.contextMessageIds,
+                  ...receipt.value.items.map((item: { id: string }) => item.id),
+                ],
+              })!
             }
             return fixturePlanCompletion(role, messages)!
           }

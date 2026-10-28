@@ -22,7 +22,8 @@ const plan = (patch: Partial<ReplyPlan> = {}): ReplyPlan => ({
   facts: [],
   assets: [],
   emoji: [],
-  draftGoals: ['Give a concise answer.'],
+  memorySelections: [],
+  expressionGoals: ['Give a concise answer.'],
   actions: [],
   ...patch,
 })
@@ -439,4 +440,86 @@ test('pre-cancelled planning and failed reads never retry or synthesize a plan',
   )
   assert.equal(completions, 1)
   assert.equal(executions, 1)
+})
+
+test('reply suggestions are absent by default and rejected at the runtime boundary; ON accepts only optional bounded text', async () => {
+  assert.throws(
+    () => validateReplyPlan(plan({ replySuggestion: 'CANNED_ANSWER' }), scope()),
+    /planner_invalid_plan/,
+  )
+  const enabled = { ...scope(), replySuggestionsEnabled: true }
+  assert.equal(validateReplyPlan(plan(), enabled).replySuggestion, undefined)
+  assert.equal(
+    validateReplyPlan(plan({ replySuggestion: 'Optional wording, not evidence.' }), enabled)
+      .replySuggestion,
+    'Optional wording, not evidence.',
+  )
+  assert.throws(
+    () => validateReplyPlan(plan({ replySuggestion: 'x'.repeat(2001) }), enabled),
+    /planner_invalid_plan/,
+  )
+  for (const on of [false, true]) {
+    await buildReplyPlan(
+      input({
+        replySuggestionsEnabled: on,
+        complete: async (_messages, tools) => {
+          const schema = tools.find((tool) => tool.name === 'reply.plan')!.inputSchema as {
+            properties: Record<string, unknown>
+            required?: string[]
+          }
+          assert.equal('replySuggestion' in schema.properties, on)
+          assert.equal('draftGoals' in schema.properties, false)
+          assert.equal(schema.required?.includes('replySuggestion') ?? false, false)
+          return completion(
+            call('reply.plan', plan(on ? { replySuggestion: 'An optional example.' } : {})),
+          )
+        },
+      }),
+    )
+  }
+})
+
+test('memory selections must cite exact records from current authorized memory receipts', () => {
+  const evidence = [
+    {
+      id: 'tool:1',
+      toolName: 'memory.search',
+      value: [{ id: 'known', content: 'A remembered preference.' }],
+    },
+  ]
+  const valid = plan({ memorySelections: [{ evidenceId: 'tool:1', memoryIds: ['known'] }] })
+  assert.equal(validateReplyPlan(valid, { ...scope(), evidence }).memorySelections.length, 1)
+  for (const selection of [
+    { evidenceId: 'missing', memoryIds: ['known'] },
+    { evidenceId: 'tool:1', memoryIds: ['foreign'] },
+  ])
+    assert.throws(
+      () => validateReplyPlan(plan({ memorySelections: [selection] }), { ...scope(), evidence }),
+      /planner_unknown_memory_evidence/,
+    )
+  assert.throws(
+    () =>
+      validateReplyPlan(valid, {
+        ...scope(),
+        evidence: [{ ...evidence[0]!, toolName: 'web-read.read' }],
+      }),
+    /planner_unknown_memory_evidence/,
+  )
+})
+
+test('duplicate memory selections cannot silently overwrite earlier selected excerpts', () => {
+  const evidence = [
+    { id: 'tool:1', toolName: 'memory.search', value: [{ id: 'one' }, { id: 'two' }] },
+  ]
+  for (const selections of [
+    [
+      { evidenceId: 'tool:1', memoryIds: ['one'] },
+      { evidenceId: 'tool:1', memoryIds: ['two'] },
+    ],
+    [{ evidenceId: 'tool:1', memoryIds: ['one', 'one'] }],
+  ])
+    assert.throws(
+      () => validateReplyPlan(plan({ memorySelections: selections }), { ...scope(), evidence }),
+      /planner_unknown_memory_evidence/,
+    )
 })

@@ -186,7 +186,7 @@ export async function describeCurrentImages(
             : unavailable.length
               ? 'image_source_unavailable'
               : 'no_current_images',
-        nextStep: 'thinker',
+        nextStep: 'replyer',
       })
       return {
         trust: 'untrusted_image_descriptions',
@@ -221,7 +221,7 @@ export async function describeCurrentImages(
         span.finish('skipped', {
           reason: 'route_not_configured',
           counts: { imageCount: selected.length, unavailableCount: images.length },
-          nextStep: 'thinker_with_image_unavailable',
+          nextStep: 'replyer_with_image_unavailable',
         })
         return {
           trust: 'untrusted_image_descriptions',
@@ -425,7 +425,7 @@ export async function describeCurrentImages(
             unavailableCount: images.length - describedCount,
           },
           reason: describedCount === images.length ? 'images_described' : 'some_images_unavailable',
-          nextStep: 'thinker',
+          nextStep: 'replyer',
         },
         imageErrors.length
           ? new AggregateError(imageErrors, 'image_processing_failed', {

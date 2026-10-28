@@ -37,7 +37,8 @@
     "learning": "背景學習",
     "vision": "圖片辨識",
     "embedding": "記憶向量",
-    "models": "探索模型"
+    "models": "探索模型",
+    "replyer": "Replyer — 按計畫組織回覆"
   },
   "outputs": {
     "text": "文字",

@@ -28,6 +28,7 @@ const assetKeys = new Set(['assetId', 'assetIds'])
 const evidenceKeys = new Set([
   'evidenceId',
   'evidenceIds',
+  'memoryIds',
   'memoryId',
   'candidateId',
   'habitId',

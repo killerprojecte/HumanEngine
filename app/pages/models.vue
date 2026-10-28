@@ -27,7 +27,7 @@ const protocols = ref<Array<{ id: string; label: string }>>([])
 const usage = ref<components['schemas']['Usage'][]>([]),
   usageBusy = ref(false)
 const embeddingPanel = ref<{ refresh: () => Promise<void> }>()
-const roles = ['planner', 'thinker', 'learning', 'vision', 'embedding'] as const
+const roles = ['planner', 'replyer', 'learning', 'vision', 'embedding'] as const
 const capabilities: Capability[] = ['text', 'tools', 'vision', 'embedding']
 const capabilityKeys: Record<Capability, string> = {
   text: 'mcCapText',
@@ -37,7 +37,8 @@ const capabilityKeys: Record<Capability, string> = {
 }
 const roleKeys: Record<Route['role'], string> = {
   planner: 'mcRolePlanner',
-  thinker: 'mcRoleThinker',
+  thinker: 'mcRoleReplyer',
+  replyer: 'mcRoleReplyer',
   learning: 'mcRoleLearning',
   vision: 'mcRoleVision',
   embedding: 'mcRoleEmbedding',
@@ -190,7 +191,7 @@ const filteredUsage = computed(() =>
     matches(
       row.day,
       row.role,
-      roles.includes(row.role as Route['role']) ? roleLabel(row.role as Route['role']) : row.role,
+      Object.hasOwn(roleKeys, row.role) ? roleLabel(row.role as Route['role']) : row.role,
       row.apiModelName,
       modelName(row.modelId),
     ),
@@ -850,7 +851,7 @@ watch(section, () => {
                 </td>
                 <td>
                   {{
-                    roles.includes(row.role as Route['role'])
+                    Object.hasOwn(roleKeys, row.role)
                       ? roleLabel(row.role as Route['role'])
                       : row.role
                   }}

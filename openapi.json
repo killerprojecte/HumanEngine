@@ -351,6 +351,7 @@
             "type": "string",
             "enum": [
               "planner",
+              "replyer",
               "thinker",
               "learning",
               "vision",
@@ -485,6 +486,10 @@
           },
           "cacheEnabled": {
             "type": "boolean"
+          },
+          "replySuggestionsEnabled": {
+            "type": "boolean",
+            "default": false
           },
           "cacheHours": {
             "type": "number",

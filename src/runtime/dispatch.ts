@@ -128,7 +128,7 @@ export async function dispatchSegment(
                   ? 'send_invalidated'
                   : 'delivery_failed',
           counts: { segmentIndex: index + 1, segmentCount: total },
-          nextStep: receipt?.status === 'sent' && index + 1 < total ? 'send_segment' : 'thinker',
+          nextStep: receipt?.status === 'sent' && index + 1 < total ? 'send_segment' : 'replyer',
         },
         failure ?? (receipt ? outcomeError(receipt) : undefined),
       )

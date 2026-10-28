@@ -22,14 +22,14 @@ const usageSummary = computed(() =>
     { calls: 0, priced: 0, cost: 0 },
   ),
 )
-const roles = ['planner', 'thinker', 'learning', 'vision', 'embedding'] as const
+const roles = ['planner', 'replyer', 'learning', 'vision', 'embedding'] as const
 const roleLabel = (role: string) => t('mcRole' + role[0]!.toUpperCase() + role.slice(1))
 const routeModels = (role: string) =>
   config.value?.routes.find((route) => route.role === role)?.orderedModelIds ?? []
 const modelName = (id?: string) =>
   config.value?.models.find((model) => model.id === id)?.displayName ?? t('uxNotAssigned')
 const configured = computed(() =>
-  ['planner', 'thinker'].every((role) =>
+  ['planner', 'replyer'].every((role) =>
     routeModels(role).some((id) => config.value?.models.some((model) => model.id === id)),
   ),
 )

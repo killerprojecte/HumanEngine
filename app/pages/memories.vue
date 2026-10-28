@@ -386,6 +386,7 @@ function date(value: string) {
     <header class="flex items-start justify-between gap-4">
       <div>
         <h1 class="page-heading">{{ t('memoryTitle') }}</h1>
+        <p class="text-sm text-muted">{{ t('memoryLearningHelp') }}</p>
         <p class="mt-2 text-sm text-muted">{{ t('memoryHelp') }}</p>
       </div>
       <div class="flex gap-2 shrink-0">

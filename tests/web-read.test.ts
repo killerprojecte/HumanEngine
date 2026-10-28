@@ -234,7 +234,7 @@ test('planner invokes enabled web read through real routed requests; dialogue on
             facts: [{ text: 'Fixture title', evidenceIds: [JSON.parse(receipt.content).id] }],
             assets: [],
             emoji: [],
-            draftGoals: ['Cite the result URL.'],
+            expressionGoals: ['Cite the result URL.'],
             actions: [],
           }),
         ]
@@ -371,8 +371,16 @@ test('planner invokes enabled web read through real routed requests; dialogue on
       dialogue[0]!.messages.find((message) => message.role === 'user')!.content,
     )
     assert.equal(composed.plan.facts[0].evidenceIds[0], receipt.id)
-    assert.deepEqual(composed.evidence[0], receipt)
-    assert.equal(composed.evidence[0].value.sourceUrl, 'https://example.com/source')
+    assert.equal(composed.evidence[0].id, receipt.id)
+    assert.equal(composed.evidence[0].toolName, receipt.toolName)
+    assert.equal(composed.evidence[0].trust, 'untrusted_web_content')
+    assert.equal(composed.evidence[0].sourceUrl, 'https://example.com/source')
+    assert.equal(
+      composed.evidence[0].text,
+      undefined,
+      'raw webpage text is not dumped into the language module',
+    )
+    assert.equal(composed.evidence[0].value, undefined)
     maliciousDialogue = true
     ingest('malicious-dialogue')
     await runtime.proactive(scene.id)

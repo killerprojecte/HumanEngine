@@ -359,6 +359,20 @@ const timingFields = [
         </section>
         <section class="settings-section">
           <div class="settings-heading">
+            <h2>{{ t('stReplyPlanning') }}</h2>
+          </div>
+          <div class="settings-body space-y-3">
+            <USwitch
+              id="settings-reply-suggestions"
+              v-model="settings.replySuggestionsEnabled"
+              :disabled="locked"
+              :label="t('stReplySuggestions')"
+            />
+            <p class="text-sm text-muted leading-6">{{ t('stReplySuggestionsHelp') }}</p>
+          </div>
+        </section>
+        <section class="settings-section">
+          <div class="settings-heading">
             <h2>{{ t('stParticipation') }}</h2>
             <UButton
               type="button"

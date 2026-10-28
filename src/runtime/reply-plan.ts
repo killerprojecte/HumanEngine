@@ -21,7 +21,12 @@ export const ReplyPlanSchema = z
       .max(24),
     assets: z.array(z.object({ assetId: id, evidenceId: id }).strict()).max(8),
     emoji: z.array(z.string().min(1).max(32)).max(8),
-    draftGoals: z.array(z.string().min(1).max(500)).max(12),
+    expressionGoals: z.array(z.string().min(1).max(500)).max(12).default([]),
+    memorySelections: z
+      .array(z.object({ evidenceId: id, memoryIds: z.array(id).min(1).max(6) }).strict())
+      .max(6)
+      .default([]),
+    replySuggestion: z.string().min(1).max(2000).optional(),
     actions: z
       .array(z.object({ toolName: id, arguments: z.record(z.string(), z.unknown()) }).strict())
       .max(4),
@@ -62,12 +67,14 @@ export const plannerActionTools = (tools: ToolDefinition[]) =>
       t.effect !== 'send' &&
       (effects.has(t.name) || t.effect === 'learningCandidate'),
   )
-const planTool: ToolDefinition = {
+const planTool = (suggestions: boolean): ToolDefinition => ({
   name: 'reply.plan',
   description:
-    'Finalize a grounded composition plan, or noReply. This does not send or execute actions. Include only public strategy, necessary cited facts and draft goals, never hidden reasoning.',
-  inputSchema: z.toJSONSchema(ReplyPlanSchema),
-}
+    'Finalize a grounded composition plan, or noReply. This does not send or execute actions. Include only public strategy, necessary cited facts and expression goals, never hidden reasoning or an exact answer unless optional reply suggestions are enabled.',
+  inputSchema: z.toJSONSchema(
+    suggestions ? ReplyPlanSchema : ReplyPlanSchema.omit({ replySuggestion: true }),
+  ),
+})
 export function validateReplyPlan(
   value: unknown,
   input: {
@@ -76,9 +83,14 @@ export function validateReplyPlan(
     evidence: PlanEvidence[]
     actionTools: ToolDefinition[]
     deliveryTools?: ToolDefinition[]
+    replySuggestionsEnabled?: boolean
   },
 ): ReplyPlan {
-  const parsed = ReplyPlanSchema.safeParse(value)
+  const parsed = (
+    input.replySuggestionsEnabled
+      ? ReplyPlanSchema
+      : ReplyPlanSchema.omit({ replySuggestion: true })
+  ).safeParse(value)
   if (!parsed.success) throw new Error('planner_invalid_plan')
   const plan = parsed.data
   if (
@@ -109,6 +121,34 @@ export function validateReplyPlan(
   )
     throw new Error('planner_invalid_target')
   const evidence = new Map(input.evidence.map((e) => [e.id, e]))
+  if (
+    plan.memorySelections.reduce((count, selection) => count + selection.memoryIds.length, 0) > 12
+  )
+    throw new Error('planner_unknown_memory_evidence')
+  if (
+    new Set(plan.memorySelections.map((selection) => selection.evidenceId)).size !==
+      plan.memorySelections.length ||
+    plan.memorySelections.some(
+      (selection) => new Set(selection.memoryIds).size !== selection.memoryIds.length,
+    )
+  )
+    throw new Error('planner_unknown_memory_evidence')
+  for (const selection of plan.memorySelections) {
+    const receipt = evidence.get(selection.evidenceId)
+    const records = Array.isArray(receipt?.value) ? receipt.value : []
+    if (
+      !['memory.search', 'memory.person'].includes(receipt?.toolName ?? '') ||
+      !Array.isArray(receipt?.value) ||
+      selection.memoryIds.some(
+        (memoryId) =>
+          !records.some(
+            (item: unknown) =>
+              item && typeof item === 'object' && 'id' in item && item.id === memoryId,
+          ),
+      )
+    )
+      throw new Error('planner_unknown_memory_evidence')
+  }
   if (plan.facts.some((f) => f.evidenceIds.some((id) => !evidence.has(id))))
     throw new Error('planner_unknown_evidence')
   for (const asset of plan.assets) {
@@ -144,6 +184,7 @@ export function validateReplyPlan(
 /** A bounded, side-effect-free planning loop. Tool receipts, not summaries, carry provenance. */
 export async function buildReplyPlan(input: {
   messages: ChatMessage[]
+  replySuggestionsEnabled?: boolean
   projection?: ContextProjection
   readTools: ToolDefinition[]
   actionTools: ToolDefinition[]
@@ -160,6 +201,7 @@ export async function buildReplyPlan(input: {
   ): Promise<Completion>
   execute(name: string, args: Record<string, unknown>, signal: AbortSignal): Promise<unknown>
 }) {
+  const finalTool = planTool(input.replySuggestionsEnabled === true)
   const readTools = plannerReadTools(input.readTools)
   const messages = [...input.messages]
   const evidence = [...input.evidence]
@@ -171,11 +213,11 @@ export async function buildReplyPlan(input: {
   for (let round = 0; round < PLANNER_MAX_ROUNDS; round++) {
     check()
     const result = await withinSignal(
-      input.complete(messages, [...readTools, planTool], input.signal),
+      input.complete(messages, [...readTools, finalTool], input.signal),
       input.signal,
     )
     check()
-    const final = result.toolCalls.filter((call) => call.name === planTool.name)
+    const final = result.toolCalls.filter((call) => call.name === finalTool.name)
     if (final.length) {
       if (final.length !== 1 || result.toolCalls.length !== 1)
         throw new Error('planner_ambiguous_plan')

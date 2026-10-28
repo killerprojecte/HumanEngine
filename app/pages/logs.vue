@@ -23,7 +23,24 @@ const busy = ref(false),
   error = ref('')
 const search = ref(''),
   level = ref('all'),
-  moduleFilter = ref('*')
+  moduleFilter = ref('*'),
+  traceFilter = ref('*'),
+  statusFilter = ref('*')
+const traceOptions = computed(() => [
+  { label: t('flowAllTraces'), value: '*' },
+  ...[
+    ...new Set(logs.value.map((log) => log.traceId).filter((id): id is string => Boolean(id))),
+  ].map((value) => ({ label: value, value })),
+])
+const statusOptions = computed(() => [
+  { label: t('flowAllStatuses'), value: '*' },
+  ...['started', 'completed', 'skipped', 'failed', 'cancelled', 'cancel_requested', 'partial'].map(
+    (value) => ({
+      label: t('flowStatus.' + value),
+      value,
+    }),
+  ),
+])
 const consolePanel = ref<HTMLElement>(),
   expanded = ref(new Set<string>())
 const modules = computed(() => [
@@ -42,12 +59,23 @@ const filtered = computed(() => {
     (log) =>
       (level.value === 'all' || log.level === level.value) &&
       (moduleFilter.value === '*' || log.module === moduleFilter.value) &&
+      (traceFilter.value === '*' ||
+        log.traceId === traceFilter.value ||
+        log.parentTraceId === traceFilter.value ||
+        log.linkedTraceIds?.includes(traceFilter.value)) &&
+      (statusFilter.value === '*' || log.status === statusFilter.value) &&
       (!query ||
         [
           log.at,
           log.level,
           log.module,
           log.code,
+          log.message,
+          log.traceId,
+          log.batchId,
+          log.reason,
+          log.stage,
+          log.status,
           log.operation,
           log.phase,
           log.errorType,
@@ -144,6 +172,23 @@ function context(log: Log) {
   return Object.fromEntries(
     Object.entries({
       id: log.id,
+      code: log.code,
+      traceId: log.traceId,
+      spanId: log.spanId,
+      parentSpanId: log.parentSpanId,
+      parentTraceId: log.parentTraceId,
+      linkedTraceIds: log.linkedTraceIds,
+      batchId: log.batchId,
+      stage: log.stage,
+      status: log.status,
+      reason: log.reason,
+      nextStep: log.nextStep,
+      counts: log.counts,
+      ruleIds: log.ruleIds,
+      role: log.role,
+      apiModel: log.apiModel,
+      toolName: log.toolName,
+      outputKind: log.outputKind,
       operation: log.operation,
       phase: log.phase,
       errorType: log.errorType,
@@ -169,7 +214,7 @@ const timestamp = (at: string) =>
     second: '2-digit',
     hour12: false,
   })
-watch([search, level, moduleFilter], () => {
+watch([search, level, moduleFilter, traceFilter, statusFilter], () => {
   if (following.value) void jumpToLatest()
 })
 onMounted(() => void refresh())
@@ -190,6 +235,7 @@ onBeforeUnmount(() => {
       </div>
     </header>
     <UAlert v-if="error" color="error" :title="error" />
+    <p class="text-sm text-muted">{{ t('flowHelp') }}</p>
     <section
       class="overflow-hidden rounded-lg border border-default"
       :aria-label="t('uxLogConsole')"
@@ -208,6 +254,18 @@ onBeforeUnmount(() => {
           :items="modules"
           :aria-label="t('uxLogAllModules')"
           class="w-44"
+        />
+        <USelect
+          v-model="traceFilter"
+          :items="traceOptions"
+          :aria-label="t('flowAllTraces')"
+          class="w-full sm:w-64"
+        />
+        <USelect
+          v-model="statusFilter"
+          :items="statusOptions"
+          :aria-label="t('flowAllStatuses')"
+          class="w-40"
         />
         <div class="flex-1" />
         <div class="flex gap-2">
@@ -307,7 +365,16 @@ onBeforeUnmount(() => {
               >{{ log.level }}</span
             >
             <span class="log-module min-w-0 break-all text-violet-300">[{{ log.module }}]</span
-            ><code class="log-code min-w-0 break-all">{{ log.code }}</code
+            ><span class="log-code min-w-0 break-words font-sans text-sm"
+              ><span>{{ log.message || log.code }}</span
+              ><span v-if="log.traceId" class="block text-xs text-slate-500 font-mono"
+                >{{ t('flowTrace') }} {{ log.traceId.slice(-12)
+                }}<template v-if="log.turnId">
+                  · {{ t('flowTurn') }} {{ log.turnId.slice(-8) }}</template
+                ><template v-if="log.batchId">
+                  · {{ t('flowBatch') }} {{ log.batchId.slice(-8) }}</template
+                ></span
+              ></span
             ><span
               v-if="log.durationMs !== undefined"
               class="log-duration text-right text-slate-500"

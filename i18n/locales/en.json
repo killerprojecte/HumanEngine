@@ -878,5 +878,20 @@
   "pgWebHtmlHelp": "Required for HTML providers. Markup, CAPTCHA or redirects may make search unavailable. DuckDuckGo HTML is not DDGS multi-engine search. No challenge bypass or result-page fetching.",
   "pgWebKeyHelp": "Stored encrypted in the database. Leave blank to preserve; select Clear to delete. Never include credentials or private conversation in search queries.",
   "pgWebKeyMissing": "No saved key. Required only if this API provider is selected as primary or fallback.",
-  "pgWebRequiredKeyMissing": "The selected API provider has no saved key. Enter and save it on this page."
+  "pgWebRequiredKeyMissing": "The selected API provider has no saved key. Enter and save it on this page.",
+  "flowAllTraces": "All message traces",
+  "flowAllStatuses": "All step statuses",
+  "flowTrace": "Trace",
+  "flowTurn": "Turn",
+  "flowBatch": "Learning batch",
+  "flowHelp": "Each line describes real work, its outcome and the next action. Filter a trace to follow one conversation and its linked background learning. Model completion is not delivery confirmation. Only the latest bounded log window is shown.",
+  "flowStatus": {
+    "started": "Started",
+    "completed": "Completed",
+    "skipped": "Skipped",
+    "failed": "Failed",
+    "cancelled": "Cancelled",
+    "partial": "Partially completed",
+    "cancel_requested": "Cancellation requested"
+  }
 }

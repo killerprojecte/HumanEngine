@@ -52,6 +52,7 @@ export async function probe(
     undefined,
     registry,
     store.resolveCredential,
+    store,
   )
   const signal = AbortSignal.timeout(30000)
   try {

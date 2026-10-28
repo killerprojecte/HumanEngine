@@ -3161,6 +3161,29 @@ export interface components {
             level: "info" | "warn" | "error";
             module: string;
             code: string;
+            message?: string;
+            traceId?: string;
+            spanId?: string;
+            parentSpanId?: string;
+            parentTraceId?: string;
+            linkedTraceIds?: string[];
+            batchId?: string;
+            stage?: string;
+            /** @enum {string} */
+            status?: "started" | "completed" | "failed" | "skipped" | "cancelled" | "cancel_requested" | "partial";
+            reason?: string;
+            nextStep?: string;
+            counts?: {
+                [key: string]: number;
+            };
+            ruleIds?: string[];
+            role?: string;
+            apiModel?: string;
+            toolName?: string;
+            action?: string;
+            outputKind?: string;
+            receiptState?: string;
+            mode?: string;
             operation?: string;
             phase?: string;
             errorType?: string;

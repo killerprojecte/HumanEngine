@@ -712,6 +712,8 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
     }),
     (c) => {
       const rules = c.req.valid('json')
+      if (new Set(rules.map((rule) => rule.id)).size !== rules.length)
+        return c.json({ error: 'duplicate_rule_ids' }, 400)
       store.set('rules', rules)
       return c.json(rules, 200)
     },

@@ -56,11 +56,12 @@ export function normalizeMessage(
     message.status = 'recalled'
     return { message, scene }
   }
-  if (!Array.isArray(event.message)) {
+  const segments = typeof event.message === 'string' ? parseCqMessage(event.message) : event.message
+  if (!Array.isArray(segments)) {
     message.parts = [{ type: 'unsupported', description: 'Configure OneBot array message format' }]
     return { message, scene }
   }
-  for (const item of event.message) {
+  for (const item of segments) {
     const segment = object(item)
     const data = object(segment.data)
     if (segment.type === 'text' && typeof data.text === 'string')
@@ -74,7 +75,7 @@ export function normalizeMessage(
     else if (['image', 'record', 'video'].includes(String(segment.type)))
       message.parts.push({
         type: 'media',
-        assetId: `ob:media:${encode({ sceneId: scene.id, type: segment.type, file: rawIdOrUrl(data.url ?? data.file) })}`,
+        assetId: `ob:media:${encode({ sceneId: scene.id, type: segment.type, file: rawIdOrUrl(data.url || data.file || data.file_id || (typeof data.base64 === 'string' ? `base64://${data.base64}` : undefined)), ...(typeof (data.file_id ?? data.file) === 'string' ? { fileId: data.file_id ?? data.file } : {}) })}`,
         mediaType:
           segment.type === 'image'
             ? 'image/unknown'
@@ -89,4 +90,30 @@ export function normalizeMessage(
       })
   }
   return { message, scene }
+}
+
+/** CQ decoding happens once, after delimiters are parsed (escaped commas are data). */
+export function parseCqMessage(value: string): Obj[] {
+  const unescape = (text: string) =>
+    text
+      .replaceAll('&#91;', '[')
+      .replaceAll('&#93;', ']')
+      .replaceAll('&#44;', ',')
+      .replaceAll('&amp;', '&')
+  const result: Obj[] = []
+  let cursor = 0
+  for (const match of value.matchAll(/\[CQ:([a-zA-Z0-9_]+)((?:,[^\]]*)?)\]/g)) {
+    if (match.index > cursor)
+      result.push({ type: 'text', data: { text: unescape(value.slice(cursor, match.index)) } })
+    const data: Obj = {}
+    for (const pair of match[2]!.split(',').slice(1)) {
+      const equal = pair.indexOf('=')
+      if (equal > 0) data[pair.slice(0, equal)] = unescape(pair.slice(equal + 1))
+    }
+    result.push({ type: match[1], data })
+    cursor = match.index + match[0].length
+  }
+  if (cursor < value.length)
+    result.push({ type: 'text', data: { text: unescape(value.slice(cursor)) } })
+  return result
 }

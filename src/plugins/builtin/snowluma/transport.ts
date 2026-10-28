@@ -1,4 +1,5 @@
 import { sanitizeError } from '../../../diagnostics/errors.ts'
+import { readOneBotImage, type MediaFetcher } from './media.ts'
 import { normalizeMessage } from './normalization.ts'
 import { randomUUID } from 'node:crypto'
 import WebSocket from 'ws'
@@ -78,6 +79,22 @@ export class OneBotAdapter {
   }
   userId(platformUserId: string): string {
     return `ob:u:${encode([this.config.id, this.config.accountId, rawId(platformUserId)])}`
+  }
+
+  async readImage(
+    scene: SceneRef,
+    assetId: string,
+    signal?: AbortSignal,
+    fetchMedia?: MediaFetcher,
+  ): Promise<Buffer> {
+    this.assertScene(scene)
+    return readOneBotImage(
+      scene,
+      assetId,
+      (name, params, abort) => this.action(name, params, abort),
+      signal,
+      fetchMedia,
+    )
   }
 
   connect(): Promise<void> {

@@ -878,5 +878,20 @@
   "pgWebHtmlHelp": "HTML 供應商必須勾選。頁面結構、驗證碼或重新導向可能導致無法使用。DuckDuckGo HTML 不等於 DDGS 多引擎搜尋。不繞過驗證，不擷取結果全文。",
   "pgWebKeyHelp": "金鑰加密存入資料庫。留空保留原值；勾選清除可刪除。搜尋查詢中不得包含憑證或私人對話。",
   "pgWebKeyMissing": "尚未儲存金鑰。僅在選擇此 API 供應商作為主要或備用供應商時需要。",
-  "pgWebRequiredKeyMissing": "所選 API 供應商尚未儲存金鑰，請在本頁填寫並儲存。"
+  "pgWebRequiredKeyMissing": "所選 API 供應商尚未儲存金鑰，請在本頁填寫並儲存。",
+  "flowAllTraces": "全部訊息流程",
+  "flowAllStatuses": "全部步驟狀態",
+  "flowTrace": "流程",
+  "flowTurn": "回合",
+  "flowBatch": "學習批次",
+  "flowHelp": "每行說明實際執行的步驟、結果與下一步。選擇流程可追蹤目前對話及相關背景學習；模型完成不代表訊息已發送。此處只顯示有限數量的最近日誌。",
+  "flowStatus": {
+    "started": "開始",
+    "completed": "完成",
+    "skipped": "跳過",
+    "failed": "失敗",
+    "cancelled": "取消",
+    "partial": "部分完成",
+    "cancel_requested": "已請求取消"
+  }
 }

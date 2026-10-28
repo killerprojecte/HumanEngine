@@ -91,7 +91,7 @@ test('API unhandled failure has matching response, stdout and diagnostics reques
     assert.ok(entry.stackFrames?.some((frame) => frame.includes('tests/diagnostics.test.ts:')))
     assert.equal(entry.causes?.[0]?.systemCode, 'ECONNREFUSED')
     const stdout = writes
-      .map((value) => JSON.parse(value))
+      .map((value) => JSON.parse(value.slice(value.indexOf(' | ') + 3)))
       .find((row) => row.requestId === body.requestId)
     assert.deepEqual(stdout, entry)
     assert.doesNotMatch(

@@ -155,7 +155,8 @@ export interface Pending {
 }
 
 export function rawIdOrUrl(value: unknown): string {
-  if (typeof value !== 'string' || !value || value.length > 16_384)
-    throw new OneBotError('invalid_media_reference')
+  if (typeof value !== 'string' || !value) throw new OneBotError('invalid_media_reference')
+  const limit = /^(?:base64:\/\/|data:image\/)/i.test(value) ? 14 * 1024 * 1024 : 16_384
+  if (value.length > limit) throw new OneBotError('invalid_media_reference')
   return value
 }

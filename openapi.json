@@ -648,6 +648,86 @@
           "code": {
             "type": "string"
           },
+          "message": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "spanId": {
+            "type": "string"
+          },
+          "parentSpanId": {
+            "type": "string"
+          },
+          "parentTraceId": {
+            "type": "string"
+          },
+          "linkedTraceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 60
+          },
+          "batchId": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "started",
+              "completed",
+              "failed",
+              "skipped",
+              "cancelled",
+              "cancel_requested",
+              "partial"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "nextStep": {
+            "type": "string"
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "ruleIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32
+          },
+          "role": {
+            "type": "string"
+          },
+          "apiModel": {
+            "type": "string"
+          },
+          "toolName": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "outputKind": {
+            "type": "string"
+          },
+          "receiptState": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
           "operation": {
             "type": "string"
           },

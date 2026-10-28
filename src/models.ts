@@ -4,7 +4,13 @@ import {
   type ModelProtocolContext,
   type ProtocolRegistration,
 } from './model-protocols.ts'
-import { modelScheduler } from './scheduler.ts'
+import { currentFlowWriter, startFlow, type FlowWriter } from './diagnostics/flow.ts'
+import {
+  observeModel,
+  completionDetails,
+  modelUsageCounts,
+  scheduleModel,
+} from './diagnostics/model-flow.ts'
 export type ModelRole = 'planner' | 'thinker' | 'learning' | 'vision' | 'embedding'
 export interface Provider {
   id: string
@@ -145,11 +151,32 @@ export class Router {
     private readonly protocols?: ModelProtocolRegistry,
     private readonly resolveCredential: (provider: Provider) => string | undefined = (provider) =>
       provider.credentialEnv ? process.env[provider.credentialEnv] : undefined,
+    private readonly flowWriter?: FlowWriter,
   ) {
     this.config = structuredClone(config)
   }
 
   async complete(
+    role: Exclude<ModelRole, 'embedding'>,
+    messages: ChatMessage[],
+    tools: ToolDefinition[] = [],
+    signal?: AbortSignal,
+  ): Promise<Completion> {
+    return observeModel(
+      this.flowWriter,
+      'model_request',
+      {
+        role,
+        counts: { messages: messages.length, offeredTools: tools.length },
+        nextStep: 'select_model',
+      },
+      signal,
+      () => this.completeRequest(role, messages, tools, signal),
+      completionDetails,
+    )
+  }
+
+  private async completeRequest(
     role: Exclude<ModelRole, 'embedding'>,
     messages: ChatMessage[],
     tools: ToolDefinition[] = [],
@@ -167,7 +194,7 @@ export class Router {
     let attempted = false
     let retryable = true
     let lastStatus: number | undefined
-    for (const modelId of route.orderedModelIds) {
+    for (const [index, modelId] of route.orderedModelIds.entries()) {
       if (signal?.aborted) throw abortError()
       const model = this.config.models.find((item) => item.id === modelId)
       if (
@@ -175,108 +202,148 @@ export class Router {
         !model.capabilities.includes('text') ||
         (tools.length && !model.capabilities.includes('tools')) ||
         (messages.some((item) => item.images?.length) && !model.capabilities.includes('vision'))
-      )
+      ) {
+        const skipped = startFlow(this.flowWriter ?? currentFlowWriter(), 'model_attempt', {
+          role,
+          modelId,
+          counts: { attempt: index + 1 },
+        })
+        skipped.finish('skipped', {
+          reason: !model ? 'model_not_configured' : 'model_capability_mismatch',
+          nextStep: 'select_next_model',
+        })
         continue
+      }
       const provider = this.config.providers.find((item) => item.id === model.providerId)
-      if (!provider) continue
+      if (!provider) {
+        const skipped = startFlow(this.flowWriter ?? currentFlowWriter(), 'model_attempt', {
+          role,
+          modelId,
+          counts: { attempt: index + 1 },
+        })
+        skipped.finish('skipped', {
+          reason: 'provider_not_configured',
+          nextStep: 'select_next_model',
+        })
+        continue
+      }
       attempted = true
       const started = Date.now()
       try {
-        if (!isBuiltinProtocol(provider.protocol))
-          return await this.completeProtocol(
-            provider,
-            model,
+        return await observeModel(
+          this.flowWriter,
+          'model_attempt',
+          {
             role,
-            messages,
-            tools,
-            route.timeoutMs,
-            signal,
-          )
-        const responses = provider.protocol === 'openai-responses'
-        const body = responses
-          ? {
-              model: model.apiModelName,
-              input: this.responsesInput(messages, modelId),
-              store: false,
-              stream: false,
-              include: ['reasoning.encrypted_content'],
-              ...(tools.length
-                ? {
-                    tools: tools.map((tool) => ({
-                      type: 'function',
-                      name: wireName(tool.name),
-                      description: tool.description,
-                      parameters: tool.inputSchema,
-                      strict: false,
-                    })),
-                  }
-                : {}),
-            }
-          : {
-              model: model.apiModelName,
-              messages: messages.map((message) => this.chatInput(message)),
-              stream: false,
-              ...(tools.length
-                ? {
-                    tools: tools.map((tool) => ({
-                      type: 'function',
-                      function: {
-                        name: wireName(tool.name),
-                        description: tool.description,
-                        parameters: tool.inputSchema,
-                        strict: false,
-                      },
-                    })),
-                  }
-                : {}),
-            }
-        const requestSecrets: string[] = []
-        const result = await modelScheduler.run(
-          role === 'planner' || role === 'thinker' ? 0 : 1,
-          signal,
-          () =>
-            this.request(
-              provider,
-              responses ? 'responses' : 'chat/completions',
-              body,
-              route.timeoutMs,
-              signal,
-              (secret) => requestSecrets.push(secret),
-            ),
-        )
-        if (signal?.aborted) throw abortError()
-        const parsed = responses
-          ? this.parseResponses(result, names)
-          : this.parseChat(result, names)
-        const assistant: ChatMessage = {
-          role: 'assistant',
-          content: parsed.text,
-          toolCalls: parsed.toolCalls,
-        }
-        if (responses) this.state.set(assistant, { modelId, output: array(result.output) })
-        const completion = { ...parsed, modelId, assistant }
-        try {
-          this.diagnostic(
-            {
-              role,
-              modelId,
-              messages,
-              output: { text: parsed.text, toolCalls: parsed.toolCalls },
+            modelId,
+            providerId: provider.id,
+            apiModel: model.apiModelName,
+            counts: {
+              attempt: index + 1,
+              remainingCandidates: route.orderedModelIds.length - index - 1,
             },
-            requestSecrets,
-          )
-        } catch {
-          /* Optional diagnostics cannot break model execution. */
-        }
-        this.emit({
-          event: 'model.completed',
-          modelId,
-          providerId: provider.id,
-          role,
-          durationMs: Date.now() - started,
-          usage: completion.usage,
-        })
-        return completion
+            nextStep: 'wait_for_model_slot',
+          },
+          signal,
+          async () => {
+            if (!isBuiltinProtocol(provider.protocol))
+              return await this.completeProtocol(
+                provider,
+                model,
+                role,
+                messages,
+                tools,
+                route.timeoutMs,
+                signal,
+              )
+            const responses = provider.protocol === 'openai-responses'
+            const body = responses
+              ? {
+                  model: model.apiModelName,
+                  input: this.responsesInput(messages, modelId),
+                  store: false,
+                  stream: false,
+                  include: ['reasoning.encrypted_content'],
+                  ...(tools.length
+                    ? {
+                        tools: tools.map((tool) => ({
+                          type: 'function',
+                          name: wireName(tool.name),
+                          description: tool.description,
+                          parameters: tool.inputSchema,
+                          strict: false,
+                        })),
+                      }
+                    : {}),
+                }
+              : {
+                  model: model.apiModelName,
+                  messages: messages.map((message) => this.chatInput(message)),
+                  stream: false,
+                  ...(tools.length
+                    ? {
+                        tools: tools.map((tool) => ({
+                          type: 'function',
+                          function: {
+                            name: wireName(tool.name),
+                            description: tool.description,
+                            parameters: tool.inputSchema,
+                            strict: false,
+                          },
+                        })),
+                      }
+                    : {}),
+                }
+            const requestSecrets: string[] = []
+            const result = await scheduleModel(
+              role === 'planner' || role === 'thinker' ? 0 : 1,
+              signal,
+              () =>
+                this.request(
+                  provider,
+                  responses ? 'responses' : 'chat/completions',
+                  body,
+                  route.timeoutMs,
+                  signal,
+                  (secret) => requestSecrets.push(secret),
+                ),
+            )
+            if (signal?.aborted) throw abortError()
+            const parsed = responses
+              ? this.parseResponses(result, names)
+              : this.parseChat(result, names)
+            const assistant: ChatMessage = {
+              role: 'assistant',
+              content: parsed.text,
+              toolCalls: parsed.toolCalls,
+            }
+            if (responses) this.state.set(assistant, { modelId, output: array(result.output) })
+            const completion = { ...parsed, modelId, assistant }
+            try {
+              this.diagnostic(
+                {
+                  role,
+                  modelId,
+                  messages,
+                  output: { text: parsed.text, toolCalls: parsed.toolCalls },
+                },
+                requestSecrets,
+              )
+            } catch {
+              /* Optional diagnostics cannot break model execution. */
+            }
+            this.emit({
+              event: 'model.completed',
+              modelId,
+              providerId: provider.id,
+              role,
+              durationMs: Date.now() - started,
+              usage: completion.usage,
+            })
+            return completion
+          },
+          completionDetails,
+        )
       } catch (error) {
         if (signal?.aborted) throw abortError()
         retryable &&= error instanceof ModelError && error.retryable
@@ -300,6 +367,34 @@ export class Router {
   }
 
   async embeddings(
+    modelId: string,
+    inputs: string[],
+    signal?: AbortSignal,
+  ): Promise<{ vectors: number[][]; usage: Usage; modelId: string }> {
+    return observeModel(
+      this.flowWriter,
+      'model_request',
+      {
+        role: 'embedding',
+        modelId,
+        counts: { inputs: inputs.length },
+        nextStep: 'prepare_embedding_batches',
+      },
+      signal,
+      () => this.embeddingsRequest(modelId, inputs, signal),
+      (value) => ({
+        outputKind: 'embeddings',
+        counts: {
+          ...modelUsageCounts(value.usage),
+          vectors: value.vectors.length,
+          dimensions: value.vectors[0]?.length ?? 0,
+        },
+        nextStep: 'embedding_results_ready',
+      }),
+    )
+  }
+
+  private async embeddingsRequest(
     modelId: string,
     inputs: string[],
     signal?: AbortSignal,
@@ -358,49 +453,73 @@ export class Router {
       this.config.routes.find((route) => route.role === 'embedding')?.timeoutMs ?? 30_000
     const started = Date.now()
     try {
-      if (!isBuiltinProtocol(provider.protocol))
-        return await this.embeddingsProtocol(provider, model, inputs, timeout, signal)
-      const result = await modelScheduler.run(1, signal, () =>
-        this.request(
-          provider,
-          'embeddings',
-          {
-            model: model.apiModelName,
-            input: inputs,
-            encoding_format: 'float',
-            ...(model.embeddingDimensions === undefined
-              ? {}
-              : { dimensions: model.embeddingDimensions }),
-          },
-          timeout,
-          signal,
-        ),
-      )
-      if (signal?.aborted) throw abortError()
-      const rows = array(result.data)
-        .map(object)
-        .sort((a, b) => Number(a.index) - Number(b.index))
-      if (rows.length !== inputs.length || rows.some((row, index) => row.index !== index))
-        throw new ModelError('invalid_embedding_response')
-      const vectors = rows.map((row) =>
-        array(row.embedding).map((value) => {
-          if (typeof value !== 'number' || !Number.isFinite(value))
+      return await observeModel(
+        this.flowWriter,
+        'model_attempt',
+        {
+          role: 'embedding',
+          modelId,
+          providerId: provider.id,
+          apiModel: model.apiModelName,
+          counts: { inputs: inputs.length },
+          nextStep: 'wait_for_model_slot',
+        },
+        signal,
+        async () => {
+          if (!isBuiltinProtocol(provider.protocol))
+            return await this.embeddingsProtocol(provider, model, inputs, timeout, signal)
+          const result = await scheduleModel(1, signal, () =>
+            this.request(
+              provider,
+              'embeddings',
+              {
+                model: model.apiModelName,
+                input: inputs,
+                encoding_format: 'float',
+                ...(model.embeddingDimensions === undefined
+                  ? {}
+                  : { dimensions: model.embeddingDimensions }),
+              },
+              timeout,
+              signal,
+            ),
+          )
+          if (signal?.aborted) throw abortError()
+          const rows = array(result.data)
+            .map(object)
+            .sort((a, b) => Number(a.index) - Number(b.index))
+          if (rows.length !== inputs.length || rows.some((row, index) => row.index !== index))
             throw new ModelError('invalid_embedding_response')
-          return value
+          const vectors = rows.map((row) =>
+            array(row.embedding).map((value) => {
+              if (typeof value !== 'number' || !Number.isFinite(value))
+                throw new ModelError('invalid_embedding_response')
+              return value
+            }),
+          )
+          if (vectors.some((vector) => !vector.length || vector.length !== vectors[0]?.length))
+            throw new ModelError('invalid_embedding_dimensions')
+          const usage = usageOf(result.usage, true)
+          this.emit({
+            event: 'model.completed',
+            modelId,
+            providerId: provider.id,
+            role: 'embedding',
+            durationMs: Date.now() - started,
+            usage,
+          })
+          return { vectors, usage, modelId }
+        },
+        (value) => ({
+          outputKind: 'embeddings',
+          counts: {
+            ...modelUsageCounts(value.usage),
+            vectors: value.vectors.length,
+            dimensions: value.vectors[0]?.length ?? 0,
+          },
+          nextStep: 'validate_embedding_results',
         }),
       )
-      if (vectors.some((vector) => !vector.length || vector.length !== vectors[0]?.length))
-        throw new ModelError('invalid_embedding_dimensions')
-      const usage = usageOf(result.usage, true)
-      this.emit({
-        event: 'model.completed',
-        modelId,
-        providerId: provider.id,
-        role: 'embedding',
-        durationMs: Date.now() - started,
-        usage,
-      })
-      return { vectors, usage, modelId }
     } catch (error) {
       if (signal?.aborted) throw abortError()
       this.emit({
@@ -416,6 +535,21 @@ export class Router {
   }
 
   async listModels(providerId: string, signal?: AbortSignal): Promise<string[]> {
+    return observeModel(
+      this.flowWriter,
+      'model_request',
+      { role: 'models', providerId, nextStep: 'discover_models' },
+      signal,
+      () => this.listModelsRequest(providerId, signal),
+      (value) => ({
+        outputKind: 'model_list',
+        counts: { models: value.length },
+        nextStep: 'model_list_ready',
+      }),
+    )
+  }
+
+  private async listModelsRequest(providerId: string, signal?: AbortSignal): Promise<string[]> {
     const provider = this.config.providers.find((item) => item.id === providerId)
     if (!provider) throw new ModelError('provider_not_configured')
     if (!isBuiltinProtocol(provider.protocol)) {
@@ -496,7 +630,7 @@ export class Router {
         onAbort = () => reject(failure())
         signal.addEventListener('abort', onAbort, { once: true })
       })
-      const pending = modelScheduler.run(priority, signal, async () => {
+      const pending = scheduleModel(priority, signal, async () => {
         if (signal.aborted) throw failure()
         let base: URL
         try {

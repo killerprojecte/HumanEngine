@@ -1,3 +1,5 @@
+import { currentFlowContext } from './diagnostics/flow.ts'
+import { readableLog, stdoutLog } from './diagnostics/format.ts'
 import Database from 'better-sqlite3'
 import { SecretStore, type SecretMutation } from './secrets/store.ts'
 import type { Provider } from './models.ts'
@@ -142,10 +144,19 @@ export class Store {
     code: string,
     context: Partial<Omit<Log, 'id' | 'at' | 'level' | 'module' | 'code'>> = {},
   ) {
-    const row = { id: randomUUID(), at: new Date().toISOString(), level, module, code, ...context }
+    const row: Log = {
+      id: randomUUID(),
+      at: new Date().toISOString(),
+      level,
+      module,
+      code,
+      ...currentFlowContext(),
+      ...context,
+    }
+    row.message = readableLog(row)
     // Emit the same structured, sanitized record to container logs.
     try {
-      process.stdout.write(JSON.stringify(row) + '\n')
+      process.stdout.write(stdoutLog(row))
     } catch {
       /* Diagnostics must not stop runtime work. */
     }
@@ -171,12 +182,22 @@ export class Store {
     return row
   }
   recordModel(entry: ModelLog, config: RouterConfig = this.models) {
-    this.log(
-      entry.event === 'model.failed' ? 'error' : 'info',
-      'model',
-      entry.code ?? entry.event,
-      { modelId: entry.modelId, providerId: entry.providerId, durationMs: entry.durationMs },
-    )
+    // Structured flow attempts already describe the same call; keep accounting without duplicate opaque lines.
+    if (!currentFlowContext().spanId)
+      this.log(
+        entry.event === 'model.failed' ? 'error' : 'info',
+        'model',
+        entry.code ?? entry.event,
+        {
+          modelId: entry.modelId,
+          providerId: entry.providerId,
+          durationMs: entry.durationMs,
+          role: entry.role,
+          counts: entry.usage
+            ? { inputTokens: entry.usage.inputTokens, outputTokens: entry.usage.outputTokens }
+            : undefined,
+        },
+      )
     if (entry.role === 'models') return
     const usage = entry.usage ?? { inputTokens: 0, outputTokens: 0, known: false }
     const model = config.models.find((m) => m.id === entry.modelId)

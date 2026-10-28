@@ -1,3 +1,4 @@
+import { startFlow } from './diagnostics/flow.ts'
 import { createHash, randomUUID } from 'node:crypto'
 import { ModelError, type Router, type RouterConfig } from './models.ts'
 import type { MemoryRecord, MemoryService } from './memory.ts'
@@ -524,40 +525,81 @@ export class EmbeddingIndex {
     )
   }
   async search(ctx: { sceneId: string; simulation: boolean }, query: string, signal?: AbortSignal) {
-    if (signal?.aborted) return []
-    if (ctx.simulation) return this.memory.search(ctx, query)
-    const active = this.active()
-    try {
-      const config = this.store.models,
-        selected = encoder(config)
-      if (
-        !active ||
-        selected?.revision !== active.encoderRevision ||
-        this.store.get('embedding.incompatible', '') === active.generationId
-      )
-        return this.memory.search(ctx, query)
-      const result = await this.router(config).embeddings(active.modelId, [query], signal)
-      if (signal?.aborted) return []
-      return this.store.db
-        .transaction(() => {
-          if (!this.usable(active)) return this.memory.search(ctx, query)
-          if (result.vectors[0]?.length !== active.dimensions) {
-            this.markIncompatible(active.generationId)
-            return this.memory.search(ctx, query)
-          }
-          return this.memory.search(ctx, query, undefined, {
-            spaceId: active.spaceId,
-            vector: result.vectors[0]!,
-          })
+    const span = startFlow(this.store, 'memory.search', {
+      sceneId: ctx.sceneId,
+      mode: ctx.simulation ? 'simulation' : 'real',
+    })
+    return span.run(async () => {
+      const cancelled = () => {
+        span.finish('cancelled', { reason: 'request_cancelled', nextStep: 'stop' })
+        return []
+      }
+      const lexical = (reason: string) => {
+        const results = this.memory.search(ctx, query)
+        span.finish('completed', {
+          action: 'lexical',
+          reason,
+          counts: { resultCount: results.length },
+          nextStep: 'use_memory_results',
         })
-        .immediate()
-    } catch (error) {
-      if (error instanceof ModelError && error.code === 'embedding_dimensions_mismatch')
-        this.markIncompatible(active?.generationId)
-      if (signal?.aborted) return []
-      this.store.log('warn', 'memory', 'query_embedding_unavailable')
-      return this.memory.search(ctx, query)
-    }
+        return results
+      }
+      let active: IndexGeneration | undefined
+      try {
+        if (signal?.aborted) return cancelled()
+        if (ctx.simulation) return lexical('simulation_lexical_only')
+        active = this.active()
+        const config = this.store.models,
+          selected = encoder(config)
+        if (!active) return lexical('no_active_vector_index')
+        if (selected?.revision !== active.encoderRevision) return lexical('vector_revision_changed')
+        if (this.store.get('embedding.incompatible', '') === active.generationId)
+          return lexical('vector_index_incompatible')
+        const result = await this.router(config).embeddings(active.modelId, [query], signal)
+        if (signal?.aborted) return cancelled()
+        const generation = active
+        return this.store.db
+          .transaction(() => {
+            if (!this.usable(generation)) return lexical('vector_generation_changed')
+            if (result.vectors[0]?.length !== generation.dimensions) {
+              this.markIncompatible(generation.generationId)
+              return lexical('embedding_dimensions_mismatch')
+            }
+            const results = this.memory.search(ctx, query, undefined, {
+              spaceId: generation.spaceId,
+              vector: result.vectors[0]!,
+            })
+            span.finish('completed', {
+              action: 'vector',
+              counts: { resultCount: results.length },
+              nextStep: 'use_memory_results',
+            })
+            return results
+          })
+          .immediate()
+      } catch (error) {
+        if (error instanceof ModelError && error.code === 'embedding_dimensions_mismatch')
+          this.markIncompatible(active?.generationId)
+        if (signal?.aborted) return cancelled()
+        this.store.log('warn', 'memory', 'query_embedding_unavailable')
+        try {
+          return lexical('query_embedding_unavailable')
+        } catch (fallbackError) {
+          span.finish(
+            'failed',
+            { reason: 'memory_retrieval_failed', nextStep: 'stop' },
+            fallbackError,
+          )
+          throw fallbackError
+        }
+      } finally {
+        if (!span.ended)
+          span.finish(signal?.aborted ? 'cancelled' : 'failed', {
+            reason: signal?.aborted ? 'request_cancelled' : 'memory_retrieval_failed',
+            nextStep: 'stop',
+          })
+      }
+    })
   }
   async index(id: string, content: string, signal?: AbortSignal) {
     if (signal?.aborted) return

@@ -37,6 +37,11 @@ export async function createChatMediaFixture() {
     .toBuffer()
   const store = new Store(':memory:')
   const engine = new Engine(store)
+  const managedRoot = await mkdtemp(join(tmpdir(), 'chat-managed-'))
+  Object.defineProperty(engine, 'memes', {
+    value: new MemeService(store, managedRoot),
+    configurable: true,
+  })
   const requests: Array<{ action: string; params: Record<string, unknown> }> = []
   const messages: Message[] = []
   const events = new Map<number, Record<string, unknown>>()
@@ -144,7 +149,6 @@ export async function createChatMediaFixture() {
     if (Date.now() > deadline) throw new Error('fixture_ingress_failed')
     await new Promise((resolve) => setTimeout(resolve, 5))
   }
-  let managedRoot: string | undefined
   const token = 'fixture-admin-token'
   const app = createApp(store, { engine, token })
   const gateway = createSessionGateway()
@@ -166,11 +170,6 @@ export async function createChatMediaFixture() {
     adapter,
     recoverCorrupt: () => bytes.set('corrupt', png),
     prepareManaged: async () => {
-      managedRoot ??= await mkdtemp(join(tmpdir(), 'chat-managed-'))
-      Object.defineProperty(engine, 'memes', {
-        value: new MemeService(store, managedRoot),
-        configurable: true,
-      })
       store.saveScene({ ...store.scene(scene.id)!, learningEnabled: true })
       const source = {
         sceneId: scene.id,
@@ -188,6 +187,8 @@ export async function createChatMediaFixture() {
       )
       store.saveScene({ ...store.scene(scene.id)!, learningEnabled: false })
       engine.memes.update(asset.id, { tags: asset.tags })
+      // Deterministic unselected state whether background intake or explicit import won admission.
+      engine.memes.adminSetIncluded(asset.id, false)
       const outgoing: Message = {
         ...messages[0]!,
         id: adapter.messageId(scene, '80'),
@@ -195,7 +196,7 @@ export async function createChatMediaFixture() {
         parts: [{ type: 'media', assetId: asset.id, mediaType: 'image/png' }],
       }
       engine.runtime.ingest(outgoing, scene, false)
-      return { asset, outgoing }
+      return { asset: engine.memes.adminGet(asset.id)!, outgoing }
     },
     close: async () => {
       await engine.dispose()

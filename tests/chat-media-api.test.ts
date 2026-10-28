@@ -226,7 +226,8 @@ test('managed outgoing image uses scene-bound original and revalidates proposed,
       404,
       'proposed/unavailable asset is not displayed',
     )
-    f.engine.memes.update(asset.id, { available: true })
+    assert.equal(asset.knownOnly, true)
+    f.engine.memes.adminSetIncluded(asset.id, true)
     const displayed = await f.app.request(url, { headers })
     assert.equal(displayed.status, 200)
     assert.deepEqual(Buffer.from(await displayed.arrayBuffer()), f.png)
@@ -241,7 +242,8 @@ test('managed outgoing image uses scene-bound original and revalidates proposed,
       404,
       'cached bytes cannot bypass disabled state',
     )
-    f.engine.memes.update(asset.id, { disabled: false, available: true })
+    f.engine.memes.update(asset.id, { disabled: false })
+    f.engine.memes.adminSetIncluded(asset.id, true)
     assert.equal((await f.app.request(url, { headers })).status, 200)
     f.engine.runtime.recall(f.scene.id, outgoing.id)
     assert.equal((await f.app.request(url, { headers })).status, 404)

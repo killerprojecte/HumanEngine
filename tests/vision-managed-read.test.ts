@@ -24,7 +24,8 @@ test('current model reads managed bot image original; cache eligibility rejects 
       false,
       'proposed asset is not readable',
     )
-    f.engine.memes.update(asset.id, { available: true })
+    assert.equal(asset.knownOnly, true)
+    f.engine.memes.adminSetIncluded(asset.id, true)
     const ctx = context()
     assert.equal(runtime.imageSourceAvailable(ctx, outgoing.id, asset.id), true)
     assert.deepEqual(await runtime.readImage(ctx, asset.id, outgoing), f.png)
@@ -43,7 +44,8 @@ test('current model reads managed bot image original; cache eligibility rejects 
       runtime.readImage(ctx, asset.id, outgoing),
       /image_context_unavailable|image_source_unavailable/,
     )
-    f.engine.memes.update(asset.id, { disabled: false, available: true })
+    f.engine.memes.update(asset.id, { disabled: false })
+    f.engine.memes.adminSetIncluded(asset.id, true)
     const other = f.adapter.scene('group', '10')
     f.store.saveScene({ ...f.store.scene(f.scene.id)!, ...other })
     const foreign = { ...outgoing, id: f.adapter.messageId(other, '90'), sceneId: other.id }

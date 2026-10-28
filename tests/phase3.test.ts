@@ -113,7 +113,15 @@ test('Usage retains request-time prices and diagnostics are opt-in, redacted, tr
       providerId: 'p',
       role: 'thinker',
       durationMs: 12,
-      usage: { inputTokens: 1000, outputTokens: 500, totalTokens: 1500 },
+      usage: {
+        inputTokens: 1000,
+        outputTokens: 500,
+        totalTokens: 1500,
+        cacheKnown: true,
+        ordinaryInputTokens: 1000,
+        cacheReadInputTokens: 0,
+        cacheWriteInputTokens: 0,
+      },
     }
     store.recordModel(log, priced)
     const unknown = config()

@@ -59,6 +59,12 @@ export const ModelSchema = z
     embeddingDimensions: z.number().int().min(1).max(16384).optional(),
     inputUsdPerMillion: z.number().min(0).optional(),
     outputUsdPerMillion: z.number().min(0).optional(),
+    cacheReadUsdPerMillion: z.number().min(0).optional(),
+    cacheWriteUsdPerMillion: z.number().min(0).optional(),
+    cacheWrite5mUsdPerMillion: z.number().min(0).optional(),
+    cacheWrite1hUsdPerMillion: z.number().min(0).optional(),
+    cacheWrite30mUsdPerMillion: z.number().min(0).optional(),
+    cacheWrite12hUsdPerMillion: z.number().min(0).optional(),
   })
   .strict()
   .openapi('ModelInstance')
@@ -281,6 +287,24 @@ export const UsageSchema = z
     durationMs: z.number(),
     pricedCalls: z.number(),
     estimatedUsd: z.number(),
+    ordinaryInputTokens: z.number(),
+    cacheReadInputTokens: z.number(),
+    cacheWriteInputTokens: z.number(),
+    cacheWrite5mInputTokens: z.number(),
+    cacheWrite1hInputTokens: z.number(),
+    cacheWrite30mInputTokens: z.number(),
+    cacheWrite12hInputTokens: z.number(),
+    ordinaryInputUsd: z.number(),
+    outputUsd: z.number(),
+    cacheReadUsd: z.number(),
+    cacheWriteUsd: z.number(),
+    legacyEstimatedUsd: z.number(),
+    cacheKnownCalls: z.number(),
+    cacheReadKnownCalls: z.number(),
+    cacheWriteKnownCalls: z.number(),
+    partialPricedCalls: z.number(),
+    legacyCalls: z.number(),
+    unknownUsageCalls: z.number(),
   })
   .openapi('Usage')
 

@@ -156,7 +156,9 @@ test('legacy usage remains readable and aggregates under Replyer without rewriti
   try {
     store.set('models', config)
     store.db
-      .prepare('INSERT INTO model_usage VALUES(?,?,?,?,?,?,?,?,?,?,?)')
+      .prepare(
+        'INSERT INTO model_usage (day,model_id,provider_id,api_model,role,calls,input_tokens,output_tokens,duration_ms,priced_calls,estimated_usd) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+      )
       .run(today, 'm', 'p', 'saved-provider-model', 'thinker', 2, 10, 5, 20, 1, 0.25)
     store.recordModel({
       event: 'model.completed',

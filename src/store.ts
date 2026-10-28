@@ -1,3 +1,10 @@
+import {
+  cachePartition,
+  calculateModelCost,
+  validTokenCount,
+  validCostUsage,
+  type CostUsage,
+} from './model-cost.ts'
 import { canonicalModelRole, normalizeRoleRoutes } from './model-roles.ts'
 import {
   displayName,
@@ -25,6 +32,28 @@ import {
   type Scene,
   type Log,
 } from './schema.ts'
+
+const usageColumns = {
+  ordinary_input_tokens: 'ordinaryInputTokens',
+  cache_read_input_tokens: 'cacheReadInputTokens',
+  cache_write_input_tokens: 'cacheWriteInputTokens',
+  cache_write_5m_input_tokens: 'cacheWrite5mInputTokens',
+  cache_write_1h_input_tokens: 'cacheWrite1hInputTokens',
+  cache_write_30m_input_tokens: 'cacheWrite30mInputTokens',
+  cache_write_12h_input_tokens: 'cacheWrite12hInputTokens',
+  cache_known_calls: 'cacheKnownCalls',
+  cache_read_known_calls: 'cacheReadKnownCalls',
+  cache_write_known_calls: 'cacheWriteKnownCalls',
+  partial_priced_calls: 'partialPricedCalls',
+  legacy_calls: 'legacyCalls',
+  unknown_usage_calls: 'unknownUsageCalls',
+  ordinary_input_usd: 'ordinaryInputUsd',
+  output_usd: 'outputUsd',
+  cache_read_usd: 'cacheReadUsd',
+  cache_write_usd: 'cacheWriteUsd',
+  legacy_estimated_usd: 'legacyEstimatedUsd',
+} as const
+type UsageBreakdown = Record<(typeof usageColumns)[keyof typeof usageColumns], number>
 
 export class Store {
   readonly db: Database.Database
@@ -62,6 +91,28 @@ export class Store {
       CREATE TABLE IF NOT EXISTS scenes (id TEXT PRIMARY KEY, value TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS recall_tombstones (scene_id TEXT NOT NULL, message_id TEXT NOT NULL, recalled_at TEXT NOT NULL, PRIMARY KEY(scene_id,message_id));
     `)
+    // Additive and transactional: old backups retain their original aggregate estimates.
+    this.db.transaction(() => {
+      const columns = new Set(
+        (this.db.pragma('table_info(model_usage)') as Array<{ name: string }>).map(
+          (column) => column.name,
+        ),
+      )
+      const legacy = !columns.has('legacy_calls')
+      const backfillRead = !columns.has('cache_read_known_calls')
+      const backfillWrite = !columns.has('cache_write_known_calls')
+      for (const column of Object.keys(usageColumns))
+        if (!columns.has(column))
+          this.db.exec(
+            `ALTER TABLE model_usage ADD COLUMN ${column} ${column.endsWith('_usd') ? 'REAL' : 'INTEGER'} NOT NULL DEFAULT 0`,
+          )
+      if (backfillRead)
+        this.db.exec('UPDATE model_usage SET cache_read_known_calls=cache_known_calls')
+      if (backfillWrite)
+        this.db.exec('UPDATE model_usage SET cache_write_known_calls=cache_known_calls')
+      if (legacy)
+        this.db.exec('UPDATE model_usage SET legacy_calls=calls,legacy_estimated_usd=estimated_usd')
+    })()
   }
   get<T>(key: string, fallback: T): T {
     const r = this.db.prepare('SELECT value FROM config WHERE key=?').get(key) as
@@ -266,53 +317,101 @@ export class Store {
         },
       )
     if (entry.role === 'models') return
-    const usage = entry.usage ?? { inputTokens: 0, outputTokens: 0, known: false }
+    const usage: CostUsage = entry.usage ?? { inputTokens: 0, outputTokens: 0, known: false }
     const model = config.models.find((m) => m.id === entry.modelId)
-    const priced =
-      entry.event === 'model.completed' &&
-      usage.known !== false &&
-      model?.inputUsdPerMillion !== undefined &&
-      model.outputUsdPerMillion !== undefined
-    const cost = priced
-      ? (usage.inputTokens * model!.inputUsdPerMillion! +
-          usage.outputTokens * model!.outputUsdPerMillion!) /
-        1000000
-      : 0
+    const valid = validCostUsage(usage)
+    const partition = valid ? cachePartition(usage) : undefined
+    const snapshot = entry.pricing
+    const prices = snapshot ?? model ?? {}
+    const cost = entry.event === 'model.completed' ? calculateModelCost(usage, prices) : undefined
+    const breakdown: UsageBreakdown = {
+      ordinaryInputTokens: partition?.ordinaryInputTokens ?? 0,
+      cacheReadInputTokens: valid ? (usage.cacheReadInputTokens ?? 0) : 0,
+      cacheWriteInputTokens: valid ? (usage.cacheWriteInputTokens ?? 0) : 0,
+      cacheWrite5mInputTokens: partition?.cacheWrite5mInputTokens ?? 0,
+      cacheWrite1hInputTokens: partition?.cacheWrite1hInputTokens ?? 0,
+      cacheWrite30mInputTokens: partition?.cacheWrite30mInputTokens ?? 0,
+      cacheWrite12hInputTokens: partition?.cacheWrite12hInputTokens ?? 0,
+      cacheKnownCalls: partition ? 1 : 0,
+      cacheReadKnownCalls: valid && usage.cacheReadInputTokens !== undefined ? 1 : 0,
+      cacheWriteKnownCalls: valid && usage.cacheWriteInputTokens !== undefined ? 1 : 0,
+      partialPricedCalls: cost && !cost.fullyPriced ? 1 : 0,
+      legacyCalls: 0,
+      unknownUsageCalls:
+        usage.known === false ||
+        !validTokenCount(usage.inputTokens) ||
+        !validTokenCount(usage.outputTokens)
+          ? 1
+          : 0,
+      ordinaryInputUsd: cost?.ordinaryInputUsd ?? 0,
+      outputUsd: cost?.outputUsd ?? 0,
+      cacheReadUsd: cost?.cacheReadUsd ?? 0,
+      cacheWriteUsd: cost?.cacheWriteUsd ?? 0,
+      legacyEstimatedUsd: 0,
+    }
+    const columns = [
+      'day',
+      'model_id',
+      'provider_id',
+      'api_model',
+      'role',
+      'calls',
+      'input_tokens',
+      'output_tokens',
+      'duration_ms',
+      'priced_calls',
+      'estimated_usd',
+      ...Object.keys(usageColumns),
+    ]
+    const sums = columns
+      .slice(5)
+      .map((column) => `${column}=${column}+excluded.${column}`)
+      .join(',')
     this.db
       .prepare(
-        'INSERT INTO model_usage VALUES(?,?,?,?,?,1,?,?,?,?,?) ON CONFLICT(day,model_id,provider_id,api_model,role) DO UPDATE SET calls=calls+1,input_tokens=input_tokens+excluded.input_tokens,output_tokens=output_tokens+excluded.output_tokens,duration_ms=duration_ms+excluded.duration_ms,priced_calls=priced_calls+excluded.priced_calls,estimated_usd=estimated_usd+excluded.estimated_usd',
+        `INSERT INTO model_usage (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')}) ON CONFLICT(day,model_id,provider_id,api_model,role) DO UPDATE SET ${sums}`,
       )
       .run(
         new Date().toISOString().slice(0, 10),
         entry.modelId,
         entry.providerId,
-        model?.apiModelName ?? 'unknown',
+        snapshot?.apiModelName ?? model?.apiModelName ?? 'unknown',
         canonicalModelRole(entry.role),
-        usage.inputTokens,
-        usage.outputTokens,
+        1,
+        validTokenCount(usage.inputTokens) ? usage.inputTokens : 0,
+        validTokenCount(usage.outputTokens) ? usage.outputTokens : 0,
         entry.durationMs,
-        priced ? 1 : 0,
-        cost,
+        cost?.fullyPriced ? 1 : 0,
+        cost?.estimatedUsd ?? 0,
+        ...Object.values(usageColumns).map((key) => breakdown[key]),
       )
   }
   usage() {
     return this.db
       .prepare(
-        "SELECT day,model_id AS modelId,provider_id AS providerId,api_model AS apiModelName,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END AS role,SUM(calls) AS calls,SUM(input_tokens) AS inputTokens,SUM(output_tokens) AS outputTokens,SUM(duration_ms) AS durationMs,SUM(priced_calls) AS pricedCalls,SUM(estimated_usd) AS estimatedUsd FROM model_usage GROUP BY day,model_id,provider_id,api_model,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END ORDER BY day DESC,model_id",
+        `SELECT day,model_id AS modelId,provider_id AS providerId,api_model AS apiModelName,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END AS role,SUM(calls) AS calls,SUM(input_tokens) AS inputTokens,SUM(output_tokens) AS outputTokens,SUM(duration_ms) AS durationMs,SUM(priced_calls) AS pricedCalls,SUM(estimated_usd) AS estimatedUsd,${Object.entries(
+          usageColumns,
+        )
+          .map(([column, alias]) => `SUM(${column}) AS ${alias}`)
+          .join(
+            ',',
+          )} FROM model_usage GROUP BY day,model_id,provider_id,api_model,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END ORDER BY day DESC,model_id`,
       )
-      .all() as Array<{
-      day: string
-      modelId: string
-      providerId: string
-      apiModelName: string
-      role: string
-      calls: number
-      inputTokens: number
-      outputTokens: number
-      durationMs: number
-      pricedCalls: number
-      estimatedUsd: number
-    }>
+      .all() as Array<
+      {
+        day: string
+        modelId: string
+        providerId: string
+        apiModelName: string
+        role: string
+        calls: number
+        inputTokens: number
+        outputTokens: number
+        durationMs: number
+        pricedCalls: number
+        estimatedUsd: number
+      } & UsageBreakdown
+    >
   }
   clearDiagnostics() {
     this.diagnosticEntries = []

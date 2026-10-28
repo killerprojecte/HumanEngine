@@ -28,6 +28,17 @@ const usage = ref<components['schemas']['Usage'][]>([]),
   usageBusy = ref(false)
 const embeddingPanel = ref<{ refresh: () => Promise<void> }>()
 const roles = ['planner', 'replyer', 'learning', 'vision', 'embedding'] as const
+const priceFields = [
+  { field: 'inputUsdPerMillion', label: 'inputPrice' },
+  { field: 'outputUsdPerMillion', label: 'outputPrice' },
+  { field: 'cacheReadUsdPerMillion', label: 'cacheReadPrice' },
+  { field: 'cacheWriteUsdPerMillion', label: 'cacheWritePrice' },
+  { field: 'cacheWrite5mUsdPerMillion', label: 'cacheWrite5mPrice' },
+  { field: 'cacheWrite1hUsdPerMillion', label: 'cacheWrite1hPrice' },
+  { field: 'cacheWrite30mUsdPerMillion', label: 'cacheWrite30mPrice' },
+  { field: 'cacheWrite12hUsdPerMillion', label: 'cacheWrite12hPrice' },
+] as const
+type PriceField = (typeof priceFields)[number]['field']
 const capabilities: Capability[] = ['text', 'tools', 'vision', 'embedding']
 const capabilityKeys: Record<Capability, string> = {
   text: 'mcCapText',
@@ -364,9 +375,9 @@ async function persist(deleting = false) {
   if (
     !deleting &&
     modelDraft.value &&
-    [modelDraft.value.inputUsdPerMillion, modelDraft.value.outputUsdPerMillion].some(
-      (value) => value !== undefined && (!Number.isFinite(value) || value < 0),
-    )
+    priceFields
+      .map(({ field }) => modelDraft.value![field])
+      .some((value) => value !== undefined && (!Number.isFinite(value) || value < 0))
   ) {
     editorError.value = t('priceInvalid')
     return
@@ -455,7 +466,7 @@ function setProviderField(
 ) {
   if (providerDraft.value) providerDraft.value[field] = String(value)
 }
-function price(field: 'inputUsdPerMillion' | 'outputUsdPerMillion', value: string | number) {
+function price(field: PriceField, value: string | number) {
   if (!modelDraft.value) return
   if (value === '') delete modelDraft.value[field]
   else modelDraft.value[field] = Number(value)
@@ -532,14 +543,15 @@ async function runProbe() {
     probeBusy.value = false
   }
 }
+function usd(value: number) {
+  return new Intl.NumberFormat(locale.value, {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 6,
+  }).format(value)
+}
 function cost(row: components['schemas']['Usage']) {
-  return row.pricedCalls
-    ? new Intl.NumberFormat(locale.value, {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 6,
-      }).format(row.estimatedUsd)
-    : t('usageUnknownCost')
+  return row.pricedCalls || row.partialPricedCalls ? usd(row.estimatedUsd) : t('usageUnknownCost')
 }
 watch(section, () => {
   query.value = ''
@@ -831,6 +843,7 @@ watch(section, () => {
                 <th>{{ t('mcTask') }}</th>
                 <th>{{ t('usageCalls') }}</th>
                 <th>{{ t('usageTokens') }}</th>
+                <th>{{ t('usageCache') }}</th>
                 <th>{{ t('usageDuration') }}</th>
                 <th>{{ t('usageCost') }}</th>
               </tr>
@@ -858,16 +871,104 @@ watch(section, () => {
                 </td>
                 <td>{{ row.calls }}</td>
                 <td class="whitespace-nowrap">{{ row.inputTokens }} / {{ row.outputTokens }}</td>
+                <td class="min-w-64">
+                  <template
+                    v-if="
+                      row.cacheKnownCalls || row.cacheReadKnownCalls || row.cacheWriteKnownCalls
+                    "
+                  >
+                    <div v-if="row.cacheKnownCalls">
+                      {{ t('usageOrdinary') }}: {{ row.ordinaryInputTokens }}
+                    </div>
+                    <div>
+                      {{ t('usageCacheRead') }}:
+                      {{
+                        row.cacheReadKnownCalls
+                          ? row.cacheReadInputTokens
+                          : t('usageCounterUnknown')
+                      }}
+                      <span class="text-xs text-muted"
+                        >({{ row.cacheReadKnownCalls }}/{{ row.calls }})</span
+                      >
+                    </div>
+                    <div>
+                      {{ t('usageCacheWrite') }}:
+                      {{
+                        row.cacheWriteKnownCalls
+                          ? row.cacheWriteInputTokens
+                          : t('usageCounterUnknown')
+                      }}
+                      <span class="text-xs text-muted"
+                        >({{ row.cacheWriteKnownCalls }}/{{ row.calls }})</span
+                      >
+                    </div>
+                    <p
+                      v-if="
+                        row.cacheWrite5mInputTokens ||
+                        row.cacheWrite1hInputTokens ||
+                        row.cacheWrite30mInputTokens ||
+                        row.cacheWrite12hInputTokens
+                      "
+                      class="text-xs text-muted mt-1"
+                    >
+                      {{
+                        t('usageWriteTtl', {
+                          m5: row.cacheWrite5mInputTokens,
+                          h1: row.cacheWrite1hInputTokens,
+                          m30: row.cacheWrite30mInputTokens,
+                          h12: row.cacheWrite12hInputTokens,
+                        })
+                      }}
+                    </p>
+                  </template>
+                  <div v-else>{{ t('usageCacheUnknown') }}</div>
+                  <p class="text-xs text-muted mt-1">
+                    {{ t('usageCacheCoverage', { known: row.cacheKnownCalls, total: row.calls }) }}
+                  </p>
+                </td>
                 <td class="whitespace-nowrap">{{ row.durationMs }} ms</td>
                 <td class="whitespace-nowrap">
                   <div>{{ cost(row) }}</div>
+                  <p
+                    v-if="
+                      (row.pricedCalls || row.partialPricedCalls) && row.pricedCalls < row.calls
+                    "
+                    class="text-xs text-warning mt-1"
+                  >
+                    {{ t('usagePartialCost') }}
+                  </p>
+                  <p
+                    v-if="row.pricedCalls || row.partialPricedCalls"
+                    class="text-xs text-muted mt-1 max-w-72 whitespace-normal"
+                  >
+                    {{
+                      t('usageCostBreakdown', {
+                        input: usd(row.ordinaryInputUsd),
+                        output: usd(row.outputUsd),
+                        read: usd(row.cacheReadUsd),
+                        write: usd(row.cacheWriteUsd),
+                      })
+                    }}
+                  </p>
+                  <p
+                    v-if="row.legacyCalls"
+                    class="text-xs text-muted mt-1 max-w-72 whitespace-normal"
+                  >
+                    {{
+                      t('usageLegacy', {
+                        calls: row.legacyCalls,
+                        cost: usd(row.legacyEstimatedUsd),
+                      })
+                    }}
+                  </p>
                   <p class="text-xs text-muted mt-1">
-                    {{ t('usagePriced', { priced: row.pricedCalls, total: row.calls }) }}
+                    {{ t('usagePriced', { priced: row.pricedCalls, total: row.calls }) }} ·
+                    {{ t('usagePartialCalls', { count: row.partialPricedCalls }) }}
                   </p>
                 </td>
               </tr>
               <tr v-if="!filteredUsage.length">
-                <td colspan="7" class="p-8 text-center text-muted">
+                <td colspan="8" class="p-8 text-center text-muted">
                   {{ t(usage.length ? 'uxNoMatches' : 'usageEmpty') }}
                 </td>
               </tr>
@@ -1103,26 +1204,18 @@ watch(section, () => {
               <details class="border-t border-default pt-4">
                 <summary class="cursor-pointer text-sm font-medium">{{ t('mcPricing') }}</summary>
                 <p class="mt-3 text-xs leading-5 text-muted">{{ t('priceOptionalHelp') }}</p>
+                <p class="mt-2 text-xs leading-5 text-muted">{{ t('cachePriceHelp') }}</p>
                 <div class="grid sm:grid-cols-2 gap-4 mt-4">
-                  <UFormField :label="t('inputPrice')"
-                    ><UInput
+                  <UFormField v-for="item in priceFields" :key="item.field" :label="t(item.label)">
+                    <UInput
                       type="number"
                       min="0"
                       step="any"
                       class="w-full"
-                      :model-value="String(selectedModel.inputUsdPerMillion ?? '')"
-                      @update:model-value="
-                        (value) => price('inputUsdPerMillion', value)
-                      " /></UFormField
-                  ><UFormField :label="t('outputPrice')"
-                    ><UInput
-                      type="number"
-                      min="0"
-                      step="any"
-                      class="w-full"
-                      :model-value="String(selectedModel.outputUsdPerMillion ?? '')"
-                      @update:model-value="(value) => price('outputUsdPerMillion', value)"
-                  /></UFormField>
+                      :model-value="String(selectedModel[item.field] ?? '')"
+                      @update:model-value="(value) => price(item.field, value)"
+                    />
+                  </UFormField>
                 </div>
               </details>
               <details class="border-t border-default pt-4">

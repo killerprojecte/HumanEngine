@@ -43,6 +43,12 @@ export interface ModelInstance {
   capabilities: Array<'text' | 'tools' | 'vision' | 'embedding'>
   inputUsdPerMillion?: number
   outputUsdPerMillion?: number
+  cacheReadUsdPerMillion?: number
+  cacheWriteUsdPerMillion?: number
+  cacheWrite5mUsdPerMillion?: number
+  cacheWrite1hUsdPerMillion?: number
+  cacheWrite30mUsdPerMillion?: number
+  cacheWrite12hUsdPerMillion?: number
   /** Maximum inputs per sequential embedding request; defaults to four. */
   embeddingBatchSize?: number
   /** Omit for provider-native output; explicit values require provider support. */
@@ -77,6 +83,18 @@ export interface Usage {
   inputTokens: number
   outputTokens: number
   totalTokens: number
+  /** Input totals include ordinary input, cache reads, and cache writes exactly once. */
+  ordinaryInputTokens?: number
+  cacheReadInputTokens?: number
+  cacheWriteInputTokens?: number
+  cacheWrite5mInputTokens?: number
+  cacheWrite1hInputTokens?: number
+  cacheWrite30mInputTokens?: number
+  cacheWrite12hInputTokens?: number
+  /** True only when the complete input partition is reported and internally consistent. */
+  cacheKnown?: boolean
+  /** Fixed allowlisted numeric provider counters only, never a raw response body. */
+  rawTokenCounters?: Record<string, number>
 }
 export interface Completion {
   text: string
@@ -96,6 +114,17 @@ export interface ModelDiagnostic {
   messages: ChatMessage[]
   output: { text: string; toolCalls: ToolCall[] }
 }
+export interface ModelPriceSnapshot {
+  apiModelName: string
+  inputUsdPerMillion?: number
+  outputUsdPerMillion?: number
+  cacheReadUsdPerMillion?: number
+  cacheWriteUsdPerMillion?: number
+  cacheWrite5mUsdPerMillion?: number
+  cacheWrite1hUsdPerMillion?: number
+  cacheWrite30mUsdPerMillion?: number
+  cacheWrite12hUsdPerMillion?: number
+}
 export interface ModelLog {
   event: 'model.completed' | 'model.failed'
   modelId: string
@@ -104,6 +133,7 @@ export interface ModelLog {
   durationMs: number
   code?: string
   usage?: Usage
+  pricing?: ModelPriceSnapshot
 }
 export class ModelError extends Error {
   readonly retryAfterMs?: number
@@ -175,23 +205,202 @@ const array = (value: unknown): unknown[] => {
   if (!Array.isArray(value)) throw new ModelError('invalid_provider_response')
   return value
 }
-const tokenCount = (value: unknown): number =>
-  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : 0
-const usageOf = (value: unknown, embedding = false): Usage => {
-  const usage = value && typeof value === 'object' ? (value as JsonObject) : {}
-  const inputTokens = tokenCount(usage.input_tokens ?? usage.prompt_tokens)
-  const outputTokens = tokenCount(usage.output_tokens ?? usage.completion_tokens)
-  const valid = (n: unknown) => typeof n === 'number' && Number.isSafeInteger(n) && n >= 0
-  const known =
-    valid(usage.input_tokens ?? usage.prompt_tokens) &&
-    (embedding || valid(usage.output_tokens ?? usage.completion_tokens))
-  return {
-    ...(!known ? { known: false } : {}),
-    inputTokens,
-    outputTokens,
-    totalTokens: tokenCount(usage.total_tokens) || inputTokens + outputTokens,
+const validTokenCount = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+const tokenCount = (value: unknown): number => (validTokenCount(value) ? value : 0)
+const cacheUsageKeys = [
+  'ordinaryInputTokens',
+  'cacheReadInputTokens',
+  'cacheWriteInputTokens',
+  'cacheWrite5mInputTokens',
+  'cacheWrite1hInputTokens',
+  'cacheWrite30mInputTokens',
+  'cacheWrite12hInputTokens',
+] as const
+const rawCounterPaths = [
+  'input_tokens',
+  'output_tokens',
+  'total_tokens',
+  'prompt_tokens',
+  'completion_tokens',
+  'input_tokens_details.cached_tokens',
+  'input_tokens_details.cache_write_tokens',
+  'input_tokens_details.cache_write_tokens_details.ttl_30m_tokens',
+  'input_tokens_details.cache_write_tokens_details.ttl_12h_tokens',
+  'prompt_tokens_details.cached_tokens',
+  'prompt_tokens_details.cache_write_tokens',
+  'prompt_tokens_details.cache_write_tokens_details.ttl_30m_tokens',
+  'prompt_tokens_details.cache_write_tokens_details.ttl_12h_tokens',
+  'prompt_cache_hit_tokens',
+  'prompt_cache_miss_tokens',
+  'cache_read_input_tokens',
+  'cache_creation_input_tokens',
+  'cache_creation.ephemeral_5m_input_tokens',
+  'cache_creation.ephemeral_1h_input_tokens',
+] as const
+const atPath = (value: unknown, path: string): unknown =>
+  path
+    .split('.')
+    .reduce<unknown>(
+      (part, key) =>
+        part && typeof part === 'object' && !Array.isArray(part)
+          ? (part as Record<string, unknown>)[key]
+          : undefined,
+      value,
+    )
+const rawCounters = (value: unknown): Record<string, number> =>
+  Object.fromEntries(
+    rawCounterPaths
+      .map((path) => [path, atPath(value, path)] as const)
+      .filter((entry): entry is readonly [(typeof rawCounterPaths)[number], number] =>
+        validTokenCount(entry[1]),
+      ),
+  )
+
+/** Raw provider counts only. Anthropic's exclusive-input convention must be selected explicitly. */
+export function normalizeProviderUsage(
+  value: unknown,
+  convention: 'openai' | 'anthropic' = 'openai',
+  embedding = false,
+): Usage {
+  const usage =
+    value && typeof value === 'object' && !Array.isArray(value) ? (value as JsonObject) : {}
+  let invalid = false
+  const read = (...paths: string[]) => {
+    const values = paths.map((path) => atPath(usage, path)).filter((value) => value !== undefined)
+    if (values.some((value) => !validTokenCount(value))) invalid = true
+    const valid = values.filter(validTokenCount)
+    if (new Set(valid).size > 1) invalid = true
+    return valid[0]
   }
+  const input = read('input_tokens', ...(convention === 'openai' ? ['prompt_tokens'] : []))
+  const output = read('output_tokens', ...(convention === 'openai' ? ['completion_tokens'] : []))
+  const total = read('total_tokens')
+  const result: Usage = { inputTokens: input ?? 0, outputTokens: output ?? 0, totalTokens: 0 }
+  if (input === undefined || (!embedding && output === undefined)) invalid = true
+  const anthropicShape = [
+    'cache_read_input_tokens',
+    'cache_creation_input_tokens',
+    'cache_creation',
+  ].some((key) => Object.hasOwn(usage, key))
+  const hasCache =
+    anthropicShape ||
+    [
+      'input_tokens_details',
+      'prompt_tokens_details',
+      'prompt_cache_hit_tokens',
+      'prompt_cache_miss_tokens',
+    ].some((key) => Object.hasOwn(usage, key))
+  if (hasCache) {
+    result.cacheKnown = false
+    result.rawTokenCounters = rawCounters(usage)
+    let cached: number | undefined, written: number | undefined
+    if (convention === 'anthropic') {
+      cached = read('cache_read_input_tokens')
+      written = read('cache_creation_input_tokens')
+      const five = read('cache_creation.ephemeral_5m_input_tokens'),
+        hour = read('cache_creation.ephemeral_1h_input_tokens')
+      if (five !== undefined) result.cacheWrite5mInputTokens = five
+      if (hour !== undefined) result.cacheWrite1hInputTokens = hour
+      if (written === undefined && five !== undefined && hour !== undefined) written = five + hour
+      if (
+        written !== undefined &&
+        five !== undefined &&
+        hour !== undefined &&
+        five + hour !== written
+      )
+        invalid = true
+      if (input !== undefined && cached !== undefined && written !== undefined)
+        result.inputTokens = input + cached + written
+      else invalid = true // The inclusive input total is unknown if an exclusive component is missing.
+    } else {
+      if (anthropicShape) invalid = true // Never guess that an OpenAI-compatible wrapper uses exclusive totals.
+      cached = read(
+        'input_tokens_details.cached_tokens',
+        'prompt_tokens_details.cached_tokens',
+        'prompt_cache_hit_tokens',
+      )
+      written = read(
+        'input_tokens_details.cache_write_tokens',
+        'prompt_tokens_details.cache_write_tokens',
+      )
+      const halfHour = read(
+        'input_tokens_details.cache_write_tokens_details.ttl_30m_tokens',
+        'prompt_tokens_details.cache_write_tokens_details.ttl_30m_tokens',
+      )
+      const halfDay = read(
+        'input_tokens_details.cache_write_tokens_details.ttl_12h_tokens',
+        'prompt_tokens_details.cache_write_tokens_details.ttl_12h_tokens',
+      )
+      if (halfHour !== undefined) result.cacheWrite30mInputTokens = halfHour
+      if (halfDay !== undefined) result.cacheWrite12hInputTokens = halfDay
+      if (
+        written !== undefined &&
+        halfHour !== undefined &&
+        halfDay !== undefined &&
+        halfHour + halfDay !== written
+      )
+        invalid = true
+      const miss = read('prompt_cache_miss_tokens')
+      if (miss !== undefined && cached !== undefined) {
+        if (
+          input === undefined ||
+          cached + miss !== input ||
+          (written !== undefined && written !== 0)
+        )
+          invalid = true
+        written ??= 0 // DeepSeek cache misses are ordinary input, not a separately billed write bucket.
+      }
+    }
+    if (cached !== undefined) result.cacheReadInputTokens = cached
+    if (written !== undefined) result.cacheWriteInputTokens = written
+    const writes = [
+      result.cacheWrite5mInputTokens,
+      result.cacheWrite1hInputTokens,
+      result.cacheWrite30mInputTokens,
+      result.cacheWrite12hInputTokens,
+    ]
+    const typedWriteSum = writes.reduce<number>((sum, count) => sum + (count ?? 0), 0)
+    if (
+      !validTokenCount(typedWriteSum) ||
+      typedWriteSum > result.inputTokens ||
+      (written !== undefined && typedWriteSum > written)
+    )
+      invalid = true
+    if ((cached ?? 0) + (written ?? 0) > result.inputTokens) invalid = true
+    if (cached !== undefined && written !== undefined && !invalid) {
+      result.ordinaryInputTokens = result.inputTokens - cached - written
+      result.cacheKnown = true
+    }
+  } else if (embedding && convention === 'openai' && !invalid) {
+    // Native embedding usage has only prompt/total counts, with no cache billing category.
+    result.cacheKnown = true
+    result.ordinaryInputTokens = result.inputTokens
+    result.cacheReadInputTokens = 0
+    result.cacheWriteInputTokens = 0
+  } else if (convention === 'anthropic') {
+    // Without explicit cache components, exclusive input alone cannot establish the inclusive total.
+    invalid = true
+  }
+  const sum = result.inputTokens + result.outputTokens
+  result.totalTokens = validTokenCount(sum) ? sum : 0
+  if (
+    !validTokenCount(result.inputTokens) ||
+    !validTokenCount(sum) ||
+    (total !== undefined && total !== sum)
+  )
+    invalid = true
+  if (!validTokenCount(result.inputTokens)) result.inputTokens = 0
+  if (invalid) {
+    result.known = false
+    if (result.cacheKnown !== undefined) result.cacheKnown = false
+    delete result.ordinaryInputTokens
+  }
+  return result
 }
+const usageOf = (value: unknown, embedding = false): Usage =>
+  normalizeProviderUsage(value, 'openai', embedding)
+
 const wireName = (name: string) => name.replaceAll('.', '__')
 const abortError = (cause?: unknown) =>
   new ModelError('request_cancelled', undefined, false, { cause })
@@ -523,10 +732,38 @@ export class Router {
       if (vectors.length && batch.vectors.some((vector) => vector.length !== vectors[0]!.length))
         throw new ModelError('invalid_embedding_dimensions')
       vectors.push(...batch.vectors)
-      usage.inputTokens += batch.usage.inputTokens
-      usage.outputTokens += batch.usage.outputTokens
-      usage.totalTokens += batch.usage.totalTokens
+      for (const key of ['inputTokens', 'outputTokens', 'totalTokens'] as const) {
+        const sum = usage[key] + batch.usage[key]
+        usage[key] = validTokenCount(sum) ? sum : 0
+        if (!validTokenCount(sum)) usage.known = false
+      }
+      for (const key of cacheUsageKeys) {
+        if (offset === 0 && batch.usage[key] !== undefined) usage[key] = batch.usage[key]
+        else if (usage[key] !== undefined && batch.usage[key] !== undefined) {
+          const sum = usage[key]! + batch.usage[key]!
+          if (validTokenCount(sum)) usage[key] = sum
+          else {
+            delete usage[key]
+            usage.known = false
+          }
+        } else delete usage[key]
+      }
+      if (offset === 0 && batch.usage.rawTokenCounters)
+        usage.rawTokenCounters = { ...batch.usage.rawTokenCounters }
+      else if (usage.rawTokenCounters && batch.usage.rawTokenCounters) {
+        for (const key of Object.keys(usage.rawTokenCounters)) {
+          const count = batch.usage.rawTokenCounters[key]
+          const sum = usage.rawTokenCounters[key]! + (count ?? 0)
+          if (count === undefined || !validTokenCount(sum)) delete usage.rawTokenCounters[key]
+          else usage.rawTokenCounters[key] = sum
+        }
+      } else delete usage.rawTokenCounters
+      if (offset === 0 && batch.usage.cacheKnown !== undefined)
+        usage.cacheKnown = batch.usage.cacheKnown
+      else if (usage.cacheKnown !== undefined || batch.usage.cacheKnown !== undefined)
+        usage.cacheKnown = usage.cacheKnown === true && batch.usage.cacheKnown === true
       if (batch.usage.known === false) usage.known = false
+      if (usage.known === false && usage.cacheKnown !== undefined) usage.cacheKnown = false
     }
     return { vectors, usage, modelId }
   }
@@ -890,21 +1127,70 @@ export class Router {
 
   private normalizedUsage(value: unknown): Usage {
     const usage = object(value)
-    if (usage.known !== undefined && typeof usage.known !== 'boolean')
+    if (
+      (usage.known !== undefined && typeof usage.known !== 'boolean') ||
+      (usage.cacheKnown !== undefined && typeof usage.cacheKnown !== 'boolean')
+    )
       throw new ModelError('invalid_provider_usage')
     for (const key of ['inputTokens', 'outputTokens', 'totalTokens'])
-      if (
-        typeof usage[key] !== 'number' ||
-        !Number.isSafeInteger(usage[key]) ||
-        (usage[key] as number) < 0
-      )
-        throw new ModelError('invalid_provider_usage')
-    return {
+      if (!validTokenCount(usage[key])) throw new ModelError('invalid_provider_usage')
+    const result: Usage = {
       inputTokens: usage.inputTokens as number,
       outputTokens: usage.outputTokens as number,
       totalTokens: usage.totalTokens as number,
       ...(usage.known === false ? { known: false } : {}),
+      ...(usage.cacheKnown !== undefined ? { cacheKnown: usage.cacheKnown as boolean } : {}),
     }
+    if (
+      !validTokenCount(result.inputTokens + result.outputTokens) ||
+      result.inputTokens + result.outputTokens !== result.totalTokens
+    )
+      throw new ModelError('invalid_provider_usage')
+    for (const key of cacheUsageKeys) {
+      if (usage[key] === undefined) continue
+      if (!validTokenCount(usage[key])) throw new ModelError('invalid_provider_usage')
+      result[key] = usage[key] as number
+    }
+    const read = result.cacheReadInputTokens,
+      write = result.cacheWriteInputTokens
+    const ttlTotal = [
+      result.cacheWrite5mInputTokens,
+      result.cacheWrite1hInputTokens,
+      result.cacheWrite30mInputTokens,
+      result.cacheWrite12hInputTokens,
+    ].reduce<number>((sum, count) => sum + (count ?? 0), 0)
+    if (
+      !validTokenCount(ttlTotal) ||
+      (write !== undefined && ttlTotal > write) ||
+      (read ?? 0) + (write ?? 0) > result.inputTokens
+    )
+      throw new ModelError('invalid_provider_usage')
+    if (result.cacheKnown === true) {
+      if (read === undefined || write === undefined) throw new ModelError('invalid_provider_usage')
+      result.ordinaryInputTokens ??= result.inputTokens - read - write
+    }
+    if (
+      result.ordinaryInputTokens !== undefined &&
+      read !== undefined &&
+      write !== undefined &&
+      result.ordinaryInputTokens + read + write !== result.inputTokens
+    )
+      throw new ModelError('invalid_provider_usage')
+    if (usage.rawTokenCounters !== undefined) {
+      const raw = object(usage.rawTokenCounters)
+      if (Object.keys(raw).length > rawCounterPaths.length)
+        throw new ModelError('invalid_provider_usage')
+      result.rawTokenCounters = {}
+      for (const [key, count] of Object.entries(raw)) {
+        if (
+          !rawCounterPaths.includes(key as (typeof rawCounterPaths)[number]) ||
+          !validTokenCount(count)
+        )
+          throw new ModelError('invalid_provider_usage')
+        result.rawTokenCounters[key] = count
+      }
+    }
+    return result
   }
 
   private async completeProtocol(
@@ -1061,8 +1347,24 @@ export class Router {
   }
 
   private emit(entry: ModelLog) {
+    const model = this.config.models.find((model) => model.id === entry.modelId)
+    const pricing: ModelPriceSnapshot | undefined = model
+      ? { apiModelName: model.apiModelName }
+      : undefined
+    if (pricing && model)
+      for (const key of [
+        'inputUsdPerMillion',
+        'outputUsdPerMillion',
+        'cacheReadUsdPerMillion',
+        'cacheWriteUsdPerMillion',
+        'cacheWrite5mUsdPerMillion',
+        'cacheWrite1hUsdPerMillion',
+        'cacheWrite30mUsdPerMillion',
+        'cacheWrite12hUsdPerMillion',
+      ] as const)
+        if (model[key] !== undefined) pricing[key] = model[key]
     try {
-      this.log(entry)
+      this.log({ ...entry, ...(pricing ? { pricing } : {}) })
     } catch {
       /* Observability must not repeat a successful model operation. */
     }

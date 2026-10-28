@@ -3297,6 +3297,12 @@ export interface components {
             embeddingDimensions?: number;
             inputUsdPerMillion?: number;
             outputUsdPerMillion?: number;
+            cacheReadUsdPerMillion?: number;
+            cacheWriteUsdPerMillion?: number;
+            cacheWrite5mUsdPerMillion?: number;
+            cacheWrite1hUsdPerMillion?: number;
+            cacheWrite30mUsdPerMillion?: number;
+            cacheWrite12hUsdPerMillion?: number;
         };
         RoleRoute: {
             /** @enum {string} */
@@ -3509,6 +3515,24 @@ export interface components {
             durationMs: number;
             pricedCalls: number;
             estimatedUsd: number;
+            ordinaryInputTokens: number;
+            cacheReadInputTokens: number;
+            cacheWriteInputTokens: number;
+            cacheWrite5mInputTokens: number;
+            cacheWrite1hInputTokens: number;
+            cacheWrite30mInputTokens: number;
+            cacheWrite12hInputTokens: number;
+            ordinaryInputUsd: number;
+            outputUsd: number;
+            cacheReadUsd: number;
+            cacheWriteUsd: number;
+            legacyEstimatedUsd: number;
+            cacheKnownCalls: number;
+            cacheReadKnownCalls: number;
+            cacheWriteKnownCalls: number;
+            partialPricedCalls: number;
+            legacyCalls: number;
+            unknownUsageCalls: number;
         };
         Diagnostic: {
             id: string;

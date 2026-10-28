@@ -333,6 +333,30 @@
           "outputUsdPerMillion": {
             "type": "number",
             "minimum": 0
+          },
+          "cacheReadUsdPerMillion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cacheWriteUsdPerMillion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cacheWrite5mUsdPerMillion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cacheWrite1hUsdPerMillion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cacheWrite30mUsdPerMillion": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cacheWrite12hUsdPerMillion": {
+            "type": "number",
+            "minimum": 0
           }
         },
         "required": [
@@ -1121,6 +1145,60 @@
           },
           "estimatedUsd": {
             "type": "number"
+          },
+          "ordinaryInputTokens": {
+            "type": "number"
+          },
+          "cacheReadInputTokens": {
+            "type": "number"
+          },
+          "cacheWriteInputTokens": {
+            "type": "number"
+          },
+          "cacheWrite5mInputTokens": {
+            "type": "number"
+          },
+          "cacheWrite1hInputTokens": {
+            "type": "number"
+          },
+          "cacheWrite30mInputTokens": {
+            "type": "number"
+          },
+          "cacheWrite12hInputTokens": {
+            "type": "number"
+          },
+          "ordinaryInputUsd": {
+            "type": "number"
+          },
+          "outputUsd": {
+            "type": "number"
+          },
+          "cacheReadUsd": {
+            "type": "number"
+          },
+          "cacheWriteUsd": {
+            "type": "number"
+          },
+          "legacyEstimatedUsd": {
+            "type": "number"
+          },
+          "cacheKnownCalls": {
+            "type": "number"
+          },
+          "cacheReadKnownCalls": {
+            "type": "number"
+          },
+          "cacheWriteKnownCalls": {
+            "type": "number"
+          },
+          "partialPricedCalls": {
+            "type": "number"
+          },
+          "legacyCalls": {
+            "type": "number"
+          },
+          "unknownUsageCalls": {
+            "type": "number"
           }
         },
         "required": [
@@ -1134,7 +1212,25 @@
           "outputTokens",
           "durationMs",
           "pricedCalls",
-          "estimatedUsd"
+          "estimatedUsd",
+          "ordinaryInputTokens",
+          "cacheReadInputTokens",
+          "cacheWriteInputTokens",
+          "cacheWrite5mInputTokens",
+          "cacheWrite1hInputTokens",
+          "cacheWrite30mInputTokens",
+          "cacheWrite12hInputTokens",
+          "ordinaryInputUsd",
+          "outputUsd",
+          "cacheReadUsd",
+          "cacheWriteUsd",
+          "legacyEstimatedUsd",
+          "cacheKnownCalls",
+          "cacheReadKnownCalls",
+          "cacheWriteKnownCalls",
+          "partialPricedCalls",
+          "legacyCalls",
+          "unknownUsageCalls"
         ]
       },
       "Diagnostic": {

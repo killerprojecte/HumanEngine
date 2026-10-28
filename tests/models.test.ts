@@ -349,7 +349,15 @@ test('Embedding batches default to four, preserve ordering, sum usage, and honor
       result.vectors.map((vector) => vector[0]),
       input.map(Number),
     )
-    assert.deepEqual(result.usage, { inputTokens: 9, outputTokens: 0, totalTokens: 9 })
+    assert.deepEqual(result.usage, {
+      inputTokens: 9,
+      outputTokens: 0,
+      totalTokens: 9,
+      ordinaryInputTokens: 9,
+      cacheReadInputTokens: 0,
+      cacheWriteInputTokens: 0,
+      cacheKnown: true,
+    })
     batches.length = 0
     cfg.models[0]!.embeddingBatchSize = 2
     await new Router(cfg).embeddings('a', input.slice(0, 5))

@@ -125,8 +125,9 @@ export class ChatMediaService {
       let bytes: Buffer
       try {
         bytes = await source.read()
-      } catch {
+      } catch (error) {
         valid()
+        if (error instanceof ChatMediaError) throw error
         throw new ChatMediaError(503, 'image_fetch_unavailable')
       }
       valid()

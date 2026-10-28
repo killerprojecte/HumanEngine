@@ -128,6 +128,7 @@ test('learning-off inbound stickers are known-only, concurrent turn reuses analy
     .png()
     .toBuffer()
   let vision = 0,
+    reads = 0,
     sends = 0
   const completed = withFixturePlan(async (role: string, messages: ChatMessage[]) => {
     if (role === 'vision') {
@@ -158,13 +159,17 @@ test('learning-off inbound stickers are known-only, concurrent turn reuses analy
     },
     history: async () => ({ items: [], coverage: 'partial' }),
     getMessage: async () => ({ items: [], coverage: 'partial' }),
-    readImage: async () => bytes,
+    readImage: async () => {
+      reads++
+      return bytes
+    },
     dispose() {},
   })
   try {
     engine.runtime.ingest(message('first'), scene)
     await until(() => sends === 1)
     assert.equal(vision, 1, 'background intake and current turn share one analysis')
+    assert.equal(reads, 1, 'background and turn share one actual adapter read')
     const first = engine.memes.adminList()[0]!
     assert.equal(first.knownOnly, true)
     assert.equal(first.available, false)
@@ -176,6 +181,11 @@ test('learning-off inbound stickers are known-only, concurrent turn reuses analy
     assert.equal(vision, 1)
     assert.equal(engine.memes.adminList().length, 1)
     assert.equal(engine.memes.adminList()[0]!.sources.length, 2)
+    assert.equal(
+      reads,
+      2,
+      'unknown changed URL is verified once, historical known reference does not redownload',
+    )
     // Re-observation after enabling learning reuses semantics, not an implicit mass promotion.
     const enabled = { ...scene, learningEnabled: true }
     store.saveScene(enabled)
@@ -183,6 +193,18 @@ test('learning-off inbound stickers are known-only, concurrent turn reuses analy
     await until(() => sends === 3)
     assert.equal(vision, 1)
     assert.equal(engine.memes.adminList()[0]!.knownOnly, true)
+    assert.equal(reads, 3)
+    const sameReference = message('same-reference', 'mface', {
+      url: 'https://fixture.invalid/first',
+    })
+    engine.runtime.ingest(sameReference, enabled)
+    await until(() => sends === 4)
+    assert.equal(
+      reads,
+      4,
+      'a new source verifies a mutable URL even when its spelling is identical',
+    )
+    assert.equal(vision, 1)
     store.saveScene(scene)
     const app = createApp(store, { engine, token: 'fixture-token' })
     const response = await app.request('/api/memes?state=known', {

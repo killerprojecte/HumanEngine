@@ -8,6 +8,9 @@ import { startFlow } from './diagnostics/flow.ts'
 
 const imageFailureCodes = new Set([
   'image_context_unavailable',
+  'image_cache_busy',
+  'media_content_hash_mismatch',
+  'analysis_failed_recently',
   'image_context_cancelled',
   'image_source_unavailable',
   'image_read_unsupported',
@@ -30,6 +33,8 @@ const imageFailureCodes = new Set([
   'invalid_image_data',
   'request_cancelled',
   'request_timeout',
+  'model_stage_timeout',
+  'model_attempt_timeout',
   'http_request_failed',
   'connection_failed',
   'route_not_configured',
@@ -80,6 +85,7 @@ type ImageObservation = {
   framePolicy?: 'first_frame_only' | 'stored_library_observation'
 }
 export interface ImageLibraryObserver {
+  lookup?(message: RuntimeMessage, assetId: string, context: TurnContext): string | undefined
   canRecognize?(message: RuntimeMessage, assetId: string, context: TurnContext): boolean
   recognize(
     bytes: Buffer,
@@ -141,7 +147,7 @@ export async function describeCurrentImages(
       })
       continue
     }
-    const key = candidate.assetId
+    const key = JSON.stringify([candidate.message.id, candidate.assetId])
     if (
       selected.some(
         (item) => item.message.id === candidate.message.id && item.assetId === candidate.assetId,
@@ -229,16 +235,45 @@ export async function describeCurrentImages(
         context.validations.push(() => valid(message, assetId))
         ensure(message, assetId)
         const cacheKey = createHash('sha256')
-          .update(JSON.stringify([VISION_PROMPT_VERSION, context.scene.id, assetId, store.models]))
+          .update(
+            JSON.stringify([
+              VISION_PROMPT_VERSION,
+              context.scene.id,
+              message.id,
+              assetId,
+              store.models,
+            ]),
+          )
           .digest('hex')
+        // Library revisions are authoritative, and lookup must not download the original again.
+        const stored = library?.lookup?.(message, assetId, context)
+        if (stored) {
+          ensure(message, assetId)
+          context.validations.push(() => library?.lookup?.(message, assetId, context) === stored)
+          const observation: ImageObservation = {
+            status: 'described',
+            description: stored,
+            framePolicy: 'stored_library_observation',
+          }
+          results.set(cacheKey, observation)
+          images.push({ messageId: message.id, ...observation })
+          startFlow(store, 'vision.image', { counts: { imageCount: 1 } }).finish('completed', {
+            reason: 'image_library_cached',
+            nextStep: 'next_image',
+          })
+          continue
+        }
         const previous = results.get(cacheKey)
-        if (previous) {
+        if (
+          previous &&
+          (!library?.lookup || previous.framePolicy !== 'stored_library_observation')
+        ) {
           ensure(message, assetId)
           images.push({ messageId: message.id, ...previous })
           continue
         }
         const cached = cache.get(cacheKey)
-        if (cached && !library) {
+        if (cached) {
           ensure(message, assetId)
           results.set(cacheKey, { status: 'described', description: cached })
           images.push({ messageId: message.id, status: 'described', description: cached })
@@ -267,10 +302,22 @@ export async function describeCurrentImages(
             }
             const bytes = await runtime.readImage(context, assetId, message)
             ensure(message, assetId)
+            operation = 'image.recognize'
             let description = await library?.recognize(bytes, message, assetId, context)
             ensure(message, assetId)
             const libraryMatched = description !== undefined
-            if (!libraryMatched && cached) description = cached
+            const contentKey = createHash('sha256')
+              .update(
+                JSON.stringify([
+                  VISION_PROMPT_VERSION,
+                  context.scene.id,
+                  createHash('sha256').update(bytes).digest('hex'),
+                  store.models,
+                ]),
+              )
+              .digest('hex')
+            const contentCached = cache.get(contentKey)
+            if (!libraryMatched && (cached || contentCached)) description = cached || contentCached
             if (description === undefined) {
               if (
                 !store.models.routes.some(
@@ -327,9 +374,17 @@ export async function describeCurrentImages(
               framePolicy: libraryMatched ? 'stored_library_observation' : 'first_frame_only',
             }
             results.set(cacheKey, observation)
-            if (!libraryMatched) cache.put(cacheKey, context.scene.id, message.id, description)
+            if (!libraryMatched) {
+              cache.put(cacheKey, context.scene.id, message.id, description)
+              cache.put(contentKey, context.scene.id, message.id, description)
+            }
             images.push({ messageId: message.id, ...observation })
             imageSpan.finish('completed', {
+              reason: libraryMatched
+                ? 'image_library_recognized'
+                : cached || contentCached
+                  ? 'image_description_cached'
+                  : 'image_model_described',
               outputKind: 'image_description',
               counts: { textCharacters: description.length },
               nextStep: 'next_image',

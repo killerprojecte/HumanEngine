@@ -216,6 +216,12 @@ export class MemeService {
         PRIMARY KEY(asset_id,scene_id,message_id)
       );
       CREATE INDEX IF NOT EXISTS meme_source_lookup ON meme_sources(scene_id,message_id);
+      CREATE TABLE IF NOT EXISTS meme_media_references (
+        scene_id TEXT NOT NULL, reference_hash TEXT NOT NULL,
+        asset_id TEXT NOT NULL, message_id TEXT NOT NULL, sender_id TEXT NOT NULL,
+        content_hash TEXT NOT NULL, updated_at INTEGER NOT NULL,
+        PRIMARY KEY(scene_id,reference_hash,message_id)
+      );
       CREATE TABLE IF NOT EXISTS meme_feedback (
         asset_id TEXT NOT NULL REFERENCES meme_assets(id) ON DELETE CASCADE,
         scene_id TEXT NOT NULL, message_id TEXT NOT NULL, positive INTEGER NOT NULL,
@@ -245,6 +251,124 @@ export class MemeService {
 
   hasRecognitionCandidates(ctx: MemeContext): boolean {
     return this.readVisible(ctx).some((asset) => !asset.disabled && this.hasValidSource(asset))
+  }
+  /** Exact opaque adapter locators are hashed, never persisted as signed URLs or tokens. */
+  private mediaReferenceHash(ctx: MemeContext, reference: string): string | undefined {
+    const scene = this.store.scene(ctx.sceneId)
+    if (ctx.simulation || !scene || !reference || reference.length > 16 * 1024 * 1024)
+      return undefined
+    return createHash('sha256')
+      .update(JSON.stringify([ctx.sceneId, scene.adapterId, scene.accountId, reference]))
+      .digest('hex')
+  }
+  private mediaReference(ctx: MemeContext, reference: string, sourceMessageId?: string) {
+    const hash = this.mediaReferenceHash(ctx, reference)
+    if (!hash || !sourceMessageId) return undefined
+    return this.store.db
+      .prepare(
+        'SELECT asset_id, message_id, sender_id, content_hash FROM meme_media_references WHERE scene_id=? AND reference_hash=? AND message_id=?',
+      )
+      .get(ctx.sceneId, hash, sourceMessageId) as
+      { asset_id: string; message_id: string; sender_id: string; content_hash: string } | undefined
+  }
+  hasMediaReference(ctx: MemeContext, reference: string, sourceMessageId?: string): boolean {
+    // Opaque locators may change bytes between messages. Never infer a new message's
+    // content identity from another source's exact URL/file-token string.
+    return this.mediaReference(ctx, reference, sourceMessageId) !== undefined
+  }
+  bindMediaReference(
+    ctx: MemeContext,
+    reference: string,
+    assetId: string,
+    source: MemorySource,
+    bytes: Buffer,
+  ): void {
+    this.validateObservedSource(ctx, source)
+    const hash = this.mediaReferenceHash(ctx, reference)
+    if (!hash) throw new Error('invalid_media_reference')
+    const asset = this.visible(ctx, assetId, false)
+    if (
+      !bytes.length ||
+      bytes.length > MAX_BYTES ||
+      digest(bytes) !== (asset.contentHash ?? asset.id)
+    )
+      throw new Error('media_content_hash_mismatch')
+    if (
+      !asset.sources.some(
+        (item) =>
+          item.sceneId === source.sceneId &&
+          item.messageId === source.messageId &&
+          item.senderId === source.senderId,
+      )
+    )
+      throw new Error('invalid_source_evidence')
+    this.store.db.transaction(() => {
+      this.store.db
+        .prepare(
+          `INSERT INTO meme_media_references VALUES(?,?,?,?,?,?,?)
+        ON CONFLICT(scene_id,reference_hash,message_id) DO UPDATE SET asset_id=excluded.asset_id,
+        message_id=excluded.message_id,sender_id=excluded.sender_id,
+        content_hash=excluded.content_hash,updated_at=excluded.updated_at`,
+        )
+        .run(
+          ctx.sceneId,
+          hash,
+          asset.id,
+          source.messageId,
+          source.senderId,
+          asset.contentHash ?? asset.id,
+          Date.now(),
+        )
+      this.store.db
+        .prepare(
+          `DELETE FROM meme_media_references WHERE scene_id=? AND rowid IN
+        (SELECT rowid FROM meme_media_references WHERE scene_id=? ORDER BY updated_at DESC, rowid DESC LIMIT -1 OFFSET 2048)`,
+        )
+        .run(ctx.sceneId, ctx.sceneId)
+    })()
+  }
+  lookupMediaReference(
+    ctx: MemeContext,
+    reference: string,
+    sourceMessageId?: string,
+  ): MemeAsset | undefined {
+    const entry = this.mediaReference(ctx, reference, sourceMessageId)
+    if (!entry || this.store.recalled(ctx.sceneId, entry.message_id)) return undefined
+    try {
+      const asset = this.visible(ctx, entry.asset_id, false)
+      if (
+        (asset.contentHash ?? asset.id) !== entry.content_hash ||
+        !asset.sources.some(
+          (source) =>
+            source.sceneId === ctx.sceneId &&
+            source.messageId === entry.message_id &&
+            source.senderId === entry.sender_id,
+        )
+      )
+        return undefined
+      return this.sanitize(asset)
+    } catch {
+      return undefined
+    }
+  }
+  /** Understanding is independent of send eligibility, but never of scene/source authorization. */
+  recognitionOriginal(ctx: MemeContext, id: string): { path: string; contentType: string } {
+    const asset = this.visible(ctx, id, false)
+    return { path: this.file(asset.id, asset.format), contentType: `image/${asset.format}` }
+  }
+  async readReference(
+    ctx: MemeContext,
+    reference: string,
+    sourceMessageId?: string,
+  ): Promise<Buffer> {
+    const asset = this.lookupMediaReference(ctx, reference, sourceMessageId)
+    if (!asset) throw new Error('image_source_unavailable')
+    const bytes = await readFile(this.recognitionOriginal(ctx, asset.id).path)
+    const current = this.lookupMediaReference(ctx, reference, sourceMessageId)
+    if (!current || current.id !== asset.id) throw new Error('image_source_unavailable')
+    if (bytes.length !== current.bytes || digest(bytes) !== (current.contentHash ?? current.id))
+      throw new Error('media_content_hash_mismatch')
+    return bytes
   }
   async recognizeBytes(ctx: MemeContext, bytes: Buffer): Promise<MemeAsset | undefined> {
     if (!bytes.length || bytes.length > MAX_BYTES) throw new Error('image_size_limit')

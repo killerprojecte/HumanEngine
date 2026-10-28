@@ -104,6 +104,8 @@ test('unreadable managed images do not starve valid current user pixels or inval
       ],
     }))
     for (const message of missing) f.engine.runtime.ingest(message, f.scene, false)
+    // This GIF has different bytes from the managed PNG; disabling that asset must
+    // revoke its own original source, not this unrelated current image.
     for (const disabled of [false, true]) {
       if (disabled) f.engine.memes.update(asset.id, { disabled: true })
       const ctx: TurnContext = {
@@ -113,7 +115,7 @@ test('unreadable managed images do not starve valid current user pixels or inval
         signal: new AbortController().signal,
         dependencies: new Set(),
         validations: [],
-        imagePriorityIds: [outgoing.id, ...missing.map((m) => m.id), f.messages[0]!.id],
+        imagePriorityIds: [outgoing.id, ...missing.map((m) => m.id), f.messages[1]!.id],
       }
       let calls = 0
       const router = () =>
@@ -122,25 +124,25 @@ test('unreadable managed images do not starve valid current user pixels or inval
             calls++
             assert.match(input[1]!.images![0]!, /^data:image\/png;base64,/)
             return {
-              text: 'Visible synthetic mountain illustration',
+              text: 'Visible synthetic colored frame',
               toolCalls: [],
               usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
               modelId: 'fixture',
-              assistant: { role: 'assistant', content: 'Visible synthetic mountain illustration' },
+              assistant: { role: 'assistant', content: 'Visible synthetic colored frame' },
             }
           },
         }) as unknown as Router
       const result = await describeCurrentImages(f.store, f.engine.runtime, router, ctx, [
         outgoing,
         ...missing,
-        f.messages[0]!,
+        f.messages[1]!,
       ])
       assert.equal(
         result.images.find((image) => image.messageId === outgoing.id)?.status,
         'unavailable',
       )
       assert.equal(
-        result.images.find((image) => image.messageId === f.messages[0]!.id)?.status,
+        result.images.find((image) => image.messageId === f.messages[1]!.id)?.status,
         'described',
       )
       assert.equal(result.images.filter((image) => image.status === 'unavailable').length, 4)

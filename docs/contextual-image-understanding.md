@@ -19,11 +19,13 @@ attach attributed visual observations to the same tool receipt. They do not
 replay messages into live ingress or learning. The composer retains those
 untrusted visual observations even for a plan with no cited facts.
 
-Four distinct image references share one budget across the entire turn, including
-history tool calls. Duplicate references retain each message attribution and
-reuse the visual cache. Failed reads and empty descriptions are also reused within
-the turn, so duplicate references cannot multiply model or download attempts; a
-new turn may retry. Omitted images explicitly report `image_budget_exhausted`;
+Four authorized message/part sources share one budget across the entire turn,
+including history tool calls. A mutable URL reused in another message is not
+assumed to be the same image. After reading a source, matching verified byte hashes
+can reuse successful model descriptions while retaining message attribution.
+Failed reads and empty descriptions are attempted only once per source within
+the turn; a new turn may retry. Repeated history tools cannot bypass the source
+budget or repeat a failed source attempt. Omitted images explicitly report `image_budget_exhausted`;
 this is not a claim that their contents were inspected. Unreferenced images older
 than the bounded recent window still require a history lookup. This is not a
 scan of all prior messages or an unlimited vision budget.

@@ -107,12 +107,20 @@ test('display cache expires, cancellation and recall reject late bytes, and hist
     const service = new ChatMediaService(f.engine.runtime, () => now)
     const message = f.messages[1]!
     await service.read(f.scene.id, message.id, 1, new AbortController().signal)
-    let calls = f.requests.filter((call) => call.action === 'get_image').length
+    const targetLookups = () =>
+      f.requests.filter((call) => call.action === 'get_image' && call.params.file === 'animation')
+        .length
+    const calls = targetLookups()
+    assert.equal(calls, 1, 'the target GIF was resolved exactly once')
     await service.read(f.scene.id, message.id, 1, new AbortController().signal)
-    assert.equal(f.requests.filter((call) => call.action === 'get_image').length, calls)
+    assert.equal(targetLookups(), calls)
     now = 61_000
     await service.read(f.scene.id, message.id, 1, new AbortController().signal)
-    assert.equal(f.requests.filter((call) => call.action === 'get_image').length, calls + 1)
+    assert.equal(
+      targetLookups(),
+      calls,
+      'expired display cache reuses still-valid shared source bytes without a second platform lookup',
+    )
     await assert.rejects(
       service.read(f.scene.id, message.id, 1, AbortSignal.abort()),
       /request_cancelled|image_unavailable/,
@@ -184,6 +192,18 @@ test('read-only history sources, late recall/cancel, failed-image recovery and e
     assert.equal(f.engine.runtime.preview(f.scene.id).length, before)
     f.adapter.readImage = originalRead
 
+    // Use fresh exact historical sources: persisted aliases may legitimately bypass adapter I/O.
+    for (const id of [52, 53])
+      f.events.set(id, {
+        ...staleEvent,
+        message_id: id,
+        message: [
+          { type: 'text', data: { text: '' } },
+          { type: 'image', data: { file: `fixture-delayed-${id}` } },
+        ],
+      })
+    const delayedId = f.adapter.messageId(f.scene, '52')
+    const cancelledId = f.adapter.messageId(f.scene, '53')
     const service = new ChatMediaService(f.engine.runtime)
     let release!: (bytes: Buffer) => void
     const oldRead = f.adapter.readImage
@@ -191,9 +211,13 @@ test('read-only history sources, late recall/cancel, failed-image recovery and e
       new Promise<Buffer>((resolve) => {
         release = resolve
       })
-    const pending = service.read(f.scene.id, f.messages[2]!.id, 1, new AbortController().signal)
-    while (!release) await new Promise((resolve) => setImmediate(resolve))
-    f.engine.runtime.recall(f.scene.id, f.messages[2]!.id)
+    const pending = service.read(f.scene.id, delayedId, 1, new AbortController().signal)
+    const recallDeadline = Date.now() + 2000
+    while (!release) {
+      if (Date.now() > recallDeadline) assert.fail('delayed image read did not start')
+      await new Promise((resolve) => setImmediate(resolve))
+    }
+    f.engine.runtime.recall(f.scene.id, delayedId)
     release(f.png)
     await assert.rejects(pending, /image_unavailable/)
     let releaseCancelled!: (bytes: Buffer) => void
@@ -202,8 +226,12 @@ test('read-only history sources, late recall/cancel, failed-image recovery and e
         releaseCancelled = resolve
       })
     const controller = new AbortController()
-    const cancelled = service.read(f.scene.id, f.messages[1]!.id, 1, controller.signal)
-    while (!releaseCancelled) await new Promise((resolve) => setImmediate(resolve))
+    const cancelled = service.read(f.scene.id, cancelledId, 1, controller.signal)
+    const cancelDeadline = Date.now() + 2000
+    while (!releaseCancelled) {
+      if (Date.now() > cancelDeadline) assert.fail('cancelled image read did not start')
+      await new Promise((resolve) => setImmediate(resolve))
+    }
     controller.abort()
     releaseCancelled(f.gif)
     await assert.rejects(cancelled, /image_unavailable/)

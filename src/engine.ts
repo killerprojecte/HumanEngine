@@ -161,6 +161,14 @@ export class Engine {
         read: async () =>
           readFile(this.memes.original({ sceneId, simulation: false }, assetId).path),
       }),
+      (sceneId, reference, messageId) => {
+        const context = { sceneId, simulation: false }
+        if (!this.memes.hasMediaReference(context, reference, messageId)) return undefined
+        return {
+          available: () => !!this.memes.lookupMediaReference(context, reference, messageId),
+          read: () => this.memes.readReference(context, reference, messageId),
+        }
+      },
     )
     this.plugins = new PluginManager(store, this.runtime, this.protocols, {
       adapterStopped: (id) => {
@@ -269,6 +277,14 @@ export class Engine {
           messages,
           this.imageDescriptions,
           {
+            lookup: (message, assetId, turn) => {
+              const asset = this.memes.lookupMediaReference(
+                { sceneId: turn.scene.id, simulation: turn.mode === 'simulation' },
+                assetId,
+                message.id,
+              )
+              return asset?.analyzed ? this.memeObservation(asset) : undefined
+            },
             canRecognize: (message, assetId, turn) =>
               (message.origin === 'live' &&
                 message.senderId !== 'bot' &&
@@ -280,24 +296,7 @@ export class Engine {
             recognize: async (bytes, message, assetId, turn) => {
               const asset = await this.observeImageMeme(bytes, message, assetId, turn.signal)
               if (!asset?.analyzed) return undefined
-              return JSON.stringify({
-                source: 'scene_visible_meme_library',
-                visibleEvidence: {
-                  appearance: asset.tags.appearance,
-                  style: asset.tags.style,
-                  subject: asset.tags.subject,
-                  ocr: asset.tags.ocr,
-                },
-                possibleUses: {
-                  emotion: asset.tags.emotion,
-                  intent: asset.tags.intent,
-                  tone: asset.tags.tone,
-                  intensity: asset.tags.intensity,
-                  memeMeaning: asset.tags.memeMeaning,
-                },
-                uncertainty:
-                  'Stored image labels are fallible observations and possible conventional uses, not proof of sender feelings or intent. Interpret using current conversation. Animation analysis samples frames rather than all motion.',
-              }).slice(0, 4000)
+              return this.memeObservation(asset)
             },
           },
         ),
@@ -1605,6 +1604,26 @@ export class Engine {
       this.store,
     )
   }
+  private memeObservation(asset: import('./memes.ts').MemeAsset) {
+    return JSON.stringify({
+      source: 'scene_visible_meme_library',
+      visibleEvidence: {
+        appearance: asset.tags.appearance,
+        style: asset.tags.style,
+        subject: asset.tags.subject,
+        ocr: asset.tags.ocr,
+      },
+      possibleUses: {
+        emotion: asset.tags.emotion,
+        intent: asset.tags.intent,
+        tone: asset.tags.tone,
+        intensity: asset.tags.intensity,
+        memeMeaning: asset.tags.memeMeaning,
+      },
+      uncertainty:
+        'Stored image labels are fallible observations and possible conventional uses, not proof of sender feelings or intent. Interpret using current conversation. Animation analysis samples frames rather than all motion.',
+    }).slice(0, 4000)
+  }
   private async observeImageMeme(
     bytes: Buffer,
     message: RuntimeMessage,
@@ -1643,38 +1662,48 @@ export class Engine {
     const vision = this.store.models.routes.some(
       (route) => route.role === 'vision' && route.orderedModelIds.length,
     )
-    const asset = await this.memes.observeBytes(
-      context,
-      bytes,
-      source,
-      vision ? this.router() : undefined,
-      {
-        signal,
-        admit: isStickerSource(message, assetId),
-        selectionContext: {
-          persona: this.store.settings.persona,
-          preferences: {
-            expression: this.habits
-              .list({ sceneId: message.sceneId, simulation: false })
-              .filter((hint) => hint.kind === 'botExpression'),
+    try {
+      const asset = await this.memes.observeBytes(
+        context,
+        bytes,
+        source,
+        vision ? this.router() : undefined,
+        {
+          signal,
+          admit: isStickerSource(message, assetId),
+          selectionContext: {
+            persona: this.store.settings.persona,
+            preferences: {
+              expression: this.habits
+                .list({ sceneId: message.sceneId, simulation: false })
+                .filter((hint) => hint.kind === 'botExpression'),
+            },
+            sourceContextKnown: true,
+            sourceContext: this.runtime
+              .preview(message.sceneId)
+              .slice(-8)
+              .map((item) => ({
+                isBot: item.senderId === 'bot',
+                text: item.parts
+                  .filter((part) => part.type === 'text')
+                  .map((part) => part.text)
+                  .join(' ')
+                  .slice(0, 2000),
+              })),
           },
-          sourceContextKnown: true,
-          sourceContext: this.runtime
-            .preview(message.sceneId)
-            .slice(-8)
-            .map((item) => ({
-              isBot: item.senderId === 'bot',
-              text: item.parts
-                .filter((part) => part.type === 'text')
-                .map((part) => part.text)
-                .join(' ')
-                .slice(0, 2000),
-            })),
         },
-      },
-    )
-    if (!valid()) throw new Error('image_source_unavailable')
-    return asset
+      )
+      if (!valid()) throw new Error('image_source_unavailable')
+      return asset
+    } finally {
+      // Admission persists bytes before analysis; retain that verified link even if VLM times out.
+      // Never bind cancelled/recalled/deleted input or infer a digest from platform metadata.
+      if (valid()) {
+        const saved = await this.memes.recognizeBytes(context, bytes)
+        if (saved && valid())
+          this.memes.bindMediaReference(context, assetId, saved.id, source, bytes)
+      }
+    }
   }
   private async ingestMedia(message: RuntimeMessage) {
     const key = `${message.sceneId}|${message.id}`,

@@ -1,3 +1,5 @@
+import { validateDisplayImage } from './chat-media.ts'
+import { ImageByteCache } from './runtime/image-byte-cache.ts'
 import { ContextProjection } from './runtime/context-projection.ts'
 import { preserveErrorContext, failureFromOutcomes } from './diagnostics/error-context.ts'
 import {
@@ -392,6 +394,10 @@ class GroundingError extends Error {
   }
 }
 export class Runtime {
+  private readonly imageBytes = new ImageByteCache()
+  get imageByteCacheStats() {
+    return { ...this.imageBytes.stats }
+  }
   // Authority is per turn (shared dependencies survive tool signal clones), never live ingestion.
   private readonly imageSources = new WeakMap<
     Set<string>,
@@ -473,6 +479,16 @@ export class Runtime {
       available: () => boolean
       read: () => Promise<Buffer>
     },
+    private readonly sourceImage?: (
+      sceneId: string,
+      reference: string,
+      messageId?: string,
+    ) =>
+      | {
+          available: () => boolean
+          read: () => Promise<Buffer>
+        }
+      | undefined,
   ) {
     this.cleanupTimer = setInterval(() => {
       for (const [id, state] of this.states)
@@ -520,6 +536,8 @@ export class Runtime {
     return topic.attention * Math.exp(-(Date.now() - topic.lastAt) / 300000)
   }
   addAdapter(id: string, adapter: RuntimeAdapter, botUserId?: string) {
+    const previous = this.adapters.get(id)
+    if (previous) this.imageBytes.clear(undefined, previous)
     this.adapters.get(id)?.dispose()
     this.adapters.set(id, adapter)
     if (botUserId) this.botUserIds.set(id, botUserId)
@@ -529,6 +547,7 @@ export class Runtime {
     for (const [sceneId, scene] of this.scenes) if (scene.adapterId === id) this.cancel(sceneId)
     const adapter = this.adapters.get(id)
     this.adapters.delete(id)
+    if (adapter) this.imageBytes.clear(undefined, adapter)
     this.botUserIds.delete(id)
     adapter?.dispose()
   }
@@ -811,6 +830,7 @@ export class Runtime {
     )
   }
   recall(sceneId: string, messageId: string) {
+    this.imageBytes.clear(sceneId)
     this.store.clearDiagnostics()
     if (this.scenes.get(sceneId)?.kind === 'simulation')
       this.states.get(sceneId)?.recalled.add(messageId)
@@ -869,6 +889,7 @@ export class Runtime {
     if (topic) await this.run(scene, topic.id, true)
   }
   dispose() {
+    this.imageBytes.clear()
     this.typingDelay?.dispose()
     this.typingDelay = undefined
     clearInterval(this.cleanupTimer)
@@ -1942,6 +1963,77 @@ export class Runtime {
       this.store,
     )
   }
+  private async cachedImageBytes(
+    adapter: RuntimeAdapter,
+    sceneId: string,
+    reference: string,
+    messageId: string,
+    signal: AbortSignal,
+    available: () => boolean,
+    load: (signal: AbortSignal) => Promise<Buffer>,
+  ) {
+    const span = startFlow(this.store, 'media.fetch', { sceneId })
+    let reason = 'image_source_read'
+    try {
+      const bytes = await this.imageBytes.read(
+        adapter,
+        sceneId,
+        JSON.stringify([messageId, reference]),
+        signal,
+        available,
+        async (operationSignal) => {
+          const bytes = await load(operationSignal)
+          await validateDisplayImage(bytes)
+          return bytes
+        },
+        (kind) => {
+          reason = kind
+        },
+      )
+      span.finish('completed', { reason, counts: { byteCount: bytes.length } })
+      return bytes
+    } catch (error) {
+      span.finish(signal.aborted ? 'cancelled' : 'failed', { reason }, error)
+      throw error
+    }
+  }
+  private async adapterImageBytes(
+    adapter: RuntimeAdapter,
+    scene: SceneRef,
+    messageId: string,
+    partIndex: number,
+    assetId: string,
+    signal: AbortSignal,
+    available: () => boolean,
+    fetchMedia?: typeof fetchQqMedia,
+  ) {
+    try {
+      return await adapter.readImage!(scene, assetId, signal, fetchMedia)
+    } catch (error) {
+      if (!available() || signal.aborted) throw error
+      const refreshed = await adapter.getMessage(scene, messageId, signal)
+      const replacement = refreshed.items.find(
+        (item) => item.id === messageId && item.sceneId === scene.id && item.status === 'available',
+      )?.parts[partIndex]
+      if (
+        !available() ||
+        signal.aborted ||
+        replacement?.type !== 'media' ||
+        replacement.assetId === assetId ||
+        !(replacement.mediaType === 'image' || replacement.mediaType.startsWith('image/'))
+      )
+        throw error
+      return adapter.readImage!(scene, replacement.assetId, signal, fetchMedia)
+    }
+  }
+  private aliasAvailable(sceneId: string, reference: string, messageId: string) {
+    try {
+      const source = this.sourceImage?.(sceneId, reference, messageId)
+      return !source || source.available()
+    } catch {
+      return false
+    }
+  }
   /** Read-only dashboard lookup; historical reads never become live ingress or learning inputs. */
   async resolveDisplayImage(
     sceneId: string,
@@ -1979,8 +2071,8 @@ export class Runtime {
       return undefined
     const assetId = part.assetId
     const local = /^[a-f0-9]{64}$/.test(assetId) ? managed?.(assetId) : undefined
-    const available = () =>
-      !signal.aborted &&
+    const sourceAvailable = () =>
+      this.aliasAvailable(sceneId, assetId, messageId) &&
       (!local || local.available()) &&
       !this.isRecalled(sceneId, messageId) &&
       this.adapters.get(scene.adapterId) === adapter &&
@@ -1994,31 +2086,47 @@ export class Runtime {
               item.parts[partIndex]?.type === 'media' &&
               item.parts[partIndex].assetId === assetId,
           ) === true)
+    const available = () => !signal.aborted && sourceAvailable()
     if (!available()) return undefined
     return {
       assetId,
       available,
       read: async () => {
-        if (local) return local.read()
-        try {
-          return await adapter.readImage!(scene as SceneRef, assetId, signal)
-        } catch (error) {
-          if (!available()) throw error
-          // Expired URL-only history may have no get_image token. Refresh this exact message once.
-          const refreshed = await adapter.getMessage(scene as SceneRef, messageId, signal)
-          const replacement = refreshed.items.find(
-            (item) =>
-              item.id === messageId && item.sceneId === sceneId && item.status === 'available',
-          )?.parts[partIndex]
-          if (
-            !available() ||
-            replacement?.type !== 'media' ||
-            replacement.assetId === assetId ||
-            !(replacement.mediaType === 'image' || replacement.mediaType.startsWith('image/'))
-          )
-            throw error
-          return adapter.readImage!(scene as SceneRef, replacement.assetId, signal)
+        if (!available()) throw new Error('image_source_unavailable')
+        if (local) {
+          const bytes = await local.read()
+          if (!available()) throw new Error('image_source_unavailable')
+          return bytes
         }
+        const stored = this.sourceImage?.(sceneId, assetId, messageId)
+        if (stored) {
+          if (!stored.available()) throw new Error('image_source_unavailable')
+          const bytes = await stored.read()
+          if (!available() || !stored.available()) throw new Error('image_source_unavailable')
+          startFlow(this.store, 'media.fetch', { sceneId }).finish('completed', {
+            reason: 'image_local_original',
+            counts: { byteCount: bytes.length },
+          })
+          return bytes
+        }
+        return this.cachedImageBytes(
+          adapter,
+          sceneId,
+          assetId,
+          messageId,
+          signal,
+          sourceAvailable,
+          (operationSignal) =>
+            this.adapterImageBytes(
+              adapter,
+              scene as SceneRef,
+              messageId,
+              partIndex,
+              assetId,
+              operationSignal,
+              sourceAvailable,
+            ),
+        )
       },
     }
   }
@@ -2031,10 +2139,10 @@ export class Runtime {
     fetchMedia?: typeof fetchQqMedia,
   ): Promise<Buffer> {
     const scene = this.scenes.get(sceneId)
-    const available = () =>
+    const sourceAvailable = () =>
       !!scene &&
       scene.kind !== 'simulation' &&
-      !signal.aborted &&
+      this.aliasAvailable(sceneId, assetId, messageId) &&
       !this.isRecalled(sceneId, messageId) &&
       !!this.states
         .get(sceneId)
@@ -2044,10 +2152,43 @@ export class Runtime {
             message.status === 'available' &&
             message.parts.some((part) => part.type === 'media' && part.assetId === assetId),
         )
+    const available = () => !signal.aborted && sourceAvailable()
     if (!available()) throw new Error('image_source_unavailable')
     const adapter = this.adapters.get(scene!.adapterId)
     if (!adapter?.readImage) throw new Error('image_read_unsupported')
-    const bytes = await adapter.readImage(scene as SceneRef, assetId, signal, fetchMedia)
+    const partIndex = this.states
+      .get(sceneId)!
+      .messages.find((message) => message.id === messageId)!
+      .parts.findIndex((part) => part.type === 'media' && part.assetId === assetId)
+    const stored = this.sourceImage?.(sceneId, assetId, messageId)
+    if (stored && !stored.available()) throw new Error('image_source_unavailable')
+    const bytes = stored
+      ? await stored.read()
+      : await this.cachedImageBytes(
+          adapter,
+          sceneId,
+          assetId,
+          messageId,
+          signal,
+          () => sourceAvailable() && this.adapters.get(scene!.adapterId) === adapter,
+          (operationSignal) =>
+            this.adapterImageBytes(
+              adapter,
+              scene as SceneRef,
+              messageId,
+              partIndex,
+              assetId,
+              operationSignal,
+              () => sourceAvailable() && this.adapters.get(scene!.adapterId) === adapter,
+              fetchMedia,
+            ),
+        )
+    if (stored && !stored.available()) throw new Error('image_source_unavailable')
+    if (stored)
+      startFlow(this.store, 'media.fetch', { sceneId }).finish('completed', {
+        reason: 'image_local_original',
+        counts: { byteCount: bytes.length },
+      })
     if (!available()) throw new Error('image_source_unavailable')
     return bytes
   }
@@ -2092,6 +2233,8 @@ export class Runtime {
         source.adapter === this.adapters.get(context.scene.adapterId) &&
         matches(source.message))
     if (!authorized) return false
+    const stored = this.sourceImage?.(context.scene.id, assetId, messageId)
+    if (stored && !stored.available()) return false
     if (/^[a-f0-9]{64}$/.test(assetId)) {
       try {
         return this.managedImage?.(context.scene.id, assetId).available() ?? false
@@ -2133,7 +2276,14 @@ export class Runtime {
     if (!resolved || !this.eligible(context)) throw new Error('image_source_unavailable')
     context.dependencies.add(message.id)
     context.validations.push(resolved.available)
-    const bytes = await resolved.read()
+    let bytes: Buffer
+    try {
+      bytes = await resolved.read()
+    } catch (error) {
+      if (!this.eligible(context) || !resolved.available())
+        throw new Error('image_context_cancelled')
+      throw error
+    }
     if (!this.eligible(context) || !resolved.available()) throw new Error('image_context_cancelled')
     return bytes
   }

@@ -111,6 +111,12 @@ const builtinFields: Record<string, Record<string, string>> = {
     eventCredentialEnv: 'pgEventCredential',
   },
   'typing-delay': { speedFactor: 'pgTypingSpeed' },
+  'web-read': {
+    timeoutMs: 'pgWebTimeout',
+    maxResponseBytes: 'pgWebBytes',
+    maxConcurrency: 'pgWebConcurrency',
+    maxChars: 'pgWebReadChars',
+  },
   'web-search': {
     provider: 'pgWebProvider',
     fallbackProvider: 'pgWebFallback',
@@ -149,10 +155,12 @@ function builtinFieldHelp(id: string | undefined, key: string) {
   if (id === 'snowluma' && key === 'transport') return t('pgTransportHelp')
 }
 function pluginName(plugin: Plugin) {
+  if (plugin.builtin && plugin.id === 'web-read') return t('pgWebReadName')
   if (plugin.builtin && plugin.id === 'web-search') return t('pgWebName')
   return plugin.builtin && plugin.id === 'typing-delay' ? t('pgTypingName') : plugin.name
 }
 function pluginDescription(plugin: Plugin) {
+  if (plugin.builtin && plugin.id === 'web-read') return t('pgWebReadDescription')
   if (plugin.builtin && plugin.id === 'web-search') return t('pgWebDescription')
   return plugin.builtin && plugin.id === 'typing-delay'
     ? t('pgTypingDescription')

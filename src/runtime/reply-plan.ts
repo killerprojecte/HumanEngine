@@ -1,3 +1,4 @@
+import type { ContextProjection } from './context-projection.ts'
 import { z } from '@hono/zod-openapi'
 import type { ChatMessage, Completion, ToolDefinition } from '../models.ts'
 
@@ -143,6 +144,7 @@ export function validateReplyPlan(
 /** A bounded, side-effect-free planning loop. Tool receipts, not summaries, carry provenance. */
 export async function buildReplyPlan(input: {
   messages: ChatMessage[]
+  projection?: ContextProjection
   readTools: ToolDefinition[]
   actionTools: ToolDefinition[]
   deliveryTools?: ToolDefinition[]
@@ -178,7 +180,10 @@ export async function buildReplyPlan(input: {
       if (final.length !== 1 || result.toolCalls.length !== 1)
         throw new Error('planner_ambiguous_plan')
       return {
-        plan: validateReplyPlan(final[0]!.arguments, { ...input, evidence }),
+        plan: validateReplyPlan(
+          input.projection?.restoreArguments(final[0]!.arguments) ?? final[0]!.arguments,
+          { ...input, evidence },
+        ),
         evidence,
         rounds: round + 1,
         toolCalls,
@@ -194,7 +199,11 @@ export async function buildReplyPlan(input: {
         throw new Error('planner_forbidden_tool')
       toolCalls++
       const value = await withinSignal(
-        input.execute(call.name, call.arguments, input.signal),
+        input.execute(
+          call.name,
+          input.projection?.restoreArguments(call.arguments) ?? call.arguments,
+          input.signal,
+        ),
         input.signal,
       )
       check()
@@ -202,7 +211,11 @@ export async function buildReplyPlan(input: {
         throw new Error('planner_evidence_too_large')
       const receipt = { id: `tool:${toolCalls}`, toolName: call.name, value }
       evidence.push(receipt)
-      messages.push({ role: 'tool', toolCallId: call.id, content: JSON.stringify(receipt) })
+      messages.push({
+        role: 'tool',
+        toolCallId: call.id,
+        content: input.projection?.stringify(receipt) ?? JSON.stringify(receipt),
+      })
     }
   }
   throw new Error('planner_round_budget_exhausted')

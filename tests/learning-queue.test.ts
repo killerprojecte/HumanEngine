@@ -275,7 +275,7 @@ test('A failing scene backoff does not block a different scene and does not cons
     const original = engine.router().complete
     engine.router().complete = async (...args) => {
       const input = JSON.parse(args[1][1]!.content)
-      if (input.messages[0].sceneId === 'scene') throw new ModelError('provider_http_503', 503)
+      if (input.messages[0].id === 'failure') throw new ModelError('provider_http_503', 503)
       return original(...args)
     }
     queue.enqueueLearning(message('failure'))
@@ -330,7 +330,7 @@ test('Extraction never receives remembered private content; reconciliation canno
               name: 'learning.reconcile',
               arguments: {
                 candidateIndex: 0,
-                targetId: seed.memory.id,
+                targetId: JSON.parse(prompts[1]!.content).relatedMemories[0].id,
                 action: 'merge',
                 content: 'Private old credential sentinel',
                 sourceMessageIds: ['source'],

@@ -86,11 +86,11 @@ test(
       input: { candidate: string; originalContext: unknown[] }
     }> = []
     const reconciliationInputs: Array<{
-      relatedMemories: Array<{ id: string; canRevise: boolean }>
+      relatedMemories: Array<{ id: string; content: string; canRevise: boolean }>
     }> = []
     const learningInputs: Array<{
       phase: string
-      related: Array<{ id: string; canRevise: boolean }>
+      related: Array<{ id: string; content: string; canRevise: boolean }>
     }> = []
     const visionInputs: Array<{ images: string[]; text: string }> = []
     const sentBytes: Buffer[] = []
@@ -158,10 +158,15 @@ test(
                       candidate?.content === 'HTTP means a different thing here.'
                     ? publicHttpId
                     : undefined
-            return targetId
+            const target = input.relatedMemories.find(
+              (memory: { content: string }) =>
+                memory.content ===
+                engine.memory.adminList().find((record) => record.id === targetId)?.content,
+            )
+            return target
               ? output('learning.reconcile', {
                   candidateIndex: 0,
-                  targetId,
+                  targetId: target.id,
                   action: candidate.content === groupFact ? 'merge' : 'supersede',
                 })
               : { text: '', toolCalls: [], usage }
@@ -169,7 +174,7 @@ test(
           if (context.model?.id === 'learning') {
             const input = JSON.parse(messages[1]!.content) as {
               messages: RuntimeMessage[]
-              relatedMemories: Array<{ id: string; canRevise: boolean }>
+              relatedMemories: Array<{ id: string; content: string; canRevise: boolean }>
             }
             const source = input.messages.find((message) =>
               message.parts.some((part) => part.type === 'text' && /^[A-Z_]+:/.test(part.text)),
@@ -197,7 +202,6 @@ test(
                   content: 'The participant uses the name Blair.',
                   kind: 'fact',
                   personId: 'person-a',
-                  supersedesId: originalNameId,
                 })
               case 'PRIVATE_TECH':
                 return output('learning.propose', {
@@ -218,14 +222,12 @@ test(
                   ...common,
                   content: 'HTTP status codes classify response outcomes.',
                   kind: 'fact',
-                  supersedesId: publicHttpId,
                 })
               case 'OTHER_CORRECTION':
                 return output('learning.propose', {
                   ...common,
                   content: 'HTTP means a different thing here.',
                   kind: 'fact',
-                  supersedesId: publicHttpId,
                 })
               case 'TECH_JSON':
               case 'JSON_REPEAT':
@@ -244,7 +246,6 @@ test(
                   ...common,
                   content: groupFact,
                   kind: 'term',
-                  mergeIntoId: groupId,
                 })
               default:
                 return { text: '', toolCalls: [], usage }
@@ -259,10 +260,12 @@ test(
               })
             const results = messages.filter((message) => message.role === 'tool')
             if (privacyProbe) {
-              if (!results.length) return output('memory.source', { memoryId: publicHttpId })
+              if (!results.length) return output('memory.search', { query: 'HTTP' })
               if (results.length === 1) {
-                privacyResults.push(JSON.parse(results[0]!.content).value)
-                return output('messages.get', { ids: [publicSourceId] })
+                const found = JSON.parse(results[0]!.content).value.find(
+                  (record: { content: string }) => record.content === httpFact,
+                )
+                return output('memory.source', { memoryId: found.id })
               }
               privacyResults.push(JSON.parse(results[1]!.content).value)
               return output('reply.plan', { ...plan, action: 'noReply' })
@@ -437,8 +440,8 @@ test(
         engine.runtime.endSimulation(simulation)
       }
       assert.deepEqual((privacyResults[0] as { sources: unknown[] }).sources, [])
-      assert.deepEqual((privacyResults[1] as { items: unknown[] }).items, [])
-      assert.equal((privacyResults[1] as { coverage: string }).coverage, 'partial')
+      // Source IDs are intentionally not exposed across scenes; unknown refs are rejected before reads.
+      assert.equal(privacyResults.length, 1)
       assert.equal(sentBytes.length, 0)
       await learn('PRIVATE_TECH: This private group convention uses HTTP 299 for release approval.')
       const privateRecord = engine.memory
@@ -473,7 +476,7 @@ test(
       assert.equal(merged.sources.length, 2)
       assert.ok(
         reconciliationInputs.some((input) =>
-          input.relatedMemories.some((memory) => memory.id === groupId && memory.canRevise),
+          input.relatedMemories.some((memory) => memory.content === groupFact && memory.canRevise),
         ),
       )
       await learn('NAME_CHANGE: The participant now uses Blair rather than Alex.')

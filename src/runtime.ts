@@ -1,3 +1,4 @@
+import { ContextProjection } from './runtime/context-projection.ts'
 import { preserveErrorContext, failureFromOutcomes } from './diagnostics/error-context.ts'
 import {
   buildReplyPlan,
@@ -956,6 +957,7 @@ export class Runtime {
     proactive: boolean,
     manualContext: string,
     imageContext: unknown[] = [],
+    projection = new ContextProjection(scene.id),
   ) {
     const response = await router.complete(
       'planner',
@@ -970,7 +972,7 @@ export class Runtime {
         },
         {
           role: 'user',
-          content: JSON.stringify({
+          content: projection.stringify({
             sceneKind: scene.kind,
             botUserId: 'bot',
             now: new Date().toISOString(),
@@ -1005,7 +1007,8 @@ export class Runtime {
     )
     const call = response.toolCalls.find((t) => t.name === 'participation.decide')
     if (!call) throw new Error('planner_missing_decision')
-    const parsed = DecisionSchema.safeParse(call.arguments)
+    const arguments_ = projection.restoreArguments(call.arguments)
+    const parsed = DecisionSchema.safeParse(arguments_)
     if (parsed.success) return parsed.data
     const issue = parsed.error.issues[0]
     if (
@@ -1019,7 +1022,7 @@ export class Runtime {
       throw parsed.error
     // Keep control fields strict; never pass a partial model explanation to the Thinker.
     const decision = DecisionSchema.parse({
-      ...call.arguments,
+      ...arguments_,
       reasonCode: 'planner_reason_omitted_over_limit',
     })
     this.store.log('warn', 'runtime', 'planner_reason_omitted_over_limit', { sceneId: scene.id })
@@ -1119,6 +1122,8 @@ export class Runtime {
               )
               throw error
             }
+            const projection = new ContextProjection(scene.id)
+            projection.project(recent)
             const imageContext: unknown[] = []
             const imageSourceIds = new Set(topic.messageIds)
             for (const message of recent)
@@ -1200,6 +1205,7 @@ export class Runtime {
                     proactive,
                     manualContext,
                     imageContext,
+                    projection,
                   ),
                   decisionSignal,
                 ),
@@ -1327,6 +1333,7 @@ export class Runtime {
             try {
               planned = await planning.run(() =>
                 buildReplyPlan({
+                  projection,
                   messages: [
                     {
                       role: 'system',
@@ -1338,7 +1345,7 @@ export class Runtime {
                     },
                     {
                       role: 'user',
-                      content: JSON.stringify({
+                      content: projection.stringify({
                         decision,
                         now: new Date().toISOString(),
                         timezone: settings!.timezone,
@@ -1508,7 +1515,9 @@ export class Runtime {
                         },
                         {
                           role: 'user',
-                          content: JSON.stringify({
+                          content: projection.stringify({
+                            now: new Date().toISOString(),
+                            timezone: settings!.timezone,
                             proposed: request,
                             newMessages: fresh,
                             originalTarget: decision.targetMessageIds,
@@ -1562,7 +1571,7 @@ export class Runtime {
               },
               {
                 role: 'user',
-                content: JSON.stringify({
+                content: projection.stringify({
                   now: new Date().toISOString(),
                   timezone: settings.timezone,
                   sceneKind: scene.kind,
@@ -1615,14 +1624,22 @@ export class Runtime {
                     output = await executing.run(async () => {
                       if (!declared) throw new Error('dialogue_forbidden_tool')
                       if (call.name === 'messages.send') {
-                        output = await this.send(context, call.arguments, dialogueSignal)
+                        output = await this.send(
+                          context,
+                          projection.restoreArguments(call.arguments),
+                          dialogueSignal,
+                        )
                       } else {
                         const extension = this.extensions.find((e) =>
                           e.tools.some((t) => t.name === call.name && t.effect === 'send'),
                         )
                         if (!extension) throw new Error('dialogue_forbidden_tool')
                         output = await withinSignal(
-                          extension.execute(call.name, call.arguments, context),
+                          extension.execute(
+                            call.name,
+                            projection.restoreArguments(call.arguments),
+                            context,
+                          ),
                           dialogueSignal,
                         )
                       }
@@ -1668,14 +1685,19 @@ export class Runtime {
                     output =
                       error instanceof GroundingError
                         ? { error: 'grounding_rejected', code: error.code, delivered: false }
-                        : { error: 'Tool unavailable' }
+                        : error instanceof Error &&
+                            ['context_reference_unknown', 'context_reference_cross_scene'].includes(
+                              error.message,
+                            )
+                          ? { error: error.message, delivered: false }
+                          : { error: 'Tool unavailable' }
                   }
                   if (!this.eligible(context)) break
                   grounding.observeTool(call.name, output)
                   messages.push({
                     role: 'tool',
                     toolCallId: call.id,
-                    content: JSON.stringify(output),
+                    content: projection.stringify(output),
                   })
                   if (
                     [...this.operations].some(
@@ -1863,6 +1885,87 @@ export class Runtime {
       this.store,
     )
   }
+  /** Read-only dashboard lookup; historical reads never become live ingress or learning inputs. */
+  async resolveDisplayImage(
+    sceneId: string,
+    messageId: string,
+    partIndex: number,
+    signal: AbortSignal,
+    managed?: (assetId: string) => { available: () => boolean; read: () => Promise<Buffer> },
+  ) {
+    const scene = this.scenes.get(sceneId) ?? this.store.scene(sceneId)
+    if (
+      !scene ||
+      scene.kind === 'simulation' ||
+      !Number.isInteger(partIndex) ||
+      partIndex < 0 ||
+      partIndex > 255 ||
+      signal.aborted ||
+      this.isRecalled(sceneId, messageId)
+    )
+      return undefined
+    const adapter = this.adapters.get(scene.adapterId)
+    if (!adapter?.readImage) return undefined
+    const live = this.states.get(sceneId)?.messages.find((message) => message.id === messageId)
+    let message = live
+    if (!message) {
+      const result = await adapter.getMessage(scene as SceneRef, messageId, signal)
+      message = result.items.find((item) => item.id === messageId && item.sceneId === sceneId)
+    }
+    if (!message || message.sceneId !== sceneId || message.status !== 'available') return undefined
+    const part = message.parts[partIndex]
+    if (
+      !part ||
+      part.type !== 'media' ||
+      !(part.mediaType === 'image' || part.mediaType.toLowerCase().startsWith('image/'))
+    )
+      return undefined
+    const assetId = part.assetId
+    const local = /^[a-f0-9]{64}$/.test(assetId) ? managed?.(assetId) : undefined
+    const available = () =>
+      !signal.aborted &&
+      (!local || local.available()) &&
+      !this.isRecalled(sceneId, messageId) &&
+      this.adapters.get(scene.adapterId) === adapter &&
+      (!live ||
+        this.states
+          .get(sceneId)
+          ?.messages.some(
+            (item) =>
+              item.id === messageId &&
+              item.status === 'available' &&
+              item.parts[partIndex]?.type === 'media' &&
+              item.parts[partIndex].assetId === assetId,
+          ) === true)
+    if (!available()) return undefined
+    return {
+      assetId,
+      available,
+      read: async () => {
+        if (local) return local.read()
+        try {
+          return await adapter.readImage!(scene as SceneRef, assetId, signal)
+        } catch (error) {
+          if (!available()) throw error
+          // Expired URL-only history may have no get_image token. Refresh this exact message once.
+          const refreshed = await adapter.getMessage(scene as SceneRef, messageId, signal)
+          const replacement = refreshed.items.find(
+            (item) =>
+              item.id === messageId && item.sceneId === sceneId && item.status === 'available',
+          )?.parts[partIndex]
+          if (
+            !available() ||
+            replacement?.type !== 'media' ||
+            replacement.assetId === assetId ||
+            !(replacement.mediaType === 'image' || replacement.mediaType.startsWith('image/'))
+          )
+            throw error
+          return adapter.readImage!(scene as SceneRef, replacement.assetId, signal)
+        }
+      },
+    }
+  }
+
   async readSourceImage(
     sceneId: string,
     messageId: string,

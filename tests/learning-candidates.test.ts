@@ -150,7 +150,7 @@ test('Candidate isolation keeps the eight-call bound and source guards', async (
           .some((row) => ['Forged source', 'Outside limit'].includes(row.content)),
         false,
       )
-      assert.equal(store.logs.filter((row) => row.code === 'learning_candidate_invalid').length, 1)
+      assert.equal(store.logs.filter((row) => row.code === 'learning_candidate_invalid').length, 2)
     },
   )
 })

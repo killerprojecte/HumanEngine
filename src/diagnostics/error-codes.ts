@@ -1,5 +1,7 @@
 /** Only application-owned codes are eligible for diagnostic text and advice. */
 export const diagnosticCodes = new Set([
+  'context_reference_unknown',
+  'context_reference_cross_scene',
   'http_action_failed',
   'http_request_failed',
   'invalid_http_response',

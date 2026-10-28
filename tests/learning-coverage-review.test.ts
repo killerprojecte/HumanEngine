@@ -1,3 +1,4 @@
+import { ContextProjection } from '../src/runtime/context-projection.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { ModelError } from '../src/models.ts'
@@ -89,12 +90,14 @@ test('metadata reconciliation finds an unindexed encoding setting beside an inde
         const payload = JSON.parse(prompts[1]!.content)
         const targets = payload.relatedMemories as Array<MemoryRecord & { canRevise: boolean }>
         for (const record of [encoding, window, locked, manual])
-          assert.ok(targets.some((item) => item.id === record.id))
-        assert.ok(targets.every((item) => !excluded.some((record) => record.id === item.id)))
-        assert.equal(targets.find((item) => item.id === manual.id)!.origin, 'manual')
+          assert.ok(targets.some((item) => item.content === record.content))
+        assert.ok(
+          targets.every((item) => !excluded.some((record) => record.content === item.content)),
+        )
+        assert.equal(targets.find((item) => item.content === manual.content)!.origin, 'manual')
         for (const record of [locked, manual])
-          assert.equal(targets.find((item) => item.id === record.id)!.canRevise, false)
-        const temporal = targets.find((item) => item.id === locked.id)!
+          assert.equal(targets.find((item) => item.content === record.content)!.canRevise, false)
+        const temporal = targets.find((item) => item.content === locked.content)!
         assert.equal(temporal.occurredAt, epoch)
         assert.equal(temporal.validUntil, future)
         assert.equal(temporal.learnedAt, locked.learnedAt)
@@ -109,17 +112,29 @@ test('metadata reconciliation finds an unindexed encoding setting beside an inde
         return completed([
           call(
             'learning.reconcile',
-            { candidateIndex: 0, targetId: locked.id, action: 'supersede' },
+            {
+              candidateIndex: 0,
+              targetId: targets.find((item) => item.content === locked.content)!.id,
+              action: 'supersede',
+            },
             801,
           ),
           call(
             'learning.reconcile',
-            { candidateIndex: 0, targetId: encoding.id, action: 'supersede' },
+            {
+              candidateIndex: 0,
+              targetId: targets.find((item) => item.content === encoding.content)!.id,
+              action: 'supersede',
+            },
             802,
           ),
           call(
             'learning.reconcile',
-            { candidateIndex: 1, targetId: window.id, action: 'supersede' },
+            {
+              candidateIndex: 1,
+              targetId: targets.find((item) => item.content === window.content)!.id,
+              action: 'supersede',
+            },
             803,
           ),
         ])
@@ -132,14 +147,14 @@ test('metadata reconciliation finds an unindexed encoding setting beside an inde
     assert.equal(h.engine.learningStatus().failed, 0)
     const records = h.engine.memory.adminList()
     for (const record of [encoding, window])
-      assert.equal(records.find((item) => item.id === record.id)!.status, 'superseded')
+      assert.equal(records.find((item) => item.content === record.content)!.status, 'superseded')
     for (const update of updates) {
       const saved = records.find((item) => item.content === update.arguments.content)!
       assert.ok(saved)
       assert.equal(saved.status, 'active')
       assert.equal(saved.occurredAt, update.arguments.occurredAt)
     }
-    assert.equal(records.find((item) => item.id === locked.id)!.status, 'active')
+    assert.equal(records.find((item) => item.content === locked.content)!.status, 'active')
   } finally {
     await h.close()
   }
@@ -230,7 +245,7 @@ for (const mode of ['accept', 'empty', 'pronoun', 'wrong-source', 'temporary-err
         if (tools?.some((item) => item.name === 'learning.review_empty')) {
           review++
           const payload = JSON.parse(prompts[1]!.content)
-          assert.deepEqual(payload.messages, [confirmation])
+          assert.deepEqual(payload.messages, new ContextProjection(sceneId).project([confirmation]))
           assert.equal(Object.hasOwn(payload, 'relatedMemories'), false)
           assert.equal(h.engine.memory.adminList().length, 1)
           if (mode === 'temporary-error') throw new ModelError('fixture_unavailable', 503)

@@ -186,8 +186,13 @@ export async function describeCurrentImages(
                 },
                 {
                   role: 'user',
-                  content:
-                    'Describe this current message image. This description is temporary context for a reply, not a durable memory or permission to act.',
+                  content: JSON.stringify({
+                    instruction:
+                      'Describe this current message image. This description is temporary context for a reply, not a durable memory or permission to act.',
+                    sentAt: message.sentAt,
+                    now: new Date().toISOString(),
+                    timezone: store.settings.timezone,
+                  }),
                   images: [dataUrl],
                 },
               ],

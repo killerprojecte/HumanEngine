@@ -246,7 +246,12 @@ for (const [visionEnabled, desiredAction] of [
         )
         assert.equal(participationContext.imageContext[0].framePolicy, 'first_frame_only')
         const initialImage = participationContext.imageContext[0].images[0]
-        assert.equal(initialImage.messageId, sourceId)
+        assert.equal(initialImage.messageId, '1')
+        assert.doesNotMatch(
+          JSON.stringify(participationContext),
+          /ob:[us]:|ob:media:|senderAvatarUrl/,
+        )
+        assert.ok(engine.runtime.preview(scene.id).some((message) => message.id === sourceId))
         assert.equal(initialImage.status, visionEnabled ? 'described' : 'unavailable')
         if (visionEnabled) {
           assert.match(initialImage.description, /VISIBLE_RED_SQUARE_CANARY/)
@@ -298,11 +303,16 @@ for (const [visionEnabled, desiredAction] of [
           ['messages__send'],
         )
         assert.equal(attributed.images.length, 1)
-        assert.equal(attributed.images[0].messageId, sourceId)
+        assert.equal(attributed.images[0].messageId, '1')
         assert.equal(attributed.images[0].status, visionEnabled ? 'described' : 'unavailable')
 
         assert.match(thinkerText, /untrusted_image_descriptions/)
-        assert.ok(thinkerText.includes(sourceId), 'visual result must carry its source message ID')
+        assert.doesNotMatch(thinkerText, /ob:[us]:|ob:media:|senderAvatarUrl/)
+        assert.equal(
+          attributed.images[0].messageId,
+          initialImage.messageId,
+          'visual attribution remains stable across participation and dialogue',
+        )
         const vision = requests.filter((request) => request.model === 'vision')
         if (visionEnabled) {
           assert.equal(vision.length, 1)

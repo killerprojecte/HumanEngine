@@ -10,21 +10,19 @@ export function useApi() {
   const authReady = useState('adminAuthReady', () => false)
   const authMessage = useState<'expired' | 'network' | ''>('adminAuthMessage', () => '')
   const authEpoch = useState('adminAuthEpoch', () => 0)
-  const client = createClient<paths>({
-    baseUrl: '',
-    fetch: async (input) => {
-      const epoch = authEpoch.value
-      const request = new Request(input, { credentials: 'same-origin' })
-      request.headers.set('X-HumanEngine-Session', '1')
-      const response = await fetch(request)
-      if (response.status === 401 && epoch === authEpoch.value && authenticated.value) {
-        authenticated.value = false
-        authMessage.value = 'expired'
-        authEpoch.value++
-      }
-      return response
-    },
-  })
+  async function authenticatedFetch(input: RequestInfo | URL, init?: RequestInit) {
+    const epoch = authEpoch.value
+    const request = new Request(input, { ...init, credentials: 'same-origin' })
+    request.headers.set('X-HumanEngine-Session', '1')
+    const response = await fetch(request)
+    if (response.status === 401 && epoch === authEpoch.value && authenticated.value) {
+      authenticated.value = false
+      authMessage.value = 'expired'
+      authEpoch.value++
+    }
+    return response
+  }
+  const client = createClient<paths>({ baseUrl: '', fetch: authenticatedFetch })
   async function session(method: 'GET' | 'POST' | 'DELETE', secret?: string) {
     const send = () =>
       fetch('/api/auth/session', {
@@ -88,6 +86,7 @@ export function useApi() {
   }
   return {
     client,
+    authenticatedFetch,
     authenticated,
     authReady,
     authMessage,

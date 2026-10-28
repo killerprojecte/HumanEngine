@@ -1,3 +1,4 @@
+import { ContextProjection } from './runtime/context-projection.ts'
 import { providerAttemptsHandled } from './models/request-policy.ts'
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -587,7 +588,7 @@ export class MemeService {
           },
           {
             role: 'user',
-            content: `Frames are in temporal order, sampled indexes ${frames.map((frame) => frame.index).join(', ')} out of ${asset.frames} frames. Describe changes and ending when present. Do not assume this material is public or safe to share. Context: ${JSON.stringify(selectionContext ? { preferences: selectionContext.preferences, sourceContext: selectionContext.sourceContext } : null)}`,
+            content: `Frames are in temporal order, sampled indexes ${frames.map((frame) => frame.index).join(', ')} out of ${asset.frames} frames. Describe changes and ending when present. Do not assume this material is public or safe to share. Context: ${new ContextProjection(ctx.sceneId).stringify(selectionContext ? { now: new Date().toISOString(), timezone: this.store.settings.timezone, preferences: selectionContext.preferences, sourceContext: selectionContext.sourceContext } : null)}`,
             images: frames.map((frame) => frame.image),
           },
         ],

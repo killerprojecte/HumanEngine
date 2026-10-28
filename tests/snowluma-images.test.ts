@@ -120,16 +120,14 @@ test('image bytes override claimed MIME; PNG JPEG GIF WebP become verified PNG m
   await assert.rejects(imageDataUrl(Buffer.alloc(10 * 1024 * 1024 + 1)), /media_size_limit/)
 })
 
-test('media policy continues to reject local URLs, credentials and foreign hosts before network use', async () => {
+test('media schemes, credentials and private hosts are rejected without remote requests', async () => {
   for (const url of [
     'file:///etc/passwd',
-    'http://gchat.qpic.cn/a',
-    'https://127.0.0.1/a',
-    'https://gchat.qpic.cn.evil.test/a',
-    'https://secret@gchat.qpic.cn/a',
-    'https://gchat.qpic.cn:8443/a',
+    'ftp://public.example/a',
+    'https://secret@public.example/a',
   ])
-    await assert.rejects(fetchQqMedia(url), /media_host_not_allowed/)
+    await assert.rejects(fetchQqMedia(url), /media_url_not_supported/)
+  await assert.rejects(fetchQqMedia('https://127.0.0.1/a'), /media_address_not_public/)
 })
 
 test('mocked outgoing vision request contains verified image content, not the unknown placeholder', async () => {

@@ -416,6 +416,22 @@ test('planner reads and planned learning retain one context identity and retriev
       },
     ])
   })
+  // Historical ID is supplied through a trusted reply edge, not guessed by the model.
+  fixture.runtime.ingest(
+    {
+      id: 'reference',
+      sceneId: scene.id,
+      senderId: 'user',
+      sentAt: new Date().toISOString(),
+      receivedAt: new Date().toISOString(),
+      origin: 'live',
+      status: 'available',
+      replyToId: 'old',
+      parts: [{ type: 'text', text: 'Please inspect the earlier reply.' }],
+    },
+    scene,
+    false,
+  )
   fixture.runtime.addAdapter('fixture', {
     send: async () => {
       delivered++

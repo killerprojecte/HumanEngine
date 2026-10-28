@@ -277,7 +277,9 @@ async function runFeedbackAck(
         ])
       plan.targetMessageIds = [...new Set([...plan.contextMessageIds, sourceMessageId])]
       plan.contextMessageIds = [...plan.targetMessageIds]
-      plan.actions = withoutFeedback ? [] : [{ toolName: 'memes.feedback', arguments: {} }]
+      plan.actions = withoutFeedback
+        ? []
+        : [{ toolName: 'memes.feedback', arguments: { sourceMessageId } }]
       return completion([{ id: 'reply-plan', name: 'reply.plan', arguments: plan }])
     }
     if (role === 'planner')
@@ -327,7 +329,14 @@ async function runFeedbackAck(
   const runtime = new Runtime(store, () => router)
   runtime.addExtension({
     tools: [{ name: 'memes.feedback', description: 'Fixture', inputSchema: {} }],
-    execute: async () => ({ ...negativeReceipt, sourceMessageId }),
+    execute: async (_name, arguments_) => {
+      assert.equal(typeof arguments_.sourceMessageId, 'string')
+      assert.ok(
+        !/^m\d+$/.test(arguments_.sourceMessageId as string),
+        'feedback runtime receives canonical source, never model alias',
+      )
+      return { ...negativeReceipt, sourceMessageId: arguments_.sourceMessageId }
+    },
   })
   if (retargetHook)
     runtime.beforeSend({
@@ -403,6 +412,7 @@ async function runFeedbackAck(
       runtime.ingest(
         {
           id: 'feedback-live',
+          ...(readOldSource ? { replyToId: 'old-live-feedback' } : {}),
           sceneId: scene.id,
           senderId: 'person',
           sentAt: now,

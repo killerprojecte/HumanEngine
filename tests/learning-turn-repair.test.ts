@@ -1,3 +1,4 @@
+import { ContextProjection } from '../src/runtime/context-projection.ts'
 import { fixturePlanCompletion } from './helpers/reply-plan.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
@@ -193,7 +194,10 @@ for (const operation of ['correct-setting', 'confirm-setting'] as const) {
           assert.equal(h.engine.memory.adminList().length, 1)
           const payload = JSON.parse(prompts[1]!.content)
           assert.equal(payload.candidates.length, 1)
-          assert.deepEqual(payload.candidates[0].messages, [source])
+          assert.deepEqual(
+            payload.candidates[0].messages,
+            new ContextProjection(sceneId).project([source]),
+          )
           assert.equal(Object.hasOwn(payload, 'relatedMemories'), false)
           assert.equal(
             JSON.stringify(payload).includes(ungrounded.arguments.content as string),
@@ -206,7 +210,9 @@ for (const operation of ['correct-setting', 'confirm-setting'] as const) {
           return completed([
             call('learning.reconcile', {
               candidateIndex: 0,
-              targetId: previous.id,
+              targetId: JSON.parse(prompts[1]!.content).relatedMemories.find(
+                (memory: { content: string }) => memory.content === previous.content,
+              ).id,
               action: correcting ? 'supersede' : 'merge',
             }),
           ])

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
 import { humanName, mediaLabelKey } from '~/utils/chatIdentity'
+import { historyReasonKey } from '~/utils/chatMedia'
 type Message = components['schemas']['Message'] & {
   senderDisplayName?: string
   senderAvatarUrl?: string
@@ -544,7 +545,9 @@ onBeforeUnmount(() => {
             {{ t(historyError ? 'cfStaleAt' : 'cfFetchedAt', { time: time(historyAt) }) }} ·
             {{ t(coverage) }}
           </p>
-          <p v-if="historyReason" class="text-sm text-muted break-words">{{ historyReason }}</p>
+          <p v-if="historyReason" class="text-sm text-muted break-words">
+            {{ t(historyReasonKey(historyReason)) }}
+          </p>
         </div>
         <div
           ref="transcript"
@@ -632,7 +635,14 @@ onBeforeUnmount(() => {
                       }}</span
                       ><span v-else-if="part.type === 'mention'" class="text-primary break-words">
                         @{{ mentionName(part.userId) }} </span
-                      ><span v-else class="text-muted break-words"
+                      ><ChatImage
+                        v-else-if="
+                          part.type === 'media' &&
+                          (part.mediaUrl || part.mediaType?.startsWith('image/'))
+                        "
+                        :media-url="part.mediaUrl"
+                        :media-kind="part.mediaKind"
+                      /><span v-else class="text-muted break-words"
                         >[{{ t(mediaLabelKey(part)) }}]</span
                       ></template
                     ></template

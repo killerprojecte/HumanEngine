@@ -86,7 +86,13 @@ test('a sole 212-character planner explanation overflow is omitted without chang
   const decision = outcome.planningInputs[0]!.decision as Record<string, unknown>
   assert.equal(decision.action, 'reply')
   assert.equal(decision.reasonCode, marker)
-  assert.deepEqual(decision.targetMessageIds, [outcome.messages[0]!.id])
+  const context = outcome.thinkerInputs[0]!.messages as Array<{ id: string }>
+  assert.deepEqual(decision.targetMessageIds, [context[0]!.id])
+  assert.notEqual(context[0]!.id, outcome.messages[0]!.id)
+  assert.equal(
+    (outcome.thinkerInputs[0]!.plan as { targetMessageIds: string[] }).targetMessageIds[0],
+    context[0]!.id,
+  )
   assert.equal(outcome.logs.filter((entry) => entry.code === marker).length, 1)
   assert.equal(JSON.stringify(outcome.logs).includes(overflow), false)
   assert.equal(JSON.stringify(outcome.thinkerInputs).includes(overflow), false)

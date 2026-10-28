@@ -1,3 +1,4 @@
+import { ChatMediaService, ChatMediaError, presentChatMessage } from './chat-media.ts'
 import {
   snowLumaFields,
   snowLumaReasons,
@@ -52,6 +53,8 @@ const Part = z.object({
   userId: z.string().optional(),
   assetId: z.string().optional(),
   mediaType: z.string().optional(),
+  mediaUrl: z.string().optional(),
+  mediaKind: z.enum(['image', 'sticker']).optional(),
   description: z.string().optional(),
 })
 const Message = z
@@ -169,6 +172,20 @@ const Meme = z
   .openapi('Meme')
 const Success = z.object({ ok: z.boolean() })
 export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
+  const chatMedia = new ChatMediaService(engine.runtime, Date.now, (sceneId, assetId) => ({
+    available: () => {
+      try {
+        engine.memes.original({ sceneId, simulation: false }, assetId)
+        return true
+      } catch {
+        return false
+      }
+    },
+    read: async () => {
+      const original = engine.memes.original({ sceneId, simulation: false }, assetId)
+      return readFile(original.path)
+    },
+  }))
   app.openAPIRegistry.register('SnowLumaPluginConfig', SnowLumaConfigSchema)
   app.openAPIRegistry.register('TypingDelayPluginConfig', TypingDelayConfigSchema)
   const { runtime, store, memory, plugins } = engine
@@ -623,7 +640,57 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       request: { params },
       responses: { 200: json(z.array(Message)), ...errors },
     }),
-    (c) => c.json(runtime.preview(c.req.valid('param').id), 200),
+    (c) => c.json(runtime.preview(c.req.valid('param').id).map(presentChatMessage), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/scenes/{id}/messages/{messageId}/media/{partIndex}',
+      request: {
+        params: z.object({
+          id: z.string().min(1).max(4096),
+          messageId: z.string().min(1).max(8192),
+          partIndex: z.string().regex(/^(?:0|[1-9][0-9]{0,2})$/),
+        }),
+      },
+      responses: {
+        200: {
+          description: 'Validated original image bytes, preserving animation',
+          content: {
+            'image/png': { schema: z.string().openapi({ format: 'binary' }) },
+            'image/jpeg': { schema: z.string().openapi({ format: 'binary' }) },
+            'image/gif': { schema: z.string().openapi({ format: 'binary' }) },
+            'image/webp': { schema: z.string().openapi({ format: 'binary' }) },
+          },
+        },
+        404: json(ErrorSchema, 'Image unavailable'),
+        415: json(ErrorSchema, 'Invalid or unsupported image'),
+        ...errors,
+      },
+    }),
+    async (c) => {
+      const { id, messageId, partIndex } = c.req.valid('param')
+      const signal = AbortSignal.any([c.req.raw.signal, AbortSignal.timeout(20_000)])
+      try {
+        const { bytes, mime } = await chatMedia.read(id, messageId, Number(partIndex), signal)
+        return new Response(new Uint8Array(bytes), {
+          headers: {
+            'Content-Type': mime,
+            'Content-Length': String(bytes.length),
+            'Cache-Control': 'no-store',
+            'X-Content-Type-Options': 'nosniff',
+            'Content-Disposition': 'inline',
+            'Cross-Origin-Resource-Policy': 'same-origin',
+          },
+        })
+      } catch (error) {
+        if (error instanceof ChatMediaError) return c.json({ error: error.code }, error.status)
+        return c.json(
+          { error: signal.aborted ? 'image_request_cancelled' : 'image_fetch_unavailable' },
+          503,
+        )
+      }
+    },
   )
   app.openapi(
     createRoute({
@@ -642,7 +709,10 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
         ...errors,
       },
     }),
-    async (c) => c.json(await runtime.previewHistory(c.req.valid('param').id), 200),
+    async (c) => {
+      const history = await runtime.previewHistory(c.req.valid('param').id)
+      return c.json({ ...history, items: history.items.map(presentChatMessage) }, 200)
+    },
   )
   app.openapi(
     createRoute({

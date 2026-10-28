@@ -1,3 +1,4 @@
+import { ContextProjection } from './runtime/context-projection.ts'
 import { providerAttemptsHandled } from './models/request-policy.ts'
 import { describeCurrentImages, ImageDescriptionCache } from './vision-context.ts'
 import { startFlow, withFlowContext, currentFlowContext } from './diagnostics/flow.ts'
@@ -23,7 +24,12 @@ import { z } from '@hono/zod-openapi'
 import { Store } from './store.ts'
 import { Runtime, type RuntimeMessage, type TurnContext } from './runtime.ts'
 import { PluginManager } from './plugins.ts'
-import { snowLumaPlugin, typingDelayPlugin, webSearchPlugin } from './builtin-plugins.ts'
+import {
+  snowLumaPlugin,
+  typingDelayPlugin,
+  webSearchPlugin,
+  webReadPlugin,
+} from './builtin-plugins.ts'
 import { MemoryService, type MemoryCandidate, type MemoryContext } from './memory.ts'
 import { ModelError, Router, type RouterConfig, type ToolDefinition } from './models.ts'
 import type { Scene } from './schema.ts'
@@ -476,6 +482,7 @@ export class Engine {
     )
     await this.plugins.register(typingDelayPlugin(this.runtime), { builtin: true })
     await this.plugins.register(webSearchPlugin(this.store), { builtin: true })
+    await this.plugins.register(webReadPlugin(), { builtin: true })
     const local =
       process.env.HUMANENGINE_PLUGINS?.split(',')
         .map((entry) => entry.trim())
@@ -860,7 +867,38 @@ export class Engine {
           let terminal = false
           const totals = { candidateCount: 0, savedCount: 0, rejectedCount: 0, ignoredCount: 0 }
           try {
-            const router = this.router()
+            const projection = new ContextProjection(sceneId)
+            const baseRouter = this.router()
+            const router = {
+              complete: async (...args: Parameters<Router['complete']>) => {
+                const response = await baseRouter.complete(...args)
+                return {
+                  ...response,
+                  toolCalls: response.toolCalls.map((call) => {
+                    const arguments_ = { ...call.arguments }
+                    // Extraction never has reconciliation authority (as below).
+                    if (['learning.propose', 'learning.review_empty'].includes(call.name)) {
+                      delete arguments_.mergeIntoId
+                      delete arguments_.supersedesId
+                    }
+                    try {
+                      return { ...call, arguments: projection.restoreArguments(arguments_) }
+                    } catch (error) {
+                      if (
+                        !(error instanceof Error) ||
+                        !['context_reference_unknown', 'context_reference_cross_scene'].includes(
+                          error.message,
+                        )
+                      )
+                        throw error
+                      this.store.log('warn', 'learning', error.message, { sceneId })
+                      // Retain call position and budget, rejecting this candidate only.
+                      return { ...call, arguments: { invalidReference: true } }
+                    }
+                  }),
+                }
+              },
+            }
             const related = await this.searchMemory(
               { sceneId, simulation: false },
               messages
@@ -887,7 +925,7 @@ export class Engine {
                     },
                     {
                       role: 'user',
-                      content: JSON.stringify({
+                      content: projection.stringify({
                         now: new Date().toISOString(),
                         timezone: this.store.settings.timezone,
                         messages,
@@ -953,7 +991,8 @@ export class Engine {
                       },
                       {
                         role: 'user',
-                        content: JSON.stringify({
+                        content: projection.stringify({
+                          now: new Date().toISOString(),
                           purpose: 'source-only-empty-extraction-review',
                           timezone: this.store.settings.timezone,
                           messages: reviewMessages.slice(0, 8),
@@ -1091,7 +1130,9 @@ export class Engine {
                       },
                       {
                         role: 'user',
-                        content: JSON.stringify({
+                        content: projection.stringify({
+                          now: new Date().toISOString(),
+                          timezone: this.store.settings.timezone,
                           purpose: 'source-only-neutral-repair',
                           candidates: rejected,
                         }),
@@ -1232,7 +1273,7 @@ export class Engine {
                         },
                         {
                           role: 'user',
-                          content: JSON.stringify({
+                          content: projection.stringify({
                             candidates: calls.map((call, candidateIndex) => ({
                               candidateIndex,
                               candidate: call.name === 'learning.propose' ? call.arguments : null,
@@ -1718,6 +1759,7 @@ export class Engine {
           containsPersonalData: z.boolean(),
         })
         .strict()
+      const projection = new ContextProjection(sceneId)
       const response = await this.router().complete(
         'learning',
         [
@@ -1728,7 +1770,9 @@ export class Engine {
           },
           {
             role: 'user',
-            content: JSON.stringify({
+            content: projection.stringify({
+              now: new Date().toISOString(),
+              timezone: this.store.settings.timezone,
               domain,
               candidate: record.content,
               originalContext: reviewContext.map((message) => ({

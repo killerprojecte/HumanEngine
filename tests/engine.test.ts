@@ -1,3 +1,5 @@
+import { fixtureReplyPlan } from './helpers/reply-plan.ts'
+import type { ChatMessage } from '../src/models.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
@@ -11,6 +13,7 @@ test('authenticated API → real Planner/Thinker protocol → isolated simulatio
     const chunks: Buffer[] = []
     for await (const chunk of req) chunks.push(Buffer.from(chunk))
     const body = JSON.parse(Buffer.concat(chunks).toString()) as {
+      messages: ChatMessage[]
       tools: Array<{ function: { name: string } }>
     }
     calls++
@@ -24,19 +27,28 @@ test('authenticated API → real Planner/Thinker protocol → isolated simulatio
             arguments: JSON.stringify({ action: 'reply', reasonCode: 'addressed' }),
           },
         }
-      : calls === 2
+      : body.tools.some((t) => t.function.name === 'reply__plan')
         ? {
-            id: 'send',
+            id: 'reply-plan',
             type: 'function',
             function: {
-              name: 'messages__send',
-              arguments: JSON.stringify({
-                operationId: 'once',
-                segments: [{ parts: [{ type: 'text', text: 'Fixture reply' }] }],
-              }),
+              name: 'reply__plan',
+              arguments: JSON.stringify(fixtureReplyPlan(body.messages as ChatMessage[])),
             },
           }
-        : undefined
+        : calls === 3
+          ? {
+              id: 'send',
+              type: 'function',
+              function: {
+                name: 'messages__send',
+                arguments: JSON.stringify({
+                  operationId: 'once',
+                  segments: [{ parts: [{ type: 'text', text: 'Fixture reply' }] }],
+                }),
+              },
+            }
+          : undefined
     res.setHeader('Content-Type', 'application/json')
     res.end(
       JSON.stringify({

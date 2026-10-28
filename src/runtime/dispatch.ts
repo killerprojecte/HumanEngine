@@ -1,3 +1,4 @@
+import { outcomeError, preserveOutcomeError } from '../diagnostics/error-context.ts'
 import { randomUUID } from 'node:crypto'
 import { startFlow, type FlowWriter } from '../diagnostics/flow.ts'
 import type { createTypingDelay } from '../typing-delay.ts'
@@ -92,7 +93,11 @@ export async function dispatchSegment(
       const adapter = services.adapter(context.scene.adapterId)
       return (receipt = adapter
         ? await adapter.send(context.scene as SceneRef, segment, context.signal)
-        : { status: 'failed', detail: 'adapter_unavailable' })
+        : preserveOutcomeError(
+            { status: 'failed' as const, detail: 'adapter_unavailable' },
+            new Error('adapter_unavailable'),
+            { operation: 'adapter.send', stage: 'send_segment' },
+          ))
     } catch (error) {
       failure = error
       throw error
@@ -125,7 +130,7 @@ export async function dispatchSegment(
           counts: { segmentIndex: index + 1, segmentCount: total },
           nextStep: receipt?.status === 'sent' && index + 1 < total ? 'send_segment' : 'thinker',
         },
-        failure,
+        failure ?? (receipt ? outcomeError(receipt) : undefined),
       )
     }
   })

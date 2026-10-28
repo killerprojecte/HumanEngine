@@ -38,8 +38,8 @@ test('flow spans have one terminal, readable summaries, safe structural errors a
       assert.equal(rows.filter((row) => row.status === 'completed').length, 1)
       assert.equal(rows.filter((row) => row.status === 'failed').length, 0)
       const end = rows.find((row) => row.status === 'completed')!
-      assert.match(end.message!, /用途=生成回覆.*輸入 tokens=10.*工具呼叫數=1/)
-      assert.match(stdoutLog(end), /完成：呼叫模型.*下一步.*\| \{/)
+      assert.match(end.message!, /用途=.*输入 tokens=10.*工具呼叫数=1/)
+      assert.match(stdoutLog(end), /完成: 呼叫模型.*下一步.*\| \{/)
       assert.equal(rows.find((row) => row.code === 'inside')!.turnId, traceId)
     }
     const failed = startFlow(store, 'send_segment')

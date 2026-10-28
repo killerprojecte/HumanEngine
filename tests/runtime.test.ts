@@ -1,3 +1,4 @@
+import { fixturePlanCompletion, withFixturePlan } from './helpers/reply-plan.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Store } from '../src/store.ts'
@@ -44,7 +45,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 function setup(complete: (role: string, messages: ChatMessage[]) => Promise<Completion>) {
   const store = new Store(':memory:')
   store.set('settings', { ...store.settings, debounceMs: 0, maxWaitMs: 100 })
-  const runtime = new Runtime(store, () => ({ complete }) as Router)
+  const runtime = new Runtime(store, () => ({ complete: withFixturePlan(complete) }) as Router)
   return { store, runtime }
 }
 
@@ -339,6 +340,8 @@ test('semantic topics narrow thinker context and unrelated secondary recall does
           _tools: unknown,
           signal?: AbortSignal,
         ) => {
+          const fixturePlan = fixturePlanCompletion(role, messages)
+          if (fixturePlan) return fixturePlan
           if (role === 'planner') {
             plannerCalls++
             const plannerInput = JSON.parse(messages[1]!.content)

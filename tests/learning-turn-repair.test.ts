@@ -1,3 +1,4 @@
+import { fixturePlanCompletion } from './helpers/reply-plan.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { HabitService } from '../src/habits.ts'
@@ -57,7 +58,9 @@ for (const change of ['unchanged', 'retract', 'lock'] as const) {
         assert.ok(inserted.habit.weight > 0)
         let thinker = 0,
           sent = 0
-        h.install(async (role) => {
+        h.install(async (role, messages) => {
+          const fixturePlan = fixturePlanCompletion(role, messages)
+          if (fixturePlan) return fixturePlan
           if (role === 'planner') {
             entered()
             await pending

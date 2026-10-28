@@ -1,0 +1,162 @@
+/** Only application-owned codes are eligible for diagnostic text and advice. */
+export const diagnosticCodes = new Set([
+  'http_action_failed',
+  'http_request_failed',
+  'invalid_http_response',
+  'platform_action_failed',
+  'invalid_action_parameters',
+  'missing_send_receipt',
+  'send_failed',
+  'planner_timeout',
+  'dialogue_timeout',
+  'dialogue_failed',
+  'dialogue_forbidden_tool',
+  'dialogue_timeout',
+  'planner_action',
+  'planner_action_failed',
+  'planner_ambiguous_plan',
+  'planner_context_ineligible',
+  'planner_duplicate_action',
+  'planner_duplicate_evidence',
+  'planner_evidence_too_large',
+  'planner_failed',
+  'planner_forbidden_action',
+  'planner_forbidden_tool',
+  'planner_invalid_delivery_tool',
+  'planner_invalid_no_reply',
+  'planner_invalid_plan',
+  'planner_invalid_target',
+  'planner_invalid_topic',
+  'planner_missing_decision',
+  'planner_missing_plan',
+  'planner_no_reply',
+  'planner_reason_omitted_over_limit',
+  'planner_round_budget_exhausted',
+  'planner_stale_action',
+  'planner_timeout',
+  'planner_tool_budget_exhausted',
+  'planner_tool_failed',
+  'planner_unknown_asset',
+  'planner_unknown_evidence',
+  'planner_unknown_target',
+  'image_processing_failed',
+  'turn_tool_failures',
+  'database_statement_failed',
+  'database_io_error',
+  'database_open_failed',
+  'database_permission_denied',
+  'database_schema_changed',
+  'unknown_error',
+  'cause_not_captured',
+  'operation_outcomes_failed',
+  'tool_execution_failed',
+  'schema_validation_failed',
+  'request_cancelled',
+  'protocol_disabled',
+  'route_not_configured',
+  'invalid_tool_names',
+  'all_models_failed',
+  'no_compatible_model',
+  'embedding_model_not_configured',
+  'invalid_embedding_dimensions_setting',
+  'invalid_embedding_batch_size',
+  'invalid_embedding_response',
+  'invalid_embedding_dimensions',
+  'invalid_embedding_vector',
+  'embedding_dimensions_mismatch',
+  'provider_not_configured',
+  'provider_timeout',
+  'provider_request_failed',
+  'invalid_provider_url',
+  'credential_not_configured',
+  'invalid_provider_response',
+  'invalid_provider_content_type',
+  'empty_provider_response',
+  'provider_response_too_large',
+  'invalid_provider_json',
+  'protocol_not_registered',
+  'protocol_operation_unsupported',
+  'work_queue_full',
+  'invalid_provider_usage',
+  'duplicate_tool_call_id',
+  'incomplete_model_response',
+  'incomplete_tool_call',
+  'unsupported_response_item',
+  'invalid_tool_arguments',
+  'unknown_tool_call',
+  'missing_tool_call_id',
+  'unsupported_tool_call',
+  'image_read_unsupported',
+  'media_size_limit',
+  'invalid_image_data',
+  'invalid_media_reference',
+  'media_scope_mismatch',
+  'unsupported_media_type',
+  'media_cancelled',
+  'image_download_url_unavailable',
+  'unsupported_image_format',
+  'invalid_or_unsupported_image',
+  'media_fetch_failed',
+  'media_host_not_allowed',
+  'media_address_not_allowed',
+  'media_redirect_not_allowed',
+  'image_unavailable',
+  'adapter_unavailable',
+  'delivery_failed',
+  'delivery_unknown',
+  'send_invalidated',
+  'send_validation_failed',
+  'database_busy',
+  'database_locked',
+  'database_readonly',
+  'database_full',
+  'database_corrupt',
+  'database_constraint',
+])
+export function knownDiagnosticCode(value: unknown): string | undefined {
+  return typeof value === 'string' &&
+    (diagnosticCodes.has(value) || /^provider_http_[1-5]\d\d$/.test(value))
+    ? value
+    : undefined
+}
+export const sqliteCodes: Record<string, string> = {
+  SQLITE_ERROR: 'database_statement_failed',
+  SQLITE_IOERR: 'database_io_error',
+  SQLITE_CANTOPEN: 'database_open_failed',
+  SQLITE_PERM: 'database_permission_denied',
+  SQLITE_AUTH: 'database_permission_denied',
+  SQLITE_SCHEMA: 'database_schema_changed',
+  SQLITE_NOTADB: 'database_corrupt',
+  SQLITE_BUSY: 'database_busy',
+  SQLITE_LOCKED: 'database_locked',
+  SQLITE_READONLY: 'database_readonly',
+  SQLITE_FULL: 'database_full',
+  SQLITE_CORRUPT: 'database_corrupt',
+  SQLITE_CONSTRAINT: 'database_constraint',
+}
+/** Preserve technical information without copying arbitrary provider/chat payloads. */
+export function technicalMessage(message: unknown, code: string, type: string): string {
+  if (code !== 'unknown_error' && code !== 'cause_not_captured') return code
+  if (typeof message !== 'string') return 'No inspectable error message was captured.'
+  if (
+    /^Cannot read properties of (?:undefined|null) \(reading ['"][^\n]{1,120}['"]\)$/.test(message)
+  )
+    return 'Cannot read a property of undefined or null (property name withheld).'
+  if (/^Cannot set properties of (?:undefined|null)/.test(message))
+    return 'Cannot set a property of undefined or null.'
+  if (type === 'SyntaxError') return 'Invalid syntax or JSON; input content omitted.'
+  if (
+    /^(?:fetch failed|network error|socket hang up|The operation was aborted|This operation was aborted)\.?$/i.test(
+      message,
+    )
+  )
+    return message.slice(0, 120)
+  if (/^database (?:is locked|is readonly|disk image is malformed)$/i.test(message)) return message
+  if (
+    /^(?:connect|read|write|getaddrinfo) (?:ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN)\b/.test(
+      message,
+    )
+  )
+    return message.split(/\s+/).slice(0, 2).join(' ') + ' [endpoint omitted]'
+  return 'Unclassified exception; arbitrary message content withheld. Inspect the error type and source frames.'
+}

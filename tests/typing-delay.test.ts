@@ -1,3 +1,4 @@
+import { fixturePlanCompletion } from './helpers/reply-plan.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { setTimeout as sleep } from 'node:timers/promises'
@@ -39,7 +40,6 @@ function harness(segments: SendSegment[], speedFactor?: number, pluginSend = fal
   })
   let calls = 0
   let revalidations = 0
-  const toolOutputs: unknown[] = []
   const runtime = new Runtime(
     store,
     () =>
@@ -51,6 +51,10 @@ function harness(segments: SendSegment[], speedFactor?: number, pluginSend = fal
               { id: 'validate', name: 'reply.validate', arguments: { valid: false } },
             ])
           }
+          const fixturePlan = fixturePlanCompletion(role, messages, {
+            deliveryTool: pluginSend ? 'fixture.send' : 'messages.send',
+          })
+          if (fixturePlan) return fixturePlan
           if (role === 'planner')
             return completion([
               {
@@ -59,9 +63,6 @@ function harness(segments: SendSegment[], speedFactor?: number, pluginSend = fal
                 arguments: { action: 'reply', reasonCode: 'fixture' },
               },
             ])
-          for (const message of messages)
-            if (message.role === 'tool' && typeof message.content === 'string')
-              toolOutputs.push(JSON.parse(message.content))
           return completion(
             ++calls === 1
               ? [
@@ -84,6 +85,7 @@ function harness(segments: SendSegment[], speedFactor?: number, pluginSend = fal
       tools: [
         {
           name: 'fixture.send',
+          effect: 'send',
           description: 'Fixture core-routed send',
           inputSchema: { type: 'object' },
         },
@@ -127,7 +129,6 @@ function harness(segments: SendSegment[], speedFactor?: number, pluginSend = fal
     sent,
     plugin,
     prepared,
-    toolOutputs,
     start() {
       const now = new Date().toISOString()
       runtime.ingest(
@@ -216,9 +217,7 @@ for (const reason of ['disable', 'recall', 'shutdown'] as const) {
         assert.equal(h.runtime.preview(scene.id).filter((m) => m.senderId === 'bot').length, 0)
       if (reason === 'disable')
         assert.ok(
-          h.toolOutputs.some(
-            (output) => Array.isArray(output) && output[0]?.status === 'cancelled',
-          ),
+          h.store.logs.some((row) => row.stage === 'send_segment' && row.status === 'cancelled'),
         )
     } finally {
       h.close()
@@ -236,11 +235,11 @@ test('disabling after the first delivered segment preserves its receipt and canc
     assert.equal(h.sent.length, 1)
     assert.equal(h.runtime.preview(scene.id).filter((m) => m.senderId === 'bot').length, 1)
     assert.ok(
-      h.toolOutputs.some(
-        (output) =>
-          Array.isArray(output) &&
-          output[0]?.status === 'sent' &&
-          output[1]?.status === 'cancelled',
+      h.store.logs.some(
+        (row) =>
+          row.stage === 'turn' &&
+          row.counts?.sentSegments === 1 &&
+          row.counts?.cancelledSegments === 1,
       ),
     )
   } finally {

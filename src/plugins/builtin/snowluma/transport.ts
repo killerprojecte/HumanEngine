@@ -1,4 +1,5 @@
 import { OneBotProfiles } from './profiles.ts'
+import { preserveOutcomeError } from '../../../diagnostics/error-context.ts'
 import { sanitizeError } from '../../../diagnostics/errors.ts'
 import { readOneBotImage, type MediaFetcher } from './media.ts'
 import { normalizeMessage } from './normalization.ts'
@@ -168,20 +169,28 @@ export class OneBotAdapter {
       try {
         id = this.messageId(scene, rawId(result.message_id))
       } catch {
-        return { status: 'unknown', detail: 'missing_send_receipt' }
+        return preserveOutcomeError(
+          { status: 'unknown' as const, detail: 'missing_send_receipt' },
+          new OneBotError('missing_send_receipt', true),
+          { operation: 'adapter.send', stage: 'send_segment' },
+        )
       }
       return { status: 'sent', messageId: id }
     } catch (error) {
       const failure = error instanceof OneBotError ? error : new OneBotError('send_failed')
-      return {
-        status:
-          acknowledged || failure.transmitted
-            ? 'unknown'
-            : signal?.aborted
-              ? 'cancelled'
-              : 'failed',
-        detail: failure.code,
-      }
+      return preserveOutcomeError(
+        {
+          status:
+            acknowledged || failure.transmitted
+              ? 'unknown'
+              : signal?.aborted
+                ? 'cancelled'
+                : 'failed',
+          detail: failure.code,
+        },
+        error,
+        { operation: 'adapter.send', stage: 'send_segment' },
+      )
     }
   }
 

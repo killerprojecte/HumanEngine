@@ -155,8 +155,24 @@ export const SceneSchema = z
   .strict()
   .refine((s) => s.kind === 'group' || !s.proactiveEnabled, 'Private scenes cannot be proactive')
   .openapi('Scene')
+const ErrorContextSchema = z.object({
+  operation: z.string().optional(),
+  stage: z.string().optional(),
+  role: z.string().optional(),
+  modelId: z.string().optional(),
+  providerId: z.string().optional(),
+  apiModel: z.string().optional(),
+  attempt: z.number().optional(),
+  timeoutMs: z.number().optional(),
+  remainingCandidates: z.number().optional(),
+  retryable: z.boolean().optional(),
+})
 const ErrorCauseDiagnosticSchema = z.object({
   errorType: z.string(),
+  errorCode: z.string().optional(),
+  errorMessage: z.string().optional(),
+  adviceCode: z.string().optional(),
+  errorContext: ErrorContextSchema.optional(),
   systemCode: z.string().optional(),
   httpStatus: z.number().int().min(100).max(599).optional(),
   stackFrames: z.array(z.string()).max(8),
@@ -201,6 +217,12 @@ export const LogSchema = z
     operation: z.string().optional(),
     phase: z.string().optional(),
     errorType: z.string().optional(),
+    errorCode: z.string().optional(),
+    errorMessage: z.string().optional(),
+    adviceCode: z.string().optional(),
+    errorContext: ErrorContextSchema.optional(),
+    rootCause: ErrorCauseDiagnosticSchema.optional(),
+    failures: z.array(ErrorCauseDiagnosticSchema).max(4).optional(),
     stackFrames: z.array(z.string()).max(8).optional(),
     causes: z.array(ErrorCauseDiagnosticSchema).max(4).optional(),
     requestId: z.string().optional(),

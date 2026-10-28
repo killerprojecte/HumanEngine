@@ -20,6 +20,7 @@ for (const visionEnabled of [true, false]) {
         .toBuffer()
       const requests: Array<{
         model: string
+        tools?: Array<{ function: { name: string } }>
         messages: Array<{ role: string; content: unknown }>
       }> = []
       const actions: Array<{ action: string; params: Record<string, unknown> }> = []
@@ -34,8 +35,43 @@ for (const visionEnabled of [true, false]) {
         for await (const chunk of req) chunks.push(Buffer.from(chunk))
         const body = JSON.parse(Buffer.concat(chunks).toString())
         requests.push(body)
-        const calls =
-          body.model === 'planner'
+        const planning =
+          body.model === 'planner' &&
+          body.tools.some(
+            (item: { function: { name: string } }) => item.function.name === 'reply__plan',
+          )
+        const input = planning
+          ? JSON.parse(
+              body.messages.find((message: { role: string }) => message.role === 'user').content,
+            )
+          : undefined
+        const visualEvidence = input?.evidence.find(
+          (item: { value?: { trust?: string } }) =>
+            item.value?.trust === 'untrusted_image_descriptions',
+        )
+        const calls = planning
+          ? [
+              tool('reply.plan', {
+                action: 'reply',
+                targetMessageIds: input.planContract.targetMessageIds,
+                contextMessageIds: input.planContract.contextMessageIds,
+                strategy: 'Describe the provided image, or explain that it is unavailable.',
+                constraints: ['Use only the attributed vision result.'],
+                facts: [
+                  {
+                    text: visionEnabled
+                      ? 'The image shows a red square.'
+                      : 'Image viewing is unavailable.',
+                    evidenceIds: [visualEvidence.id],
+                  },
+                ],
+                assets: [],
+                emoji: [],
+                draftGoals: ['Answer the image question briefly.'],
+                actions: [],
+              }),
+            ]
+          : body.model === 'planner'
             ? [
                 tool('participation.decide', {
                   action: 'reply',
@@ -184,8 +220,33 @@ for (const visionEnabled of [true, false]) {
         const thinkerContext = JSON.parse(
           thinker.messages.find((message) => message.role === 'user')!.content as string,
         )
-        const attributed = thinkerContext.learnedData.find(
-          (item: { trust?: string }) => item.trust === 'untrusted_image_descriptions',
+        const planner = requests.find(
+          (request) =>
+            request.model === 'planner' &&
+            request.tools?.some((tool) => tool.function.name === 'reply__plan'),
+        )
+        assert.ok(planner, 'research planner must run before dialogue')
+        const plannerContext = JSON.parse(
+          planner.messages.find((message) => message.role === 'user')!.content as string,
+        )
+        const plannedEvidence = plannerContext.evidence.find(
+          (item: { value?: { trust?: string } }) =>
+            item.value?.trust === 'untrusted_image_descriptions',
+        )
+        const selectedEvidence = thinkerContext.evidence.find(
+          (item: { id: string }) => item.id === plannedEvidence.id,
+        )
+        assert.deepEqual(
+          selectedEvidence,
+          plannedEvidence,
+          'dialogue receives the selected authoritative vision evidence unchanged',
+        )
+        assert.equal(thinkerContext.plan.facts[0].evidenceIds[0], plannedEvidence.id)
+        const attributed = selectedEvidence.value
+        assert.ok(requests.indexOf(planner) < requests.indexOf(thinker))
+        assert.deepEqual(
+          thinker.tools?.map((tool) => tool.function.name),
+          ['messages__send'],
         )
         assert.equal(attributed.images.length, 1)
         assert.equal(attributed.images[0].messageId, sourceId)
@@ -211,8 +272,7 @@ for (const visionEnabled of [true, false]) {
             file: 'opaque-image-token-canary',
           })
           assert.ok(
-            requests.findIndex((request) => request.model === 'vision') <
-              requests.findIndex((request) => request.model === 'thinker'),
+            requests.findIndex((request) => request.model === 'vision') < requests.indexOf(planner),
           )
         } else {
           assert.equal(vision.length, 0)

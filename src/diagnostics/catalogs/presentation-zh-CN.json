@@ -1,0 +1,48 @@
+{
+  "words": {
+    "reason": "原因",
+    "role": "用途",
+    "model": "模型",
+    "provider": "提供商",
+    "tool": "工具",
+    "result": "输出类型",
+    "duration": "耗时",
+    "system": "系统码",
+    "next": "下一步",
+    "root": "根因",
+    "advice": "处理建议",
+    "type": "异常类型",
+    "technical": "脱敏技术说明",
+    "operation": "操作",
+    "stage": "阶段",
+    "attempt": "尝试",
+    "timeout": "超时上限",
+    "remaining": "剩余候选",
+    "retryable": "允许按策略重试",
+    "simulated": "模拟完成分段数",
+    "trace": "追踪",
+    "turn": "回合",
+    "batch": "学习批次",
+    "yes": "是",
+    "no": "否",
+    "unknown": "未映射状态",
+    "httpSummary": "提供商返回 HTTP {status}",
+    "httpAdvice": "重试前检查提供商状态、API 配置与权限。"
+  },
+  "roles": {
+    "planner": "规划、检索及复杂推理",
+    "thinker": "按计划快速生成对话",
+    "learning": "背景学习",
+    "vision": "图片辨识",
+    "embedding": "记忆向量",
+    "models": "探索模型"
+  },
+  "outputs": {
+    "text": "文字",
+    "tool_calls": "工具调用",
+    "text_and_tools": "文字及工具调用",
+    "empty": "空结果",
+    "embeddings": "向量",
+    "model_list": "模型列表"
+  }
+}

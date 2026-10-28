@@ -77,3 +77,37 @@ The format is independently implemented. MaiBot's operation-oriented diagnostics
 were a design reference, not copied implementation code. This change adds no
 claim that a model always obeys injected rules or that an unavailable provider
 has succeeded.
+
+## Diagnosing a failed turn
+
+The final failed or partially completed turn includes a bounded `rootCause`, not
+only a generic `turn_failed` code. Model failures retain their application code,
+HTTP status, selected provider/model, role, attempt, configured deadline and
+remaining fallback candidates through wrapper errors. A model selection failure
+retains up to four recent attempt summaries. A stage timeout is distinct from
+user cancellation; its selected-attempt metadata is captured only while that
+attempt is active, never guessed from the first configured model.
+
+Sending failures and uncertain receipts carry private, in-memory error references
+through aggregation. Failed hooks and delivery plugins remain visible at the
+turn boundary even if the dialogue loop continues. Previously acknowledged sends
+are not undone; these diagnostics do not trigger automatic resending. Image
+processing summaries retain their underlying download, decoding or vision-model
+cause while still returning an explicit unavailable-image context when recovery
+is possible. Partial learning writes retain both the persistence and batch cause.
+
+Default stdout uses Simplified Chinese. The Logs page renders structured fields
+in its selected Simplified Chinese, Traditional Chinese or English locale; it does
+not trust a previously formatted message as the only explanation. The readable
+root-cause panel includes actionable suggestions, and source frames remain in a
+separate expandable technical section.
+
+Diagnostic serialization preserves fixed application/system codes and recognized
+technical message templates. It does not copy arbitrary upstream exception text:
+unknown text can contain prompts, chat or credentials and is explicitly marked
+as withheld rather than silently presented as a known cause. Missing exception
+objects are marked `cause_not_captured`. SQLite extension suffixes are normalized
+to fixed base codes, and custom getters, `toJSON`, raw response bodies, SQL,
+request URLs and headers are not evaluated or emitted. Stack frames are bounded
+to verified source paths. Error references are held in WeakMaps and never added
+to model-visible tool payloads.

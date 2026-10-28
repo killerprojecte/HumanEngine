@@ -1,0 +1,418 @@
+{
+  "provider_http_401": {
+    "summary": "提供商拒绝认证",
+    "advice": "检查已保存的 API 密钥、凭据权限和提供商端点；不要用未修改的凭据重复请求。"
+  },
+  "provider_http_403": {
+    "summary": "提供商拒绝访问",
+    "advice": "检查模型或账户权限，以及提供商的访问限制。"
+  },
+  "provider_http_404": {
+    "summary": "提供商端点或模型不存在",
+    "advice": "按提供商文档检查 API 基础路径与准确模型名。"
+  },
+  "provider_http_429": {
+    "summary": "提供商触发限流或额度限制",
+    "advice": "检查额度和限流设置，降低并发或等待提供商恢复；本日志不表示已经自动重试。"
+  },
+  "provider_http_408": {
+    "summary": "提供商请求超时",
+    "advice": "检查提供商延迟与配置的超时时间，再决定是否重试。"
+  },
+  "provider_http_5xx": {
+    "summary": "提供商服务返回服务器错误",
+    "advice": "检查提供商服务状态和备用模型配置；仅按现有策略重试。"
+  },
+  "provider_timeout": {
+    "summary": "模型请求超过超时限制",
+    "advice": "查看记录的超时时间与提供商延迟，调整合理超时或选择已配置的备用模型。"
+  },
+  "provider_request_failed": {
+    "summary": "模型传输请求失败",
+    "advice": "查看系统错误码和原因链，检查 DNS、网络连通性及 TLS 配置。"
+  },
+  "invalid_provider_json": {
+    "summary": "提供商响应不是有效 JSON",
+    "advice": "检查 API 协议兼容性，以及网关是否返回 HTML 或截断数据。"
+  },
+  "invalid_provider_response": {
+    "summary": "提供商响应不符合预期结构",
+    "advice": "检查所选 API 协议及响应结构，查看结构验证诊断，不要复制私密请求或响应原文。"
+  },
+  "invalid_provider_content_type": {
+    "summary": "提供商返回了错误的内容类型",
+    "advice": "检查 API 端点和网关配置；该模型路由需要 JSON 响应。"
+  },
+  "invalid_tool_arguments": {
+    "summary": "模型提供了无效工具参数",
+    "advice": "查看工具名与结构验证详情，修正规划或工具契约，不要原样重试参数。"
+  },
+  "schema_validation_failed": {
+    "summary": "结构化数据未通过验证",
+    "advice": "查看当前操作记录的安全验证码和预期类型。"
+  },
+  "database_busy": {
+    "summary": "数据库忙或被锁定",
+    "advice": "检查并发写入与事务持续时间；不要自动重放结果不确定的写入。"
+  },
+  "database_readonly": {
+    "summary": "数据库为只读",
+    "advice": "检查数据库目录挂载方式与进程写入权限。"
+  },
+  "database_full": {
+    "summary": "数据库或存储空间已满",
+    "advice": "再次写入前检查可用磁盘空间与存储配额。"
+  },
+  "database_corrupt": {
+    "summary": "数据库完整性异常",
+    "advice": "停止不确定写入，保留备份并检查数据库完整性，再进行恢复。"
+  },
+  "database_constraint": {
+    "summary": "数据库约束拒绝写入",
+    "advice": "查看操作与约束错误码，修正冲突或无效数据后再重试。"
+  },
+  "tool_execution_failed": {
+    "summary": "工具执行失败",
+    "advice": "查看工具名、操作与底层原因；不能把失败视为工具已成功返回。"
+  },
+  "image_read_unsupported": {
+    "summary": "适配器无法读取该图片",
+    "advice": "检查适配器图片读取能力及视觉模型路由配置。"
+  },
+  "media_fetch_failed": {
+    "summary": "图片下载失败",
+    "advice": "查看传输原因和媒体来源是否有效；过期地址可能需要平台重新获取。"
+  },
+  "image_download_url_unavailable": {
+    "summary": "平台未返回图片下载位置",
+    "advice": "检查平台 get_image 支持情况，以及图片引用是否已过期。"
+  },
+  "invalid_or_unsupported_image": {
+    "summary": "无法安全解码图片数据",
+    "advice": "检查图片格式、字节大小和像素限制；MIME 标签本身不能证明图片有效。"
+  },
+  "media_size_limit": {
+    "summary": "图片超过大小限制",
+    "advice": "使用符合文档字节和像素上限的较小图片。"
+  },
+  "route_not_configured": {
+    "summary": "该用途尚未配置模型路由",
+    "advice": "在模型页面为记录的用途配置兼容模型；视觉任务需要视觉能力。"
+  },
+  "credential_not_configured": {
+    "summary": "缺少所需 API 凭据",
+    "advice": "在模型页面保存提供商 API 密钥，或在插件页面保存适配器密钥。"
+  },
+  "all_models_failed": {
+    "summary": "所有已配置模型尝试均失败",
+    "advice": "查看根因和已尝试模型详情；仅修改外层回合标签无法解决提供商故障。"
+  },
+  "no_compatible_model": {
+    "summary": "没有可用的兼容模型",
+    "advice": "检查路由模型列表、已启用的提供商，以及所需文本、工具或视觉能力。"
+  },
+  "unknown_error": {
+    "summary": "未分类的运行错误",
+    "advice": "查看脱敏技术说明、异常类型与堆栈，并携带这些诊断及追踪 ID 反馈问题。"
+  },
+  "cause_not_captured": {
+    "summary": "未捕获底层原因",
+    "advice": "该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。"
+  },
+  "ECONNREFUSED": {
+    "summary": "连接被拒绝",
+    "advice": "检查配置的服务是否正在监听，以及运行环境能否访问该服务。"
+  },
+  "ENOTFOUND": {
+    "summary": "DNS 无法解析地址",
+    "advice": "检查端点拼写，以及运行环境的 DNS 可用性。"
+  },
+  "ETIMEDOUT": {
+    "summary": "网络操作超时",
+    "advice": "检查网络连通性、服务延迟及配置的超时时间。"
+  },
+  "EACCES": {
+    "summary": "操作缺少文件或网络权限",
+    "advice": "检查进程身份及失败操作所需权限；不要盲目关闭安全控制。"
+  },
+  "ECONNRESET": {
+    "summary": "远端连接被重置",
+    "advice": "重试前检查上游连接稳定性和网关限制。"
+  },
+  "TypeError": {
+    "summary": "运行值的类型不符合预期",
+    "advice": "查看安全技术说明与第一处应用堆栈，定位无效操作。"
+  },
+  "model_timeout": {
+    "summary": "模型请求超过超时限制",
+    "advice": "查看记录的超时时间与提供商延迟，调整合理超时或选择已配置的备用模型。"
+  },
+  "database_locked": {
+    "summary": "数据库忙或被锁定",
+    "advice": "检查并发写入与事务持续时间；不要自动重放结果不确定的写入。"
+  },
+  "SQLITE_BUSY": {
+    "summary": "数据库忙或被锁定",
+    "advice": "检查并发写入与事务持续时间；不要自动重放结果不确定的写入。"
+  },
+  "SQLITE_LOCKED": {
+    "summary": "数据库忙或被锁定",
+    "advice": "检查并发写入与事务持续时间；不要自动重放结果不确定的写入。"
+  },
+  "SQLITE_READONLY": {
+    "summary": "数据库为只读",
+    "advice": "检查数据库目录挂载方式与进程写入权限。"
+  },
+  "SQLITE_FULL": {
+    "summary": "数据库或存储空间已满",
+    "advice": "再次写入前检查可用磁盘空间与存储配额。"
+  },
+  "SQLITE_CORRUPT": {
+    "summary": "数据库完整性异常",
+    "advice": "停止不确定写入，保留备份并检查数据库完整性，再进行恢复。"
+  },
+  "SQLITE_CONSTRAINT": {
+    "summary": "数据库约束拒绝写入",
+    "advice": "查看操作与约束错误码，修正冲突或无效数据后再重试。"
+  },
+  "EAI_AGAIN": {
+    "summary": "DNS 无法解析地址",
+    "advice": "检查端点拼写，以及运行环境的 DNS 可用性。"
+  },
+  "UND_ERR_CONNECT_TIMEOUT": {
+    "summary": "网络操作超时",
+    "advice": "检查网络连通性、服务延迟及配置的超时时间。"
+  },
+  "EPERM": {
+    "summary": "操作缺少文件或网络权限",
+    "advice": "检查进程身份及失败操作所需权限；不要盲目关闭安全控制。"
+  },
+  "invalid_image_data": {
+    "summary": "无法安全解码图片数据",
+    "advice": "检查图片格式、字节大小和像素限制；MIME 标签本身不能证明图片有效。"
+  },
+  "unsupported_image_format": {
+    "summary": "无法安全解码图片数据",
+    "advice": "检查图片格式、字节大小和像素限制；MIME 标签本身不能证明图片有效。"
+  },
+  "invalid_provider_usage": {
+    "summary": "提供商响应不符合预期结构",
+    "advice": "检查所选 API 协议及响应结构，查看结构验证诊断，不要复制私密请求或响应原文。"
+  },
+  "incomplete_model_response": {
+    "summary": "提供商响应不符合预期结构",
+    "advice": "检查所选 API 协议及响应结构，查看结构验证诊断，不要复制私密请求或响应原文。"
+  },
+  "incomplete_tool_call": {
+    "summary": "提供商响应不符合预期结构",
+    "advice": "检查所选 API 协议及响应结构，查看结构验证诊断，不要复制私密请求或响应原文。"
+  },
+  "duplicate_tool_call_id": {
+    "summary": "提供商响应不符合预期结构",
+    "advice": "检查所选 API 协议及响应结构，查看结构验证诊断，不要复制私密请求或响应原文。"
+  },
+  "unknown_tool_call": {
+    "summary": "模型提供了无效工具参数",
+    "advice": "查看工具名与结构验证详情，修正规划或工具契约，不要原样重试参数。"
+  },
+  "unknown_tool": {
+    "summary": "模型提供了无效工具参数",
+    "advice": "查看工具名与结构验证详情，修正规划或工具契约，不要原样重试参数。"
+  },
+  "tool_failed": {
+    "summary": "工具执行失败",
+    "advice": "查看工具名、操作与底层原因；不能把失败视为工具已成功返回。"
+  },
+  "invalid_media_reference": {
+    "summary": "平台未返回图片下载位置",
+    "advice": "检查平台 get_image 支持情况，以及图片引用是否已过期。"
+  },
+  "http_action_failed": {
+    "summary": "适配器 HTTP 操作失败",
+    "advice": "查看 HTTP 状态、适配器端点与令牌权限。"
+  },
+  "http_request_failed": {
+    "summary": "适配器传输请求失败",
+    "advice": "查看系统错误码及适配器连通性，不能假定消息已经发送。"
+  },
+  "invalid_http_response": {
+    "summary": "适配器返回了无效 HTTP 响应",
+    "advice": "检查适配器协议兼容性与响应内容类型。"
+  },
+  "platform_action_failed": {
+    "summary": "平台拒绝执行操作",
+    "advice": "查看平台结果码、机器人权限和目标可用性。"
+  },
+  "invalid_action_parameters": {
+    "summary": "适配器操作参数无效",
+    "advice": "查看操作名和已验证的参数契约，不要再次发送相同无效参数。"
+  },
+  "missing_send_receipt": {
+    "summary": "平台没有提供可用的发送回执",
+    "advice": "发送结果不确定。重试前检查平台历史，避免重复消息。"
+  },
+  "send_failed": {
+    "summary": "消息发送失败",
+    "advice": "重试前查看适配器或平台根因，以及已经确认发送的分段数量。"
+  },
+  "planner_timeout": {
+    "summary": "规划阶段超过时间预算",
+    "advice": "检查 Planner 路由超时与任务复杂度，缩小研究范围或配置合理预算；这不是用户取消。"
+  },
+  "dialogue_timeout": {
+    "summary": "对话生成阶段超过时间预算",
+    "advice": "检查对话模型路由超时、模型延迟和回复长度，并配置合理预算；这不是用户取消。"
+  },
+  "TLS_ERROR": {
+    "summary": "TLS 证书验证失败",
+    "advice": "检查端点主机名、证书有效期和受信任证书链；不要关闭 TLS 验证。"
+  },
+  "CERT_HAS_EXPIRED": {
+    "summary": "TLS 证书验证失败",
+    "advice": "检查端点主机名、证书有效期和受信任证书链；不要关闭 TLS 验证。"
+  },
+  "DEPTH_ZERO_SELF_SIGNED_CERT": {
+    "summary": "TLS 证书验证失败",
+    "advice": "检查端点主机名、证书有效期和受信任证书链；不要关闭 TLS 验证。"
+  },
+  "ERR_TLS_CERT_ALTNAME_INVALID": {
+    "summary": "TLS 证书验证失败",
+    "advice": "检查端点主机名、证书有效期和受信任证书链；不要关闭 TLS 验证。"
+  },
+  "UNABLE_TO_VERIFY_LEAF_SIGNATURE": {
+    "summary": "TLS 证书验证失败",
+    "advice": "检查端点主机名、证书有效期和受信任证书链；不要关闭 TLS 验证。"
+  },
+  "SELF_SIGNED_CERT_IN_CHAIN": {
+    "summary": "TLS 证书验证失败",
+    "advice": "检查端点主机名、证书有效期和受信任证书链；不要关闭 TLS 验证。"
+  },
+  "planner_invalid_plan": {
+    "summary": "规划器返回了无效回复计划",
+    "advice": "查看安全计划验证详情及规划模型的工具兼容性；只有一个有效结构化计划才能进入对话生成。"
+  },
+  "planner_missing_plan": {
+    "summary": "规划器没有返回回复计划",
+    "advice": "查看安全计划验证详情及规划模型的工具兼容性；只有一个有效结构化计划才能进入对话生成。"
+  },
+  "planner_ambiguous_plan": {
+    "summary": "规划器返回了相互冲突的回复计划",
+    "advice": "查看安全计划验证详情及规划模型的工具兼容性；只有一个有效结构化计划才能进入对话生成。"
+  },
+  "planner_missing_decision": {
+    "summary": "规划器遗漏了是否参与的决定",
+    "advice": "查看安全计划验证详情及规划模型的工具兼容性；只有一个有效结构化计划才能进入对话生成。"
+  },
+  "planner_forbidden_tool": {
+    "summary": "规划器请求了超出权限的工具",
+    "advice": "研究与规划由 Planner 执行，发送必须走已验证的对话路径；检查允许的工具契约，不要扩大权限来掩盖错误。"
+  },
+  "planner_forbidden_action": {
+    "summary": "规划器请求了超出权限的操作",
+    "advice": "研究与规划由 Planner 执行，发送必须走已验证的对话路径；检查允许的工具契约，不要扩大权限来掩盖错误。"
+  },
+  "planner_invalid_delivery_tool": {
+    "summary": "规划器尝试使用无效发送工具",
+    "advice": "研究与规划由 Planner 执行，发送必须走已验证的对话路径；检查允许的工具契约，不要扩大权限来掩盖错误。"
+  },
+  "dialogue_forbidden_tool": {
+    "summary": "对话模型请求了仅限规划器使用或未获授权的工具",
+    "advice": "对话模型只能依据有来源的计划组织并发送回复；搜索、表情选择和复杂工具操作应交回 Planner。"
+  },
+  "planner_unknown_asset": {
+    "summary": "计划引用了未知表情或素材",
+    "advice": "使用当前授权素材搜索实际返回的素材 ID，不要编造或复用未验证的 ID。"
+  },
+  "planner_invalid_target": {
+    "summary": "计划包含无效回复目标",
+    "advice": "从当前场景和回合中选择有效目标与话题，不能使用已撤回或跨场景目标。"
+  },
+  "planner_unknown_target": {
+    "summary": "计划引用了当前回合中不存在的目标",
+    "advice": "从当前场景和回合中选择有效目标与话题，不能使用已撤回或跨场景目标。"
+  },
+  "planner_invalid_topic": {
+    "summary": "计划引用了无效会话话题",
+    "advice": "从当前场景和回合中选择有效目标与话题，不能使用已撤回或跨场景目标。"
+  },
+  "planner_unknown_evidence": {
+    "summary": "计划引用了未实际检索到的依据",
+    "advice": "只引用本次规划实际获取的依据，去重并限制大小；不要编造事实依据。"
+  },
+  "planner_duplicate_evidence": {
+    "summary": "计划重复引用了相同依据",
+    "advice": "只引用本次规划实际获取的依据，去重并限制大小；不要编造事实依据。"
+  },
+  "planner_evidence_too_large": {
+    "summary": "计划依据超过允许的大小",
+    "advice": "只引用本次规划实际获取的依据，去重并限制大小；不要编造事实依据。"
+  },
+  "planner_round_budget_exhausted": {
+    "summary": "规划器已耗尽推理轮次预算",
+    "advice": "缩小规划范围或配置合理的有限预算；达到上限后应停止，不能静默追加轮次或工具调用。"
+  },
+  "planner_tool_budget_exhausted": {
+    "summary": "规划器已耗尽工具调用预算",
+    "advice": "缩小规划范围或配置合理的有限预算；达到上限后应停止，不能静默追加轮次或工具调用。"
+  },
+  "planner_duplicate_action": {
+    "summary": "规划器请求了已处理过的操作",
+    "advice": "查看此前操作结果与操作 ID，不要重复可能产生外部影响的操作。"
+  },
+  "planner_stale_action": {
+    "summary": "规划操作在执行前已失效",
+    "advice": "开始新计划前重新验证场景、来源和取消状态，不能执行失效操作。"
+  },
+  "planner_invalid_no_reply": {
+    "summary": "规划器同时提出不回复决定与回复操作",
+    "advice": "查看安全计划验证详情及规划模型的工具兼容性；只有一个有效结构化计划才能进入对话生成。"
+  },
+  "planner_context_ineligible": {
+    "summary": "规划上下文已不再满足执行条件",
+    "advice": "开始新计划前重新验证场景、来源和取消状态，不能执行失效操作。"
+  },
+  "planner_tool_failed": {
+    "summary": "规划工具执行失败",
+    "advice": "查看记录的工具或操作及底层原因，保留已确认的影响，避免不安全重放。"
+  },
+  "planner_action_failed": {
+    "summary": "规划操作执行失败",
+    "advice": "查看记录的工具或操作及底层原因，保留已确认的影响，避免不安全重放。"
+  },
+  "planner_failed": {
+    "summary": "回复规划失败",
+    "advice": "查看捕获的根因、模型、预算和已尝试操作；外层阶段失败本身不是诊断。"
+  },
+  "dialogue_failed": {
+    "summary": "根据计划生成对话失败",
+    "advice": "查看捕获的根因、模型、预算和已尝试操作；外层阶段失败本身不是诊断。"
+  },
+  "image_processing_failed": {
+    "summary": "图片处理存在失败",
+    "advice": "检查下面保留的下载、解析或视觉模型根因；不要假定图片已被识别。"
+  },
+  "turn_tool_failures": {
+    "summary": "本回合有未恢复的工具错误",
+    "advice": "查看具体工具与根因；已确认的发送不会撤回，不要盲目重发。"
+  },
+  "database_statement_failed": {
+    "summary": "数据库语句执行失败",
+    "advice": "检查展开的源位置、数据库结构与迁移版本，不要把SQL或用户内容写入日志。"
+  },
+  "database_io_error": {
+    "summary": "数据库存储读写失败",
+    "advice": "检查磁盘、文件系统和运行账户权限；先确认写入状态再决定重试。"
+  },
+  "database_open_failed": {
+    "summary": "无法打开数据库",
+    "advice": "检查数据库目录是否存在及运行账户的访问权限。"
+  },
+  "database_permission_denied": {
+    "summary": "数据库访问权限不足",
+    "advice": "检查运行账户、文件权限及数据库授权设置。"
+  },
+  "database_schema_changed": {
+    "summary": "数据库结构已变化",
+    "advice": "确认迁移版本和并发结构修改，重新准备语句前检查兼容性。"
+  }
+}

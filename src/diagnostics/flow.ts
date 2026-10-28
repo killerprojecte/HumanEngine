@@ -165,7 +165,19 @@ export function startFlow(
             ...(status === 'started'
               ? {}
               : { durationMs: Math.max(0, Math.round((performance.now() - started) * 100) / 100) }),
-            ...(error === undefined ? {} : sanitizeError(error)),
+            ...(error === undefined
+              ? {}
+              : sanitizeError(error, {
+                  stage: label(stage),
+                  operation: label(stage),
+                  role: merged.role,
+                  modelId: merged.modelId,
+                  providerId: merged.providerId,
+                  apiModel: merged.apiModel,
+                  attempt: merged.counts?.attempt,
+                  timeoutMs: merged.counts?.timeoutMs,
+                  remainingCandidates: merged.counts?.remainingCandidates,
+                })),
           },
         ),
       )

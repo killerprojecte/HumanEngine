@@ -740,6 +740,196 @@
           "errorType": {
             "type": "string"
           },
+          "errorCode": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "adviceCode": {
+            "type": "string"
+          },
+          "errorContext": {
+            "type": "object",
+            "properties": {
+              "operation": {
+                "type": "string"
+              },
+              "stage": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              },
+              "modelId": {
+                "type": "string"
+              },
+              "providerId": {
+                "type": "string"
+              },
+              "apiModel": {
+                "type": "string"
+              },
+              "attempt": {
+                "type": "number"
+              },
+              "timeoutMs": {
+                "type": "number"
+              },
+              "remainingCandidates": {
+                "type": "number"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            }
+          },
+          "rootCause": {
+            "type": "object",
+            "properties": {
+              "errorType": {
+                "type": "string"
+              },
+              "errorCode": {
+                "type": "string"
+              },
+              "errorMessage": {
+                "type": "string"
+              },
+              "adviceCode": {
+                "type": "string"
+              },
+              "errorContext": {
+                "type": "object",
+                "properties": {
+                  "operation": {
+                    "type": "string"
+                  },
+                  "stage": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "modelId": {
+                    "type": "string"
+                  },
+                  "providerId": {
+                    "type": "string"
+                  },
+                  "apiModel": {
+                    "type": "string"
+                  },
+                  "attempt": {
+                    "type": "number"
+                  },
+                  "timeoutMs": {
+                    "type": "number"
+                  },
+                  "remainingCandidates": {
+                    "type": "number"
+                  },
+                  "retryable": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "systemCode": {
+                "type": "string"
+              },
+              "httpStatus": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 599
+              },
+              "stackFrames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "errorType",
+              "stackFrames"
+            ]
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "errorType": {
+                  "type": "string"
+                },
+                "errorCode": {
+                  "type": "string"
+                },
+                "errorMessage": {
+                  "type": "string"
+                },
+                "adviceCode": {
+                  "type": "string"
+                },
+                "errorContext": {
+                  "type": "object",
+                  "properties": {
+                    "operation": {
+                      "type": "string"
+                    },
+                    "stage": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    },
+                    "modelId": {
+                      "type": "string"
+                    },
+                    "providerId": {
+                      "type": "string"
+                    },
+                    "apiModel": {
+                      "type": "string"
+                    },
+                    "attempt": {
+                      "type": "number"
+                    },
+                    "timeoutMs": {
+                      "type": "number"
+                    },
+                    "remainingCandidates": {
+                      "type": "number"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "systemCode": {
+                  "type": "string"
+                },
+                "httpStatus": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 599
+                },
+                "stackFrames": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 8
+                }
+              },
+              "required": [
+                "errorType",
+                "stackFrames"
+              ]
+            },
+            "maxItems": 4
+          },
           "stackFrames": {
             "type": "array",
             "items": {
@@ -754,6 +944,50 @@
               "properties": {
                 "errorType": {
                   "type": "string"
+                },
+                "errorCode": {
+                  "type": "string"
+                },
+                "errorMessage": {
+                  "type": "string"
+                },
+                "adviceCode": {
+                  "type": "string"
+                },
+                "errorContext": {
+                  "type": "object",
+                  "properties": {
+                    "operation": {
+                      "type": "string"
+                    },
+                    "stage": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    },
+                    "modelId": {
+                      "type": "string"
+                    },
+                    "providerId": {
+                      "type": "string"
+                    },
+                    "apiModel": {
+                      "type": "string"
+                    },
+                    "attempt": {
+                      "type": "number"
+                    },
+                    "timeoutMs": {
+                      "type": "number"
+                    },
+                    "remainingCandidates": {
+                      "type": "number"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    }
+                  }
                 },
                 "systemCode": {
                   "type": "string"

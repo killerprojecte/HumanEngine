@@ -1,9 +1,22 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
+import { readableLog, diagnosticLines, type ReadableLog } from '../../src/diagnostics/format'
 type Log = components['schemas']['Log']
 type Diagnostic = components['schemas']['Diagnostic']
 const { t, locale } = useI18n(),
   { client } = useApi()
+const logMessage = (log: Log) => readableLog(log as ReadableLog, locale.value)
+const errorLines = (log: Log) => diagnosticLines(log as ReadableLog, locale.value)
+const errorFrames = (log: Log) => {
+  const diagnostic = log as ReadableLog
+  return [
+    ...new Set([
+      ...(diagnostic.rootCause?.stackFrames ?? []),
+      ...(log.stackFrames ?? []),
+      ...(diagnostic.causes ?? []).flatMap((cause) => cause.stackFrames ?? []),
+    ]),
+  ]
+}
 const latest = ref<Log[]>([])
 const lastFetched = ref(''),
   logError = ref('')
@@ -70,7 +83,7 @@ const filtered = computed(() => {
           log.level,
           log.module,
           log.code,
-          log.message,
+          logMessage(log),
           log.traceId,
           log.batchId,
           log.reason,
@@ -192,6 +205,11 @@ function context(log: Log) {
       operation: log.operation,
       phase: log.phase,
       errorType: log.errorType,
+      errorCode: (log as ReadableLog).errorCode,
+      errorMessage: (log as ReadableLog).errorMessage,
+      adviceCode: (log as ReadableLog).adviceCode,
+      errorContext: (log as ReadableLog).errorContext,
+      rootCause: (log as ReadableLog).rootCause,
       stackFrames: log.stackFrames,
       causes: log.causes,
       requestId: log.requestId,
@@ -366,7 +384,7 @@ onBeforeUnmount(() => {
             >
             <span class="log-module min-w-0 break-all text-violet-300">[{{ log.module }}]</span
             ><span class="log-code min-w-0 break-words font-sans text-sm"
-              ><span>{{ log.message || log.code }}</span
+              ><span>{{ logMessage(log) }}</span
               ><span v-if="log.traceId" class="block text-xs text-slate-500 font-mono"
                 >{{ t('flowTrace') }} {{ log.traceId.slice(-12)
                 }}<template v-if="log.turnId">
@@ -381,6 +399,23 @@ onBeforeUnmount(() => {
               >{{ log.durationMs }} ms</span
             >
           </button>
+          <section
+            v-if="expanded.has(log.id) && errorLines(log).length"
+            class="ml-6 my-3 rounded border border-rose-900/50 bg-slate-900 p-3 font-sans"
+            :aria-label="t('lgRootCauseTitle')"
+          >
+            <h3 class="mb-2 text-sm font-semibold text-rose-200">{{ t('lgRootCauseTitle') }}</h3>
+            <ul class="space-y-1 text-sm text-slate-200 break-words">
+              <li v-for="(line, index) in errorLines(log)" :key="index">{{ line }}</li>
+            </ul>
+            <details class="mt-3 text-xs text-slate-400">
+              <summary class="cursor-pointer">{{ t('lgStackFrames') }}</summary>
+              <pre v-if="errorFrames(log).length" class="mt-2 whitespace-pre-wrap break-all">{{
+                errorFrames(log).join('\n')
+              }}</pre>
+              <p v-else class="mt-2">{{ t('lgNoStackFrames') }}</p>
+            </details>
+          </section>
           <pre
             v-if="expanded.has(log.id)"
             class="ml-6 my-2 border-l border-slate-700 pl-3 whitespace-pre-wrap break-all text-slate-400 leading-5"

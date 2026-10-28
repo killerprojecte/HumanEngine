@@ -1,3 +1,4 @@
+import { fixtureReplyPlan } from './helpers/reply-plan.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
@@ -249,40 +250,47 @@ test(
                 return { text: '', toolCalls: [], usage }
             }
           }
-          if (context.model?.id === 'planner')
-            return output('participation.decide', {
-              action: 'reply',
-              reasonCode: 'fixture-media-request',
-            })
-          if (context.model?.id === 'thinker') {
+          if (context.model?.id === 'planner') {
+            const plan = fixtureReplyPlan(messages)
+            if (!plan)
+              return output('participation.decide', {
+                action: 'reply',
+                reasonCode: 'fixture-media-request',
+              })
             const results = messages.filter((message) => message.role === 'tool')
             if (privacyProbe) {
               if (!results.length) return output('memory.source', { memoryId: publicHttpId })
               if (results.length === 1) {
-                privacyResults.push(JSON.parse(results[0]!.content))
+                privacyResults.push(JSON.parse(results[0]!.content).value)
                 return output('messages.get', { ids: [publicSourceId] })
               }
-              privacyResults.push(JSON.parse(results[1]!.content))
-              return { text: '', toolCalls: [], usage }
+              privacyResults.push(JSON.parse(results[1]!.content).value)
+              return output('reply.plan', { ...plan, action: 'noReply' })
             }
             if (!results.length) return output('memes.search', { query: 'greeting' })
-            if (results.length === 1) {
-              const result = JSON.parse(results[0]!.content) as {
-                items: MemeAsset[]
-                coverage: string
-              }
-              assert.equal(result.coverage, 'partial')
-              const assets = result.items
-              searchConsumed =
-                assets.length === 2 && assets.every((asset) => asset.sources.length === 0)
-              return output('messages.send', {
-                operationId: 'original-media',
-                segments: assets.map((asset) => ({
-                  parts: [{ type: 'media', assetId: asset.id, mediaType: 'image' }],
-                })),
-              })
+            const receipt = JSON.parse(results[0]!.content) as {
+              id: string
+              value: { items: MemeAsset[]; coverage: string }
             }
-            return { text: '', toolCalls: [], usage }
+            assert.equal(receipt.value.coverage, 'partial')
+            const assets = receipt.value.items
+            searchConsumed =
+              assets.length === 2 && assets.every((asset) => asset.sources.length === 0)
+            return output('reply.plan', {
+              ...plan,
+              assets: assets.map((asset) => ({ assetId: asset.id, evidenceId: receipt.id })),
+            })
+          }
+          if (context.model?.id === 'thinker') {
+            const plan = JSON.parse(
+              messages.find((message) => message.role === 'user')!.content,
+            ).plan
+            return output('messages.send', {
+              operationId: 'original-media',
+              segments: plan.assets.map((asset: { assetId: string }) => ({
+                parts: [{ type: 'media', assetId: asset.assetId, mediaType: 'image' }],
+              })),
+            })
           }
           throw new Error('unexpected_fixture_role')
         },

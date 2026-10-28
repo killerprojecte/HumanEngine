@@ -1,0 +1,48 @@
+{
+  "words": {
+    "reason": "Reason",
+    "role": "Purpose",
+    "model": "Model",
+    "provider": "Provider",
+    "tool": "Tool",
+    "result": "Output",
+    "duration": "Duration",
+    "system": "System code",
+    "next": "Next",
+    "root": "Root cause",
+    "advice": "Corrective action",
+    "type": "Error type",
+    "technical": "Sanitized technical detail",
+    "operation": "Operation",
+    "stage": "Stage",
+    "attempt": "Attempt",
+    "timeout": "Timeout limit",
+    "remaining": "Remaining candidates",
+    "retryable": "Policy retry allowed",
+    "simulated": "Simulated segments",
+    "trace": "Trace",
+    "turn": "Turn",
+    "batch": "Learning batch",
+    "yes": "yes",
+    "no": "no",
+    "unknown": "Unmapped state",
+    "httpSummary": "Provider returned HTTP {status}",
+    "httpAdvice": "Inspect provider status, API configuration and permissions before retrying."
+  },
+  "roles": {
+    "planner": "Planning, research and complex reasoning",
+    "thinker": "Fast planned dialogue composition",
+    "learning": "Background learning",
+    "vision": "Image understanding",
+    "embedding": "Memory embeddings",
+    "models": "Model discovery"
+  },
+  "outputs": {
+    "text": "Text",
+    "tool_calls": "Tool calls",
+    "text_and_tools": "Text and tool calls",
+    "empty": "Empty",
+    "embeddings": "Embeddings",
+    "model_list": "Model list"
+  }
+}

@@ -1,3 +1,4 @@
+import { fixturePlanCompletion, fixtureReplyPlan, withFixturePlan } from './helpers/reply-plan.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Runtime, type RuntimeMessage, type RuntimeAdapter } from '../src/runtime.ts'
@@ -65,10 +66,21 @@ function fixture(
     status: 'sent',
     messageId: crypto.randomUUID(),
   }),
+  planning?: (messages: ChatMessage[]) => Promise<Completion>,
 ) {
   const store = new Store(':memory:')
   store.set('settings', { ...store.settings, debounceMs: 5, maxWaitMs: 100 })
-  const runtime = new Runtime(store, () => ({ complete }) as Router)
+  const runtime = new Runtime(
+    store,
+    () =>
+      ({
+        complete: async (role: string, messages: ChatMessage[]) => {
+          if (role === 'planner' && fixtureReplyPlan(messages) && planning)
+            return planning(messages)
+          return withFixturePlan(complete)(role, messages)
+        },
+      }) as Router,
+  )
   const adapter: RuntimeAdapter = {
     send: receipt,
     history: async () => ({ items: [], coverage: 'partial' }),
@@ -198,49 +210,61 @@ test('silence, wait and disabled participation identify intentional skips rather
   }
 })
 
-test('failed tool and unknown send remain diagnostic failures, never successful delivery', async () => {
-  let thinker = 0
-  const f = fixture(
-    async (role) =>
-      role === 'planner'
-        ? decide()
-        : ++thinker === 1
-          ? completion([{ id: 'tool', name: 'fixture.fail', arguments: {} }])
-          : thinker === 2
-            ? send()
+test('forbidden dialogue tool and unknown send remain diagnostic failures, never successful delivery', async () => {
+  for (const forbidden of [true, false]) {
+    let thinker = 0,
+      executed = 0
+    const f = fixture(
+      async (role) =>
+        role === 'planner'
+          ? decide()
+          : ++thinker === 1
+            ? forbidden
+              ? completion([{ id: 'tool', name: 'fixture.fail', arguments: {} }])
+              : send()
             : completion(),
-    async () => ({ status: 'unknown', detail: 'private-upstream-canary' }),
-  )
-  const s = scene()
-  f.add(s)
-  f.runtime.addExtension({
-    tools: [{ name: 'fixture.fail', description: 'Fixture', inputSchema: { type: 'object' } }],
-    async execute() {
-      throw new Error('private-error-canary')
-    },
-  })
-  try {
-    f.runtime.ingest(message(s), s)
-    await until(() => f.store.logs.some((row) => row.stage === 'turn' && row.status === 'failed'))
-    assert.ok(f.store.logs.some((row) => row.stage === 'tool' && row.status === 'failed'))
-    assert.ok(
-      f.store.logs.some(
-        (row) =>
-          row.stage === 'send_segment' &&
-          row.status === 'partial' &&
-          row.receiptState === 'unknown',
-      ),
+      async () => ({ status: 'unknown', detail: 'private-upstream-canary' }),
     )
-    assert.equal(
-      f.store.logs.find((row) => row.stage === 'turn' && row.status === 'failed')?.counts
-        ?.sentSegments,
-      0,
-    )
-    assert.equal(JSON.stringify(f.store.logs).includes('private-upstream-canary'), false)
-    assert.equal(JSON.stringify(f.store.logs).includes('private-error-canary'), false)
-    balanced(f.store)
-  } finally {
-    f.end()
+    const s = scene()
+    f.add(s)
+    f.runtime.addExtension({
+      tools: [{ name: 'fixture.fail', description: 'Fixture', inputSchema: { type: 'object' } }],
+      async execute() {
+        executed++
+        throw new Error('private-error-canary')
+      },
+    })
+    try {
+      f.runtime.ingest(message(s), s)
+      await until(() => f.store.logs.some((row) => row.stage === 'turn' && row.status === 'failed'))
+      assert.ok(f.store.logs.some((row) => row.stage === 'tool' && row.status === 'failed'))
+      assert.equal(executed, 0)
+      assert.equal(thinker, 1)
+      if (forbidden)
+        assert.equal(
+          f.store.logs.some((row) => row.stage === 'send_segment'),
+          false,
+        )
+      else
+        assert.ok(
+          f.store.logs.some(
+            (row) =>
+              row.stage === 'send_segment' &&
+              row.status === 'partial' &&
+              row.receiptState === 'unknown',
+          ),
+        )
+      assert.equal(
+        f.store.logs.find((row) => row.stage === 'turn' && row.status === 'failed')?.counts
+          ?.sentSegments,
+        0,
+      )
+      assert.equal(JSON.stringify(f.store.logs).includes('private-upstream-canary'), false)
+      assert.equal(JSON.stringify(f.store.logs).includes('private-error-canary'), false)
+      balanced(f.store)
+    } finally {
+      f.end()
+    }
   }
 })
 
@@ -416,21 +440,29 @@ test('image hooks run only after a reply decision and receive the planner-select
 test('cancellation closes active spans immediately but does not falsely report pending tool cleanup as finished', async () => {
   let release!: () => void,
     entered = false,
-    thinker = 0
+    planner = 0
   const gate = new Promise<void>((resolve) => {
     release = resolve
   })
-  const f = fixture(async (role) =>
-    role === 'planner'
-      ? decide()
-      : ++thinker === 1
+  const f = fixture(
+    async (role) => (role === 'planner' ? decide() : completion()),
+    undefined,
+    async (messages) =>
+      ++planner === 1
         ? completion([{ id: 'pending', name: 'fixture.pending', arguments: {} }])
-        : completion(),
+        : fixturePlanCompletion('planner', messages)!,
   )
   const s = scene()
   f.add(s)
   f.runtime.addExtension({
-    tools: [{ name: 'fixture.pending', description: 'Fixture', inputSchema: { type: 'object' } }],
+    tools: [
+      {
+        name: 'fixture.pending',
+        effect: 'read',
+        description: 'Fixture',
+        inputSchema: { type: 'object' },
+      },
+    ],
     async execute() {
       entered = true
       await gate

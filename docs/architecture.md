@@ -4,7 +4,11 @@ One process hosts a single character, SQLite state, a TypeScript bot runtime, an
 
 ## Conversation pipeline
 
-Platform event → scene/topic batching and attention → Planner participation decision → Thinker tools → guarded sequential sends → receipts. Planner decides silent, wait, or reply, never authors the answer. Thinker final text is not automatically forwarded after sending tools. Errors stay in technical logs, not chat.
+Platform event → scene/topic batching and attention → Planner participation decision → bounded Planner research and validated ReplyPlan → guarded planned feedback/learning → Dialogue composition → guarded sequential sends → receipts. `planner` and `thinker` remain separate, independently configured role routes; “Dialogue” is the user-facing name of the existing `thinker` role. No model is selected, recommended by price, or added automatically.
+
+Planner decides silent/wait/reply, gathers necessary information through scoped read tools (including enabled Web Search), chooses emoji/meme assets, and supplies a public composition plan rather than hidden reasoning. A final `noReply` skips actions and dialogue. Dialogue receives selected context, cited original tool receipts and actual action receipts; it cannot search, read more memory, change meme selection, or perform feedback/learning. Its only tool is the plan's one validated delivery tool: `messages.send` or an explicitly registered `effect: send` plugin routed through the same core guard. Terminal plain text is never delivered. Errors remain in diagnostics, not chat.
+
+See [Planner and Dialogue handoff](planner-dialogue.md) for schema, budgets, failure semantics and tested boundaries.
 
 Each turn snapshots role templates, manual rules, settings, and model routing. Participation disable and source recall are immediate exceptions: cancel dependent unsent work, never pretend sent segments were not sent. Private conversations only respond; proactive group turns must have a current contextual motive.
 

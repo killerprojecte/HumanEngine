@@ -1,3 +1,4 @@
+import { fixturePlanCompletion, fixtureReplyPlan } from './helpers/reply-plan.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { ReplyGrounding } from '../src/runtime.ts'
@@ -47,6 +48,8 @@ async function runFixture(
   let thinkerCalls = 0
   let sawRejection = false
   router.complete = async (role, messages) => {
+    const planned = fixturePlanCompletion(role, messages)
+    if (planned) return planned
     if (role === 'planner')
       return completion([
         {
@@ -94,7 +97,7 @@ test('captured chronology overclaim is rejected before send and corrected in the
 })
 test('continually invalid model exhausts bounded repair budget with one honest fallback', async () => {
   const outcome = await runFixture(false)
-  assert.equal(outcome.thinkerCalls, 12)
+  assert.equal(outcome.thinkerCalls, 3)
   assert.equal(outcome.messages.length, 1)
   assert.deepEqual(
     outcome.messages[0]!.parts,
@@ -265,6 +268,18 @@ async function runFeedbackAck(
   let calls = 0
   let sourceMessageId = ''
   router.complete = async (role, messages) => {
+    const plan = role === 'planner' ? fixtureReplyPlan(messages) : undefined
+    if (plan) {
+      sourceMessageId = readOldSource ? 'old-live-feedback' : plan.contextMessageIds.at(-1)!
+      if (readOldSource && !messages.some((m) => m.role === 'tool'))
+        return completion([
+          { id: 'history', name: 'messages.get', arguments: { ids: [sourceMessageId] } },
+        ])
+      plan.targetMessageIds = [...new Set([...plan.contextMessageIds, sourceMessageId])]
+      plan.contextMessageIds = [...plan.targetMessageIds]
+      plan.actions = withoutFeedback ? [] : [{ toolName: 'memes.feedback', arguments: {} }]
+      return completion([{ id: 'reply-plan', name: 'reply.plan', arguments: plan }])
+    }
     if (role === 'planner')
       return completion([
         {
@@ -286,12 +301,6 @@ async function runFeedbackAck(
     )
     if (++calls > 2 && omittedTarget !== 'always') return completion([])
     return completion([
-      ...(readOldSource
-        ? [{ id: `history-${calls}`, name: 'messages.get', arguments: { ids: [sourceMessageId] } }]
-        : []),
-      ...(withoutFeedback
-        ? []
-        : [{ id: `feedback-${calls}`, name: 'memes.feedback', arguments: {} }]),
       {
         id: `send-${calls}`,
         name: 'messages.send',
@@ -405,9 +414,9 @@ async function runFeedbackAck(
         scene,
       )
       const deadline = Date.now() + 3000
-      while (calls < 3 && Date.now() < deadline)
+      while (!adapterCalls && Date.now() < deadline)
         await new Promise((resolve) => setTimeout(resolve, 10))
-      assert.equal(calls, 3)
+      assert.equal(calls, 1)
       await new Promise((resolve) => setTimeout(resolve, 10))
       assert.equal(adapterCalls, 1)
       return runtime.preview(scene.id).filter((m) => m.senderId === 'bot')
@@ -422,7 +431,7 @@ async function runFeedbackAck(
       (m) => m.senderId === 'bot',
     )
     if (omittedTarget) assert.equal(sawTargetRejection, true)
-    if (omittedTarget === 'always') assert.equal(calls, 12)
+    if (omittedTarget === 'always') assert.equal(calls, 3)
     return result
   } finally {
     runtime.dispose()
@@ -499,7 +508,7 @@ test('feedback bound segments cannot be removed or reordered; ordinary operation
 test('cross-swapped targets cannot move a feedback overpromise into an unrelated reply', async () => {
   assert.deepEqual(await runFeedbackAck(false, false, false, true, 'swap'), [])
 })
-test('successful feedback followed by 12 missing-target sends never guesses a target or auto-posts', async () => {
+test('successful feedback followed by 3 missing-target sends never guesses a target or auto-posts', async () => {
   assert.deepEqual(await runFeedbackAck(false, false, 'always'), [])
 })
 

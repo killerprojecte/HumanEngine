@@ -1,3 +1,4 @@
+import { preserveErrorContext, bindAbortErrorContext } from './error-context.ts'
 import { modelScheduler } from '../scheduler.ts'
 import type { Completion, Usage } from '../models.ts'
 import { startFlow, currentFlowWriter, type FlowWriter, type FlowDetails } from './flow.ts'
@@ -88,6 +89,20 @@ export async function observeModel<T>(
   summary: (value: T) => FlowDetails,
 ): Promise<T> {
   const span = startFlow(writer ?? currentFlowWriter(), stage, details)
+  const releaseContext =
+    stage === 'model_attempt'
+      ? bindAbortErrorContext(signal, {
+          operation: 'model.request',
+          stage,
+          role: details.role,
+          modelId: details.modelId,
+          providerId: details.providerId,
+          apiModel: details.apiModel,
+          attempt: details.counts?.attempt,
+          timeoutMs: details.counts?.timeoutMs,
+          remainingCandidates: details.counts?.remainingCandidates,
+        })
+      : () => {}
   span.bindSignal(signal)
   return span.run(async () => {
     try {
@@ -99,6 +114,17 @@ export async function observeModel<T>(
       span.finish('completed', summary(value))
       return value
     } catch (error) {
+      preserveErrorContext(error, {
+        operation: 'model.request',
+        stage,
+        role: details.role,
+        modelId: details.modelId,
+        providerId: details.providerId,
+        apiModel: details.apiModel,
+        attempt: details.counts?.attempt,
+        timeoutMs: details.counts?.timeoutMs,
+        remainingCandidates: details.counts?.remainingCandidates,
+      })
       const reason = modelFailureReason(error)
       span.finish(
         signal?.aborted || reason === 'request_cancelled' || reason === 'protocol_disabled'
@@ -116,6 +142,8 @@ export async function observeModel<T>(
         error,
       )
       throw error
+    } finally {
+      releaseContext()
     }
   })
 }

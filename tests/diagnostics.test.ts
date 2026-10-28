@@ -17,12 +17,26 @@ test('structural error diagnostics retain safe frames and bounded causes without
   })
   error.stack = `TypeError: ${privateText}\n    at send (${resolve('src/api.ts')}:80:10)\n    at ${privateText} (${resolve('src/not-a-real-private-file.ts')}:4:2)`
   const result = sanitizeError(error)
-  assert.deepEqual(result, {
-    errorType: 'TypeError',
-    httpStatus: 502,
-    stackFrames: ['src/api.ts:80:10'],
-    causes: [{ errorType: 'Error', systemCode: 'ENOTFOUND', stackFrames: ['src/models.ts:40:12'] }],
-  })
+  assert.deepEqual(
+    {
+      errorType: result.errorType,
+      httpStatus: result.httpStatus,
+      stackFrames: result.stackFrames,
+      causes: result.causes.map(({ errorType, systemCode, stackFrames }) => ({
+        errorType,
+        systemCode,
+        stackFrames,
+      })),
+    },
+    {
+      errorType: 'TypeError',
+      httpStatus: 502,
+      stackFrames: ['src/api.ts:80:10'],
+      causes: [
+        { errorType: 'Error', systemCode: 'ENOTFOUND', stackFrames: ['src/models.ts:40:12'] },
+      ],
+    },
+  )
   assert.doesNotMatch(
     JSON.stringify(result),
     /fixture-private|private\.invalid|Authorization|lookup|send/,
@@ -30,15 +44,17 @@ test('structural error diagnostics retain safe frames and bounded causes without
   Object.defineProperty(cause, 'cause', { value: error })
   assert.equal(sanitizeError(error).causes.length, 1)
   let reads = 0
-  assert.deepEqual(
-    sanitizeError({
-      get stack() {
-        reads++
-        throw Error(privateText)
-      },
-    }),
-    { errorType: 'UnknownError', stackFrames: [], causes: [] },
-  )
+  const accessorResult = sanitizeError({
+    get stack() {
+      reads++
+      throw Error(privateText)
+    },
+  })
+  assert.equal(accessorResult.errorType, 'UnknownError')
+  assert.deepEqual(accessorResult.stackFrames, [])
+  assert.deepEqual(accessorResult.causes, [])
+  assert.equal(result.rootCause?.errorCode, 'ENOTFOUND')
+  assert.ok(result.rootCause?.adviceCode)
   const inheritedAccessor = new Error()
   Object.setPrototypeOf(
     inheritedAccessor,

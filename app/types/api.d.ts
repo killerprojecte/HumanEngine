@@ -3188,9 +3188,81 @@ export interface components {
             operation?: string;
             phase?: string;
             errorType?: string;
+            errorCode?: string;
+            errorMessage?: string;
+            adviceCode?: string;
+            errorContext?: {
+                operation?: string;
+                stage?: string;
+                role?: string;
+                modelId?: string;
+                providerId?: string;
+                apiModel?: string;
+                attempt?: number;
+                timeoutMs?: number;
+                remainingCandidates?: number;
+                retryable?: boolean;
+            };
+            rootCause?: {
+                errorType: string;
+                errorCode?: string;
+                errorMessage?: string;
+                adviceCode?: string;
+                errorContext?: {
+                    operation?: string;
+                    stage?: string;
+                    role?: string;
+                    modelId?: string;
+                    providerId?: string;
+                    apiModel?: string;
+                    attempt?: number;
+                    timeoutMs?: number;
+                    remainingCandidates?: number;
+                    retryable?: boolean;
+                };
+                systemCode?: string;
+                httpStatus?: number;
+                stackFrames: string[];
+            };
+            failures?: {
+                errorType: string;
+                errorCode?: string;
+                errorMessage?: string;
+                adviceCode?: string;
+                errorContext?: {
+                    operation?: string;
+                    stage?: string;
+                    role?: string;
+                    modelId?: string;
+                    providerId?: string;
+                    apiModel?: string;
+                    attempt?: number;
+                    timeoutMs?: number;
+                    remainingCandidates?: number;
+                    retryable?: boolean;
+                };
+                systemCode?: string;
+                httpStatus?: number;
+                stackFrames: string[];
+            }[];
             stackFrames?: string[];
             causes?: {
                 errorType: string;
+                errorCode?: string;
+                errorMessage?: string;
+                adviceCode?: string;
+                errorContext?: {
+                    operation?: string;
+                    stage?: string;
+                    role?: string;
+                    modelId?: string;
+                    providerId?: string;
+                    apiModel?: string;
+                    attempt?: number;
+                    timeoutMs?: number;
+                    remainingCandidates?: number;
+                    retryable?: boolean;
+                };
                 systemCode?: string;
                 httpStatus?: number;
                 stackFrames: string[];

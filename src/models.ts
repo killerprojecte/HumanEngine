@@ -1,3 +1,4 @@
+import { preserveErrorContext } from './diagnostics/error-context.ts'
 import {
   ModelProtocolRegistry,
   isBuiltinProtocol,
@@ -39,6 +40,7 @@ export interface RoleRoute {
   timeoutMs: number
 }
 export interface ToolDefinition {
+  effect?: 'read' | 'learningCandidate' | 'send'
   name: string
   description: string
   inputSchema: Record<string, unknown>
@@ -94,8 +96,11 @@ export class ModelError extends Error {
     public readonly code: string,
     public readonly status?: number,
     public readonly retryable = status !== undefined && [429, 502, 503, 504].includes(status),
+    options: { cause?: unknown; failures?: unknown[] } = {},
   ) {
-    super(code)
+    super(code, options)
+    if (options.failures)
+      Object.defineProperty(this, 'failures', { value: options.failures.slice(0, 4) })
     this.name = 'ModelError'
   }
 }
@@ -131,7 +136,8 @@ const usageOf = (value: unknown, embedding = false): Usage => {
   }
 }
 const wireName = (name: string) => name.replaceAll('.', '__')
-const abortError = () => new ModelError('request_cancelled')
+const abortError = (cause?: unknown) =>
+  new ModelError('request_cancelled', undefined, false, { cause })
 
 /** Protocol state is transient, opaque, and never serialized into logs or persisted messages. */
 export class Router {
@@ -194,6 +200,7 @@ export class Router {
     let attempted = false
     let retryable = true
     let lastStatus: number | undefined
+    const failures: unknown[] = []
     for (const [index, modelId] of route.orderedModelIds.entries()) {
       if (signal?.aborted) throw abortError()
       const model = this.config.models.find((item) => item.id === modelId)
@@ -240,6 +247,7 @@ export class Router {
             apiModel: model.apiModelName,
             counts: {
               attempt: index + 1,
+              timeoutMs: route.timeoutMs,
               remainingCandidates: route.orderedModelIds.length - index - 1,
             },
             nextStep: 'wait_for_model_slot',
@@ -345,7 +353,21 @@ export class Router {
           completionDetails,
         )
       } catch (error) {
-        if (signal?.aborted) throw abortError()
+        if (signal?.aborted) throw abortError(error)
+        preserveErrorContext(error, {
+          operation: 'model.complete',
+          stage: 'model_attempt',
+          role,
+          modelId,
+          providerId: provider.id,
+          apiModel: model.apiModelName,
+          attempt: index + 1,
+          timeoutMs: route.timeoutMs,
+          remainingCandidates: route.orderedModelIds.length - index - 1,
+          retryable: error instanceof ModelError && error.retryable,
+        })
+        if (failures.length === 4) failures.shift()
+        failures.push(error)
         retryable &&= error instanceof ModelError && error.retryable
         lastStatus = error instanceof ModelError ? error.status : undefined
         this.emit({
@@ -363,6 +385,7 @@ export class Router {
       attempted ? 'all_models_failed' : 'no_compatible_model',
       retryable && attempted ? lastStatus : undefined,
       attempted && retryable,
+      { cause: failures.at(-1), failures },
     )
   }
 
@@ -530,7 +553,9 @@ export class Router {
         durationMs: Date.now() - started,
         code: error instanceof ModelError ? error.code : 'provider_request_failed',
       })
-      throw error instanceof ModelError ? error : new ModelError('provider_request_failed')
+      throw error instanceof ModelError
+        ? error
+        : new ModelError('provider_request_failed', undefined, false, { cause: error })
     }
   }
 
@@ -588,7 +613,9 @@ export class Router {
           durationMs: Date.now() - started,
           code: error instanceof ModelError ? error.code : 'provider_request_failed',
         })
-        throw error instanceof ModelError ? error : new ModelError('provider_request_failed')
+        throw error instanceof ModelError
+          ? error
+          : new ModelError('provider_request_failed', undefined, false, { cause: error })
       }
     }
     const result = await this.request(provider, 'models', undefined, 15_000, signal)
@@ -671,7 +698,7 @@ export class Router {
     } catch (error) {
       if (signal.aborted) throw failure()
       // Never trust exception text or even a ModelError thrown by external plugin code.
-      throw new ModelError('provider_request_failed')
+      throw new ModelError('provider_request_failed', undefined, false, { cause: error })
     } finally {
       signal.removeEventListener('abort', onAbort)
     }
@@ -1045,14 +1072,18 @@ export class Router {
       if (signal.aborted) throw abortError()
       try {
         return object(JSON.parse(Buffer.concat(chunks).toString('utf8')))
-      } catch {
-        throw new ModelError('invalid_provider_json')
+      } catch (error) {
+        throw new ModelError('invalid_provider_json', undefined, false, { cause: error })
       }
     } catch (error) {
-      if (parentSignal?.aborted) throw abortError()
-      if (timeoutSignal.aborted) throw new ModelError('provider_timeout')
+      if (parentSignal?.aborted) throw abortError(error)
+      if (timeoutSignal.aborted)
+        throw preserveErrorContext(
+          new ModelError('provider_timeout', undefined, false, { cause: error }),
+          { timeoutMs },
+        )
       if (error instanceof ModelError) throw error
-      throw new ModelError('provider_request_failed')
+      throw new ModelError('provider_request_failed', undefined, false, { cause: error })
     }
   }
 }

@@ -18,7 +18,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open `http://127.0.0.1:3000`. Enter the server's administration token. The token remains in tab memory, not local storage. Configure a provider using either **OpenAI Chat Completions** or **OpenAI Responses**, create independent model instances, then assign the ordered Planner and Thinker routes. Model names can be typed manually even when discovery is unavailable. Save providers before discovery.
+Open `http://127.0.0.1:3000`. Enter the server's administration token. The token remains in tab memory, not local storage. Configure a provider using either **OpenAI Chat Completions** or **OpenAI Responses**, create independent model instances, then assign the ordered Planner and Dialogue routes (`planner` and `thinker` IDs remain unchanged). Model names can be typed manually even when discovery is unavailable. Save providers before discovery.
 
 ```sh
 npm run check
@@ -42,7 +42,7 @@ No public deployment is performed by this project. Keep the interface on loopbac
 
 The runtime starts with the server, independently of browser visits. Enable the SnowLuma plugin after setting its OneBot WebSocket URL, bot account ID, and access token directly in the UI. Incoming scenes start disabled; explicitly enable participation and/or learning in Scenes.
 
-- Planner participation decisions and Thinker tool-only sends, with batched ingress, bounded topic attention, cancellation, receipt-aware segments, and stale-answer validation.
+- Planner participation, bounded research and grounded response plans, followed by Dialogue composition with one plan-selected delivery tool. Independent routes, scoped evidence, cancellation, receipt-aware segments, and stale-answer validation remain enforced; see [Planner and Dialogue](docs/planner-dialogue.md).
 - Isolated Web simulation and read-only real history preview with explicit partial/unavailable coverage.
 - Scene/person memory, conservative public-technical promotion, sourced background learning, correction/lock/delete guards, and scoped sqlite-vec search.
 - Durable recall tombstones, in-flight cancellation, derived-source invalidation, and no history resurrection or restart replay.

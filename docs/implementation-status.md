@@ -2,7 +2,7 @@
 
 ## Implemented
 
-The runtime, management API, and dashboard are integrated, not independent demo stubs. Both OpenAI protocols are exercised against HTTP fixtures; the full authenticated API → Planner → Thinker → send-tool simulation path is covered by an integration test. OneBot transport tests exercise actual WebSocket events, history, recalls, unknown send outcomes, and disposal. SQLite and sqlite-vec are actually loaded in tests; GIF/WebP fixtures actually contain multiple animated frames.
+The runtime, management API, and dashboard are integrated, not independent demo stubs. Both OpenAI protocols are exercised against HTTP fixtures; the full authenticated API → Planner participation/research/validated plan → Dialogue → guarded send-tool simulation path is covered by an integration test. OneBot transport tests exercise actual WebSocket events, history, recalls, unknown send outcomes, and disposal. SQLite and sqlite-vec are actually loaded in tests; GIF/WebP fixtures actually contain multiple animated frames.
 
 Configuration, scene participation/learning, models/routes, chat simulation/preview, memory management, manual rules, persona version records, media management, and plugins have typed administration APIs and Nuxt UI pages. Schemas generate OpenAPI and browser types; contract drift is checked.
 
@@ -17,7 +17,7 @@ Configuration, scene participation/learning, models/routes, chat simulation/prev
 ## Current runtime and operations
 
 - Sourced scene habits and structured shared bot-expression preferences are integrated with learning, retrieval, feedback, recall, and lock/delete administration. Background batches first extract from sources alone, then use scoped related memory only for candidate-index reconciliation and explicit name/correction supersession. Exact normalized content can share alternative proofs; differing semantic paraphrases may remain separate for safe lineage. Conservative original-context technical review can promote the same sourced record without increasing factual confidence.
-- Planner may assign one message to several topics and select a main topic. Thinker context narrows to that topic; no conversational-quality or human-likeness benchmark is claimed.
+- Planner may assign one message to several topics and select a main topic. Research context narrows to that topic, and Dialogue receives only plan-selected context plus cited receipts; no conversational-quality or human-likeness benchmark is claimed.
 - Participation-window inclinations are soft hints in the instance timezone. Bounded priority scheduling favors foreground decisions over queued background work; it is not a spending limit.
 - Automatic animated-media intake connects ordered distinct GIF/WebP samples to vision tags, conservative availability/sharing decisions, metadata search, and original-byte guarded sends. Manual choices and source recalls remain authoritative; bounded sampling and model privacy review are not guarantees.
 - Explicit single-model capability probes never silently alter configuration. Vision probes establish input acceptance, not image understanding.

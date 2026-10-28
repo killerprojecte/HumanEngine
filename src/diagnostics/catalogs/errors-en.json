@@ -1,0 +1,418 @@
+{
+  "provider_http_401": {
+    "summary": "Provider rejected authentication",
+    "advice": "Check the saved API key, credential scope and provider endpoint; do not retry unchanged credentials."
+  },
+  "provider_http_403": {
+    "summary": "Provider denied access",
+    "advice": "Check model/account permissions and provider access restrictions."
+  },
+  "provider_http_404": {
+    "summary": "Provider endpoint or model was not found",
+    "advice": "Check the API base path and exact model name against provider documentation."
+  },
+  "provider_http_429": {
+    "summary": "Provider rate or quota limit reached",
+    "advice": "Check quota and rate limits; reduce concurrency or wait for the provider limit to reset."
+  },
+  "provider_http_408": {
+    "summary": "Provider timed out the request",
+    "advice": "Inspect provider latency and the configured timeout before retrying."
+  },
+  "provider_http_5xx": {
+    "summary": "Provider service returned a server error",
+    "advice": "Check provider service status and configured fallback models; retry only under the existing policy."
+  },
+  "provider_timeout": {
+    "summary": "Model request exceeded its timeout",
+    "advice": "Inspect the recorded timeout and provider latency; use a suitable timeout or another configured model."
+  },
+  "provider_request_failed": {
+    "summary": "Model transport request failed",
+    "advice": "Inspect the system code and cause chain; check DNS, connectivity and TLS configuration."
+  },
+  "invalid_provider_json": {
+    "summary": "Provider response is not valid JSON",
+    "advice": "Check API protocol compatibility and whether a gateway returned HTML or truncated data."
+  },
+  "invalid_provider_response": {
+    "summary": "Provider response does not match the expected schema",
+    "advice": "Check the selected API protocol and provider response shape; inspect schema diagnostics without copying private payloads."
+  },
+  "invalid_provider_content_type": {
+    "summary": "Provider returned an unexpected content type",
+    "advice": "Check the API endpoint and gateway configuration; the model route expects a JSON response."
+  },
+  "invalid_tool_arguments": {
+    "summary": "Model supplied invalid tool arguments",
+    "advice": "Inspect the tool name and schema-validation details; correct the planning/tool contract rather than retrying the same arguments."
+  },
+  "schema_validation_failed": {
+    "summary": "Structured data failed schema validation",
+    "advice": "Inspect the safe validation codes and expected types at the recorded operation."
+  },
+  "database_busy": {
+    "summary": "Database is busy or locked",
+    "advice": "Check concurrent writers and transaction duration; do not replay uncertain writes automatically."
+  },
+  "database_readonly": {
+    "summary": "Database is read-only",
+    "advice": "Check the mounted database directory and process write permissions."
+  },
+  "database_full": {
+    "summary": "Database or storage is full",
+    "advice": "Check available disk space and storage limits before writing again."
+  },
+  "database_corrupt": {
+    "summary": "Database integrity failure",
+    "advice": "Stop uncertain writes, preserve a backup and inspect database integrity before recovery."
+  },
+  "database_constraint": {
+    "summary": "Database constraint rejected the write",
+    "advice": "Inspect the operation and constraint code; correct conflicting or invalid data before retrying."
+  },
+  "tool_execution_failed": {
+    "summary": "Tool execution failed",
+    "advice": "Inspect the tool name, operation and underlying cause; no successful tool result should be assumed."
+  },
+  "image_read_unsupported": {
+    "summary": "Adapter cannot read this image",
+    "advice": "Check adapter image-reading support and the configured vision route."
+  },
+  "media_fetch_failed": {
+    "summary": "Image download failed",
+    "advice": "Inspect the transport cause and media-source validity; expired URLs may require platform refresh."
+  },
+  "image_download_url_unavailable": {
+    "summary": "Platform did not return an image download location",
+    "advice": "Check platform get_image support and whether the image reference has expired."
+  },
+  "invalid_or_unsupported_image": {
+    "summary": "Image bytes could not be safely decoded",
+    "advice": "Check image format, byte size and pixel limits; a MIME label alone does not prove an image is valid."
+  },
+  "media_size_limit": {
+    "summary": "Image exceeded the size limit",
+    "advice": "Use a smaller image within the documented byte and pixel limits."
+  },
+  "route_not_configured": {
+    "summary": "No model route configured for this purpose",
+    "advice": "Configure a compatible model for the recorded purpose in Models; a vision task requires vision capability."
+  },
+  "credential_not_configured": {
+    "summary": "Required API credential is missing",
+    "advice": "Save the provider API key in the Models page or the adapter key in its plugin page."
+  },
+  "all_models_failed": {
+    "summary": "All configured model attempts failed",
+    "advice": "Inspect the root cause and attempted model details; changing the outer turn label cannot resolve the provider failure."
+  },
+  "no_compatible_model": {
+    "summary": "No compatible model was available",
+    "advice": "Check the route model list, enabled providers and required text, tool or vision capabilities."
+  },
+  "unknown_error": {
+    "summary": "Unclassified runtime error",
+    "advice": "Inspect the sanitized technical description, error type and stack; report the trace ID with these diagnostics."
+  },
+  "cause_not_captured": {
+    "summary": "Underlying cause was not captured",
+    "advice": "This boundary did not retain the original failure; inspect adjacent trace events and report the missing capture point."
+  },
+  "ECONNREFUSED": {
+    "summary": "Connection was refused",
+    "advice": "Check that the configured service is listening and reachable from this runtime."
+  },
+  "ENOTFOUND": {
+    "summary": "DNS name could not be resolved",
+    "advice": "Check endpoint spelling and DNS availability from this runtime."
+  },
+  "ETIMEDOUT": {
+    "summary": "Network operation timed out",
+    "advice": "Check network reachability, service latency and configured timeouts."
+  },
+  "EACCES": {
+    "summary": "Operation lacks filesystem or network permission",
+    "advice": "Check the process identity and permissions for the failing operation; do not disable security controls blindly."
+  },
+  "ECONNRESET": {
+    "summary": "Remote connection was reset",
+    "advice": "Check upstream connection stability and gateway limits before retrying."
+  },
+  "TypeError": {
+    "summary": "Runtime value has an unexpected type",
+    "advice": "Inspect the safe technical detail and first application stack frame for the invalid operation."
+  },
+  "model_timeout": {
+    "summary": "Model request exceeded its timeout",
+    "advice": "Inspect the recorded timeout and provider latency; use a suitable timeout or another configured model."
+  },
+  "database_locked": {
+    "summary": "Database is busy or locked",
+    "advice": "Check concurrent writers and transaction duration; do not replay uncertain writes automatically."
+  },
+  "SQLITE_BUSY": {
+    "summary": "Database is busy or locked",
+    "advice": "Check concurrent writers and transaction duration; do not replay uncertain writes automatically."
+  },
+  "SQLITE_LOCKED": {
+    "summary": "Database is busy or locked",
+    "advice": "Check concurrent writers and transaction duration; do not replay uncertain writes automatically."
+  },
+  "SQLITE_READONLY": {
+    "summary": "Database is read-only",
+    "advice": "Check the mounted database directory and process write permissions."
+  },
+  "SQLITE_FULL": {
+    "summary": "Database or storage is full",
+    "advice": "Check available disk space and storage limits before writing again."
+  },
+  "SQLITE_CORRUPT": {
+    "summary": "Database integrity failure",
+    "advice": "Stop uncertain writes, preserve a backup and inspect database integrity before recovery."
+  },
+  "SQLITE_CONSTRAINT": {
+    "summary": "Database constraint rejected the write",
+    "advice": "Inspect the operation and constraint code; correct conflicting or invalid data before retrying."
+  },
+  "EAI_AGAIN": {
+    "summary": "DNS name could not be resolved",
+    "advice": "Check endpoint spelling and DNS availability from this runtime."
+  },
+  "UND_ERR_CONNECT_TIMEOUT": {
+    "summary": "Network operation timed out",
+    "advice": "Check network reachability, service latency and configured timeouts."
+  },
+  "EPERM": {
+    "summary": "Operation lacks filesystem or network permission",
+    "advice": "Check the process identity and permissions for the failing operation; do not disable security controls blindly."
+  },
+  "invalid_image_data": {
+    "summary": "Image bytes could not be safely decoded",
+    "advice": "Check image format, byte size and pixel limits; a MIME label alone does not prove an image is valid."
+  },
+  "unsupported_image_format": {
+    "summary": "Image bytes could not be safely decoded",
+    "advice": "Check image format, byte size and pixel limits; a MIME label alone does not prove an image is valid."
+  },
+  "invalid_provider_usage": {
+    "summary": "Provider response does not match the expected schema",
+    "advice": "Check the selected API protocol and provider response shape; inspect schema diagnostics without copying private payloads."
+  },
+  "incomplete_model_response": {
+    "summary": "Provider response does not match the expected schema",
+    "advice": "Check the selected API protocol and provider response shape; inspect schema diagnostics without copying private payloads."
+  },
+  "incomplete_tool_call": {
+    "summary": "Provider response does not match the expected schema",
+    "advice": "Check the selected API protocol and provider response shape; inspect schema diagnostics without copying private payloads."
+  },
+  "duplicate_tool_call_id": {
+    "summary": "Provider response does not match the expected schema",
+    "advice": "Check the selected API protocol and provider response shape; inspect schema diagnostics without copying private payloads."
+  },
+  "unknown_tool_call": {
+    "summary": "Model supplied invalid tool arguments",
+    "advice": "Inspect the tool name and schema-validation details; correct the planning/tool contract rather than retrying the same arguments."
+  },
+  "unknown_tool": {
+    "summary": "Model supplied invalid tool arguments",
+    "advice": "Inspect the tool name and schema-validation details; correct the planning/tool contract rather than retrying the same arguments."
+  },
+  "tool_failed": {
+    "summary": "Tool execution failed",
+    "advice": "Inspect the tool name, operation and underlying cause; no successful tool result should be assumed."
+  },
+  "invalid_media_reference": {
+    "summary": "Platform did not return an image download location",
+    "advice": "Check platform get_image support and whether the image reference has expired."
+  },
+  "http_action_failed": {
+    "summary": "Adapter HTTP action failed",
+    "advice": "Inspect the HTTP status, adapter endpoint and token permissions."
+  },
+  "http_request_failed": {
+    "summary": "Adapter transport request failed",
+    "advice": "Inspect the system code and adapter connectivity; do not assume the message was sent."
+  },
+  "invalid_http_response": {
+    "summary": "Adapter returned an invalid HTTP response",
+    "advice": "Check adapter protocol compatibility and response content type."
+  },
+  "platform_action_failed": {
+    "summary": "Platform rejected the action",
+    "advice": "Inspect the platform result code, bot permissions and target availability."
+  },
+  "invalid_action_parameters": {
+    "summary": "Adapter action parameters are invalid",
+    "advice": "Inspect the action name and validated parameter contract; do not send malformed parameters again."
+  },
+  "missing_send_receipt": {
+    "summary": "Platform did not provide a usable send receipt",
+    "advice": "The send result is uncertain. Inspect platform history before retrying to avoid duplicate messages."
+  },
+  "send_failed": {
+    "summary": "Message send failed",
+    "advice": "Inspect the adapter or platform root cause and already-confirmed segment count before retrying."
+  },
+  "planner_timeout": {
+    "summary": "Planning exceeded its stage budget",
+    "advice": "Inspect the Planner route timeout and task complexity; reduce research scope or configure an appropriate budget. This is not a user cancellation."
+  },
+  "dialogue_timeout": {
+    "summary": "Dialogue composition exceeded its stage budget",
+    "advice": "Inspect the dialogue route timeout, model latency and response size; choose an appropriate budget. This is not a user cancellation."
+  },
+  "TLS_ERROR": {
+    "summary": "TLS certificate validation failed",
+    "advice": "Check the endpoint hostname, certificate validity and trusted certificate chain; do not disable TLS verification."
+  },
+  "CERT_HAS_EXPIRED": {
+    "summary": "TLS certificate validation failed",
+    "advice": "Check the endpoint hostname, certificate validity and trusted certificate chain; do not disable TLS verification."
+  },
+  "DEPTH_ZERO_SELF_SIGNED_CERT": {
+    "summary": "TLS certificate validation failed",
+    "advice": "Check the endpoint hostname, certificate validity and trusted certificate chain; do not disable TLS verification."
+  },
+  "ERR_TLS_CERT_ALTNAME_INVALID": {
+    "summary": "TLS certificate validation failed",
+    "advice": "Check the endpoint hostname, certificate validity and trusted certificate chain; do not disable TLS verification."
+  },
+  "UNABLE_TO_VERIFY_LEAF_SIGNATURE": {
+    "summary": "TLS certificate validation failed",
+    "advice": "Check the endpoint hostname, certificate validity and trusted certificate chain; do not disable TLS verification."
+  },
+  "SELF_SIGNED_CERT_IN_CHAIN": {
+    "summary": "TLS certificate validation failed",
+    "advice": "Check the endpoint hostname, certificate validity and trusted certificate chain; do not disable TLS verification."
+  },
+  "planner_invalid_plan": {
+    "summary": "Planner returned an invalid response plan",
+    "advice": "Inspect the safe plan-validation details and planning model/tool compatibility. Require one valid structured plan before dialogue composition."
+  },
+  "planner_missing_plan": {
+    "summary": "Planner did not return a response plan",
+    "advice": "Inspect the safe plan-validation details and planning model/tool compatibility. Require one valid structured plan before dialogue composition."
+  },
+  "planner_ambiguous_plan": {
+    "summary": "Planner returned conflicting response plans",
+    "advice": "Inspect the safe plan-validation details and planning model/tool compatibility. Require one valid structured plan before dialogue composition."
+  },
+  "planner_missing_decision": {
+    "summary": "Planner omitted the participation decision",
+    "advice": "Inspect the safe plan-validation details and planning model/tool compatibility. Require one valid structured plan before dialogue composition."
+  },
+  "planner_forbidden_tool": {
+    "summary": "Planner requested a tool outside its authority",
+    "advice": "Keep research and planning in Planner; delivery belongs to the validated dialogue path. Inspect the allowed tool contract rather than granting broader privileges."
+  },
+  "planner_forbidden_action": {
+    "summary": "Planner requested an action outside its authority",
+    "advice": "Keep research and planning in Planner; delivery belongs to the validated dialogue path. Inspect the allowed tool contract rather than granting broader privileges."
+  },
+  "planner_invalid_delivery_tool": {
+    "summary": "Planner attempted to use an invalid delivery tool",
+    "advice": "Keep research and planning in Planner; delivery belongs to the validated dialogue path. Inspect the allowed tool contract rather than granting broader privileges."
+  },
+  "dialogue_forbidden_tool": {
+    "summary": "Dialogue model requested a planning-only or unauthorized tool",
+    "advice": "Dialogue should compose and send only from the grounded plan. Move search, meme selection and complex tool use back to Planner."
+  },
+  "planner_unknown_asset": {
+    "summary": "Plan referenced an unknown meme or asset",
+    "advice": "Use asset IDs returned by the current authorized asset search; do not invent or reuse unverified IDs."
+  },
+  "planner_invalid_target": {
+    "summary": "Plan contained an invalid reply target",
+    "advice": "Select a live target and topic from the current scene and turn; recalled or cross-scene targets must not be used."
+  },
+  "planner_unknown_target": {
+    "summary": "Plan referenced a target not present in the current turn",
+    "advice": "Select a live target and topic from the current scene and turn; recalled or cross-scene targets must not be used."
+  },
+  "planner_invalid_topic": {
+    "summary": "Plan referenced an invalid conversation topic",
+    "advice": "Select a live target and topic from the current scene and turn; recalled or cross-scene targets must not be used."
+  },
+  "planner_unknown_evidence": {
+    "summary": "Plan referenced evidence that was not retrieved",
+    "advice": "Use bounded, deduplicated references to evidence actually returned in this planning turn; do not fabricate grounding."
+  },
+  "planner_duplicate_evidence": {
+    "summary": "Plan included duplicate evidence references",
+    "advice": "Use bounded, deduplicated references to evidence actually returned in this planning turn; do not fabricate grounding."
+  },
+  "planner_evidence_too_large": {
+    "summary": "Plan evidence exceeded the allowed size",
+    "advice": "Use bounded, deduplicated references to evidence actually returned in this planning turn; do not fabricate grounding."
+  },
+  "planner_round_budget_exhausted": {
+    "summary": "Planner exhausted its reasoning round budget",
+    "advice": "Reduce planning scope or configure a suitable bounded budget; stop rather than silently running extra rounds or tools."
+  },
+  "planner_tool_budget_exhausted": {
+    "summary": "Planner exhausted its tool-call budget",
+    "advice": "Reduce planning scope or configure a suitable bounded budget; stop rather than silently running extra rounds or tools."
+  },
+  "planner_duplicate_action": {
+    "summary": "Planner requested an already-processed action",
+    "advice": "Inspect the prior action result and operation ID; do not repeat an action with possible external effects."
+  },
+  "planner_stale_action": {
+    "summary": "Planner action became stale before execution",
+    "advice": "Revalidate scene, source and cancellation state before starting a new plan; never execute stale actions."
+  },
+  "planner_invalid_no_reply": {
+    "summary": "Planner combined a no-reply decision with reply actions",
+    "advice": "Inspect the safe plan-validation details and planning model/tool compatibility. Require one valid structured plan before dialogue composition."
+  },
+  "planner_context_ineligible": {
+    "summary": "Planning context is no longer eligible",
+    "advice": "Revalidate scene, source and cancellation state before starting a new plan; never execute stale actions."
+  },
+  "planner_tool_failed": {
+    "summary": "Planning tool failed",
+    "advice": "Inspect the recorded tool/action and underlying cause; preserve any confirmed effects and avoid unsafe replay."
+  },
+  "planner_action_failed": {
+    "summary": "Planning action failed",
+    "advice": "Inspect the recorded tool/action and underlying cause; preserve any confirmed effects and avoid unsafe replay."
+  },
+  "planner_failed": {
+    "summary": "Response planning failed",
+    "advice": "Inspect the captured root cause, model, budget and attempted operations; the outer stage failure alone is not a diagnosis."
+  },
+  "dialogue_failed": {
+    "summary": "Planned dialogue composition failed",
+    "advice": "Inspect the captured root cause, model, budget and attempted operations; the outer stage failure alone is not a diagnosis."
+  },
+  "image_processing_failed": {
+    "summary": "Image processing failed",
+    "advice": "Inspect the retained download, decoding or vision-model cause; do not assume the image was understood."
+  },
+  "turn_tool_failures": {
+    "summary": "The turn contains unresolved tool failures",
+    "advice": "Inspect the specific tool and cause. Confirmed sends are not undone; do not blindly resend."
+  },
+  "database_statement_failed": {
+    "summary": "Database statement failed",
+    "advice": "Inspect source frames, schema and migration versions; do not log SQL or user content."
+  },
+  "database_io_error": {
+    "summary": "Database storage I/O failed",
+    "advice": "Check disk, filesystem and process permissions; establish commit state before retrying."
+  },
+  "database_open_failed": {
+    "summary": "Cannot open database",
+    "advice": "Check that the database directory exists and the process can access it."
+  },
+  "database_permission_denied": {
+    "summary": "Database access denied",
+    "advice": "Check process identity, file permissions and database authorization."
+  },
+  "database_schema_changed": {
+    "summary": "Database schema changed",
+    "advice": "Check migration versions and concurrent schema changes before preparing statements again."
+  }
+}

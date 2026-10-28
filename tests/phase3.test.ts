@@ -1,3 +1,4 @@
+import { fixturePlanCompletion } from './helpers/reply-plan.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { WorkScheduler } from '../src/scheduler.ts'
@@ -270,6 +271,8 @@ test('Simulation never notifies real observers or changes real reply state; self
     () =>
       ({
         complete: async (role: string, messages: ChatMessage[]) => {
+          const fixturePlan = fixturePlanCompletion(role, messages)
+          if (fixturePlan) return fixturePlan
           if (role === 'planner') {
             plannerStates.push(JSON.parse(messages[1]!.content).globalState)
             return completion([

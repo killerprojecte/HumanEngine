@@ -1,3 +1,4 @@
+import { fixturePlanCompletion } from './helpers/reply-plan.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Store } from '../src/store.ts'
@@ -20,8 +21,14 @@ async function runDecision(
   store.set('settings', { ...store.settings, debounceMs: 0, maxWaitMs: 100 })
   let thinkerCalls = 0
   const thinkerInputs: Array<Record<string, unknown>> = []
+  const planningInputs: Array<Record<string, unknown>> = []
   const router = new Router(store.models)
   router.complete = async (role, messages: ChatMessage[]) => {
+    const fixturePlan = fixturePlanCompletion(role, messages)
+    if (fixturePlan) {
+      planningInputs.push(JSON.parse(messages.find((m) => m.role === 'user')!.content))
+      return fixturePlan
+    }
     if (role === 'planner')
       return result([
         {
@@ -55,6 +62,7 @@ async function runDecision(
       messages,
       thinkerCalls,
       thinkerInputs,
+      planningInputs,
       logs: structuredClone(store.logs),
     }
   } finally {
@@ -74,8 +82,8 @@ test('a sole 212-character planner explanation overflow is omitted without chang
     topics: [{ topicId: 'current', messageIds: [input.messages[0]!.id] }],
   }))
   assert.equal(outcome.messages.filter((m) => m.senderId === 'bot').length, 1)
-  assert.equal(outcome.thinkerCalls, 2)
-  const decision = outcome.thinkerInputs[0]!.decision as Record<string, unknown>
+  assert.equal(outcome.thinkerCalls, 1)
+  const decision = outcome.planningInputs[0]!.decision as Record<string, unknown>
   assert.equal(decision.action, 'reply')
   assert.equal(decision.reasonCode, marker)
   assert.deepEqual(decision.targetMessageIds, [outcome.messages[0]!.id])
@@ -87,7 +95,7 @@ test('a sole 212-character planner explanation overflow is omitted without chang
 test('bounded planner explanations remain unchanged and silent or wait cannot become replies', async () => {
   const reason = 'a'.repeat(200)
   const bounded = await runDecision(() => ({ action: 'reply', reasonCode: reason }))
-  assert.equal((bounded.thinkerInputs[0]!.decision as Record<string, unknown>).reasonCode, reason)
+  assert.equal((bounded.planningInputs[0]!.decision as Record<string, unknown>).reasonCode, reason)
   assert.equal(
     bounded.logs.some((entry) => entry.code === marker),
     false,
@@ -128,7 +136,7 @@ test('reason normalization does not repair other malformed fields or bypass mess
       false,
     )
     assert.equal(
-      outcome.logs.some((entry) => entry.code === 'turn_failed'),
+      outcome.logs.some((entry) => entry.stage === 'turn' && entry.status === 'failed'),
       true,
     )
   }
@@ -146,7 +154,7 @@ test('reason normalization does not repair other malformed fields or bypass mess
     assert.equal(outcome.thinkerCalls, 0)
     assert.equal(outcome.messages.filter((m) => m.senderId === 'bot').length, 0)
     assert.equal(
-      outcome.logs.some((entry) => entry.code === 'turn_failed'),
+      outcome.logs.some((entry) => entry.stage === 'turn' && entry.status === 'failed'),
       true,
     )
   }

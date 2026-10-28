@@ -1,3 +1,4 @@
+import { fixtureReplyPlan } from './helpers/reply-plan.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Store } from '../src/store.ts'
@@ -61,7 +62,23 @@ function setup(complete: (role: string, messages: ChatMessage[]) => Promise<Comp
     learningEnabled: false,
     proactiveEnabled: true,
   })
-  const runtime = new Runtime(store, () => ({ complete }) as Router)
+  const runtime = new Runtime(
+    store,
+    () =>
+      ({
+        complete: async (role: string, messages: ChatMessage[]) => {
+          const plan = role === 'planner' ? fixtureReplyPlan(messages) : undefined
+          if (plan) {
+            const input = JSON.parse(messages.find((m) => m.role === 'user')!.content)
+            plan.deliveryTool =
+              input.deliveryTools.find((t: { effect?: string }) => t.effect === 'send')?.name ??
+              'messages.send'
+            return result([{ id: 'reply-plan', name: 'reply.plan', arguments: plan }])
+          }
+          return complete(role, messages)
+        },
+      }) as Router,
+  )
   const plugins = new PluginManager(store, runtime)
   return { store, runtime, plugins }
 }

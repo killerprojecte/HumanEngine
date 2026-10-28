@@ -1,3 +1,4 @@
+import { preserveErrorContext } from './diagnostics/error-context.ts'
 import { createHash } from 'node:crypto'
 import { imageDataUrl } from './media.ts'
 import { ModelError, type Router } from './models.ts'
@@ -105,6 +106,7 @@ export async function describeCurrentImages(
       })
       return { trust: 'untrusted_image_descriptions', images }
     }
+    const imageErrors: unknown[] = []
     const valid = (message: RuntimeMessage, assetId: string) =>
       !context.signal.aborted &&
       !store.recalled(context.scene.id, message.id) &&
@@ -161,11 +163,14 @@ export async function describeCurrentImages(
         })
         imageSpan.bindSignal(context.signal)
         await imageSpan.run(async () => {
+          let operation = 'image.download'
           try {
             const bytes = await runtime.readImage(context, assetId)
             ensure(message, assetId)
+            operation = 'image.decode'
             const dataUrl = await imageDataUrl(bytes)
             ensure(message, assetId)
+            operation = 'image.describe'
             const result = await router().complete(
               'vision',
               [
@@ -206,6 +211,12 @@ export async function describeCurrentImages(
               nextStep: 'next_image',
             })
           } catch (error) {
+            preserveErrorContext(error, {
+              operation,
+              stage: operation === 'image.download' ? 'media.fetch' : 'vision.image',
+              role: 'vision',
+            })
+            imageErrors.push(error)
             const cancelled = context.signal.aborted || !valid(message, assetId)
             imageSpan.finish(
               cancelled ? 'cancelled' : 'failed',
@@ -236,6 +247,11 @@ export async function describeCurrentImages(
           reason: describedCount === images.length ? 'images_described' : 'some_images_unavailable',
           nextStep: 'thinker',
         },
+        imageErrors.length
+          ? new AggregateError(imageErrors, 'image_processing_failed', {
+              cause: imageErrors.at(-1),
+            })
+          : undefined,
       )
       return { trust: 'untrusted_image_descriptions', images }
     } catch (error) {

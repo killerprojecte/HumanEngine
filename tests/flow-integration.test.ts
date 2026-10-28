@@ -1,3 +1,4 @@
+import { fixtureReplyPlan } from './helpers/reply-plan.ts'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
@@ -20,23 +21,28 @@ test('actual mock group lifecycle includes real Router calls, memory tool, confi
     const body = JSON.parse(Buffer.concat(chunks).toString())
     captured.push(body)
     let calls: unknown[] = []
-    if (body.model === 'fixture-planner')
-      calls = [
-        tool('participation.decide', { action: 'reply', reasonCode: 'private-decision-canary' }),
-      ]
+    if (body.model === 'fixture-planner') {
+      const plan = fixtureReplyPlan(body.messages)
+      if (!plan)
+        calls = [
+          tool('participation.decide', { action: 'reply', reasonCode: 'private-decision-canary' }),
+        ]
+      else if (!body.messages.some((message: { role: string }) => message.role === 'tool'))
+        calls = [tool('memory.search', { query: 'private-query-canary' })]
+      else calls = [tool('reply.plan', plan)]
+    }
     if (body.model === 'fixture-thinker') {
       thinkerCalls++
-      if (thinkerCalls === 1) calls = [tool('memory.search', { query: 'private-query-canary' })]
-      if (thinkerCalls === 2)
-        calls = [
-          tool('messages.send', {
-            operationId: 'mock-send',
-            segments: [
-              { parts: [{ type: 'text', text: 'private-answer-canary' }] },
-              { parts: [{ type: 'text', text: 'private-followup-canary' }] },
-            ],
-          }),
-        ]
+      assert.equal(thinkerCalls, 1)
+      calls = [
+        tool('messages.send', {
+          operationId: 'mock-send',
+          segments: [
+            { parts: [{ type: 'text', text: 'private-answer-canary' }] },
+            { parts: [{ type: 'text', text: 'private-followup-canary' }] },
+          ],
+        }),
+      ]
     }
     if (body.model === 'fixture-learning')
       calls = [

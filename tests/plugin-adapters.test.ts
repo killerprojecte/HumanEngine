@@ -1,3 +1,4 @@
+import { fixturePlanCompletion } from './helpers/reply-plan.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Store } from '../src/store.ts'
@@ -25,6 +26,7 @@ test('Declared plugin adapters and protocols are scoped, core-owned, simulation 
     () =>
       ({
         complete: async (role, messages) =>
+          fixturePlanCompletion(role, messages, { deliveryTool: 'fixture.deliver' }) ??
           completion(
             role === 'planner'
               ? [

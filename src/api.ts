@@ -64,7 +64,10 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       requestId,
       operation: requestOperation(c.req.method, c.req.routePath),
       phase: 'request',
-      ...sanitizeError(error),
+      ...sanitizeError(error, {
+        operation: requestOperation(c.req.method, c.req.routePath),
+        stage: 'api.request',
+      }),
     })
     return c.json({ error: 'Request failed; inspect server diagnostics', requestId }, 503)
   })

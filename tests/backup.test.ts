@@ -42,7 +42,7 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
       .png()
       .toBuffer()
     const source = { sceneId: 'scene', messageId: 'media-message', senderId: 'person' }
-    await memes.import(
+    const imported = await memes.import(
       {
         sceneId: 'scene',
         simulation: false,
@@ -51,9 +51,20 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
       bytes,
       source,
     )
+    assert.notEqual(imported.id, digest(bytes), 'new scoped id is not the raw byte hash')
+    assert.equal(imported.contentHash, digest(bytes))
+    const legacyId = digest(bytes)
+    const legacy = {
+      ...memes.adminGet(imported.id)!,
+      id: legacyId,
+      contentHash: undefined,
+      sources: [],
+    }
+    store.db.prepare('INSERT INTO meme_assets VALUES(?,?)').run(legacyId, JSON.stringify(legacy))
+    await writeFile(join(mediaRoot, `${legacyId}.png`), bytes)
     await writeFile(join(root, '.env'), 'EXAMPLE_API_KEY=not-for-backup')
     const manifest = await backup({ database, mediaRoot, destination })
-    assert.equal(manifest.files.length, 2)
+    assert.equal(manifest.files.length, 3)
     assert.ok(!JSON.stringify(manifest).includes('.env'))
     assert.equal(
       digest(await readFile(join(destination, 'humanengine.sqlite'))),
@@ -74,6 +85,10 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
     assert.equal(restored.recalled('scene', 'old-message'), true)
     const media = manifest.files.find((f) => f.path.startsWith('media/'))!
     assert.deepEqual(await readFile(join(fresh, media.path)), bytes)
+    for (const entry of manifest.files.filter((file) => file.path.startsWith('media/'))) {
+      assert.equal(entry.sha256, digest(bytes))
+      assert.deepEqual(await readFile(join(fresh, entry.path)), bytes)
+    }
     await assert.rejects(restore({ backupRoot: destination, destination: fresh }))
     assert.equal(restored.get('example', null) !== null, true)
     const active = join(root, 'existing')
@@ -87,6 +102,15 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
       /backup_hash_mismatch/,
     )
     await assert.rejects(readFile(join(root, 'corrupt-restore', 'humanengine.sqlite')))
+    // Re-signing a tampered file in the manifest must not bypass the snapshot's content hash.
+    media.sha256 = digest(Buffer.from('tampered'))
+    media.bytes = Buffer.byteLength('tampered')
+    await writeFile(join(destination, 'manifest.json'), JSON.stringify(manifest))
+    await assert.rejects(
+      restore({ backupRoot: destination, destination: join(root, 'wrong-content-restore') }),
+      /media_content_hash_mismatch/,
+    )
+    await assert.rejects(readFile(join(root, 'wrong-content-restore', 'humanengine.sqlite')))
   } finally {
     restored?.close()
     store.close()

@@ -16,7 +16,7 @@ export async function regularFile(path: string): Promise<Buffer> {
   if (!(await lstat(path)).isFile()) throw new Error('regular_file_required')
   return readFile(path)
 }
-export function mediaFiles(db: Database.Database): string[] {
+export function mediaRecords(db: Database.Database): { path: string; sha256: string }[] {
   if (!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='meme_assets'").get())
     return []
   return (db.prepare('SELECT id,value FROM meme_assets').all() as { id: string; value: string }[])
@@ -25,12 +25,16 @@ export function mediaFiles(db: Database.Database): string[] {
       if (
         !/^[a-f0-9]{64}$/.test(row.id) ||
         asset.id !== row.id ||
-        !['jpeg', 'png', 'gif', 'webp'].includes(asset.format)
+        !['jpeg', 'png', 'gif', 'webp'].includes(asset.format) ||
+        !/^[a-f0-9]{64}$/.test(asset.contentHash ?? row.id)
       )
         throw new Error('invalid_media_record')
-      return `media/${row.id}.${asset.format}`
+      return { path: `media/${row.id}.${asset.format}`, sha256: asset.contentHash ?? row.id }
     })
-    .sort()
+    .sort((a, b) => a.path.localeCompare(b.path))
+}
+export function mediaFiles(db: Database.Database): string[] {
+  return mediaRecords(db).map((record) => record.path)
 }
 export function checkIntegrity(db: Database.Database) {
   const results = db.pragma('integrity_check') as { integrity_check: string }[]
@@ -60,7 +64,7 @@ export async function backup(options: {
     await chmod(databasePath, 0o600)
     snapshot = new Database(databasePath, { readonly: true })
     checkIntegrity(snapshot)
-    const media = mediaFiles(snapshot)
+    const media = mediaRecords(snapshot)
     const hasSecrets =
       !!snapshot
         .prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='secrets'")
@@ -90,10 +94,10 @@ export async function backup(options: {
       await writeFile(join(destination, '.secrets.key'), key, { flag: 'wx', mode: 0o600 })
       manifest.files.push({ path: '.secrets.key', sha256: digest(key), bytes: key.length })
     }
-    for (const path of media) {
+    for (const { path, sha256 } of media) {
       const original = join(options.mediaRoot, path.slice('media/'.length))
       const bytes = await regularFile(original)
-      if (digest(bytes) !== path.slice(6, 70)) throw new Error('media_content_hash_mismatch')
+      if (digest(bytes) !== sha256) throw new Error('media_content_hash_mismatch')
       const target = join(destination, path)
       await copyFile(original, target, constants.COPYFILE_EXCL)
       await chmod(target, 0o600)

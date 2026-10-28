@@ -18,6 +18,7 @@ import { ModelProtocolRegistry } from './model-protocols.ts'
 import { HabitService, type HabitInput } from './habits.ts'
 import { modelScheduler, WorkScheduler } from './scheduler.ts'
 import { MemeService } from './memes.ts'
+import { isStickerSource } from './meme-intake.ts'
 import { fetchQqMedia } from './media-fetch.ts'
 import { readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
@@ -267,6 +268,38 @@ export class Engine {
           context,
           messages,
           this.imageDescriptions,
+          {
+            canRecognize: (message, assetId, turn) =>
+              (message.origin === 'live' &&
+                message.senderId !== 'bot' &&
+                isStickerSource(message, assetId)) ||
+              this.memes.hasRecognitionCandidates({
+                sceneId: turn.scene.id,
+                simulation: turn.mode === 'simulation',
+              }),
+            recognize: async (bytes, message, assetId, turn) => {
+              const asset = await this.observeImageMeme(bytes, message, assetId, turn.signal)
+              if (!asset?.analyzed) return undefined
+              return JSON.stringify({
+                source: 'scene_visible_meme_library',
+                visibleEvidence: {
+                  appearance: asset.tags.appearance,
+                  style: asset.tags.style,
+                  subject: asset.tags.subject,
+                  ocr: asset.tags.ocr,
+                },
+                possibleUses: {
+                  emotion: asset.tags.emotion,
+                  intent: asset.tags.intent,
+                  tone: asset.tags.tone,
+                  intensity: asset.tags.intensity,
+                  memeMeaning: asset.tags.memeMeaning,
+                },
+                uncertainty:
+                  'Stored image labels are fallible observations and possible conventional uses, not proof of sender feelings or intent. Interpret using current conversation. Animation analysis samples frames rather than all motion.',
+              }).slice(0, 4000)
+            },
+          },
         ),
       contextPrompt: (context) => {
         const configured = this.store.get<Rule[]>('rules', [])
@@ -450,11 +483,7 @@ export class Engine {
       },
       received: (message, scene) => {
         this.enqueueLearning(message)
-        if (
-          scene.kind !== 'simulation' &&
-          this.store.scene(scene.id)?.learningEnabled &&
-          message.senderId !== 'bot'
-        ) {
+        if (scene.kind !== 'simulation' && message.senderId !== 'bot') {
           void this.ingestMedia(message)
         }
       },
@@ -1576,9 +1605,78 @@ export class Engine {
       this.store,
     )
   }
+  private async observeImageMeme(
+    bytes: Buffer,
+    message: RuntimeMessage,
+    assetId: string,
+    signal: AbortSignal,
+  ) {
+    if (signal.aborted) throw new Error('analysis_cancelled')
+    const source = { sceneId: message.sceneId, messageId: message.id, senderId: message.senderId }
+    const context = {
+      sceneId: message.sceneId,
+      simulation: message.origin === 'simulation',
+      sourceEvidence: [
+        {
+          ...source,
+          available: !this.store.recalled(message.sceneId, message.id),
+          isBot: message.senderId === 'bot',
+        },
+      ],
+    }
+    if (context.simulation) return undefined
+    const known = await this.memes.recognizeBytes(context, bytes)
+    if (message.origin !== 'live' || message.senderId === 'bot') return known
+    if (!isStickerSource(message, assetId) && !known) return undefined
+    const valid = () =>
+      !signal.aborted &&
+      !this.store.recalled(message.sceneId, message.id) &&
+      this.runtime
+        .preview(message.sceneId)
+        .some(
+          (item) =>
+            item.id === message.id &&
+            item.status === 'available' &&
+            item.parts.some((part) => part.type === 'media' && part.assetId === assetId),
+        )
+    if (!valid()) throw new Error('image_source_unavailable')
+    const vision = this.store.models.routes.some(
+      (route) => route.role === 'vision' && route.orderedModelIds.length,
+    )
+    const asset = await this.memes.observeBytes(
+      context,
+      bytes,
+      source,
+      vision ? this.router() : undefined,
+      {
+        signal,
+        admit: isStickerSource(message, assetId),
+        selectionContext: {
+          persona: this.store.settings.persona,
+          preferences: {
+            expression: this.habits
+              .list({ sceneId: message.sceneId, simulation: false })
+              .filter((hint) => hint.kind === 'botExpression'),
+          },
+          sourceContextKnown: true,
+          sourceContext: this.runtime
+            .preview(message.sceneId)
+            .slice(-8)
+            .map((item) => ({
+              isBot: item.senderId === 'bot',
+              text: item.parts
+                .filter((part) => part.type === 'text')
+                .map((part) => part.text)
+                .join(' ')
+                .slice(0, 2000),
+            })),
+        },
+      },
+    )
+    if (!valid()) throw new Error('image_source_unavailable')
+    return asset
+  }
   private async ingestMedia(message: RuntimeMessage) {
-    if (!this.store.models.routes.some((r) => r.role === 'vision' && r.orderedModelIds.length))
-      return
     const key = `${message.sceneId}|${message.id}`,
       controller = new AbortController()
     this.mediaTasks.set(key, controller)
@@ -1586,6 +1684,11 @@ export class Engine {
       await this.background.run(1, controller.signal, async () => {
         for (const part of message.parts) {
           if (part.type !== 'media' || !part.assetId.startsWith('ob:media:')) continue
+          if (
+            !isStickerSource(message, part.assetId) &&
+            !this.memes.hasRecognitionCandidates({ sceneId: message.sceneId, simulation: false })
+          )
+            continue
           try {
             const media = JSON.parse(
               Buffer.from(part.assetId.slice(9), 'base64url').toString('utf8'),
@@ -1646,24 +1749,7 @@ export class Engine {
                 )
             )
               throw new Error('image_source_unavailable')
-            const source = {
-              sceneId: message.sceneId,
-              messageId: message.id,
-              senderId: message.senderId,
-            }
-            const context = {
-              sceneId: message.sceneId,
-              simulation: false,
-              sourceEvidence: [
-                {
-                  ...source,
-                  available: !this.store.recalled(message.sceneId, message.id),
-                  isBot: message.senderId === 'bot',
-                },
-              ],
-            }
-            const asset = await this.memes.import(context, bytes, source)
-            await this.analyzeMeme(message.sceneId, asset.id, { signal: controller.signal })
+            await this.observeImageMeme(bytes, message, part.assetId, controller.signal)
           } catch {
             this.store.log('warn', 'media', 'intake_unavailable', { sceneId: message.sceneId })
           }

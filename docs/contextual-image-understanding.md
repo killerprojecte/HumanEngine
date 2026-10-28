@@ -54,7 +54,9 @@ and possible conventional uses, keyed by scene, asset, model configuration and
 prompt version. It does not cache a question-specific interpretation. Planner and
 composer use the actual current conversation to disambiguate possible uses.
 
-Only the first frame is supplied to vision. Motion and later animation frames
+For generic image descriptions, only the first frame is supplied to vision.
+Known meme recognition can instead reuse the library’s bounded multiframe
+analysis; see [known meme recognition](known-meme-recognition.md). Motion and later animation frames
 remain unavailable and are disclosed; animated dashboard playback does not change
 that boundary. A model can still misread an expression. Synthetic regression tests
 prove source selection, pixels reaching the vision call, prompt requirements and

@@ -536,6 +536,10 @@ test(
         ingress('', 'media-author', scope, [
           { type: 'text', text: 'A generic animated greeting made of colored shapes.' },
           { type: 'media', assetId: descriptor, mediaType: 'image' },
+          {
+            type: 'unsupported',
+            description: 'Untrusted platform image metadata: {"kind":"mface"}',
+          },
         ])
       }
       await waitFor(
@@ -557,14 +561,18 @@ test(
       )
       for (const [url, bytes] of originals) {
         const id = createHash('sha256').update(bytes).digest('hex')
-        const asset = engine.memes.adminList().find((asset) => asset.id === id)!
+        const asset = engine.memes
+          .adminList()
+          .find((asset) => (asset.contentHash ?? asset.id) === id)!
         assert.equal(asset.frames, 2)
         assert.equal(asset.selectionOrigin, 'automatic')
         assert.equal(asset.sharingOrigin, 'automatic')
         assert.ok(asset.tags.intent.includes('greeting'))
         assert.ok(asset.format === url.split('/').at(-1))
         assert.deepEqual(
-          await readFile(engine.memes.original({ sceneId: scope.id, simulation: false }, id).path),
+          await readFile(
+            engine.memes.original({ sceneId: scope.id, simulation: false }, asset.id).path,
+          ),
           bytes,
         )
       }

@@ -38,10 +38,10 @@ export function imageParts(sceneId: string, kind: string, data: Obj): MessagePar
     typeof data.sub_type === 'number' || typeof data.sub_type === 'string'
       ? label(String(data.sub_type))
       : ''
-  if (kind !== 'image' || summary || subtype)
+  if (kind !== 'image' || summary || subtype || data.emoji_id || data.emoji_package_id)
     parts.push({
       type: 'unsupported',
-      description: `Untrusted platform image metadata: ${JSON.stringify({ kind, ...(summary ? { summary } : {}), ...(subtype ? { subtype } : {}) })}`,
+      description: `Untrusted platform image metadata: ${JSON.stringify({ kind: kind === 'image' && (data.emoji_id || data.emoji_package_id) ? 'mface' : kind, ...(summary ? { summary } : {}), ...(subtype ? { subtype } : {}) })}`,
     })
   return parts
 }

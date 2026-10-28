@@ -125,10 +125,21 @@ test('Hash dedup retains scoped sources, sharing requires review, and simulation
     assert.equal(memes.search(b, '').length, 0)
     assert.throws(() => memes.update(first.id, { shared: true }), /public_media_review_required/)
     const second = await memes.import(b, bytes, source(b))
-    assert.equal(first.id, second.id)
-    assert.equal(memes.adminList().length, 1)
-    assert.equal(memes.adminList()[0]?.sources.length, 2)
+    assert.notEqual(
+      first.id,
+      second.id,
+      'unreviewed identical content keeps scene semantics isolated',
+    )
+    assert.equal(first.contentHash, second.contentHash)
+    assert.equal(memes.adminList().length, 2)
+    assert.equal(memes.adminGet(first.id)?.sources.length, 1)
+    assert.equal(second.analyzed, false)
     memes.update(first.id, { shared: true, privacyReviewed: true })
+    assert.equal(
+      (await memes.import(b, bytes, source(b))).id,
+      second.id,
+      'existing local semantics take priority over newly shared matches',
+    )
     const simulation = { sceneId: 'simulation', simulation: true }
     const before = snapshot(store)
     assert.deepEqual(memes.search(simulation, '')[0]?.sources, [])
@@ -149,7 +160,11 @@ test('Hash dedup retains scoped sources, sharing requires review, and simulation
     )
     assert.equal(snapshot(store), before)
     memes.recall('a', 'm1')
-    assert.equal(memes.search(simulation, '').length, 1)
+    assert.equal(
+      memes.search(simulation, '').length,
+      0,
+      'private duplicate in another scene cannot revive reviewed source',
+    )
     memes.recall('b', 'm1')
     assert.equal(memes.search(simulation, '').length, 0)
   } finally {

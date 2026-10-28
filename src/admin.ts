@@ -150,6 +150,8 @@ const Meme = z
     tags: MemeTags,
     tagRevision: z.number().int().optional(),
     analyzed: z.boolean(),
+    knownOnly: z.boolean().optional(),
+    contentHash: z.string().optional(),
     available: z.boolean(),
     shared: z.boolean(),
     privacyReviewed: z.boolean(),
@@ -442,7 +444,9 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
               'Invalid scope',
             )
             .default('*'),
-          state: z.enum(['*', 'favorite', 'disabled', 'available', 'unanalyzed']).default('*'),
+          state: z
+            .enum(['*', 'favorite', 'disabled', 'available', 'unanalyzed', 'known'])
+            .default('*'),
         }),
       },
       responses: {
@@ -535,6 +539,28 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
         headers: { 'Content-Type': `image/${asset.format}`, 'Cache-Control': 'no-store' },
       })
     },
+  )
+  app.openapi(
+    createRoute({
+      method: 'post',
+      path: '/api/memes/{id}/inclusion',
+      request: { params, body: body(z.object({ included: z.boolean() }).strict()) },
+      responses: { 200: json(Meme), ...errors },
+    }),
+    (c) =>
+      c.json(
+        engine.memes.adminSetIncluded(c.req.valid('param').id, c.req.valid('json').included),
+        200,
+      ),
+  )
+  app.openapi(
+    createRoute({
+      method: 'delete',
+      path: '/api/memes/{id}',
+      request: { params },
+      responses: { 200: json(Success), ...errors },
+    }),
+    async (c) => c.json({ ok: await engine.memes.adminDelete(c.req.valid('param').id) }, 200),
   )
   app.openapi(
     createRoute({

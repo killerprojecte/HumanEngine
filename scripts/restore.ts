@@ -2,7 +2,14 @@ import { mkdir, writeFile, rm } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Store } from '../src/store.ts'
-import { checkIntegrity, digest, mediaFiles, regularFile, type BackupManifest } from './backup.ts'
+import {
+  checkIntegrity,
+  digest,
+  mediaFiles,
+  mediaRecords,
+  regularFile,
+  type BackupManifest,
+} from './backup.ts'
 
 export async function restore(options: {
   backupRoot: string
@@ -43,17 +50,17 @@ export async function restore(options: {
     await mkdir(join(destination, 'media'), { mode: 0o700 })
     for (const file of manifest.files) {
       const bytes = await regularFile(join(root, file.path))
-      if (
-        bytes.length !== file.bytes ||
-        digest(bytes) !== file.sha256 ||
-        (file.path.startsWith('media/') && digest(bytes) !== file.path.slice(6, 70))
-      )
+      if (bytes.length !== file.bytes || digest(bytes) !== file.sha256)
         throw new Error('backup_hash_mismatch')
       await writeFile(join(destination, file.path), bytes, { flag: 'wx', mode: 0o600 })
     }
     const database = join(destination, 'humanengine.sqlite')
     store = new Store(database)
     checkIntegrity(store.db)
+    for (const record of mediaRecords(store.db)) {
+      if (digest(await regularFile(join(destination, record.path))) !== record.sha256)
+        throw new Error('media_content_hash_mismatch')
+    }
     const hasSecrets = !!store.db.prepare('SELECT 1 FROM secrets LIMIT 1').get()
     if (hasSecrets && !paths.has('.secrets.key')) throw new Error('secret_key_missing')
     if (hasSecrets) {

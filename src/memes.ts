@@ -1,7 +1,7 @@
 import { ContextProjection } from './runtime/context-projection.ts'
 import { providerAttemptsHandled } from './models/request-policy.ts'
 import { createHash } from 'node:crypto'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile, unlink } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import sharp from 'sharp'
 import { ModelError, type Router } from './models.ts'
@@ -25,7 +25,16 @@ export interface MemeContext {
   simulation: boolean
   sourceEvidence?: SourceEvidence[]
 }
+export interface MemeSelectionContext {
+  persona: string
+  preferences: unknown
+  sourceContext: unknown
+  sourceContextKnown: boolean
+}
 export interface MemeAsset {
+  /** Legacy assets default to their id; new private assets use scene-scoped ids. */
+  contentHash?: string
+  knownOnly?: boolean
   id: string
   format: 'png' | 'jpeg' | 'gif' | 'webp'
   bytes: number
@@ -165,6 +174,35 @@ export class MemeService {
   private readonly thumbnailTasks = new Map<string, Promise<Buffer>>()
   private readonly analyses = new Map<string, Promise<MemeAsset>>()
   private readonly analysisControllers = new Map<string, AbortController>()
+  private readonly observations = new Map<
+    string,
+    {
+      promise: Promise<MemeAsset>
+      controller: AbortController
+      consumers: number
+      evidence: SourceEvidence[]
+    }
+  >()
+  private readonly observationFailures = new Map<string, number>()
+  private readonly assetEpochs = new Map<string, number>()
+  private readonly deletingAssets = new Set<string>()
+  private readonly deletingContent = new Map<
+    string,
+    { hash: string; scenes: Set<string>; shared: boolean }
+  >()
+  private readonly assetWrites = new Map<string, Promise<unknown>>()
+  private withAssetWrite<T>(id: string, action: () => Promise<T>): Promise<T> {
+    const pending = this.assetWrites.get(id) ?? Promise.resolve()
+    const next = pending.catch(() => {}).then(action)
+    this.assetWrites.set(id, next)
+    void next
+      .finally(() => {
+        if (this.assetWrites.get(id) === next) this.assetWrites.delete(id)
+      })
+      .catch(() => {})
+    return next
+  }
+
   constructor(
     private readonly store: Store,
     mediaRoot = 'data/media',
@@ -205,11 +243,130 @@ export class MemeService {
     })()
   }
 
+  hasRecognitionCandidates(ctx: MemeContext): boolean {
+    return this.readVisible(ctx).some((asset) => !asset.disabled && this.hasValidSource(asset))
+  }
+  async recognizeBytes(ctx: MemeContext, bytes: Buffer): Promise<MemeAsset | undefined> {
+    if (!bytes.length || bytes.length > MAX_BYTES) throw new Error('image_size_limit')
+    const hash = digest(bytes)
+    const match = this.contentCandidates(ctx).find(
+      (asset) =>
+        (asset.contentHash ?? asset.id) === hash && !asset.disabled && this.hasValidSource(asset),
+    )
+    return match ? this.sanitize(match) : undefined
+  }
+  async admitKnown(
+    ctx: MemeContext,
+    bytes: Buffer,
+    source: MemorySource,
+    signal?: AbortSignal,
+  ): Promise<MemeAsset> {
+    return this.intake(ctx, bytes, source, true, signal)
+  }
+  async observeBytes(
+    ctx: MemeContext,
+    bytes: Buffer,
+    source: MemorySource,
+    router?: Pick<Router, 'complete'>,
+    options: {
+      signal?: AbortSignal
+      selectionContext?: MemeSelectionContext
+      admit?: boolean
+    } = {},
+  ): Promise<MemeAsset | undefined> {
+    if (options.signal?.aborted) throw new Error('analysis_cancelled')
+    this.validateObservedSource(ctx, source)
+    const known = await this.recognizeBytes(ctx, bytes)
+    if (!known && options.admit === false) return undefined
+    const asset = await this.admitKnown(ctx, bytes, source, options.signal)
+    if (!router || asset.analyzed) return asset
+    const key = `${ctx.sceneId}:${asset.contentHash ?? asset.id}`
+    const failureKey = `${key}:${source.messageId}`
+    if ((this.observationFailures.get(failureKey) ?? 0) > Date.now())
+      throw new Error('analysis_failed_recently')
+    let flight = this.observations.get(key)
+    if (!flight) {
+      const controller = new AbortController()
+      const evidence = [...(ctx.sourceEvidence ?? [])]
+      const promise = this.analyze({ ...ctx, sourceEvidence: evidence }, asset.id, router, {
+        ...options,
+        signal: controller.signal,
+        observation: true,
+      })
+      flight = { promise, controller, consumers: 0, evidence }
+      this.observations.set(key, flight)
+      void promise
+        .finally(() => {
+          if (this.observations.get(key)?.promise === promise) this.observations.delete(key)
+        })
+        .catch(() => {})
+    } else {
+      for (const item of ctx.sourceEvidence ?? [])
+        if (
+          !flight.evidence.some(
+            (old) => old.sceneId === item.sceneId && old.messageId === item.messageId,
+          )
+        )
+          flight.evidence.push(item)
+    }
+    const shared = flight
+    shared.consumers++
+    try {
+      return await new Promise<MemeAsset>((resolve, reject) => {
+        const abort = () => reject(new Error('analysis_cancelled'))
+        options.signal?.addEventListener('abort', abort, { once: true })
+        if (options.signal?.aborted) abort()
+        shared.promise
+          .then(resolve, reject)
+          .finally(() => options.signal?.removeEventListener('abort', abort))
+          .catch(() => {})
+      })
+    } catch (error) {
+      if (!options.signal?.aborted) {
+        this.observationFailures.set(failureKey, Date.now() + 15000)
+        while (this.observationFailures.size > 128)
+          this.observationFailures.delete(this.observationFailures.keys().next().value!)
+      }
+      throw error
+    } finally {
+      shared.consumers--
+      if (!shared.consumers) shared.controller.abort('no_active_observers')
+    }
+  }
   async import(ctx: MemeContext, bytes: Buffer, source: MemorySource): Promise<MemeAsset> {
-    this.allowWrite(ctx)
-    this.validateSource(ctx, source)
+    return this.intake(ctx, bytes, source, false)
+  }
+  private async intake(
+    ctx: MemeContext,
+    bytes: Buffer,
+    source: MemorySource,
+    knownOnly: boolean,
+    signal?: AbortSignal,
+  ): Promise<MemeAsset> {
+    if (!knownOnly) this.allowWrite(ctx)
+    this.validateObservedSource(ctx, source)
+    if (signal?.aborted) throw new Error('analysis_cancelled')
     if (!bytes.length || bytes.length > MAX_BYTES) throw new Error('image_size_limit')
     const format = sniff(bytes)
+    const contentHash = digest(bytes)
+    // Never merge a new private scene into another scene's unreviewed semantic state.
+    const visible = this.contentCandidates(ctx).find(
+      (asset) =>
+        (asset.contentHash ?? asset.id) === contentHash &&
+        !asset.disabled &&
+        this.hasValidSource(asset),
+    )
+    for (const [deletingId, barrier] of this.deletingContent) {
+      if (
+        barrier.hash === contentHash &&
+        (barrier.shared || barrier.scenes.has(ctx.sceneId)) &&
+        (!visible || visible.id === deletingId)
+      )
+        throw new Error('media_deleted')
+    }
+    const id = visible?.id ?? digest(Buffer.from(JSON.stringify([ctx.sceneId, contentHash])))
+    if (this.deletingAssets.has(id)) throw new Error('media_deleted')
+    const epoch = this.assetEpochs.get(id) ?? 0
     const metadata = await sharp(bytes, {
       limitInputPixels: MAX_PIXELS,
       failOn: 'warning',
@@ -219,44 +376,56 @@ export class MemeService {
       height = metadata.pageHeight ?? metadata.height
     if (!width || !height || frames > 400 || width * height * frames > 80_000_000)
       throw new Error('image_pixel_limit')
-    const id = digest(bytes)
-    await mkdir(this.mediaRoot, { recursive: true, mode: 0o700 })
-    try {
-      await writeFile(this.file(id, format), bytes, { flag: 'wx', mode: 0o600 })
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
-    }
-    return this.store.db.transaction(() => {
-      this.validateSource(ctx, source)
-      const existing = this.get(id)
-      const asset: MemeAsset = existing ?? {
-        id,
-        format,
-        bytes: bytes.length,
-        width,
-        height,
-        frames,
-        sources: [],
-        tags: emptyTags(),
-        analyzed: false,
-        available: false,
-        shared: false,
-        privacyReviewed: false,
-        favorite: false,
-        disabled: false,
-        preference: 0,
-        usageCount: 0,
-        createdAt: new Date().toISOString(),
+    return this.withAssetWrite(id, async () => {
+      if (this.deletingAssets.has(id)) throw new Error('media_deleted')
+      if ((this.assetEpochs.get(id) ?? 0) !== epoch) throw new Error('media_deleted')
+      await mkdir(this.mediaRoot, { recursive: true, mode: 0o700 })
+      try {
+        await writeFile(this.file(id, format), bytes, { flag: 'wx', mode: 0o600 })
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
       }
-      if (
-        !asset.sources.some(
-          (item) => item.sceneId === source.sceneId && item.messageId === source.messageId,
+      if (digest(await readFile(this.file(id, format))) !== contentHash)
+        throw new Error('media_hash_mismatch')
+      return this.store.db.transaction(() => {
+        if ((this.assetEpochs.get(id) ?? 0) !== epoch) throw new Error('media_deleted')
+        if (signal?.aborted) throw new Error('analysis_cancelled')
+        if (!knownOnly) this.allowWrite(ctx)
+        this.validateObservedSource(ctx, source)
+        const existing = this.get(id)
+        if (existing && !this.readVisible(ctx).some((asset) => asset.id === id && !asset.disabled))
+          throw new Error('media_scope_changed')
+        const asset: MemeAsset = existing ?? {
+          id,
+          contentHash,
+          knownOnly,
+          format,
+          bytes: bytes.length,
+          width,
+          height,
+          frames,
+          sources: [],
+          tags: emptyTags(),
+          analyzed: false,
+          available: false,
+          shared: false,
+          privacyReviewed: false,
+          favorite: false,
+          disabled: false,
+          preference: 0,
+          usageCount: 0,
+          createdAt: new Date().toISOString(),
+        }
+        if (
+          !asset.sources.some(
+            (item) => item.sceneId === source.sceneId && item.messageId === source.messageId,
+          )
         )
-      )
-        asset.sources.push({ ...source })
-      this.write(asset)
-      return this.sanitize(asset)
-    })()
+          asset.sources.push({ ...source })
+        this.write(asset)
+        return this.sanitize(asset)
+      })()
+    })
   }
 
   async analyze(
@@ -265,6 +434,7 @@ export class MemeService {
     router: Pick<Router, 'complete'>,
     options: {
       force?: boolean
+      observation?: boolean
       signal?: AbortSignal
       selectionContext?: {
         persona: string
@@ -274,7 +444,7 @@ export class MemeService {
       }
     } = {},
   ): Promise<MemeAsset> {
-    this.allowWrite(ctx)
+    this.allowAnalysis(ctx, options.observation)
     if (options.signal?.aborted) throw new Error('analysis_cancelled')
     const asset = this.visible(ctx, id, false)
     if (asset.analyzed && !options.force) return this.sanitize(asset)
@@ -292,6 +462,7 @@ export class MemeService {
       router,
       signal,
       options.selectionContext,
+      options.observation,
     ).finally(() => {
       this.analyses.delete(key)
       this.analysisControllers.delete(key)
@@ -339,8 +510,9 @@ export class MemeService {
       favorite: "json_extract(value, '$.favorite') = 1",
       disabled: "json_extract(value, '$.disabled') = 1",
       unanalyzed: "json_extract(value, '$.analyzed') = 0",
+      known: "json_extract(value, '$.knownOnly') = 1 AND json_extract(value, '$.disabled') = 0",
       available:
-        "json_extract(value, '$.available') = 1 AND json_extract(value, '$.disabled') = 0 AND json_extract(value, '$.analyzed') = 1 AND EXISTS (SELECT 1 FROM meme_sources s WHERE s.asset_id = a.id)",
+        "json_extract(value, '$.available') = 1 AND COALESCE(json_extract(value, '$.knownOnly'),0)=0 AND json_extract(value, '$.disabled') = 0 AND json_extract(value, '$.analyzed') = 1 AND EXISTS (SELECT 1 FROM meme_sources s WHERE s.asset_id = a.id)",
     }
     if (input.state && states[input.state]) clauses.push(states[input.state]!)
     const query = input.query?.trim()
@@ -381,7 +553,8 @@ export class MemeService {
   }
   async thumbnail(id: string): Promise<Buffer> {
     const asset = this.get(id)
-    if (!asset) throw new Error('meme_not_found')
+    if (!asset || this.deletingAssets.has(id)) throw new Error('meme_not_found')
+    const epoch = this.assetEpochs.get(id) ?? 0
     const cached = this.thumbnails.get(id)
     if (cached) {
       this.thumbnails.delete(id)
@@ -401,6 +574,8 @@ export class MemeService {
         .resize(320, 320, { fit: 'inside', withoutEnlargement: true })
         .webp({ quality: 75 })
         .toBuffer()
+      if (!this.get(id) || (this.assetEpochs.get(id) ?? 0) !== epoch)
+        throw new Error('meme_not_found')
       this.thumbnails.set(id, bytes)
       while (this.thumbnails.size > 128)
         this.thumbnails.delete(this.thumbnails.keys().next().value!)
@@ -422,6 +597,8 @@ export class MemeService {
     const asset = this.get(id)
     if (!asset) throw new Error('meme_not_found')
     const next = { ...asset }
+    if (asset.knownOnly && (patch.available === true || patch.shared === true))
+      throw new Error('known_meme_requires_review')
     for (const key of ['available', 'shared', 'privacyReviewed', 'favorite', 'disabled'] as const) {
       if (patch[key] !== undefined) {
         if (typeof patch[key] !== 'boolean') throw new Error('invalid_meme_setting')
@@ -448,13 +625,83 @@ export class MemeService {
     this.write(next)
     return next
   }
+  /** Explicit review action; observation/import never silently promotes a known analyzed item. */
+  promoteKnown(ctx: MemeContext, id: string): MemeAsset {
+    this.allowWrite(ctx)
+    const asset = this.visible(ctx, id, false)
+    if (!asset.knownOnly || !asset.analyzed || asset.disabled)
+      throw new Error('known_meme_not_reviewable')
+    return this.sanitize(this.adminSetIncluded(id, true))
+  }
+  /** Delete this scoped record and original only; equal-content assets in other scopes remain. */
+  async adminDelete(id: string): Promise<boolean> {
+    if (this.deletingAssets.has(id)) throw new Error('media_delete_in_progress')
+    const asset = this.get(id)
+    if (!asset) return false
+    this.deletingAssets.add(id)
+    this.deletingContent.set(id, {
+      hash: asset.contentHash ?? asset.id,
+      scenes: new Set(asset.sources.map((source) => source.sceneId)),
+      shared: asset.shared && asset.privacyReviewed && !asset.knownOnly,
+    })
+    this.assetEpochs.set(id, (this.assetEpochs.get(id) ?? 0) + 1)
+    for (const [key, controller] of this.analysisControllers)
+      if (key.endsWith(':' + id)) controller.abort('media_deleted')
+    this.thumbnails.delete(id)
+    return this.withAssetWrite(id, async () => {
+      // Delete bytes before the row so a filesystem failure can be retried by the administrator.
+      try {
+        await unlink(this.file(id, asset.format))
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+          throw new Error('media_delete_failed')
+      }
+      this.store.db.prepare('DELETE FROM meme_assets WHERE id=?').run(id)
+      this.thumbnails.delete(id)
+      return true
+    }).finally(() => {
+      this.deletingAssets.delete(id)
+      this.deletingContent.delete(id)
+    })
+  }
+  /** Deliberate authenticated-admin action, independent of automatic learning admission. */
+  adminSetIncluded(id: string, included: boolean): MemeAsset {
+    if (typeof included !== 'boolean') throw new Error('invalid_meme_setting')
+    const asset = this.get(id)
+    if (!asset || this.deletingAssets.has(id)) throw new Error('meme_not_found')
+    if (included && (!asset.analyzed || asset.disabled || !this.hasValidSource(asset)))
+      throw new Error('meme_not_available')
+    for (const [key, controller] of this.analysisControllers)
+      if (key.endsWith(':' + id)) controller.abort('admin_state_changed')
+    const next: MemeAsset = {
+      ...asset,
+      knownOnly: !included,
+      available: included,
+      shared: false,
+      privacyReviewed: false,
+      selectionOrigin: 'manual',
+      sharingOrigin: 'manual',
+      // Invalidate an inference snapshot even if its provider ignores cancellation.
+      tagRevision: (asset.tagRevision ?? 0) + 1,
+      ...(['running', 'retrying'].includes(asset.analysisState ?? '')
+        ? { analysisState: 'cancelled' as const, analysisNextRetryAt: undefined }
+        : {}),
+    }
+    this.write(next)
+    return next
+  }
   search(ctx: MemeContext, query: string, tags: string[] = []): MemeAsset[] {
     const terms = normalized(query).split(/\s+/).filter(Boolean)
     const requested = new Set([...concepts(query), ...tags.flatMap(concepts)])
     return this.readVisible(ctx)
       .filter(
         (asset) =>
-          asset.available && !asset.disabled && asset.analyzed && this.hasValidSource(asset),
+          asset.available &&
+          !this.deletingAssets.has(asset.id) &&
+          !asset.knownOnly &&
+          !asset.disabled &&
+          asset.analyzed &&
+          this.hasValidSource(asset),
       )
       .map((asset) => {
         const labels = TAG_CATEGORIES.flatMap((category) => asset.tags[category]).map((tag) =>
@@ -549,10 +796,11 @@ export class MemeService {
       sourceContext: unknown
       sourceContextKnown: boolean
     },
+    observation = false,
   ): Promise<MemeAsset> {
     try {
       const bytes = await readFile(this.file(asset.id, asset.format))
-      if (digest(bytes) !== asset.id) throw new Error('media_hash_mismatch')
+      if (digest(bytes) !== (asset.contentHash ?? asset.id)) throw new Error('media_hash_mismatch')
       const sampleCount = Math.min(asset.frames, 8)
       const indexes = [
         ...new Set(
@@ -600,6 +848,7 @@ export class MemeService {
       const tags = validateTags(parsed)
       const selection = parsed.selection
       const selected =
+        this.store.scene(ctx.sceneId)?.learningEnabled === true &&
         !!selectionContext &&
         selection?.usable === true &&
         typeof selection.confidence === 'number' &&
@@ -617,7 +866,7 @@ export class MemeService {
         selection.containsRealPerson === false &&
         !/(https?:\/\/|[\w.+-]+@[\w.-]+|\b\d{7,}\b)/i.test(tags.ocr)
       return this.store.db.transaction(() => {
-        this.allowWrite(ctx)
+        this.allowAnalysis(ctx, observation)
         const current = this.visible(ctx, asset.id, false)
         if (!current.sources.length || current.disabled)
           throw new Error('media_no_longer_available')
@@ -626,15 +875,19 @@ export class MemeService {
           return this.sanitize(current)
         const next = { ...current, tags, analyzed: true }
         if (
-          current.selectionOrigin === 'automatic' ||
-          (!current.analyzed && !current.selectionOrigin)
+          this.store.scene(ctx.sceneId)?.learningEnabled &&
+          !(current.knownOnly && current.analyzed) &&
+          (current.selectionOrigin === 'automatic' ||
+            (!current.analyzed && !current.selectionOrigin))
         ) {
           next.available = selected
+          next.knownOnly = !selected && (current.knownOnly ?? false)
           next.selectionOrigin = 'automatic'
         }
         if (
-          current.sharingOrigin === 'automatic' ||
-          (!current.analyzed && !current.sharingOrigin)
+          this.store.scene(ctx.sceneId)?.learningEnabled &&
+          !(current.knownOnly && current.analyzed) &&
+          (current.sharingOrigin === 'automatic' || (!current.analyzed && !current.sharingOrigin))
         ) {
           next.shared = shareable
           next.privacyReviewed = shareable
@@ -670,6 +923,7 @@ export class MemeService {
       sourceContext: unknown
       sourceContextKnown: boolean
     },
+    observation = false,
   ): Promise<MemeAsset> {
     const update = (patch: Partial<MemeAsset>) => {
       const current = this.get(asset.id)
@@ -677,7 +931,7 @@ export class MemeService {
     }
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        this.allowWrite(ctx)
+        this.allowAnalysis(ctx, observation)
         const current = this.visible(ctx, asset.id, false)
         if (signal.aborted) throw new Error('analysis_cancelled')
         if (current.tagRevision !== asset.tagRevision) {
@@ -690,7 +944,14 @@ export class MemeService {
           analysisNextRetryAt: undefined,
           analysisFailureCode: undefined,
         })
-        const result = await this.analyzeOnce(ctx, asset, router, signal, selectionContext)
+        const result = await this.analyzeOnce(
+          ctx,
+          asset,
+          router,
+          signal,
+          selectionContext,
+          observation,
+        )
         update({
           analysisState: 'succeeded',
           analysisNextRetryAt: undefined,
@@ -730,29 +991,82 @@ export class MemeService {
     }
     throw new Error('analysis_failed')
   }
+  private contentCandidates(ctx: MemeContext): MemeAsset[] {
+    return this.readVisible(ctx)
+      .filter((asset) => !this.deletingAssets.has(asset.id))
+      .sort(
+        (a, b) =>
+          Number(b.sources.some((source) => source.sceneId === ctx.sceneId)) -
+          Number(a.sources.some((source) => source.sceneId === ctx.sceneId)),
+      )
+  }
   private readVisible(ctx: MemeContext): MemeAsset[] {
     const sql = ctx.simulation
-      ? "SELECT value FROM meme_assets WHERE json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1"
-      : "SELECT value FROM meme_assets WHERE (json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1) OR id IN (SELECT asset_id FROM meme_sources WHERE scene_id=?)"
+      ? "SELECT value FROM meme_assets WHERE json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0"
+      : "SELECT value FROM meme_assets WHERE (json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0) OR id IN (SELECT asset_id FROM meme_sources WHERE scene_id=?)"
     return (
       this.store.db.prepare(sql).all(...(ctx.simulation ? [] : [ctx.sceneId])) as {
         value: string
       }[]
-    ).map((row) => JSON.parse(row.value))
+    )
+      .map((row) => JSON.parse(row.value) as MemeAsset)
+      .filter(
+        (asset) =>
+          (asset.shared &&
+            asset.privacyReviewed &&
+            !asset.knownOnly &&
+            this.hasValidSource(asset)) ||
+          (!ctx.simulation &&
+            asset.sources.some(
+              (source) =>
+                source.sceneId === ctx.sceneId &&
+                !this.store.recalled(source.sceneId, source.messageId),
+            )),
+      )
   }
   private visible(ctx: MemeContext, id: string, requireAvailable: boolean): MemeAsset {
     const asset = this.readVisible(ctx).find((item) => item.id === id)
     if (
       !asset ||
+      this.deletingAssets.has(id) ||
       asset.disabled ||
       !this.hasValidSource(asset) ||
-      (requireAvailable && !asset.available)
+      (requireAvailable && (!asset.available || asset.knownOnly))
     )
       throw new Error('meme_not_available')
     return asset
   }
   private hasValidSource(asset: MemeAsset) {
     return asset.sources.some((source) => !this.store.recalled(source.sceneId, source.messageId))
+  }
+  private allowAnalysis(ctx: MemeContext, observation = false) {
+    if (!observation) return this.allowWrite(ctx)
+    const evidence = ctx.sourceEvidence?.find(
+      (source) =>
+        source.sceneId === ctx.sceneId &&
+        source.available &&
+        !source.isBot &&
+        !this.store.recalled(source.sceneId, source.messageId),
+    )
+    if (!evidence) throw new Error('invalid_source_evidence')
+    this.validateObservedSource(ctx, evidence)
+  }
+  private validateObservedSource(ctx: MemeContext, source: MemorySource) {
+    if (ctx.simulation) throw new Error('simulation_does_not_learn')
+    if (
+      !this.store.scene(ctx.sceneId) ||
+      source.sceneId !== ctx.sceneId ||
+      this.store.recalled(source.sceneId, source.messageId) ||
+      !ctx.sourceEvidence?.some(
+        (item) =>
+          item.sceneId === source.sceneId &&
+          item.messageId === source.messageId &&
+          item.senderId === source.senderId &&
+          item.available &&
+          !item.isBot,
+      )
+    )
+      throw new Error('invalid_source_evidence')
   }
   private allowWrite(ctx: MemeContext) {
     if (ctx.simulation) throw new Error('simulation_does_not_learn')

@@ -20,7 +20,7 @@ const assets = ref<Meme[]>([]),
   success = ref('')
 const query = ref(''),
   scope = ref('*'),
-  stateFilter = ref<'*' | 'favorite' | 'disabled' | 'available' | 'unanalyzed'>('*'),
+  stateFilter = ref<'*' | 'favorite' | 'disabled' | 'available' | 'unanalyzed' | 'known'>('*'),
   page = ref(1),
   pageSize = ref(24),
   density = ref('comfortable'),
@@ -49,15 +49,17 @@ const tagGroups = [
 const title = (asset: Meme) => asset.tags.intent[0] || asset.tags.memeMeaning[0] || t('meUntitled')
 const sceneName = (id: string) => scenes.value.find((scene) => scene.id === id)?.name || id
 const status = (asset: Meme) =>
-  asset.disabled
-    ? 'meDisabled'
-    : !asset.analyzed
-      ? 'meUnanalyzed'
-      : !asset.sources.length
-        ? 'meNoSourcesStatus'
-        : asset.available
-          ? 'meAvailable'
-          : 'meNotSelected'
+  asset.knownOnly
+    ? 'meKnown'
+    : asset.disabled
+      ? 'meDisabled'
+      : !asset.analyzed
+        ? 'meUnanalyzed'
+        : !asset.sources.length
+          ? 'meNoSourcesStatus'
+          : asset.available
+            ? 'meAvailable'
+            : 'meNotSelected'
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
 const displayed = computed(() => assets.value)
 const observedIds = ref(new Set<string>())
@@ -102,8 +104,10 @@ const sourceScenes = computed(() =>
     value: id,
   })),
 )
-const confirmation = ref<'discard' | 'share' | 'analyze'>(),
-  confirmationKind = ref<'discard' | 'share' | 'analyze'>('discard')
+const confirmation = ref<'discard' | 'share' | 'analyze' | 'include' | 'exclude' | 'delete'>(),
+  confirmationKind = ref<'discard' | 'share' | 'analyze' | 'include' | 'exclude' | 'delete'>(
+    'discard',
+  )
 const confirmationCopy = ref({ title: '', help: '', action: '', preview: '' }),
   confirmationError = ref('')
 let pendingNavigation: ((allow: boolean) => void) | undefined
@@ -205,16 +209,18 @@ function close() {
 function ask(kind: NonNullable<typeof confirmation.value>) {
   if (busy.value || (kind !== 'discard' && blocked.value) || !selected.value) return
   confirmationKind.value = kind
+  const copy = {
+    discard: ['mcDiscardTitle', 'meDiscardHelp', 'mcDiscard'],
+    share: ['meShareTitle', 'meShareHelp', 'meSaveShared'],
+    analyze: ['meAnalyzeTitle', 'meAnalyzeHelp', 'meAnalyzeConfirm'],
+    include: ['meInclude', 'meIncludeHelp', 'meInclude'],
+    exclude: ['meExclude', 'meExcludeHelp', 'meExclude'],
+    delete: ['meDelete', 'meDeleteHelp', 'meDelete'],
+  } as const
   confirmationCopy.value = {
-    title: t(
-      kind === 'discard' ? 'mcDiscardTitle' : kind === 'share' ? 'meShareTitle' : 'meAnalyzeTitle',
-    ),
-    help: t(
-      kind === 'discard' ? 'meDiscardHelp' : kind === 'share' ? 'meShareHelp' : 'meAnalyzeHelp',
-    ),
-    action: t(
-      kind === 'discard' ? 'mcDiscard' : kind === 'share' ? 'meSaveShared' : 'meAnalyzeConfirm',
-    ),
+    title: t(copy[kind][0]),
+    help: t(copy[kind][1]),
+    action: t(copy[kind][2]),
     preview:
       title(selected.value) + (kind === 'analyze' ? ` · ${sceneName(analysisScene.value)}` : ''),
   }
@@ -352,11 +358,37 @@ async function analyze() {
     if (!modalOpen.value) await load(false, true)
   }
 }
+async function changeMembership(kind: 'include' | 'exclude' | 'delete') {
+  if (blocked.value || dirty.value || !selected.value) return
+  const id = selected.value.id
+  let submitted = false
+  busy.value = true
+  confirmationError.value = ''
+  try {
+    submitted = true
+    const result =
+      kind === 'delete'
+        ? await client.DELETE('/api/memes/{id}', { params: { path: { id } } })
+        : await client.POST('/api/memes/{id}/inclusion', {
+            params: { path: { id } },
+            body: { included: kind === 'include' },
+          })
+    if (!result.data) failResponse(result.response, result.error?.error ?? t('networkError'))
+    close()
+    success.value = t(kind === 'delete' ? 'meDeleted' : 'meMembershipSaved')
+  } catch (cause) {
+    confirmationError.value = failure(cause, submitted)
+  } finally {
+    busy.value = false
+    if (!modalOpen.value) await load(false, true)
+  }
+}
 async function confirm() {
   if (busy.value || !confirmation.value) return
   if (confirmation.value === 'discard') discard()
   else if (confirmation.value === 'share') await save(true)
-  else await analyze()
+  else if (confirmation.value === 'analyze') await analyze()
+  else await changeMembership(confirmation.value)
 }
 const wantedPreviewIds = computed(() =>
   displayed.value.filter((asset) => observedIds.value.has(asset.id)).map((asset) => asset.id),
@@ -550,6 +582,7 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
           :items="[
             { label: t('meAllStates'), value: '*' },
             { label: t('meAvailable'), value: 'available' },
+            { label: t('meKnown'), value: 'known' },
             { label: t('meDisabled'), value: 'disabled' },
             { label: t('favorite'), value: 'favorite' },
             { label: t('meUnanalyzed'), value: 'unanalyzed' },
@@ -769,12 +802,36 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
                 v-model="draft.disabled"
                 :label="t('meDisableLabel')"
                 :description="t('meDisableHelp')"
-              /><USwitch
-                v-model="draft.available"
-                :disabled="draft.disabled"
-                :label="t('meAvailableLabel')"
-                :description="t('meAvailableHelp')"
               />
+              <div class="rounded border border-default p-3 space-y-2">
+                <p class="font-medium">{{ t(status(selected)) }}</p>
+                <p class="text-xs text-muted">{{ t('meKnownHelp') }}</p>
+                <p v-if="!selected.analyzed" class="text-xs text-muted">
+                  {{ t('meIncludeRequirements') }}
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  <UButton
+                    type="button"
+                    :disabled="
+                      blocked ||
+                      dirty ||
+                      ((!selected.available || selected.knownOnly) &&
+                        (selected.disabled || !selected.analyzed))
+                    "
+                    @click="ask(selected.available && !selected.knownOnly ? 'exclude' : 'include')"
+                  >
+                    {{ t(selected.available && !selected.knownOnly ? 'meExclude' : 'meInclude') }}
+                  </UButton>
+                  <UButton
+                    type="button"
+                    color="error"
+                    variant="outline"
+                    :disabled="blocked || dirty"
+                    @click="ask('delete')"
+                    >{{ t('meDelete') }}</UButton
+                  >
+                </div>
+              </div>
               <p class="text-xs text-muted">
                 {{ t('meSelectionOrigin') }}:
                 {{
@@ -789,6 +846,7 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
               </p>
               <UCheckbox
                 v-model="draft.shared"
+                :disabled="selected.knownOnly"
                 :label="t('meSharedLabel')"
                 :description="t('meSharedHelp')"
               />
@@ -947,7 +1005,9 @@ const date = (at: string) => new Date(at).toLocaleString(locale.value)
             @click="cancelConfirmation"
             >{{ t(confirmationKind === 'discard' ? 'mcKeepEditing' : 'cancel') }}</UButton
           ><UButton
-            :color="confirmationKind === 'discard' ? 'error' : 'primary'"
+            :color="
+              confirmationKind === 'discard' || confirmationKind === 'delete' ? 'error' : 'primary'
+            "
             :loading="busy"
             :disabled="busy || !confirmation || (confirmationKind !== 'discard' && blocked)"
             @click="confirm"

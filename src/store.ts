@@ -1,3 +1,21 @@
+import { RequestMeasurementSummarySchema } from './model-measurement/schema.ts'
+import { SourceEventStore } from './memory/storage/event-revisions.ts'
+import { recordSourceEventMutation } from './memory/recovery/source-events.ts'
+import { BudgetSettingsSchema } from './budget/settings.ts'
+import {
+  configurationFlags,
+  sceneFlags,
+  sceneIdentityHash,
+} from './memory/recovery/configuration-contract.ts'
+import { advanceSecurityState } from './memory/recovery/security-state.ts'
+import {
+  openGate,
+  maintenanceGate,
+  revoke,
+  assertRecoveryReady,
+  requireModelReadPolicyReader,
+  type RecoveryAuthority,
+} from './memory/recovery/ledger.ts'
 import {
   cachePartition,
   calculateModelCost,
@@ -58,6 +76,14 @@ type UsageBreakdown = Record<(typeof usageColumns)[keyof typeof usageColumns], n
 export class Store {
   readonly db: Database.Database
   readonly secrets: SecretStore
+  private sourceEventStore?: SourceEventStore
+  get sourceEvents() {
+    this.assertRecoveryReady()
+    return (this.sourceEventStore ??= new SourceEventStore(this.db, {
+      assertReady: () => this.assertRecoveryReady(),
+      beforeWrite: (mutation) => recordSourceEventMutation(this.db, mutation),
+    }))
+  }
   readonly vectorVersion: string
   readonly logs: Log[] = []
   private diagnosticEntries: Array<{
@@ -70,11 +96,24 @@ export class Store {
   }> = []
   private diagnosticTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private readonly logDirectory?: string
-  constructor(path = process.env.HUMANENGINE_DB || 'data/humanengine.sqlite') {
+  readonly recoveryQuarantined: boolean
+  private recoveryAuthority?: RecoveryAuthority
+  constructor(
+    path = process.env.HUMANENGINE_DB || 'data/humanengine.sqlite',
+    maintenance?: { authority: RecoveryAuthority },
+  ) {
+    this.recoveryQuarantined = !!maintenance
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
     if (path !== ':memory:')
       this.logDirectory = process.env.HUMANENGINE_LOG_DIR || join(dirname(path), 'logs')
     this.db = new Database(path)
+    try {
+      if (maintenance) maintenanceGate(this.db, path, maintenance.authority)
+      else this.recoveryAuthority = openGate(this.db, path)
+    } catch (error) {
+      this.db.close()
+      throw error
+    }
     this.db.pragma('journal_mode = WAL')
     this.db.pragma('foreign_keys = ON')
     this.secrets = new SecretStore(
@@ -114,17 +153,121 @@ export class Store {
         this.db.exec('UPDATE model_usage SET legacy_calls=calls,legacy_estimated_usd=estimated_usd')
     })()
   }
+  assertRecoveryReady() {
+    if (!this.recoveryQuarantined) assertRecoveryReady(this.db)
+  }
   get<T>(key: string, fallback: T): T {
+    this.assertRecoveryReady()
     const r = this.db.prepare('SELECT value FROM config WHERE key=?').get(key) as
       { value: string } | undefined
     return r ? JSON.parse(r.value) : fallback
   }
   set(key: string, value: unknown) {
+    this.assertRecoveryReady()
     this.db
-      .prepare(
-        'INSERT INTO config(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
-      )
-      .run(key, JSON.stringify(value))
+      .transaction(() => {
+        const previous = this.get<unknown>(key, undefined)
+        if (key === 'settings') {
+          const flags = configurationFlags((value ?? {}) as Record<string, unknown>)
+          const feedbackEnabled = (input: unknown) =>
+            ((input ?? {}) as Record<string, unknown>).memoryExperienceFeedbackEnabled === true
+          if (feedbackEnabled(previous) !== feedbackEnabled(value)) {
+            const revision = this.get('memory-experience-feedback-revision', 0)
+            if (
+              !Number.isSafeInteger(revision) ||
+              revision < 0 ||
+              revision >= Number.MAX_SAFE_INTEGER
+            )
+              throw new Error('experience_feedback_policy_invalid')
+            this.db
+              .prepare('INSERT OR REPLACE INTO config(key,value) VALUES(?,?)')
+              .run('memory-experience-feedback-revision', JSON.stringify(revision + 1))
+          }
+          const knowledgeFlags = (input: unknown) => {
+            const row = (input ?? {}) as Record<string, unknown>
+            return [
+              'memoryKnowledgeEnabled',
+              'memoryKnowledgeAutoAdmissionEnabled',
+              'memoryKnowledgeAnswerEnabled',
+            ].map((key) => row[key] ?? false)
+          }
+          if (JSON.stringify(knowledgeFlags(previous)) !== JSON.stringify(knowledgeFlags(value))) {
+            const revision = this.get('memory-knowledge-policy-revision', 0)
+            if (
+              !Number.isSafeInteger(revision) ||
+              revision < 0 ||
+              revision >= Number.MAX_SAFE_INTEGER
+            )
+              throw new Error('knowledge_policy_invalid')
+            this.db
+              .prepare('INSERT OR REPLACE INTO config(key,value) VALUES(?,?)')
+              .run('memory-knowledge-policy-revision', JSON.stringify(revision + 1))
+          }
+          const semanticFlags = (input: unknown) => {
+            const row = (input ?? {}) as Record<string, unknown>
+            return [
+              'memorySemanticEnabled',
+              'memorySemanticAutoAdmissionEnabled',
+              'memorySemanticAnswerEnabled',
+            ].map((key) => row[key] ?? false)
+          }
+          if (JSON.stringify(semanticFlags(previous)) !== JSON.stringify(semanticFlags(value))) {
+            const revision = this.get('memory-semantic-policy-revision', 0)
+            if (
+              !Number.isSafeInteger(revision) ||
+              revision < 0 ||
+              revision >= Number.MAX_SAFE_INTEGER
+            )
+              throw new Error('semantic_policy_invalid')
+            this.db
+              .prepare('INSERT OR REPLACE INTO config(key,value) VALUES(?,?)')
+              .run('memory-semantic-policy-revision', JSON.stringify(revision + 1))
+          }
+          if (
+            JSON.stringify(flags) !==
+            JSON.stringify(configurationFlags((previous ?? {}) as Record<string, unknown>))
+          )
+            revoke(this.db, { kind: 'configuration_flags', schemaVersion: 8, flags })
+        }
+        const securityValue = (input: unknown) => {
+          if (key === 'settings') return BudgetSettingsSchema.parse(input ?? {})
+          if (key !== 'models') return input
+          const model = ModelConfigSchema.parse(input ?? { providers: [], models: [], routes: [] })
+          return {
+            providers: model.providers.map(({ id, protocol, baseUrl, credentialEnv }) => ({
+              id,
+              protocol,
+              baseUrl,
+              credentialEnv,
+            })),
+            models: model.models.map(({ id, providerId, apiModelName, capabilities }) => ({
+              id,
+              providerId,
+              apiModelName,
+              capabilities,
+            })),
+            routes: normalizeRoleRoutes(model.routes).map(({ role, orderedModelIds }) => ({
+              role,
+              orderedModelIds,
+            })),
+          }
+        }
+        if (
+          (key === 'settings' ||
+            key === 'models' ||
+            key === 'localPlugins' ||
+            key.startsWith('plugin:') ||
+            key.startsWith('plugin-enabled:')) &&
+          JSON.stringify(securityValue(previous)) !== JSON.stringify(securityValue(value))
+        )
+          advanceSecurityState(this.db)
+        this.db
+          .prepare(
+            'INSERT INTO config(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',
+          )
+          .run(key, JSON.stringify(value))
+      })
+      .immediate()
   }
   get models(): ModelConfig {
     const config = ModelConfigSchema.parse(
@@ -177,19 +320,63 @@ export class Store {
     )
   }
   scenes(): Scene[] {
+    this.assertRecoveryReady()
     return (
       this.db.prepare('SELECT value FROM scenes ORDER BY id').all() as { value: string }[]
     ).map((r) => JSON.parse(r.value))
   }
   scene(id: string): Scene | undefined {
+    this.assertRecoveryReady()
     return this.scenes().find((s) => s.id === id)
   }
   saveScene(scene: Scene) {
+    this.assertRecoveryReady()
     this.db
-      .prepare(
-        'INSERT INTO scenes(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value',
-      )
-      .run(scene.id, JSON.stringify(scene))
+      .transaction(() => {
+        const previous = this.scene(scene.id)
+        // Older callers omitting the new controls must not silently re-enable them.
+        const next: Scene = { ...scene }
+        for (const key of ['memoryReadEnabled', 'personalizationEnabled'] as const)
+          if (next[key] === undefined && previous?.[key] !== undefined) next[key] = previous[key]
+        const revision = previous?.memoryReadRevision ?? 0
+        if (!Number.isSafeInteger(revision) || revision < 0)
+          throw new Error('memory_read_policy_invalid')
+        const changed =
+          !!previous &&
+          ((previous.memoryReadEnabled !== false) !== (next.memoryReadEnabled !== false) ||
+            (previous.personalizationEnabled !== false) !==
+              (next.personalizationEnabled !== false) ||
+            sceneIdentityHash(previous) !== sceneIdentityHash(next))
+        delete next.memoryReadRevision // supplied revision is never an authority upgrade
+        if (revision || changed) {
+          if (revision >= Number.MAX_SAFE_INTEGER) throw new Error('memory_read_policy_invalid')
+          next.memoryReadRevision = revision + Number(changed)
+        }
+        if (
+          previous &&
+          (JSON.stringify(sceneFlags(previous)) !== JSON.stringify(sceneFlags(next)) ||
+            sceneIdentityHash(previous) !== sceneIdentityHash(next))
+        )
+          revoke(this.db, {
+            kind: 'scene_flags',
+            schemaVersion: 2,
+            sceneId: scene.id,
+            identityHash: sceneIdentityHash(next),
+            flags: sceneFlags(next),
+          })
+        if (
+          next.memoryReadEnabled !== undefined ||
+          next.personalizationEnabled !== undefined ||
+          next.memoryReadRevision !== undefined
+        )
+          requireModelReadPolicyReader(this.db)
+        this.db
+          .prepare(
+            'INSERT INTO scenes(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value',
+          )
+          .run(next.id, JSON.stringify(next))
+      })
+      .immediate()
   }
   /** Presentation metadata is scene scoped; adapter-owned identity never changes routing IDs. */
   updateIdentity(profile: ProfileUpdate) {
@@ -246,14 +433,20 @@ export class Store {
     }
   }
   recalled(sceneId: string, messageId: string): boolean {
+    this.assertRecoveryReady()
     return !!this.db
       .prepare('SELECT 1 FROM recall_tombstones WHERE scene_id=? AND message_id=?')
       .get(sceneId, messageId)
   }
   recall(sceneId: string, messageId: string) {
     this.db
-      .prepare('INSERT OR IGNORE INTO recall_tombstones VALUES(?,?,?)')
-      .run(sceneId, messageId, new Date().toISOString())
+      .transaction(() => {
+        revoke(this.db, { kind: 'source', sceneId, messageId })
+        this.db
+          .prepare('INSERT OR IGNORE INTO recall_tombstones VALUES(?,?,?)')
+          .run(sceneId, messageId, new Date().toISOString())
+      })
+      .immediate()
   }
   log(
     level: Log['level'],
@@ -300,6 +493,16 @@ export class Store {
     return row
   }
   recordModel(entry: ModelLog, config: RouterConfig = this.models) {
+    // Measurement is independently observable inside flow spans; it is not provider usage or cost.
+    const measurement = RequestMeasurementSummarySchema.safeParse(entry.requestMeasurement)
+    if (measurement.success)
+      this.log('info', 'model', 'model_request_measured', {
+        modelId: entry.modelId,
+        providerId: entry.providerId,
+        role: entry.role,
+        requestMeasurement: measurement.data,
+      })
+
     // Structured flow attempts already describe the same call; keep accounting without duplicate opaque lines.
     if (!currentFlowContext().spanId)
       this.log(
@@ -486,6 +689,7 @@ export class Store {
   }
   close() {
     this.clearDiagnostics()
+    this.recoveryAuthority?.close()
     this.db.close()
   }
 }

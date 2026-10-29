@@ -1,3 +1,5 @@
+import { BudgetAdmissionError, type NativeBudgetGate } from './budget/native-attempt.ts'
+import { readRestoredModelHold } from './memory/recovery/model-hold.ts'
 import type { ModelProtocolRegistry } from './model-protocols.ts'
 import { Router, ModelError, providerOperationBudget, type ModelInstance } from './models.ts'
 import type { Store } from './store.ts'
@@ -20,6 +22,7 @@ export async function probe(
   modelId: string,
   capability: ProbeCapability,
   registry?: ModelProtocolRegistry,
+  budget?: NativeBudgetGate | (() => NativeBudgetGate | undefined),
 ): Promise<ProbeResult> {
   const started = Date.now()
   const result = (ok: boolean, detail: string): ProbeResult => ({
@@ -36,6 +39,7 @@ export async function probe(
   if (!provider) return result(false, 'provider_not_configured')
   const role =
     capability === 'vision' ? 'vision' : capability === 'embedding' ? 'embedding' : 'replyer'
+  let restorationAdmissionDenied = false
   // Advertised capability flags are hypotheses being tested, not permission to fallback.
   const router = new Router(
     {
@@ -53,6 +57,16 @@ export async function probe(
     registry,
     store.resolveCredential,
     store,
+    () => {
+      // Store-backed probes are managed even when callers omit optional budget admission.
+      // Router invokes this supplier again at the physical transport boundary after queueing.
+      store.assertRecoveryReady()
+      if (readRestoredModelHold(store.db)?.status === 'held') {
+        restorationAdmissionDenied = true
+        throw new BudgetAdmissionError('budget_restore_accounting_hold')
+      }
+      return typeof budget === 'function' ? budget() : budget
+    },
   )
   const signal = AbortSignal.timeout(providerOperationBudget(provider))
   try {
@@ -116,6 +130,7 @@ export async function probe(
         : 'text_response_received',
     )
   } catch (error) {
+    if (restorationAdmissionDenied) return result(false, 'budget_restore_accounting_hold')
     // Preserve the probe API diagnostic; dimension mismatch remains a distinct error.
     if (
       capability === 'embedding' &&

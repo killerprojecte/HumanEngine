@@ -59,3 +59,19 @@ The server schemas in `src/schema.ts` and route definitions in `src/api.ts` are 
 Secrets entered in the UI are encrypted in SQLite with a separate automatically generated installation key; legacy environment references remain optional. See [credential storage and recovery](docs/secrets.md). Configuration changes apply to new turns. Temporary chats, pending sends, attention, and simulation sessions are never restored after restart. Recall tombstones are durable provenance metadata, not an outgoing queue.
 
 Dependency audit limitations and the tested esbuild override are documented in [SECURITY.md](SECURITY.md). The remaining upstream node-forge advisory is not represented as a clean audit.
+
+## Qualified memory redesign
+
+The memory system now includes exact-version provenance and revocation, independent
+recovery authority and restore model HOLD, multi-person plans and bounded recorded
+history, explicit identity links, a finite qualified knowledge graph, selective working
+sets, incremental attributed summaries/episodes and requester-scoped operation trials.
+Experimental paths are independently controlled; read/personalization pause is separate
+from learning and administrator access. None of these projections is a truth oracle.
+
+Start with the [release and test handoff](docs/memory-release-checklist.md),
+[current capability boundaries](docs/memory-current-status.md), and
+[migration checklist](docs/memory-migration-checklist.md). The
+[executable offline acceptance](docs/acceptance/safety-runner.md) binds 200 distinct safety
+cases and three actual Runtime longitudinal configurations. Synthetic tests do not
+establish real-model accuracy, production performance or sustained user benefit.

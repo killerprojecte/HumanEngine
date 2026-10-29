@@ -76,7 +76,7 @@ export function harness() {
   store.saveScene(scope())
   store.saveScene(scope(otherSceneId))
   const engine = new Engine(store)
-  const access = engine as unknown as LearningAccess
+  const access = engine.learning as unknown as LearningAccess
   const install = (complete: Router['complete']) => {
     const router = engine.router()
     router.complete = complete

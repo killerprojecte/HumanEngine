@@ -1,3 +1,4 @@
+import { metadata, RecoveryAuthority, sameHead } from '../src/memory/recovery/ledger.ts'
 import Database from 'better-sqlite3'
 import { constants } from 'node:fs'
 import { copyFile, mkdir, readFile, writeFile, lstat, rm, chmod } from 'node:fs/promises'
@@ -57,12 +58,22 @@ export async function backup(options: {
   try {
     if (!(await lstat(options.database)).isFile()) throw new Error('regular_database_required')
     source = new Database(options.database, { readonly: true, fileMustExist: true })
+    const gate = metadata(source)
+    if (!gate || gate.state !== 'ready') throw new Error('recovery_legacy_enrollment_required')
+    const authority = new RecoveryAuthority(gate.authority)
+    try {
+      if (!sameHead(gate.head, authority.head())) throw new Error('recovery_authority_head_changed')
+    } finally {
+      authority.close()
+    }
     const databasePath = join(destination, 'humanengine.sqlite')
     await source.backup(databasePath)
     source.close()
     source = undefined
     await chmod(databasePath, 0o600)
-    snapshot = new Database(databasePath, { readonly: true })
+    // Normalize only the copied snapshot; the live database keeps its existing WAL mode.
+    snapshot = new Database(databasePath)
+    snapshot.pragma('journal_mode = DELETE')
     checkIntegrity(snapshot)
     const media = mediaRecords(snapshot)
     const hasSecrets =

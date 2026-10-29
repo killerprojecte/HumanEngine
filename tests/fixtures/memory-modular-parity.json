@@ -1,0 +1,1445 @@
+[
+  {
+    "stage": "first",
+    "result": {
+      "status": "saved",
+      "memory": {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m1",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.5,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      }
+    },
+    "records": [
+      {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m1",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.5,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      }
+    ],
+    "proofs": [
+      {
+        "id": "id-1",
+        "proofs": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "sourceObservations": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "state": [
+      {
+        "assertion_id": "id-1",
+        "version": 1,
+        "deletion_epoch": 0,
+        "deleted": 0
+      }
+    ],
+    "history": [
+      {
+        "assertion_id": "id-1",
+        "version": 1,
+        "value": {
+          "assertionId": "id-1",
+          "version": 1,
+          "record": {
+            "id": "id-1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic tea preference",
+            "kind": "fact",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ],
+            "importance": "medium",
+            "confidence": 0.5,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "learned",
+            "lineageStatus": "verified"
+          },
+          "supports": [
+            {
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m1",
+                  "senderId": "p"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "sourceObservations": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m1",
+                  "senderId": "p"
+                }
+              ]
+            }
+          ],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "learned_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      }
+    ],
+    "sources": [
+      {
+        "memory_id": "id-1",
+        "scene_id": "s",
+        "message_id": "m1",
+        "sender_id": "p"
+      }
+    ],
+    "authority": []
+  },
+  {
+    "stage": "alternative",
+    "result": {
+      "status": "saved",
+      "memory": {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m1",
+            "senderId": "p"
+          },
+          {
+            "sceneId": "s",
+            "messageId": "m2",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.5,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      }
+    },
+    "records": [
+      {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m1",
+            "senderId": "p"
+          },
+          {
+            "sceneId": "s",
+            "messageId": "m2",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.5,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      }
+    ],
+    "proofs": [
+      {
+        "id": "id-1",
+        "proofs": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "sourceObservations": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ]
+          },
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "sourceObservations": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "state": [
+      {
+        "assertion_id": "id-1",
+        "version": 2,
+        "deletion_epoch": 0,
+        "deleted": 0
+      }
+    ],
+    "history": [
+      {
+        "assertion_id": "id-1",
+        "version": 1,
+        "value": {
+          "assertionId": "id-1",
+          "version": 1,
+          "record": {
+            "id": "id-1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic tea preference",
+            "kind": "fact",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ],
+            "importance": "medium",
+            "confidence": 0.5,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "learned",
+            "lineageStatus": "verified"
+          },
+          "supports": [
+            {
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m1",
+                  "senderId": "p"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "sourceObservations": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m1",
+                  "senderId": "p"
+                }
+              ]
+            }
+          ],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "learned_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      },
+      {
+        "assertion_id": "id-1",
+        "version": 2,
+        "value": {
+          "assertionId": "id-1",
+          "version": 2,
+          "record": {
+            "id": "id-1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic tea preference",
+            "kind": "fact",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              },
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "importance": "medium",
+            "confidence": 0.5,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "learned",
+            "lineageStatus": "verified"
+          },
+          "supports": [
+            {
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m1",
+                  "senderId": "p"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "sourceObservations": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m1",
+                  "senderId": "p"
+                }
+              ]
+            },
+            {
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "sourceObservations": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ]
+            }
+          ],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "learned_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      }
+    ],
+    "sources": [
+      {
+        "memory_id": "id-1",
+        "scene_id": "s",
+        "message_id": "m1",
+        "sender_id": "p"
+      },
+      {
+        "memory_id": "id-1",
+        "scene_id": "s",
+        "message_id": "m2",
+        "sender_id": "p"
+      }
+    ],
+    "authority": []
+  },
+  {
+    "stage": "recall-one",
+    "result": [
+      {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m2",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.25,
+        "learnedAt": "<time>",
+        "status": "disputed",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      }
+    ],
+    "records": [
+      {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m2",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.25,
+        "learnedAt": "<time>",
+        "status": "disputed",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      }
+    ],
+    "proofs": [
+      {
+        "id": "id-1",
+        "proofs": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": []
+          },
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "sourceObservations": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "state": [
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "deletion_epoch": 1,
+        "deleted": 0
+      }
+    ],
+    "history": [
+      {
+        "assertion_id": "id-1",
+        "version": 1,
+        "value": null
+      },
+      {
+        "assertion_id": "id-1",
+        "version": 2,
+        "value": null
+      },
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "value": {
+          "assertionId": "id-1",
+          "version": 3,
+          "record": {
+            "id": "id-1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic tea preference",
+            "kind": "fact",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "importance": "medium",
+            "confidence": 0.25,
+            "learnedAt": "<time>",
+            "status": "disputed",
+            "locked": false,
+            "origin": "learned",
+            "lineageStatus": "verified"
+          },
+          "supports": [
+            {
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "sourceObservations": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ]
+            }
+          ],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "learned_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      }
+    ],
+    "sources": [
+      {
+        "memory_id": "id-1",
+        "scene_id": "s",
+        "message_id": "m2",
+        "sender_id": "p"
+      }
+    ],
+    "authority": [
+      {
+        "sequence": 1,
+        "revocation": {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      },
+      {
+        "sequence": 2,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 2,
+          "terminal": false
+        }
+      }
+    ]
+  },
+  {
+    "stage": "manual",
+    "result": {
+      "id": "id-2",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic manual fact",
+      "kind": "fact",
+      "sources": [],
+      "importance": "medium",
+      "confidence": 1,
+      "learnedAt": "<time>",
+      "status": "active",
+      "locked": false,
+      "origin": "manual"
+    },
+    "records": [
+      {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m2",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.25,
+        "learnedAt": "<time>",
+        "status": "disputed",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      },
+      {
+        "id": "id-2",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic manual fact",
+        "kind": "fact",
+        "sources": [],
+        "importance": "medium",
+        "confidence": 1,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "manual"
+      }
+    ],
+    "proofs": [
+      {
+        "id": "id-1",
+        "proofs": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": []
+          },
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "sourceObservations": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "state": [
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "deletion_epoch": 1,
+        "deleted": 0
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 1,
+        "deletion_epoch": 0,
+        "deleted": 0
+      }
+    ],
+    "history": [
+      {
+        "assertion_id": "id-1",
+        "version": 1,
+        "value": null
+      },
+      {
+        "assertion_id": "id-1",
+        "version": 2,
+        "value": null
+      },
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "value": {
+          "assertionId": "id-1",
+          "version": 3,
+          "record": {
+            "id": "id-1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic tea preference",
+            "kind": "fact",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "importance": "medium",
+            "confidence": 0.25,
+            "learnedAt": "<time>",
+            "status": "disputed",
+            "locked": false,
+            "origin": "learned",
+            "lineageStatus": "verified"
+          },
+          "supports": [
+            {
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "sourceObservations": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ]
+            }
+          ],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "learned_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 1,
+        "value": {
+          "assertionId": "id-2",
+          "version": 1,
+          "record": {
+            "id": "id-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic manual fact",
+            "kind": "fact",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "manual"
+          },
+          "supports": [],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "admin_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      }
+    ],
+    "sources": [
+      {
+        "memory_id": "id-1",
+        "scene_id": "s",
+        "message_id": "m2",
+        "sender_id": "p"
+      }
+    ],
+    "authority": [
+      {
+        "sequence": 1,
+        "revocation": {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      },
+      {
+        "sequence": 2,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 2,
+          "terminal": false
+        }
+      }
+    ]
+  },
+  {
+    "stage": "update",
+    "result": {
+      "id": "id-2",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic reviewed correction",
+      "kind": "fact",
+      "sources": [],
+      "importance": "medium",
+      "confidence": 1,
+      "learnedAt": "<time>",
+      "status": "active",
+      "locked": false,
+      "origin": "manual"
+    },
+    "records": [
+      {
+        "id": "id-1",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic tea preference",
+        "kind": "fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m2",
+            "senderId": "p"
+          }
+        ],
+        "importance": "medium",
+        "confidence": 0.25,
+        "learnedAt": "<time>",
+        "status": "disputed",
+        "locked": false,
+        "origin": "learned",
+        "lineageStatus": "verified"
+      },
+      {
+        "id": "id-2",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic reviewed correction",
+        "kind": "fact",
+        "sources": [],
+        "importance": "medium",
+        "confidence": 1,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "manual"
+      }
+    ],
+    "proofs": [
+      {
+        "id": "id-1",
+        "proofs": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": []
+          },
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "sourceObservations": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "state": [
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "deletion_epoch": 1,
+        "deleted": 0
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 2,
+        "deletion_epoch": 0,
+        "deleted": 0
+      }
+    ],
+    "history": [
+      {
+        "assertion_id": "id-1",
+        "version": 1,
+        "value": null
+      },
+      {
+        "assertion_id": "id-1",
+        "version": 2,
+        "value": null
+      },
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "value": {
+          "assertionId": "id-1",
+          "version": 3,
+          "record": {
+            "id": "id-1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic tea preference",
+            "kind": "fact",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m2",
+                "senderId": "p"
+              }
+            ],
+            "importance": "medium",
+            "confidence": 0.25,
+            "learnedAt": "<time>",
+            "status": "disputed",
+            "locked": false,
+            "origin": "learned",
+            "lineageStatus": "verified"
+          },
+          "supports": [
+            {
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "sourceObservations": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m2",
+                  "senderId": "p"
+                }
+              ]
+            }
+          ],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "learned_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 1,
+        "value": {
+          "assertionId": "id-2",
+          "version": 1,
+          "record": {
+            "id": "id-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic manual fact",
+            "kind": "fact",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "manual"
+          },
+          "supports": [],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "admin_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 2,
+        "value": {
+          "assertionId": "id-2",
+          "version": 2,
+          "record": {
+            "id": "id-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic reviewed correction",
+            "kind": "fact",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "manual"
+          },
+          "supports": [],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "admin_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      }
+    ],
+    "sources": [
+      {
+        "memory_id": "id-1",
+        "scene_id": "s",
+        "message_id": "m2",
+        "sender_id": "p"
+      }
+    ],
+    "authority": [
+      {
+        "sequence": 1,
+        "revocation": {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      },
+      {
+        "sequence": 2,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 2,
+          "terminal": false
+        }
+      }
+    ]
+  },
+  {
+    "stage": "delete",
+    "result": true,
+    "records": [
+      {
+        "id": "id-2",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic reviewed correction",
+        "kind": "fact",
+        "sources": [],
+        "importance": "medium",
+        "confidence": 1,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "manual"
+      }
+    ],
+    "proofs": [],
+    "state": [
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "deletion_epoch": 3,
+        "deleted": 1
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 2,
+        "deletion_epoch": 0,
+        "deleted": 0
+      }
+    ],
+    "history": [
+      {
+        "assertion_id": "id-2",
+        "version": 1,
+        "value": {
+          "assertionId": "id-2",
+          "version": 1,
+          "record": {
+            "id": "id-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic manual fact",
+            "kind": "fact",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "manual"
+          },
+          "supports": [],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "admin_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 2,
+        "value": {
+          "assertionId": "id-2",
+          "version": 2,
+          "record": {
+            "id": "id-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic reviewed correction",
+            "kind": "fact",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "manual"
+          },
+          "supports": [],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "admin_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      }
+    ],
+    "sources": [],
+    "authority": [
+      {
+        "sequence": 1,
+        "revocation": {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      },
+      {
+        "sequence": 2,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 2,
+          "terminal": false
+        }
+      },
+      {
+        "sequence": 3,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 3,
+          "terminal": true
+        }
+      },
+      {
+        "sequence": 4,
+        "revocation": {
+          "kind": "fingerprint",
+          "value": "3b6730ce43418300b2491755376e407d389293e656b539009034e6fedae55586"
+        }
+      },
+      {
+        "sequence": 5,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 3,
+          "terminal": false
+        }
+      }
+    ]
+  },
+  {
+    "stage": "tombstone-rejection",
+    "result": {
+      "status": "rejected",
+      "reason": "manually_deleted"
+    },
+    "records": [
+      {
+        "id": "id-2",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s"
+        },
+        "content": "Synthetic reviewed correction",
+        "kind": "fact",
+        "sources": [],
+        "importance": "medium",
+        "confidence": 1,
+        "learnedAt": "<time>",
+        "status": "active",
+        "locked": false,
+        "origin": "manual"
+      }
+    ],
+    "proofs": [],
+    "state": [
+      {
+        "assertion_id": "id-1",
+        "version": 3,
+        "deletion_epoch": 3,
+        "deleted": 1
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 2,
+        "deletion_epoch": 0,
+        "deleted": 0
+      }
+    ],
+    "history": [
+      {
+        "assertion_id": "id-2",
+        "version": 1,
+        "value": {
+          "assertionId": "id-2",
+          "version": 1,
+          "record": {
+            "id": "id-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic manual fact",
+            "kind": "fact",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "manual"
+          },
+          "supports": [],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "admin_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      },
+      {
+        "assertion_id": "id-2",
+        "version": 2,
+        "value": {
+          "assertionId": "id-2",
+          "version": 2,
+          "record": {
+            "id": "id-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s"
+            },
+            "content": "Synthetic reviewed correction",
+            "kind": "fact",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "<time>",
+            "status": "active",
+            "locked": false,
+            "origin": "manual"
+          },
+          "supports": [],
+          "recordedAt": "<time>",
+          "validFrom": null,
+          "validTo": null,
+          "event": {
+            "kind": "admin_assertion",
+            "actorId": null,
+            "legacyImport": false
+          }
+        }
+      }
+    ],
+    "sources": [],
+    "authority": [
+      {
+        "sequence": 1,
+        "revocation": {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      },
+      {
+        "sequence": 2,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 2,
+          "terminal": false
+        }
+      },
+      {
+        "sequence": 3,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 3,
+          "terminal": true
+        }
+      },
+      {
+        "sequence": 4,
+        "revocation": {
+          "kind": "fingerprint",
+          "value": "3b6730ce43418300b2491755376e407d389293e656b539009034e6fedae55586"
+        }
+      },
+      {
+        "sequence": 5,
+        "revocation": {
+          "kind": "assertion",
+          "id": "id-1",
+          "throughVersion": 3,
+          "terminal": false
+        }
+      }
+    ]
+  }
+]

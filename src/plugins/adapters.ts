@@ -1,3 +1,4 @@
+import type { SourceEventResult, TrustedSourceChange } from '../memory/domain/events.ts'
 import { createHash } from 'node:crypto'
 import type { Runtime, RuntimeAdapter } from '../runtime.ts'
 import type { Store } from '../store.ts'
@@ -9,6 +10,11 @@ export interface AdapterContext {
   scene(accountId: string, kind: 'group' | 'private', platformSceneId: string): SceneRef
   messageId(scene: SceneRef, platformMessageId: string): string
   receive(message: Message, scene: SceneRef, isBot: boolean): void
+  edit(
+    message: Message,
+    scene: SceneRef,
+    change: Pick<Extract<TrustedSourceChange, { kind: 'edit' }>, 'editId' | 'order'>,
+  ): SourceEventResult
   recall(scene: SceneRef, messageId: string): void
   isRecalled(scene: SceneRef, messageId: string): boolean
   status(value: 'connecting' | 'connected' | 'disconnected'): void
@@ -139,6 +145,12 @@ export function installAdapter(
         isBot ? { ...normalized, senderId: 'bot' } : normalized,
         Object.freeze({ ...scope }),
       )
+    },
+    edit: (message, scope, change) => {
+      if (!active()) throw new Error('plugin_disabled')
+      const normalized = checkMessage(message, scope)
+      if (normalized.origin !== 'live') throw new Error('adapter_ingress_requires_live_origin')
+      return runtime.edit(normalized, Object.freeze({ ...scope }), change)
     },
     recall: (scope, messageId) => {
       if (!active()) return

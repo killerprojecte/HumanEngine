@@ -1,3 +1,12 @@
+import { registerExternalCostRoutes } from './budget/external-cost/admin-routes.ts'
+import { installSemanticRoutes } from './memory/interfaces/semantic-routes.ts'
+import { installKnowledgeRoutes } from './memory/interfaces/knowledge-routes.ts'
+import { installIdentityRoutes } from './memory/interfaces/identity-routes.ts'
+import { installExperienceRoutes } from './memory/interfaces/experience-routes.ts'
+import { installRelationRoutes } from './memory/interfaces/relation-routes.ts'
+import { registerBudgetRoutes } from './budget/admin-routes.ts'
+import { installMemoryHistoryRoutes } from './memory/interfaces/history-routes.ts'
+import { installPersonMemoryRoutes } from './memory/interfaces/person-routes.ts'
 import { ChatMediaService, ChatMediaError, presentChatMessage } from './chat-media.ts'
 import {
   snowLumaFields,
@@ -12,6 +21,7 @@ import { PluginConfigurationError, PluginStartupError } from './plugins.ts'
 import { probe } from './probes.ts'
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { readFile } from 'node:fs/promises'
+import { isDeepStrictEqual } from 'node:util'
 import { join } from 'node:path'
 import { Engine } from './engine.ts'
 import { ErrorSchema } from './schema.ts'
@@ -86,13 +96,26 @@ const MemoryInput = z
     kind: z.enum(['fact', 'claim', 'term', 'experience', 'summary']),
     importance: z.enum(['low', 'medium', 'high']).default('medium'),
     confidence: z.number().min(0).max(1).default(1),
+    validFrom: z.iso.datetime({ offset: true }).optional(),
+    validUntil: z.iso.datetime({ offset: true }).optional(),
+    occurredAt: z.iso.datetime({ offset: true }).optional(),
+    epistemicKind: z
+      .enum(['explicit', 'reported', 'observed', 'inferred', 'hypothesis'])
+      .optional(),
     locked: z.boolean().default(false),
   })
   .strict()
 const Memory = MemoryInput.extend({
   id: z.string(),
+  revision: z
+    .object({
+      version: z.number().int().nonnegative(),
+      deletionEpoch: z.number().int().nonnegative(),
+    })
+    .optional(),
   sources: z.array(z.object({ sceneId: z.string(), messageId: z.string(), senderId: z.string() })),
   learnedAt: z.string(),
+  observedAt: z.string().optional(),
   status: z.enum(['active', 'disputed', 'superseded', 'invalidated']),
   origin: z.enum(['manual', 'learned']),
   lineageStatus: z.enum(['verified', 'unverified', 'quarantined']).optional(),
@@ -174,6 +197,19 @@ const Meme = z
   .openapi('Meme')
 const Success = z.object({ ok: z.boolean() })
 export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
+  const presentMemory = (record: ReturnType<Engine['memory']['create']>) => {
+    const { version, deletionEpoch } = engine.memory.revisionState(record.id)
+    return { ...record, revision: { version, deletionEpoch } }
+  }
+  registerBudgetRoutes(app, { budget: engine.budget })
+  registerExternalCostRoutes(app, engine.budget.externalCosts)
+  installPersonMemoryRoutes(app, { memory: engine.memory, store: engine.store })
+  installSemanticRoutes(app, { semantic: engine.memory.semantic, store: engine.store })
+  installKnowledgeRoutes(app, { knowledge: engine.memory.knowledge, store: engine.store })
+  installIdentityRoutes(app, { identities: engine.memory.identities.registry, store: engine.store })
+  installRelationRoutes(app, { memory: engine.memory, store: engine.store })
+  installExperienceRoutes(app, { experience: engine.experience, store: engine.store })
+  installMemoryHistoryRoutes(app, { memory: engine.memory, store: engine.store })
   const chatMedia = new ChatMediaService(engine.runtime, Date.now, (sceneId, assetId) => ({
     available: () => {
       try {
@@ -422,6 +458,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
           c.req.valid('param').id,
           c.req.valid('json').capability,
           engine.protocols,
+          () => engine.budget.gate(),
         ),
         200,
       ),
@@ -535,6 +572,11 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       const asset = engine.memes.adminGet(c.req.valid('param').id)
       if (!asset) return c.json({ error: 'Asset unavailable' }, 400)
       const bytes = await readFile(join(engine.memes.mediaRoot, `${asset.id}.${asset.format}`))
+      // A completed file read is not authority to deliver an older asset snapshot.
+      engine.store.assertRecoveryReady()
+      const current = engine.memes.adminGet(asset.id)
+      if (!current || !isDeepStrictEqual(current, asset))
+        return c.json({ error: 'Asset unavailable' }, 400)
       return new Response(bytes, {
         headers: { 'Content-Type': `image/${asset.format}`, 'Cache-Control': 'no-store' },
       })
@@ -746,7 +788,14 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       path: '/api/memories',
       responses: { 200: json(z.array(Memory)), ...errors },
     }),
-    (c) => c.json(memory.adminList(), 200),
+    (c) =>
+      c.json(
+        memory
+          .adminList()
+          .filter((record) => !record.internalUse)
+          .map(presentMemory),
+        200,
+      ),
   )
   app.openapi(
     createRoute({
@@ -758,7 +807,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
     (c) => {
       const record = memory.create(c.req.valid('json'))
       void engine.indexMemory(record.id, record.content)
-      return c.json(record, 200)
+      return c.json(presentMemory(record), 200)
     },
   )
   app.openapi(
@@ -770,6 +819,14 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
         body: body(
           z
             .object({
+              guard: z
+                .object({
+                  expectedVersion: z.number().int().nonnegative(),
+                  expectedDeletionEpoch: z.number().int().nonnegative(),
+                  idempotencyKey: z.string().min(1).max(160),
+                })
+                .strict()
+                .optional(),
               content: z.string().min(1).max(10000).optional(),
               locked: z.boolean().optional(),
               status: z.enum(['active', 'disputed', 'superseded', 'invalidated']).optional(),
@@ -777,12 +834,30 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
             .strict(),
         ),
       },
-      responses: { 200: json(Memory), ...errors },
+      responses: { 200: json(Memory), 409: json(ErrorSchema), ...errors },
     }),
     (c) => {
-      const record = memory.update(c.req.valid('param').id, c.req.valid('json'))
+      const { guard, ...patch } = c.req.valid('json')
+      let record
+      try {
+        record = guard
+          ? memory.updateGuarded(c.req.valid('param').id, patch, guard)
+          : memory.update(c.req.valid('param').id, patch)
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          [
+            'assertion_version_conflict',
+            'assertion_deleted_or_stale_epoch',
+            'memory_command_conflict',
+            'memory_command_superseded',
+          ].includes(error.message)
+        )
+          return c.json({ error: 'Memory changed; reload before editing' }, 409)
+        throw error
+      }
       void engine.indexMemory(record.id, record.content)
-      return c.json(record, 200)
+      return c.json(presentMemory(record), 200)
     },
   )
   app.openapi(

@@ -1,3 +1,4 @@
+import { retainLegacyProofFormat } from './helpers/legacy-memory-proof.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -11,7 +12,7 @@ import {
 } from '../src/memory.ts'
 import { Store } from '../src/store.ts'
 
-function setup(path = ':memory:') {
+function setup(path = ':memory:', legacyBindings = true) {
   const store = new Store(path)
   for (const id of ['a', 'b'])
     store.saveScene({
@@ -34,17 +35,28 @@ function setup(path = ':memory:') {
     context: Partial<MemoryContext> = {},
   ) {
     const source = { sceneId: context.sceneId ?? 'a', messageId, senderId: 'alice' }
-    return memory.propose(
+    const result = memory.propose(
       {
         sceneId: 'a',
         simulation: false,
         provenance: parents.length ? 'contextual' : 'source-only',
         dependencyMemoryIds: parents,
+        dependencyParentReferences: parents.flatMap((id) => {
+          const ctx = { sceneId: context.sceneId ?? 'a', simulation: false }
+          const record = memory.list(ctx).find((item) => item.id === id)
+          const reference = record ? memory.captureParentReference(ctx, record) : undefined
+          return reference ? [reference] : []
+        }),
         sourceEvidence: [{ ...source, available: true, isBot: false }],
         ...context,
       },
       { content, kind: 'fact', sources: [source], ...patch },
     )
+    // Existing scenario assertions cover legacy databases; current bound proofs
+    // are covered independently by memory-parent-integration.test.ts.
+    if (legacyBindings && result.status === 'saved' && parents.length)
+      retainLegacyProofFormat(store, result.memory.id)
+    return result
   }
   function saved(result: ReturnType<typeof propose>): MemoryRecord {
     assert.equal(result.status, 'saved', JSON.stringify(result))
@@ -317,14 +329,19 @@ test('Expired premises cannot hide valid top-k simulation results or be revived 
     assert.equal(JSON.stringify(store.db.prepare('SELECT * FROM memories').all()), before)
     assert.equal(JSON.stringify(store.db.prepare('SELECT * FROM memory_vectors').all()), vectors)
     memory.update(child.id, { confidence: 1, status: 'active' })
-    assert.equal(memory.adminList().find((m) => m.id === child.id)?.status, 'invalidated')
+    // Expiry is current-read applicability, not irreversible privacy invalidation.
+    assert.equal(memory.adminList().find((m) => m.id === child.id)?.status, 'active')
+    assert.equal(
+      memory.list({ sceneId: 'a', simulation: false }).some((m) => m.id === child.id),
+      false,
+    )
     assert.equal(
       (
         store.db
           .prepare('SELECT count(*) AS n FROM memory_vectors WHERE memory_id=?')
           .get(child.id) as { n: number }
       ).n,
-      0,
+      1, // Expiry excludes reads; retained derived state is not a deletion.
     )
   } finally {
     store.close()
@@ -481,7 +498,7 @@ test('Repeated source confidence claims cannot inflate confidence or duplicate p
 })
 
 test('Proof deduplication is order-independent but preserves distinct dependency alternatives', () => {
-  const { store, memory, propose, saved } = setup()
+  const { store, memory, propose, saved } = setup(':memory:', false)
   try {
     const a = saved(propose('Premise A', 'a'))
     const b = saved(propose('Premise B', 'b'))

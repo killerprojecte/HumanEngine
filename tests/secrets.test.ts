@@ -1,3 +1,4 @@
+import { metadata } from '../src/memory/recovery/ledger.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, readFileSync, rmSync, statSync, chmodSync, writeFileSync } from 'node:fs'
@@ -177,7 +178,11 @@ test('backup restores encrypted secrets with separate installation key', async (
     const destination = join(dir, 'backup')
     const manifest = await backup({ database, mediaRoot: join(dir, 'media'), destination })
     assert.ok(manifest.files.some((f) => f.path === '.secrets.key'))
-    const result = await restore({ backupRoot: destination, destination: join(dir, 'restored') })
+    const result = await restore({
+      authorityDirectory: metadata(store.db)!.authority,
+      backupRoot: destination,
+      destination: join(dir, 'restored'),
+    })
     copy = new Store(result.database)
     assert.equal(copy.secrets.get('plugin:snowluma', 'token'), 'mock-backup-key')
   } finally {

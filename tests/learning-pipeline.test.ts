@@ -59,6 +59,7 @@ test(
     store.set('settings', {
       ...store.settings,
       learningBatchMs: 100,
+      learningMinIntervalMs: 0,
       debounceMs: 0,
       maxWaitMs: 100,
     })

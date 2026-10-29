@@ -1,3 +1,6 @@
+import { ModelReadPolicy } from './memory/read/model-read-policy.ts'
+import { withBudgetContext } from './budget/native-attempt.ts'
+import { withModelPriority } from './scheduler.ts'
 import { startFlow } from './diagnostics/flow.ts'
 import { createHash, randomUUID } from 'node:crypto'
 import { ModelError, type Router, type RouterConfig } from './models.ts'
@@ -74,7 +77,7 @@ export class EmbeddingIndex {
   constructor(
     private readonly store: Store,
     private readonly memory: MemoryService,
-    private readonly router: (config: RouterConfig) => Router,
+    private readonly router: (config: RouterConfig, admit?: () => void) => Router,
     private readonly options: { now?: () => number } = {},
   ) {
     store.db.exec(`CREATE TABLE IF NOT EXISTS embedding_rebuild_items (
@@ -280,21 +283,29 @@ export class EmbeddingIndex {
     return job
   }
   async dispose() {
-    this.store.db
-      .transaction(() => {
-        const job = this.job()
-        if (
-          job?.state === 'running' &&
-          job.ownerId === this.ownerId &&
-          job.attemptId === this.ownedAttempt
-        ) {
-          job.state = 'paused'
-          this.save(job)
-        }
-      })
-      .immediate()
     this.controller?.abort()
-    await this.work
+    try {
+      if (this.ownedAttempt)
+        this.store.db
+          .transaction(() => {
+            const job = this.job()
+            if (
+              job?.state === 'running' &&
+              job.ownerId === this.ownerId &&
+              job.attemptId === this.ownedAttempt
+            ) {
+              job.state = 'paused'
+              this.save(job)
+            }
+          })
+          .immediate()
+    } catch (error) {
+      // Shutdown must stop work without mutating a database behind the authority head.
+      if (!(error instanceof Error) || error.message !== 'recovery_authority_head_changed')
+        throw error
+    } finally {
+      await this.work
+    }
   }
   async settled() {
     await this.work
@@ -322,7 +333,10 @@ export class EmbeddingIndex {
     }, this.leaseMs / 3)
     heartbeat.unref()
     this.heartbeat = heartbeat
-    this.work = this.run(job, config, controller.signal).finally(() => {
+    this.work = withBudgetContext(
+      { turnId: `embedding-rebuild:${job.id}`, lane: 'maintenance' },
+      () => withModelPriority(2, () => this.run(job, config, controller.signal)),
+    ).finally(() => {
       clearInterval(heartbeat)
       if (this.controller === controller) {
         this.controller = undefined
@@ -341,6 +355,24 @@ export class EmbeddingIndex {
       return false
     }
     return true
+  }
+  private modelReadGuard(records: readonly MemoryRecord[]) {
+    const policy = new ModelReadPolicy(this.store)
+    const tickets = new Map<string, ReturnType<ModelReadPolicy['require']>>()
+    for (const record of records) {
+      if (record.scope.kind !== 'scene') continue
+      const sceneId = record.scope.sceneId
+      const ticket = tickets.get(sceneId) ?? policy.require(sceneId)
+      tickets.set(sceneId, ticket)
+      if (
+        !ticket.personalizationEnabled &&
+        (record.scope.personId || ['experience', 'summary'].includes(record.kind))
+      )
+        throw new Error('personalization_disabled')
+    }
+    return () => {
+      for (const ticket of tickets.values()) policy.assert(ticket)
+    }
   }
   private pending(job: RebuildJob) {
     const eligible = this.memory.indexable()
@@ -402,13 +434,16 @@ export class EmbeddingIndex {
           return
         }
         const batch = pending.slice(0, selected.model.embeddingBatchSize ?? 4)
+        const admit = this.modelReadGuard(batch)
         job.requiresRetryConfirmation = true
         if (!this.saveOwned(job)) return
-        const result = await this.router(config).embeddings(
+        admit()
+        const result = await this.router(config, admit).embeddings(
           job.modelId,
           batch.map((m) => m.content),
           signal,
         )
+        admit()
         if (!this.current(job, signal)) return
         // The router validates finite/nonzero/consistent dimensions and explicit dimension requests.
         const dimensions = result.vectors[0]?.length
@@ -459,6 +494,9 @@ export class EmbeddingIndex {
           ? error.code
           : error instanceof Error &&
               [
+                'memory_read_disabled',
+                'memory_read_revoked',
+                'personalization_disabled',
                 'embedding_dimensions_changed',
                 'embedding_active_generation_changed',
                 'embedding_lease_lost',
@@ -619,7 +657,14 @@ export class EmbeddingIndex {
         return
       const before = this.memory.indexable().find((m) => m.id === id && m.content === content)
       if (!before) return
-      const result = await this.router(config).embeddings(selected.model.id, [content], signal)
+      const admit = this.modelReadGuard([before])
+      admit()
+      const result = await this.router(config, admit).embeddings(
+        selected.model.id,
+        [content],
+        signal,
+      )
+      admit()
       if (signal?.aborted || encoder(this.store.models)?.revision !== selected.revision) return
       this.store.db.transaction(() => {
         const now = this.memory.indexable().find((m) => m.id === id)

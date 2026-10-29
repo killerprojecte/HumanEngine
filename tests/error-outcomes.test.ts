@@ -189,7 +189,7 @@ test('learning persistence database failure reaches final batch with partial-wri
   engine.indexMemory = async () => {
     throw sqliteError()
   }
-  const queue = engine as unknown as {
+  const queue = engine.learning as unknown as {
     enqueueLearning(message: RuntimeMessage): void
     learn(id: string): Promise<void>
     learningRetries: Map<string, unknown>

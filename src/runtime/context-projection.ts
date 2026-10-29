@@ -8,6 +8,9 @@ const omitted = new Set([
   'platformMetadata',
   'raw',
   'rawEvent',
+  'proofId',
+  'backingFingerprint',
+  'spanHash',
   'accountId',
   'adapterId',
   'platformSceneId',
@@ -23,12 +26,34 @@ const messageKeys = new Set([
   'replyToId',
   'originalTarget',
 ])
-const userKeys = new Set(['senderId', 'userId', 'personId', 'botUserId', 'recipientId'])
+const userKeys = new Set([
+  'senderId',
+  'userId',
+  'personId',
+  'botUserId',
+  'recipientId',
+  'participantIds',
+  'confirmedParticipantIds',
+  'missingParticipantIds',
+  'completedParticipantIds',
+  'cancelledParticipantIds',
+])
 const assetKeys = new Set(['assetId', 'assetIds'])
 const evidenceKeys = new Set([
+  'eventId',
   'evidenceId',
   'evidenceIds',
+  'stateEvidenceIds',
+  'assertionId',
+  'parents',
   'memoryIds',
+  'selectedParentIds',
+  'requiredMemoryIds',
+  'entityId',
+  'originEdgeId',
+  'edgeId',
+  'entityIds',
+  'policyId',
   'memoryId',
   'candidateId',
   'habitId',
@@ -91,21 +116,24 @@ export class ContextProjection {
     parent?: Record<string, unknown>,
     idKind?: Kind,
   ): unknown {
-    const kind = messageKeys.has(field)
-      ? 'm'
-      : userKeys.has(field)
-        ? 'u'
-        : assetKeys.has(field)
-          ? 'a'
-          : evidenceKeys.has(field)
-            ? 'e'
-            : field === 'id'
-              ? parent && 'parts' in parent && 'senderId' in parent
-                ? 'm'
-                : parent && 'format' in parent && 'tags' in parent
-                  ? 'a'
-                  : (idKind ?? 'e')
-              : undefined
+    const kind =
+      field === 'paths' && parent?.interpretation === 'attributed_claims_not_transitive_truth'
+        ? 'e'
+        : messageKeys.has(field)
+          ? 'm'
+          : userKeys.has(field)
+            ? 'u'
+            : assetKeys.has(field)
+              ? 'a'
+              : evidenceKeys.has(field)
+                ? 'e'
+                : field === 'id'
+                  ? parent && 'parts' in parent && 'senderId' in parent
+                    ? 'm'
+                    : parent && 'format' in parent && 'tags' in parent
+                      ? 'a'
+                      : (idKind ?? 'e')
+                  : undefined
     if (typeof value === 'string') {
       if (field === 'topicId') {
         if (!inbound) return this.register('e', value)

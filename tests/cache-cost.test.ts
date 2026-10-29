@@ -5,6 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Store } from '../src/store.ts'
+import { enroll } from '../src/memory/recovery/ledger.ts'
 import {
   calculateModelCost,
   cachePartition,
@@ -190,6 +191,9 @@ test('legacy database/backup migration preserves aggregate prices and marks cach
     2,
     0.25,
   )
+  // Enroll this synthetic current legacy database before producing its trusted backup.
+  assert.throws(() => new Store(path), /recovery_legacy_enrollment_required/)
+  enroll(db, path, root + '-authority').close()
   await db.backup(backup)
   db.close()
   try {
@@ -221,6 +225,7 @@ test('legacy database/backup migration preserves aggregate prices and marks cach
     }
   } finally {
     rmSync(root, { recursive: true, force: true })
+    rmSync(root + '-authority', { recursive: true, force: true })
   }
 })
 

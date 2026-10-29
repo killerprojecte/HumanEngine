@@ -45,7 +45,7 @@ async function fixture(
       proactiveEnabled: false,
     })
   const engine = new Engine(store),
-    queue = engine as unknown as Internals,
+    queue = engine.learning as unknown as Internals,
     seen: string[][] = []
   const router = engine.router()
   router.complete = async (_role, prompts) => {

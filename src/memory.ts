@@ -1,209 +1,447 @@
-import { createHash, randomUUID } from 'node:crypto'
+import { SemanticPrivacy } from './memory/lifecycle/semantic-privacy.ts'
+import { createSemanticService, semanticPolicyRevision } from './memory/semantic/facade.ts'
+import { semanticAssertion } from './memory/semantic/authority.ts'
+import { SemanticNotifications } from './memory/semantic/notifications.ts'
+import { SemanticEpisodeAnchors } from './memory/semantic/episode-anchors.ts'
+import { SemanticNeighborhood } from './memory/semantic/neighborhood.ts'
+import type { SemanticService } from './memory/semantic/candidates.ts'
+import type { SemanticInput } from './memory/semantic/input.ts'
+import type { SemanticProposal } from './memory/semantic/contracts.ts'
+import type { SemanticContext, SemanticRef } from './memory/semantic/contracts.ts'
+import { KnowledgePrivacy } from './memory/lifecycle/knowledge-privacy.ts'
+import { createKnowledgeService } from './memory/knowledge/facade.ts'
+import type { KnowledgeService } from './memory/knowledge/service.ts'
+import { createIdentityFacade, type IdentityFacade } from './memory/identities/facade.ts'
+import { MemoryWorkspace } from './memory/read/memory-workspace.ts'
+import { isDeepStrictEqual } from 'node:util'
+import { CommitmentService } from './memory/commitments/service.ts'
+import type {
+  MemoryCandidate,
+  MemoryContext,
+  MemoryKind,
+  MemoryRecord,
+  MemoryScope,
+  MemorySource,
+  ProposalResult,
+  SourceEvidence,
+  VectorSpace,
+} from './memory/domain/contracts.ts'
+import {
+  parentBindingState,
+  type ProofParentReference,
+  type SupportProof,
+} from './memory/domain/proofs.ts'
+import { hash, scopeKey, uniqueSources } from './memory/domain/record-values.ts'
+import { AssertionLifecycle } from './memory/lifecycle/assertion-lifecycle.ts'
+import { CommitmentPrivacy } from './memory/lifecycle/commitment-privacy.ts'
+import { ProofInvalidation } from './memory/lifecycle/proof-invalidation.ts'
+import { MemoryProjections } from './memory/projections/coordinator.ts'
+import { projectPeople, projectPerson } from './memory/projections/people.ts'
+import { AssertionAuthority } from './memory/read/assertion-authority.ts'
+import { WorkspaceAuthority } from './memory/read/workspace-authority.ts'
+import {
+  queryAssertionHistory,
+  type HistoricalAssertionQuery,
+} from './memory/read/assertion-history-query.ts'
+import { createParentTraversal } from './memory/read/bound-parents.ts'
+import { domainSourceCurrent } from './memory/read/domain-source-events.ts'
+import { memorySearchTerms } from './memory/read/lexical.ts'
+import { recordCommitmentMutation } from './memory/recovery/commitments.ts'
+import { RelationCandidates } from './memory/relations/candidates.ts'
+import {
+  AssertionRepository,
+  readAssertionRow as read,
+  type AssertionRow as Row,
+} from './memory/storage/assertion-repository.ts'
+import { initializeMemoryStorage } from './memory/storage/migrations.ts'
+import { type MemoryCommandGuard } from './memory/write/guarded-command.ts'
+import { ManualMemoryCommands } from './memory/write/manual-commands.ts'
+import { ProposalCommand } from './memory/write/proposal-command.ts'
+import { MemoryRevisionCoordinator } from './memory/write/revision-coordinator.ts'
+import {
+  earliestObservation,
+  resolveSubjectAttribution,
+} from './memory/write/subject-attribution.ts'
 import type { Store } from './store.ts'
 
-export type MemoryScope =
-  { kind: 'scene'; sceneId: string; personId?: string } | { kind: 'sharedPublicKnowledge' }
-export type MemoryKind = 'fact' | 'claim' | 'term' | 'experience' | 'summary'
-export interface MemorySource {
-  sceneId: string
-  messageId: string
-  senderId: string
-}
-export interface SourceEvidence extends MemorySource {
-  available: boolean
-  isBot: boolean
-}
-export interface MemoryContext {
-  sceneId: string
-  simulation: boolean
-  sourceEvidence?: SourceEvidence[]
-  /** Trusted extraction boundary; never populated from model arguments. */
-  provenance?: 'source-only' | 'contextual'
-  dependencyMemoryIds?: string[]
-}
-export interface MemoryRecord {
-  id: string
-  scope: MemoryScope
-  kind: MemoryKind
-  content: string
-  sources: MemorySource[]
-  importance: 'low' | 'medium' | 'high'
-  confidence: number
-  learnedAt: string
-  occurredAt?: string
-  validUntil?: string
-  status: 'active' | 'disputed' | 'superseded' | 'invalidated'
-  locked: boolean
-  origin: 'manual' | 'learned'
-  supersedesId?: string
-  score?: number
-  lineageStatus?: 'verified' | 'unverified' | 'quarantined'
-}
-export interface MemoryCandidate {
-  content: string
-  kind: MemoryKind
-  personId?: string
-  sources: MemorySource[]
-  importance?: MemoryRecord['importance']
-  confidence?: number
-  occurredAt?: string
-  validUntil?: string
-  supersedesId?: string
-  mergeIntoId?: string
-}
-export interface VectorSpace {
-  providerId: string
-  modelId: string
-  apiModelName: string
-  deployment: string
-  dimensions: number
-  preprocessing: string
-  normalized: boolean
-  generation?: string
-  encoderRevision?: string
-}
-export type ProposalResult =
-  { status: 'saved'; memory: MemoryRecord } | { status: 'rejected'; reason: string }
-type Support = { sources: MemorySource[]; parents: string[]; invalidatedBy?: string }
-type Row = {
-  id: string
-  scope_key: string
-  person_id: string | null
-  content: string
-  value: string
-  fingerprint: string
-  distance?: number | null
-}
-const hash = (value: string) => createHash('sha256').update(value).digest('hex')
-const scopeKey = (scope: MemoryScope) =>
-  scope.kind === 'scene' ? `scene:${scope.sceneId}` : 'shared:public'
-const fingerprint = (scope: MemoryScope, content: string) =>
-  hash(
-    JSON.stringify([
-      scopeKey(scope),
-      scope.kind === 'scene' ? (scope.personId ?? '') : '',
-      content.trim().replace(/\s+/g, ' ').toLowerCase(),
-    ]),
-  )
-const historicalFingerprint = (memory: MemoryRecord) =>
-  `history:${fingerprint(memory.scope, memory.content)}:${memory.id}`
-const read = (row: Row): MemoryRecord => JSON.parse(row.value) as MemoryRecord
-
-// Chinese questions need word boundaries even when no embedding model is configured.
-// Keep technical tokens intact; never turn individual Han characters into broad matches.
-const hanWords = new Intl.Segmenter('zh', { granularity: 'word' })
-const genericHanTerms = new Set([
-  '什么',
-  '怎么',
-  '如何',
-  '是否',
-  '能否',
-  '请问',
-  '一下',
-  '一个',
-  '这个',
-  '那个',
-  '哪些',
-  '这样',
-  '那样',
-  '之前',
-  '现在',
-  '以后',
-  '曾经',
-  '记得',
-  '记住',
-  '知道',
-  '事情',
-  '东西',
-  '内容',
-  '问题',
-  '信息',
-  '有关',
-  '相关',
-  '说过',
-  '过的',
-  '应该',
-  '可以',
-  '需要',
-  '不是',
-  '没有',
-  '不要',
-  '还有',
-  '以及',
-  '因为',
-  '所以',
-  '但是',
-  '然后',
-  '情况',
-  '时候',
-  '用户',
-  '我们',
-  '你们',
-  '他们',
-  '她们',
-  '大家',
-])
-function memorySearchTerms(query: string): string[] {
-  const terms = new Set<string>()
-  const add = (term: string) => {
-    if (terms.size >= 64 || genericHanTerms.has(term)) return
-    if (/^\p{Script=Han}+$/u.test(term) && [...term].length < 2) return
-    terms.add(term)
-  }
-  for (const token of query
-    .toLowerCase()
-    .slice(0, 2000)
-    .match(/[\p{L}\p{N}_:.+-]+/gu) ?? []) {
-    add(token)
-    if (/\p{Script=Han}/u.test(token)) {
-      for (const word of hanWords.segment(token)) {
-        if (word.isWordLike && /\p{Script=Han}/u.test(word.segment)) add(word.segment)
-      }
-    }
-  }
-  return [...terms]
-}
-const date = (value: string | undefined) =>
-  value === undefined || (typeof value === 'string' && Number.isFinite(Date.parse(value)))
+export type {
+  MemoryCandidate,
+  MemoryContext,
+  MemoryKind,
+  MemoryRecord,
+  MemoryScope,
+  MemorySource,
+  ProposalResult,
+  SourceEvidence,
+  VectorSpace,
+} from './memory/domain/contracts.ts'
+type Support = SupportProof
 
 /** SQLite is authoritative; embeddings are replaceable, scope-filtered derived data. */
 export class MemoryService {
-  constructor(private readonly store: Store) {
-    store.db.exec(`
-      CREATE TABLE IF NOT EXISTS memories (
-        id TEXT PRIMARY KEY, scope_key TEXT NOT NULL, person_id TEXT,
-        content TEXT NOT NULL, fingerprint TEXT NOT NULL UNIQUE, value TEXT NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS memories_scope ON memories(scope_key,person_id);
-      CREATE TABLE IF NOT EXISTS memory_sources (
-        memory_id TEXT NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
-        scene_id TEXT NOT NULL, message_id TEXT NOT NULL, sender_id TEXT NOT NULL,
-        PRIMARY KEY(memory_id,scene_id,message_id)
-      );
-      CREATE INDEX IF NOT EXISTS memory_source_lookup ON memory_sources(scene_id,message_id);
-      CREATE TABLE IF NOT EXISTS memory_deleted (fingerprint TEXT PRIMARY KEY, deleted_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS vector_spaces (id TEXT PRIMARY KEY, value TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS memory_vectors (
-        memory_id TEXT NOT NULL REFERENCES memories(id) ON DELETE CASCADE,
-        space_id TEXT NOT NULL REFERENCES vector_spaces(id) ON DELETE CASCADE,
-        embedding BLOB NOT NULL, PRIMARY KEY(memory_id,space_id)
-      );
-    `)
-    // Atomic, idempotent migration: legacy content is retained but never silently
-    // asserted to have independent provenance. No historical messages are replayed.
-    store.db.transaction(() => {
-      store.db.exec(`CREATE TABLE IF NOT EXISTS memory_supports (
-        memory_id TEXT PRIMARY KEY REFERENCES memories(id) ON DELETE CASCADE,
-        value TEXT NOT NULL
-      );`)
-      store.db
-        .prepare(
-          `UPDATE memories SET value=json_set(value,'$.lineageStatus','unverified')
-        WHERE json_extract(value,'$.origin')='learned'
-          AND json_extract(value,'$.lineageStatus') IS NULL`,
-        )
-        .run()
+  private readonly commitmentPrivacy: CommitmentPrivacy
+  private readonly lifecycleCommands: AssertionLifecycle
+  private readonly manual: ManualMemoryCommands
+  private readonly proposals: ProposalCommand
+  private readonly authority: AssertionAuthority
+  private readonly repository: AssertionRepository
+  private readonly unsubscribeWorkspaceSource: () => void
+  readonly semantic: SemanticService
+  readonly semanticNotifications: SemanticNotifications
+  readonly semanticEpisodes: SemanticEpisodeAnchors
+  readonly semanticNeighborhood: SemanticNeighborhood
+  readonly knowledge: KnowledgeService
+  readonly identities: IdentityFacade
+  readonly workspace: MemoryWorkspace
+  readonly workspaceAuthority: WorkspaceAuthority
+  readonly commitments: CommitmentService
+  readonly relations: RelationCandidates
+  private readonly revisions: MemoryRevisionCoordinator
+  private readonly projections: MemoryProjections
+  private readonly lifecycle: ProofInvalidation<MemoryRecord, Support>
+  knowledgeModelEligible(ctx: MemoryContext, refs: readonly ProofParentReference[]): boolean {
+    return refs.every((ref) => {
+      const view = this.authority.relationAuthority({ ...ctx, provenance: 'contextual' }, ref)
+      return (
+        !!view &&
+        ['fact', 'claim', 'term'].includes(view.record.kind) &&
+        (view.record.scope.kind !== 'scene' || !view.record.scope.personId)
+      )
+    })
+  }
+  semanticCurrent(ctx: SemanticContext, ref: SemanticRef) {
+    return semanticAssertion(
+      this.store,
+      (context, reference) =>
+        this.authority.relationAuthority({ ...context, provenance: 'contextual' }, reference),
+      ctx,
+      ref,
+    )
+  }
+  beginSemanticAttempt(snapshot: SemanticInput) {
+    return this.revisions.transaction(() => {
+      if (!this.semanticNeighborhood.valid(snapshot)) return false
+      return this.semantic.beginAttempt(
+        { sceneId: snapshot.sceneId, simulation: false },
+        { inputKey: snapshot.inputKey, parents: snapshot.selections },
+      )
     })()
+  }
+  finishSemanticAttempt(snapshot: SemanticInput, status: 'finished' | 'abandoned') {
+    this.revisions.transaction(() =>
+      this.semantic.finishAttempt(
+        { sceneId: snapshot.sceneId, simulation: false },
+        snapshot.inputKey,
+        status,
+      ),
+    )()
+  }
+  commitSemantic(
+    snapshot: SemanticInput,
+    proposals: readonly SemanticProposal[],
+    guard: () => void,
+  ) {
+    return this.revisions.transaction(() => {
+      guard()
+      if (!this.semanticNeighborhood.valid(snapshot)) throw new Error('semantic_authority_changed')
+      const result = this.semantic.admit(
+        { sceneId: snapshot.sceneId, simulation: false },
+        snapshot.selections,
+        proposals,
+        snapshot.episodeAnchor && snapshot.episodeMembershipKey
+          ? {
+              anchor: snapshot.episodeAnchor,
+              membershipKey: snapshot.episodeMembershipKey,
+              anchorDependencies: snapshot.anchorDependencies ?? [],
+              anchorQualifications: snapshot.anchorQualifications ?? [],
+            }
+          : undefined,
+      )
+      return { created: result.created.length, rejected: result.rejected.length }
+    })()
+  }
+  constructor(private readonly store: Store) {
+    initializeMemoryStorage(store)
+    this.identities = createIdentityFacade(store, this)
+    this.repository = new AssertionRepository(store, {
+      beforeWrite: (id) => this.revisions.beforeWrite(id),
+      removeProjection: (id) => {
+        this.projections.remove(id)
+        this.workspace?.onAssertionUnavailable(id)
+      },
+    })
+    this.relations = new RelationCandidates(store.db, {
+      enabled: () => store.settings.memoryGraphEnabled,
+      autoAdmission: () => store.settings.memoryGraphAutoAdmissionEnabled,
+      learningEnabled: (ctx) => !!store.scene(ctx.sceneId)?.learningEnabled,
+      current: (ctx, ref) => this.authority.relationAuthority(ctx, ref),
+    })
+    this.knowledge = createKnowledgeService(store, (ctx, ref) =>
+      this.authority.relationAuthority(ctx, ref),
+    )
+    this.semanticEpisodes = new SemanticEpisodeAnchors({
+      knowledge: this.knowledge,
+      anchorCurrent: (ctx, ref) =>
+        this.authority.relationAuthority({ ...ctx, provenance: 'contextual' }, ref),
+      current: (ctx, ref) => this.semanticCurrent(ctx, ref),
+      triggerRecord: (ctx, ref) =>
+        this.authority.relationAuthority({ ...ctx, provenance: 'contextual' }, ref)?.record,
+    })
+    this.semantic = createSemanticService(
+      store,
+      (ctx, ref) => this.semanticCurrent(ctx, ref),
+      (ctx, ref) => this.authority.relationAuthority({ ...ctx, provenance: 'contextual' }, ref),
+      (ctx, anchor, parents, key) =>
+        !!key && this.semanticEpisodes.valid(ctx, anchor, parents, key),
+      (ctx, personId) => this.semanticNeighborhood.partitionKey(ctx, personId),
+    )
+    this.semanticNotifications = new SemanticNotifications({
+      enabled: (sceneId) =>
+        store.settings.memorySemanticEnabled && !!store.scene(sceneId)?.learningEnabled,
+      policyIdentity: (sceneId) =>
+        JSON.stringify([
+          semanticPolicyRevision(store),
+          store.scene(sceneId)?.memoryReadRevision ?? 0,
+          store.scene(sceneId)?.learningEnabled,
+        ]),
+      current: (ctx, ref) => this.semanticCurrent(ctx, ref),
+      episodes: (ctx, ref) => this.semanticEpisodes.discover(ctx, ref).groups,
+      failed: () => store.log('info', 'memory', 'semantic_notification_unavailable'),
+    })
+    this.semanticNeighborhood = new SemanticNeighborhood({
+      records: (ctx) => this.list(ctx),
+      references: (ctx, records) => this.captureParentReferences(ctx, records),
+      current: (ctx, ref) => this.semanticCurrent(ctx, ref),
+      episodes: (ctx, ref) => this.semanticEpisodes.discover(ctx, ref).groups,
+    })
+    this.commitments = new CommitmentService(store.db, {
+      enabled: () => store.settings.memoryCommitmentsEnabled,
+      learningEnabled: (ctx) => !!store.scene(ctx.sceneId)?.learningEnabled,
+      current: (ctx, ref) => this.authority.relationAuthority(ctx, ref),
+      historical: (ctx, ref) => this.authority.historicalAssertion(ctx, ref),
+      surviving: (ctx, evidence) => this.commitmentPrivacy.surviving(ctx, evidence),
+      people: (ctx, ref) => {
+        const view = this.authority.relationAuthority(ctx, ref)
+        if (!view) return []
+        const sources = view.proofs.flatMap((proof) => proof.sources)
+        const trusted = (ctx as MemoryContext).sourceEvidence ?? []
+        return [
+          ...new Set(
+            sources.flatMap((source) => {
+              const evidence = trusted.find(
+                (item) =>
+                  item.sceneId === source.sceneId &&
+                  item.messageId === source.messageId &&
+                  item.senderId === source.senderId &&
+                  item.available &&
+                  !item.isBot,
+              )
+              return evidence
+                ? [
+                    source.senderId,
+                    ...(evidence.mentions ?? [])
+                      .filter((mention) => !mention.isBot)
+                      .map((mention) => mention.userId),
+                  ]
+                : [source.senderId]
+            }),
+          ),
+        ]
+      },
+      beforeWrite: (change) => recordCommitmentMutation(store.db, change),
+      afterWrite: (head, revisions, priorRevisions) =>
+        this.workspace?.onPlanCommitted(head, revisions, priorRevisions),
+    })
+    this.projections = new MemoryProjections(
+      store.db,
+      () => store.settings.memoryProjectionEnabled,
+      (id) => {
+        const record = this.repository.get(id)
+        return record && !record.internalUse && this.authority.supported(record)
+          ? record
+          : undefined
+      },
+    )
+    this.revisions = new MemoryRevisionCoordinator(
+      store.db,
+      (id) => this.repository.get(id),
+      (id) => this.authority.historySupports(id),
+      (record) =>
+        record.status !== 'invalidated' &&
+        record.lineageStatus !== 'quarantined' &&
+        !record.sources.some((source) => store.recalled(source.sceneId, source.messageId)),
+      (id, version, epoch) => {
+        this.relations.assertionChanged(id)
+        this.projections.committed(id, version, epoch)
+        const record = this.repository.get(id)
+        if (record?.scope.kind === 'scene') {
+          this.workspace?.onAssertionCommitted(record.scope.sceneId, id, version, epoch)
+          this.semanticNotifications?.notify(
+            record.scope.sceneId,
+            { id, version, deletionEpoch: epoch },
+            'assertion_committed',
+          )
+        }
+      },
+      () => this.flushProjections(),
+    )
+    this.authority = new AssertionAuthority(store, this.repository, this.revisions)
+    this.lifecycle = new ProofInvalidation({
+      records: () => this.adminList(),
+      proofs: (id) => this.repository.supports(id),
+      historyDependents: (id) => this.revisions.history.dependents(id),
+      exists: (id) => this.repository.get(id) !== undefined,
+      removeProjection: (id) => {
+        this.relations.purgeAssertion(id)
+        this.projections.remove(id)
+        this.workspace?.onAssertionUnavailable(id)
+      },
+      purgeHistory: (id) => {
+        this.relations.purgeAssertion(id)
+        this.workspace?.onAssertionUnavailable(id)
+        this.revisions.history.purge(id)
+      },
+      touch: (id) => this.revisions.touch(id),
+      saveProofs: (id, proofs) => this.repository.saveSupports(id, proofs),
+      supported: (record, path, cache) => this.authority.supported(record, path, cache),
+      invalidateRecord: (record) => {
+        this.knowledge.purgeAssertion(record.id)
+        this.semantic.lifecycle.purgeAssertion(record.id)
+        this.repository.write({ ...record, status: 'invalidated' })
+      },
+      removeVector: (id) => {
+        this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(id)
+      },
+    })
+    this.commitmentPrivacy = new CommitmentPrivacy(
+      store,
+      this.repository,
+      this.authority,
+      this.revisions,
+      this.commitments,
+    )
+    this.lifecycleCommands = new AssertionLifecycle(
+      store,
+      this.repository,
+      this.revisions,
+      this.relations,
+      this.commitments,
+      this.commitmentPrivacy,
+      this.lifecycle,
+      (id) => {
+        this.knowledge.purgeAssertion(id)
+        this.semantic.lifecycle.purgeAssertion(id)
+        this.workspace?.terminalAssertionDeleted(id)
+      },
+      (sceneId, messageId) => {
+        this.identities.sourceRecalled(sceneId, messageId)
+        this.knowledge.purgeSource(sceneId, messageId)
+        this.semantic.lifecycle.purgeSource(sceneId, messageId)
+      },
+      new KnowledgePrivacy(this.knowledge, this.revisions, (sceneId, backing, proof) => {
+        const record = this.repository.get(backing.id)
+        return (
+          !!record &&
+          record.scope.kind === 'scene' &&
+          record.scope.sceneId === sceneId &&
+          this.authority.supported(record) &&
+          !proof.sources.some((source) => store.recalled(source.sceneId, source.messageId)) &&
+          this.authority.proofParentsAvailable(record.scope, proof, 'history')
+        )
+      }),
+      new SemanticPrivacy(this.semantic, this.revisions, (sceneId, backing, proof) => {
+        const record = this.repository.get(backing.id)
+        return (
+          !!record &&
+          record.scope.kind === 'scene' &&
+          record.scope.sceneId === sceneId &&
+          this.authority.supported(record) &&
+          !proof.sources.some((source) => store.recalled(source.sceneId, source.messageId)) &&
+          this.authority.proofParentsAvailable(record.scope, proof, 'history')
+        )
+      }),
+    )
+    this.proposals = new ProposalCommand(
+      store,
+      this.repository,
+      this.authority,
+      this.revisions,
+      this.relations,
+      this.commitments,
+      this.knowledge,
+      {
+        refreshSupport: () => this.lifecycleCommands.refreshSupport(),
+        dependsOn: (id, wanted) => this.lifecycleCommands.dependsOn(id, wanted),
+      },
+    )
+    this.manual = new ManualMemoryCommands(store, this.repository, this.authority, this.revisions, {
+      refreshSupport: () => this.lifecycleCommands.refreshSupport(),
+      invalidateDependents: (id, legacyOnly) =>
+        this.lifecycleCommands.invalidateDependents(id, legacyOnly),
+    })
+    this.workspaceAuthority = new WorkspaceAuthority({
+      ready: () => store.assertRecoveryReady(),
+      list: (ctx) => this.list(ctx),
+      capture: (ctx, records) => this.captureParentReferences(ctx, records),
+      current: (ctx, ref) =>
+        this.authority.relationAuthority(
+          { ...ctx, provenance: ctx.provenance ?? 'contextual' },
+          ref,
+        ),
+      sourceHead: (sceneId, messageId) => store.sourceEvents.registered(sceneId, messageId),
+      currentPlan: (ctx, ref) =>
+        this.commitments.current({ ...ctx, provenance: 'contextual' }, ref),
+    })
+    this.workspace = new MemoryWorkspace(
+      store,
+      this.workspaceAuthority,
+      this.commitments,
+      (sceneId, ref) => {
+        const record = this.repository.get(ref.id)
+        const state = this.revisions.history.state(ref.id)
+        return (
+          !!record &&
+          !state.deleted &&
+          state.version >= ref.version &&
+          state.deletionEpoch >= ref.deletionEpoch &&
+          record.scope.kind === 'scene' &&
+          record.scope.sceneId === sceneId
+        )
+      },
+      {
+        sourceAssertions: (sceneId, messageId) => {
+          const rows = store.db
+            .prepare(
+              'SELECT DISTINCT memory_id AS id FROM memory_sources WHERE scene_id=? AND message_id=?',
+            )
+            .all(sceneId, messageId) as { id: string }[]
+          return rows
+            .map(({ id }) => ({ id, ...this.revisions.history.state(id) }))
+            .filter((ref) => !ref.deleted && ref.version > 0)
+            .map(({ id, version, deletionEpoch }) => ({ id, version, deletionEpoch }))
+        },
+      },
+    )
+    this.unsubscribeWorkspaceSource = store.sourceEvents.subscribeCommitted((mutation) => {
+      if (mutation.kind === 'new' || mutation.kind === 'edited') {
+        const { sceneId, messageId } = mutation.identity
+        this.workspace.onSourceEdited(sceneId, messageId)
+        const rows = store.db
+          .prepare(
+            'SELECT DISTINCT memory_id AS id FROM memory_sources WHERE scene_id=? AND message_id=?',
+          )
+          .all(sceneId, messageId) as { id: string }[]
+        for (const { id } of rows) {
+          const state = this.revisions.history.state(id)
+          if (!state.deleted && state.version > 0)
+            this.semanticNotifications.notify(
+              sceneId,
+              { id, version: state.version, deletionEpoch: state.deletionEpoch },
+              'source_qualification_changed',
+            )
+        }
+      }
+    })
     let cachedTermsJson = ''
     let cachedTerms: string[] = []
     store.db.function('humanengine_lexical', { deterministic: true }, (content, termsJson) => {
@@ -218,13 +456,263 @@ export class MemoryService {
     })
   }
 
+  dispose(): void {
+    this.unsubscribeWorkspaceSource()
+    this.semanticNotifications.dispose()
+  }
+
+  delete(id: string): boolean {
+    return this.lifecycleCommands.delete(id)
+  }
+  redactRecoveredHistory(id: string): void {
+    this.lifecycleCommands.redactRecoveredHistory(id)
+  }
+  eraseRecoveredAssertion(id: string): void {
+    this.lifecycleCommands.eraseRecoveredAssertion(id)
+  }
+  prepareRecall(sceneId: string, messageId: string): () => string[] {
+    return this.lifecycleCommands.prepareRecall(sceneId, messageId)
+  }
+  recall(sceneId: string, messageId: string): string[] {
+    return this.lifecycleCommands.recall(sceneId, messageId)
+  }
+
+  propose(ctx: MemoryContext, candidate: MemoryCandidate): ProposalResult {
+    return this.proposals.propose(ctx, candidate)
+  }
+
   list(ctx: MemoryContext, personId?: string): MemoryRecord[] {
-    if (!ctx.simulation) this.refreshSupport()
+    this.store.assertRecoveryReady()
+    if (!ctx.simulation) this.lifecycleCommands.refreshSupport()
     return this.scopedRows(ctx, personId)
       .map(read)
-      .filter((record) => this.supported(record))
-      .map((record) => this.sanitize(record))
+      .filter(
+        (record) => this.authority.supported(record) && this.authority.currentApplicable(record),
+      )
+      .map((record) => this.authority.sanitize(record))
   }
+  /** Read-only views; authoritative filtering remains in list(), never in a cache. */
+  people(ctx: MemoryContext) {
+    return projectPeople(ctx, this.list(ctx))
+  }
+
+  personProfile(ctx: MemoryContext, personId: string) {
+    return projectPerson(ctx, personId, this.list(ctx, personId))
+  }
+
+  parentBinding(id: string): 'bound' | 'legacy_unknown' | undefined {
+    const proofs = this.repository.supports(id).filter((proof) => proof.parents.length > 0)
+    if (!proofs.length) return undefined
+    return proofs.some((proof) => parentBindingState(proof) !== 'bound')
+      ? 'legacy_unknown'
+      : 'bound'
+  }
+
+  /** Capture actual authorized read content and its immutable revision together. */
+  captureParentReference(
+    ctx: MemoryContext,
+    returned: MemoryRecord,
+  ): ProofParentReference | undefined {
+    return this.captureParentReferences(ctx, [returned])[0]
+  }
+
+  /** One current scene read per bounded batch, not one scene scan per projected record. */
+  captureParentReferences(
+    ctx: MemoryContext,
+    returned: readonly MemoryRecord[],
+  ): ProofParentReference[] {
+    if (ctx.simulation) return []
+    if (returned.length > 40) throw new Error('workspace_candidate_limit')
+    return this.captureReturnedReferences(ctx, returned)
+  }
+
+  /** Trusted model-delivery capture. Preserves the existing unpaginated person-read
+   * contract: no silent prefix, no caller-supplied authority map. One scene scan per
+   * synchronous batch; each returned body still must equal current authorized data. */
+  captureExposedReferences(
+    ctx: MemoryContext,
+    returned: readonly MemoryRecord[],
+  ): ProofParentReference[] {
+    if (ctx.simulation) return []
+    return this.captureReturnedReferences(ctx, returned)
+  }
+
+  private captureReturnedReferences(
+    ctx: MemoryContext,
+    returned: readonly MemoryRecord[],
+  ): ProofParentReference[] {
+    return this.revisions.transaction(() => {
+      const current = new Map(this.list(ctx).map((record) => [record.id, record]))
+      return returned.flatMap((record) => {
+        const { score: _score, ...body } = record
+        const authorized = current.get(record.id)
+        if (!authorized || !isDeepStrictEqual(authorized, body)) return []
+        let state = this.revisions.history.state(record.id)
+        if (state.deleted) return []
+        if (state.version === 0 && state.deletionEpoch === 0) {
+          this.revisions.history.importLegacy(authorized, this.authority.historySupports(record.id))
+          state = this.revisions.history.state(record.id)
+        }
+        return state.version > 0
+          ? [{ id: record.id, version: state.version, deletionEpoch: state.deletionEpoch }]
+          : []
+      })
+    })()
+  }
+
+  /** Current authorization is mandatory even for historical versions. */
+  historyFor(ctx: MemoryContext, id: string) {
+    this.store.assertRecoveryReady()
+    if (ctx.simulation) return undefined
+    this.lifecycleCommands.refreshSupport()
+    const current = this.repository.get(id)
+    if (
+      !current ||
+      current.scope.kind !== 'scene' ||
+      current.scope.sceneId !== ctx.sceneId ||
+      !this.authority.supported(current)
+    )
+      return undefined
+    this.revisions.transaction(() => {
+      const state = this.revisions.history.state(id)
+      if (state.version === 0 && state.deletionEpoch === 0)
+        this.revisions.history.importLegacy(current, this.authority.historySupports(id))
+    })()
+    const retained = this.revisions.history.revisions(id, scopeKey(current.scope), 201)
+    const retainedCount = this.revisions.history.retainedCount(id, scopeKey(current.scope))
+    const coverage =
+      retainedCount > 200 || retained.length !== Math.min(retainedCount, 201)
+        ? ('limited' as const)
+        : ('complete' as const)
+    const traversal = createParentTraversal()
+    // This one bounded page may contain up to 200 independently sourced versions.
+    traversal.remaining = 8192
+    const revisions = retained
+      .slice(-200)
+      .map((revision) => ({
+        ...revision,
+        supports: this.authority.filterHistorySupports(
+          revision.record.scope,
+          revision.supports,
+          traversal,
+        ),
+      }))
+      .filter(
+        (revision) =>
+          revision.record.scope.kind === 'scene' &&
+          revision.record.scope.sceneId === ctx.sceneId &&
+          this.authority.parentScopeAllows(current.scope, revision.record.scope) &&
+          !revision.record.sources.some((source) =>
+            this.store.recalled(source.sceneId, source.messageId),
+          ) &&
+          (revision.record.lineageStatus !== 'verified' || revision.supports.length > 0),
+      )
+    return {
+      ...this.revisions.history.state(id),
+      revisions: revisions.map((revision) => ({
+        ...revision,
+        record: this.authority.withObservation(revision.record, revision.supports),
+      })),
+      coverage,
+    }
+  }
+
+  /** Previously recorded assertions, not replayed message bodies or implicit current learning authority. */
+  historicalQuery(
+    ctx: MemoryContext,
+    input: Omit<HistoricalAssertionQuery, 'anchor'> & {
+      memoryId: string
+      anchor?: ProofParentReference
+    },
+  ) {
+    this.store.assertRecoveryReady()
+    if (ctx.simulation || !this.store.settings.memoryHistoricalReadEnabled)
+      throw new Error('memory_history_disabled')
+    const available = this.historyFor(ctx, input.memoryId)
+    if (!available || available.deleted || available.version < 1)
+      throw new Error('memory_history_anchor_unavailable')
+    const currentAnchor = {
+      id: input.memoryId,
+      version: available.version,
+      deletionEpoch: available.deletionEpoch,
+    }
+    if (input.anchor && !isDeepStrictEqual(input.anchor, currentAnchor))
+      throw new Error('memory_history_anchor_changed')
+    const anchor = input.anchor ?? currentAnchor
+    const authorize = (ref: ProofParentReference) => {
+      const record = this.repository.get(ref.id)
+      const state = this.revisions.history.state(ref.id)
+      return record?.scope.kind === 'scene' &&
+        record.scope.sceneId === ctx.sceneId &&
+        !state.deleted &&
+        state.version === ref.version &&
+        state.deletionEpoch === ref.deletionEpoch &&
+        this.authority.supported(record)
+        ? scopeKey(record.scope)
+        : undefined
+    }
+    const result = queryAssertionHistory(
+      { ...input, anchor },
+      {
+        authorizeAnchor: authorize,
+        query: (id, scope, options) => {
+          const page = this.revisions.history.queryRetained(id, scope, options)
+          const traversal = createParentTraversal()
+          traversal.remaining = 8192
+          return {
+            ...page,
+            revisions: page.revisions.map((revision) => {
+              const supports = this.authority.filterHistorySupports(
+                revision.record.scope,
+                revision.supports,
+                traversal,
+              )
+              return {
+                ...revision,
+                supports,
+                record: this.authority.withObservation(
+                  {
+                    ...revision.record,
+                    sources: uniqueSources(supports.flatMap((proof) => proof.sources)),
+                  },
+                  supports,
+                ),
+              }
+            }),
+          }
+        },
+        authorizeRevision: (revision) =>
+          this.authority.parentScopeAllows(
+            this.repository.get(input.memoryId)!.scope,
+            revision.record.scope,
+          ) &&
+          revision.record.scope.kind === 'scene' &&
+          revision.record.scope.sceneId === ctx.sceneId &&
+          (revision.record.lineageStatus !== 'verified' || revision.supports.length > 0),
+        qualification: (revision) =>
+          revision.supports.some((proof) =>
+            proof.sources.some((source) => {
+              if (!source.eventRef) return false
+              const scene = this.store.scene(source.sceneId)
+              return (
+                !scene ||
+                !this.store.sourceEvents.historical(source.eventRef, {
+                  sceneId: source.sceneId,
+                  adapterId: scene.adapterId,
+                  accountId: scene.accountId,
+                  messageId: source.messageId,
+                  senderId: source.senderId,
+                }).eligible
+              )
+            }),
+          )
+            ? ['source_event_metadata_unavailable']
+            : [],
+      },
+    )
+    return { ...result, anchor }
+  }
+
   /** Bounded learning-only targets. Candidate metadata is relevance, never read authority. */
   reconciliationTargets(
     ctx: Omit<MemoryContext, 'sourceEvidence'> & {
@@ -236,6 +724,8 @@ export class MemoryService {
       kind: MemoryKind
       personId?: string
       sourceMessageIds: string[]
+      subject?: MemoryCandidate['subject']
+      epistemicKind?: MemoryCandidate['epistemicKind']
     }[],
     semantic: MemoryRecord[],
   ) {
@@ -244,7 +734,7 @@ export class MemoryService {
     let capped = candidates.length > 8
     if (ctx.simulation || !this.store.scene(ctx.sceneId)?.learningEnabled)
       return { targets: [], coverage: 'complete' as const, limits }
-    this.refreshSupport()
+    this.lifecycleCommands.refreshSupport()
     const kindGroup = (kind: MemoryKind) => (['fact', 'claim'].includes(kind) ? 'statement' : kind)
     const groups = new Map<
       string,
@@ -262,19 +752,28 @@ export class MemoryService {
             !this.store.recalled(ctx.sceneId, id),
         ),
       )
-      if (
-        !sources.length ||
-        sources.some((source) => !source) ||
-        (candidate.personId && !sources.some((source) => source!.senderId === candidate.personId))
-      )
-        continue
-      const key = JSON.stringify([candidate.personId ?? null, kindGroup(candidate.kind)])
+      if (!sources.length || sources.some((source) => !source)) continue
+      const attribution = resolveSubjectAttribution(ctx, {
+        ...candidate,
+        sources: sources as SourceEvidence[],
+      })
+      if (!attribution.ok) continue
+      const resolvedCandidate = {
+        ...candidate,
+        personId: attribution.personId,
+        kind: attribution.kind,
+        epistemicKind: attribution.epistemicKind,
+      }
+      const key = JSON.stringify([
+        resolvedCandidate.personId ?? null,
+        kindGroup(resolvedCandidate.kind),
+      ])
       const group = groups.get(key) ?? {
-        personId: candidate.personId,
-        kind: candidate.kind,
+        personId: resolvedCandidate.personId,
+        kind: resolvedCandidate.kind,
         candidates: [] as typeof candidates,
       }
-      group.candidates.push(candidate)
+      group.candidates.push(resolvedCandidate)
       groups.set(key, group)
     }
     if (groups.size && semantic.length > limits.semantic) capped = true
@@ -284,9 +783,9 @@ export class MemoryService {
         .prepare(
           `SELECT * FROM memories
         WHERE scope_key=? AND person_id IS ? AND json_extract(value,'$.kind') IN (SELECT value FROM json_each(?))
-          AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined'
+          AND json_extract(value,'$.internalUse') IS NULL AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined'
           AND json_extract(value,'$.status') IN ('active','disputed')
-          AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now'))
+          AND (json_extract(value,'$.validFrom') IS NULL OR julianday(json_extract(value,'$.validFrom')) <= julianday('now')) AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now'))
         ORDER BY rowid DESC LIMIT ?`,
         )
         .all(
@@ -299,10 +798,19 @@ export class MemoryService {
       const metadata = rows
         .slice(0, limits.perGroup)
         .map(read)
-        .filter((record) => this.supported(record))
+        .filter(
+          (record) => this.authority.supported(record) && this.authority.currentApplicable(record),
+        )
       const semanticMatches = semantic.slice(0, limits.semantic).flatMap((record) => {
-        const current = this.get(record.id)
-        if (!current || !this.supported(current) || !kinds.includes(current.kind)) return []
+        const current = this.repository.get(record.id)
+        if (
+          !current ||
+          current.internalUse ||
+          !this.authority.supported(current) ||
+          !this.authority.currentApplicable(current) ||
+          !kinds.includes(current.kind)
+        )
+          return []
         if (current.scope.kind === 'scene') {
           if (current.scope.sceneId !== ctx.sceneId || current.scope.personId !== group.personId)
             return []
@@ -337,7 +845,7 @@ export class MemoryService {
           }
           groupIds.add(memory.id)
           const entry = selected.get(memory.id) ?? {
-            memory: this.sanitize(memory),
+            memory: this.authority.sanitize(memory),
             candidateIndexes: [],
           }
           if (!entry.candidateIndexes.includes(candidate.candidateIndex))
@@ -353,9 +861,7 @@ export class MemoryService {
     }
   }
   adminList(): MemoryRecord[] {
-    return (this.store.db.prepare('SELECT * FROM memories ORDER BY rowid DESC').all() as Row[]).map(
-      read,
-    )
+    return this.repository.all()
   }
 
   search(
@@ -364,17 +870,20 @@ export class MemoryService {
     personId?: string,
     options?: { spaceId: string; vector: number[]; limit?: number },
   ): MemoryRecord[] {
-    if (!ctx.simulation) this.refreshSupport()
+    if (!ctx.simulation) this.lifecycleCommands.refreshSupport()
     const terms = memorySearchTerms(query)
     // Validate the selected space even for an empty permitted scope, as before.
     const vector = options ? this.vector(options.spaceId, options.vector) : undefined
     const scope = this.scopeFilter(ctx, personId)
     if (!scope) return []
-    const unsupported = ctx.simulation
-      ? this.adminList()
-          .filter((record) => !this.supported(record))
-          .map((record) => record.id)
-      : []
+    const applicability = new Map<string, boolean>()
+    const unsupported = this.adminList()
+      .filter(
+        (record) =>
+          !this.authority.currentApplicable(record, new Set(), applicability) ||
+          (ctx.simulation && !this.authority.supported(record)),
+      )
+      .map((record) => record.id)
     const lexical = terms.length ? 'humanengine_lexical(scoped.content, ?)' : '0.0'
     const semantic = options
       ? 'CASE WHEN v.embedding IS NULL THEN 0.0 ELSE max(0.0, 1.0 - vec_distance_cosine(v.embedding, ?)) END'
@@ -388,8 +897,8 @@ export class MemoryService {
         `
       WITH scoped AS MATERIALIZED (
         SELECT rowid AS ordinal, * FROM memories
-        WHERE ${scope.sql} AND id NOT IN (SELECT value FROM json_each(?)) AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(value,'$.status') IN ('active','disputed')
-          AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now'))
+        WHERE ${scope.sql} AND id NOT IN (SELECT value FROM json_each(?)) AND json_extract(value,'$.internalUse') IS NULL AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(value,'$.status') IN ('active','disputed')
+          AND (json_extract(value,'$.validFrom') IS NULL OR julianday(json_extract(value,'$.validFrom')) <= julianday('now')) AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now'))
       ), relevant AS MATERIALIZED (
         SELECT scoped.value, scoped.ordinal, max(${lexical}, ${semantic}) AS relevance
         FROM scoped ${join}
@@ -412,273 +921,15 @@ export class MemoryService {
         Math.trunc(limit),
       ) as { value: string; score: number }[]
     return rows
-      .filter((row) => this.supported(JSON.parse(row.value) as MemoryRecord))
+      .filter((row) => this.authority.supported(JSON.parse(row.value) as MemoryRecord))
       .map((row) => ({
-        ...this.sanitize(JSON.parse(row.value) as MemoryRecord),
+        ...this.authority.sanitize(JSON.parse(row.value) as MemoryRecord),
         score: row.score,
       }))
   }
 
-  propose(ctx: MemoryContext, candidate: MemoryCandidate): ProposalResult {
-    if (ctx.simulation) return { status: 'rejected', reason: 'simulation_does_not_learn' }
-    return this.store.db.transaction((): ProposalResult => {
-      if (!this.store.scene(ctx.sceneId)?.learningEnabled)
-        return { status: 'rejected', reason: 'learning_disabled' }
-      if (!candidate.sources?.length)
-        return { status: 'rejected', reason: 'missing_source_evidence' }
-      if (
-        candidate.sources.some(
-          (source) =>
-            source.sceneId !== ctx.sceneId ||
-            this.store.recalled(source.sceneId, source.messageId) ||
-            !ctx.sourceEvidence?.some(
-              (evidence) =>
-                evidence.sceneId === source.sceneId &&
-                evidence.messageId === source.messageId &&
-                evidence.senderId === source.senderId &&
-                evidence.available &&
-                !evidence.isBot,
-            ),
-        )
-      )
-        return { status: 'rejected', reason: 'invalid_source_evidence' }
-      const scope: MemoryScope = {
-        kind: 'scene',
-        sceneId: ctx.sceneId,
-        ...(candidate.personId ? { personId: candidate.personId } : {}),
-      }
-      const parents = [...new Set(ctx.dependencyMemoryIds ?? [])]
-      if (
-        !ctx.provenance ||
-        (ctx.provenance === 'contextual' && !ctx.dependencyMemoryIds) ||
-        (ctx.provenance === 'source-only' && parents.length) ||
-        parents.some((id) => !this.validParent(scope, id))
-      )
-        return { status: 'rejected', reason: 'invalid_memory_dependencies' }
-      const merging = candidate.mergeIntoId !== undefined
-      if (merging && (!candidate.mergeIntoId || candidate.supersedesId !== undefined))
-        return { status: 'rejected', reason: 'invalid_merge_request' }
-      const fp = fingerprint(scope, candidate.content)
-      if (this.store.db.prepare('SELECT 1 FROM memory_deleted WHERE fingerprint=?').get(fp))
-        return { status: 'rejected', reason: 'manually_deleted' }
-      const existingRow = this.store.db
-        .prepare(
-          merging
-            ? 'SELECT * FROM memories WHERE id=?'
-            : 'SELECT * FROM memories WHERE fingerprint=?',
-        )
-        .get(merging ? candidate.mergeIntoId : fp) as Row | undefined
-      if (merging) {
-        const target = existingRow ? read(existingRow) : undefined
-        if (
-          target &&
-          ctx.provenance === 'source-only' &&
-          fp !== fingerprint(target.scope, target.content)
-        )
-          return { status: 'rejected', reason: 'merge_requires_exact_content' }
-        if (
-          !target ||
-          target.locked ||
-          target.origin !== 'learned' ||
-          target.status !== 'active' ||
-          target.scope.kind !== 'scene' ||
-          target.scope.sceneId !== ctx.sceneId ||
-          target.scope.personId !== scope.personId ||
-          (target.validUntil !== undefined && Date.parse(target.validUntil) <= Date.now()) ||
-          target.sources.some((source) => this.store.recalled(source.sceneId, source.messageId)) ||
-          this.store.db
-            .prepare('SELECT 1 FROM memory_deleted WHERE fingerprint=?')
-            .get(existingRow!.fingerprint)
-        )
-          return { status: 'rejected', reason: 'merge_not_allowed' }
-      }
-      let superseded: MemoryRecord | undefined
-      if (candidate.supersedesId) {
-        const previous = this.get(candidate.supersedesId)
-        const sameScene =
-          previous?.scope.kind === 'scene' &&
-          previous.scope.sceneId === ctx.sceneId &&
-          previous.scope.personId === candidate.personId
-        const owningPublicSource =
-          previous?.scope.kind === 'sharedPublicKnowledge' &&
-          previous.origin === 'learned' &&
-          previous.status === 'active' &&
-          previous.sources.length > 0 &&
-          previous.sources.every((source) => source.sceneId === ctx.sceneId)
-        if (
-          !previous ||
-          previous.locked ||
-          previous.origin === 'manual' ||
-          !['active', 'disputed'].includes(previous.status) ||
-          (!sameScene && !owningPublicSource) ||
-          existingRow?.id === previous.id
-        )
-          return { status: 'rejected', reason: 'correction_not_allowed' }
-        superseded = previous
-      }
-      if (superseded && parents.includes(superseded.id))
-        return { status: 'rejected', reason: 'correction_depends_on_superseded_memory' }
-      const applyCorrection = () => {
-        if (!superseded) return
-        this.write({ ...superseded, status: 'superseded' })
-        this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(superseded.id)
-      }
-      const existing = existingRow ? read(existingRow) : undefined
-      if (
-        existing &&
-        (parents.includes(existing.id) || parents.some((id) => this.dependsOn(id, existing.id)))
-      )
-        return { status: 'rejected', reason: 'cyclic_memory_dependencies' }
-      const history =
-        existing && superseded ? this.correctionHistory(existing.id, superseded) : undefined
-      const reverting =
-        existing?.status === 'superseded' &&
-        !existing.locked &&
-        existing.origin === 'learned' &&
-        existing.sources.length > 0 &&
-        !existing.sources.some((source) => this.store.recalled(source.sceneId, source.messageId)) &&
-        superseded !== undefined &&
-        history !== undefined &&
-        candidate.sources.every(
-          (source) =>
-            !history.some((record) =>
-              record.sources.some(
-                (old) => old.sceneId === source.sceneId && old.messageId === source.messageId,
-              ),
-            ),
-        )
-      if (existingRow && !reverting) {
-        const existing = read(existingRow)
-        if (
-          existing.locked ||
-          existing.origin === 'manual' ||
-          existing.status === 'superseded' ||
-          existing.status === 'invalidated' ||
-          existing.lineageStatus === 'quarantined'
-        )
-          return { status: 'rejected', reason: 'manual_or_invalid_record' }
-        if (existing.supersedesId) {
-          const history = this.correctionHistory(existing.id, existing)
-          if (
-            !history ||
-            candidate.sources.some(
-              (source) =>
-                !existing.sources.some(
-                  (current) =>
-                    current.sceneId === source.sceneId && current.messageId === source.messageId,
-                ) &&
-                history
-                  .slice(1)
-                  .some((record) =>
-                    record.sources.some(
-                      (old) => old.sceneId === source.sceneId && old.messageId === source.messageId,
-                    ),
-                  ),
-            )
-          )
-            return { status: 'rejected', reason: 'invalid_source_evidence' }
-        }
-        // Both exact and semantic duplicates preserve the target identity, content, and metadata.
-        const sources = this.uniqueSources([...existing.sources, ...candidate.sources])
-        const independent = new Set(sources.map((source) => source.senderId)).size
-        const next = {
-          ...existing,
-          sources,
-          confidence: Math.min(
-            0.85,
-            existing.confidence +
-              (independent > new Set(existing.sources.map((source) => source.senderId)).size
-                ? 0.05
-                : 0),
-          ),
-        }
-        this.validate(next)
-        applyCorrection()
-        this.write(next)
-        // Semantic duplicates preserve existing text, so only exact-content
-        // corroboration can establish an alternative proof of that text.
-        if (ctx.provenance && fp === fingerprint(existing.scope, existing.content)) {
-          const supports = this.supports(existing.id)
-          supports.push({ sources: this.uniqueSources(candidate.sources), parents })
-          this.saveSupports(existing.id, supports)
-          next.lineageStatus = 'verified'
-          this.write(next)
-        }
-        if (superseded) this.refreshSupport()
-        return { status: 'saved', memory: this.sanitize(next) }
-      }
-      const memory: MemoryRecord = {
-        id: randomUUID(),
-        scope,
-        content: candidate.content.trim(),
-        kind: candidate.kind,
-        sources: this.uniqueSources(candidate.sources),
-        importance: candidate.importance ?? 'medium',
-        confidence: Math.min(candidate.confidence ?? 0.5, 0.7),
-        learnedAt: new Date().toISOString(),
-        status: 'active',
-        locked: false,
-        origin: 'learned',
-        lineageStatus: ctx.provenance ? 'verified' : 'unverified',
-        ...(candidate.occurredAt ? { occurredAt: candidate.occurredAt } : {}),
-        ...(candidate.validUntil ? { validUntil: candidate.validUntil } : {}),
-        ...(candidate.supersedesId ? { supersedesId: candidate.supersedesId } : {}),
-      }
-      this.validate(memory)
-      // A return to an older preference is a new statement, not a resurrection:
-      // retain the old version and its sources without creating a supersession cycle.
-      if (reverting)
-        this.store.db
-          .prepare('UPDATE memories SET fingerprint=? WHERE id=?')
-          .run(historicalFingerprint(existing!), existing!.id)
-      applyCorrection()
-      this.write(memory)
-      if (ctx.provenance) this.saveSupports(memory.id, [{ sources: memory.sources, parents }])
-      if (superseded) this.refreshSupport()
-      return { status: 'saved', memory: this.sanitize(memory) }
-    })()
-  }
-
-  /** Internal engine operation only, after conservative public-technical eligibility review. */
   promotePublic(ctx: MemoryContext, id: string): ProposalResult {
-    if (ctx.simulation) return { status: 'rejected', reason: 'simulation_does_not_learn' }
-    return this.store.db.transaction((): ProposalResult => {
-      if (!this.store.scene(ctx.sceneId)?.learningEnabled)
-        return { status: 'rejected', reason: 'learning_disabled' }
-      const memory = this.get(id)
-      if (
-        !memory ||
-        memory.origin !== 'learned' ||
-        memory.locked ||
-        memory.status !== 'active' ||
-        memory.scope.kind !== 'scene' ||
-        memory.scope.sceneId !== ctx.sceneId ||
-        memory.scope.personId !== undefined ||
-        memory.lineageStatus !== 'verified' ||
-        this.supports(id).some((proof) =>
-          proof.parents.some((parent) => this.get(parent)?.scope.kind !== 'sharedPublicKnowledge'),
-        ) ||
-        !['fact', 'term'].includes(memory.kind) ||
-        memory.validUntil !== undefined ||
-        !memory.sources.length ||
-        memory.sources.some(
-          (source) =>
-            source.sceneId !== ctx.sceneId || this.store.recalled(source.sceneId, source.messageId),
-        )
-      )
-        return { status: 'rejected', reason: 'public_promotion_not_allowed' }
-      const scope: MemoryScope = { kind: 'sharedPublicKnowledge' }
-      const fp = fingerprint(scope, memory.content)
-      if (this.store.db.prepare('SELECT 1 FROM memory_deleted WHERE fingerprint=?').get(fp))
-        return { status: 'rejected', reason: 'manually_deleted' }
-      if (this.store.db.prepare('SELECT 1 FROM memories WHERE fingerprint=?').get(fp))
-        return { status: 'rejected', reason: 'public_memory_already_exists' }
-      const promoted: MemoryRecord = { ...memory, scope }
-      this.validate(promoted)
-      this.write(promoted)
-      this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(id)
-      return { status: 'saved', memory: this.sanitize(promoted) }
-    })()
+    return this.manual.promotePublic(ctx, id)
   }
 
   create(input: {
@@ -689,31 +940,12 @@ export class MemoryService {
     importance?: MemoryRecord['importance']
     confidence?: number
     locked?: boolean
+    validFrom?: string
+    epistemicKind?: MemoryRecord['epistemicKind']
     occurredAt?: string
     validUntil?: string
   }): MemoryRecord {
-    const memory: MemoryRecord = {
-      id: randomUUID(),
-      scope: input.scope,
-      content: input.content.trim(),
-      kind: input.kind,
-      sources: this.uniqueSources(input.sources ?? []),
-      importance: input.importance ?? 'medium',
-      confidence: input.confidence ?? 1,
-      learnedAt: new Date().toISOString(),
-      status: 'active',
-      locked: input.locked ?? false,
-      origin: 'manual',
-      ...(input.occurredAt ? { occurredAt: input.occurredAt } : {}),
-      ...(input.validUntil ? { validUntil: input.validUntil } : {}),
-    }
-    this.validate(memory)
-    this.store.db.transaction(() => {
-      if (memory.sources.some((source) => this.store.recalled(source.sceneId, source.messageId)))
-        throw new Error('recalled_source')
-      this.write(memory)
-    })()
-    return memory
+    return this.manual.create(input)
   }
 
   update(
@@ -727,118 +959,40 @@ export class MemoryService {
         | 'confidence'
         | 'status'
         | 'locked'
+        | 'validFrom'
+        | 'epistemicKind'
         | 'occurredAt'
         | 'validUntil'
       >
     >,
   ): MemoryRecord {
-    return this.store.db.transaction(() => {
-      const previous = this.get(id)
-      if (!previous) throw new Error('memory_not_found')
-      // Revalidation requires an explicit reviewed content field, even when unchanged.
-      const reviewedContent = Object.hasOwn(patch, 'content')
-      const lockOnly = Object.keys(patch).every((key) => key === 'locked')
-      const next: MemoryRecord = {
-        ...previous,
-        ...patch,
-        id: previous.id,
-        scope: previous.scope,
-        sources: previous.sources,
-        origin: lockOnly ? previous.origin : 'manual',
-        lineageStatus: reviewedContent ? undefined : previous.lineageStatus,
-      }
-      this.validate(next)
-      if (next.content !== previous.content)
-        this.store.db
-          .prepare('INSERT OR REPLACE INTO memory_deleted VALUES(?,?)')
-          .run(fingerprint(previous.scope, previous.content), new Date().toISOString())
-      if (next.content !== previous.content) this.invalidateDependents(id)
-      if (reviewedContent)
-        this.store.db.prepare('DELETE FROM memory_supports WHERE memory_id=?').run(id)
-      this.write(next)
-      this.refreshSupport()
-      if (
-        next.content !== previous.content ||
-        next.status === 'invalidated' ||
-        next.status === 'superseded'
-      )
-        this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(id)
-      return next
-    })()
-  }
-  lock(id: string, locked: boolean): MemoryRecord {
-    return this.update(id, { locked })
-  }
-  delete(id: string): boolean {
-    return this.store.db.transaction(() => {
-      const memory = this.get(id)
-      if (!memory) return false
-      this.store.db
-        .prepare('INSERT OR REPLACE INTO memory_deleted VALUES(?,?)')
-        .run(fingerprint(memory.scope, memory.content), new Date().toISOString())
-      if (memory.origin === 'learned' && memory.scope.kind === 'sharedPublicKnowledge') {
-        const deletedAt = new Date().toISOString()
-        const insert = this.store.db.prepare('INSERT OR REPLACE INTO memory_deleted VALUES(?,?)')
-        for (const sceneId of new Set(memory.sources.map((source) => source.sceneId)))
-          insert.run(fingerprint({ kind: 'scene', sceneId }, memory.content), deletedAt)
-      }
-      this.invalidateDependents(id)
-      this.store.db.prepare('DELETE FROM memories WHERE id=?').run(id)
-      this.refreshSupport()
-      return true
-    })()
-  }
-  recall(sceneId: string, messageId: string): string[] {
-    return this.store.db.transaction(() => {
-      this.store.recall(sceneId, messageId)
-      const rows = this.store.db
-        .prepare(
-          'SELECT m.* FROM memories m JOIN memory_sources s ON s.memory_id=m.id WHERE s.scene_id=? AND s.message_id=?',
-        )
-        .all(sceneId, messageId) as Row[]
-      for (const row of rows) {
-        const previous = read(row)
-        const sources = previous.sources.filter(
-          (source) => source.sceneId !== sceneId || source.messageId !== messageId,
-        )
-        const next: MemoryRecord = {
-          ...previous,
-          sources,
-          confidence: (previous.confidence * sources.length) / previous.sources.length,
-          status: ['superseded', 'invalidated'].includes(previous.status)
-            ? previous.status
-            : sources.length
-              ? 'disputed'
-              : 'invalidated',
-        }
-        this.write(next)
-        if (!sources.length)
-          this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(previous.id)
-      }
-      const affected = new Set(rows.map((row) => row.id))
-      for (const memory of this.adminList()) {
-        if (memory.lineageStatus !== 'unverified') continue
-        if (
-          (memory.scope.kind === 'scene' && memory.scope.sceneId === sceneId) ||
-          memory.sources.some((source) => source.sceneId === sceneId)
-        ) {
-          this.write({ ...memory, lineageStatus: 'quarantined' })
-          this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(memory.id)
-          affected.add(memory.id)
-        }
-      }
-      for (const id of this.refreshSupport()) affected.add(id)
-      return [...affected]
-    })()
+    return this.manual.update(id, patch)
   }
 
-  /** Authoritative, provenance-safe rebuild view; never replay source messages. */
+  revisionState(id: string) {
+    return this.revisions.history.state(id)
+  }
+
+  updateGuarded(
+    id: string,
+    patch: Parameters<MemoryService['update']>[1],
+    guard: MemoryCommandGuard,
+  ): MemoryRecord {
+    return this.manual.updateGuarded(id, patch, guard)
+  }
+
+  lock(id: string, locked: boolean): MemoryRecord {
+    return this.manual.lock(id, locked)
+  }
+
   indexable(): MemoryRecord[] {
-    this.refreshSupport()
+    this.lifecycleCommands.refreshSupport()
     return this.adminList().filter(
       (memory) =>
+        !memory.internalUse &&
+        ['active', 'disputed'].includes(memory.status) &&
         (memory.origin === 'manual' || memory.lineageStatus === 'verified') &&
-        this.supported(memory),
+        this.authority.supported(memory),
     )
   }
 
@@ -872,14 +1026,15 @@ export class MemoryService {
   }
   index(id: string, spaceId: string, vector: number[]): void {
     const bytes = this.vector(spaceId, vector)
-    const memory = this.get(id)
+    const memory = this.repository.get(id)
     if (
       !memory ||
+      !['active', 'disputed'].includes(memory.status) ||
       (memory.origin === 'manual' && memory.lineageStatus === undefined
         ? !['active', 'disputed'].includes(memory.status)
-        : !this.supported(memory))
+        : !this.authority.supported(memory))
     ) {
-      this.refreshSupport()
+      this.lifecycleCommands.refreshSupport()
       throw new Error('memory_not_indexable')
     }
     this.store.db
@@ -888,118 +1043,14 @@ export class MemoryService {
       )
       .run(id, spaceId, bytes)
   }
-  private supports(id: string): Support[] {
-    const row = this.store.db
-      .prepare('SELECT value FROM memory_supports WHERE memory_id=?')
-      .get(id) as { value: string } | undefined
-    return row ? (JSON.parse(row.value) as Support[]) : []
-  }
-  private saveSupports(id: string, supports: Support[]) {
-    // Replaying identical evidence must neither inflate confidence nor append
-    // unbounded duplicate proofs. Keep genuinely distinct alternatives/history.
-    const unique = new Map<string, Support>()
-    for (const proof of supports) {
-      const key = JSON.stringify([
-        proof.sources
-          .map((source) => JSON.stringify([source.sceneId, source.messageId, source.senderId]))
-          .sort(),
-        [...proof.parents].sort(),
-        proof.invalidatedBy ?? null,
-      ])
-      unique.set(key, proof)
-    }
-    this.store.db
-      .prepare(
-        'INSERT INTO memory_supports VALUES(?,?) ON CONFLICT(memory_id) DO UPDATE SET value=excluded.value',
-      )
-      .run(id, JSON.stringify([...unique.values()]))
-  }
-  private validParent(scope: MemoryScope, id: string): boolean {
-    const parent = this.get(id)
-    if (!parent || !this.supported(parent)) return false
-    if (parent.scope.kind === 'sharedPublicKnowledge') return true
-    return (
-      scope.kind === 'scene' &&
-      parent.scope.sceneId === scope.sceneId &&
-      (parent.scope.personId === undefined || parent.scope.personId === scope.personId)
-    )
-  }
-  private dependsOn(id: string, wanted: string, seen = new Set<string>()): boolean {
-    if (id === wanted) return true
-    if (seen.has(id)) return false
-    seen.add(id)
-    return this.supports(id).some((proof) =>
-      proof.parents.some((parent) => this.dependsOn(parent, wanted, seen)),
-    )
-  }
-  private supported(
-    memory: MemoryRecord,
-    path = new Set<string>(),
-    cache = new Map<string, boolean>(),
-  ): boolean {
-    if (
-      !['active', 'disputed'].includes(memory.status) ||
-      memory.lineageStatus === 'quarantined' ||
-      (memory.validUntil !== undefined && Date.parse(memory.validUntil) <= Date.now()) ||
-      path.has(memory.id)
-    )
-      return false
-    if (cache.has(memory.id)) return cache.get(memory.id)!
-    if (memory.lineageStatus !== 'verified') return true
-    const nextPath = new Set(path).add(memory.id)
-    const supported = this.supports(memory.id).some(
-      (proof) =>
-        !proof.invalidatedBy &&
-        proof.sources.length > 0 &&
-        proof.sources.every((source) => !this.store.recalled(source.sceneId, source.messageId)) &&
-        proof.parents.every((id) => {
-          const parent = this.get(id)
-          return parent !== undefined && this.supported(parent, nextPath, cache)
-        }),
-    )
-    cache.set(memory.id, supported)
-    return supported
-  }
-  /** Re-evaluate proof alternatives atomically; locks never override recalled evidence. */
-  private refreshSupport(): string[] {
-    return this.store.db.transaction(() => {
-      const invalidated: string[] = []
-      const cache = new Map<string, boolean>()
-      const rows = this.store.db
-        .prepare(
-          `SELECT * FROM memories
-        WHERE json_extract(value,'$.lineageStatus')='verified'
-          AND json_extract(value,'$.status') IN ('active','disputed')`,
-        )
-        .all() as Row[]
-      for (const memory of rows.map(read)) {
-        if (
-          memory.lineageStatus !== 'verified' ||
-          !['active', 'disputed'].includes(memory.status) ||
-          this.supported(memory, new Set(), cache)
-        )
-          continue
-        this.write({ ...memory, status: 'invalidated' })
-        this.store.db.prepare('DELETE FROM memory_vectors WHERE memory_id=?').run(memory.id)
-        invalidated.push(memory.id)
-      }
-      return invalidated
-    })()
-  }
-  private invalidateDependents(id: string) {
-    // Replacing/deleting a premise invalidates only proofs requiring it. Other
-    // independently sourced proofs remain valid; evidence history is retained.
-    for (const memory of this.adminList()) {
-      const supports = this.supports(memory.id)
-      if (!supports.some((proof) => proof.parents.includes(id))) continue
-      this.saveSupports(
-        memory.id,
-        supports.map((proof) =>
-          proof.parents.includes(id) ? { ...proof, invalidatedBy: id } : proof,
-        ),
-      )
+  flushProjections() {
+    try {
+      return this.projections.flush()
+    } catch {
+      this.store.log('warn', 'memory', 'memory_projection_refresh_failed')
     }
   }
+
   private vector(spaceId: string, vector: number[]): Buffer {
     const row = this.store.db.prepare('SELECT value FROM vector_spaces WHERE id=?').get(spaceId) as
       { value: string } | undefined
@@ -1020,6 +1071,7 @@ export class MemoryService {
     ctx: MemoryContext,
     personId?: string,
   ): { sql: string; params: string[] } | undefined {
+    this.store.assertRecoveryReady()
     if (ctx.simulation)
       return personId ? undefined : { sql: "scope_key='shared:public'", params: [] }
     if (personId)
@@ -1031,100 +1083,49 @@ export class MemoryService {
     if (!scope) return []
     return this.store.db
       .prepare(
-        `SELECT * FROM memories WHERE ${scope.sql} AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(value,'$.status') IN ('active','disputed') AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now')) ORDER BY rowid DESC`,
+        `SELECT * FROM memories WHERE ${scope.sql} AND json_extract(value,'$.internalUse') IS NULL AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(value,'$.status') IN ('active','disputed') AND (json_extract(value,'$.validFrom') IS NULL OR julianday(json_extract(value,'$.validFrom')) <= julianday('now')) AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now')) ORDER BY rowid DESC`,
       )
       .all(...scope.params) as Row[]
   }
-  private get(id: string): MemoryRecord | undefined {
-    const row = this.store.db.prepare('SELECT * FROM memories WHERE id=?').get(id) as
-      Row | undefined
-    return row ? read(row) : undefined
+
+  subjectEvidence(ctx: MemoryContext, id: string) {
+    return this.subjectEvidenceBatch(ctx, [id]).items.get(id)
   }
-  private correctionHistory(id: string, current: MemoryRecord): MemoryRecord[] | undefined {
-    const visited = new Set<string>()
-    const history: MemoryRecord[] = []
-    let found = false
-    let previous: MemoryRecord | undefined = current
-    while (previous && !visited.has(previous.id)) {
-      history.push(previous)
-      if (previous.id === id) found = true
-      visited.add(previous.id)
-      if (!previous.supersedesId) break
-      previous = this.get(previous.supersedesId)
-      if (!previous) return undefined
+  subjectEvidenceBatch(ctx: MemoryContext, ids: readonly string[]) {
+    const wanted = [...new Set(ids)]
+    const items = new Map<string, ReturnType<MemoryService['projectSubjectEvidence']>>()
+    if (ctx.simulation) return { items, coverage: 'complete' as const }
+    const visible = new Map(this.list(ctx).map((record) => [record.id, record]))
+    for (const id of wanted.slice(0, 200)) {
+      const record = visible.get(id)
+      if (record?.scope.kind === 'scene' && record.scope.sceneId === ctx.sceneId)
+        items.set(id, this.projectSubjectEvidence(record))
     }
-    return found && previous && !previous.supersedesId ? history : undefined
+    return { items, coverage: wanted.length > 200 ? ('limited' as const) : ('complete' as const) }
   }
-  private sanitize(memory: MemoryRecord): MemoryRecord {
-    return memory.scope.kind === 'sharedPublicKnowledge'
-      ? { ...memory, sources: [], supersedesId: undefined }
-      : memory
-  }
-  private uniqueSources(sources: MemorySource[]): MemorySource[] {
-    return [
-      ...new Map(
-        sources.map((source) => [
-          JSON.stringify([source.sceneId, source.messageId]),
-          { sceneId: source.sceneId, messageId: source.messageId, senderId: source.senderId },
-        ]),
-      ).values(),
-    ]
-  }
-  private validate(memory: MemoryRecord) {
-    if (
-      typeof memory.content !== 'string' ||
-      !memory.content ||
-      memory.content.length > 20_000 ||
-      typeof memory.locked !== 'boolean' ||
-      !['active', 'disputed', 'superseded', 'invalidated'].includes(memory.status) ||
-      !['fact', 'claim', 'term', 'experience', 'summary'].includes(memory.kind) ||
-      !['low', 'medium', 'high'].includes(memory.importance) ||
-      !Number.isFinite(memory.confidence) ||
-      memory.confidence < 0 ||
-      memory.confidence > 1 ||
-      !date(memory.occurredAt) ||
-      !date(memory.validUntil)
-    )
-      throw new Error('invalid_memory')
-    if (memory.scope.kind === 'scene') {
-      const sceneId = memory.scope.sceneId
-      if (!sceneId || memory.sources.some((source) => source.sceneId !== sceneId))
-        throw new Error('memory_scope_mismatch')
-    } else if (
-      memory.scope.kind !== 'sharedPublicKnowledge' ||
-      'personId' in memory.scope ||
-      'sceneId' in memory.scope
-    )
-      throw new Error('invalid_public_scope')
-    if (memory.sources.some((source) => !source.sceneId || !source.messageId || !source.senderId))
-      throw new Error('invalid_source')
-  }
-  private write(memory: MemoryRecord) {
-    const stored = this.store.db
-      .prepare('SELECT fingerprint FROM memories WHERE id=?')
-      .get(memory.id) as { fingerprint: string } | undefined
-    // Historical source retractions and lock changes must not reclaim the current
-    // version's unique content key. Explicit manual reactivation still checks it.
-    const fp =
-      ['superseded', 'invalidated'].includes(memory.status) &&
-      stored?.fingerprint === historicalFingerprint(memory)
-        ? stored.fingerprint
-        : fingerprint(memory.scope, memory.content)
-    this.store.db
-      .prepare(
-        'INSERT INTO memories VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET scope_key=excluded.scope_key,person_id=excluded.person_id,content=excluded.content,fingerprint=excluded.fingerprint,value=excluded.value',
+  private projectSubjectEvidence(record: MemoryRecord) {
+    const id = record.id
+    const proofs = this.authority
+      .historySupports(id)
+      .filter(
+        (proof) =>
+          this.authority.proofParentsAvailable(record.scope, proof, 'current') &&
+          proof.sources.every((source) => domainSourceCurrent(this.store, source)),
       )
-      .run(
-        memory.id,
-        scopeKey(memory.scope),
-        memory.scope.kind === 'scene' ? (memory.scope.personId ?? null) : null,
-        memory.content,
-        fp,
-        JSON.stringify(memory),
-      )
-    this.store.db.prepare('DELETE FROM memory_sources WHERE memory_id=?').run(memory.id)
-    const insert = this.store.db.prepare('INSERT INTO memory_sources VALUES(?,?,?,?)')
-    for (const source of memory.sources)
-      insert.run(memory.id, source.sceneId, source.messageId, source.senderId)
+    return {
+      observedAt: earliestObservation(proofs.flatMap((proof) => proof.sourceObservations ?? [])),
+      witnesses: proofs.slice(0, 40).flatMap((proof) =>
+        proof.subjectWitness
+          ? [
+              {
+                ...proof.subjectWitness,
+                sources: structuredClone(proof.sources),
+                observations: structuredClone(proof.sourceObservations ?? []),
+              },
+            ]
+          : [],
+      ),
+      coverage: proofs.length > 40 ? ('limited' as const) : ('complete' as const),
+    }
   }
 }

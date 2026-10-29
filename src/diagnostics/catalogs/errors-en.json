@@ -430,5 +430,145 @@
   "invalid_role_budget": {
     "summary": "Invalid role time budget",
     "advice": "Check the configured total role budget."
+  },
+  "memory_proof_budget_exhausted": {
+    "summary": "Memory evidence traversal reached its safety limit",
+    "advice": "Narrow the requested history or inspect the dependency graph. No evidence was declared invalid or deleted because of this limit."
+  },
+  "budget_admission_failed": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_amount_overflow": {
+    "summary": "Budget amount exceeds safe arithmetic range",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_estimate_unknown": {
+    "summary": "Request reservation cannot be estimated",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_price_unknown": {
+    "summary": "Required model or cache prices are missing",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_contract_overrun": {
+    "summary": "Actual usage exceeded the verified budget contract",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_daily_limit": {
+    "summary": "Daily model budget exhausted",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_lane_limit": {
+    "summary": "Task lane budget exhausted",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_turn_amount": {
+    "summary": "Turn cost budget exhausted",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_turn_calls": {
+    "summary": "Turn model request limit reached",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_turn_tokens": {
+    "summary": "Turn reserved token limit reached",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_turn_identity_required": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_unbounded_exposure": {
+    "summary": "Existing request exposure has no reliable upper bound",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_unresolved_limit": {
+    "summary": "Unresolved cost reserve limit reached",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_output_cap_required": {
+    "summary": "A valid output cap is required",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_output_cap_unverified": {
+    "summary": "Provider output-cap compliance is unverified",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_protocol_unsupported": {
+    "summary": "Protocol has no budget admission adapter",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_opaque_input_unsupported": {
+    "summary": "Image or continuation input cannot be reliably budgeted",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_verified_estimator_required": {
+    "summary": "Strict budgeting requires a verified estimator and provider contract",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_estimate_contract_mismatch": {
+    "summary": "Estimate does not match the provider contract",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_attempt_already_started": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_attempt_identity_conflict": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_idempotency_conflict": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_invalid_transition": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_attempt_owner": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_attempt_missing": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_release_started": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_receipt_conflict": {
+    "summary": "Budget ledger rejected an unsafe state transition",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_configuration_invalid": {
+    "summary": "Invalid budget configuration",
+    "advice": "Inspect budget coverage, configured USD prices and request limits. Unknown usage remains reserved; do not retry or clear it as free. Strict mode requires verified estimation and provider output-cap support."
+  },
+  "budget_configuration_changed": {
+    "summary": "Budget configuration changed before dispatch",
+    "advice": "Retry only after checking the current configuration. Already dispatched attempts still settle against their original price and reservation snapshots."
+  },
+  "planner_evidence_budget_exhausted": {
+    "summary": "The complete evidence payload exceeded its byte budget",
+    "advice": "Narrow the retrieved evidence or adjust the explicit byte limit. No token count or missing fact is inferred."
+  },
+  "reply_evidence_budget_exhausted": {
+    "summary": "The complete evidence payload exceeded its byte budget",
+    "advice": "Narrow the retrieved evidence or adjust the explicit byte limit. No token count or missing fact is inferred."
+  },
+  "budget_restore_accounting_hold": {
+    "summary": "Model and embedding requests are paused after recovery, even when experimental budgeting is off.",
+    "advice": "Displayed amounts cover retained records only; later spending may be missing. This is not reconciled accounting. Midnight and restart do not clear the pause. Management and non-model reads remain available."
+  },
+  "planner_unknown_state_evidence": {
+    "summary": "Plan referenced evidence that was not retrieved",
+    "advice": "Use bounded, deduplicated references to evidence actually returned in this planning turn; do not fabricate grounding."
+  },
+  "planner_target_outside_admitted_topic": {
+    "summary": "Reply target was not admitted to this topic",
+    "advice": "Reading history is not permission to consume another active or deferred topic. The stale plan is stopped; no automatic send retry is created."
   }
 }

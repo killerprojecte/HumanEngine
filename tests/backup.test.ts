@@ -1,3 +1,4 @@
+import { metadata } from '../src/memory/recovery/ledger.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises'
@@ -73,7 +74,11 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
     // Source remains open and usable: the helper did not require a shutdown or raw WAL copying.
     store.set('after-backup', true)
     const fresh = join(root, 'restored')
-    const result = await restore({ backupRoot: destination, destination: fresh })
+    const result = await restore({
+      authorityDirectory: metadata(store.db)!.authority,
+      backupRoot: destination,
+      destination: fresh,
+    })
     assert.ok(result.vectorVersion)
     restored = new Store(result.database)
     assert.deepEqual(restored.get('example', null), {
@@ -89,7 +94,13 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
       assert.equal(entry.sha256, digest(bytes))
       assert.deepEqual(await readFile(join(fresh, entry.path)), bytes)
     }
-    await assert.rejects(restore({ backupRoot: destination, destination: fresh }))
+    await assert.rejects(
+      restore({
+        authorityDirectory: metadata(store.db)!.authority,
+        backupRoot: destination,
+        destination: fresh,
+      }),
+    )
     assert.equal(restored.get('example', null) !== null, true)
     const active = join(root, 'existing')
     await mkdir(active)
@@ -98,7 +109,11 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
     assert.equal(await readFile(join(active, 'sentinel'), 'utf8'), 'keep')
     await writeFile(join(destination, media.path), 'tampered')
     await assert.rejects(
-      restore({ backupRoot: destination, destination: join(root, 'corrupt-restore') }),
+      restore({
+        authorityDirectory: metadata(store.db)!.authority,
+        backupRoot: destination,
+        destination: join(root, 'corrupt-restore'),
+      }),
       /backup_hash_mismatch/,
     )
     await assert.rejects(readFile(join(root, 'corrupt-restore', 'humanengine.sqlite')))
@@ -107,7 +122,11 @@ test('Online backup restores config, memory, recall tombstones, and hashed media
     media.bytes = Buffer.byteLength('tampered')
     await writeFile(join(destination, 'manifest.json'), JSON.stringify(manifest))
     await assert.rejects(
-      restore({ backupRoot: destination, destination: join(root, 'wrong-content-restore') }),
+      restore({
+        authorityDirectory: metadata(store.db)!.authority,
+        backupRoot: destination,
+        destination: join(root, 'wrong-content-restore'),
+      }),
       /media_content_hash_mismatch/,
     )
     await assert.rejects(readFile(join(root, 'wrong-content-restore', 'humanengine.sqlite')))

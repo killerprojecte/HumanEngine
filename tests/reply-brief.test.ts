@@ -63,7 +63,7 @@ test('memory content is opt-in through exact record selection; uncertainty and s
   }
 })
 
-test('exact selection includes a wanted seventh memory without arbitrary prefix selection; long excerpts explicitly mark omissions', () => {
+test('exact selection includes a wanted seventh memory without arbitrary prefix selection; long records retain all qualifications for whole-group packing', () => {
   const evidence = [
     {
       id: 'tool:1',
@@ -85,9 +85,9 @@ test('exact selection includes a wanted seventh memory without arbitrary prefix 
   }
   assert.equal(receipt.memories.length, 1)
   assert.equal(receipt.memories[0]!.id, 'memory-7')
-  assert.equal(receipt.memories[0]!.content.length, 1200)
-  assert.equal(receipt.memories[0]!.contentTruncated, true)
-  assert.match(receipt.caution, /omit qualifications/)
+  assert.equal(receipt.memories[0]!.content, evidence[0]!.value[7]!.content)
+  assert.equal(receipt.memories[0]!.contentTruncated, undefined)
+  assert.match(receipt.caution, /complete qualifications/)
   const citationOnly = buildReplyBrief(
     plan({ facts: [{ text: 'Necessary fact selected by Planner.', evidenceIds: ['tool:1'] }] }),
     evidence,
@@ -347,4 +347,38 @@ test('web-read citations preserve sourceUrl and trust without returning the page
   assert.match(wire, /https:\/\/example.test\/primary-source/)
   assert.match(wire, /untrusted_public_web/)
   assert.doesNotMatch(wire, /RAW_PUBLIC_PAGE_CANARY|RAW_HTML_CANARY/)
+})
+
+test('selected person memory keeps subject distinct from reporting speaker and all source clocks', () => {
+  const selected = {
+    ...record('The speaker reports a preference; it is not independently verified.'),
+    scope: {
+      kind: 'scene',
+      sceneId: 'scene',
+      personId: 'synthetic-canonical-mentioned-person-with-long-identity',
+    },
+    sources: [
+      {
+        sceneId: 'scene',
+        messageId: 'message-1',
+        senderId: 'synthetic-canonical-reporting-speaker-with-long-identity',
+      },
+    ],
+    epistemicKind: 'reported',
+    observedAt: '2026-10-01T00:00:02Z',
+  }
+  const brief = buildReplyBrief(
+    plan({ memorySelections: [{ evidenceId: 'tool:1', memoryIds: ['memory-1'] }] }),
+    [{ id: 'tool:1', toolName: 'memory.person', value: [selected] }],
+    [],
+  )
+  const wire = JSON.parse(new ContextProjection('scene').stringify(brief))
+  const memory = wire.evidence[0].memories[0]
+  assert.notEqual(memory.personId, memory.sources[0].senderId)
+  assert.equal(memory.epistemicKind, 'reported')
+  assert.equal(memory.observedAt, selected.observedAt)
+  assert.equal(memory.occurredAt, selected.occurredAt)
+  assert.equal(memory.learnedAt, selected.learnedAt)
+  assert.equal(memory.scope, undefined)
+  assert.doesNotMatch(JSON.stringify(wire), /synthetic-canonical/)
 })

@@ -1,3 +1,5 @@
+import { domainSourceCurrent } from './memory/read/domain-source-events.ts'
+import { assertDomainReady, revoke, isRecoveryMaintenance } from './memory/recovery/ledger.ts'
 import { createHash, randomUUID } from 'node:crypto'
 import type { Store } from './store.ts'
 import type { MemorySource, SourceEvidence } from './memory.ts'
@@ -68,6 +70,7 @@ export class HabitService {
     private readonly store: Store,
     options: HabitOptions = {},
   ) {
+    assertDomainReady(store.db)
     this.now = options.now ?? Date.now
     this.policy = { ...DEFAULT_HABIT_POLICY, ...options.policy }
     const p = this.policy
@@ -88,6 +91,7 @@ export class HabitService {
       CREATE TABLE IF NOT EXISTS habit_deleted (fingerprint TEXT PRIMARY KEY);`)
   }
   adminList(): HabitRecord[] {
+    assertDomainReady(this.store.db)
     return (
       this.store.db.prepare('SELECT value FROM habits ORDER BY rowid').all() as { value: string }[]
     ).map((row) => {
@@ -98,6 +102,7 @@ export class HabitService {
   }
   list(ctx: HabitContext): HabitRecord[] {
     return this.adminList()
+      .map((record) => this.currentEvidence(record))
       .filter(
         (record) =>
           record.status === 'active' &&
@@ -111,8 +116,7 @@ export class HabitService {
   validationIdentity(ctx: HabitContext, id: string): string | undefined {
     const raw = this.get(id)
     if (!raw) return
-    const effective = structuredClone(raw)
-    this.recalculate(effective)
+    const effective = this.currentEvidence(raw)
     if (
       effective.status !== 'active' ||
       !(
@@ -258,12 +262,30 @@ export class HabitService {
     return record
   }
   delete(id: string): void {
+    assertDomainReady(this.store.db)
     this.store.db.transaction(() => {
+      const row = this.store.db.prepare('SELECT fingerprint FROM habits WHERE id=?').get(id) as
+        { fingerprint: string } | undefined
+      if (row)
+        revoke(this.store.db, {
+          schemaVersion: 1,
+          kind: 'habit_delete',
+          id,
+          fingerprint: row.fingerprint,
+        })
       this.store.db
         .prepare('INSERT OR IGNORE INTO habit_deleted SELECT fingerprint FROM habits WHERE id=?')
         .run(id)
       this.store.db.prepare('DELETE FROM habits WHERE id=?').run(id)
     })()
+  }
+  recoverDelete(id: string, fingerprint: string): void {
+    if (!isRecoveryMaintenance(this.store.db)) throw new Error('recovery_maintenance_required')
+    const row = this.store.db.prepare('SELECT fingerprint FROM habits WHERE id=?').get(id) as
+      { fingerprint: string } | undefined
+    if (row && row.fingerprint !== fingerprint) throw new Error('recovery_habit_identity_mismatch')
+    this.delete(id)
+    this.store.db.prepare('INSERT OR IGNORE INTO habit_deleted VALUES(?)').run(fingerprint)
   }
   recall(source: Pick<MemorySource, 'sceneId' | 'messageId'>): number {
     return this.store.db.transaction(() => {
@@ -295,7 +317,7 @@ export class HabitService {
           !s.messageId ||
           !s.senderId ||
           s.sceneId !== ctx.sceneId ||
-          this.store.recalled(s.sceneId, s.messageId) ||
+          !domainSourceCurrent(this.store, s) ||
           !ctx.sourceEvidence?.some(
             (e) =>
               e.sceneId === s.sceneId &&
@@ -441,6 +463,14 @@ export class HabitService {
     record.sources = record.sources.slice(0, this.policy.maxSources)
     this.recalculate(record)
   }
+  private currentEvidence(record: HabitRecord): HabitRecord {
+    const effective = structuredClone(record)
+    effective.sources = effective.sources.filter((source) =>
+      domainSourceCurrent(this.store, source),
+    )
+    this.recalculate(effective)
+    return effective
+  }
   private recalculate(record: HabitRecord) {
     if (record.evidenceVersion !== 2) {
       // Preserve legacy evidence for administration; do not infer its missing scope or chronology.
@@ -465,11 +495,13 @@ export class HabitService {
         Math.abs(net) < 1e-9 || (record.kind === 'sceneRule' && net < 0) ? 'disputed' : 'active'
   }
   private get(id: string): HabitRecord | undefined {
+    assertDomainReady(this.store.db)
     const row = this.store.db.prepare('SELECT value FROM habits WHERE id=?').get(id) as
       { value: string } | undefined
     return row ? JSON.parse(row.value) : undefined
   }
   private save(record: HabitRecord) {
+    assertDomainReady(this.store.db)
     this.store.db
       .prepare('UPDATE habits SET value=? WHERE id=?')
       .run(JSON.stringify(record), record.id)

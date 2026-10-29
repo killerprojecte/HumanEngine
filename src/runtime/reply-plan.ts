@@ -1,3 +1,11 @@
+import {
+  stateEvidenceTools,
+  workspaceStateTools,
+  validWorkspaceState,
+} from './workspace-state-evidence.ts'
+import { validateRelationSelection } from './relation-evidence.ts'
+import { isDeepStrictEqual } from 'node:util'
+import { PlannerEvidenceBudget, type EvidenceCoverage } from './planner-evidence-budget.ts'
 import type { ContextProjection } from './context-projection.ts'
 import { z } from '@hono/zod-openapi'
 import type { ChatMessage, Completion, ToolDefinition } from '../models.ts'
@@ -23,17 +31,21 @@ export const ReplyPlanSchema = z
     emoji: z.array(z.string().min(1).max(32)).max(8),
     expressionGoals: z.array(z.string().min(1).max(500)).max(12).default([]),
     memorySelections: z
-      .array(z.object({ evidenceId: id, memoryIds: z.array(id).min(1).max(6) }).strict())
+      .array(z.object({ evidenceId: id, memoryIds: z.array(id).min(1).max(12) }).strict())
       .max(6)
       .default([]),
+    stateEvidenceIds: z.array(id).max(4).default([]),
     replySuggestion: z.string().min(1).max(2000).optional(),
     actions: z
       .array(z.object({ toolName: id, arguments: z.record(z.string(), z.unknown()) }).strict())
       .max(4),
   })
   .strict()
-export type ReplyPlan = z.infer<typeof ReplyPlanSchema>
+export type ReplyPlan = Omit<z.infer<typeof ReplyPlanSchema>, 'stateEvidenceIds'> & {
+  stateEvidenceIds?: string[]
+}
 export interface PlanEvidence {
+  coverage?: EvidenceCoverage
   id: string
   toolName?: string
   value: unknown
@@ -47,6 +59,11 @@ const reads = new Set([
   'messages.byUser',
   'memory.search',
   'memory.person',
+  'memory.relations',
+  ...workspaceStateTools,
+  'memory.commitments',
+  'memory.commitmentHistory',
+  'memory.history',
   'memory.source',
   'memes.search',
   'rules.list',
@@ -70,7 +87,7 @@ export const plannerActionTools = (tools: ToolDefinition[]) =>
 const planTool = (suggestions: boolean): ToolDefinition => ({
   name: 'reply.plan',
   description:
-    'Finalize a grounded composition plan, or noReply. This does not send or execute actions. Include only public strategy, necessary cited facts and expression goals, never hidden reasoning or an exact answer unless optional reply suggestions are enabled.',
+    'Finalize a grounded composition plan, or noReply. This does not send or execute actions. Include only public strategy, necessary cited facts and expression goals, never hidden reasoning or an exact answer unless optional reply suggestions are enabled. Receipt coverage marked limited means evidence was omitted for the byte budget, not that the search found no records; narrow the query when needed and never cite omitted records. Select whole memory.summaries (qualified attributed summaries with every original declaration, not independently verified facts), memory.identities, memory.workingSet, memory.episodes, memory.commitments, memory.history, memory.commitmentHistory or memory.commitmentTimeline receipts using stateEvidenceIds; they are qualified state/history, not current verified facts.',
   inputSchema: z.toJSONSchema(
     suggestions ? ReplyPlanSchema : ReplyPlanSchema.omit({ replySuggestion: true }),
   ),
@@ -137,7 +154,7 @@ export function validateReplyPlan(
     const receipt = evidence.get(selection.evidenceId)
     const records = Array.isArray(receipt?.value) ? receipt.value : []
     if (
-      !['memory.search', 'memory.person'].includes(receipt?.toolName ?? '') ||
+      !['memory.search', 'memory.person', 'memory.relations'].includes(receipt?.toolName ?? '') ||
       !Array.isArray(receipt?.value) ||
       selection.memoryIds.some(
         (memoryId) =>
@@ -148,6 +165,65 @@ export function validateReplyPlan(
       )
     )
       throw new Error('planner_unknown_memory_evidence')
+    if (receipt?.toolName === 'memory.relations')
+      validateRelationSelection(records, selection.memoryIds)
+  }
+  if (new Set(plan.stateEvidenceIds).size !== plan.stateEvidenceIds.length)
+    throw new Error('planner_unknown_state_evidence')
+  for (const stateId of plan.stateEvidenceIds) {
+    const receipt = evidence.get(stateId)
+    if (
+      !receipt ||
+      !stateEvidenceTools.includes(receipt.toolName ?? '') ||
+      !Array.isArray(receipt.value) ||
+      receipt.value.length === 0 ||
+      receipt.value.length >
+        (receipt.toolName === 'memory.commitments'
+          ? 12
+          : receipt.toolName === 'memory.commitmentHistory'
+            ? 1
+            : 20)
+    )
+      throw new Error('planner_unknown_state_evidence')
+    if (workspaceStateTools.includes(receipt.toolName ?? '')) {
+      if (receipt.value.length !== 1 || !validWorkspaceState(receipt.toolName!, receipt.value[0]))
+        throw new Error('planner_unknown_state_evidence')
+      continue
+    }
+    if (
+      receipt.value.some(
+        (item) =>
+          !item ||
+          typeof item !== 'object' ||
+          (receipt.toolName === 'memory.commitments'
+            ? item.stateKind !== 'commitment' || !item.view || typeof item.view !== 'object'
+            : item.stateKind !==
+                (receipt.toolName === 'memory.commitmentHistory'
+                  ? 'commitment_history'
+                  : 'assertion_history') ||
+              !Array.isArray(item.revisions) ||
+              item.revisions.length === 0 ||
+              item.revisions.length > 20),
+      )
+    )
+      throw new Error('planner_unknown_state_evidence')
+    if (
+      receipt.toolName === 'memory.commitmentHistory' &&
+      receipt.value.some(
+        (item) =>
+          !item.anchor ||
+          typeof item.anchor !== 'object' ||
+          item.revisions.some(
+            (view: unknown) => !view || typeof view !== 'object' || !('ref' in view),
+          ),
+      )
+    )
+      throw new Error('planner_unknown_state_evidence')
+    if (
+      ['memory.history', 'memory.commitmentHistory'].includes(receipt.toolName ?? '') &&
+      receipt.value.reduce((sum, item) => sum + item.revisions.length, 0) > 20
+    )
+      throw new Error('planner_unknown_state_evidence')
   }
   if (plan.facts.some((f) => f.evidenceIds.some((id) => !evidence.has(id))))
     throw new Error('planner_unknown_evidence')
@@ -176,7 +252,13 @@ export function validateReplyPlan(
     plan.actions.some((action) => !input.actionTools.some((tool) => tool.name === action.toolName))
   )
     throw new Error('planner_forbidden_action')
-  if (plan.action === 'noReply' && (plan.actions.length || plan.assets.length))
+  if (
+    plan.action === 'noReply' &&
+    (plan.actions.some(
+      (action) => !['learning.propose', 'experience.propose'].includes(action.toolName),
+    ) ||
+      plan.assets.length)
+  )
     throw new Error('planner_invalid_no_reply')
   return plan
 }
@@ -185,6 +267,7 @@ export function validateReplyPlan(
 export async function buildReplyPlan(input: {
   messages: ChatMessage[]
   replySuggestionsEnabled?: boolean
+  evidenceMaxBytes?: number
   projection?: ContextProjection
   readTools: ToolDefinition[]
   actionTools: ToolDefinition[]
@@ -199,11 +282,13 @@ export async function buildReplyPlan(input: {
     tools: ToolDefinition[],
     signal: AbortSignal,
   ): Promise<Completion>
+  deliver?(name: string, value: unknown, input?: Record<string, unknown>): unknown
   execute(name: string, args: Record<string, unknown>, signal: AbortSignal): Promise<unknown>
 }) {
   const finalTool = planTool(input.replySuggestionsEnabled === true)
   const readTools = plannerReadTools(input.readTools)
   const messages = [...input.messages]
+  const budget = new PlannerEvidenceBudget(input.evidenceMaxBytes)
   const evidence = [...input.evidence]
   let toolCalls = 0
   const check = () => {
@@ -212,6 +297,7 @@ export async function buildReplyPlan(input: {
   }
   for (let round = 0; round < PLANNER_MAX_ROUNDS; round++) {
     check()
+    budget.assertWithin(messages)
     const result = await withinSignal(
       input.complete(messages, [...readTools, finalTool], input.signal),
       input.signal,
@@ -235,6 +321,7 @@ export async function buildReplyPlan(input: {
     if (toolCalls + result.toolCalls.length > PLANNER_MAX_TOOL_CALLS)
       throw new Error('planner_tool_budget_exhausted')
     messages.push(result.assistant)
+    budget.assertWithin(messages)
     for (const call of result.toolCalls) {
       check()
       if (!readTools.some((tool) => tool.name === call.name))
@@ -249,15 +336,30 @@ export async function buildReplyPlan(input: {
         input.signal,
       )
       check()
-      if (Buffer.byteLength(JSON.stringify(value) ?? '') > 65536)
-        throw new Error('planner_evidence_too_large')
-      const receipt = { id: `tool:${toolCalls}`, toolName: call.name, value }
-      evidence.push(receipt)
-      messages.push({
-        role: 'tool',
-        toolCallId: call.id,
-        content: input.projection?.stringify(receipt) ?? JSON.stringify(receipt),
-      })
+      const delivered = budget.receipt(
+        messages,
+        { id: `tool:${toolCalls}`, toolName: call.name, value },
+        call.id,
+        (receipt) => input.projection?.stringify(receipt) ?? JSON.stringify(receipt),
+      )
+      // Commit only measured, actually delivered evidence to contextual learning authority.
+      // Snapshot also detects a callback mutating its input object in place.
+      const expectedValue = structuredClone(delivered.receipt.value)
+      const acceptedValue = input.deliver
+        ? input.deliver(
+            call.name,
+            delivered.receipt.value,
+            input.projection?.restoreArguments(call.arguments) ?? call.arguments,
+          )
+        : delivered.receipt.value
+      if (
+        !isDeepStrictEqual(acceptedValue, expectedValue) ||
+        !isDeepStrictEqual(delivered.receipt.value, expectedValue)
+      )
+        throw new Error('planner_context_ineligible')
+      // Only delivered members authorize model citations; full receipts remain private upstream.
+      evidence.push(delivered.receipt)
+      messages.push(delivered.message)
     }
   }
   throw new Error('planner_round_budget_exhausted')

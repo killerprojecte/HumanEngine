@@ -379,7 +379,20 @@
     "analysis_failed_recently": "图片分析刚刚失败，正在等待后续重试",
     "memory_not_requested": "本次回复未请求记忆检索",
     "memory_evidence_selected": "已选择有权限的记忆摘录交给语言模块",
-    "memory_evidence_not_selected": "已检索记忆，但本次回复未选择记忆摘录"
+    "memory_evidence_not_selected": "已检索记忆，但本次回复未选择记忆摘录",
+    "contextual_learning_queued": "候选已排队，尚未保存",
+    "contextual_learning_running": "开始验证异步候选",
+    "contextual_learning_completed": "候选处理结束；以保存记录为准",
+    "contextual_learning_failed": "异步候选处理失败，不自动重播",
+    "contextual_learning_discarded": "候选权限或来源已变化，丢弃迟到结果",
+    "contextual_learning_cancelled": "异步候选已取消",
+    "turn_wait_recheck": "等待到期，没有新输入，不调用模型",
+    "learning_source_payload_unavailable": "部分排队来源已不可用，仅处理仍有效的来源",
+    "learning_relation_repair_discarded": "断言正文修复后已丢弃旧关系，未沿用失效语义",
+    "memory_relation_shadow_compared": "已比较有界普通检索与关系结果，不代表质量评估",
+    "memory_relation_shadow_unavailable": "关系对照暂不可用，普通检索保持不变",
+    "experience_use_unavailable": "实验策略使用记录暂不可用，未推断效果",
+    "experience_feedback_unavailable": "明确反馈未满足实验策略准入条件"
   },
   "stageLabels": {
     "ingress": "接收消息",
@@ -431,7 +444,9 @@
     "dialogue": "按計畫生成对话",
     "provider_attempt": "请求提供商（单次尝试）",
     "provider_retry_wait": "等待后重试同一模型",
-    "memory.handoff": "选择交给 Replyer 的记忆摘录"
+    "memory.handoff": "选择交给 Replyer 的记忆摘录",
+    "learning.contextual": "异步处理对话学习候选",
+    "turn_wait": "等待后的轻量检查"
   },
   "statusLabels": {
     "started": "开始",

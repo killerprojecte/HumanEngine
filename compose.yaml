@@ -16,11 +16,14 @@ services:
       HUMANENGINE_ADMIN_TOKEN: ${HUMANENGINE_ADMIN_TOKEN:?Set a long random administration token}
       HUMANENGINE_DB: /app/data/humanengine.sqlite
       HUMANENGINE_LOG_DIR: /app/data/logs
+      HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY: /app/authority
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       SNOWLUMA_TOKEN: ${SNOWLUMA_TOKEN:-}
       HUMANENGINE_PLUGINS: ${HUMANENGINE_PLUGINS:-}
     volumes:
       - humanengine-data:/app/data
+      # Retain independently; never replace this volume with an older data backup.
+      - humanengine-authority:/app/authority
       # Optional trusted local plugins; create this directory before enabling the mount.
       # - ./plugins:/app/plugins:ro
     read_only: true
@@ -33,3 +36,4 @@ services:
     stop_grace_period: 30s
 volumes:
   humanengine-data:
+  humanengine-authority:

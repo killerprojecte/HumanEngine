@@ -164,11 +164,14 @@ test('Recall atomically invalidates single-source learning, reduces independent 
   const { store, memory } = setup()
   try {
     const single = memory.propose(evidence('group-a'), candidate('group-a', 'Single source'))
-    const multi = memory.propose(evidence('group-a'), candidate('group-a', 'Multiple sources'))
-    memory.propose(
-      evidence('group-a', 'm2', 'another-person'),
-      candidate('group-a', 'Multiple sources', 'm2', 'another-person'),
-    )
+    const multi = memory.propose(evidence('group-a'), {
+      ...candidate('group-a', 'Multiple sources'),
+      personId: undefined,
+    })
+    memory.propose(evidence('group-a', 'm2', 'another-person'), {
+      ...candidate('group-a', 'Multiple sources', 'm2', 'another-person'),
+      personId: undefined,
+    })
     assert.equal(single.status, 'saved')
     assert.equal(multi.status, 'saved')
     if (single.status !== 'saved' || multi.status !== 'saved') return

@@ -1,3 +1,20 @@
+import {
+  measureSerializedRequest,
+  recordRequestMeasurement,
+  unknownCustomMeasurement,
+  takeRequestMeasurementSummary,
+  withRequestMeasurements,
+} from './model-measurement/measurement.ts'
+import type { TargetTokenizerRegistry } from './model-measurement/registry.ts'
+import type { RequestMeasurementSummary } from './model-measurement/contracts.ts'
+import { isBudgetFailureCode, safeBudgetFailureCode } from './budget/errors.ts'
+import {
+  NativeBudgetGate,
+  withBudgetRequest,
+  currentBudgetPriority,
+  BudgetAdmissionError,
+  type NativeAttemptDescriptor,
+} from './budget/native-attempt.ts'
 import { canonicalModelRole, normalizeRoleRoutes, type ModelRole } from './model-roles.ts'
 export type { ModelRole, CanonicalModelRole } from './model-roles.ts'
 import {
@@ -104,6 +121,8 @@ export interface Completion {
   assistant: ChatMessage
 }
 export interface RouterConfig {
+  /** Optional native request output cap; not a provider-honored or monetary guarantee. */
+  nativeMaxOutputTokens?: number
   providers: Provider[]
   models: ModelInstance[]
   routes: RoleRoute[]
@@ -134,6 +153,7 @@ export interface ModelLog {
   code?: string
   usage?: Usage
   pricing?: ModelPriceSnapshot
+  requestMeasurement?: RequestMeasurementSummary
 }
 export class ModelError extends Error {
   readonly retryAfterMs?: number
@@ -151,6 +171,13 @@ export class ModelError extends Error {
     if (options.retryAfterMs !== undefined) this.retryAfterMs = options.retryAfterMs
     this.name = 'ModelError'
   }
+}
+function isReadAdmissionCode(code: string): boolean {
+  return (
+    code === 'memory_read_disabled' ||
+    code === 'memory_read_revoked' ||
+    code === 'personalization_disabled'
+  )
 }
 function isTransientNetworkFailure(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false
@@ -424,11 +451,46 @@ export class Router {
     private readonly resolveCredential: (provider: Provider) => string | undefined = (provider) =>
       provider.credentialEnv ? process.env[provider.credentialEnv] : undefined,
     private readonly flowWriter?: FlowWriter,
+    private readonly budget?: NativeBudgetGate | (() => NativeBudgetGate | undefined),
+    private readonly tokenizerRegistry?: TargetTokenizerRegistry,
   ) {
+    if (
+      config.nativeMaxOutputTokens !== undefined &&
+      (!Number.isSafeInteger(config.nativeMaxOutputTokens) ||
+        config.nativeMaxOutputTokens < 1 ||
+        config.nativeMaxOutputTokens > 1_000_000)
+    )
+      throw new ModelError('invalid_output_cap')
     this.config = structuredClone({ ...config, routes: normalizeRoleRoutes(config.routes) })
   }
 
   async complete(
+    role: Exclude<ModelRole, 'embedding'>,
+    messages: ChatMessage[],
+    tools: ToolDefinition[] = [],
+    signal?: AbortSignal,
+  ): Promise<Completion> {
+    return withRequestMeasurements(() =>
+      withBudgetRequest(() => this.completeScoped(role, messages, tools, signal)),
+    )
+  }
+
+  private currentBudget(): NativeBudgetGate | undefined {
+    try {
+      return typeof this.budget === 'function' ? this.budget() : this.budget
+    } catch (error) {
+      // Admission is not a provider failure: never fallback/retry around a denied supplier.
+      // Only bounded codes cross this boundary; arbitrary supplier messages stay private.
+      const readCode =
+        error instanceof ModelError ? error.code : error instanceof Error ? error.message : ''
+      if (isReadAdmissionCode(readCode))
+        throw new ModelError(readCode, undefined, false, { cause: error })
+      if (error instanceof ModelError && isBudgetFailureCode(error.code)) throw error
+      throw new ModelError(safeBudgetFailureCode(error), undefined, false, { cause: error })
+    }
+  }
+
+  private async completeScoped(
     role: Exclude<ModelRole, 'embedding'>,
     messages: ChatMessage[],
     tools: ToolDefinition[] = [],
@@ -529,6 +591,8 @@ export class Router {
               { role, modelId, apiModel: model.apiModelName },
               signal,
               async () => {
+                if (this.currentBudget() && !isBuiltinProtocol(provider.protocol))
+                  throw new ModelError('budget_protocol_unsupported')
                 if (!isBuiltinProtocol(provider.protocol))
                   return await this.completeProtocol(
                     provider,
@@ -579,7 +643,7 @@ export class Router {
                     }
                 const requestSecrets: string[] = []
                 const result = await scheduleModel(
-                  role === 'planner' || role === 'replyer' ? 0 : 1,
+                  role === 'planner' || role === 'replyer' || role === 'vision' ? 0 : 1,
                   signal,
                   () =>
                     this.request(
@@ -589,6 +653,17 @@ export class Router {
                       providerPolicy(provider).timeoutMs,
                       signal,
                       (secret) => requestSecrets.push(secret),
+                      {
+                        providerId: provider.id,
+                        modelId: model.id,
+                        protocol: provider.protocol,
+                        operation: 'complete',
+                        role,
+                        prices: model,
+                        opaqueInput: messages.some(
+                          (message) => !!message.images?.length || this.state.has(message),
+                        ),
+                      },
                     ),
                 )
                 if (signal?.aborted) throw abortError()
@@ -653,7 +728,13 @@ export class Router {
           durationMs: Date.now() - started,
           code: error instanceof ModelError ? error.code : 'provider_request_failed',
         })
-        if (error instanceof ModelError && error.code === 'protocol_disabled') throw error
+        if (
+          error instanceof ModelError &&
+          (error.code === 'protocol_disabled' ||
+            isBudgetFailureCode(error.code) ||
+            isReadAdmissionCode(error.code))
+        )
+          throw error
       }
     }
     throw new ModelError(
@@ -665,6 +746,16 @@ export class Router {
   }
 
   async embeddings(
+    modelId: string,
+    inputs: string[],
+    signal?: AbortSignal,
+  ): Promise<{ vectors: number[][]; usage: Usage; modelId: string }> {
+    return withRequestMeasurements(() =>
+      withBudgetRequest(() => this.embeddingsScoped(modelId, inputs, signal)),
+    )
+  }
+
+  private async embeddingsScoped(
     modelId: string,
     inputs: string[],
     signal?: AbortSignal,
@@ -799,9 +890,11 @@ export class Router {
             { role: 'embedding', modelId, apiModel: model.apiModelName },
             signal,
             async () => {
+              if (this.currentBudget() && !isBuiltinProtocol(provider.protocol))
+                throw new ModelError('budget_protocol_unsupported')
               if (!isBuiltinProtocol(provider.protocol))
                 return await this.embeddingsProtocol(provider, model, inputs, timeout, signal)
-              const result = await scheduleModel(1, signal, () =>
+              const result = await scheduleModel(currentBudgetPriority(1), signal, () =>
                 this.request(
                   provider,
                   'embeddings',
@@ -815,6 +908,15 @@ export class Router {
                   },
                   timeout,
                   signal,
+                  undefined,
+                  {
+                    providerId: provider.id,
+                    modelId: model.id,
+                    protocol: provider.protocol,
+                    operation: 'embedding',
+                    role: 'embedding',
+                    prices: model,
+                  },
                 ),
               )
               if (signal?.aborted) throw abortError()
@@ -1084,6 +1186,10 @@ export class Router {
         // The task may ignore cancellation. Race it inside the scheduler so it cannot retain a queue slot.
         const execution = Promise.resolve().then(() => {
           if (signal.aborted) throw failure()
+          if (operation !== 'listModels' && this.currentBudget())
+            throw new ModelError('budget_protocol_unsupported')
+          if (model && operation !== 'listModels')
+            recordRequestMeasurement(provider.id, model.id, unknownCustomMeasurement())
           return task(
             {
               provider: structuredClone(provider),
@@ -1101,6 +1207,11 @@ export class Router {
       return { value, registration, secrets }
     } catch (error) {
       if (signal.aborted) throw failure()
+      const readCode =
+        error instanceof ModelError ? error.code : error instanceof Error ? error.message : ''
+      if (isReadAdmissionCode(readCode))
+        throw new ModelError(readCode, undefined, false, { cause: error })
+      if (error instanceof ModelError && isBudgetFailureCode(error.code)) throw error
       // Only the explicit protocol error contract grants retry eligibility.
       if (error instanceof ModelProtocolError) {
         const status = error.status
@@ -1210,7 +1321,7 @@ export class Router {
       model,
       'complete',
       timeout,
-      role === 'planner' || role === 'replyer' ? 0 : 1,
+      role === 'planner' || role === 'replyer' || role === 'vision' ? 0 : 1,
       signal,
       (context, registration) =>
         registration.adapter.complete(
@@ -1290,7 +1401,7 @@ export class Router {
       model,
       'embeddings',
       timeout,
-      1,
+      currentBudgetPriority(1),
       signal,
       (context, registration) => registration.adapter.embeddings!(context, [...inputs]),
     )
@@ -1364,7 +1475,12 @@ export class Router {
       ] as const)
         if (model[key] !== undefined) pricing[key] = model[key]
     try {
-      this.log({ ...entry, ...(pricing ? { pricing } : {}) })
+      const requestMeasurement = takeRequestMeasurementSummary(entry.providerId, entry.modelId)
+      this.log({
+        ...entry,
+        ...(pricing ? { pricing } : {}),
+        ...(requestMeasurement ? { requestMeasurement } : {}),
+      })
     } catch {
       /* Observability must not repeat a successful model operation. */
     }
@@ -1499,6 +1615,7 @@ export class Router {
     timeoutMs: number,
     parentSignal?: AbortSignal,
     credentialUsed?: (secret: string) => void,
+    budgetDescriptor?: NativeAttemptDescriptor,
   ): Promise<JsonObject> {
     if (parentSignal?.aborted) throw abortError()
     let base: URL
@@ -1521,7 +1638,56 @@ export class Router {
     if (credential) credentialUsed?.(credential)
     const timeoutSignal = AbortSignal.timeout(Math.max(1, Math.min(timeoutMs, 600_000)))
     const signal = parentSignal ? AbortSignal.any([parentSignal, timeoutSignal]) : timeoutSignal
+    let attempt: ReturnType<NativeBudgetGate['prepare']> | undefined
     try {
+      if (signal.aborted) throw abortError()
+      const budget = this.currentBudget()
+      if (budget && budgetDescriptor) {
+        attempt = budget.prepare(budgetDescriptor, body)
+        body = attempt.body
+      }
+      if (
+        budgetDescriptor?.operation === 'complete' &&
+        this.config.nativeMaxOutputTokens !== undefined
+      ) {
+        const key =
+          provider.protocol === 'openai-responses' ? 'max_output_tokens' : 'max_completion_tokens'
+        const fields = body as Record<string, unknown>
+        const previous = fields[key]
+        body = {
+          ...fields,
+          [key]:
+            typeof previous === 'number'
+              ? Math.min(previous, this.config.nativeMaxOutputTokens)
+              : this.config.nativeMaxOutputTokens,
+        }
+      }
+      const serializedBody = body === undefined ? undefined : JSON.stringify(body)
+      const model =
+        budgetDescriptor && this.config.models.find((item) => item.id === budgetDescriptor.modelId)
+      const measurement =
+        serializedBody !== undefined && budgetDescriptor && model
+          ? measureSerializedRequest(
+              serializedBody,
+              {
+                providerId: provider.id,
+                protocol: provider.protocol,
+                apiModelName: model.apiModelName,
+                codecId: `native-json:${path}:v1`,
+              },
+              this.tokenizerRegistry,
+            )
+          : undefined
+      if (signal.aborted) throw abortError()
+      // Counter code is trusted but may synchronously change configuration. Recheck
+      // restoration admission even when budgeting was OFF; never send a newly
+      // budgeted request without the reservation/cap prepared above.
+      const finalBudget = this.currentBudget()
+      if (budgetDescriptor && !attempt && finalBudget)
+        throw new BudgetAdmissionError('budget_configuration_changed')
+      attempt?.start()
+      if (measurement && budgetDescriptor)
+        recordRequestMeasurement(provider.id, budgetDescriptor.modelId, measurement)
       const response = await fetch(`${base.href.replace(/\/$/, '')}/${path}`, {
         method: body === undefined ? 'GET' : 'POST',
         headers: {
@@ -1529,7 +1695,7 @@ export class Router {
           ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
           ...(credential ? { Authorization: `Bearer ${credential}` } : {}),
         },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        ...(serializedBody === undefined ? {} : { body: serializedBody }),
         signal,
         redirect: 'error',
       })
@@ -1560,13 +1726,27 @@ export class Router {
         }
         chunks.push(value)
       }
-      if (signal.aborted) throw abortError()
+      if (!attempt && signal.aborted) throw abortError()
       try {
-        return object(JSON.parse(Buffer.concat(chunks).toString('utf8')))
+        const result = object(JSON.parse(Buffer.concat(chunks).toString('utf8')))
+        attempt?.settle(usageOf(result.usage, path === 'embeddings'))
+        if (signal.aborted) throw abortError()
+        return result
       } catch (error) {
+        if (!(error instanceof SyntaxError)) throw error
         throw new ModelError('invalid_provider_json', undefined, false, { cause: error })
       }
     } catch (error) {
+      try {
+        attempt?.fail()
+      } catch (accountingError) {
+        throw new ModelError(safeBudgetFailureCode(accountingError), undefined, false)
+      }
+      if (
+        error instanceof BudgetAdmissionError ||
+        (attempt && error instanceof Error && isBudgetFailureCode(error.message))
+      )
+        throw new ModelError(safeBudgetFailureCode(error), undefined, false, { cause: error })
       if (parentSignal?.aborted) throw abortError(error)
       if (timeoutSignal.aborted)
         throw preserveErrorContext(

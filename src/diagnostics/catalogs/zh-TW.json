@@ -379,7 +379,20 @@
     "analysis_failed_recently": "圖片分析剛剛失敗，正在等待後續重試",
     "memory_not_requested": "本次回覆未請求記憶檢索",
     "memory_evidence_selected": "已選擇有權限的記憶摘錄交給語言模組",
-    "memory_evidence_not_selected": "已檢索記憶，但本次回覆未選擇記憶摘錄"
+    "memory_evidence_not_selected": "已檢索記憶，但本次回覆未選擇記憶摘錄",
+    "contextual_learning_queued": "候選已排隊，尚未儲存",
+    "contextual_learning_running": "開始驗證非同步候選",
+    "contextual_learning_completed": "候選處理結束；以儲存記錄為準",
+    "contextual_learning_failed": "非同步候選處理失敗，不自動重播",
+    "contextual_learning_discarded": "候選權限或來源已變，捨棄遲到結果",
+    "contextual_learning_cancelled": "非同步候選已取消",
+    "turn_wait_recheck": "等待到期，沒有新輸入，不呼叫模型",
+    "learning_source_payload_unavailable": "部分排隊來源已不可用，僅處理仍有效的來源",
+    "learning_relation_repair_discarded": "斷言正文修復後已捨棄舊關係，未沿用失效語義",
+    "memory_relation_shadow_compared": "已比較有界一般檢索與關係結果，不代表品質評估",
+    "memory_relation_shadow_unavailable": "關係對照暫不可用，一般檢索保持不變",
+    "experience_use_unavailable": "實驗策略使用記錄暫不可用，未推斷效果",
+    "experience_feedback_unavailable": "明確回饋未滿足實驗策略准入條件"
   },
   "stageLabels": {
     "ingress": "接收訊息",
@@ -431,7 +444,9 @@
     "dialogue": "按計畫生成對話",
     "provider_attempt": "請求提供商（單次嘗試）",
     "provider_retry_wait": "等待後重試同一模型",
-    "memory.handoff": "選擇交給 Replyer 的記憶摘錄"
+    "memory.handoff": "選擇交給 Replyer 的記憶摘錄",
+    "learning.contextual": "非同步處理對話學習候選",
+    "turn_wait": "等待後的輕量檢查"
   },
   "statusLabels": {
     "started": "開始",

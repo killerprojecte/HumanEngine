@@ -8,7 +8,7 @@ Configuration, scene participation/learning, models/routes, chat simulation/prev
 
 ## Verification boundaries
 
-- No live provider credentials or QQ account were supplied. Live provider behavior, SnowLuma deployment compatibility, client animation playback, and reconnect behavior against a real QQ session remain unverified.
+- No live provider credentials have been read or used by this implementation task, and no real QQ account is connected. Provider execution and credential-transmission approval remain pending; credentials supplied elsewhere are not copied into source or logs. Live provider behavior, SnowLuma deployment compatibility, client animation playback, and reconnect behavior against a real QQ session remain unverified.
 - The earlier shell Chromium launch failed with a process-singleton socket `EPERM`; no browser flags or permissions were changed. A later supported cloud CDP browser run reached the local production app through the normal desktop Terminal and verified synthetic UI interactions/screenshots. See [browser verification](ui-verification.md). This does not establish live provider/QQ quality or exhaustive device/accessibility coverage.
 - The initial npm attempt failed because its default user-level npm cache did not exist. The configured cache is in an explicitly writable workspace directory. TypeScript 7 conflicted with the contract generator's peer range; the latest compatible TypeScript 5.9.3 is pinned instead of forcing resolution.
 - The tsx CLI attempted an unavailable Unix IPC socket. Test scripts use the supported `node --import tsx` loader, which does not need that CLI IPC channel.

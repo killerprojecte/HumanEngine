@@ -187,7 +187,7 @@ for (const operation of ['correct-setting', 'confirm-setting'] as const) {
         ? 'Serializer emits binary packets.'
         : 'Frame headers have a fixed width.'
       let repairs = 0
-      h.access.searchMemory = async () => [previous]
+      h.engine.searchMemory = async () => [previous]
       h.install(async (_role, prompts, tools) => {
         if (tools?.some((item) => item.name === 'learning.repair')) {
           repairs++
@@ -293,7 +293,7 @@ for (const mode of [
         return completed([bad, sibling])
       })
       if (mode === 'partial-write')
-        h.access.indexMemory = async () => {
+        h.engine.indexMemory = async () => {
           throw new ModelError('fixture_unavailable', 503)
         }
       await h.run([source, sideSource])

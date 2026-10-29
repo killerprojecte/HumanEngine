@@ -9,6 +9,8 @@ import {
   fsyncSync,
 } from 'node:fs'
 import type Database from 'better-sqlite3'
+import { assertDomainReady } from '../memory/recovery/ledger.ts'
+import { advanceSecurityState } from '../memory/recovery/security-state.ts'
 
 export type SecretMutation =
   { action: 'preserve' } | { action: 'clear' } | { action: 'set'; value: string }
@@ -73,11 +75,13 @@ export class SecretStore {
     return rows.map((row) => this.get(row.namespace, row.name)!).filter(Boolean)
   }
   has(namespace: string, name: string): boolean {
+    assertDomainReady(this.db)
     return !!this.db
       .prepare('SELECT 1 FROM secrets WHERE namespace=? AND name=?')
       .get(namespace, name)
   }
   get(namespace: string, name: string): string | undefined {
+    assertDomainReady(this.db)
     const row = this.db
       .prepare('SELECT ciphertext FROM secrets WHERE namespace=? AND name=?')
       .get(namespace, name) as { ciphertext: string } | undefined
@@ -98,9 +102,14 @@ export class SecretStore {
     }
   }
   apply(namespace: string, name: string, mutation?: SecretMutation): void {
+    assertDomainReady(this.db)
     if (!mutation || mutation.action === 'preserve') return
     if (mutation.action === 'clear') {
-      this.db.prepare('DELETE FROM secrets WHERE namespace=? AND name=?').run(namespace, name)
+      if (!this.has(namespace, name)) return
+      this.db.transaction(() => {
+        advanceSecurityState(this.db)
+        this.db.prepare('DELETE FROM secrets WHERE namespace=? AND name=?').run(namespace, name)
+      })()
       return
     }
     if (
@@ -120,10 +129,13 @@ export class SecretStore {
       cipher.getAuthTag().toString('base64'),
       encrypted.toString('base64'),
     ].join('.')
-    this.db
-      .prepare(
-        'INSERT INTO secrets(namespace,name,ciphertext) VALUES(?,?,?) ON CONFLICT(namespace,name) DO UPDATE SET ciphertext=excluded.ciphertext',
-      )
-      .run(namespace, name, ciphertext)
+    this.db.transaction(() => {
+      advanceSecurityState(this.db)
+      this.db
+        .prepare(
+          'INSERT INTO secrets(namespace,name,ciphertext) VALUES(?,?,?) ON CONFLICT(namespace,name) DO UPDATE SET ciphertext=excluded.ciphertext',
+        )
+        .run(namespace, name, ciphertext)
+    })()
   }
 }

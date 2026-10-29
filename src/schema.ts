@@ -1,3 +1,5 @@
+import { RequestMeasurementSummarySchema } from './model-measurement/schema.ts'
+import { budgetSettingsShape, refineBudgetSettings } from './budget/settings.ts'
 import { MODEL_ROLE_INPUTS, canonicalModelRole } from './model-roles.ts'
 import { z } from '@hono/zod-openapi'
 
@@ -111,6 +113,7 @@ export const ModelConfigWriteSchema = ModelConfigSchema.safeExtend({
 }).openapi('ModelConfigWrite')
 export const SettingsSchema = z
   .object({
+    ...budgetSettingsShape,
     name: z.string().min(1).max(100),
     timezone: z.string().refine((value) => {
       try {
@@ -123,10 +126,38 @@ export const SettingsSchema = z
     persona: z.string().min(1).max(20000),
     cacheEnabled: z.boolean(),
     replySuggestionsEnabled: z.boolean().default(false),
+    replyEvidenceMaxBytes: z.number().int().min(4096).max(1048576).default(65536),
+    plannerEvidenceMaxBytes: z.number().int().min(8192).max(2097152).default(131072),
     cacheHours: z.number().min(0.1).max(168),
     debounceMs: z.number().int().min(0).max(30000),
     maxWaitMs: z.number().int().min(100).max(60000),
     learningBatchMs: z.number().int().min(100).max(300000).default(30000),
+    topicAdmissionEnabled: z.boolean().default(false),
+    sourceEventRevisionsEnabled: z.boolean().default(false),
+    memoryCommitmentsEnabled: z.boolean().default(false),
+    memoryCommitmentsAnswerEnabled: z.boolean().default(false),
+    memoryHistoricalReadEnabled: z.boolean().default(false),
+    memoryWorkingSetEnabled: z.boolean().default(false),
+    memoryEpisodesEnabled: z.boolean().default(false),
+    memoryColdAfterDays: z.number().int().min(1).max(3650).default(30),
+    memoryReviewAfterDays: z.number().int().min(1).max(3650).default(14),
+    memoryProjectionEnabled: z.boolean().default(false),
+    memoryGraphEnabled: z.boolean().default(false),
+    memoryGraphAutoAdmissionEnabled: z.boolean().default(false),
+    memoryGraphAnswerEnabled: z.boolean().default(false),
+    memoryGraphShadowEnabled: z.boolean().default(false),
+    memorySemanticEnabled: z.boolean().default(false),
+    memorySemanticAutoAdmissionEnabled: z.boolean().default(false),
+    memorySemanticAnswerEnabled: z.boolean().default(false),
+    memoryKnowledgeEnabled: z.boolean().default(false),
+    memoryKnowledgeAutoAdmissionEnabled: z.boolean().default(false),
+    memoryKnowledgeAnswerEnabled: z.boolean().default(false),
+    memoryExperienceEnabled: z.boolean().default(false),
+    memoryExperienceAutoActivateEnabled: z.boolean().default(false),
+    memoryExperienceHintsEnabled: z.boolean().default(false),
+    memoryExperienceFeedbackEnabled: z.boolean().default(false),
+    learningMaxWaitMs: z.number().int().min(100).max(900000).default(120000),
+    learningMinIntervalMs: z.number().int().min(0).max(900000).default(60000),
     learningQueueMaxMessages: z.number().int().min(60).max(20000).default(2048),
     learningQueueMaxTotalMessages: z.number().int().min(60).max(100000).default(8192),
     learningRetryAttempts: z.number().int().min(1).max(5).default(3),
@@ -148,6 +179,7 @@ export const SettingsSchema = z
       .default([]),
   })
   .strict()
+  .superRefine(refineBudgetSettings)
   .openapi('Settings')
 export const SceneSchema = z
   .object({
@@ -160,6 +192,9 @@ export const SceneSchema = z
     avatarUrl: z.string().optional(),
     participationEnabled: z.boolean(),
     learningEnabled: z.boolean(),
+    memoryReadEnabled: z.boolean().optional(),
+    personalizationEnabled: z.boolean().optional(),
+    memoryReadRevision: z.number().int().nonnegative().optional(),
     proactiveEnabled: z.boolean(),
   })
   .strict()
@@ -191,6 +226,7 @@ const ErrorCauseDiagnosticSchema = z.object({
 })
 export const LogSchema = z
   .object({
+    requestMeasurement: RequestMeasurementSummarySchema.optional(),
     id: z.string(),
     at: z.string(),
     level: z.enum(['info', 'warn', 'error']),
@@ -323,6 +359,14 @@ export const SceneStateSchema = z
   .object({
     activeTasks: z.number(),
     secondsSinceBotSpoke: z.number().nullable(),
+    topicRouting: z.object({
+      enabled: z.boolean(),
+      deferred: z.number().int().nonnegative(),
+      overflowed: z.number().int().nonnegative(),
+      provisional: z.number().int().nonnegative(),
+      maxTopics: z.literal(4),
+      maxDeferred: z.literal(60),
+    }),
     topics: z.array(
       z.object({
         id: z.string(),

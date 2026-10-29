@@ -222,6 +222,20 @@ const timingFields = [
     max: 300000,
   },
   {
+    key: 'learningMaxWaitMs' as const,
+    label: 'stLearningMaxWait',
+    help: 'stLearningMaxWaitHelp',
+    min: 100,
+    max: 900000,
+  },
+  {
+    key: 'learningMinIntervalMs' as const,
+    label: 'stLearningMinInterval',
+    help: 'stLearningMinIntervalHelp',
+    min: 0,
+    max: 900000,
+  },
+  {
     key: 'modelConcurrency' as const,
     label: 'stConcurrency',
     help: 'stConcurrencyHelp',
@@ -369,6 +383,183 @@ const timingFields = [
               :label="t('stReplySuggestions')"
             />
             <p class="text-sm text-muted leading-6">{{ t('stReplySuggestionsHelp') }}</p>
+            <USwitch
+              id="settings-topic-admission"
+              v-model="settings.topicAdmissionEnabled"
+              :disabled="locked"
+              :label="t('topicAdmissionEnabled')"
+            />
+            <p class="text-sm text-muted leading-6">{{ t('topicAdmissionHelp') }}</p>
+            <USwitch
+              id="settings-source-events"
+              v-model="settings.sourceEventRevisionsEnabled"
+              :disabled="locked"
+              :label="t('stSourceEvents')"
+            />
+            <p class="text-sm text-muted leading-6">{{ t('stSourceEventsHelp') }}</p>
+            <USwitch
+              id="settings-memory-projection"
+              v-model="settings.memoryProjectionEnabled"
+              :disabled="locked"
+              :label="t('stMemoryProjection')"
+            />
+            <p class="text-sm text-muted leading-6">{{ t('stMemoryProjectionHelp') }}</p>
+          </div>
+        </section>
+        <section class="settings-section">
+          <div class="settings-heading">
+            <h2>{{ t('mrSettingsTitle') }}</h2>
+          </div>
+          <div class="settings-body space-y-3">
+            <p class="text-sm text-muted">{{ t('mrSettingsHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryGraphEnabled"
+              :disabled="locked"
+              :label="t('mrGraphToggle')"
+            />
+            <p class="text-sm text-muted">{{ t('mrGraphToggleHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryGraphAutoAdmissionEnabled"
+              :disabled="locked"
+              :label="t('mrAutoToggle')"
+            />
+            <p class="text-sm text-muted">{{ t('mrAutoToggleHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryGraphAnswerEnabled"
+              :disabled="locked"
+              :label="t('mrAnswerToggle')"
+            />
+            <p class="text-sm text-muted">{{ t('mrAnswerToggleHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryGraphShadowEnabled"
+              :disabled="locked"
+              :label="t('mrShadowToggle')"
+            />
+            <p class="text-sm text-muted">{{ t('mrShadowToggleHelp') }}</p>
+          </div>
+        </section>
+        <section class="settings-section">
+          <div class="settings-heading">
+            <h2>{{ t('knTitle') }}</h2>
+          </div>
+          <div class="settings-body space-y-3">
+            <p class="text-sm text-muted">{{ t('knSettingsHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryKnowledgeEnabled"
+              :disabled="locked"
+              :label="t('knEnabled')"
+            />
+            <USwitch
+              v-model="settings.memoryKnowledgeAutoAdmissionEnabled"
+              :disabled="locked"
+              :label="t('knAuto')"
+            />
+            <USwitch
+              v-model="settings.memoryKnowledgeAnswerEnabled"
+              :disabled="locked"
+              :label="t('knAnswer')"
+            />
+          </div>
+        </section>
+        <section class="settings-section">
+          <div class="settings-heading">
+            <h2>{{ t('smTitle') }}</h2>
+          </div>
+          <div class="settings-body space-y-3">
+            <p class="text-sm text-muted">{{ t('smSettingsHelp') }}</p>
+            <USwitch
+              v-model="settings.memorySemanticEnabled"
+              :disabled="locked"
+              :label="t('smEnabled')"
+            /><USwitch
+              v-model="settings.memorySemanticAutoAdmissionEnabled"
+              :disabled="locked"
+              :label="t('smAuto')"
+            /><USwitch
+              v-model="settings.memorySemanticAnswerEnabled"
+              :disabled="locked"
+              :label="t('smAnswer')"
+            />
+          </div>
+        </section>
+        <BudgetSettings v-model="settings" :disabled="locked" />
+        <EvidenceBudgetSettings v-model="settings" :disabled="locked" />
+        <ExperienceSettings v-model="settings" :disabled="locked" />
+        <section class="settings-section">
+          <div class="settings-heading">
+            <h2>{{ t('cmSettingsTitle') }}</h2>
+          </div>
+          <div class="settings-body space-y-3">
+            <p class="text-sm text-muted">{{ t('cmSettingsHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryCommitmentsEnabled"
+              :disabled="locked"
+              :label="t('cmEnabled')"
+            />
+            <p class="text-sm text-muted">{{ t('cmEnabledHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryCommitmentsAnswerEnabled"
+              :disabled="locked"
+              :label="t('cmAnswerEnabled')"
+            />
+            <p class="text-sm text-muted">{{ t('cmAnswerEnabledHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryHistoricalReadEnabled"
+              :disabled="locked"
+              :label="t('cmHistoryEnabled')"
+            />
+            <p class="text-sm text-muted">{{ t('cmHistoryEnabledHelp') }}</p>
+          </div>
+        </section>
+        <section class="settings-section">
+          <div class="settings-heading">
+            <h2>{{ t('wsSettingsTitle') }}</h2>
+          </div>
+          <div class="settings-body space-y-3">
+            <p class="text-sm text-muted">{{ t('wsSettingsHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryWorkingSetEnabled"
+              :disabled="locked"
+              :label="t('wsEnabled')"
+            />
+            <p class="text-sm text-muted">{{ t('wsEnabledHelp') }}</p>
+            <p class="text-xs text-muted">{{ t('wsSelectionHelp') }}</p>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label class="block text-sm space-y-1"
+                ><span>{{ t('wsColdDays') }}</span
+                ><input
+                  v-model.number="settings.memoryColdAfterDays"
+                  type="number"
+                  min="1"
+                  max="3650"
+                  step="1"
+                  required
+                  :disabled="locked"
+                  class="block w-full rounded border border-default bg-default p-2"
+                /><span class="block text-xs text-muted">{{ t('wsColdDaysHelp') }}</span></label
+              >
+              <label class="block text-sm space-y-1"
+                ><span>{{ t('wsReviewDays') }}</span
+                ><input
+                  v-model.number="settings.memoryReviewAfterDays"
+                  type="number"
+                  min="1"
+                  max="3650"
+                  step="1"
+                  required
+                  :disabled="locked"
+                  class="block w-full rounded border border-default bg-default p-2"
+                /><span class="block text-xs text-muted">{{ t('wsReviewDaysHelp') }}</span></label
+              >
+            </div>
+            <p class="text-xs text-muted">{{ t('wsPinHelp') }}</p>
+            <USwitch
+              v-model="settings.memoryEpisodesEnabled"
+              :disabled="locked"
+              :label="t('wsEpisodesEnabled')"
+            />
+            <p class="text-sm text-muted">{{ t('wsEpisodesHelp') }}</p>
+            <p class="text-xs text-muted">{{ t('wsUnknownTimeHelp') }}</p>
           </div>
         </section>
         <section class="settings-section">

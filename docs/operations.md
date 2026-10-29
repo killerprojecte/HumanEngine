@@ -17,19 +17,19 @@ Implementation references: [SQLite Online Backup API](https://www.sqlite.org/bac
 ## Restore to a new destination
 
 ```sh
-node --import tsx scripts/restore.ts backups/2026-10-25 recovered-data
+node --import tsx scripts/restore.ts backups/2026-10-25 recovered-data /absolute/path/to/original-authority
 ```
 
-The destination must not exist, even if it is empty. The command validates all manifest paths, hashes, byte counts, database integrity, and the exact referenced-media set, and instantiates `Store` to check that the installed sqlite-vec extension loads. It creates `recovered-data/humanengine.sqlite` and `recovered-data/media/`; it never overwrites an active database. Validation failure removes only its own new partial destination. Restore helpers do not deploy, restart, reconnect adapters, or send anything.
+The destination must not exist, even if it is empty. The third argument is the independently retained, current original authority directory, not a journal copied out of the old backup. Follow [recovery authority](recovery-authority.md) for deliberate legacy enrollment and custody requirements. The command validates all manifest paths, hashes, byte counts, database integrity, and the exact referenced-media set, and instantiates `Store` to check that the installed sqlite-vec extension loads. It creates `recovered-data/humanengine.sqlite` and `recovered-data/media/`; it never overwrites an active database. Validation failure removes only its own new partial destination. Restore helpers do not deploy, restart, reconnect adapters, or send anything.
 
 Before using the restored data:
 
 1. Stop HumanEngine and confirm the old instance is no longer running. Do not run two instances on the same platform account.
 2. Preserve the old data directory separately. Configure the database/media paths to the newly restored files, or manually move the entire restored directory into place while stopped. Do not copy just a database over an active WAL database.
 3. The restore script restores and validates stored credentials with their installation key. Restore any optional legacy credential environment values separately and review configured enabled plugins/adapters before startup. Plugin source is not bundled.
-4. Start manually and inspect status/error logs. Any newly received platform events follow normal runtime rules. There is no restoration or replay of pending sends, attention windows, raw cache, or partially completed tool operations.
+4. Start manually and inspect status/error logs. A fresh restore places managed model/embedding/probe admission on HOLD even when budget admission is OFF. Review the incomplete cost-coverage notice and use the authenticated exact-restore acknowledgment only after your own accounting review; acknowledgment does not reconstruct usage or settle unknown attempts. Any newly received platform events follow normal runtime rules. There is no restoration or replay of pending sends, attention windows, raw cache, or partially completed tool operations.
 
-An older backup necessarily lacks changes and recall notifications received after its snapshot. No restore claims knowledge of missing/offline platform events. Review this limitation before reconnecting or enabling learning; never assume a stale backup is a complete current recall ledger.
+An older backup lacks general learning/content/usage changes after its snapshot. The independently retained authority replays supported recorded safety transitions and refuses publication when required newer material is missing; it is not a full replication log. No restore knows platform events never received by the installation. Never bypass quarantine with an older binary, enroll an old backup as current, or replace the authority with an old matching copy.
 
 ## Synthetic sqlite-vec benchmark
 

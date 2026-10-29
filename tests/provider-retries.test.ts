@@ -407,7 +407,7 @@ test('Engine learning does not multiply exhausted Router retries into a second r
   store.set('settings', { ...store.settings, learningBatchMs: 300000 })
   const engine = new Engine(store)
   engine.router = () => new Router(learningConfig(service.url))
-  const queue = engine as unknown as {
+  const queue = engine.learning as unknown as {
     enqueueLearning(message: RuntimeMessage): void
     learn(sceneId: string): Promise<void>
     learningRetries: Map<string, unknown>

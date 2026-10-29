@@ -58,7 +58,7 @@ async function fixture(run: (engine: Engine, store: Store, queue: Queue) => Prom
     })
   const engine = new Engine(store)
   try {
-    await run(engine, store, engine as unknown as Queue)
+    await run(engine, store, engine.learning as unknown as Queue)
   } finally {
     await engine.dispose()
     store.close()

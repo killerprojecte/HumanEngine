@@ -44,7 +44,7 @@ async function fixture(
     learningEnabled: true,
     proactiveEnabled: false,
   })
-  const internals = engine as unknown as LearningInternals
+  const internals = engine.learning as unknown as LearningInternals
   const router = engine.router()
   router.complete = async () =>
     ({ toolCalls: proposals.map((call, index) => ({ ...call, id: String(index) })) }) as Completion
@@ -189,7 +189,7 @@ test('Candidate siblings stop after cancellation, disabled learning or disposal 
       async (engine, store, run) => {
         engine.indexMemory = async () => {
           if (boundary === 'abort')
-            (engine as unknown as LearningInternals).learningTasks.get('scene')!.abort()
+            (engine.learning as unknown as LearningInternals).learningTasks.get('scene')!.abort()
           else if (boundary === 'disable')
             store.saveScene({ ...store.scene('scene')!, learningEnabled: false })
           else await engine.dispose()

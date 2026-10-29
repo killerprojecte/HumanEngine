@@ -198,7 +198,7 @@ test('actual mock group lifecycle includes real Router calls, memory tool, confi
       assert.match(system, /Use metric units/)
       assert.doesNotMatch(system, /EXCLUDED_RULE_CANARY/)
     }
-    await (engine as unknown as { learn(id: string): Promise<void> }).learn(scene.id)
+    await (engine.learning as unknown as { learn(id: string): Promise<void> }).learn(scene.id)
     const rows = store.logs.filter((row) => row.module === 'flow')
     const turn = rows.find((row) => row.stage === 'turn' && row.status === 'completed')
     assert.ok(turn)

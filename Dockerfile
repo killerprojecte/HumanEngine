@@ -14,10 +14,12 @@ RUN node --input-type=module -e "import {cpSync} from 'node:fs'; for(const p of 
 
 FROM node:24.22.1-bookworm-slim AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000 \
-    HUMANENGINE_DB=/app/data/humanengine.sqlite HUMANENGINE_LOG_DIR=/app/data/logs
+    HUMANENGINE_DB=/app/data/humanengine.sqlite HUMANENGINE_LOG_DIR=/app/data/logs \
+    HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY=/app/authority
 WORKDIR /app
 COPY --from=build --chown=node:node /app/.output ./.output
-RUN mkdir -p /app/data/media /app/data/logs /app/plugins && chown -R node:node /app/data /app/plugins
+RUN mkdir -p /app/data/media /app/data/logs /app/plugins /app/authority \
+    && chown -R node:node /app/data /app/plugins /app/authority
 USER node
 EXPOSE 3000
 STOPSIGNAL SIGTERM

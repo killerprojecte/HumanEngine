@@ -3,7 +3,12 @@ import type { components } from '~/types/api'
 import { humanName } from '~/utils/chatIdentity'
 type Scene = components['schemas']['Scene'] & { avatarUrl?: string }
 type SceneState = components['schemas']['SceneState']
-type SwitchField = 'participationEnabled' | 'learningEnabled' | 'proactiveEnabled'
+type SwitchField =
+  | 'participationEnabled'
+  | 'learningEnabled'
+  | 'proactiveEnabled'
+  | 'memoryReadEnabled'
+  | 'personalizationEnabled'
 const { t } = useI18n(),
   { client } = useApi()
 const scenes = ref<Scene[]>([]),
@@ -75,7 +80,9 @@ async function update(scene: Scene, field: SwitchField, enabled: boolean) {
   const saved = savedScenes.get(scene.id)
   if (
     !saved ||
-    saved[field] === enabled ||
+    (field === 'memoryReadEnabled' || field === 'personalizationEnabled'
+      ? saved[field] !== false
+      : saved[field]) === enabled ||
     (field === 'proactiveEnabled' && !saved.participationEnabled)
   )
     return
@@ -180,7 +187,7 @@ onBeforeUnmount(() => {
         />
       </div>
       <p class="px-4 py-3 text-xs leading-5 text-muted border-b border-default">
-        {{ t('scImmediateHelp') }}
+        {{ t('scImmediateHelp') }} {{ t('scMemoryReadHelp') }}
       </p>
       <p v-if="!loaded && loading" class="px-4 py-10 text-center text-muted">
         {{ t('uxLoading') }}
@@ -191,11 +198,13 @@ onBeforeUnmount(() => {
       <template v-else>
         <table class="scene-table hidden lg:table w-full table-fixed text-left text-sm">
           <colgroup>
-            <col style="width: 36%" />
-            <col style="width: 16%" />
-            <col style="width: 16%" />
-            <col style="width: 18%" />
-            <col style="width: 14%" />
+            <col style="width: 28%" />
+            <col style="width: 12%" />
+            <col style="width: 12%" />
+            <col style="width: 12%" />
+            <col style="width: 12%" />
+            <col style="width: 12%" />
+            <col style="width: 12%" />
           </colgroup>
           <thead>
             <tr>
@@ -203,6 +212,8 @@ onBeforeUnmount(() => {
               <th>{{ t('scReplies') }}</th>
               <th>{{ t('scLearning') }}</th>
               <th>{{ t('scProactive') }}</th>
+              <th>{{ t('scMemoryRead') }}</th>
+              <th>{{ t('scPersonalization') }}</th>
               <th class="text-right">{{ t('scDetails') }}</th>
             </tr>
           </thead>
@@ -250,6 +261,22 @@ onBeforeUnmount(() => {
                     @update:model-value="(value) => update(scene, 'proactiveEnabled', value)"
                   /><span v-else class="text-xs text-muted">{{ t('scPassiveOnly') }}</span>
                 </td>
+                <td>
+                  <USwitch
+                    :model-value="scene.memoryReadEnabled !== false"
+                    :disabled="loading || pending[scene.id] || !!rowErrors[scene.id]"
+                    :aria-label="t('scMemoryRead') + ': ' + sceneName(scene)"
+                    @update:model-value="(value) => update(scene, 'memoryReadEnabled', value)"
+                  />
+                </td>
+                <td>
+                  <USwitch
+                    :model-value="scene.personalizationEnabled !== false"
+                    :disabled="loading || pending[scene.id] || !!rowErrors[scene.id]"
+                    :aria-label="t('scPersonalization') + ': ' + sceneName(scene)"
+                    @update:model-value="(value) => update(scene, 'personalizationEnabled', value)"
+                  />
+                </td>
                 <td class="text-right">
                   <UButton variant="ghost" color="neutral" @click="inspect(scene.id)">{{
                     t('scDetails')
@@ -263,7 +290,7 @@ onBeforeUnmount(() => {
                   (scene.kind === 'group' && !scene.participationEnabled)
                 "
               >
-                <td colspan="5" class="status-cell">
+                <td colspan="7" class="status-cell">
                   <p
                     v-if="scene.kind === 'group' && !scene.participationEnabled"
                     class="text-muted mb-1"
@@ -329,6 +356,18 @@ onBeforeUnmount(() => {
                 @update:model-value="(value) => update(scene, 'proactiveEnabled', value)"
               />
               <p v-else class="text-xs text-muted">{{ t('scPassiveOnly') }}</p>
+              <USwitch
+                :model-value="scene.memoryReadEnabled !== false"
+                :label="t('scMemoryRead')"
+                :disabled="loading || pending[scene.id] || !!rowErrors[scene.id]"
+                @update:model-value="(value) => update(scene, 'memoryReadEnabled', value)"
+              />
+              <USwitch
+                :model-value="scene.personalizationEnabled !== false"
+                :label="t('scPersonalization')"
+                :disabled="loading || pending[scene.id] || !!rowErrors[scene.id]"
+                @update:model-value="(value) => update(scene, 'personalizationEnabled', value)"
+              />
               <p
                 v-if="scene.kind === 'group' && !scene.participationEnabled"
                 class="text-xs text-muted"
@@ -380,6 +419,19 @@ onBeforeUnmount(() => {
                 </dd>
               </div>
             </dl>
+            <div class="text-sm text-muted space-y-1">
+              <p>
+                {{
+                  t('topicRoutingStatus', {
+                    enabled: state.topicRouting.enabled ? t('enabled') : t('disabled'),
+                    deferred: state.topicRouting.deferred,
+                    overflowed: state.topicRouting.overflowed,
+                    provisional: state.topicRouting.provisional,
+                  })
+                }}
+              </p>
+              <p>{{ t('topicRoutingLimits') }}</p>
+            </div>
             <section>
               <h3 class="text-sm font-medium mb-3">
                 {{ t('scTopics') }} ({{ state.topics.length }})

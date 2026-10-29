@@ -379,7 +379,20 @@
     "analysis_failed_recently": "Recent image analysis failed; waiting before retrying",
     "memory_not_requested": "This reply did not request memory retrieval",
     "memory_evidence_selected": "Selected authorized memory excerpts for expression",
-    "memory_evidence_not_selected": "Memory was queried but no excerpts were selected for this reply"
+    "memory_evidence_not_selected": "Memory was queried but no excerpts were selected for this reply",
+    "contextual_learning_queued": "Candidate queued, not yet saved",
+    "contextual_learning_running": "Validating queued candidate",
+    "contextual_learning_completed": "Candidate processing ended; inspect persisted result",
+    "contextual_learning_failed": "Candidate processing failed; no automatic replay",
+    "contextual_learning_discarded": "Candidate authority changed; stale result discarded",
+    "contextual_learning_cancelled": "Candidate cancelled",
+    "turn_wait_recheck": "Wait expired without fresh input; no model call",
+    "learning_source_payload_unavailable": "Some admitted sources are no longer available; only valid sources are processed",
+    "learning_relation_repair_discarded": "Relations discarded after assertion text repair; no stale semantics reused",
+    "memory_relation_shadow_compared": "Compared bounded baseline and relation IDs; not a quality measurement",
+    "memory_relation_shadow_unavailable": "Relation comparison unavailable; baseline unchanged",
+    "experience_use_unavailable": "Experimental policy-use observation unavailable; no effect is inferred",
+    "experience_feedback_unavailable": "Explicit experimental feedback was not admitted"
   },
   "stageLabels": {
     "ingress": "Receive message",
@@ -431,7 +444,9 @@
     "dialogue": "Compose planned dialogue",
     "provider_attempt": "Provider request attempt",
     "provider_retry_wait": "Wait before provider retry",
-    "memory.handoff": "Select memory excerpts for Replyer"
+    "memory.handoff": "Select memory excerpts for Replyer",
+    "learning.contextual": "Process asynchronous contextual learning",
+    "turn_wait": "Cheap wait recheck"
   },
   "statusLabels": {
     "started": "Started",

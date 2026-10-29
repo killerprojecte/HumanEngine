@@ -1,3 +1,5 @@
+import { installWorkspaceRoutes } from './memory/api/workspace-routes.ts'
+import { installCommitmentRoutes } from './memory/interfaces/commitment-routes.ts'
 import { requestIdFor, requestOperation, sanitizeError } from './diagnostics/errors.ts'
 import { modelScheduler } from './scheduler.ts'
 import { Engine } from './engine.ts'
@@ -53,7 +55,10 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       b = Buffer.from(token)
     if (a.length !== b.length || !timingSafeEqual(a, b))
       return c.json({ error: 'Authentication required' }, 401)
+    store.assertRecoveryReady()
     await next()
+    // Pending external revocations can appear while an asynchronous route reads bytes.
+    store.assertRecoveryReady()
     c.header('Cache-Control', 'no-store')
     c.header('X-Content-Type-Options', 'nosniff')
   })
@@ -189,8 +194,9 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       const scene = c.req.valid('json')
       if (scene.id !== c.req.valid('param').id) return c.json({ error: 'Scene ID mismatch' }, 400)
       store.saveScene(scene)
-      engine.sceneChanged(scene)
-      return c.json(scene, 200)
+      const saved = store.scene(scene.id)!
+      engine.sceneChanged(saved)
+      return c.json(saved, 200)
     },
   )
   app.openapi(
@@ -249,6 +255,8 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
         : c.json({ error: 'Scene unavailable' }, 400),
   )
   installEngineRoutes(app, engine)
+  installCommitmentRoutes(app, { memory: engine.memory, store })
+  installWorkspaceRoutes(app, { memory: engine.memory, store })
   app.doc('/api/openapi.json', {
     openapi: '3.1.0',
     info: { title: 'HumanEngine API', version: '0.1.0' },

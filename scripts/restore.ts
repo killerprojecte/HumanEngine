@@ -1,4 +1,13 @@
-import { mkdir, writeFile, rm } from 'node:fs/promises'
+import Database from 'better-sqlite3'
+import {
+  RecoveryAuthority,
+  metadata,
+  saveGate,
+  authorityPath,
+  sameHead,
+} from '../src/memory/recovery/ledger.ts'
+import { reconcileRecovery } from '../src/memory/recovery/reconcile.ts'
+import { mkdir, writeFile, rm, rename, rmdir, lstat } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Store } from '../src/store.ts'
@@ -14,9 +23,14 @@ import {
 export async function restore(options: {
   backupRoot: string
   destination: string
+  authorityDirectory?: string
 }): Promise<{ database: string; mediaRoot: string; vectorVersion: string }> {
+  if (!options.authorityDirectory) throw new Error('recovery_authority_required')
   const root = resolve(options.backupRoot),
-    destination = resolve(options.destination)
+    finalDestination = resolve(options.destination),
+    destination = finalDestination + '.quarantine'
+  authorityPath(join(finalDestination, 'humanengine.sqlite'), options.authorityDirectory)
+  authorityPath(join(root, 'humanengine.sqlite'), options.authorityDirectory)
   const manifest: BackupManifest = JSON.parse(
     (await regularFile(join(root, 'manifest.json'))).toString('utf8'),
   )
@@ -46,7 +60,11 @@ export async function restore(options: {
   if (!paths.has('humanengine.sqlite')) throw new Error('backup_database_missing')
   await mkdir(destination, { mode: 0o700 })
   let store: Store | undefined
+  let authority: RecoveryAuthority | undefined
+  let published = false
+  const stagingIdentity = await lstat(destination)
   try {
+    authority = new RecoveryAuthority(options.authorityDirectory)
     await mkdir(join(destination, 'media'), { mode: 0o700 })
     for (const file of manifest.files) {
       const bytes = await regularFile(join(root, file.path))
@@ -55,7 +73,20 @@ export async function restore(options: {
       await writeFile(join(destination, file.path), bytes, { flag: 'wx', mode: 0o600 })
     }
     const database = join(destination, 'humanengine.sqlite')
-    store = new Store(database)
+    const raw = new Database(database)
+    try {
+      const gate = metadata(raw)
+      if (
+        !gate ||
+        gate.authority !== authority.path ||
+        gate.head.instanceId !== authority.head().instanceId
+      )
+        throw new Error('recovery_instance_mismatch')
+      saveGate(raw, { ...gate, authority: authority.path, state: 'quarantine' })
+    } finally {
+      raw.close()
+    }
+    store = new Store(database, { authority })
     checkIntegrity(store.db)
     for (const record of mediaRecords(store.db)) {
       if (digest(await regularFile(join(destination, record.path))) !== record.sha256)
@@ -77,31 +108,56 @@ export async function restore(options: {
     ].sort()
     if (JSON.stringify(expected) !== JSON.stringify([...paths].sort()))
       throw new Error('backup_media_manifest_mismatch')
+    const applied = await reconcileRecovery(store, authority, join(destination, 'media'))
     const vectorVersion = store.vectorVersion
     store.close()
     store = undefined
-    return { database, mediaRoot: join(destination, 'media'), vectorVersion }
+    if (!sameHead(applied, authority.head())) throw new Error('recovery_authority_head_changed')
+    await mkdir(finalDestination, { mode: 0o700 })
+    await rmdir(finalDestination)
+    await rename(destination, finalDestination)
+    published = true
+    if (!sameHead(applied, authority.head())) throw new Error('recovery_authority_head_changed')
+    authority.close()
+    return {
+      database: join(finalDestination, 'humanengine.sqlite'),
+      mediaRoot: join(finalDestination, 'media'),
+      vectorVersion,
+    }
   } catch (error) {
     store?.close()
+    authority?.close()
     await rm(destination, { recursive: true, force: true })
+    if (published) {
+      const current = await lstat(finalDestination).catch(() => undefined)
+      if (current?.dev === stagingIdentity.dev && current.ino === stagingIdentity.ino)
+        await rm(finalDestination, { recursive: true, force: true })
+    }
     throw error
   }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const [backupRoot, destination] = process.argv.slice(2)
-  if (!backupRoot || !destination || process.argv.length !== 4) {
-    console.error('Usage: node --import tsx scripts/restore.ts BACKUP_DIRECTORY NEW_DATA_DIRECTORY')
+  const [backupRoot, destination, authorityDirectory] = process.argv.slice(2)
+  if (!backupRoot || !destination || !authorityDirectory || process.argv.length !== 5) {
+    console.error(
+      'Usage: node --import tsx scripts/restore.ts BACKUP_DIRECTORY NEW_DATA_DIRECTORY AUTHORITY_DIRECTORY',
+    )
     process.exitCode = 1
   } else
-    restore({ backupRoot, destination })
+    restore({ backupRoot, destination, authorityDirectory })
       .then((result) =>
         console.log(
           `Restore verified; sqlite-vec ${result.vectorVersion}. Start manually after shutdown of the old instance.`,
         ),
       )
-      .catch(() => {
+      .catch((error: unknown) => {
+        const code =
+          error instanceof Error && /^recovery_[a-z_]{1,100}$/.test(error.message)
+            ? error.message
+            : 'restore_verification_failed'
+        console.error(code)
         console.error(
-          'Restore failed; existing destinations are never overwritten. Check manifest, hashes, and permissions.',
+          'Restore remains quarantined; existing destinations are never overwritten. Supply the original independently retained authority and a snapshot containing required grant evidence. Check supported domain formats, manifest, original media hashes, and permissions; never bypass the gate with an old binary.',
         )
         process.exitCode = 1
       })

@@ -35,6 +35,17 @@ function fixture() {
   const store = new Store(':memory:'),
     memory = new MemoryService(store),
     protocols = new ModelProtocolRegistry()
+  store.saveScene({
+    id: 's',
+    adapterId: 'a',
+    accountId: 'a',
+    platformSceneId: 's',
+    kind: 'group',
+    name: 's',
+    participationEnabled: true,
+    learningEnabled: true,
+    proactiveEnabled: false,
+  })
   store.set('models', config(1024))
   let calls = 0
   let outputWidth: number | undefined

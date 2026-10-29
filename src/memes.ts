@@ -1,3 +1,12 @@
+import { domainSourceCurrent } from './memory/read/domain-source-events.ts'
+import {
+  assertDomainReady,
+  revoke,
+  beginDurableRevocation,
+  commitDurableRevocation,
+  isRecoveryMaintenance,
+} from './memory/recovery/ledger.ts'
+import { qualificationHash, type DomainRecoveryEvent } from './memory/recovery/domain-contracts.ts'
 import { ContextProjection } from './runtime/context-projection.ts'
 import { providerAttemptsHandled } from './models/request-policy.ts'
 import { createHash } from 'node:crypto'
@@ -207,6 +216,7 @@ export class MemeService {
     private readonly store: Store,
     mediaRoot = 'data/media',
   ) {
+    assertDomainReady(store.db)
     this.mediaRoot = resolve(mediaRoot)
     store.db.exec(`
       CREATE TABLE IF NOT EXISTS meme_assets (id TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -216,6 +226,7 @@ export class MemeService {
         PRIMARY KEY(asset_id,scene_id,message_id)
       );
       CREATE INDEX IF NOT EXISTS meme_source_lookup ON meme_sources(scene_id,message_id);
+      CREATE TABLE IF NOT EXISTS meme_reference_denials (key TEXT PRIMARY KEY);
       CREATE TABLE IF NOT EXISTS meme_media_references (
         scene_id TEXT NOT NULL, reference_hash TEXT NOT NULL,
         asset_id TEXT NOT NULL, message_id TEXT NOT NULL, sender_id TEXT NOT NULL,
@@ -271,10 +282,42 @@ export class MemeService {
       .get(ctx.sceneId, hash, sourceMessageId) as
       { asset_id: string; message_id: string; sender_id: string; content_hash: string } | undefined
   }
+  private referenceDenialKey(sceneId: string, referenceHash: string, messageId: string): string {
+    return digest(Buffer.from(JSON.stringify([sceneId, referenceHash, messageId])))
+  }
+  private referenceDenied(ctx: MemeContext, reference: string, messageId?: string): boolean {
+    const hash = this.mediaReferenceHash(ctx, reference)
+    return (
+      !!hash &&
+      !!messageId &&
+      !!this.store.db
+        .prepare('SELECT 1 FROM meme_reference_denials WHERE key=?')
+        .get(this.referenceDenialKey(ctx.sceneId, hash, messageId))
+    )
+  }
+  /** Retain only a non-reversible denial key: absence must not trigger a platform redownload. */
+  private retireReferences(
+    where: 'asset_id=?' | 'scene_id=? AND message_id=?',
+    values: string[],
+  ): void {
+    const rows = this.store.db
+      .prepare(
+        `SELECT scene_id,reference_hash,message_id FROM meme_media_references WHERE ${where}`,
+      )
+      .all(...values) as { scene_id: string; reference_hash: string; message_id: string }[]
+    for (const row of rows)
+      this.store.db
+        .prepare('INSERT OR IGNORE INTO meme_reference_denials VALUES(?)')
+        .run(this.referenceDenialKey(row.scene_id, row.reference_hash, row.message_id))
+    this.store.db.prepare(`DELETE FROM meme_media_references WHERE ${where}`).run(...values)
+  }
   hasMediaReference(ctx: MemeContext, reference: string, sourceMessageId?: string): boolean {
     // Opaque locators may change bytes between messages. Never infer a new message's
     // content identity from another source's exact URL/file-token string.
-    return this.mediaReference(ctx, reference, sourceMessageId) !== undefined
+    return (
+      this.referenceDenied(ctx, reference, sourceMessageId) ||
+      this.mediaReference(ctx, reference, sourceMessageId) !== undefined
+    )
   }
   bindMediaReference(
     ctx: MemeContext,
@@ -286,6 +329,8 @@ export class MemeService {
     this.validateObservedSource(ctx, source)
     const hash = this.mediaReferenceHash(ctx, reference)
     if (!hash) throw new Error('invalid_media_reference')
+    if (this.referenceDenied(ctx, reference, source.messageId))
+      throw new Error('image_source_unavailable')
     const asset = this.visible(ctx, assetId, false)
     if (
       !bytes.length ||
@@ -332,6 +377,7 @@ export class MemeService {
     reference: string,
     sourceMessageId?: string,
   ): MemeAsset | undefined {
+    if (this.referenceDenied(ctx, reference, sourceMessageId)) return undefined
     const entry = this.mediaReference(ctx, reference, sourceMessageId)
     if (!entry || this.store.recalled(ctx.sceneId, entry.message_id)) return undefined
     try {
@@ -342,7 +388,8 @@ export class MemeService {
           (source) =>
             source.sceneId === ctx.sceneId &&
             source.messageId === entry.message_id &&
-            source.senderId === entry.sender_id,
+            source.senderId === entry.sender_id &&
+            domainSourceCurrent(this.store, source),
         )
       )
         return undefined
@@ -600,6 +647,7 @@ export class MemeService {
     await Promise.allSettled(this.analyses.values())
   }
   adminList(): MemeAsset[] {
+    assertDomainReady(this.store.db)
     return (
       this.store.db.prepare('SELECT value FROM meme_assets ORDER BY rowid DESC').all() as {
         value: string
@@ -618,6 +666,7 @@ export class MemeService {
       state?: string
     } = {},
   ) {
+    assertDomainReady(this.store.db)
     const pageSize = Math.max(1, Math.min(96, Math.floor(input.pageSize ?? 24)))
     const clauses: string[] = []
     const bindings: (string | number)[] = []
@@ -707,7 +756,9 @@ export class MemeService {
     })()
     this.thumbnailTasks.set(id, task)
     try {
-      return await task
+      const result = await task
+      assertDomainReady(this.store.db)
+      return result
     } finally {
       this.thumbnailTasks.delete(id)
     }
@@ -746,7 +797,10 @@ export class MemeService {
     }
     if (next.available && (!next.analyzed || !next.sources.length))
       throw new Error('meme_not_available')
-    this.write(next)
+    this.store.db.transaction(() => {
+      revoke(this.store.db, this.recoveryState(next))
+      this.write(next)
+    })()
     return next
   }
   /** Explicit review action; observation/import never silently promotes a known analyzed item. */
@@ -762,6 +816,14 @@ export class MemeService {
     if (this.deletingAssets.has(id)) throw new Error('media_delete_in_progress')
     const asset = this.get(id)
     if (!asset) return false
+    const ticket = beginDurableRevocation(this.store.db, {
+      schemaVersion: 1,
+      kind: 'meme_delete',
+      id,
+      contentHash: asset.contentHash ?? asset.id,
+      qualificationHash: this.recoveryQualification(asset),
+      format: asset.format,
+    })
     this.deletingAssets.add(id)
     this.deletingContent.set(id, {
       hash: asset.contentHash ?? asset.id,
@@ -780,9 +842,12 @@ export class MemeService {
         if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
           throw new Error('media_delete_failed')
       }
-      this.store.db.prepare('DELETE FROM meme_assets WHERE id=?').run(id)
-      this.thumbnails.delete(id)
-      return true
+      return commitDurableRevocation(this.store.db, ticket, () => {
+        this.retireReferences('asset_id=?', [id])
+        this.store.db.prepare('DELETE FROM meme_assets WHERE id=?').run(id)
+        this.thumbnails.delete(id)
+        return true
+      })
     }).finally(() => {
       this.deletingAssets.delete(id)
       this.deletingContent.delete(id)
@@ -811,8 +876,97 @@ export class MemeService {
         ? { analysisState: 'cancelled' as const, analysisNextRetryAt: undefined }
         : {}),
     }
-    this.write(next)
+    this.store.db.transaction(() => {
+      revoke(this.store.db, this.recoveryState(next))
+      this.write(next)
+    })()
     return next
+  }
+  private recoveryQualification(asset: MemeAsset): string {
+    return qualificationHash({
+      id: asset.id,
+      contentHash: asset.contentHash ?? asset.id,
+      format: asset.format,
+      bytes: asset.bytes,
+      width: asset.width,
+      height: asset.height,
+      frames: asset.frames,
+      analyzed: asset.analyzed,
+      tags: asset.tags,
+      sources: [...asset.sources].sort((a, b) =>
+        JSON.stringify(a).localeCompare(JSON.stringify(b)),
+      ),
+    })
+  }
+  private recoveryState(asset: MemeAsset): Extract<DomainRecoveryEvent, { kind: 'meme_state' }> {
+    return {
+      schemaVersion: 1,
+      kind: 'meme_state',
+      id: asset.id,
+      contentHash: asset.contentHash ?? asset.id,
+      qualificationHash: this.recoveryQualification(asset),
+      state: {
+        available: asset.available,
+        disabled: asset.disabled,
+        knownOnly: asset.knownOnly ?? false,
+        shared: asset.shared,
+        privacyReviewed: asset.privacyReviewed,
+      },
+    }
+  }
+  recoverState(event: Extract<DomainRecoveryEvent, { kind: 'meme_state' }>): void {
+    if (!isRecoveryMaintenance(this.store.db)) throw new Error('recovery_maintenance_required')
+    const asset = this.get(event.id)
+    if (
+      !asset ||
+      (asset.contentHash ?? asset.id) !== event.contentHash ||
+      this.recoveryQualification(asset) !== event.qualificationHash
+    )
+      throw new Error('recovery_meme_qualification_missing')
+    if (
+      event.state.available &&
+      (!asset.analyzed ||
+        !this.hasValidSource(asset) ||
+        event.state.disabled ||
+        event.state.knownOnly)
+    )
+      throw new Error('recovery_meme_grant_invalid')
+    if (event.state.shared && (!event.state.privacyReviewed || event.state.knownOnly))
+      throw new Error('recovery_meme_grant_invalid')
+    this.write({
+      ...asset,
+      ...event.state,
+      selectionOrigin: 'manual',
+      sharingOrigin: 'manual',
+      tagRevision: (asset.tagRevision ?? 0) + 1,
+    })
+  }
+  async recoverDelete(event: Extract<DomainRecoveryEvent, { kind: 'meme_delete' }>): Promise<void> {
+    if (!isRecoveryMaintenance(this.store.db)) throw new Error('recovery_maintenance_required')
+    const asset = this.get(event.id)
+    if (
+      asset &&
+      ((asset.contentHash ?? asset.id) !== event.contentHash ||
+        asset.format !== event.format ||
+        this.recoveryQualification(asset) !== event.qualificationHash)
+    )
+      throw new Error('recovery_meme_identity_mismatch')
+    // A terminal event also cleans bytes left by a prior interrupted local delete.
+    try {
+      const bytes = await readFile(this.file(event.id, event.format))
+      if (digest(bytes) !== event.contentHash) throw new Error('recovery_meme_content_mismatch')
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+    }
+    if (asset) await this.adminDelete(event.id)
+    else {
+      try {
+        await unlink(this.file(event.id, event.format))
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+      }
+      this.retireReferences('asset_id=?', [event.id])
+    }
   }
   search(ctx: MemeContext, query: string, tags: string[] = []): MemeAsset[] {
     const terms = normalized(query).split(/\s+/).filter(Boolean)
@@ -890,6 +1044,7 @@ export class MemeService {
             .all(sceneId, messageId, sceneId, messageId) as { asset_id: string }[]
         ).map((row) => row.asset_id),
       )
+      this.retireReferences('scene_id=? AND message_id=?', [sceneId, messageId])
       this.store.db
         .prepare('DELETE FROM meme_feedback WHERE scene_id=? AND message_id=?')
         .run(sceneId, messageId)
@@ -1125,6 +1280,7 @@ export class MemeService {
       )
   }
   private readVisible(ctx: MemeContext): MemeAsset[] {
+    assertDomainReady(this.store.db)
     const sql = ctx.simulation
       ? "SELECT value FROM meme_assets WHERE json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0"
       : "SELECT value FROM meme_assets WHERE (json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0) OR id IN (SELECT asset_id FROM meme_sources WHERE scene_id=?)"
@@ -1142,9 +1298,7 @@ export class MemeService {
             this.hasValidSource(asset)) ||
           (!ctx.simulation &&
             asset.sources.some(
-              (source) =>
-                source.sceneId === ctx.sceneId &&
-                !this.store.recalled(source.sceneId, source.messageId),
+              (source) => source.sceneId === ctx.sceneId && domainSourceCurrent(this.store, source),
             )),
       )
   }
@@ -1161,7 +1315,7 @@ export class MemeService {
     return asset
   }
   private hasValidSource(asset: MemeAsset) {
-    return asset.sources.some((source) => !this.store.recalled(source.sceneId, source.messageId))
+    return asset.sources.some((source) => domainSourceCurrent(this.store, source))
   }
   private allowAnalysis(ctx: MemeContext, observation = false) {
     if (!observation) return this.allowWrite(ctx)
@@ -1170,7 +1324,7 @@ export class MemeService {
         source.sceneId === ctx.sceneId &&
         source.available &&
         !source.isBot &&
-        !this.store.recalled(source.sceneId, source.messageId),
+        domainSourceCurrent(this.store, source),
     )
     if (!evidence) throw new Error('invalid_source_evidence')
     this.validateObservedSource(ctx, evidence)
@@ -1180,7 +1334,7 @@ export class MemeService {
     if (
       !this.store.scene(ctx.sceneId) ||
       source.sceneId !== ctx.sceneId ||
-      this.store.recalled(source.sceneId, source.messageId) ||
+      !domainSourceCurrent(this.store, source) ||
       !ctx.sourceEvidence?.some(
         (item) =>
           item.sceneId === source.sceneId &&
@@ -1200,7 +1354,7 @@ export class MemeService {
     if (
       !this.store.scene(ctx.sceneId)?.learningEnabled ||
       source.sceneId !== ctx.sceneId ||
-      this.store.recalled(source.sceneId, source.messageId) ||
+      !domainSourceCurrent(this.store, source) ||
       !ctx.sourceEvidence?.some(
         (item) =>
           item.sceneId === source.sceneId &&
@@ -1213,6 +1367,7 @@ export class MemeService {
       throw new Error('invalid_source_evidence')
   }
   private get(id: string): MemeAsset | undefined {
+    assertDomainReady(this.store.db)
     const row = this.store.db.prepare('SELECT value FROM meme_assets WHERE id=?').get(id) as
       { value: string } | undefined
     return row ? JSON.parse(row.value) : undefined
@@ -1238,6 +1393,7 @@ export class MemeService {
       this.store.db.prepare('INSERT INTO meme_search_concepts VALUES(?,?)').run(asset.id, concept)
   }
   private write(asset: MemeAsset) {
+    assertDomainReady(this.store.db)
     this.store.db.transaction(() => {
       this.store.db
         .prepare(

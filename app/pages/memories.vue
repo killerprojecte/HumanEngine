@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemoryRelations from '~/components/memory/MemoryRelations.vue'
 import type { components } from '~/types/api'
 type Memory = components['schemas']['Memory']
 type Scene = components['schemas']['Scene']
@@ -317,7 +318,18 @@ async function save() {
       }
       const response = await client.PATCH('/api/memories/{id}', {
         params: { path: { id: original.id } },
-        body: patch,
+        body: {
+          ...patch,
+          ...(original.revision
+            ? {
+                guard: {
+                  expectedVersion: original.revision.version,
+                  expectedDeletionEpoch: original.revision.deletionEpoch,
+                  idempotencyKey: crypto.randomUUID(),
+                },
+              }
+            : {}),
+        },
       })
       if (!response.data)
         mutationFailure(response.response, response.error?.error ?? t('networkError'))
@@ -360,10 +372,20 @@ async function confirmAction() {
     } else {
       const response = await client.PATCH('/api/memories/{id}', {
         params: { path: { id: record.id } },
-        body:
-          action === 'revalidate'
-            ? { content: record.content, status: 'active' }
-            : { locked: !record.locked },
+        body: {
+          ...(action === 'revalidate'
+            ? { content: record.content, status: 'active' as const }
+            : { locked: !record.locked }),
+          ...(record.revision
+            ? {
+                guard: {
+                  expectedVersion: record.revision.version,
+                  expectedDeletionEpoch: record.revision.deletionEpoch,
+                  idempotencyKey: crypto.randomUUID(),
+                },
+              }
+            : {}),
+        },
       })
       if (!response.data)
         mutationFailure(response.response, response.error?.error ?? t('networkError'))
@@ -405,6 +427,13 @@ function date(value: string) {
         >
       </div>
     </header>
+    <MemoryPeople :scenes="scenes" />
+    <KnowledgePanel :scenes="scenes" />
+    <SemanticPanel :scenes="scenes" />
+    <MemoryRelations :scenes="scenes" />
+    <MemoryExperience :scenes="scenes" />
+    <MemoryCommitments :scenes="scenes" />
+    <MemoryWorkspace :scenes="scenes" />
     <UAlert v-if="error && !modalOpen" color="error" :title="error" /><UAlert
       v-if="saved"
       color="success"
@@ -583,6 +612,11 @@ function date(value: string) {
             :description="t('memoryLineageHelp')"
           />
           <p class="whitespace-pre-wrap break-words text-sm leading-7">{{ selected.content }}</p>
+          <MemoryAssertionHistory
+            v-if="selected.scope.kind === 'scene'"
+            :scene-id="selected.scope.sceneId"
+            :memory-id="selected.id"
+          />
           <UButton
             v-if="selected.lineageStatus && selected.lineageStatus !== 'verified'"
             :disabled="busy || recoveryRequired || editorUncertain"

@@ -163,7 +163,9 @@ test('actual planner outbound mocks see compact receipts; historical targets, ev
   assert.equal(built.evidence[1]!.id, 'tool:1')
 })
 
-test('runtime decision, planner, attributed vision context and composer use the same refs; hooks and adapter receive canonical IDs once', async () => {
+test('runtime decision, planner, attributed vision context and composer use the same refs; hooks and adapter receive canonical IDs once', async (t) => {
+  // This test checks preserved fixed timestamps, not expiry against the runner's wall clock.
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-10-28T04:00:00.000Z') })
   const { Store } = await import('../src/store.ts')
   const { Runtime } = await import('../src/runtime.ts')
   const { fixtureReplyPlan } = await import('./helpers/reply-plan.ts')
@@ -305,8 +307,10 @@ test('background extraction wire stays compact and restores source/person proven
   let extracted = false
   h.install(async (_role, messages, tools) => {
     const wire = JSON.stringify(messages)
-    assert.doesNotMatch(wire, /ob:u:|ob:s:|ob:media:|AVATAR_CANARY|receivedAt|a-canonical-message/)
+    assert.doesNotMatch(wire, /ob:u:|ob:s:|ob:media:|AVATAR_CANARY|a-canonical-message/)
     const payload = JSON.parse(messages[1]!.content)
+    // Guidance may name server-owned fields; their values must not enter model payloads.
+    assert.doesNotMatch(JSON.stringify(payload), /"receivedAt"\s*:/)
     assert.ok(payload.now)
     assert.equal(payload.timezone, h.store.settings.timezone)
     if (tools?.some((t) => t.name === 'learning.propose')) {

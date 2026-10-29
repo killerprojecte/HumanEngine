@@ -66,13 +66,13 @@ test('metadata reconciliation finds an unindexed encoding setting beside an inde
       normalized: true,
     })
     h.engine.memory.index(window.id, spaceId, [1, 0])
-    h.access.searchMemory = async (ctx, query) =>
+    h.engine.searchMemory = async (ctx, query) =>
       h.engine.memory.search(ctx, query, undefined, { spaceId, vector: [1, 0] })
     const inputs = [
       message(201, '正式更正：编码输出改成二进制表示。'),
       message(202, '接收窗口现在改成八个数据帧。'),
     ]
-    const visible = await h.access.searchMemory(
+    const visible = await h.engine.searchMemory(
       { sceneId, simulation: false },
       inputs.map((item) => (item.parts[0]!.type === 'text' ? item.parts[0]!.text : '')).join(' '),
     )

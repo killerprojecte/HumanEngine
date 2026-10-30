@@ -25,7 +25,15 @@ import {
 import { parseDomainRecoveryEvent, type DomainRecoveryEvent } from './domain-contracts.ts'
 import Database from 'better-sqlite3'
 import { createHash, randomUUID } from 'node:crypto'
-import { existsSync, mkdirSync, lstatSync, realpathSync, chmodSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  lstatSync,
+  realpathSync,
+  chmodSync,
+  openSync,
+  closeSync,
+} from 'node:fs'
 import { dirname, resolve, relative, join, parse } from 'node:path'
 
 export const RECOVERY_FORMAT = 1
@@ -128,19 +136,20 @@ export class RecoveryAuthority {
     if (!existsSync(this.path) || realpathSync(this.path) !== this.path)
       throw new Error('recovery_authority_missing')
     const file = join(this.path, 'authority.sqlite')
+    if (!createInstance && !existsSync(file)) throw new Error('recovery_authority_missing')
     if (existsSync(file) && !lstatSync(file).isFile()) throw new Error('recovery_authority_invalid')
     this.db = new Database(file, { fileMustExist: !createInstance })
-    chmodSync(file, 0o600)
-    this.db.pragma('journal_mode = DELETE')
-    this.db.pragma('synchronous = FULL')
-    if (createInstance) {
-      this.db.exec(
-        'CREATE TABLE IF NOT EXISTS identity (id TEXT PRIMARY KEY, format INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS revocations (sequence INTEGER PRIMARY KEY, previous_hash TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL)',
-      )
-      if (!this.db.prepare('SELECT 1 FROM identity').get())
-        this.db.prepare('INSERT INTO identity VALUES(?,?)').run(createInstance, RECOVERY_FORMAT)
-    }
     try {
+      chmodSync(file, 0o600)
+      this.db.pragma('journal_mode = DELETE')
+      this.db.pragma('synchronous = FULL')
+      if (createInstance) {
+        this.db.exec(
+          'CREATE TABLE IF NOT EXISTS identity (id TEXT PRIMARY KEY, format INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS revocations (sequence INTEGER PRIMARY KEY, previous_hash TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL)',
+        )
+        if (!this.db.prepare('SELECT 1 FROM identity').get())
+          this.db.prepare('INSERT INTO identity VALUES(?,?)').run(createInstance, RECOVERY_FORMAT)
+      }
       this.entries()
     } catch (error) {
       this.db.close()
@@ -232,8 +241,13 @@ export function metadata(
 ): { head: Head; authority: string; minimumReader: number; state: string } | undefined {
   if (!readRecoveryStatement(db, 'gateExists')) return undefined
   const row = readRecoveryStatement(db, 'gateValue') as { value: string } | undefined
-  if (!row) return undefined
-  const value = JSON.parse(row.value)
+  if (!row) throw new Error('recovery_gate_invalid')
+  let value
+  try {
+    value = JSON.parse(row.value)
+  } catch {
+    throw new Error('recovery_gate_invalid')
+  }
   if (
     !value ||
     !value.head ||
@@ -265,18 +279,47 @@ export function enroll(
   database: string,
   explicit?: string,
 ): RecoveryAuthority {
-  if (metadata(db)) throw new Error('recovery_already_enrolled')
-  const path = authorityPath(database, explicit)
-  if (existsSync(join(path, 'authority.sqlite')))
-    throw new Error('recovery_existing_authority_requires_reconciliation')
-  const authority = new RecoveryAuthority(path, randomUUID())
-  saveGate(db, {
-    head: authority.head(),
-    authority: path,
-    minimumReader: RECOVERY_FORMAT,
-    state: 'ready',
-  })
-  return authority
+  // Enrollment is a one-time operator trust decision, not a repair for damaged gates.
+  // Serialize the check and write on the main database, including competing CLIs.
+  if (db.inTransaction) throw new Error('recovery_enrollment_transaction_active')
+  let authority: RecoveryAuthority | undefined
+  try {
+    return db
+      .transaction(() => {
+        if (metadata(db)) throw new Error('recovery_already_enrolled')
+        const path = authorityPath(database, explicit)
+        const file = join(path, 'authority.sqlite')
+        if (existsSync(file)) throw new Error('recovery_existing_authority_requires_reconciliation')
+        // BEGIN IMMEDIATE alone does not reject a readonly SQLite connection. Perform
+        // the first reversible main-DB write before creating any external authority.
+        db.exec(
+          'CREATE TABLE recovery_gate (id INTEGER PRIMARY KEY CHECK(id=1), value TEXT NOT NULL)',
+        )
+        mkdirSync(path, { recursive: true, mode: 0o700 })
+        try {
+          closeSync(openSync(file, 'wx', 0o600))
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === 'EEXIST')
+            throw new Error('recovery_existing_authority_requires_reconciliation')
+          throw error
+        }
+        authority = new RecoveryAuthority(path, randomUUID())
+        saveGate(db, {
+          head: authority.head(),
+          authority: path,
+          minimumReader: RECOVERY_FORMAT,
+          state: 'ready',
+        })
+        return authority
+      })
+      .immediate()
+  } catch (error) {
+    authority?.close()
+    // Cross-database commits are not atomic. If a later failure/crash left a newly
+    // reserved authority, retain it as a fail-closed reconciliation obligation.
+    // Never delete/reuse a possibly durable authority to make a retry succeed.
+    throw error
+  }
 }
 export function openGate(db: Database.Database, database: string): RecoveryAuthority | undefined {
   if (database === ':memory:') return

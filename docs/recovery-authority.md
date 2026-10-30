@@ -64,7 +64,150 @@ This safety journal is not a replication log for every soft negative, ranking, f
 
 The provided Compose configuration retains both the data volume and a separate `humanengine-authority` volume mounted at `/app/authority`, with `HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY` set consistently. Keep both volumes across upgrades; preserving only `/app/data` is insufficient. Do not place authority inside a backup payload or replace it with an older copied volume to clear quarantine. Existing databases require deliberate offline enrollment using the same absolute authority path that the application will use.
 
-The enrollment/export/restore commands above run from the source checkout with its Node dependencies installed. The production runtime image does not ship the TypeScript maintenance scripts or `tsx`, and no separate maintenance image is supplied here. Do not assume a `docker exec` command for those scripts is available. The container wiring has static configuration tests; this is not evidence that a real deployment, volume migration or operator restore has been exercised.
+The production image now includes the same enrollment/export implementation as
+`.output/server/recovery-authority.mjs`, bundled during `npm run build`. It does
+not ship `tsx`, the TypeScript maintenance sources, or a separate maintenance
+image. Earlier images lacked this executable container migration entrypoint.
+The source-checkout commands above remain valid; full backup/restore still uses
+the source-checkout tools, not this enrollment/export bundle.
+
+### One-time upgrade of a pre-gate live database
+
+`recovery_legacy_enrollment_required` means a nonempty database has no recorded
+enrollment identity. It is not permission to enroll any file that happens to
+open. The operator must establish that this is the **current live database**,
+not a backup, rolled-back copy, or an already enrolled database with damaged
+metadata. Enrollment cannot reconstruct revocations lost before this decision.
+
+1. Identify the existing Compose project, service, data volume and independent
+   authority volume. Use the same Compose file/project and absolute mount paths
+   throughout; a new project may silently select new empty volumes. Select the
+   upgraded image containing the bundled maintenance entrypoint before proceeding.
+2. Stop **all** processes or containers that can write the database. For the
+   provided single-service Compose installation, begin with
+   `docker compose stop humanengine`; also stop any other writers. Do not run the
+   command through `docker exec` in a running service.
+3. Privately preserve a complete cold backup of the stopped data volume,
+   including the database and any SQLite sidecars, `.secrets.key`, media and
+   relevant configuration. Keep the existing current authority separately under
+   its original custody, if one exists. These materials may contain or decrypt
+   credentials: never upload them to a support issue or a source archive.
+4. Only for a genuinely pre-gate current live database, run the one-shot command
+   against the **original live volumes**, with no application startup:
+
+   ```sh
+   docker compose run --rm --no-deps --entrypoint node humanengine \
+     .output/server/recovery-authority.mjs enroll \
+     /app/data/humanengine.sqlite /app/authority \
+     --current-live-database-not-a-backup
+   ```
+
+   The acknowledgment is a deliberate trust decision, not an automatic freshness
+   check. The independent `/app/authority` path must match the one the application
+   will use. Keep the service stopped if this exits nonzero. An already enrolled,
+   malformed, or interrupted enrollment must not be repaired by deleting the gate
+   or authority and retrying. The main database uses a transaction, but the two
+   databases are not one atomic commit: a failure or crash can leave a reserved
+   authority that must be preserved for offline review, never automatically reused
+   or removed to make enrollment succeed.
+
+5. After enrollment succeeds, retain both volumes and restart with
+   `docker compose up -d --no-deps humanengine`. Check the authenticated
+   `/api/status` and container health. Restarting the application can reconnect
+   already enabled adapters; review the installation's connection settings before
+   returning it to service. Enrollment itself does not start adapters, learn,
+   call models, replay chats, or send messages.
+
+If the database was already enrolled and its authority is missing, invalid or
+behind/ahead, this is **not** the legacy-upgrade case. Keep it stopped and restore
+access to the independently retained current authority at its originally bound
+absolute path, or use the documented recovery review. Never create a replacement
+authority, remove a database, copy an old matching authority head, or use an older
+binary to clear the error. Do not use `docker compose down --volumes` for an upgrade.
+
+Before successful enrollment/recovery, authenticated API requests report a
+controlled unavailable response rather than claiming healthy status. Neither
+that response nor successful enrollment establishes real-platform readiness or
+general semantic correctness; verify the deployment using synthetic data first.
+
+### Bind-mount upgrade sequence
+
+For the existing `humanengine` service using `./data:/app/data` and the read-only
+`./plugins:/app/plugins:ro` bind, first merge the
+[minimal authority configuration](containers.md#existing-compose-installation-using-a-data-bind-mount).
+It adds `HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY: /app/authority`, the independent
+`humanengine-authority:/app/authority` mount and its top-level volume declaration.
+Keep the live data bind, plugin bind and all existing read-only/nonroot/security
+settings. A merely declared but unused `humanengine-data` named volume is not
+the live store and must not replace `./data`.
+
+Use the original Compose directory and the same project (`-p`, if used) for
+every command below. After selecting a published, verified image containing the
+bundled CLI, pull that selected image without starting a service:
+
+```sh
+docker compose pull humanengine
+docker compose stop humanengine
+```
+
+Stop any additional writers as well. Before running maintenance, make a private
+complete cold backup of the **actual bound `./data` directory**, including hidden
+`.secrets.key`, database/SQLite sidecars, media and logs, and preserve relevant
+configuration privately. Independently retain any existing current authority;
+do not bundle it into an older data backup or overwrite it. Do not upload these
+materials or print environment variables.
+
+The image runs as UID/GID 1000. The existing data bind must remain writable by
+that identity, and Docker initializes the new named authority volume from the
+image's owned `/app/authority` directory. This optional one-shot precheck only
+checks effective UID and filesystem access; it does not read database contents,
+keys or environment values, create an enrollment, or prove database freshness:
+
+```sh
+docker compose run --rm --no-deps --entrypoint node humanengine --input-type=module -e '
+  import { accessSync, constants } from "node:fs";
+  try {
+    if (process.getuid() !== 1000) throw new Error("unexpected_uid");
+    for (const path of ["/app/data", "/app/authority"])
+      accessSync(path, constants.R_OK | constants.W_OK | constants.X_OK);
+    accessSync("/app/data/humanengine.sqlite", constants.R_OK | constants.W_OK);
+    console.log("Volume access precheck passed; service must remain stopped for enrollment.");
+  } catch {
+    console.error("Volume access precheck failed; keep the service stopped and review only the intended mounts and permissions.");
+    process.exitCode = 1;
+  }
+'
+```
+
+If this fails, stop. An administrator may correct ownership/permissions only on
+the precisely identified live bound directory and the files it actually needs;
+do not run an unreviewed recursive ownership change on a parent directory. Do
+not run the application as root, loosen the read-only/capability/security flags,
+replace the data bind, or delete the database/authority as a workaround.
+
+Only after the backup, permission check and current-live pre-gate identity review
+are satisfied, run the acknowledged one-shot enrollment:
+
+```sh
+docker compose run --rm --no-deps --entrypoint node humanengine \
+  .output/server/recovery-authority.mjs enroll \
+  /app/data/humanengine.sqlite /app/authority \
+  --current-live-database-not-a-backup
+```
+
+On a nonzero exit keep everything stopped and preserve the error code and both
+stores; do not automatically retry after removing anything. On success, restart
+only this service and inspect health without dumping credentials:
+
+```sh
+docker compose up -d --no-deps --no-build humanengine
+docker compose ps humanengine
+```
+
+Enrollment is not a migration path for an already enrolled database whose
+original authority is missing or mismatched. Restart can reconnect previously
+enabled adapters, so review connection settings before returning it to service.
+This sequence never requires `docker compose down --volumes` or a new data volume.
 
 ## Model admission after every restore
 

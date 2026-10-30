@@ -12,7 +12,10 @@ for the full boundaries.
 2. **Retain independent authority custody.** New empty stores enroll automatically.
    A pre-gate nonempty live database requires the documented deliberate offline
    `scripts/recovery-authority.ts enroll DATABASE AUTHORITY_DIRECTORY --current-live-database-not-a-backup`
-   command. Never enroll an old snapshot or replace the independent current head
+   command. Container operators use the bundled
+   `.output/server/recovery-authority.mjs` through the documented
+   [one-shot stopped-service procedure](recovery-authority.md#one-time-upgrade-of-a-pre-gate-live-database),
+   not `docker exec` or a new Compose project with fresh volumes. Never enroll an old snapshot or replace the independent current head
    with a matching older copy. Missing trustworthy authority is a stop condition.
 3. **Make and verify a supported backup.** Use
    `node --import tsx scripts/backup.ts DATABASE MEDIA_ROOT NEW_BACKUP_DIRECTORY`.

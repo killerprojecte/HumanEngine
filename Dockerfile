@@ -8,6 +8,8 @@ COPY package.json package-lock.json ./
 # Root postinstall needs the Nuxt configuration, so install after copying safe sources.
 COPY . .
 RUN npm ci && npm run check && npm run build
+# npm build also emits the offline recovery-authority.mjs maintenance entrypoint.
+RUN test -s .output/server/recovery-authority.mjs
 # Supplement tracing only for native runtime packages and dynamically selected binaries.
 # No full project dependency tree: Nuxt development/server tooling stays in the build stage.
 RUN node --input-type=module -e "import {cpSync} from 'node:fs'; for(const p of ['better-sqlite3','sqlite-vec','sqlite-vec-linux-'+process.arch,'sharp','@img','detect-libc','semver']) cpSync('node_modules/'+p,'.output/server/node_modules/'+p,{recursive:true})"

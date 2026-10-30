@@ -133,7 +133,10 @@ onBeforeUnmount(clear)
 <template>
   <section class="mt-6 space-y-3 rounded-lg border border-default p-4">
     <h3 class="font-semibold">{{ t('smTitle') }}</h3>
-    <p class="text-sm text-muted">{{ t('smHelp') }}</p>
+    <details class="text-xs text-muted">
+      <summary class="cursor-pointer w-fit">{{ t('mxAboutView') }}</summary>
+      <p class="mt-2 max-w-3xl leading-5">{{ t('smHelp') }}</p>
+    </details>
     <label
       >{{ t('knScene')
       }}<select v-model="sceneId" class="ml-2 rounded border border-default bg-default p-2">
@@ -224,7 +227,7 @@ onBeforeUnmount(clear)
             >{{ t('smReject') }}</UButton
           >
         </div>
-        <details open>
+        <details>
           <summary>{{ t('smDeclarations') }}</summary>
           <p class="text-sm text-muted">{{ t('smProofHelp') }}</p>
           <article

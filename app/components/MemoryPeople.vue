@@ -156,7 +156,10 @@ defineExpose({ refresh: loadPeople })
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h2 class="font-semibold">{{ t('mpTitle') }}</h2>
-        <p class="text-sm text-muted mt-1">{{ t('mpHelp') }}</p>
+        <details class="text-xs text-muted">
+          <summary class="cursor-pointer w-fit">{{ t('mxAboutView') }}</summary>
+          <p class="mt-2 max-w-3xl leading-5">{{ t('mpHelp') }}</p>
+        </details>
       </div>
       <UButton
         icon="i-lucide-refresh-cw"

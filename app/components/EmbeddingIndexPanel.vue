@@ -1,17 +1,68 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
-const props = defineProps<{ configBusy: boolean }>()
+import {
+  embeddingIndexActions,
+  type EmbeddingIndexAction as Action,
+} from '~/utils/embedding-index-actions'
+const props = defineProps<{ configBusy: boolean; compact?: boolean }>()
 const { t } = useI18n()
 const { client } = useApi()
 type Status = components['schemas']['EmbeddingIndexStatus']
-type Action = 'start' | 'pause' | 'cancel' | 'resume'
 const status = ref<Status>(),
   busy = ref(false),
   error = ref(''),
   uncertain = ref(false)
+const confirmationAction = ref<Action>('start')
 const pending = ref<Action>(),
-  confirmUnknown = ref(false)
+  confirmUnknown = ref(false),
+  detailsOpen = ref(false)
 const actionLocked = computed(() => busy.value || props.configBusy || uncertain.value)
+const availableActions = computed(() => embeddingIndexActions(status.value))
+const activeJob = computed(() =>
+  status.value?.job && ['running', 'paused', 'failed'].includes(status.value.job.state)
+    ? status.value.job
+    : undefined,
+)
+const actionLabels: Record<Action, string> = {
+  start: 'eiStart',
+  pause: 'eiPause',
+  resume: 'eiResume',
+  cancel: 'eiCancelJob',
+}
+const actionIcons: Record<Action, string> = {
+  start: 'i-lucide-refresh-cw',
+  pause: 'i-lucide-pause',
+  resume: 'i-lucide-play',
+  cancel: 'i-lucide-circle-x',
+}
+const menuItems = computed(() =>
+  [
+    availableActions.value.map((action) => ({
+      label: t(actionLabels[action]),
+      icon: actionIcons[action],
+      disabled: actionLocked.value,
+      onSelect: () => request(action),
+    })),
+    [
+      {
+        label: t('eiDetails'),
+        icon: 'i-lucide-info',
+        disabled: !status.value,
+        onSelect: () => {
+          detailsOpen.value = true
+        },
+      },
+      {
+        label: t('refresh'),
+        icon: 'i-lucide-refresh-cw',
+        disabled: busy.value,
+        onSelect: () => {
+          void refresh()
+        },
+      },
+    ],
+  ].filter((group) => group.length),
+)
 let disposed = false
 let refreshQueued = false
 let timer: ReturnType<typeof setInterval> | undefined
@@ -33,14 +84,18 @@ async function refresh() {
       pending.value = undefined
     }
   } catch {
-    if (!disposed) error.value = t('networkError')
+    if (!disposed) {
+      error.value = t('networkError')
+      uncertain.value = true
+    }
   } finally {
     busy.value = false
     if (refreshQueued && !disposed) void refresh()
   }
 }
 function request(action: Action) {
-  if (actionLocked.value) return
+  if (actionLocked.value || !availableActions.value.includes(action)) return
+  confirmationAction.value = action
   pending.value = action
   confirmUnknown.value = false
 }
@@ -49,6 +104,7 @@ async function execute() {
   if (
     !action ||
     actionLocked.value ||
+    !availableActions.value.includes(action) ||
     (action === 'resume' && status.value?.job?.requiresRetryConfirmation && !confirmUnknown.value)
   )
     return
@@ -97,116 +153,199 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <section class="rounded-lg border border-default p-4 space-y-3" :aria-label="t('eiTitle')">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <h2 class="font-semibold">{{ t('eiTitle') }}</h2>
-      <UButton variant="ghost" color="neutral" :disabled="busy" :loading="busy" @click="refresh">{{
+  <section
+    :class="
+      props.compact
+        ? 'inline-flex min-w-0 items-center'
+        : 'rounded-lg border border-default bg-default'
+    "
+    :aria-label="t('eiTitle')"
+  >
+    <div
+      :class="
+        props.compact
+          ? 'inline-flex items-center'
+          : 'flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5'
+      "
+    >
+      <div
+        v-if="!props.compact"
+        class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5"
+      >
+        <h2 class="text-sm font-semibold">{{ t('eiTitle') }}</h2>
+        <UBadge
+          v-if="status"
+          size="sm"
+          :color="status.state === 'needs_rebuild' ? 'warning' : 'neutral'"
+          variant="subtle"
+          >{{ t(`eiState_${status.state}`) }}</UBadge
+        >
+        <span v-else-if="busy" role="status" class="text-xs text-muted">{{ t('uxLoading') }}</span>
+        <span v-if="status" class="text-xs text-muted tabular">{{
+          t('eiCoverage', status.coverage)
+        }}</span>
+      </div>
+      <UDropdownMenu :items="menuItems" :content="{ align: 'end' }">
+        <template v-if="props.compact && error" #content-top
+          ><p role="alert" class="max-w-64 p-2 text-xs text-warning">{{ error }}</p></template
+        >
+        <UButton
+          :color="
+            props.compact && (status?.state === 'needs_rebuild' || error) ? 'warning' : 'neutral'
+          "
+          :variant="props.compact ? 'outline' : 'ghost'"
+          :size="props.compact ? 'md' : 'sm'"
+          :ui="props.compact ? { leadingIcon: 'hidden sm:block' } : {}"
+          :icon="
+            props.compact ? (error ? 'i-lucide-circle-alert' : 'i-lucide-database') : undefined
+          "
+          trailing-icon="i-lucide-chevron-down"
+          :loading="busy"
+          :aria-label="`${t('eiTitle')} · ${t('mcActions')}`"
+          ><template v-if="props.compact"
+            ><span>{{
+              activeJob
+                ? t(`eiJob_${activeJob.state}`)
+                : status?.state === 'needs_rebuild'
+                  ? t('eiNeedsAction')
+                  : t('eiIndexMenu')
+            }}</span
+            ><span v-if="activeJob" class="text-xs tabular"
+              >{{ activeJob.processed }}/{{ activeJob.total }}</span
+            ></template
+          ><template v-else>{{ t('mcActions') }}</template></UButton
+        >
+        <template v-if="props.compact && activeJob?.state === 'running'" #content-bottom
+          ><div class="px-2 py-1">
+            <UProgress
+              :model-value="activeJob.total ? activeJob.processed : null"
+              :max="activeJob.total || 100"
+              :aria-label="t('eiJob_running')"
+              size="xs"
+            /></div
+        ></template>
+      </UDropdownMenu>
+    </div>
+    <div
+      v-if="activeJob && !props.compact"
+      class="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-default px-3 py-2 text-xs"
+    >
+      <span class="tabular" role="status">{{
+        t('eiJob', {
+          state: t(`eiJob_${activeJob.state}`),
+          processed: activeJob.processed,
+          total: activeJob.total,
+        })
+      }}</span>
+      <UProgress
+        v-if="activeJob.state === 'running'"
+        :model-value="activeJob.total ? activeJob.processed : null"
+        :max="activeJob.total || 100"
+        :aria-label="t('eiJob_running')"
+        size="xs"
+        class="w-28"
+      />
+      <span v-if="activeJob.error" class="min-w-0 break-words text-warning">{{
+        activeJob.error
+      }}</span>
+      <span
+        v-if="activeJob.requiresRetryConfirmation && activeJob.state !== 'running'"
+        class="text-warning"
+        >{{ t('eiUnknownWarning') }}</span
+      >
+    </div>
+    <div
+      v-if="error && !props.compact"
+      class="flex flex-wrap items-center gap-2 border-t border-default px-3 py-2 text-xs text-warning"
+      role="alert"
+    >
+      <span class="min-w-0 flex-1">{{ error }}</span>
+      <UButton size="xs" color="neutral" variant="link" :disabled="busy" @click="refresh">{{
         t('refresh')
       }}</UButton>
     </div>
-    <p class="text-sm text-muted">{{ t('eiHelp') }}</p>
-    <UAlert v-if="error" color="warning" :title="error" />
-    <template v-if="status">
-      <p class="text-sm font-medium">{{ t(`eiState_${status.state}`) }}</p>
-      <p v-if="status.selected" class="text-sm break-all">
-        {{
-          t('eiSelected', {
-            model: status.selected.modelId,
-            dimensions: status.selected.requestedDimensions ?? t('eiNative'),
-          })
-        }}
-      </p>
-      <p class="text-sm">{{ t('eiCoverage', status.coverage) }}</p>
-      <p v-if="status.active" class="text-xs break-all">
-        {{
-          t('eiActive', {
-            model: status.active.modelId,
-            dimensions: status.active.dimensions,
-            generation: status.active.generationId,
-          })
-        }}
-      </p>
-      <p class="text-xs text-muted">{{ t('eiRetained', status.retained) }}</p>
-      <div v-if="status.job" class="rounded border border-default p-3 space-y-2">
-        <p class="text-sm">
-          {{
-            t('eiJob', {
-              state: t(`eiJob_${status.job.state}`),
-              processed: status.job.processed,
-              total: status.job.total,
-            })
-          }}
-        </p>
-        <p class="text-xs break-all">
-          {{ t('eiStaging') }}: {{ status.job.id }} ·
-          {{ status.job.dimensions ?? t('eiAwaitingDimensions') }}
-        </p>
-        <p v-if="status.job.error" class="text-xs break-all">{{ status.job.error }}</p>
-        <p
-          v-if="
-            status.job.requiresRetryConfirmation && ['paused', 'failed'].includes(status.job.state)
-          "
-          class="text-sm text-warning"
-        >
-          {{ t('eiUnknownWarning') }}
-        </p>
-      </div>
-      <div class="flex flex-wrap gap-2">
+    <UModal
+      v-model:open="detailsOpen"
+      :title="t('eiDetails')"
+      :description="t('eiHelp')"
+      :ui="{ content: 'max-w-xl', body: 'space-y-4 overflow-y-auto' }"
+    >
+      <template #body>
+        <template v-if="status">
+          <p class="text-sm font-medium">{{ t(`eiState_${status.state}`) }}</p>
+          <p v-if="status.selected" class="text-sm break-all">
+            {{
+              t('eiSelected', {
+                model: status.selected.modelId,
+                dimensions: status.selected.requestedDimensions ?? t('eiNative'),
+              })
+            }}
+          </p>
+          <p class="text-sm">{{ t('eiCoverage', status.coverage) }}</p>
+          <p v-if="status.active" class="text-xs break-all">
+            {{
+              t('eiActive', {
+                model: status.active.modelId,
+                dimensions: status.active.dimensions,
+                generation: status.active.generationId,
+              })
+            }}
+          </p>
+          <p class="text-xs text-muted">{{ t('eiRetained', status.retained) }}</p>
+          <div v-if="status.job" class="space-y-2 border-t border-default pt-3 text-xs">
+            <p>
+              {{
+                t('eiJob', {
+                  state: t(`eiJob_${status.job.state}`),
+                  processed: status.job.processed,
+                  total: status.job.total,
+                })
+              }}
+            </p>
+            <p class="break-all">
+              {{ t('eiStaging') }}: {{ status.job.id }} ·
+              {{ status.job.dimensions ?? t('eiAwaitingDimensions') }}
+            </p>
+            <p v-if="status.job.error" class="break-all text-warning">{{ status.job.error }}</p>
+          </div>
+        </template>
+      </template>
+    </UModal>
+    <UModal
+      :open="!!pending"
+      :title="t(actionLabels[confirmationAction])"
+      :description="
+        confirmationAction === 'start'
+          ? `${t('eiChargeConfirm')} ${t('eiReplacePaused')}`
+          : confirmationAction === 'resume'
+            ? t('eiChargeConfirm')
+            : t('eiStopConfirm')
+      "
+      :dismissible="!busy"
+      :close="!busy"
+      :ui="{ content: 'max-w-lg', footer: 'justify-end' }"
+      @update:open="
+        (open) => {
+          if (!open && !busy) pending = undefined
+        }
+      "
+    >
+      <template v-if="pending === 'resume' && status?.job?.requiresRetryConfirmation" #body>
+        <UCheckbox v-model="confirmUnknown" :label="t('eiUnknownConfirm')" />
+      </template>
+      <template #footer>
+        <UButton variant="ghost" color="neutral" :disabled="busy" @click="pending = undefined">{{
+          t('cancel')
+        }}</UButton>
         <UButton
           :disabled="
-            actionLocked || status.state === 'unconfigured' || status.job?.state === 'running'
+            actionLocked ||
+            (pending === 'resume' && status?.job?.requiresRetryConfirmation && !confirmUnknown)
           "
-          @click="request('start')"
-          >{{ t('eiStart') }}</UButton
+          @click="execute"
+          >{{ t(confirmationAction === 'start' ? 'eiConfirmRebuild' : 'eiConfirm') }}</UButton
         >
-        <UButton
-          v-if="status.job?.state === 'running'"
-          variant="outline"
-          :disabled="actionLocked"
-          @click="request('pause')"
-          >{{ t('eiPause') }}</UButton
-        >
-        <UButton
-          v-if="status.job && ['paused', 'failed'].includes(status.job.state)"
-          variant="outline"
-          :disabled="actionLocked"
-          @click="request('resume')"
-          >{{ t('eiResume') }}</UButton
-        >
-        <UButton
-          v-if="status.job && ['running', 'paused', 'failed'].includes(status.job.state)"
-          color="warning"
-          variant="outline"
-          :disabled="actionLocked"
-          @click="request('cancel')"
-          >{{ t('eiCancelJob') }}</UButton
-        >
-      </div>
-      <div v-if="pending" class="border border-warning rounded p-3 space-y-3">
-        <p class="text-sm">
-          {{
-            pending === 'start' || pending === 'resume' ? t('eiChargeConfirm') : t('eiStopConfirm')
-          }}
-        </p>
-        <UCheckbox
-          v-if="pending === 'resume' && status.job?.requiresRetryConfirmation"
-          v-model="confirmUnknown"
-          :label="t('eiUnknownConfirm')"
-        />
-        <div class="flex gap-2">
-          <UButton
-            :disabled="
-              actionLocked ||
-              (pending === 'resume' && status.job?.requiresRetryConfirmation && !confirmUnknown)
-            "
-            @click="execute"
-            >{{ t('eiConfirm') }}</UButton
-          >
-          <UButton variant="ghost" color="neutral" :disabled="busy" @click="pending = undefined">{{
-            t('cancel')
-          }}</UButton>
-        </div>
-      </div>
-    </template>
+      </template>
+    </UModal>
   </section>
 </template>

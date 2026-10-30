@@ -132,7 +132,10 @@ onBeforeUnmount(() => {
 <template>
   <section class="rounded-lg border border-default p-4 space-y-3">
     <h2 class="font-semibold">{{ t('mrTitle') }}</h2>
-    <p class="text-sm text-muted">{{ t('mrHelp') }}</p>
+    <details class="text-xs text-muted">
+      <summary class="cursor-pointer w-fit">{{ t('mxAboutView') }}</summary>
+      <p class="mt-2 max-w-3xl leading-5">{{ t('mrHelp') }}</p>
+    </details>
     <div class="flex flex-wrap gap-2">
       <select
         v-model="sceneId"

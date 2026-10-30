@@ -190,8 +190,14 @@ onBeforeUnmount(clear)
 <template>
   <section class="mt-6 space-y-4 rounded-lg border border-default p-4">
     <h3 class="font-semibold">{{ t('knTitle') }}</h3>
-    <p class="text-sm text-muted">{{ t('knHelp') }}</p>
-    <p class="text-sm text-muted">{{ t('knExactSeedHelp') }}</p>
+    <details class="text-xs text-muted">
+      <summary class="cursor-pointer w-fit">{{ t('mxAboutView') }}</summary>
+      <p class="mt-2 max-w-3xl leading-5">{{ t('knHelp') }}</p>
+    </details>
+    <details class="text-xs text-muted">
+      <summary class="cursor-pointer w-fit">{{ t('mxAboutView') }}</summary>
+      <p class="mt-2 max-w-3xl leading-5">{{ t('knExactSeedHelp') }}</p>
+    </details>
     <div class="flex flex-wrap items-end gap-3">
       <label
         >{{ t('knScene')

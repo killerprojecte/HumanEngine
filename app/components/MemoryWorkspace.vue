@@ -209,7 +209,10 @@ onBeforeUnmount(() => {
 <template>
   <section class="rounded border border-default p-4 space-y-3">
     <h2 class="font-semibold">{{ t('wwTitle') }}</h2>
-    <p class="text-sm text-muted">{{ t('wwHelp') }}</p>
+    <details class="text-xs text-muted">
+      <summary class="cursor-pointer w-fit">{{ t('mxAboutView') }}</summary>
+      <p class="mt-2 max-w-3xl leading-5">{{ t('wwHelp') }}</p>
+    </details>
     <div class="flex flex-wrap gap-2">
       <select
         v-if="!props.sceneId"
@@ -229,9 +232,24 @@ onBeforeUnmount(() => {
       /><UButton variant="outline" :disabled="busy || !scene || !authenticated" @click="load">{{
         t('refresh')
       }}</UButton
-      ><UButton variant="outline" :disabled="busy || !scene || !authenticated" @click="rebuild">{{
-        t('wwRefreshCandidates')
-      }}</UButton>
+      ><UDropdownMenu
+        :items="[
+          {
+            label: t('wwRefreshCandidates'),
+            icon: 'i-lucide-list-restart',
+            disabled: busy || !scene || !authenticated,
+            onSelect: rebuild,
+          },
+        ]"
+      >
+        <UButton
+          variant="ghost"
+          color="neutral"
+          icon="i-lucide-ellipsis"
+          :aria-label="t('mcActions')"
+          :disabled="busy || !scene || !authenticated"
+        />
+      </UDropdownMenu>
     </div>
     <p v-if="!authenticated">{{ t('mpSignIn') }}</p>
     <p v-if="busy" role="status">{{ t('uxLoading') }}</p>

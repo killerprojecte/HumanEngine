@@ -4,7 +4,7 @@ import type { components } from '~/types/api'
 type Memory = components['schemas']['Memory']
 type Scene = components['schemas']['Scene']
 const { t, locale } = useI18n()
-const { client } = useApi()
+const { client, authenticatedFetch } = useApi()
 const memories = ref<Memory[]>([]),
   scenes = ref<Scene[]>([])
 const error = ref(''),
@@ -13,7 +13,158 @@ const error = ref(''),
   saved = ref(false)
 const sceneFilter = ref('all'),
   personFilter = ref(''),
-  query = ref('')
+  query = ref(''),
+  kindFilter = ref('all'),
+  statusFilter = ref('all'),
+  page = ref(1)
+const pageSize = 20
+const recordsRegion = ref<HTMLElement>()
+const section = ref('records'),
+  knowledgeTab = ref('knowledge'),
+  activityTab = ref('commitments')
+const visited = reactive(new Set(['records']))
+watch(section, (value) => visited.add(value))
+const sections = computed(() => [
+  { label: t('mxRecords'), value: 'records', icon: 'i-lucide-search' },
+  { label: t('mxPeople'), value: 'people', icon: 'i-lucide-users' },
+  { label: t('mxKnowledge'), value: 'knowledge', icon: 'i-lucide-network' },
+  { label: t('mxRelations'), value: 'relations', icon: 'i-lucide-waypoints' },
+  { label: t('mxActivity'), value: 'activity', icon: 'i-lucide-calendar-check' },
+])
+const helpOpen = ref(false),
+  filtersOpen = ref(false)
+const people = ref<{ personId: string; displayName?: string; recordCount: number }[]>([])
+const personLabels = reactive<Record<string, Record<string, string>>>({})
+const labelRequests = new Set<string>()
+const scenePeopleRequests = new Map<
+  string,
+  Promise<{ sceneId: string; people: typeof people.value }>
+>()
+let labelQueue: string[] = [],
+  labelEpoch = 0,
+  activeLabelReads = 0,
+  labelsDisposed = false
+const peopleBusy = ref(false),
+  peopleError = ref(false)
+let peopleEpoch = 0
+const scopedPeople = computed(() => {
+  const ids = new Set(
+    memories.value.flatMap((memory) =>
+      memory.scope.kind === 'scene' &&
+      memory.scope.sceneId === currentSceneId.value &&
+      memory.scope.personId
+        ? [memory.scope.personId]
+        : [],
+    ),
+  )
+  return [...ids].map((personId) => ({
+    personId,
+    displayName: people.value.find((person) => person.personId === personId)?.displayName,
+  }))
+})
+const personOptions = computed(() => [
+  { label: t('mxAllPeople'), value: '' },
+  ...scopedPeople.value.map((person, index) => ({
+    label: person.displayName
+      ? scopedPeople.value.filter((other) => other.displayName === person.displayName).length > 1
+        ? `${person.displayName} · ${index + 1}`
+        : person.displayName
+      : t('mpUnnamed', { number: index + 1 }),
+    value: person.personId,
+  })),
+])
+function personName(memory: Memory) {
+  if (memory.scope.kind !== 'scene' || !memory.scope.personId) return ''
+  const { sceneId, personId } = memory.scope
+  return (
+    personLabels[sceneId]?.[personId] ||
+    (personId.length > 18 ? `${personId.slice(0, 8)}…${personId.slice(-4)}` : personId)
+  )
+}
+function rememberPeople(sceneId: string, rows: typeof people.value) {
+  personLabels[sceneId] = Object.fromEntries(
+    rows
+      .filter((person) => person.displayName)
+      .map((person) => [person.personId, person.displayName!]),
+  )
+}
+function readScenePeople(sceneId: string) {
+  const existing = scenePeopleRequests.get(sceneId)
+  if (existing) return existing
+  const request = (async () => {
+    const response = await authenticatedFetch(
+      `/api/memory-people?${new URLSearchParams({ sceneId })}`,
+    )
+    if (!response.ok) throw new Error('read')
+    const data = (await response.json()) as { sceneId: string; people: typeof people.value }
+    if (data.sceneId !== sceneId) throw new Error('scope')
+    return data
+  })()
+  scenePeopleRequests.set(sceneId, request)
+  void request
+    .finally(() => {
+      if (scenePeopleRequests.get(sceneId) === request) scenePeopleRequests.delete(sceneId)
+    })
+    .catch(() => {})
+  return request
+}
+function loadVisiblePersonNames() {
+  labelQueue = [
+    ...new Set(
+      pageItems.value.flatMap((memory) =>
+        memory.scope.kind === 'scene' && memory.scope.personId ? [memory.scope.sceneId] : [],
+      ),
+    ),
+  ].filter((id) => !personLabels[id] && !labelRequests.has(id))
+  pumpPersonLabels()
+}
+function pumpPersonLabels() {
+  if (labelsDisposed) return
+  // One shared queue bounds overlapping page/filter changes, not just one request batch.
+  while (activeLabelReads < 4 && labelQueue.length) {
+    const sceneId = labelQueue.shift()!
+    if (personLabels[sceneId] || labelRequests.has(sceneId)) continue
+    labelRequests.add(sceneId)
+    const epoch = labelEpoch
+    activeLabelReads++
+    void (async () => {
+      try {
+        const data = await readScenePeople(sceneId)
+        if (!labelsDisposed && epoch === labelEpoch && data.sceneId === sceneId)
+          rememberPeople(sceneId, data.people)
+      } catch {
+        /* A missing label never hides an administration record or changes its scope. */
+      } finally {
+        activeLabelReads--
+        pumpPersonLabels()
+      }
+    })()
+  }
+}
+async function loadPeople() {
+  const epoch = ++peopleEpoch
+  people.value = []
+  peopleError.value = false
+  peopleBusy.value = false
+  if (!currentSceneId.value) return
+  peopleBusy.value = true
+  const requestedScene = currentSceneId.value
+  try {
+    const data = await readScenePeople(requestedScene)
+    if (epoch === peopleEpoch) {
+      people.value = data.people
+      rememberPeople(requestedScene, data.people)
+    }
+  } catch {
+    if (epoch === peopleEpoch) peopleError.value = true
+  } finally {
+    if (epoch === peopleEpoch) peopleBusy.value = false
+  }
+}
+watch([sceneFilter, kindFilter, statusFilter, personFilter, query], () => {
+  page.value = 1
+})
+watch(sceneFilter, loadPeople)
 const modalOpen = ref(false),
   mode = ref<'view' | 'edit' | 'new'>('view'),
   selectedId = ref('')
@@ -102,11 +253,86 @@ const visible = computed(() =>
           scope.kind === 'scene' &&
           scope.sceneId === currentSceneId.value &&
           scope.personId === personFilter.value.trim())) &&
+      (kindFilter.value === 'all' || memory.kind === kindFilter.value) &&
+      (statusFilter.value === 'all' || memory.status === statusFilter.value) &&
       (!query.value.trim() ||
         memory.content.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase()))
     )
   }),
 )
+const ordered = computed(() =>
+  [...visible.value].sort((a, b) => b.learnedAt.localeCompare(a.learnedAt)),
+)
+const pageCount = computed(() => Math.max(1, Math.ceil(ordered.value.length / pageSize)))
+const pageItems = computed(() =>
+  ordered.value.slice((page.value - 1) * pageSize, page.value * pageSize),
+)
+watch(pageItems, () => {
+  void loadVisiblePersonNames()
+})
+watch(pageCount, (count) => {
+  if (page.value > count) page.value = count
+})
+watch(page, async () => {
+  if (section.value !== 'records' || modalOpen.value || filtersOpen.value) return
+  const fromPagination = !!document.activeElement?.closest('[data-memory-pagination]')
+  await nextTick()
+  recordsRegion.value?.scrollIntoView({ block: 'start', behavior: 'auto' })
+  if (fromPagination) recordsRegion.value?.focus({ preventScroll: true })
+})
+const filtersActive = computed(
+  () =>
+    !!query.value ||
+    sceneFilter.value !== 'all' ||
+    kindFilter.value !== 'all' ||
+    statusFilter.value !== 'all' ||
+    !!personFilter.value,
+)
+const scopeFilterOptions = computed(() => [
+  { label: t('mmAllScopes'), value: 'all' },
+  { label: t('memoryPublic'), value: 'public' },
+  ...sceneOptions.value.map((scene) => ({ label: scene.label, value: `scene:${scene.value}` })),
+])
+const kindFilterOptions = computed(() => [
+  { label: t('mxAllKinds'), value: 'all' },
+  ...['fact', 'claim', 'term', 'experience', 'summary'].map((value) => ({
+    label: t(`memoryKind_${value}`),
+    value,
+  })),
+])
+const statusFilterOptions = computed(() => [
+  { label: t('mxAllStatuses'), value: 'all' },
+  ...['active', 'disputed', 'superseded', 'invalidated'].map((value) => ({
+    label: t(`memoryStatus_${value}`),
+    value,
+  })),
+])
+const filterChips = computed(() => [
+  ...(sceneFilter.value !== 'all' ? [activeScopeLabel.value] : []),
+  ...(kindFilter.value !== 'all' ? [t(`memoryKind_${kindFilter.value}`)] : []),
+  ...(statusFilter.value !== 'all' ? [t(`memoryStatus_${statusFilter.value}`)] : []),
+  ...(personFilter.value
+    ? [
+        personOptions.value.find((person) => person.value === personFilter.value)?.label ??
+          personFilter.value,
+      ]
+    : []),
+])
+function focusAfterFilters(event: Event) {
+  const trigger = recordsRegion.value?.querySelector<HTMLElement>('[data-memory-filter-trigger]')
+  if (!trigger?.getClientRects().length) {
+    // Rotation can hide the mobile trigger while its sheet is still open.
+    event.preventDefault()
+    recordsRegion.value?.focus({ preventScroll: true })
+  }
+}
+function resetFilters() {
+  query.value = ''
+  sceneFilter.value = 'all'
+  kindFilter.value = 'all'
+  statusFilter.value = 'all'
+  personFilter.value = ''
+}
 const canSave = computed(
   () =>
     !!draft.value.content.trim() &&
@@ -141,6 +367,15 @@ async function load(reconcile = false) {
     ])
     if (!records.data || !places.data)
       throw new Error(records.error?.error ?? places.error?.error ?? t('networkError'))
+    labelEpoch++
+    labelQueue = []
+    labelRequests.clear()
+    scenePeopleRequests.clear()
+    peopleEpoch++
+    people.value = []
+    peopleBusy.value = false
+    if (currentSceneId.value) void loadPeople()
+    for (const key of Object.keys(personLabels)) delete personLabels[key]
     memories.value = records.data
     scenes.value = places.data
     loaded.value = true
@@ -260,6 +495,10 @@ onMounted(() => {
   window.addEventListener('beforeunload', warnBeforeUnload)
 })
 onBeforeUnmount(() => {
+  labelsDisposed = true
+  labelEpoch++
+  peopleEpoch++
+  labelQueue = []
   pendingNavigation?.(false)
   window.removeEventListener('beforeunload', warnBeforeUnload)
 })
@@ -306,6 +545,9 @@ async function save() {
         record.scope.kind === 'sharedPublicKnowledge' ? 'public' : `scene:${record.scope.sceneId}`
       personFilter.value = ''
       query.value = ''
+      kindFilter.value = 'all'
+      statusFilter.value = 'all'
+      section.value = 'records'
     } else if (original) {
       const patch: { content?: string; status?: Memory['status']; locked?: boolean } = {}
       if (draft.value.content.trim() !== original.content)
@@ -404,36 +646,69 @@ function date(value: string) {
 }
 </script>
 <template>
-  <div class="space-y-5">
-    <header class="flex items-start justify-between gap-4">
-      <div>
+  <div class="memory-page space-y-2 sm:space-y-4 min-w-0">
+    <header class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-3">
+      <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
         <h1 class="page-heading">{{ t('memoryTitle') }}</h1>
-        <p class="text-sm text-muted">{{ t('memoryLearningHelp') }}</p>
-        <p class="mt-2 text-sm text-muted">{{ t('memoryHelp') }}</p>
+        <UBadge
+          v-if="loaded"
+          color="neutral"
+          variant="subtle"
+          class="tabular"
+          :aria-label="t('mxTotal', { count: memories.length })"
+          ><span class="sm:hidden">{{ memories.length }}</span
+          ><span class="hidden sm:inline">{{
+            t('mxTotal', { count: memories.length })
+          }}</span></UBadge
+        >
       </div>
-      <div class="flex gap-2 shrink-0">
+      <div class="flex shrink-0 items-center gap-1 sm:gap-2">
         <UButton
+          v-if="section === 'records'"
+          class="hidden sm:inline-flex"
           variant="ghost"
           color="neutral"
           icon="i-lucide-refresh-cw"
           :aria-label="t('refresh')"
           :disabled="busy || modalOpen"
+          :loading="busy"
           @click="load()"
-        /><UButton
+        />
+        <EmbeddingIndexPanel :config-busy="busy" compact />
+        <UDropdownMenu
+          :items="[
+            {
+              label: t('refresh'),
+              icon: 'i-lucide-refresh-cw',
+              class: 'sm:hidden',
+              disabled: busy || modalOpen || section !== 'records',
+              onSelect: () => load(),
+            },
+            {
+              label: t('mxGuide'),
+              icon: 'i-lucide-circle-help',
+              onSelect: () => (helpOpen = true),
+            },
+          ]"
+        >
+          <UButton
+            variant="outline"
+            color="neutral"
+            icon="i-lucide-ellipsis"
+            class="min-w-11 sm:min-w-0 justify-center"
+            :aria-label="t('mcActions')"
+          />
+        </UDropdownMenu>
+        <UButton
           icon="i-lucide-plus"
+          class="min-w-11 sm:min-w-0 justify-center"
+          :aria-label="t('mxCreate')"
           :disabled="busy || !loaded || recoveryRequired"
           @click="begin()"
-          >{{ t('memoryCreate') }}</UButton
+          ><span class="hidden sm:inline">{{ t('mxCreate') }}</span></UButton
         >
       </div>
     </header>
-    <MemoryPeople :scenes="scenes" />
-    <KnowledgePanel :scenes="scenes" />
-    <SemanticPanel :scenes="scenes" />
-    <MemoryRelations :scenes="scenes" />
-    <MemoryExperience :scenes="scenes" />
-    <MemoryCommitments :scenes="scenes" />
-    <MemoryWorkspace :scenes="scenes" />
     <UAlert v-if="error && !modalOpen" color="error" :title="error" /><UAlert
       v-if="saved"
       color="success"
@@ -455,108 +730,370 @@ function date(value: string) {
         >{{ t('mrReload') }}</UButton
       >
     </div>
-    <section class="surface overflow-hidden">
-      <div class="p-4 border-b border-default space-y-4">
-        <div
-          class="grid grid-cols-1 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 items-start"
+    <UTabs
+      v-model="section"
+      :items="sections.map((item) => ({ ...item, slot: item.value }))"
+      :unmount-on-hide="false"
+      variant="link"
+      :ui="{
+        list: 'memory-tabs-list overflow-x-auto overflow-y-hidden flex-nowrap w-full',
+        trigger: 'shrink-0',
+        content: 'min-w-0 pt-1 sm:pt-2',
+      }"
+      :aria-label="t('mxNavigation')"
+    >
+      <template #records>
+        <section
+          ref="recordsRegion"
+          tabindex="-1"
+          class="surface overflow-hidden focus:outline-none"
+          :aria-label="t('mxRecords')"
         >
-          <UFormField :label="t('memoryScope')"
-            ><USelect
-              v-model="sceneFilter"
-              :items="[
-                { label: t('mmAllScopes'), value: 'all' },
-                { label: t('memoryPublic'), value: 'public' },
-                ...sceneOptions.map((scene) => ({
-                  label: scene.label,
-                  value: `scene:${scene.value}`,
-                })),
-              ]"
-              class="w-full"
-          /></UFormField>
-          <UFormField :label="t('memoryPerson')"
-            ><UInput
-              v-model="personFilter"
-              :disabled="!currentSceneId"
-              :placeholder="t(currentSceneId ? 'memoryPersonFilter' : 'mmChooseSceneFirst')"
-              class="w-full"
-          /></UFormField>
-          <UFormField :label="t('mmSearch')"
-            ><UInput
-              v-model="query"
-              icon="i-lucide-search"
-              :placeholder="t('memorySearch')"
-              class="w-full"
-          /></UFormField>
-        </div>
-        <div class="flex flex-wrap items-start justify-between gap-2 text-xs">
-          <p class="text-muted break-words">
-            <span class="font-medium text-default">{{ t('mmCurrentScope') }}</span>
-            {{ activeScopeLabel
-            }}<span v-if="currentSceneId && personFilter.trim()">
-              · {{ t('memoryPerson') }}: {{ personFilter.trim() }}</span
+          <div class="p-3 border-b border-default space-y-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <UInput
+                v-model="query"
+                icon="i-lucide-search"
+                :placeholder="t('memorySearch')"
+                :aria-label="t('mmSearch')"
+                class="min-w-0 sm:min-w-52 flex-1"
+              />
+              <USlideover
+                v-model:open="filtersOpen"
+                :content="{ onCloseAutoFocus: focusAfterFilters }"
+                side="bottom"
+                :title="t('mxFilters')"
+                :ui="{
+                  content: 'max-h-[85dvh] rounded-t-xl',
+                  header: 'p-4 shrink-0',
+                  body: 'p-4 min-h-0 overflow-y-auto space-y-4',
+                  footer: 'p-4 shrink-0 justify-between',
+                }"
+              >
+                <UButton
+                  class="sm:hidden shrink-0"
+                  data-memory-filter-trigger
+                  icon="i-lucide-sliders-horizontal"
+                  color="neutral"
+                  variant="outline"
+                  :aria-label="t('mxFilters')"
+                  >{{ t('mxFilters')
+                  }}<span v-if="filterChips.length" class="tabular">{{
+                    filterChips.length
+                  }}</span></UButton
+                >
+                <template #body>
+                  <UFormField :label="t('memoryScope')"
+                    ><USelect
+                      v-model="sceneFilter"
+                      :items="scopeFilterOptions"
+                      :aria-label="t('memoryScope')"
+                      class="w-full"
+                  /></UFormField>
+                  <UFormField :label="t('memoryKind')"
+                    ><USelect
+                      v-model="kindFilter"
+                      :items="kindFilterOptions"
+                      :aria-label="t('memoryKind')"
+                      class="w-full"
+                  /></UFormField>
+                  <UFormField :label="t('memoryStatus')"
+                    ><USelect
+                      v-model="statusFilter"
+                      :items="statusFilterOptions"
+                      :aria-label="t('memoryStatus')"
+                      class="w-full"
+                  /></UFormField>
+                  <UFormField v-if="currentSceneId" :label="t('mxPersonFilter')">
+                    <select
+                      v-model="personFilter"
+                      :disabled="peopleBusy"
+                      :aria-label="t('mxPersonFilter')"
+                      class="rounded-md border border-default bg-default px-3 py-2 w-full text-sm"
+                    >
+                      <option
+                        v-for="person in personOptions"
+                        :key="person.value"
+                        :value="person.value"
+                      >
+                        {{ person.label }}
+                      </option>
+                    </select>
+                    <UButton
+                      v-if="peopleError"
+                      variant="link"
+                      color="warning"
+                      @click="loadPeople"
+                      >{{ t('mpRetry') }}</UButton
+                    >
+                  </UFormField>
+                </template>
+                <template #footer>
+                  <UButton
+                    color="neutral"
+                    variant="ghost"
+                    :disabled="!filtersActive"
+                    @click="resetFilters"
+                    >{{ t('mxClearFilters') }}</UButton
+                  >
+                  <UButton @click="filtersOpen = false">{{
+                    t('mxShowResults', { count: visible.length })
+                  }}</UButton>
+                </template>
+              </USlideover>
+              <USelect
+                v-model="sceneFilter"
+                :items="scopeFilterOptions"
+                :aria-label="t('memoryScope')"
+                class="hidden sm:flex w-52"
+              />
+              <USelect
+                v-model="kindFilter"
+                :items="kindFilterOptions"
+                :aria-label="t('memoryKind')"
+                class="hidden sm:flex w-32"
+              />
+              <USelect
+                v-model="statusFilter"
+                :items="statusFilterOptions"
+                :aria-label="t('memoryStatus')"
+                class="hidden sm:flex w-32"
+              />
+              <UButton
+                v-if="filtersActive"
+                class="hidden sm:inline-flex"
+                variant="ghost"
+                color="neutral"
+                icon="i-lucide-filter-x"
+                :aria-label="t('mxClearFilters')"
+                @click="resetFilters"
+              />
+            </div>
+            <div
+              v-if="filtersActive"
+              class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted"
             >
-          </p>
-          <span class="text-muted tabular shrink-0">{{
-            t('mmCount', { count: visible.length, total: memories.length })
-          }}</span>
-        </div>
-      </div>
-      <div v-if="!loaded && busy" class="p-10 text-center text-muted text-sm">
-        {{ t('mmLoading') }}
-      </div>
-      <div v-else-if="!visible.length" class="py-12 px-6 text-center space-y-2">
-        <p class="font-medium">{{ t('memoryEmpty') }}</p>
-        <p class="text-sm text-muted">{{ t('mmEmptyHelp') }}</p>
-      </div>
-      <div v-else class="divide-y divide-default">
-        <article
-          v-for="memory in visible"
-          :key="memory.id"
-          class="p-4 sm:px-5 hover:bg-elevated/30"
-        >
-          <div class="flex items-start gap-4">
-            <div class="min-w-0 flex-1 space-y-2.5">
-              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                <span class="font-medium text-muted break-words">{{ scopeLabel(memory) }}</span
-                ><span
-                  v-if="memory.scope.kind === 'scene' && memory.scope.personId"
-                  class="text-muted break-all"
-                  >{{ t('memoryPerson') }}: {{ memory.scope.personId }}</span
-                ><UBadge
-                  size="sm"
-                  :color="memory.status === 'active' ? 'neutral' : 'warning'"
-                  variant="subtle"
-                  >{{ t(`memoryStatus_${memory.status}`) }}</UBadge
-                ><UBadge
-                  v-if="memory.lineageStatus && memory.lineageStatus !== 'verified'"
+              <div class="hidden sm:flex flex-wrap items-center gap-2 min-w-0">
+                <select
+                  v-if="currentSceneId"
+                  v-model="personFilter"
+                  :disabled="peopleBusy"
+                  :aria-label="t('mxPersonFilter')"
+                  class="rounded-md border border-default bg-default px-2 py-1.5 w-40 text-sm"
+                >
+                  <option v-for="person in personOptions" :key="person.value" :value="person.value">
+                    {{ person.label }}
+                  </option>
+                </select>
+                <UButton
+                  v-if="peopleError"
+                  variant="link"
                   color="warning"
-                  variant="subtle"
-                  >{{ t(`memoryLineage_${memory.lineageStatus}`) }}</UBadge
-                ><span v-if="memory.locked" class="inline-flex items-center gap-1 text-muted"
-                  ><UIcon name="i-lucide-lock-keyhole" class="size-3.5" />{{ t('mmLocked') }}</span
+                  size="xs"
+                  @click="loadPeople"
+                  >{{ t('mpRetry') }}</UButton
                 >
               </div>
-              <p class="text-sm leading-6 whitespace-pre-line break-words line-clamp-3">
-                {{ memory.content }}
-              </p>
-              <p class="text-xs text-muted">
-                {{ t(`memoryKind_${memory.kind}`) }} · {{ t(`memoryOrigin_${memory.origin}`) }} ·
-                {{ t('memoryConfidence') }} {{ Math.round(memory.confidence * 100) }}%
-              </p>
+              <div v-if="filterChips.length" class="flex sm:hidden flex-wrap gap-1 min-w-0">
+                <UBadge
+                  v-for="(label, index) in filterChips"
+                  :key="index"
+                  color="neutral"
+                  variant="subtle"
+                  :title="label"
+                  ><span class="truncate max-w-44">{{ label }}</span></UBadge
+                >
+              </div>
+              <span class="tabular"
+                >{{ t('mxMatchCount', { count: visible.length, total: memories.length }) }}
+                <span class="hidden sm:inline"> · {{ t('mxNewestFirst') }}</span></span
+              >
             </div>
-            <UButton
-              variant="ghost"
-              color="neutral"
-              class="shrink-0"
-              :aria-label="t('mmViewMemory')"
-              :disabled="busy || recoveryRequired"
-              @click="openDetails(memory)"
-              >{{ t('mmView') }}</UButton
-            >
           </div>
-        </article>
-      </div>
-    </section>
+          <div v-if="!loaded && busy" class="p-12 text-center text-muted text-sm" role="status">
+            {{ t('mmLoading') }}
+          </div>
+          <div v-else-if="!loaded && error" class="py-12 px-6 text-center space-y-3">
+            <UIcon name="i-lucide-wifi-off" class="size-7 text-muted" />
+            <p class="font-medium">{{ t('mxLoadFailed') }}</p>
+            <UButton variant="outline" color="neutral" @click="load()">{{ t('mpRetry') }}</UButton>
+          </div>
+          <div v-else-if="!visible.length" class="py-14 px-6 text-center space-y-3">
+            <UIcon name="i-lucide-search" class="size-8 text-dimmed" />
+            <p class="font-medium">{{ t(filtersActive ? 'mxNoMatches' : 'mxNoRecords') }}</p>
+            <p class="text-sm text-muted">
+              {{ t(filtersActive ? 'mxNoMatchesHelp' : 'mmEmptyHelp') }}
+            </p>
+            <UButton v-if="filtersActive" variant="outline" color="neutral" @click="resetFilters">{{
+              t('mxClearFilters')
+            }}</UButton>
+          </div>
+          <template v-else>
+            <div
+              class="memory-grid hidden md:grid px-4 py-2 bg-elevated/50 text-xs text-muted border-b border-default"
+            >
+              <span>{{ t('memoryContent') }}</span
+              ><span>{{ t('memoryScope') }}</span
+              ><span>{{ t('memoryKind') }}</span
+              ><span>{{ t('mmLearnedAt') }}</span
+              ><span>{{ t('memoryStatus') }}</span
+              ><span />
+            </div>
+            <div class="divide-y divide-default">
+              <article
+                v-for="memory in pageItems"
+                :key="memory.id"
+                class="memory-grid group grid px-4 py-3 hover:bg-elevated/35 items-center gap-y-2"
+                data-testid="memory-row"
+              >
+                <div class="min-w-0">
+                  <button
+                    type="button"
+                    class="memory-content-button text-left text-sm font-medium text-highlighted leading-6 line-clamp-2 break-words w-full rounded focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                    :disabled="busy || recoveryRequired"
+                    @click="openDetails(memory)"
+                  >
+                    {{ memory.content }}
+                  </button>
+                  <div class="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted mt-1">
+                    <span>{{ t(`memoryOrigin_${memory.origin}`) }}</span>
+                    <span
+                      >{{ t('memoryConfidence') }} {{ Math.round(memory.confidence * 100) }}%</span
+                    >
+                    <span v-if="memory.sources.length" class="inline-flex items-center gap-1"
+                      ><UIcon name="i-lucide-link" class="size-3" />{{
+                        t('mxSources', { count: memory.sources.length })
+                      }}</span
+                    >
+                    <span v-if="memory.locked" class="inline-flex items-center gap-1"
+                      ><UIcon name="i-lucide-lock-keyhole" class="size-3" />{{
+                        t('mmLocked')
+                      }}</span
+                    >
+                    <span
+                      v-if="memory.lineageStatus && memory.lineageStatus !== 'verified'"
+                      class="text-warning"
+                      >{{ t(`memoryLineage_${memory.lineageStatus}`) }}</span
+                    >
+                  </div>
+                </div>
+                <div class="min-w-0 text-xs text-muted">
+                  <p class="truncate" :title="scopeLabel(memory)">{{ scopeLabel(memory) }}</p>
+                  <p v-if="personName(memory)" class="truncate mt-1">{{ personName(memory) }}</p>
+                </div>
+                <div class="text-xs text-muted">{{ t(`memoryKind_${memory.kind}`) }}</div>
+                <time
+                  class="text-xs text-muted tabular"
+                  :datetime="memory.learnedAt"
+                  :title="date(memory.learnedAt)"
+                  >{{
+                    new Date(memory.learnedAt).toLocaleString(locale, {
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })
+                  }}</time
+                >
+                <div>
+                  <UBadge
+                    size="sm"
+                    :color="memory.status === 'active' ? 'neutral' : 'warning'"
+                    variant="subtle"
+                    >{{ t(`memoryStatus_${memory.status}`) }}</UBadge
+                  >
+                </div>
+                <UButton
+                  variant="ghost"
+                  color="neutral"
+                  icon="i-lucide-chevron-right"
+                  :aria-label="t('mmViewMemory')"
+                  class="memory-view-button"
+                  :disabled="busy || recoveryRequired"
+                  @click="openDetails(memory)"
+                />
+              </article>
+            </div>
+            <footer
+              data-memory-pagination
+              class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-t border-default"
+            >
+              <span class="text-xs text-muted tabular">{{
+                t('mxPageRange', {
+                  from: (page - 1) * pageSize + 1,
+                  to: Math.min(page * pageSize, visible.length),
+                  total: visible.length,
+                })
+              }}</span>
+              <UPagination
+                v-model:page="page"
+                :items-per-page="pageSize"
+                :total="visible.length"
+                :sibling-count="1"
+                size="sm"
+                :show-edges="false"
+              />
+            </footer>
+          </template>
+        </section>
+      </template>
+      <template #people
+        ><div v-if="visited.has('people')" class="memory-tool-panel">
+          <MemoryPeople :scenes="scenes" /></div
+      ></template>
+      <template #knowledge>
+        <div v-if="visited.has('knowledge')" class="memory-tool-panel">
+          <UTabs
+            v-model="knowledgeTab"
+            :unmount-on-hide="false"
+            :items="[
+              { label: t('knTitle'), value: 'knowledge', slot: 'knowledge' },
+              { label: t('smTitle'), value: 'semantics', slot: 'semantics' },
+            ]"
+            :aria-label="t('mxKnowledge')"
+          >
+            <template #knowledge><KnowledgePanel :scenes="scenes" /></template>
+            <template #semantics><SemanticPanel :scenes="scenes" /></template>
+          </UTabs>
+        </div>
+      </template>
+      <template #relations
+        ><div v-if="visited.has('relations')" class="memory-tool-panel">
+          <MemoryRelations :scenes="scenes" /></div
+      ></template>
+      <template #activity>
+        <div v-if="visited.has('activity')" class="memory-tool-panel">
+          <UTabs
+            v-model="activityTab"
+            :unmount-on-hide="false"
+            :items="[
+              { label: t('cmTitle'), value: 'commitments', slot: 'commitments' },
+              { label: t('exTitle'), value: 'experience', slot: 'experience' },
+              { label: t('wwTitle'), value: 'workspace', slot: 'workspace' },
+            ]"
+            :ui="{
+              list: 'memory-tabs-list overflow-x-auto overflow-y-hidden flex-nowrap',
+              trigger: 'shrink-0',
+            }"
+            :aria-label="t('mxActivity')"
+          >
+            <template #commitments><MemoryCommitments :scenes="scenes" /></template>
+            <template #experience><MemoryExperience :scenes="scenes" /></template>
+            <template #workspace><MemoryWorkspace :scenes="scenes" /></template>
+          </UTabs>
+        </div>
+      </template>
+    </UTabs>
+    <UModal v-model:open="helpOpen" :title="t('mxGuide')"
+      ><template #body
+        ><div class="space-y-3 text-sm text-muted">
+          <p>{{ t('memoryLearningHelp') }}</p>
+          <p>{{ t('memoryHelp') }}</p>
+          <p>{{ t('mpTimelineHelp') }}</p>
+        </div></template
+      ></UModal
+    >
     <UModal
       :open="modalOpen"
       :title="modalTitle"
@@ -645,6 +1182,18 @@ function date(value: string) {
             <div class="col-span-2">
               <dt class="text-xs text-muted">{{ t('mmLearnedAt') }}</dt>
               <dd class="mt-1">{{ date(selected.learnedAt) }}</dd>
+            </div>
+            <div
+              v-for="entry in [
+                { key: 'mpObservedTime', value: selected.observedAt },
+                { key: 'mpOccurred', value: selected.occurredAt },
+                { key: 'mpValidFrom', value: selected.validFrom },
+                { key: 'mpValidUntil', value: selected.validUntil },
+              ]"
+              :key="entry.key"
+            >
+              <dt class="text-xs text-muted">{{ t(entry.key) }}</dt>
+              <dd class="mt-1">{{ entry.value ? date(entry.value) : t('mpUnknownTime') }}</dd>
             </div>
           </dl>
           <p class="text-xs leading-5 text-muted">
@@ -917,3 +1466,48 @@ function date(value: string) {
     </UModal>
   </div>
 </template>
+
+<style scoped>
+:deep(.memory-tabs-list) {
+  scrollbar-width: none;
+}
+:deep(.memory-tabs-list::-webkit-scrollbar) {
+  display: none;
+}
+.memory-grid {
+  grid-template-columns: minmax(0, 1fr) 9rem 4.5rem 6rem 5rem 2rem;
+  column-gap: 1rem;
+}
+.memory-tool-panel {
+  min-width: 0;
+}
+.memory-tool-panel :deep(> section) {
+  margin-top: 0;
+  background: var(--ui-bg);
+}
+@media (max-width: 767px) {
+  .memory-grid {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    column-gap: 0.75rem;
+  }
+  .memory-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+  .memory-grid > :nth-child(4) {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .memory-grid > :nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .memory-grid > :nth-child(3) {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .memory-view-button {
+    grid-column: 3;
+    grid-row: 2 / 4;
+  }
+}
+</style>

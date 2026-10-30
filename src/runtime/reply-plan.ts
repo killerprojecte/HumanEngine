@@ -1,3 +1,4 @@
+import { retrievalCoverage, type RetrievalCoverage } from './evidence-scope.ts'
 import {
   stateEvidenceTools,
   workspaceStateTools,
@@ -31,7 +32,20 @@ export const ReplyPlanSchema = z
     emoji: z.array(z.string().min(1).max(32)).max(8),
     expressionGoals: z.array(z.string().min(1).max(500)).max(12).default([]),
     memorySelections: z
-      .array(z.object({ evidenceId: id, memoryIds: z.array(id).min(1).max(12) }).strict())
+      .array(
+        z
+          .object({
+            evidenceId: id.describe('Outer delivered tool receipt.id, not a memory record ID.'),
+            memoryIds: z
+              .array(id)
+              .min(1)
+              .max(12)
+              .describe(
+                'Inner record.id values from that exact receipt.value array. Never copy the outer receipt.id here.',
+              ),
+          })
+          .strict(),
+      )
       .max(6)
       .default([]),
     stateEvidenceIds: z.array(id).max(4).default([]),
@@ -45,6 +59,7 @@ export type ReplyPlan = Omit<z.infer<typeof ReplyPlanSchema>, 'stateEvidenceIds'
   stateEvidenceIds?: string[]
 }
 export interface PlanEvidence {
+  retrievalCoverage?: RetrievalCoverage
   coverage?: EvidenceCoverage
   id: string
   toolName?: string
@@ -87,7 +102,7 @@ export const plannerActionTools = (tools: ToolDefinition[]) =>
 const planTool = (suggestions: boolean): ToolDefinition => ({
   name: 'reply.plan',
   description:
-    'Finalize a grounded composition plan, or noReply. This does not send or execute actions. Include only public strategy, necessary cited facts and expression goals, never hidden reasoning or an exact answer unless optional reply suggestions are enabled. Receipt coverage marked limited means evidence was omitted for the byte budget, not that the search found no records; narrow the query when needed and never cite omitted records. Select whole memory.summaries (qualified attributed summaries with every original declaration, not independently verified facts), memory.identities, memory.workingSet, memory.episodes, memory.commitments, memory.history, memory.commitmentHistory or memory.commitmentTimeline receipts using stateEvidenceIds; they are qualified state/history, not current verified facts.',
+    'Finalize a grounded composition plan, or noReply. For memorySelections, evidenceId is the outer tool receipt.id; memoryIds are inner record.id values in that same receipt.value array. These are different identifiers even when both use compact e-prefixed references. This does not send or execute actions. Include only public strategy, necessary cited facts and expression goals, never hidden reasoning or an exact answer unless optional reply suggestions are enabled. Receipt coverage marked limited means evidence was omitted for the byte budget, not that the search found no records; narrow the query when needed and never cite omitted records. Select whole memory.summaries (qualified attributed summaries with every original declaration, not independently verified facts), memory.identities, memory.workingSet, memory.episodes, memory.commitments, memory.history, memory.commitmentHistory or memory.commitmentTimeline receipts using stateEvidenceIds; they are qualified state/history, not current verified facts.',
   inputSchema: z.toJSONSchema(
     suggestions ? ReplyPlanSchema : ReplyPlanSchema.omit({ replySuggestion: true }),
   ),
@@ -263,6 +278,60 @@ export function validateReplyPlan(
   return plan
 }
 
+const repairablePlanErrors = new Set([
+  'planner_invalid_plan',
+  'planner_invalid_target',
+  'planner_unknown_memory_evidence',
+  'planner_unknown_state_evidence',
+  'planner_unknown_evidence',
+  'planner_unknown_asset',
+  'planner_incomplete_relation_evidence',
+  'context_reference_unknown',
+])
+/** Hints contain IDs only from receipts already delivered in this planning loop. */
+function repairHint(code: string, receipts: readonly PlanEvidence[]) {
+  const available = receipts.filter(
+    (receipt) =>
+      ['memory.search', 'memory.person', 'memory.relations'].includes(receipt.toolName ?? '') &&
+      Array.isArray(receipt.value),
+  )
+  const selected = available.slice(0, 6)
+  return {
+    error: { code, retryable: true, remainingRepairs: 1 },
+    instruction:
+      'Return only reply.plan. evidenceId is outer receipt.id; memoryIds must be inner record.id values from that same receipt.value. No reads or actions execute during repair. Preserve the initial valid actions array exactly; if the initial plan was malformed, actions must be empty. Reuse the existing plan contract; do not invent references.',
+    memorySelectionOptions: selected.map((receipt) => {
+      const ids = (receipt.value as unknown[]).flatMap((item) =>
+        item &&
+        typeof item === 'object' &&
+        'id' in item &&
+        typeof item.id === 'string' &&
+        item.id.length <= 200
+          ? [item.id]
+          : [],
+      )
+      return {
+        evidenceId: receipt.id,
+        retrievalCoverage: retrievalCoverage(receipt.toolName),
+        memoryIds: ids.slice(0, 12),
+        coverage:
+          receipt.coverage?.status === 'limited' || ids.length > 12 ? 'limited' : 'complete',
+        ...(receipt.coverage ? { receiptCoverage: receipt.coverage } : {}),
+        hintOmittedRecords: Math.max(0, ids.length - 12),
+      }
+    }),
+    coverage:
+      receipts.some((receipt) => receipt.coverage?.status === 'limited') ||
+      available.length > selected.length ||
+      selected.some(
+        (receipt) =>
+          receipt.coverage?.status === 'limited' || (receipt.value as unknown[]).length > 12,
+      )
+        ? 'limited'
+        : 'complete',
+  }
+}
+
 /** A bounded, side-effect-free planning loop. Tool receipts, not summaries, carry provenance. */
 export async function buildReplyPlan(input: {
   messages: ChatMessage[]
@@ -291,6 +360,9 @@ export async function buildReplyPlan(input: {
   const budget = new PlannerEvidenceBudget(input.evidenceMaxBytes)
   const evidence = [...input.evidence]
   let toolCalls = 0
+  let repairing = false
+  let repairActions: ReplyPlan['actions'] = []
+  const deliveredReceipts: PlanEvidence[] = []
   const check = () => {
     input.signal.throwIfAborted()
     if (!input.eligible()) throw new Error('planner_context_ineligible')
@@ -299,7 +371,7 @@ export async function buildReplyPlan(input: {
     check()
     budget.assertWithin(messages)
     const result = await withinSignal(
-      input.complete(messages, [...readTools, finalTool], input.signal),
+      input.complete(messages, repairing ? [finalTool] : [...readTools, finalTool], input.signal),
       input.signal,
     )
     check()
@@ -307,17 +379,49 @@ export async function buildReplyPlan(input: {
     if (final.length) {
       if (final.length !== 1 || result.toolCalls.length !== 1)
         throw new Error('planner_ambiguous_plan')
-      return {
-        plan: validateReplyPlan(
+      try {
+        const plan = validateReplyPlan(
           input.projection?.restoreArguments(final[0]!.arguments) ?? final[0]!.arguments,
           { ...input, evidence },
-        ),
-        evidence,
-        rounds: round + 1,
-        toolCalls,
+        )
+        if (repairing && !isDeepStrictEqual(plan.actions, repairActions))
+          throw new Error('planner_forbidden_action')
+        return { plan, evidence, rounds: round + 1, toolCalls }
+      } catch (error) {
+        if (
+          repairing ||
+          round + 1 >= PLANNER_MAX_ROUNDS ||
+          !(error instanceof Error) ||
+          !repairablePlanErrors.has(error.message)
+        )
+          throw error
+        check()
+        // A citation repair cannot introduce or change effects. Malformed initial plans authorize none.
+        try {
+          const restored =
+            input.projection?.restoreArguments(final[0]!.arguments) ?? final[0]!.arguments
+          const parsed = (
+            input.replySuggestionsEnabled
+              ? ReplyPlanSchema
+              : ReplyPlanSchema.omit({ replySuggestion: true })
+          ).safeParse(restored)
+          repairActions = parsed.success ? structuredClone(parsed.data.actions) : []
+        } catch {
+          repairActions = []
+        }
+        const hint = repairHint(error.message, deliveredReceipts)
+        messages.push(result.assistant, {
+          role: 'tool',
+          toolCallId: final[0]!.id,
+          content: input.projection?.stringify(hint) ?? JSON.stringify(hint),
+        })
+        budget.assertWithin(messages)
+        repairing = true
+        continue
       }
     }
     if (!result.toolCalls.length) throw new Error('planner_missing_plan')
+    if (repairing) throw new Error('planner_forbidden_tool')
     if (toolCalls + result.toolCalls.length > PLANNER_MAX_TOOL_CALLS)
       throw new Error('planner_tool_budget_exhausted')
     messages.push(result.assistant)
@@ -359,6 +463,7 @@ export async function buildReplyPlan(input: {
         throw new Error('planner_context_ineligible')
       // Only delivered members authorize model citations; full receipts remain private upstream.
       evidence.push(delivered.receipt)
+      deliveredReceipts.push(delivered.receipt)
       messages.push(delivered.message)
     }
   }

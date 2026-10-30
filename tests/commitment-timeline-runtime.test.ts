@@ -728,6 +728,8 @@ for (const stage of ['planner', 'replyer'] as const)
   test(`${stage} budget omits a whole temporal page and its dependent facts rather than truncating declaration qualifications`, async (t) => {
     clock(t)
     const h = fixture()
+    // Fit the fixed envelope with trusted scope metadata, but not the complete temporal page.
+    const replyerBudget = 8192
     try {
       const long = '完整条件_ONLY_THIS_NOT_CONFIRMED_'.repeat(32)
       const first = saved(
@@ -751,7 +753,7 @@ for (const stage of ['planner', 'replyer'] as const)
         replySuggestionsEnabled: true,
         ...(stage === 'planner'
           ? { plannerEvidenceMaxBytes: 30000 }
-          : { replyEvidenceMaxBytes: 4096 }),
+          : { replyEvidenceMaxBytes: replyerBudget }),
       })
       let rounds = 0
       await h.ask(t, (messages) => {
@@ -769,6 +771,7 @@ for (const stage of ['planner', 'replyer'] as const)
           })
         }
         assert.equal(read.value.length, 1)
+        assert.ok(Buffer.byteLength(JSON.stringify(read.value), 'utf8') > replyerBudget)
         return plan(messages, {
           stateEvidenceIds: [read.id],
           facts: [{ text: 'PRIVATE_TEMPORAL_CONCLUSION', evidenceIds: [read.id] }],
@@ -784,6 +787,16 @@ for (const stage of ['planner', 'replyer'] as const)
         /PRIVATE_TEMPORAL_CONCLUSION|Missing timeline means nothing ever happened|ONLY_THIS_NOT_CONFIRMED/,
       )
       assert.ok(!result.evidence.some((e: any) => e.toolName === 'memory.commitmentTimeline'))
+      if (stage === 'replyer') {
+        assert.ok(Buffer.byteLength(wire, 'utf8') <= replyerBudget)
+        assert.deepEqual(result.plan.facts, [])
+        assert.equal(result.plan.replySuggestion, undefined)
+        assert.deepEqual(
+          result.coverageByEvidence.find((e: any) => e.toolName === 'memory.commitmentTimeline')
+            .retrievalCoverage,
+          { scope: 'retained_history_window', historyCoverage: 'not_established' },
+        )
+      }
     } finally {
       await h.close()
     }

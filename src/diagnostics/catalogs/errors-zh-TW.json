@@ -570,5 +570,13 @@
   "planner_target_outside_admitted_topic": {
     "summary": "回覆目標未准入本話題",
     "advice": "讀取歷史不代表可以消耗其他活動或待路由話題的輸入。該計畫已停止，不會自動重試傳送。"
+  },
+  "planner_unknown_memory_evidence": {
+    "summary": "回覆計畫的記憶選擇與已檢索回執不符",
+    "advice": "evidenceId 應使用工具回執的外層 ID，memoryIds 應使用同一回執內的記憶記錄 ID。選擇須唯一且不超限，不要猜測缺失引用。"
+  },
+  "planner_incomplete_relation_evidence": {
+    "summary": "回覆計畫的關係選擇缺少必要證據",
+    "advice": "請選擇完整傳回的關係組，包括必要記錄與反向聲明，或省略整組。不要為使選擇通過而丟棄限定條件。"
   }
 }

@@ -392,7 +392,10 @@
     "memory_relation_shadow_compared": "已比較有界一般檢索與關係結果，不代表品質評估",
     "memory_relation_shadow_unavailable": "關係對照暫不可用，一般檢索保持不變",
     "experience_use_unavailable": "實驗策略使用記錄暫不可用，未推斷效果",
-    "experience_feedback_unavailable": "明確回饋未滿足實驗策略准入條件"
+    "experience_feedback_unavailable": "明確回饋未滿足實驗策略准入條件",
+    "planner_unknown_memory_evidence": "回覆計畫的記憶選擇與已檢索回執不符",
+    "planner_incomplete_relation_evidence": "回覆計畫的關係選擇缺少必要證據",
+    "planner_unknown_state_evidence": "計畫引用了未實際檢索到的依據"
   },
   "stageLabels": {
     "ingress": "接收訊息",

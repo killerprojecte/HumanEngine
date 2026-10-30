@@ -570,5 +570,13 @@
   "planner_target_outside_admitted_topic": {
     "summary": "Reply target was not admitted to this topic",
     "advice": "Reading history is not permission to consume another active or deferred topic. The stale plan is stopped; no automatic send retry is created."
+  },
+  "planner_unknown_memory_evidence": {
+    "summary": "Plan memory selection does not match a retrieved receipt",
+    "advice": "Use the outer tool receipt ID as evidenceId and inner record IDs from that same receipt as memoryIds. Keep selections unique and within the limit; do not guess missing references."
+  },
+  "planner_incomplete_relation_evidence": {
+    "summary": "Plan relation selection omits required evidence",
+    "advice": "Select the complete returned relation group, including required records and counterclaims, or omit the group. Do not discard qualifications to make the selection fit."
   }
 }

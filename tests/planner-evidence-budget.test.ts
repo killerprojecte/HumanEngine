@@ -95,6 +95,7 @@ test('atomic conflicting record set is omitted explicitly, not positive-only or 
         const receipt = JSON.parse(messages.at(-1)!.content)
         assert.deepEqual(receipt.value, [])
         assert.deepEqual(receipt.coverage, {
+          scope: 'returned_tool_result',
           status: 'limited',
           returnedRecords: 0,
           omittedRecords: 2,
@@ -134,8 +135,9 @@ test('omitted member cannot be selected even if a projection registered its cano
               ),
       }),
     ),
-    /planner_unknown_memory_evidence/,
+    /planner_evidence_budget_exhausted/,
   )
+  assert.equal(calls, 2) // The byte cap refuses the correction before another model call.
 })
 test('full delivered records preserve times and qualifications and authorize exact membership', async () => {
   let calls = 0
@@ -215,7 +217,12 @@ test('empty real search is complete and distinct from budget omission', () => {
     { id: 't', toolName: 'memory.person', value: [] },
     'c',
   ).receipt
-  assert.deepEqual(receipt.coverage, { status: 'complete', returnedRecords: 0, omittedRecords: 0 })
+  assert.deepEqual(receipt.coverage, {
+    scope: 'returned_tool_result',
+    status: 'complete',
+    returnedRecords: 0,
+    omittedRecords: 0,
+  })
 })
 
 test('delivery commit receives only measured members, including empty omitted receipts', async () => {

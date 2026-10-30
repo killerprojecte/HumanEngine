@@ -392,7 +392,10 @@
     "memory_relation_shadow_compared": "Compared bounded baseline and relation IDs; not a quality measurement",
     "memory_relation_shadow_unavailable": "Relation comparison unavailable; baseline unchanged",
     "experience_use_unavailable": "Experimental policy-use observation unavailable; no effect is inferred",
-    "experience_feedback_unavailable": "Explicit experimental feedback was not admitted"
+    "experience_feedback_unavailable": "Explicit experimental feedback was not admitted",
+    "planner_unknown_memory_evidence": "Plan memory selection does not match a retrieved receipt",
+    "planner_incomplete_relation_evidence": "Plan relation selection omits required evidence",
+    "planner_unknown_state_evidence": "Plan referenced evidence that was not retrieved"
   },
   "stageLabels": {
     "ingress": "Receive message",

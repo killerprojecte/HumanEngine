@@ -392,7 +392,10 @@
     "memory_relation_shadow_compared": "已比较有界普通检索与关系结果，不代表质量评估",
     "memory_relation_shadow_unavailable": "关系对照暂不可用，普通检索保持不变",
     "experience_use_unavailable": "实验策略使用记录暂不可用，未推断效果",
-    "experience_feedback_unavailable": "明确反馈未满足实验策略准入条件"
+    "experience_feedback_unavailable": "明确反馈未满足实验策略准入条件",
+    "planner_unknown_memory_evidence": "回复计划的记忆选择与已检索回执不匹配",
+    "planner_incomplete_relation_evidence": "回复计划的关系选择缺少必要证据",
+    "planner_unknown_state_evidence": "计划引用了未实际检索到的依据"
   },
   "stageLabels": {
     "ingress": "接收消息",

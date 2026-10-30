@@ -1015,12 +1015,21 @@ test('Planner cannot cite an omitted state receipt as selected evidence', async 
       if (++rounds === 1) return completion([call('memory.commitments', {}, 'read-too-broad')])
       const read = receipts(messages)[0]!
       assert.deepEqual(read.value, [])
+      assert.equal(read.coverage?.status, 'limited')
+      if (rounds === 3) {
+        const hint = receipts(messages).at(-1) as unknown as {
+          coverage: string
+          memorySelectionOptions: unknown[]
+        }
+        assert.equal(hint.coverage, 'limited')
+        assert.deepEqual(hint.memorySelectionOptions, [])
+      }
       return plan(messages, {
         stateEvidenceIds: [read.id],
         facts: [{ text: 'INVALID_SELECTED_STATE', evidenceIds: [read.id] }],
       })
     })
-    assert.equal(rounds, 2)
+    assert.equal(rounds, 3)
     assert.equal(h.replyInputs.length, 0)
     assert.equal(h.stats().sends, 0)
     assert.ok(h.store.logs.some((log) => log.errorCode === 'planner_unknown_state_evidence'))

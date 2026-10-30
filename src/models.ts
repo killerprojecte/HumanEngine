@@ -1,3 +1,4 @@
+import { nativeToolSchema } from './models/native-tool-schema.ts'
 import {
   measureSerializedRequest,
   recordRequestMeasurement,
@@ -617,7 +618,7 @@ export class Router {
                               type: 'function',
                               name: wireName(tool.name),
                               description: tool.description,
-                              parameters: tool.inputSchema,
+                              parameters: nativeToolSchema(tool.inputSchema),
                               strict: false,
                             })),
                           }
@@ -634,7 +635,7 @@ export class Router {
                               function: {
                                 name: wireName(tool.name),
                                 description: tool.description,
-                                parameters: tool.inputSchema,
+                                parameters: nativeToolSchema(tool.inputSchema),
                                 strict: false,
                               },
                             })),

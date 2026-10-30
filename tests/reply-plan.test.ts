@@ -196,6 +196,10 @@ test('planner really executes a read, retains its authoritative receipt, and cit
           id: 'tool:1',
           toolName: 'memory.search',
           value: receipt,
+          retrievalCoverage: {
+            scope: 'current_authorized_query_results',
+            historyCoverage: 'not_established',
+          },
         })
         return completion(
           call(

@@ -1,3 +1,4 @@
+import { retrievalCoverage } from './evidence-scope.ts'
 import { SemanticStateEvidenceSchema } from '../memory/read/semantic-exposure.ts'
 import { knowledgeEvidence } from './knowledge-evidence.ts'
 import { stateEvidenceTools, validWorkspaceState } from './workspace-state-evidence.ts'
@@ -337,7 +338,11 @@ const memory = (value: unknown) => {
       : {}),
   }
 }
-const metadata = ['trust', 'coverage', 'reason', 'status', 'note', 'truncated'] as const
+const metadata = ['trust', 'reason', 'status', 'note', 'truncated'] as const
+const sourceMetadata = (value: unknown) => ({
+  ...pick(value, metadata),
+  ...(object(value)?.coverage !== undefined ? { resultCoverage: object(value)!.coverage } : {}),
+})
 const webSource = (value: unknown) =>
   pick(value, ['title', 'url', 'sourceUrl', 'snippet', 'publishedAt'])
 const vision = (value: RecordValue, allowed: Set<string>) => ({
@@ -430,7 +435,7 @@ export function buildReplyBrief(
       if (receipt.toolName?.startsWith('memory.')) {
         const selectedMemoryIds = memorySelections.get(receipt.id)
         if (!selectedMemoryIds)
-          return { ...base, ...pick(value, metadata), contentOmitted: 'memory_not_selected' }
+          return { ...pick(value, metadata), ...base, contentOmitted: 'memory_not_selected' }
         const records = Array.isArray(receipt.value)
           ? receipt.value
           : Array.isArray(value?.items)
@@ -439,8 +444,8 @@ export function buildReplyBrief(
               ? [value]
               : []
         return {
+          ...sourceMetadata(value),
           ...base,
-          ...pick(value, metadata),
           caution:
             'Recalled information, not independently verified facts; preserve uncertainty and conflicts, including complete qualifications.',
           memories: records
@@ -461,8 +466,8 @@ export function buildReplyBrief(
             .map((asset) => asset.assetId),
         )
         return {
+          ...sourceMetadata(value),
           ...base,
-          ...pick(value, metadata),
           assets: assets
             .filter((asset) => ids.has(String(object(asset)?.id)))
             .map((asset) => ({
@@ -491,8 +496,8 @@ export function buildReplyBrief(
       if (receipt.toolName?.startsWith('messages.')) {
         const items = Array.isArray(value?.items) ? value.items : []
         return {
+          ...sourceMetadata(value),
           ...base,
-          ...pick(value, metadata),
           messageIds: items.map((item) => object(item)?.id).filter((id) => typeof id === 'string'),
         }
       }
@@ -503,13 +508,21 @@ export function buildReplyBrief(
           ? value.items
           : []
       return {
+        ...sourceMetadata(value),
         ...base,
-        ...pick(value, metadata),
         ...webSource(value),
         ...(results.length ? { sources: results.map(webSource) } : {}),
       }
     })
   return {
+    coverageByEvidence: evidence.map((receipt) => ({
+      id: receipt.id,
+      ...(receipt.toolName ? { toolName: receipt.toolName } : {}),
+      ...(receipt.coverage
+        ? { coverage: { ...receipt.coverage, scope: 'returned_tool_result' as const } }
+        : {}),
+      retrievalCoverage: retrievalCoverage(receipt.toolName),
+    })),
     plan: {
       action: plan.action,
       deliveryTool: plan.deliveryTool,

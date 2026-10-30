@@ -58,6 +58,8 @@ export const diagnosticCodes = new Set([
   'planner_tool_failed',
   'planner_unknown_asset',
   'planner_unknown_evidence',
+  'planner_unknown_memory_evidence',
+  'planner_incomplete_relation_evidence',
   'planner_unknown_state_evidence',
   'planner_unknown_target',
   'planner_target_outside_admitted_topic',

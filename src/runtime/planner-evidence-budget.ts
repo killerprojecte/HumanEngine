@@ -1,8 +1,10 @@
+import { retrievalCoverage } from './evidence-scope.ts'
 import { workspaceStateTools } from './workspace-state-evidence.ts'
 import type { ChatMessage } from '../models.ts'
 import type { PlanEvidence } from './reply-plan.ts'
 
 export interface EvidenceCoverage {
+  scope?: 'returned_tool_result'
   status: 'complete' | 'limited'
   returnedRecords: number
   omittedRecords: number
@@ -26,6 +28,8 @@ export class PlannerEvidenceBudget {
     toolCallId: string,
     serialize: (value: unknown) => string = JSON.stringify,
   ): { receipt: PlanEvidence; message: ChatMessage } {
+    // Scope is server-derived, not accepted from result fields or model arguments.
+    receipt = { ...receipt, retrievalCoverage: retrievalCoverage(receipt.toolName) }
     const envelope = (value: PlanEvidence): ChatMessage => ({
       role: 'tool',
       toolCallId,
@@ -51,15 +55,19 @@ export class PlannerEvidenceBudget {
       this.assertWithin([...messages, message])
       return { receipt, message }
     }
+    const upstream = receipt.coverage
     const records = receipt.value
     const candidate = (count: number): PlanEvidence => ({
       ...receipt,
       value: records.slice(0, count),
       coverage: {
-        status: count === records.length ? 'complete' : 'limited',
+        scope: 'returned_tool_result',
+        status: count === records.length && upstream?.status !== 'limited' ? 'complete' : 'limited',
         returnedRecords: count,
-        omittedRecords: records.length - count,
-        ...(count < records.length ? { reason: 'planner_evidence_budget' as const } : {}),
+        omittedRecords: (upstream?.omittedRecords ?? 0) + records.length - count,
+        ...(count < records.length || upstream?.reason === 'planner_evidence_budget'
+          ? { reason: 'planner_evidence_budget' as const }
+          : {}),
       },
     })
     // The receipt may contain conflicting/qualifying records with no explicit closure edges.

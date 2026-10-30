@@ -59,7 +59,9 @@ test('memory content is opt-in through exact record selection; uncertainty and s
     assert.match(wire, /unverified/)
     assert.match(wire, /2026-10-01T00:00:00Z/)
     assert.match(wire, /message-1/)
-    assert.doesNotMatch(wire, /UNSELECTED_MEMORY|confidence|revision|score|scope|RAW_MEMORY_DUMP/)
+    for (const receipt of brief.evidence)
+      for (const memory of (receipt as any).memories ?? []) assert.equal('scope' in memory, false)
+    assert.doesNotMatch(wire, /UNSELECTED_MEMORY|confidence|revision|score|RAW_MEMORY_DUMP/)
   }
 })
 

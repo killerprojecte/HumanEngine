@@ -463,6 +463,7 @@ test(
         const seen = receipts(body)
         assert.deepEqual(seen[0]!.value, [])
         assert.deepEqual(seen[0]!.coverage, {
+          scope: 'returned_tool_result',
           status: 'limited',
           returnedRecords: 0,
           omittedRecords: 2,

@@ -1,3 +1,4 @@
+import type Database from 'better-sqlite3'
 import type { Store } from '../../store.ts'
 import type { MemoryRecord } from '../domain/contracts.ts'
 import type { SupportProof } from '../domain/proofs.ts'
@@ -14,8 +15,55 @@ export type AssertionRow = {
 }
 export const readAssertionRow = (row: AssertionRow): MemoryRecord =>
   JSON.parse(row.value) as MemoryRecord
+const supportReadSql = {
+  record: 'SELECT * FROM memories WHERE id=?',
+  supports: 'SELECT value FROM memory_supports WHERE memory_id=?',
+} as const
+type SupportRead = keyof typeof supportReadSql
+type ReadHandle = { statement: Database.Statement; executing: boolean }
+type ReadOperation = Partial<Record<SupportRead, ReadHandle>>
 /** Internal persistence only; model-facing reads use the separate authority layer. */
 export class AssertionRepository {
+  private supportReads: ReadOperation | undefined
+
+  /** Compiled handles only, scoped to one synchronous refresh. Never retains a
+   * row, parsed object or authority result. Nested scopes get independent handles
+   * and restore the outer scope; finally drops all handles on success or failure.
+   */
+  withSupportReadStatements<T>(operation: () => T): T {
+    const previous = this.supportReads
+    this.supportReads = {}
+    try {
+      return operation()
+    } finally {
+      this.supportReads = previous
+    }
+  }
+
+  private readSupportRow(key: SupportRead, id: string): unknown {
+    const operation = this.supportReads
+    if (!operation) return this.store.db.prepare(supportReadSql[key]).get(id)
+    let handle = operation[key]
+    try {
+      // Lazy preparation keeps first-read errors at their original call site.
+      // Reentry follows the original prepare path, including its busy-connection error.
+      if (!handle || handle.executing) {
+        handle = { statement: this.store.db.prepare(supportReadSql[key]), executing: false }
+        if (operation && !operation[key]?.executing) operation[key] = handle
+      }
+      handle.executing = true
+      return handle.statement.get(id)
+    } catch (error) {
+      if (operation) {
+        delete operation.record
+        delete operation.supports
+      }
+      throw error
+    } finally {
+      if (handle) handle.executing = false
+    }
+  }
+
   constructor(
     private readonly store: Pick<Store, 'db' | 'assertRecoveryReady'>,
     private readonly mutations: {
@@ -25,14 +73,11 @@ export class AssertionRepository {
   ) {}
   get(id: string): MemoryRecord | undefined {
     this.store.assertRecoveryReady()
-    const row = this.store.db.prepare('SELECT * FROM memories WHERE id=?').get(id) as
-      AssertionRow | undefined
+    const row = this.readSupportRow('record', id) as AssertionRow | undefined
     return row ? readAssertionRow(row) : undefined
   }
   supports(id: string): SupportProof[] {
-    const row = this.store.db
-      .prepare('SELECT value FROM memory_supports WHERE memory_id=?')
-      .get(id) as { value: string } | undefined
+    const row = this.readSupportRow('supports', id) as { value: string } | undefined
     return row ? (JSON.parse(row.value) as SupportProof[]) : []
   }
   saveSupports(id: string, supports: SupportProof[]) {

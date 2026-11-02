@@ -219,7 +219,9 @@ export class AssertionLifecycle {
 
   /** Provenance maintenance only; temporal/version applicability stays in the read layer. */
   refreshSupport(): string[] {
-    return this.revisions.transaction(() => this.lifecycle.refreshSupport())()
+    return this.revisions.transaction(() =>
+      this.repository.withSupportReadStatements(() => this.lifecycle.refreshSupport()),
+    )()
   }
   private purgeHistoryDependents(
     id: string,

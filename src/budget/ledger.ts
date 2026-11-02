@@ -191,8 +191,36 @@ export class BudgetLedger {
   private time() {
     return new Date(this.now()).toISOString()
   }
-  private rows() {
-    return this.db.prepare('SELECT * FROM budget_attempts').all() as Row[]
+  private coverageRows(windowStart: string) {
+    // One SQLite snapshot. Historical settled zero-held rows contribute nothing,
+    // but historical holds and contract flags must remain globally visible.
+    // IS NOT 0 also retains malformed nonzero values for the existing exact-sum
+    // validation; do not silently turn a corrupt negative hold into headroom.
+    const columns = 'id,window_start,lane,state,known_nano,held_nano,overrun,unbounded_exposure'
+    const rows = this.db
+      .prepare(
+        `
+      SELECT ${columns} FROM budget_attempts INDEXED BY budget_window_idx WHERE window_start=?
+      UNION ALL
+      SELECT ${columns} FROM budget_attempts INDEXED BY budget_held_nonzero_idx WHERE held_nano IS NOT 0
+      UNION ALL
+      SELECT ${columns} FROM budget_attempts INDEXED BY budget_overrun_idx WHERE overrun IS NOT 0
+      UNION ALL
+      SELECT ${columns} FROM budget_attempts INDEXED BY budget_unbounded_idx WHERE unbounded_exposure IS NOT 0
+    `,
+      )
+      .all(windowStart) as Pick<
+      Row,
+      | 'id'
+      | 'window_start'
+      | 'lane'
+      | 'state'
+      | 'known_nano'
+      | 'held_nano'
+      | 'overrun'
+      | 'unbounded_exposure'
+    >[]
+    return [...new Map(rows.map((row) => [row.id, row])).values()]
   }
   private row(id: string) {
     const row = this.db.prepare('SELECT * FROM budget_attempts WHERE id=?').get(id) as
@@ -225,7 +253,7 @@ export class BudgetLedger {
   coverage(policy: BudgetPolicy): BudgetCoverage {
     policyValid(policy)
     const windowStart = this.time().slice(0, 10),
-      rows = this.rows()
+      rows = this.coverageRows(windowStart)
     const external = this.externalCoverage?.(windowStart) ?? {
       knownTodayNanoUsd: 0,
       unknownReceipts: 0,
@@ -294,7 +322,12 @@ export class BudgetLedger {
         if (coverage.externalUnknownReceipts) throw new Error('budget_external_cost_unknown')
         if (policy.mode !== 'best_effort' && coverage.unboundedAttempts)
           throw new Error('budget_unbounded_exposure')
-        const brokenContract = this.rows().some((row) => {
+        const overruns = this.db
+          .prepare(
+            'SELECT payload,overrun FROM budget_attempts INDEXED BY budget_overrun_idx WHERE overrun IS NOT 0',
+          )
+          .all() as Pick<Row, 'payload' | 'overrun'>[]
+        const brokenContract = overruns.some((row) => {
           if (!row.overrun) return false
           const prior = JSON.parse(row.payload) as BudgetRequest
           return (
@@ -315,9 +348,11 @@ export class BudgetLedger {
         )
           throw new Error('budget_lane_limit')
         if (request.turnId) {
-          const prior = this.rows().filter(
-            (row) => row.turn_id === request.turnId && row.state !== 'released',
-          )
+          const prior = this.db
+            .prepare(
+              "SELECT payload,known_nano,held_nano FROM budget_attempts WHERE turn_id=? AND state!='released'",
+            )
+            .all(request.turnId) as Pick<Row, 'payload' | 'known_nano' | 'held_nano'>[]
           if (policy.perTurnCalls !== undefined && prior.length >= policy.perTurnCalls)
             throw new Error('budget_turn_calls')
           if (

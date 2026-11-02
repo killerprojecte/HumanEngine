@@ -286,7 +286,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "dependency traversal handles transitive and cyclic proofs without flattening alternatives",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -624,7 +624,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "purge follows historical-only and current dependencies before deleting links and touches OR survivors",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -962,7 +962,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "shared seen prevents duplicate epochs across roots and cycles, alreadyPurged still removes projections and rebuilds",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1300,7 +1300,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "invalidation preserves independent OR proof and bound version metadata; AND proof requiring premise fails",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1638,7 +1638,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "refresh purges unsupported descendant once per transaction and repeated refresh is write-free",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1950,7 +1950,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "parent version drift is not interpreted as deletion or provenance loss",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -2236,7 +2236,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "port failures propagate so caller transaction can roll back rather than falsely report success",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -2509,7 +2509,7 @@
       "scope": "dependency_graph",
       "authorityChange": "privacy_vs_drift",
       "expectedOutcome": "selective content-change invalidation preserves version-bound proofs while default deletion invalidates both",
-      "fixtureHash": "3cb2f2137ffd39d96567d2e08a6bfa4d5b0e19b37a3ebbdd365c07ed067296c4",
+      "fixtureHash": "f4bd68b95e6b724e41aae3e85c16b93bc88bcc4b7450e3a998355faa4eb6c3ea",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },

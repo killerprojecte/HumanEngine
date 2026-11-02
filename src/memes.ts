@@ -278,7 +278,9 @@ export class MemeService {
   }
 
   hasRecognitionCandidates(ctx: MemeContext): boolean {
-    return this.readVisible(ctx).some((asset) => !asset.disabled && this.hasValidSource(asset))
+    for (const asset of this.visibleCandidates(ctx))
+      if (!asset.disabled && this.hasValidSource(asset)) return true
+    return false
   }
   /** Exact opaque adapter locators are hashed, never persisted as signed URLs or tokens. */
   private mediaReferenceHash(ctx: MemeContext, reference: string): string | undefined {
@@ -1305,6 +1307,13 @@ export class MemeService {
     ctx: MemeContext,
     match?: { id: string } | { contentHash: string },
   ): MemeAsset[] {
+    return [...this.visibleCandidates(ctx, match)]
+  }
+  /** Synchronous iteration closes its SQLite cursor on early return; no permission result is cached. */
+  private *visibleCandidates(
+    ctx: MemeContext,
+    match?: { id: string } | { contentHash: string },
+  ): Generator<MemeAsset> {
     assertDomainReady(this.store.db)
     const visibility = ctx.simulation
       ? "SELECT value FROM meme_assets WHERE json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0"
@@ -1320,24 +1329,21 @@ export class MemeService {
       ...(match ? ['id' in match ? match.id : match.contentHash] : []),
       ...(ctx.simulation ? [] : [ctx.sceneId]),
     ]
-    return (
-      this.store.db.prepare(sql).all(...parameters) as {
-        value: string
-      }[]
-    )
-      .map((row) => JSON.parse(row.value) as MemeAsset)
-      .filter(
-        (asset) =>
-          (asset.shared &&
-            asset.privacyReviewed &&
-            !asset.knownOnly &&
-            this.hasValidSource(asset)) ||
-          (!ctx.simulation &&
-            asset.sources.some(
-              (source) => source.sceneId === ctx.sceneId && domainSourceCurrent(this.store, source),
-            )),
+    for (const row of this.store.db.prepare(sql).iterate(...parameters) as Iterable<{
+      value: string
+    }>) {
+      const asset = JSON.parse(row.value) as MemeAsset
+      if (
+        (asset.shared && asset.privacyReviewed && !asset.knownOnly && this.hasValidSource(asset)) ||
+        (!ctx.simulation &&
+          asset.sources.some(
+            (source) => source.sceneId === ctx.sceneId && domainSourceCurrent(this.store, source),
+          ))
       )
+        yield asset
+    }
   }
+
   private visible(ctx: MemeContext, id: string, requireAvailable: boolean): MemeAsset {
     const asset = this.readVisible(ctx, { id }).find((item) => item.id === id)
     if (

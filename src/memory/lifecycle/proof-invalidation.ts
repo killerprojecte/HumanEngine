@@ -53,17 +53,47 @@ export class ProofInvalidation<R extends LifecycleRecord, P extends LifecyclePro
     alreadyPurged = new Set<string>(),
   ): void {
     if (seen.has(id)) return
-    seen.add(id)
-    const children = new Set(this.ports.historyDependents(id))
-    for (const record of this.ports.records()) {
-      if (this.ports.proofs(record.id).some((proof) => proof.parents.includes(id))) {
-        children.add(record.id)
-      }
+    this.purgeWithGraph(id, seen, alreadyPurged, this.currentDependents(this.ports.records()))
+  }
+
+  /** Current proofs are immutable during a synchronous purge operation: production
+   * privacy ports only remove history/projections and mark revision rows dirty.
+   * Never retain this graph across operations or authority/mutation boundaries.
+   */
+  private currentDependents(records: readonly R[]): Map<string, Set<string>> {
+    const graph = new Map<string, Set<string>>()
+    for (const record of records)
+      for (const proof of this.ports.proofs(record.id))
+        for (const parent of proof.parents) {
+          let children = graph.get(parent)
+          if (!children) graph.set(parent, (children = new Set()))
+          children.add(record.id)
+        }
+    return graph
+  }
+
+  private purgeWithGraph(
+    id: string,
+    seen: Set<string>,
+    alreadyPurged: Set<string>,
+    graph: ReadonlyMap<string, ReadonlySet<string>>,
+  ): void {
+    const pending = [id]
+    while (pending.length) {
+      const current = pending.pop()!
+      if (seen.has(current)) continue
+      seen.add(current)
+      // Historical links remain live and must be captured before this node's
+      // history is removed. Preserve history-first/current-record child order.
+      const children = new Set(this.ports.historyDependents(current))
+      for (const child of graph.get(current) ?? []) children.add(child)
+      this.ports.removeProjection(current)
+      if (!alreadyPurged.has(current)) this.ports.purgeHistory(current)
+      if (this.ports.exists(current)) this.ports.touch(current)
+      // Reverse push reproduces recursive depth-first event ordering, without
+      // overflowing the JS stack on long provenance chains.
+      for (const child of [...children].reverse()) pending.push(child)
     }
-    this.ports.removeProjection(id)
-    if (!alreadyPurged.has(id)) this.ports.purgeHistory(id)
-    if (this.ports.exists(id)) this.ports.touch(id)
-    for (const child of children) this.purgeHistoryDependents(child, seen, alreadyPurged)
   }
 
   /** Mark only proofs requiring the replaced/deleted premise; do not erase independent alternatives. */
@@ -90,7 +120,8 @@ export class ProofInvalidation<R extends LifecycleRecord, P extends LifecyclePro
     const unsupported: R[] = []
     // Finish bounded analysis before emitting irreversible external privacy intents.
     // The surrounding synchronous transaction keeps this plan and its application atomic.
-    for (const record of this.ports.records()) {
+    const records = this.ports.records()
+    for (const record of records) {
       if (
         record.lineageStatus !== 'verified' ||
         !['active', 'disputed'].includes(record.status) ||
@@ -99,8 +130,11 @@ export class ProofInvalidation<R extends LifecycleRecord, P extends LifecyclePro
         continue
       unsupported.push(record)
     }
+    const graph = unsupported.length
+      ? this.currentDependents(records)
+      : new Map<string, Set<string>>()
     for (const record of unsupported) {
-      this.purgeHistoryDependents(record.id, purged)
+      this.purgeWithGraph(record.id, purged, new Set(), graph)
       this.ports.invalidateRecord(record)
       this.ports.removeVector(record.id)
       invalidated.push(record.id)

@@ -250,3 +250,80 @@ test('hash candidates preserve local preference, shared qualification, legacy id
     await f.close()
   }
 })
+
+test('recognition existence short-circuits authorized candidates and releases its SQLite cursor', async () => {
+  const f = await setup()
+  try {
+    const template = await f.service.admitKnown(f.ctx(), f.bytes, f.source)
+    f.store.db.prepare('DELETE FROM meme_assets').run()
+    f.store.db.prepare('DELETE FROM meme_sources').run()
+    const insert = f.store.db.prepare('INSERT INTO meme_assets(id,value) VALUES(?,?)')
+    const link = f.store.db.prepare('INSERT INTO meme_sources VALUES(?,?,?,?)')
+    f.store.db.transaction(() => {
+      for (let i = 0; i < 2000; i++) {
+        const id = `candidate-${i}`
+        const source = { ...f.source, messageId: id }
+        insert.run(id, JSON.stringify({ ...template, id, sources: [source], disabled: i === 0 }))
+        link.run(id, source.sceneId, source.messageId, source.senderId)
+      }
+    })()
+    const checked: string[] = []
+    f.store.recalled = (_scene, message) => {
+      checked.push(message)
+      return message === 'candidate-1'
+    }
+    assert.equal(f.service.hasRecognitionCandidates(f.ctx()), true)
+    assert.deepEqual([...new Set(checked)], ['candidate-0', 'candidate-1', 'candidate-2'])
+    // db.exec rejects an active better-sqlite3 iterator, even on this same connection.
+    f.store.db.exec('CREATE INDEX iterator_release_probe ON meme_assets(id)')
+    // Early generator return must finalize the SELECT before caller mutation/transaction completion.
+    f.store.db
+      .transaction(() => {
+        assert.equal(f.service.hasRecognitionCandidates(f.ctx()), true)
+        f.store.db.prepare('UPDATE meme_assets SET value=value WHERE id=?').run('candidate-2')
+      })
+      .immediate()
+    assert.equal(f.service.hasRecognitionCandidates(f.ctx('b')), false)
+    assert.equal(f.service.hasRecognitionCandidates({ ...f.ctx(), simulation: true }), false)
+    f.store.recalled = () => true
+    assert.equal(f.service.hasRecognitionCandidates(f.ctx()), false)
+    f.store.recalled = () => {
+      throw new Error('synthetic-source-failure')
+    }
+    assert.throws(() => f.service.hasRecognitionCandidates(f.ctx()), /synthetic-source-failure/)
+    // Exceptions must close the cursor too, without swallowing the source failure.
+    f.store.db.exec('DROP INDEX iterator_release_probe')
+    f.store.db.transaction(() => f.store.db.prepare('DELETE FROM meme_assets').run()).immediate()
+  } finally {
+    await f.close()
+  }
+})
+
+test('recognition existence preserves shared, known-only and live source qualification', async () => {
+  const f = await setup()
+  try {
+    const asset = await f.service.admitKnown(f.ctx(), f.bytes, f.source)
+    const write = (fields: object) =>
+      f.store.db
+        .prepare('UPDATE meme_assets SET value=? WHERE id=?')
+        .run(JSON.stringify({ ...asset, sources: [f.source], ...fields }), asset.id)
+    for (const fields of [
+      { shared: false, privacyReviewed: true, knownOnly: false },
+      { shared: true, privacyReviewed: false, knownOnly: false },
+      { shared: true, privacyReviewed: true, knownOnly: true },
+      { shared: true, privacyReviewed: true, knownOnly: false, disabled: true },
+    ]) {
+      write(fields)
+      assert.equal(f.service.hasRecognitionCandidates(f.ctx('b')), false)
+      assert.equal(f.service.hasRecognitionCandidates({ ...f.ctx(), simulation: true }), false)
+    }
+    write({ shared: true, privacyReviewed: true, knownOnly: false })
+    assert.equal(f.service.hasRecognitionCandidates(f.ctx('b')), true)
+    assert.equal(f.service.hasRecognitionCandidates({ ...f.ctx(), simulation: true }), true)
+    f.store.recalled = () => true
+    assert.equal(f.service.hasRecognitionCandidates(f.ctx('b')), false)
+    assert.equal(f.service.hasRecognitionCandidates({ ...f.ctx(), simulation: true }), false)
+  } finally {
+    await f.close()
+  }
+})

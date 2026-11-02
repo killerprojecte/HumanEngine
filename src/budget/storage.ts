@@ -26,5 +26,15 @@ export function migrateBudget(db: BudgetDatabase): void {
       db.exec(
         'ALTER TABLE budget_attempts ADD COLUMN unbounded_exposure INTEGER NOT NULL DEFAULT 0',
       )
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS budget_held_nonzero_idx
+        ON budget_attempts(id) WHERE held_nano IS NOT 0;
+      CREATE INDEX IF NOT EXISTS budget_overrun_idx
+        ON budget_attempts(id) WHERE overrun IS NOT 0;
+      CREATE INDEX IF NOT EXISTS budget_unbounded_idx
+        ON budget_attempts(id) WHERE unbounded_exposure IS NOT 0;
+      CREATE INDEX IF NOT EXISTS budget_request_attempt_idx
+        ON budget_attempts(json_extract(payload,'$.requestId'),json_extract(payload,'$.attempt'));
+    `)
   })()
 }

@@ -223,3 +223,74 @@ test('selective content-change invalidation preserves version-bound proofs while
   assert.equal(f.proofs.get('bound-only')![0]!.invalidatedBy, 'parent')
   assert.deepEqual(f.proofs.get('bound-only')![0]!.parentReferences, bound.parentReferences)
 })
+
+test('large purge snapshots current proofs once and iterates deep cyclic chains', () => {
+  const f = fixture()
+  const size = 15_000
+  for (let i = 0; i < size; i++)
+    f.add(`node-${i}`, [
+      { sources: [`source-${i}`], parents: [i ? `node-${i - 1}` : `node-${size - 1}`] },
+    ])
+  f.historical.set('node-0', new Set(['historical-only']))
+  f.historical.set('historical-only', new Set(['node-1']))
+  let recordReads = 0,
+    proofReads = 0
+  const records = f.ports.records,
+    proofs = f.ports.proofs
+  f.ports.records = () => {
+    recordReads++
+    return records()
+  }
+  f.ports.proofs = (id) => {
+    proofReads++
+    return proofs(id)
+  }
+  f.lifecycle.purgeHistoryDependents('node-0')
+  assert.equal(recordReads, 1)
+  assert.equal(proofReads, size)
+  assert.equal(f.epochs.size, size + 1)
+  assert.ok([...f.epochs.values()].every((epoch) => epoch === 1))
+  assert.deepEqual([...f.epochs.keys()].slice(0, 4), [
+    'node-0',
+    'historical-only',
+    'node-1',
+    'node-2',
+  ])
+})
+
+test('refresh shares one current graph across independent unsupported roots', () => {
+  const f = fixture()
+  for (let i = 0; i < 200; i++) f.add(`unsupported-${i}`, [])
+  let recordReads = 0,
+    proofReads = 0
+  const records = f.ports.records,
+    proofs = f.ports.proofs
+  f.ports.records = () => {
+    recordReads++
+    return records()
+  }
+  f.ports.proofs = (id) => {
+    proofReads++
+    return proofs(id)
+  }
+  assert.equal(f.lifecycle.refreshSupport().length, 200)
+  assert.equal(recordReads, 1)
+  assert.equal(proofReads, 200)
+  assert.equal(f.epochs.size, 200)
+})
+
+test('purge keeps recursive history-first DFS ordering for shared descendants', () => {
+  const f = fixture()
+  f.add('root')
+  f.add('current-first', [{ sources: ['a'], parents: ['root'] }])
+  f.add('current-second', [{ sources: ['b'], parents: ['root'] }])
+  f.add('shared', [{ sources: ['c'], parents: ['current-first', 'current-second'] }])
+  f.historical.set('root', new Set(['historical', 'current-second']))
+  f.historical.set('historical', new Set(['shared']))
+  f.lifecycle.purgeHistoryDependents('root')
+  assert.deepEqual(
+    [...f.epochs.keys()],
+    ['root', 'historical', 'shared', 'current-second', 'current-first'],
+  )
+  assert.ok([...f.epochs.values()].every((epoch) => epoch === 1))
+})

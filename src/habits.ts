@@ -39,6 +39,15 @@ export interface HabitRecord {
   locked: boolean
   learnedAt: string
 }
+/** Candidate scope only, never evidence authority. Keep status/time out: recalculation
+ * can change eligibility, while scope is immutable during a synchronous read. */
+export function habitInScope(ctx: HabitContext, record: HabitRecord): boolean {
+  return (
+    (record.kind === 'botExpression' && !record.sceneId) ||
+    (!ctx.simulation && record.sceneId === ctx.sceneId)
+  )
+}
+
 export type HabitResult =
   { status: 'saved'; habit: HabitRecord } | { status: 'rejected'; reason: string }
 const preferences = new Set(['concise', 'detail', 'questions', 'emoji', 'meme_frequency'])
@@ -101,15 +110,15 @@ export class HabitService {
     })
   }
   list(ctx: HabitContext): HabitRecord[] {
-    return this.adminList()
-      .map((record) => this.currentEvidence(record))
-      .filter(
-        (record) =>
-          record.status === 'active' &&
-          ((record.kind === 'botExpression' && !record.sceneId) ||
-            (!ctx.simulation && record.sceneId === ctx.sceneId)),
-      )
-      .map((record) => this.sanitize(record))
+    return (
+      this.adminList()
+        // Parse/recalculate all raw rows first. Foreign evidence is not authority for
+        // this scoped view and must not block it; relevant/shared evidence still fails closed.
+        .filter((record) => habitInScope(ctx, record))
+        .map((record) => this.currentEvidence(record))
+        .filter((record) => record.status === 'active' && habitInScope(ctx, record))
+        .map((record) => this.sanitize(record))
+    )
   }
   // Time-derived magnitudes are not revisions. Keep raw administrative changes,
   // effective evidence expiry/recall, scope and policy in the trusted identity.

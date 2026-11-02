@@ -49,7 +49,7 @@ import {
   type PublicTechnicalDomain,
 } from './learning-policy.ts'
 import { ModelProtocolRegistry } from './model-protocols.ts'
-import { HabitService, type HabitInput } from './habits.ts'
+import { HabitService, habitInScope, type HabitInput } from './habits.ts'
 import { modelScheduler, WorkScheduler, withModelPriority } from './scheduler.ts'
 import { MemeService } from './memes.ts'
 import { isStickerSource } from './meme-intake.ts'
@@ -1815,7 +1815,9 @@ export class Engine {
     // Capture identity before exposing hints. Expiry during these synchronous reads
     // must revoke the turn, never bless a stale hint with a later evidence set.
     const identities = new Map(
-      originals.map((record) => [record.id, this.habits.validationIdentity(ctx, record.id)]),
+      originals
+        .filter((record) => habitInScope(ctx, record))
+        .map((record) => [record.id, this.habits.validationIdentity(ctx, record.id)]),
     )
     const hints = this.habits.list(ctx)
     this.modelRead.assert(readTicket)

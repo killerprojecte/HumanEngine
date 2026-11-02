@@ -76,6 +76,8 @@ export class ExperienceRuntime {
     this.trialLearningEpochs.set(sceneId, (this.trialLearningEpochs.get(sceneId) ?? 0) + 1)
   }
   received(message: RuntimeMessage) {
+    // Explicit feedback requires an actual reply target; ordinary ingress must not scan history.
+    if (!message.replyToId) return
     const ctx = { sceneId: message.sceneId, simulation: message.origin === 'simulation' }
     const target = this.messages(message.sceneId).find((row) => row.id === message.replyToId)
     if (!target) return

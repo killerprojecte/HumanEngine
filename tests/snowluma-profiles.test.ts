@@ -235,3 +235,69 @@ test('real ingress persists human scene metadata without violating strict scene 
     store.close()
   }
 })
+
+test('unchanged presentation observations retain fresh guards but perform no writes', () => {
+  const store = new Store(':memory:')
+  const item = normalize({ card: 'Known card' }, { group_name: 'Known group' })
+  store.saveScene({
+    ...scene,
+    name: 'Initial',
+    participationEnabled: false,
+    learningEnabled: false,
+    proactiveEnabled: false,
+  })
+  const profile = {
+    scene: item.scene,
+    sender: { id: item.message.senderId, platformId: '7', displayName: 'Known card' },
+  }
+  try {
+    store.updateIdentity(profile)
+    const count = () => (store.db.prepare('SELECT total_changes() n').get() as { n: number }).n
+    const before = count()
+    let gates = 0
+    const ready = store.assertRecoveryReady.bind(store)
+    store.assertRecoveryReady = () => {
+      gates++
+      ready()
+    }
+    for (let i = 0; i < 20; i++) store.updateIdentity(profile)
+    assert.equal(count(), before)
+    assert.equal(gates, 40, 'scene and identity reads remain fresh for each observation')
+    store.updateIdentity({
+      ...profile,
+      scene: { ...profile.scene, displayName: undefined },
+      sender: { ...profile.sender, displayName: undefined },
+    })
+    assert.equal(count(), before, 'missing labels preserve known presentation')
+    store.updateIdentity({
+      ...profile,
+      scene: { ...profile.scene, displayName: 'New group' },
+      sender: { ...profile.sender, displayName: 'New card' },
+    })
+    assert.equal(store.scene(scene.id)?.name, 'New group')
+    assert.equal(
+      store.presentMessage(item.message).senderDisplayName,
+      'Known card',
+      'captured event remains authoritative',
+    )
+    const key = `identity:${scene.id}:${item.message.senderId}`
+    assert.equal(store.get<any>(key, {}).senderDisplayName, 'New card')
+    store.set(key, {
+      senderDisplayName: 'Known card',
+      senderPlatformId: '7',
+      senderAvatarUrl: qqAvatar('7'),
+      obsolete: true,
+    })
+    store.updateIdentity(profile)
+    assert.equal('obsolete' in store.get<any>(key, {}), false, 'replacement semantics remain exact')
+    store.saveScene({ ...store.scene(scene.id)!, participationEnabled: true })
+    store.updateIdentity(profile)
+    assert.equal(
+      store.scene(scene.id)?.participationEnabled,
+      true,
+      'fresh flags are never overwritten by old presentation state',
+    )
+  } finally {
+    store.close()
+  }
+})

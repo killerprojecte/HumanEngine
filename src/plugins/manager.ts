@@ -1,4 +1,7 @@
-import { currentSourceSnapshot } from '../runtime/source-events.ts'
+import {
+  validateSourceSnapshots,
+  validateUnrecalledDependencies,
+} from '../memory/recovery/ledger.ts'
 import { ToolResultCache, type ResultOwner, type ResultRead } from '../tool-results.ts'
 import { sanitizeError } from '../diagnostics/errors.ts'
 import { randomUUID } from 'node:crypto'
@@ -88,8 +91,8 @@ export class PluginManager {
         ...this.runtime.captureToolResultGuards(context),
         ...(this.adoptedResultGuards.get(context) ?? []),
         () =>
-          dependencies.every((id) => !this.store.recalled(sceneId, id)) &&
-          snapshots.every((message) => currentSourceSnapshot(this.store, message)),
+          validateUnrecalledDependencies(this.store, sceneId, dependencies) &&
+          (!snapshots.length || validateSourceSnapshots(this.store, snapshots)),
       ],
     }
   }

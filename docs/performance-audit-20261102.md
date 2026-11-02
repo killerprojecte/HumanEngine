@@ -6,6 +6,12 @@ The audit found avoidable synchronous work that can delay both message delivery 
 
 This is a local synthetic audit, not a production CPU diagnosis. A reported “12% CPU” is not interpretable without the reporting denominator, available cores, container quota, and simultaneous event-loop latency. No external model, QQ account, or production conversation was used.
 
+## Receive-only follow-up
+
+The subsequent [bounded load validation](performance-load-validation-20261102.md) uses the actual Engine with replies, learning and proactive behavior disabled, and asserts zero model calls. It reproduces administrative latency from ordinary incoming text: feedback admission unnecessarily projected the full cached history before checking whether a reply target existed. Repeated identity writes and recovery-chain proof work compounded the cost. The follow-up fixes add early no-work exits, exact identity write suppression, SQL-prefiltered meme references, conservative idle-scene cleanup, fixed dependency read scopes, and bounded exact-row SHA proofs. No recovery head, permission decision or parsed event is cached.
+
+The matched synthetic workload improved from 111.14 to 26.16 seconds of process CPU for 2,000 arrivals; settings HTTP p95 fell from 779.05 to approximately 153 ms. These are combined local workload measurements, not a production guarantee. Fresh SQL reads, event parsing and other synchronous work remain. The small no-applicable-media early return was added after those measurements and has separate regression coverage, not an attributed benchmark speedup.
+
 ## Findings and priority
 
 | Priority               | Finding                                                                           | Evidence                                                                                                               | Action/status                                                                                                                                                                       |
@@ -33,7 +39,7 @@ The heartbeat includes subsequent synchronous guards and promise continuations, 
 
 ## Recovery safety boundaries
 
-The candidate is deliberately narrower than an eligibility cache:
+The published source-validation optimization is deliberately narrower than an eligibility cache:
 
 - It accepts only the fixed source-snapshot list, not an arbitrary callback.
 - The main WAL database and DELETE-journal authority database hold synchronous read snapshots with `query_only` enabled.
@@ -67,14 +73,17 @@ Adding `async` does not make synchronous SQLite, hashing, JSON parsing or array 
 - **Asynchronous logging needs a contract.** Decide maximum buffered bytes, backpressure or loss policy, serialized rotation, error reporting and shutdown flushing before replacing synchronous writes. A lazy directory-initialization optimization alone does not remove append blocking.
 - **Timers are not hard deadlines during synchronous stalls.** Timeout callbacks cannot run while validation blocks the event loop. Conversely, inserting a yield between a freshness check and adapter invocation creates a new race unless the necessary checks are repeated afterward.
 
-## Remaining work and verification limits
+## Published verification and remaining work
 
-1. Run merged repository contract, focused/integration, type and production-build checks on the exact publication candidate. Isolated passes do not replace merged checks.
-2. Complete merged verification of the independently reviewed learning repair change. Its matched isolated 100-message burst verifies 100 recall checks versus 5,150 on the original coordinator; 15 focused/regression tests cover recall, cancellation and retry behavior.
-3. Verify the follow-on bounded topic-ID retention implementation on the exact merged candidate, including protected references across awaits and cleanup. Do not generalize its policy to durable authority or receipts.
-4. Profile remaining dependency/extension guards separately. Do not broaden the reviewed source-read scope without another security review.
-5. Verify chat history and meme request changes at their own API/UI boundaries, including cancellation and repeated navigation.
-6. If user-environment access becomes available, collect process/container CPU, event-loop delay, queue depths, recovery-chain length, scene/topic sizes and adapter timing together. Do not record raw chats, credentials or media in performance artifacts.
+The first four implementation slices are published through commit `f1e0006`. The final merged candidate passed 1,809 tests, contract generation checks, runtime and UI typechecks, the production build, and both Check and Container CI workflows. This includes the learning admission repair, bounded topic routing history, chat history cancellation/reconciliation, and thumbnail queue changes. These are completed implementation checks, not pending candidate work.
+
+The remaining work is distinct:
+
+1. Remove synchronous logging from the normal event-loop path with bounded buffering, explicit saturation/failure policy, ordered rotation and shutdown flushing. Existing silent write-error handling and unchecked stdout backpressure also need attention.
+2. Profile residual dependency and extension guards separately. Do not broaden the source-read scope or add a stale permission cache without another security review.
+3. Audit real-scene state lifetimes independently of the now-bounded topic-ID index. Retained source authority, receipts and active work are not disposable cache entries.
+4. Exercise browser chat/meme navigation and pressure behavior, slow sinks, larger concurrent images, and sustained-memory workloads. Existing API/queue tests are not a browser latency or production saturation measurement.
+5. If user-environment access becomes available, collect process/container CPU, event-loop delay, queue depths, recovery-chain length, scene/topic sizes and adapter timing together. Do not record raw chats, credentials or media in performance artifacts.
 
 No full production workload, browser-rendering profile, slow-storage test, exhaustive GC study, or large-image saturation test has been performed. The audit identifies and verifies specific causes; it does not declare the whole system performance problem closed.
 
@@ -93,4 +102,4 @@ The audit found an important lifecycle gap: Runtime assigns `context.sourceSnaps
 
 Legacy topic admission also routes a reply using stale topic membership even when its body has left the 500-message window. The bounded implementation explicitly defines this as unavailable-history/fallback behavior rather than promising identical indefinite legacy routing. The newer admission path already requires a retained reply target.
 
-Focused verification covers 650 actual ingestions in both admission modes, a suspended history await before dependency population, pending and WAIT inputs, cap shrink and TTL during the await, recall/corruption, uncertain-send flags, and reclamation after cleanup. Existing topic-admission, edit, unknown/partial and no-replay regressions also passed. This follow-on is separate from the earlier membership-Set optimization; merged type/build/integration checks remain required.
+Focused verification covers 650 actual ingestions in both admission modes, a suspended history await before dependency population, pending and WAIT inputs, cap shrink and TTL during the await, recall/corruption, uncertain-send flags, and reclamation after cleanup. Existing topic-admission, edit, unknown/partial and no-replay regressions also passed. This follow-on is separate from the earlier membership-Set optimization; the final merged type/build/integration checks and CI passed as recorded above.

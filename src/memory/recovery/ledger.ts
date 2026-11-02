@@ -145,6 +145,9 @@ function event(value: unknown): Revocation {
 export class RecoveryAuthority {
   readonly db: Database.Database
   readonly path: string
+  // Pure SHA proofs only. Rows, identity, continuity and event schemas are read/checked afresh.
+  #rowHashProofs = new Set<string>()
+  #rowHashProofBytes = 0
   constructor(path: string, createInstance?: string) {
     this.path = resolve(path)
     if (createInstance) mkdirSync(this.path, { recursive: true, mode: 0o700 })
@@ -187,13 +190,35 @@ export class RecoveryAuthority {
       payload: string
       hash: string
     }>) {
-      if (
-        row.sequence !== ++sequence ||
-        row.previous_hash !== previous ||
-        row.hash !== hash(`${identities[0]!.id}|${sequence}|${previous}|${row.payload}`)
-      )
+      if (row.sequence !== ++sequence || row.previous_hash !== previous)
         throw new Error('recovery_chain_invalid')
-      result.push({ sequence, revocation: event(JSON.parse(row.payload)) })
+      const identity = identities[0]!.id
+      // Restrict keys to exact primitive types; oversized rows still receive full validation.
+      const fields = [identity, row.previous_hash, row.payload, row.hash]
+      const cacheable =
+        fields.every((field) => typeof field === 'string') &&
+        Number.isSafeInteger(row.sequence) &&
+        fields.reduce((size, field) => size + field.length, 0) <= 16000
+      const key = cacheable
+        ? JSON.stringify([identity, row.sequence, row.previous_hash, row.payload, row.hash])
+        : undefined
+      const bytes = key === undefined ? 0 : 2 * key.length + 256
+      const hit = key !== undefined && this.#rowHashProofs.has(key)
+      if (!hit && row.hash !== hash(`${identity}|${sequence}|${previous}|${row.payload}`))
+        throw new Error('recovery_chain_invalid')
+      // Never retain parsed objects or successful authority/permission decisions.
+      const revocation = event(JSON.parse(row.payload))
+      if (
+        !hit &&
+        key !== undefined &&
+        bytes <= 64 * 1024 &&
+        this.#rowHashProofs.size < 4096 &&
+        this.#rowHashProofBytes + bytes <= 8 * 1024 * 1024
+      ) {
+        this.#rowHashProofs.add(key)
+        this.#rowHashProofBytes += bytes
+      }
+      result.push({ sequence, revocation })
       previous = row.hash
     }
     return result
@@ -264,6 +289,8 @@ export class RecoveryAuthority {
   close() {
     if (sourceReadScopes.has(this)) throw new Error('recovery_read_scope_write_denied')
     this.db.close()
+    this.#rowHashProofs.clear()
+    this.#rowHashProofBytes = 0
   }
 }
 export function sameHead(a: Head, b: Head) {
@@ -444,9 +471,34 @@ export function validateSourceSnapshots(
   store: Store,
   messages: readonly RuntimeMessage[],
 ): boolean {
+  return validateFixedReads(store, { kind: 'sources', messages })
+}
+
+/** Fixed primitive dependency data only; never runs extension callbacks under a reused head. */
+export function validateUnrecalledDependencies(
+  store: Store,
+  sceneId: string,
+  messageIds: readonly string[],
+): boolean {
+  // Materialize before acquiring snapshots so caller iterators never execute inside the scope.
+  const ids = Array.from(messageIds)
+  if (typeof sceneId !== 'string' || ids.some((id) => typeof id !== 'string')) return false
+  if (!ids.length) return true
+  return validateFixedReads(store, { kind: 'dependencies', sceneId, ids })
+}
+
+function validateFixedReads(
+  store: Store,
+  input:
+    | { kind: 'sources'; messages: readonly RuntimeMessage[] }
+    | { kind: 'dependencies'; sceneId: string; ids: readonly string[] },
+): boolean {
   const db = store.db
   const authority = bindings.get(db)
-  const read = () => messages.every((message) => currentSourceSnapshot(store, message))
+  const read = () =>
+    input.kind === 'sources'
+      ? input.messages.every((message) => currentSourceSnapshot(store, message))
+      : input.ids.every((id) => !store.recalled(input.sceneId, id))
   // Preserve nested callers and nonstandard configurations without reducing any checks.
   if (
     !authority ||

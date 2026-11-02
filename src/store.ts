@@ -393,18 +393,20 @@ export class Store {
       return
     const name = displayName(profile.scene.displayName)
     const avatarUrl = qqAvatar(scene.platformSceneId, scene.kind === 'group')
-    if (name || avatarUrl)
+    if ((name && name !== scene.name) || (avatarUrl && avatarUrl !== scene.avatarUrl))
       this.saveScene({ ...scene, ...(name ? { name } : {}), ...(avatarUrl ? { avatarUrl } : {}) })
     const sender = profile.sender
     if (sender) {
       const key = `identity:${scene.id}:${sender.id}`
       const previous = this.get<{ senderDisplayName?: string }>(key, {})
       const senderDisplayName = displayName(sender.displayName) ?? previous.senderDisplayName
-      this.set(key, {
+      const next = {
         senderDisplayName,
         senderPlatformId: sender.platformId,
         senderAvatarUrl: qqAvatar(sender.platformId),
-      })
+      }
+      // Compare the exact persisted shape, including removal of obsolete/unknown fields.
+      if (JSON.stringify(previous) !== JSON.stringify(next)) this.set(key, next)
     }
   }
   observeIdentity(scene: SceneRef, message: Message) {

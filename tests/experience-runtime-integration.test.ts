@@ -852,3 +852,49 @@ for (const action of ['exact_person_before_semantic', 'verify_plan_qualifiers'] 
       await h.close()
     }
   })
+
+test('plain receive-only ingress never previews history for explicit experience feedback', async () => {
+  const h = fixture()
+  h.learning(false)
+  let previews = 0
+  const preview = h.engine.runtime.preview.bind(h.engine.runtime)
+  h.engine.runtime.preview = (...args) => {
+    previews++
+    return preview(...args)
+  }
+  try {
+    for (let i = 0; i < 20; i++) h.ingest(source(`plain-${i}`))
+    assert.equal(previews, 0)
+    assert.equal(h.stats().transportCalls, 0)
+    assert.equal(h.stats().extractionCalls, 0)
+    h.feedback('explicit-missing-target', 'missing')
+    assert.equal(previews, 1, 'actual replies preserve fresh target lookup')
+  } finally {
+    await h.close()
+  }
+})
+
+test('plain experience feedback guard returns before database or history access', async () => {
+  const h = fixture()
+  const ready = h.store.assertRecoveryReady.bind(h.store)
+  const preview = h.engine.runtime.preview.bind(h.engine.runtime)
+  let gateReads = 0,
+    previews = 0
+  h.store.assertRecoveryReady = () => {
+    gateReads++
+    ready()
+  }
+  h.engine.runtime.preview = (...args) => {
+    previews++
+    return preview(...args)
+  }
+  try {
+    ;(h.engine as any).experienceRuntime.received(source('plain-no-sql'))
+    assert.equal(previews, 0)
+    assert.equal(gateReads, 0)
+  } finally {
+    h.store.assertRecoveryReady = ready
+    h.engine.runtime.preview = preview
+    await h.close()
+  }
+})

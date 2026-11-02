@@ -1,6 +1,9 @@
 import { mergeRecentHistory } from './runtime/chat-history.ts'
 import { TopicRoutingHistory } from './runtime/topic-history.ts'
-import { validateSourceSnapshots } from './memory/recovery/ledger.ts'
+import {
+  validateSourceSnapshots,
+  validateUnrecalledDependencies,
+} from './memory/recovery/ledger.ts'
 import type {
   SourceEventRef,
   TrustedSourceChange,
@@ -557,11 +560,7 @@ export class Runtime {
         }
       | undefined,
   ) {
-    this.cleanupTimer = setInterval(() => {
-      for (const [id, state] of this.states)
-        if (this.scenes.get(id)?.kind !== 'simulation') this.trim(state)
-        else if (Date.now() - state.lastTouched > 3600000) this.endSimulation(id)
-    }, 60000)
+    this.cleanupTimer = setInterval(() => this.cleanupIdleScenes(), 60000)
     this.cleanupTimer.unref()
   }
   private modelConfig() {
@@ -1373,7 +1372,10 @@ export class Runtime {
     this.typingDelay?.dispose()
     this.typingDelay = undefined
     clearInterval(this.cleanupTimer)
-    for (const id of this.states.keys()) this.cancel(id)
+    for (const [id, state] of this.states) {
+      this.cancel(id)
+      state.closed = true
+    }
     for (const adapter of this.adapters.values()) {
       try {
         adapter.dispose()
@@ -1384,9 +1386,60 @@ export class Runtime {
     this.adapters.clear()
     this.botUserIds.clear()
     this.states.clear()
+    this.scenes.clear()
     this.operations.clear()
     this.sendGuards.clear()
     this.listeners.clear()
+  }
+  /** Reclaim only cache-only scenes. Replay/uncertain-delivery state is not a cache. */
+  private cleanupIdleScenes(): void {
+    const now = Date.now()
+    const settings = this.store.settings
+    const idleMs = settings.cacheEnabled ? settings.cacheHours * 3600000 : 60000
+    const guardedScenes = new Set(
+      [...this.sendGuards.values()].map((guard) => guard.context.scene.id),
+    )
+    for (const [id, state] of this.states) {
+      const scene = this.scenes.get(id)
+      if (scene?.kind === 'simulation') {
+        if (now - state.lastTouched > 3600000) this.endSimulation(id)
+        continue
+      }
+      this.trim(state)
+      if (
+        !scene ||
+        now - state.lastTouched <= idleMs ||
+        state.messages.length ||
+        state.tasks.size ||
+        state.timers.size ||
+        state.firstPending.size ||
+        state.pendingTurns.size ||
+        state.flowQueue.size ||
+        // Even completed admissions retain process-local replay IDs. Do not erase them.
+        state.admissions.size ||
+        state.routing.deferred.size ||
+        state.routing.turns.size ||
+        state.routing.protectedSends.size ||
+        state.recalled.size ||
+        guardedScenes.has(id) ||
+        (state.lastAutomaticTurn.group !== undefined &&
+          now < state.lastAutomaticTurn.group + settings.groupTurnCooldownMs) ||
+        (state.lastAutomaticTurn.direct !== undefined &&
+          now < state.lastAutomaticTurn.direct + settings.directTurnCooldownMs)
+      )
+        continue
+      // Cache OFF must not remove a still-valid proactive opportunity.
+      if (
+        [...state.topics.values()].some((topic) => now - topic.lastAt < 30 * 60000) &&
+        this.store.scene(id)?.proactiveEnabled
+      )
+        continue
+      state.closed = true
+      this.imageBytes.clear(id)
+      this.states.delete(id)
+      this.scenes.delete(id)
+      // Adapters, plugin registrations, receipts and durable source/recall authority survive.
+    }
   }
   private state(id: string) {
     let state = this.states.get(id)
@@ -1648,7 +1701,15 @@ export class Runtime {
       (context.mode === 'simulation' ||
         !!this.store.scene(context.scene.id)?.participationEnabled) &&
       context.validations.every((validate) => validate()) &&
-      ![...context.dependencies].some((id) => this.isRecalled(context.scene.id, id))
+      this.dependenciesEligible(context)
+    )
+  }
+  private dependenciesEligible(context: TurnContext) {
+    const ids = [...context.dependencies]
+    return (
+      !context.signal.aborted &&
+      !ids.some((id) => this.states.get(context.scene.id)?.recalled.has(id)) &&
+      validateUnrecalledDependencies(this.store, context.scene.id, ids)
     )
   }
   private inclination(settings: Settings) {
@@ -3403,9 +3464,9 @@ export class Runtime {
           )
           results.push(result)
           if (this.store.settings.topicAdmissionEnabled) {
-            const routing = this.state(context.scene.id).routing
-            const topicId = routing.turns.get(context.turnId)
-            if (topicId) {
+            const routing = this.states.get(context.scene.id)?.routing
+            const topicId = routing?.turns.get(context.turnId)
+            if (routing && topicId) {
               if (
                 result.status === 'sent' &&
                 result.messageId &&
@@ -3432,12 +3493,13 @@ export class Runtime {
                 result,
               })
             const now = new Date().toISOString()
+            const state = this.states.get(context.scene.id)
             if (
-              !this.state(context.scene.id).messages.some(
-                (message) => message.id === result.messageId,
-              )
+              state &&
+              !state.closed &&
+              !state.messages.some((message) => message.id === result.messageId)
             )
-              this.state(context.scene.id).messages.push({
+              state.messages.push({
                 id: result.messageId ?? randomUUID(),
                 sceneId: context.scene.id,
                 senderId: 'bot',
@@ -3467,9 +3529,9 @@ export class Runtime {
             (observed.some((r) => r.status === 'sent') &&
               (operationError || observed.some((r) => r.status !== 'sent'))))
         ) {
-          const routing = this.state(context.scene.id).routing
-          const topicId = routing.turns.get(context.turnId)
-          if (topicId) routing.protectedSends.add(topicId)
+          const routing = this.states.get(context.scene.id)?.routing
+          const topicId = routing?.turns.get(context.turnId)
+          if (routing && topicId) routing.protectedSends.add(topicId)
         }
         operationError ??= failureFromOutcomes(observed)
         const sent = observed.filter((result) => result.status === 'sent').length,

@@ -554,3 +554,37 @@ test('same locator in different messages with different pixels does not reuse a 
     store.close()
   }
 })
+
+test('background intake skips policy and task creation for plain text and unrelated media', async () => {
+  const { store } = fixture()
+  const engine = new Engine(store)
+  const intake = engine as any
+  const allowed = intake.modelRead.personalizationAllowed.bind(intake.modelRead)
+  let policyReads = 0
+  intake.modelRead.personalizationAllowed = () => {
+    policyReads++
+    return false
+  }
+  try {
+    await intake.ingestMedia({ ...imageMessage(0), parts: [{ type: 'text', text: 'plain' }] })
+    await intake.ingestMedia(imageMessage(1))
+    await intake.ingestMedia({ ...imageMessage(2), parts: [] })
+    assert.equal(policyReads, 0)
+    assert.equal(intake.mediaTasks.size, 0)
+    assert.equal(intake.background.status.queued, 0)
+    await intake.ingestMedia({
+      ...imageMessage(3),
+      parts: [{ type: 'media', mediaType: 'image', assetId: 'ob:media:malformed' }],
+    })
+    assert.equal(
+      policyReads,
+      1,
+      'applicable prefix retains the original policy gate even for malformed bytes',
+    )
+    assert.equal(intake.mediaTasks.size, 0, 'denied policy cannot allocate a task')
+  } finally {
+    intake.modelRead.personalizationAllowed = allowed
+    await engine.dispose()
+    store.close()
+  }
+})

@@ -154,3 +154,99 @@ test('identical mutable locator used by different messages preserves independent
     await f.close()
   }
 })
+
+test('exact image lookups bound source qualification to id/hash candidates in a large library', async () => {
+  const f = await setup()
+  try {
+    const asset = await f.service.admitKnown(f.ctx(), f.bytes, f.source)
+    f.service.bindMediaReference(f.ctx(), reference, asset.id, f.source, f.bytes)
+    const insertAsset = f.store.db.prepare('INSERT INTO meme_assets(id,value) VALUES(?,?)')
+    const insertSource = f.store.db.prepare(
+      'INSERT INTO meme_sources(asset_id,scene_id,message_id,sender_id) VALUES(?,?,?,?)',
+    )
+    f.store.db.transaction(() => {
+      for (let index = 0; index < 2000; index++) {
+        const id = `unrelated-${index}`
+        const source = { ...f.source, messageId: id }
+        insertAsset.run(id, JSON.stringify({ ...asset, id, contentHash: id, sources: [source] }))
+        insertSource.run(id, source.sceneId, source.messageId, source.senderId)
+      }
+    })()
+    const recalled = f.store.recalled.bind(f.store)
+    const checked: string[] = []
+    f.store.recalled = (scene, message) => {
+      checked.push(message)
+      return recalled(scene, message)
+    }
+    assert.equal((await f.service.recognizeBytes(f.ctx(), f.bytes))?.id, asset.id)
+    assert.equal((await f.service.admitKnown(f.ctx(), f.bytes, f.source)).id, asset.id)
+    assert.equal(f.service.lookupMediaReference(f.ctx(), reference, 'm1')?.id, asset.id)
+    assert.deepEqual(await f.service.readReference(f.ctx(), reference, 'm1'), f.bytes)
+    assert.ok(checked.length > 0)
+    assert.equal(
+      checked.some((id) => id.startsWith('unrelated-')),
+      false,
+    )
+    assert.equal(await f.service.recognizeBytes(f.ctx('b'), f.bytes), undefined)
+    assert.equal(
+      await f.service.recognizeBytes({ ...f.ctx(), simulation: true }, f.bytes),
+      undefined,
+    )
+    const plans = [
+      ['id=?', asset.id, 'sqlite_autoindex_meme_assets_1'],
+      [
+        "COALESCE(json_extract(value,'$.contentHash'),id)=?",
+        asset.contentHash!,
+        'meme_content_hash_lookup',
+      ],
+    ]
+    for (const [predicate, key, index] of plans) {
+      const plan = f.store.db
+        .prepare(
+          `EXPLAIN QUERY PLAN SELECT value FROM meme_assets WHERE ${predicate} AND ((json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0) OR id IN (SELECT asset_id FROM meme_sources WHERE scene_id=?))`,
+        )
+        .all(key!, 'a')
+      assert.match(JSON.stringify(plan), new RegExp(index!))
+    }
+  } finally {
+    await f.close()
+  }
+})
+
+test('hash candidates preserve local preference, shared qualification, legacy ids and recall', async () => {
+  const f = await setup()
+  try {
+    const a = await f.service.admitKnown(f.ctx(), f.bytes, f.source)
+    const bSource = { ...f.source, sceneId: 'b', messageId: 'm2' }
+    const b = await f.service.admitKnown(f.ctx('b', 'm2'), f.bytes, bSource)
+    assert.notEqual(a.id, b.id)
+    assert.equal((await f.service.recognizeBytes(f.ctx(), f.bytes))?.id, a.id)
+    assert.equal((await f.service.recognizeBytes(f.ctx('b'), f.bytes))?.id, b.id)
+    // Synthetic legacy shared record uses its hash as id and has no contentHash field.
+    const { contentHash, ...legacy } = a
+    f.store.db.prepare('INSERT INTO meme_assets(id,value) VALUES(?,?)').run(
+      contentHash!,
+      JSON.stringify({
+        ...legacy,
+        sources: [f.source],
+        id: contentHash,
+        shared: true,
+        privacyReviewed: true,
+        knownOnly: false,
+      }),
+    )
+    assert.equal(
+      (await f.service.recognizeBytes({ ...f.ctx(), simulation: true }, f.bytes))?.id,
+      contentHash,
+    )
+    f.store.recalled = (scene, message) => scene === 'a' && message === 'm1'
+    assert.equal(await f.service.recognizeBytes(f.ctx(), f.bytes), undefined)
+    assert.equal(
+      await f.service.recognizeBytes({ ...f.ctx(), simulation: true }, f.bytes),
+      undefined,
+    )
+    assert.equal((await f.service.recognizeBytes(f.ctx('b'), f.bytes))?.id, b.id)
+  } finally {
+    await f.close()
+  }
+})

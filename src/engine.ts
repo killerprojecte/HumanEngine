@@ -1537,6 +1537,15 @@ export class Engine {
     }
   }
   private async ingestMedia(message: RuntimeMessage) {
+    // No applicable media means no policy read, task allocation or background queue work.
+    if (
+      !message.parts.some(
+        (part) =>
+          part.type === 'media' &&
+          (typeof part.assetId !== 'string' || part.assetId.startsWith('ob:media:')),
+      )
+    )
+      return
     if (!this.modelRead.personalizationAllowed(message.sceneId)) return
     const key = `${message.sceneId}|${message.id}`,
       controller = new AbortController()

@@ -235,6 +235,8 @@ export class MemeService {
     this.mediaRoot = resolve(mediaRoot)
     store.db.exec(`
       CREATE TABLE IF NOT EXISTS meme_assets (id TEXT PRIMARY KEY, value TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS meme_content_hash_lookup
+        ON meme_assets(COALESCE(json_extract(value,'$.contentHash'),id));
       CREATE TABLE IF NOT EXISTS meme_sources (
         asset_id TEXT NOT NULL REFERENCES meme_assets(id) ON DELETE CASCADE,
         scene_id TEXT NOT NULL, message_id TEXT NOT NULL, sender_id TEXT NOT NULL,
@@ -435,7 +437,7 @@ export class MemeService {
   async recognizeBytes(ctx: MemeContext, bytes: Buffer): Promise<MemeAsset | undefined> {
     if (!bytes.length || bytes.length > MAX_BYTES) throw new Error('image_size_limit')
     const hash = digest(bytes)
-    const match = this.contentCandidates(ctx).find(
+    const match = this.contentCandidates(ctx, hash).find(
       (asset) =>
         (asset.contentHash ?? asset.id) === hash && !asset.disabled && this.hasValidSource(asset),
     )
@@ -536,7 +538,7 @@ export class MemeService {
     const format = sniff(bytes)
     const contentHash = digest(bytes)
     // Never merge a new private scene into another scene's unreviewed semantic state.
-    const visible = this.contentCandidates(ctx).find(
+    const visible = this.contentCandidates(ctx, contentHash).find(
       (asset) =>
         (asset.contentHash ?? asset.id) === contentHash &&
         !asset.disabled &&
@@ -579,7 +581,10 @@ export class MemeService {
         if (!knownOnly) this.allowWrite(ctx)
         this.validateObservedSource(ctx, source)
         const existing = this.get(id)
-        if (existing && !this.readVisible(ctx).some((asset) => asset.id === id && !asset.disabled))
+        if (
+          existing &&
+          !this.readVisible(ctx, { id }).some((asset) => asset.id === id && !asset.disabled)
+        )
           throw new Error('media_scope_changed')
         const asset: MemeAsset = existing ?? {
           id,
@@ -1287,8 +1292,8 @@ export class MemeService {
     }
     throw new Error('analysis_failed')
   }
-  private contentCandidates(ctx: MemeContext): MemeAsset[] {
-    return this.readVisible(ctx)
+  private contentCandidates(ctx: MemeContext, contentHash: string): MemeAsset[] {
+    return this.readVisible(ctx, { contentHash })
       .filter((asset) => !this.deletingAssets.has(asset.id))
       .sort(
         (a, b) =>
@@ -1296,13 +1301,27 @@ export class MemeService {
           Number(a.sources.some((source) => source.sceneId === ctx.sceneId)),
       )
   }
-  private readVisible(ctx: MemeContext): MemeAsset[] {
+  private readVisible(
+    ctx: MemeContext,
+    match?: { id: string } | { contentHash: string },
+  ): MemeAsset[] {
     assertDomainReady(this.store.db)
-    const sql = ctx.simulation
+    const visibility = ctx.simulation
       ? "SELECT value FROM meme_assets WHERE json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0"
       : "SELECT value FROM meme_assets WHERE (json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0) OR id IN (SELECT asset_id FROM meme_sources WHERE scene_id=?)"
+    // Narrow before parsing and source qualification; permission checks below remain authoritative.
+    const filter = match
+      ? 'id' in match
+        ? 'id=?'
+        : "COALESCE(json_extract(value,'$.contentHash'),id)=?"
+      : undefined
+    const sql = filter ? visibility.replace(' WHERE ', ` WHERE ${filter} AND (`) + ')' : visibility
+    const parameters = [
+      ...(match ? ['id' in match ? match.id : match.contentHash] : []),
+      ...(ctx.simulation ? [] : [ctx.sceneId]),
+    ]
     return (
-      this.store.db.prepare(sql).all(...(ctx.simulation ? [] : [ctx.sceneId])) as {
+      this.store.db.prepare(sql).all(...parameters) as {
         value: string
       }[]
     )
@@ -1320,7 +1339,7 @@ export class MemeService {
       )
   }
   private visible(ctx: MemeContext, id: string, requireAvailable: boolean): MemeAsset {
-    const asset = this.readVisible(ctx).find((item) => item.id === id)
+    const asset = this.readVisible(ctx, { id }).find((item) => item.id === id)
     if (
       !asset ||
       this.deletingAssets.has(id) ||

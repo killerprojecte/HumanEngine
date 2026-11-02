@@ -1030,9 +1030,17 @@ export class MemeService {
       .slice(0, 12)
       .map((item) => this.sanitize(item.asset))
   }
-  original(ctx: MemeContext, id: string): { path: string; contentType: string } {
+  original(
+    ctx: MemeContext,
+    id: string,
+  ): { path: string; contentType: string; bytes: number; hash: string } {
     const asset = this.visible(ctx, id, true)
-    return { path: this.file(asset.id, asset.format), contentType: `image/${asset.format}` }
+    return {
+      path: this.file(asset.id, asset.format),
+      contentType: `image/${asset.format}`,
+      bytes: asset.bytes,
+      hash: asset.contentHash ?? asset.id,
+    }
   }
   recordUsage(ctx: MemeContext, id: string): void {
     this.allowWrite(ctx)

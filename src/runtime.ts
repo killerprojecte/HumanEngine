@@ -161,7 +161,12 @@ interface SceneState {
 }
 export interface RuntimeAdapter {
   readonly status?: string
-  send(scene: SceneRef, segment: SendSegment, signal?: AbortSignal): Promise<SendResult>
+  send(
+    scene: SceneRef,
+    segment: SendSegment,
+    signal?: AbortSignal,
+    beforeTransmit?: () => void,
+  ): Promise<SendResult>
   getMessage(scene: SceneRef, id: string, signal?: AbortSignal): Promise<HistoryResult>
   history(
     scene: SceneRef,
@@ -479,6 +484,7 @@ export class Runtime {
       deliveryStarted?: boolean
       plan?: ReplyPlan
       recipientIds?: Set<string>
+      captureTransmitGuard?: () => () => boolean
       validate: (request: unknown, signal: AbortSignal) => Promise<boolean>
     }
   >()
@@ -2431,11 +2437,16 @@ export class Runtime {
               const selectedMessages = [...selectedById.values()].filter((message) =>
                 plan.contextMessageIds.includes(message.id),
               )
+              let validatedVersion = version
               this.sendGuards.set(turnId, {
                 context,
                 grounding,
                 plan,
                 recipientIds: new Set(selectedMessages.map((m) => m.senderId)),
+                captureTransmitGuard: () => {
+                  const checkedVersion = validatedVersion
+                  return () => topic.version === checkedVersion
+                },
                 validate: async (request, signal) => {
                   if (topic.version !== version) {
                     const checkedVersion = topic.version
@@ -2502,7 +2513,11 @@ export class Runtime {
                     for (const message of fresh) dependencies.add(message.id)
                   }
 
-                  return this.eligible({ ...context, signal })
+                  const expectedVersion = topic.version
+                  const eligible = this.eligible({ ...context, signal })
+                  if (!eligible || topic.version !== expectedVersion) return false
+                  validatedVersion = expectedVersion
+                  return true
                 },
               })
               const brief = buildReplyBrief(

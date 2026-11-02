@@ -217,7 +217,7 @@ export function installAdapter(
       get status() {
         return status
       },
-      send: async (scope, segment, other): Promise<SendResult> => {
+      send: async (scope, segment, other, beforeTransmit): Promise<SendResult> => {
         checkScene(scope)
         if (segment.replyToId && !segment.replyToId.startsWith(scope.id + ':'))
           return { status: 'failed', detail: 'quote_scope_mismatch' }
@@ -226,7 +226,13 @@ export function installAdapter(
           return { status: 'cancelled', detail: 'cancelled_before_send' }
         try {
           const result = await awaitSendStage(
-            () => adapter.send(Object.freeze({ ...scope }), structuredClone(segment), combined),
+            () =>
+              adapter.send(
+                Object.freeze({ ...scope }),
+                structuredClone(segment),
+                combined,
+                beforeTransmit,
+              ),
             combined,
           )
           if (

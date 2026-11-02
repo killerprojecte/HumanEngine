@@ -8,6 +8,12 @@ import WebSocket from 'ws'
 import { safeNetworkDetails } from '../../errors.ts'
 import { OneBotHttpTransport } from './http.ts'
 import {
+  OutboundEncoder,
+  type OutboundPreparation,
+  type OutboundLease,
+  type OutboundSource,
+} from './outbound.ts'
+import {
   OneBotError,
   SNOWLUMA_PROFILE,
   object,
@@ -32,6 +38,8 @@ export * from './protocol.ts'
 
 /** Reusable OneBot transport; implementation-specific actions live in a profile. */
 export class OneBotAdapter {
+  private readonly encoder = new OutboundEncoder()
+  private readonly lifetime = new AbortController()
   private readonly profiles: OneBotProfiles
   private readonly http: OneBotHttpTransport
   private socket?: WebSocket
@@ -66,6 +74,7 @@ export class OneBotAdapter {
         this.setStatus(status)
       },
       (code, details) => this.emitError(code, details),
+      this.encoder,
     )
   }
   get capabilities() {
@@ -119,6 +128,8 @@ export class OneBotAdapter {
   }
   dispose(): void {
     this.disposed = true
+    this.lifetime.abort()
+    this.encoder.dispose()
     this.ready = false
     clearTimeout(this.reconnectTimer)
     this.http.dispose()
@@ -128,12 +139,19 @@ export class OneBotAdapter {
     this.setStatus('disposed')
   }
 
-  async send(scene: SceneRef, segment: SendSegment, signal?: AbortSignal): Promise<SendResult> {
+  async send(
+    scene: SceneRef,
+    segment: SendSegment,
+    signal?: AbortSignal,
+    beforeTransmit?: () => void,
+  ): Promise<SendResult> {
     if (signal?.aborted) return { status: 'cancelled', detail: 'cancelled_before_send' }
     let acknowledged = false
     try {
       this.assertScene(scene)
       const message: Obj[] = []
+      const sources: OutboundSource[] = []
+      const validations: Array<() => void> = []
       if (segment.replyToId)
         message.push({
           type: 'reply',
@@ -144,6 +162,20 @@ export class OneBotAdapter {
         else if (part.type === 'mention')
           message.push({ type: 'at', data: { qq: this.platformUserId(part.userId) } })
         else if (part.type === 'media') {
+          const source = this.callbacks.resolveMediaSource?.(part.assetId, scene)
+          if (source) {
+            if (!['image', 'record', 'video'].includes(source.type))
+              throw new OneBotError('media_scope_or_type_unsupported')
+            sources.push({
+              index: message.length,
+              path: source.path,
+              bytes: source.bytes,
+              hash: source.hash,
+            })
+            validations.push(() => source.validate())
+            message.push({ type: source.type, data: { file: '' } })
+            continue
+          }
           const resolved = this.callbacks.resolveMedia?.(part.assetId, scene)
           const media = resolved
             ? { ...resolved, sceneId: scene.id }
@@ -162,6 +194,15 @@ export class OneBotAdapter {
         scene.kind === 'group' ? 'send_group_msg' : 'send_private_msg',
         { [scene.kind === 'group' ? 'group_id' : 'user_id']: scene.platformSceneId, message },
         signal,
+        false,
+        {
+          sources,
+          validate: () => {
+            this.assertScene(scene)
+            beforeTransmit?.()
+            for (const validate of validations) validate()
+          },
+        },
       )
       acknowledged = true
       const result = object(response)
@@ -338,14 +379,16 @@ export class OneBotAdapter {
     }
   }
 
-  private action(
+  private async action(
     name: string,
     params: Obj,
     signal?: AbortSignal,
     bootstrap = false,
+    preparation?: OutboundPreparation,
   ): Promise<unknown> {
     if (signal?.aborted) return Promise.reject(new OneBotError('request_cancelled'))
-    if (this.config.transport === 'http') return this.http.action(name, params, signal, bootstrap)
+    if (this.config.transport === 'http')
+      return this.http.action(name, params, signal, bootstrap, preparation)
     const socket = this.socket
     if (
       this.disposed ||
@@ -354,36 +397,98 @@ export class OneBotAdapter {
       (!bootstrap && !this.ready)
     )
       return Promise.reject(new OneBotError('adapter_not_connected'))
-    return new Promise((resolve, reject) => {
-      const echo = randomUUID()
-      const fail = (code: string) => {
-        const pending = this.pending.get(echo)
-        if (pending) {
-          this.pending.delete(echo)
-          pending.cleanup()
-          reject(new OneBotError(code, pending.transmitted))
+    const echo = randomUUID()
+    let lease: OutboundLease | undefined
+    let settled = false,
+      wireDone = true
+    const releaseWire = () => {
+      wireDone = true
+      socket.off('close', releaseWire)
+      if (settled) lease?.release()
+    }
+    const encodingTimeout = preparation
+      ? AbortSignal.timeout(this.config.timeoutMs ?? 15_000)
+      : undefined
+    const combined = AbortSignal.any([
+      this.lifetime.signal,
+      ...(signal ? [signal] : []),
+      ...(encodingTimeout ? [encodingTimeout] : []),
+    ])
+    try {
+      if (preparation)
+        lease = await this.encoder.encode(
+          { action: name, params, echo },
+          preparation.sources,
+          combined,
+        )
+      if (combined.aborted) throw new OneBotError('request_cancelled')
+      if (
+        this.disposed ||
+        this.socket !== socket ||
+        socket.readyState !== WebSocket.OPEN ||
+        (!bootstrap && !this.ready)
+      )
+        throw new OneBotError('adapter_not_connected')
+      return await new Promise((resolve, reject) => {
+        const fail = (code: string) => {
+          const pending = this.pending.get(echo)
+          if (pending) {
+            this.pending.delete(echo)
+            pending.cleanup()
+            reject(new OneBotError(code, pending.transmitted))
+          }
         }
-      }
-      const timer = setTimeout(() => fail('request_timeout'), this.config.timeoutMs ?? 15_000)
-      const abort = () => fail('request_cancelled')
-      const pending: Pending = {
-        resolve,
-        reject,
-        cleanup: () => {
-          clearTimeout(timer)
-          signal?.removeEventListener('abort', abort)
-        },
-        transmitted: false,
-      }
-      this.pending.set(echo, pending)
-      signal?.addEventListener('abort', abort, { once: true })
-      try {
-        socket.send(JSON.stringify({ action: name, params, echo }))
-        pending.transmitted = true
-      } catch {
-        fail('socket_send_failed')
-      }
-    })
+        const timer = setTimeout(() => fail('request_timeout'), this.config.timeoutMs ?? 15_000)
+        const abort = () => fail(encodingTimeout?.aborted ? 'request_timeout' : 'request_cancelled')
+        const pending: Pending = {
+          resolve,
+          reject,
+          cleanup: () => {
+            clearTimeout(timer)
+            combined.removeEventListener('abort', abort)
+          },
+          transmitted: false,
+        }
+        this.pending.set(echo, pending)
+        combined.addEventListener('abort', abort, { once: true })
+        try {
+          preparation?.validate()
+          if (combined.aborted) throw new OneBotError('request_cancelled')
+          if (
+            this.disposed ||
+            this.socket !== socket ||
+            socket.readyState !== WebSocket.OPEN ||
+            (!bootstrap && !this.ready)
+          )
+            throw new OneBotError('adapter_not_connected')
+          pending.transmitted = true // Invocation can have reached the peer even if it throws.
+          if (lease) {
+            wireDone = false
+            socket.once('close', releaseWire)
+            socket.send(lease.bytes, { binary: false }, (error) => {
+              releaseWire()
+              if (error) fail('socket_send_failed')
+            })
+          } else socket.send(JSON.stringify({ action: name, params, echo }))
+        } catch {
+          if (!wireDone) socket.terminate()
+          fail('socket_send_failed')
+        }
+      })
+    } catch (error) {
+      if (
+        error instanceof OneBotError &&
+        error.code === 'request_cancelled' &&
+        encodingTimeout?.aborted &&
+        !signal?.aborted &&
+        !this.lifetime.signal.aborted
+      )
+        throw new OneBotError('request_timeout', error.transmitted)
+      throw error
+    } finally {
+      settled = true
+      if (wireDone) lease?.release()
+    }
   }
 
   private receive(raw: string): void {

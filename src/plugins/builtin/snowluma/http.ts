@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { createServer, type Server } from 'node:http'
 import { safeNetworkDetails } from '../../errors.ts'
+import { preparedHttpRequest } from './http-prepared.ts'
+import { OutboundEncoder, type OutboundPreparation, type OutboundLease } from './outbound.ts'
 import {
   OneBotError,
   object,
@@ -21,6 +23,7 @@ export class OneBotHttpTransport {
     private readonly receive: (raw: string) => void,
     private readonly setStatus: (status: 'connecting' | 'connected' | 'disconnected') => void,
     private readonly emitError: (code: string, details?: OneBotErrorDetails) => void,
+    private readonly encoder: OutboundEncoder,
   ) {}
   dispose(): void {
     this.disposed = true
@@ -190,6 +193,7 @@ export class OneBotHttpTransport {
     params: Obj,
     signal?: AbortSignal,
     bootstrap = false,
+    preparation?: OutboundPreparation,
   ): Promise<unknown> {
     if (signal?.aborted) throw new OneBotError('request_cancelled')
     if (this.disposed || (!bootstrap && !this.ready)) throw new OneBotError('adapter_not_connected')
@@ -207,19 +211,36 @@ export class OneBotHttpTransport {
     ])
     const timer = setTimeout(() => controller.abort(), this.config.timeoutMs ?? 15000)
     let transmitted = false
+    let lease: OutboundLease | undefined
+    let releasePrepared: (() => void) | undefined
     try {
+      if (preparation) lease = await this.encoder.encode(params, preparation.sources, combined)
       if (combined.aborted) throw new OneBotError('request_cancelled')
-      transmitted = true // Fetch cannot prove that a failing request never reached the peer.
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(params),
-        redirect: 'manual',
-        signal: combined,
-      })
+      if (this.disposed || (!bootstrap && !this.ready))
+        throw new OneBotError('adapter_not_connected')
+      preparation?.validate()
+      if (this.disposed || (!bootstrap && !this.ready))
+        throw new OneBotError('adapter_not_connected')
+      if (combined.aborted) throw new OneBotError('request_cancelled')
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      }
+      transmitted = true // Invocation cannot prove that a failing request never reached the peer.
+      const prepared =
+        lease && preparation?.sources.length
+          ? preparedHttpRequest(url, headers, lease, combined)
+          : undefined
+      releasePrepared = prepared?.release
+      const response = await (prepared
+        ? prepared.response
+        : fetch(url, {
+            method: 'POST',
+            headers,
+            body: lease ? lease.bytes : JSON.stringify(params),
+            redirect: 'manual',
+            signal: combined,
+          }))
       if (!response.ok) {
         await response.body?.cancel()
         throw new OneBotError('http_action_failed', true, {
@@ -266,7 +287,16 @@ export class OneBotHttpTransport {
       }
       return envelope.data
     } catch (error) {
-      if (error instanceof OneBotError) throw error
+      if (error instanceof OneBotError) {
+        if (
+          error.code === 'request_cancelled' &&
+          controller.signal.aborted &&
+          !signal?.aborted &&
+          !this.lifetime.signal.aborted
+        )
+          throw new OneBotError('request_timeout', error.transmitted)
+        throw error
+      }
       throw new OneBotError(
         controller.signal.aborted && !signal?.aborted && !this.lifetime.signal.aborted
           ? 'request_timeout'
@@ -278,6 +308,8 @@ export class OneBotHttpTransport {
       )
     } finally {
       clearTimeout(timer)
+      if (releasePrepared) releasePrepared()
+      else lease?.release()
     }
   }
 }

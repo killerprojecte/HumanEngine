@@ -109,6 +109,19 @@ export interface OneBotCallbacks {
   onStatus?: (status: 'connecting' | 'connected' | 'disconnected' | 'disposed') => void
   onError?: (code: string, details?: OneBotErrorDetails) => void
   isRecalled?: (sceneId: string, messageId: string) => boolean
+  /** Trusted first-party source descriptor; validation stays on the authorizing parent. */
+  resolveMediaSource?: (
+    assetId: string,
+    scene: SceneRef,
+  ) =>
+    | {
+        path: string
+        bytes: number
+        hash: string
+        type: 'image' | 'record' | 'video'
+        validate(): void
+      }
+    | undefined
   resolveMedia?: (
     assetId: string,
     scene: SceneRef,

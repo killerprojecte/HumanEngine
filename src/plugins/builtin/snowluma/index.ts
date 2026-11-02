@@ -8,6 +8,7 @@ import type { Store } from '../../../store.ts'
 import { untilAbort } from '../../adapters.ts'
 export interface BuiltinServices {
   resolveMedia?: OneBotCallbacks['resolveMedia']
+  resolveMediaSource?: OneBotCallbacks['resolveMediaSource']
   adapterStopped(id: string): void
 }
 /** Trusted bundled code only. IDs and stored settings remain compatible with existing scenes. */
@@ -122,6 +123,7 @@ export function snowLumaPlugin(
         { id: 'snowluma', ...config, credentialEnv: config.credentialEnv ?? '', token, eventToken },
         {
           resolveMedia: services.resolveMedia,
+          resolveMediaSource: services.resolveMediaSource,
           onProfile: (profile) => {
             if (active()) store.updateIdentity(profile)
           },

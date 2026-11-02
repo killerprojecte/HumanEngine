@@ -1,5 +1,5 @@
 import { RequestMeasurementSummarySchema } from './model-measurement/schema.ts'
-import { SourceEventStore } from './memory/storage/event-revisions.ts'
+import { SourceEventStore, ensureSourceEventLookupIndex } from './memory/storage/event-revisions.ts'
 import { recordSourceEventMutation } from './memory/recovery/source-events.ts'
 import { BudgetSettingsSchema } from './budget/settings.ts'
 import {
@@ -152,6 +152,7 @@ export class Store {
       if (legacy)
         this.db.exec('UPDATE model_usage SET legacy_calls=calls,legacy_estimated_usd=estimated_usd')
     })()
+    this.db.transaction(() => ensureSourceEventLookupIndex(this.db))()
   }
   assertRecoveryReady() {
     if (!this.recoveryQuarantined) assertRecoveryReady(this.db)

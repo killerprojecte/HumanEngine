@@ -174,10 +174,13 @@ passive until an administrator enables them.
 
 The returned transport implements:
 
-- `send(scene, segment, signal?)`: called **only by the core send pipeline**.
+- `send(scene, segment, signal?, beforeTransmit?)`: called **only by the core send pipeline**.
   Return `sent`, `failed`, `unknown`, or `cancelled`; canonicalize receipt IDs with
   `context.messageId`. A disconnected/timed-out request with uncertain delivery
   is `unknown`, never automatically retried. There is no `context.send` bypass.
+  Cooperating asynchronous adapters invoke the optional synchronous `beforeTransmit`
+  gate after preparation and immediately before the network effect. A thrown gate
+  must yield a known-unsent result, not a retry or uncertain delivery.
 - `getMessage(scene, id, signal?)` and `history(scene, { limit, cursor? }, signal?)`:
   return normalized `HistoryResult` with truthful `complete`, `partial`, or
   `unavailable` coverage. Use history origin, preserve opaque pagination cursors,
@@ -191,6 +194,11 @@ transport check. `context.media(assetId, scene)` resolves only core-authorized
 local media for that scene; do not fetch arbitrary URLs or assume the entire
 shared library is public. No image/animation capability is inferred from a
 transport registration.
+
+`context.media` remains a synchronous compatibility API and can block while reading or
+base64-encoding large originals. The bundled SnowLuma adapter uses a separate bounded
+worker-backed source-descriptor path. External adapters must not assume that legacy
+media callbacks are asynchronous. See [outbound media limits and guarantees](outbound-media-performance.md).
 
 Simulation does not call real adapter sends/history or emit real-platform events.
 Plugin tools remain subject to their declared effects: learning-candidate tools

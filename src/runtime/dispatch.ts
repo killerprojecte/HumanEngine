@@ -80,6 +80,7 @@ export async function dispatchSegment(
   operationId: string,
   guard: {
     grounding: ReplyGrounding
+    captureTransmitGuard?: () => () => boolean
     validate(request: unknown, signal: AbortSignal): Promise<boolean>
   },
   typingDelay: ReturnType<typeof createTypingDelay> | undefined,
@@ -172,6 +173,7 @@ export async function dispatchSegment(
         return (receipt = { status: 'cancelled', detail: 'send_invalidated' })
       if (context.mode === 'simulation')
         return (receipt = { status: 'sent', messageId: randomUUID() })
+      const transmitGuard = guard.captureTransmitGuard?.()
       const sending = startFlow(services.store, 'adapter_send', {
         nextStep: 'replyer',
       })
@@ -183,7 +185,17 @@ export async function dispatchSegment(
           ? await sending.run(() => {
               const send = () => {
                 invoked = true
-                return adapter.send(context.scene as SceneRef, segment, context.signal)
+                return adapter.send(context.scene as SceneRef, segment, context.signal, () => {
+                  if (
+                    !services.eligible(context) ||
+                    services.adapter(context.scene.adapterId) !== adapter ||
+                    (segment.replyToId &&
+                      services.isRecalled(context.scene.id, segment.replyToId)) ||
+                    (transmitGuard && !transmitGuard()) ||
+                    guard.grounding.check([segment])
+                  )
+                    throw new Error('send_invalidated')
+                })
               }
               return abortContainedAdapters.has(adapter)
                 ? send()

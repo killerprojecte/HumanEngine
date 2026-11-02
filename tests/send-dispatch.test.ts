@@ -407,3 +407,73 @@ test('non-cancellation validation failure still throws without reaching the adap
     f.store.close()
   }
 })
+
+test('first-party final transmit gate rejects held encoding after eligibility, adapter, reply, grounding or topic changes', async () => {
+  for (const change of ['eligibility', 'adapter', 'reply', 'grounding', 'topic', 'none']) {
+    const f = fixture()
+    let finish!: () => void
+    let entered!: () => void
+    const held = new Promise<void>((resolve) => {
+      finish = resolve
+    })
+    const started = new Promise<void>((resolve) => {
+      entered = resolve
+    })
+    let eligible = true,
+      recalled = false,
+      groundingFailure = false,
+      version = 1,
+      sends = 0
+    const adapter = {
+      send: async (_scene, _segment, _signal, beforeTransmit) => {
+        entered()
+        await held
+        try {
+          beforeTransmit?.()
+        } catch {
+          return { status: 'failed', detail: 'send_invalidated' }
+        }
+        sends++
+        return { status: 'sent', messageId: 'receipt' }
+      },
+    } as RuntimeAdapter
+    let current = adapter
+    try {
+      const result = dispatchSegment(
+        {
+          store: f.store,
+          eligible: () => eligible,
+          isRecalled: () => recalled,
+          adapter: () => current,
+        },
+        f.context,
+        { ...segment, replyToId: 'reply' },
+        'o',
+        {
+          grounding: {
+            check: () => (groundingFailure ? 'changed' : undefined),
+          } as unknown as ReplyGrounding,
+          validate: async () => true,
+          captureTransmitGuard: () => {
+            const validated = version
+            return () => version === validated
+          },
+        },
+        undefined,
+        0,
+        1,
+      )
+      await started
+      if (change === 'eligibility') eligible = false
+      if (change === 'adapter') current = { ...adapter }
+      if (change === 'reply') recalled = true
+      if (change === 'grounding') groundingFailure = true
+      if (change === 'topic') version++
+      finish()
+      assert.equal((await result).status, change === 'none' ? 'sent' : 'failed', change)
+      assert.equal(sends, change === 'none' ? 1 : 0, change)
+    } finally {
+      f.store.close()
+    }
+  }
+})

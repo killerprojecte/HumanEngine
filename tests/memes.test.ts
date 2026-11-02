@@ -418,3 +418,45 @@ test('queued thumbnail rejects an asset deleted before its image slot is availab
     await close()
   }
 })
+
+test('authorized original descriptors preserve legacy content-hash IDs without main-thread file hashing', async () => {
+  const { store, memes, close } = await setup()
+  const { rename } = await import('node:fs/promises')
+  const { OutboundEncoder } = await import('../src/plugins/builtin/snowluma/outbound.ts')
+  const encoder = new OutboundEncoder()
+  try {
+    const bytes = await animated('gif'),
+      context = ctx('a', 'legacy')
+    const asset = await memes.import(context, bytes, source(context))
+    await memes.analyze(
+      context,
+      asset.id,
+      router(() => JSON.stringify(tags)),
+    )
+    memes.update(asset.id, { available: true })
+    const original = memes.original(context, asset.id)
+    const legacyId = asset.contentHash!
+    const legacy = { ...memes.adminGet(asset.id)!, id: legacyId }
+    delete legacy.contentHash
+    store.db
+      .prepare('INSERT INTO meme_assets(id,value) VALUES(?,?)')
+      .run(legacyId, JSON.stringify(legacy))
+    store.db.prepare('UPDATE meme_sources SET asset_id=? WHERE asset_id=?').run(legacyId, asset.id)
+    const path = original.path.replace(asset.id, legacyId)
+    await rename(original.path, path)
+    const descriptor = memes.original(context, legacyId)
+    assert.equal(descriptor.hash, legacyId)
+    assert.equal(descriptor.bytes, bytes.length)
+    const lease = await encoder.encode({ message: [{ type: 'image', data: { file: '' } }] }, [
+      { ...descriptor, index: 0 },
+    ])
+    assert.equal(
+      JSON.parse(Buffer.from(lease.bytes).toString()).message[0].data.file,
+      `base64://${bytes.toString('base64')}`,
+    )
+    lease.release()
+  } finally {
+    encoder.dispose()
+    await close()
+  }
+})

@@ -1165,12 +1165,23 @@ export class Engine {
     this.memory.flushProjections()
     await this.plugins.register(
       snowLumaPlugin(this.runtime, this.store, {
-        resolveMedia: (assetId, scene) => {
+        resolveMediaSource: (assetId, scene) => {
           if (!/^[a-f0-9]{64}$/.test(assetId)) return undefined
-          const original = this.memes.original({ sceneId: scene.id, simulation: false }, assetId)
+          const context = { sceneId: scene.id, simulation: false }
+          const original = this.memes.original(context, assetId)
           return {
-            file: `base64://${readFileSync(original.path).toString('base64')}`,
+            ...original,
             type: 'image',
+            validate: () => {
+              const current = this.memes.original(context, assetId)
+              if (
+                current.path !== original.path ||
+                current.hash !== original.hash ||
+                current.bytes !== original.bytes ||
+                current.contentType !== original.contentType
+              )
+                throw new Error('outbound_media_changed')
+            },
           }
         },
         adapterStopped: (id) => {
@@ -1798,6 +1809,9 @@ export class Engine {
     const readTicket = this.modelRead.capture(context.scene.id)!
     const ctx = { sceneId: context.scene.id, simulation: false }
     const originals = this.habits.adminList()
+    const firstOriginal = new Map<string, (typeof originals)[number]>()
+    for (const record of originals)
+      if (!firstOriginal.has(record.id)) firstOriginal.set(record.id, record)
     // Capture identity before exposing hints. Expiry during these synchronous reads
     // must revoke the turn, never bless a stale hint with a later evidence set.
     const identities = new Map(
@@ -1807,7 +1821,7 @@ export class Engine {
     this.modelRead.assert(readTicket)
     if (hints.length) this.modelRead.begin(context)
     for (const hint of hints) {
-      const original = originals.find((h) => h.id === hint.id)
+      const original = firstOriginal.get(hint.id)
       if (!original) continue
       for (const source of original.sources)
         if (source.sceneId === context.scene.id) context.dependencies.add(source.messageId)

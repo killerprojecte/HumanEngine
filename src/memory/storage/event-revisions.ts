@@ -18,6 +18,22 @@ import {
 } from '../domain/events.ts'
 
 type DB = Pick<Database.Database, 'exec' | 'prepare' | 'transaction' | 'inTransaction'>
+
+/** Writable startup migration only. Reads must not initialize or modify source-event
+ * storage, including when a validation is inside a read-only recovery scope. */
+export function ensureSourceEventLookupIndex(db: Pick<DB, 'exec' | 'prepare'>): void {
+  const tables = db
+    .prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('source_event_heads','source_event_revisions','source_event_edit_keys','source_event_tombstones')",
+    )
+    .all() as { name: string }[]
+  // Preserve unenrolled and partial-schema behavior; exists() rejects partial state
+  // on use. Do not invent tables or a new schema policy for an index optimization.
+  if (tables.length !== 4) return
+  db.exec(
+    'CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_heads(scene_id,message_id)',
+  )
+}
 export const SourceEventMetadataSchema = z
   .object({
     identity: SourceEventIdentitySchema,
@@ -128,7 +144,8 @@ export class SourceEventStore {
       .exec(`CREATE TABLE IF NOT EXISTS source_event_heads(identity_key TEXT PRIMARY KEY,event_id TEXT UNIQUE NOT NULL,scene_id TEXT NOT NULL,message_id TEXT NOT NULL,value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS source_event_revisions(event_id TEXT NOT NULL,revision INTEGER NOT NULL,value TEXT NOT NULL,PRIMARY KEY(event_id,revision));
 CREATE TABLE IF NOT EXISTS source_event_edit_keys(event_id TEXT NOT NULL,edit_key TEXT NOT NULL,revision INTEGER NOT NULL,change_hash TEXT NOT NULL,PRIMARY KEY(event_id,edit_key));
-CREATE TABLE IF NOT EXISTS source_event_tombstones(scene_id TEXT NOT NULL,message_id TEXT NOT NULL,PRIMARY KEY(scene_id,message_id));`)
+CREATE TABLE IF NOT EXISTS source_event_tombstones(scene_id TEXT NOT NULL,message_id TEXT NOT NULL,PRIMARY KEY(scene_id,message_id));
+CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_heads(scene_id,message_id);`)
   }
   private transaction<T>(fn: () => T): T {
     return this.db.inTransaction ? fn() : this.db.transaction(fn).immediate()

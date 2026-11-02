@@ -60,6 +60,7 @@ function fixture(size = 20) {
   })
   return {
     records,
+    port,
     states,
     exposure,
     ctx,
@@ -180,4 +181,33 @@ test('same-version source qualification change rejects and a later failed delive
   assert.equal(other.states.get('m0')!.version, 1)
   assert.deepEqual(other.exposure.commit(pendingContext, pending), [])
   assert.equal(pendingContext.dependencies.size, 0)
+})
+
+test('fixed-ID authorization uses private prepared identities at every boundary', () => {
+  const f = fixture(1000),
+    ctx = f.ctx()
+  const ids: string[][] = []
+  Object.assign(f.port, {
+    listByIds: (_: unknown, wanted: readonly string[]) => {
+      ids.push([...wanted])
+      return structuredClone(f.records.filter((record) => wanted.includes(record.id)))
+    },
+  })
+  const prepared = f.exposure.prepare(ctx, [f.records[3]!])
+  assert.equal(f.exposure.commit(ctx, prepared).length, 1)
+  assert.deepEqual(ids, [['m3'], ['m3']])
+  assert.equal(ctx.validations[0]!(), true)
+  assert.deepEqual(ids.at(-1), ['m3'])
+  const guard = f.exposure.captureExactGuard(ctx, 'm3')!
+  assert.equal(guard(), true)
+  assert.deepEqual(ids.at(-1), ['m3'])
+  const malicious = {
+    get id(): string {
+      throw Error('untrusted id getter invoked')
+    },
+  }
+  assert.deepEqual(f.exposure.commit(ctx, [malicious]), [])
+  assert.deepEqual(ids.at(-1), [])
+  f.records.splice(3, 1)
+  assert.equal(guard(), false)
 })

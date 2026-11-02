@@ -52,6 +52,11 @@ test('actual 1k Engine search has constant full-scene reads and fresh delivery g
       lists++
       return original(...args)
     }
+    const originalByIds = engine.memory.listByIds.bind(engine.memory)
+    engine.memory.listByIds = (...args) => {
+      lists++
+      return originalByIds(...args)
+    }
     const ctx = turn()
     const prepared = (await extension.execute(
       'memory.search',

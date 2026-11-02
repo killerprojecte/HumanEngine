@@ -491,6 +491,18 @@ export class MemoryService {
       )
       .map((record) => this.authority.sanitize(record))
   }
+  /** Exact-ID optimization only; every call retains list's fresh lifecycle and
+   * authorization boundary. IDs are not authority and no result prefix is applied. */
+  listByIds(ctx: MemoryContext, ids: readonly string[]): MemoryRecord[] {
+    this.store.assertRecoveryReady()
+    if (!ctx.simulation) this.lifecycleCommands.refreshSupport()
+    return this.scopedRows(ctx, undefined, ids)
+      .map(read)
+      .filter(
+        (record) => this.authority.supported(record) && this.authority.currentApplicable(record),
+      )
+      .map((record) => this.authority.sanitize(record))
+  }
   /** Read-only views; authoritative filtering remains in list(), never in a cache. */
   people(ctx: MemoryContext) {
     return projectPeople(ctx, this.list(ctx))
@@ -516,7 +528,7 @@ export class MemoryService {
     return this.captureParentReferences(ctx, [returned])[0]
   }
 
-  /** One current scene read per bounded batch, not one scene scan per projected record. */
+  /** One current exact-ID read per bounded batch, not one scene scan per projected record. */
   captureParentReferences(
     ctx: MemoryContext,
     returned: readonly MemoryRecord[],
@@ -527,7 +539,7 @@ export class MemoryService {
   }
 
   /** Trusted model-delivery capture. Preserves the existing unpaginated person-read
-   * contract: no silent prefix, no caller-supplied authority map. One scene scan per
+   * contract: no silent prefix, no caller-supplied authority map. One exact-ID read per
    * synchronous batch; each returned body still must equal current authorized data. */
   captureExposedReferences(
     ctx: MemoryContext,
@@ -542,7 +554,12 @@ export class MemoryService {
     returned: readonly MemoryRecord[],
   ): ProofParentReference[] {
     return this.revisions.transaction(() => {
-      const current = new Map(this.list(ctx).map((record) => [record.id, record]))
+      const current = new Map(
+        this.listByIds(
+          ctx,
+          returned.map((record) => record.id),
+        ).map((record) => [record.id, record]),
+      )
       return returned.flatMap((record) => {
         const { score: _score, ...body } = record
         const authorized = current.get(record.id)
@@ -877,7 +894,13 @@ export class MemoryService {
     const scope = this.scopeFilter(ctx, personId)
     if (!scope) return []
     const applicability = new Map<string, boolean>()
-    const unsupported = this.adminList()
+    // Scope only: do not prefilter time eligibility in an earlier statement.
+    // A record becoming eligible before the final SQL still needs applicability.
+    const candidates = this.store.db
+      .prepare(`SELECT * FROM memories WHERE ${scope.sql} ORDER BY rowid DESC`)
+      .all(...scope.params) as Row[]
+    const unsupported = candidates
+      .map(read)
       .filter(
         (record) =>
           !this.authority.currentApplicable(record, new Set(), applicability) ||
@@ -987,12 +1010,28 @@ export class MemoryService {
 
   indexable(): MemoryRecord[] {
     this.lifecycleCommands.refreshSupport()
-    return this.adminList().filter(
-      (memory) =>
-        !memory.internalUse &&
-        ['active', 'disputed'].includes(memory.status) &&
-        (memory.origin === 'manual' || memory.lineageStatus === 'verified') &&
-        this.authority.supported(memory),
+    return this.adminList().filter((memory) => this.eligibleForIndexing(memory))
+  }
+
+  /** Exact existing indexability rules, not list's temporal/applicability rules. */
+  indexableByIds(ids: readonly string[]): MemoryRecord[] {
+    this.lifecycleCommands.refreshSupport()
+    this.store.assertRecoveryReady()
+    const rows = this.store.db
+      .prepare(
+        `SELECT memories.* FROM json_each(?) AS wanted CROSS JOIN memories
+       WHERE memories.id=wanted.value ORDER BY memories.rowid DESC`,
+      )
+      .all(JSON.stringify([...new Set(ids)])) as Row[]
+    return rows.map(read).filter((memory) => this.eligibleForIndexing(memory))
+  }
+
+  private eligibleForIndexing(memory: MemoryRecord): boolean {
+    return (
+      !memory.internalUse &&
+      ['active', 'disputed'].includes(memory.status) &&
+      (memory.origin === 'manual' || memory.lineageStatus === 'verified') &&
+      this.authority.supported(memory)
     )
   }
 
@@ -1078,14 +1117,17 @@ export class MemoryService {
       return { sql: 'scope_key=? AND person_id=?', params: [`scene:${ctx.sceneId}`, personId] }
     return { sql: "(scope_key=? OR scope_key='shared:public')", params: [`scene:${ctx.sceneId}`] }
   }
-  private scopedRows(ctx: MemoryContext, personId?: string): Row[] {
+  private scopedRows(ctx: MemoryContext, personId?: string, ids?: readonly string[]): Row[] {
     const scope = this.scopeFilter(ctx, personId)
     if (!scope) return []
     return this.store.db
       .prepare(
-        `SELECT * FROM memories WHERE ${scope.sql} AND json_extract(value,'$.internalUse') IS NULL AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(value,'$.status') IN ('active','disputed') AND (json_extract(value,'$.validFrom') IS NULL OR julianday(json_extract(value,'$.validFrom')) <= julianday('now')) AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now')) ORDER BY rowid DESC`,
+        `SELECT memories.* FROM ${ids === undefined ? 'memories' : 'json_each(?) AS wanted CROSS JOIN memories'} WHERE ${ids === undefined ? '' : 'memories.id=wanted.value AND '}${scope.sql} AND json_extract(memories.value,'$.internalUse') IS NULL AND COALESCE(json_extract(memories.value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(memories.value,'$.status') IN ('active','disputed') AND (json_extract(memories.value,'$.validFrom') IS NULL OR julianday(json_extract(memories.value,'$.validFrom')) <= julianday('now')) AND (json_extract(memories.value,'$.validUntil') IS NULL OR julianday(json_extract(memories.value,'$.validUntil')) > julianday('now')) ORDER BY memories.rowid DESC`,
       )
-      .all(...scope.params) as Row[]
+      .all(
+        ...(ids === undefined ? [] : [JSON.stringify([...new Set(ids)])]),
+        ...scope.params,
+      ) as Row[]
   }
 
   subjectEvidence(ctx: MemoryContext, id: string) {
@@ -1095,7 +1137,9 @@ export class MemoryService {
     const wanted = [...new Set(ids)]
     const items = new Map<string, ReturnType<MemoryService['projectSubjectEvidence']>>()
     if (ctx.simulation) return { items, coverage: 'complete' as const }
-    const visible = new Map(this.list(ctx).map((record) => [record.id, record]))
+    const visible = new Map(
+      this.listByIds(ctx, wanted.slice(0, 200)).map((record) => [record.id, record]),
+    )
     for (const id of wanted.slice(0, 200)) {
       const record = visible.get(id)
       if (record?.scope.kind === 'scene' && record.scope.sceneId === ctx.sceneId)

@@ -310,13 +310,21 @@ test('unresolved subject is a scene claim and batch evidence performs one author
     assert.equal(saved.status, 'saved')
     if (saved.status !== 'saved') return
     const original = memory.list.bind(memory)
+    const originalByIds = memory.listByIds.bind(memory)
     let calls = 0
+    const exactIdReads: string[][] = []
     memory.list = (...args) => {
       calls++
       return original(...args)
     }
+    memory.listByIds = (context, ids) => {
+      calls++
+      exactIdReads.push([...ids])
+      return originalByIds(context, ids)
+    }
     const batch = memory.subjectEvidenceBatch(ctx(), [saved.memory.id, 'missing', saved.memory.id])
     assert.equal(calls, 1)
+    assert.deepEqual(exactIdReads, [[saved.memory.id, 'missing']])
     assert.equal(batch.items.size, 1)
     assert.equal(batch.coverage, 'complete')
     assert.equal(

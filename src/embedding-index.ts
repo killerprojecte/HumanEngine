@@ -376,21 +376,37 @@ export class EmbeddingIndex {
   }
   private pending(job: RebuildJob) {
     const eligible = this.memory.indexable()
-    const done = new Map(
+    const checkpoints = new Map(
       (
         this.store.db
-          .prepare('SELECT memory_id,content_hash FROM embedding_rebuild_items WHERE job_id=?')
-          .all(job.id) as { memory_id: string; content_hash: string }[]
-      ).map((r) => [r.memory_id, r.content_hash]),
+          .prepare(
+            `
+        SELECT wanted.value AS memory_id,done.content_hash,
+          vectors.memory_id IS NOT NULL AS indexed
+        FROM json_each(?) AS wanted
+        LEFT JOIN embedding_rebuild_items AS done
+          ON done.job_id=? AND done.memory_id=wanted.value
+        LEFT JOIN memory_vectors AS vectors
+          ON vectors.memory_id=wanted.value AND vectors.space_id=?
+      `,
+          )
+          .all(
+            JSON.stringify(eligible.map((memory) => memory.id)),
+            job.id,
+            job.spaceId ?? null,
+          ) as {
+          memory_id: string
+          content_hash: string | null
+          indexed: number
+        }[]
+      ).map((row) => [row.memory_id, row]),
     )
-    const pending = eligible.filter(
-      (m) =>
-        done.get(m.id) !== contentHash(m) ||
-        !job.spaceId ||
-        !this.store.db
-          .prepare('SELECT 1 FROM memory_vectors WHERE memory_id=? AND space_id=?')
-          .get(m.id, job.spaceId),
-    )
+    const pending = eligible.filter((memory) => {
+      const checkpoint = checkpoints.get(memory.id)
+      return (
+        checkpoint?.content_hash !== contentHash(memory) || !job.spaceId || checkpoint.indexed !== 1
+      )
+    })
     job.total = eligible.length
     job.processed = eligible.length - pending.length
     return pending
@@ -454,7 +470,9 @@ export class EmbeddingIndex {
         this.store.db.transaction(() => {
           if (!this.current(job, signal)) return
           this.space(job, config, dimensions)
-          const eligible = new Map(this.memory.indexable().map((m) => [m.id, m]))
+          const eligible = new Map(
+            this.memory.indexableByIds(batch.map((memory) => memory.id)).map((m) => [m.id, m]),
+          )
           batch.forEach((before, i) => {
             const now = eligible.get(before.id)
             if (!now || contentHash(now) !== contentHash(before)) return
@@ -655,7 +673,9 @@ export class EmbeddingIndex {
             this.store.get('embedding.incompatible', '') === active.generationId))
       )
         return
-      const before = this.memory.indexable().find((m) => m.id === id && m.content === content)
+      const before = this.memory
+        .indexableByIds([id])
+        .find((m) => m.id === id && m.content === content)
       if (!before) return
       const admit = this.modelReadGuard([before])
       admit()
@@ -667,7 +687,7 @@ export class EmbeddingIndex {
       admit()
       if (signal?.aborted || encoder(this.store.models)?.revision !== selected.revision) return
       this.store.db.transaction(() => {
-        const now = this.memory.indexable().find((m) => m.id === id)
+        const now = this.memory.indexableByIds([id]).find((m) => m.id === id)
         if (!now || contentHash(now) !== contentHash(before)) return
         const current = this.active()
         if (!active) {

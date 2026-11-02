@@ -102,6 +102,11 @@ function fixture(size: number) {
     lists++
     return list(...args)
   }
+  const originalByIds = engine.memory.listByIds.bind(engine.memory)
+  engine.memory.listByIds = (...args) => {
+    lists++
+    return originalByIds(...args)
+  }
   const resolve = engine.memory.workspace.resolve.bind(engine.memory.workspace)
   engine.memory.workspace.resolve = (ctx, refs) => {
     batches.push(refs.length)

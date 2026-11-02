@@ -71,25 +71,37 @@ test('person HTTP projection separates witnessed subject, speaker and server/eve
     assert.equal((await app.request(url)).status, 401)
     const originalBatch = engine.memory.subjectEvidenceBatch.bind(engine.memory)
     const originalList = engine.memory.list.bind(engine.memory)
+    const originalByIds = engine.memory.listByIds.bind(engine.memory)
     let batchCalls = 0,
-      listCalls = 0
+      listCalls = 0,
+      fullListCalls = 0,
+      exactIdCalls = 0
     engine.memory.subjectEvidenceBatch = (...args) => {
       batchCalls++
       return originalBatch(...args)
     }
     engine.memory.list = (...args) => {
       listCalls++
+      fullListCalls++
       return originalList(...args)
+    }
+    engine.memory.listByIds = (...args) => {
+      listCalls++
+      exactIdCalls++
+      return originalByIds(...args)
     }
     const response = await app.request(url, { headers })
     engine.memory.subjectEvidenceBatch = originalBatch
     engine.memory.list = originalList
+    engine.memory.listByIds = originalByIds
     assert.equal(batchCalls, 1)
     assert.equal(
       listCalls,
       2,
       'one profile authorization and one bounded batch authorization, not one per record',
     )
+    assert.equal(fullListCalls, 1, 'one full profile authorization')
+    assert.equal(exactIdCalls, 1, 'one exact-ID batch authorization, not one per record')
     assert.equal(response.status, 200)
     const value = await response.json()
     assert.equal(value.subjectEvidenceCoverage, 'complete')

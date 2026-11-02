@@ -15,6 +15,7 @@ export interface ModelMemorySnapshot extends ProofParentReference {
 }
 interface MemoryExposurePort {
   list(context: MemoryContext): MemoryRecord[]
+  listByIds?(context: MemoryContext, ids: readonly string[]): MemoryRecord[]
   captureParentReference(
     context: MemoryContext,
     record: MemoryRecord,
@@ -84,7 +85,10 @@ export class ModelMemoryExposure {
     const captured = batch ? new Map(batch.map((ref) => [ref.id, ref])) : undefined
     const current = captured
       ? undefined
-      : new Map(this.memory.list(scope(context)).map((record) => [record.id, record]))
+      : this.authorized(
+          context,
+          records.map((record) => record.id),
+        )
     const pending = this.pending.get(context) ?? new WeakMap<object, PreparedMemory>()
     this.pending.set(context, pending)
     const prepared: MemoryRecord[] = []
@@ -118,7 +122,11 @@ export class ModelMemoryExposure {
     if (!pending) return []
     const exposed = this.exposed.get(context) ?? new Map<string, ModelMemorySnapshot>()
     const accepted: PreparedMemory[] = []
-    const current = new Map(this.memory.list(scope(context)).map((record) => [record.id, record]))
+    const selectedIds = selected.flatMap((object) => {
+      const prepared = object && typeof object === 'object' ? pending.get(object) : undefined
+      return prepared ? [prepared.authority.id] : []
+    })
+    const current = this.authorized(context, selectedIds)
     // Validate the entire selected receipt before mutating turn exposure. A stale
     // sibling must not partially commit a receipt which the caller cannot deliver.
     for (const object of selected) {
@@ -154,7 +162,10 @@ export class ModelMemoryExposure {
     if (context.mode === 'real' && this.onDelivered) {
       // A callback is another synchronous mutation boundary. Re-authorize after it;
       // no callback-era source/version change may register stale exposure.
-      const current = new Map(this.memory.list(scope(context)).map((record) => [record.id, record]))
+      const current = this.authorized(
+        context,
+        accepted.map((prepared) => prepared.authority.id),
+      )
       if (!accepted.every((prepared) => this.valid(context, prepared, current))) {
         context.validations.push(() => false)
         return []
@@ -176,9 +187,9 @@ export class ModelMemoryExposure {
             // never a cached permission or a submit-time revision upgrade.
             context.validations.push(() => {
               if (context.signal.aborted) return false
-              const current = new Map(
-                this.memory.list(scope(context)).map((record) => [record.id, record]),
-              )
+              const current = this.authorized(context, [
+                ...(this.delivered.get(context)?.keys() ?? []),
+              ])
               return [...(this.delivered.get(context)?.values() ?? [])].every((item) =>
                 this.valid(context, item, current),
               )
@@ -208,14 +219,19 @@ export class ModelMemoryExposure {
     }
     return () => {
       try {
-        const current = new Map(
-          this.memory.list(scope(detached)).map((record) => [record.id, record]),
-        )
+        const current = this.authorized(detached, [prepared.authority.id])
         return this.valid(detached, prepared, current)
       } catch {
         return false
       }
     }
+  }
+
+  private authorized(context: ModelMemoryContext, ids: readonly string[]) {
+    const records = this.memory.listByIds
+      ? this.memory.listByIds(scope(context), ids)
+      : this.memory.list(scope(context))
+    return new Map(records.map((record) => [record.id, record]))
   }
 
   private valid(

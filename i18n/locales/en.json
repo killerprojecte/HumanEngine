@@ -1613,5 +1613,13 @@
   "mcImageBytes": "Maximum image bytes",
   "mcImageWidth": "Maximum width (pixels)",
   "mcImageHeight": "Maximum height (pixels)",
-  "mcImageRequestBytes": "Maximum complete request bytes"
+  "mcImageRequestBytes": "Maximum complete request bytes",
+  "stGroupCooldown": "Ordinary group cooldown (milliseconds)",
+  "stGroupCooldownHelp": "Before starting another ordinary group turn in the same conversation. Default 3,000 ms; 0 disables. Messages still enter context and bursts coalesce before any model decision.",
+  "stDirectCooldown": "Direct conversation cooldown (milliseconds)",
+  "stDirectCooldownHelp": "For private messages, mentions and replies to the bot. Default 0; does not bypass concurrency or cancellation. This lane has its own clock so direct traffic cannot continually postpone ordinary group work.",
+  "stSceneConcurrency": "Concurrent turns per conversation",
+  "stSceneConcurrencyHelp": "Default 1. Pending topics keep a coalesced latest context, not one job per message. Older ready batches get the next free slot. Applies to automatic incoming-message turns.",
+  "stCallRate": "Model starts per rolling minute (optional)",
+  "stCallRateHelp": "0 disables (default). Shared by all model roles, retries and background work; existing concurrency still applies. Queue time consumes stage deadlines: a low limit can cancel requests before they start. This is not a token or money budget."
 }

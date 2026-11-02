@@ -20,6 +20,9 @@ export class WorkScheduler {
   private running = 0
   private runningNonForeground = 0
   private sequence = 0
+  private callsPerMinute = 0
+  private starts: number[] = []
+  private rateTimer?: ReturnType<typeof setTimeout>
   private readonly reserveForeground: number
   private readonly backgroundAgingMs?: number
   private readonly now: () => number
@@ -30,7 +33,7 @@ export class WorkScheduler {
   ) {
     this.reserveForeground = options.reserveForeground ?? 0
     this.backgroundAgingMs = options.backgroundAgingMs
-    this.now = options.now ?? Date.now
+    this.now = options.now ?? (() => Date.now())
     if (
       !Number.isSafeInteger(this.reserveForeground) ||
       this.reserveForeground < 0 ||
@@ -39,10 +42,14 @@ export class WorkScheduler {
     )
       throw new Error('invalid_scheduler_options')
   }
-  configure(concurrency: number) {
+  configure(concurrency: number, callsPerMinute = 0) {
     if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 32)
       throw new Error('invalid_concurrency')
+    if (!Number.isSafeInteger(callsPerMinute) || callsPerMinute < 0 || callsPerMinute > 6000)
+      throw new Error('invalid_call_rate')
     this.concurrency = concurrency
+    this.callsPerMinute = callsPerMinute
+    if (!callsPerMinute) this.starts = []
     this.drain()
   }
   get status() {
@@ -83,6 +90,10 @@ export class WorkScheduler {
       : job.priority
   }
   private drain() {
+    clearTimeout(this.rateTimer)
+    this.rateTimer = undefined
+    const now = this.now()
+    this.starts = this.starts.filter((started) => started > now - 60_000)
     while (this.running < this.concurrency && this.queue.length) {
       this.queue.sort(
         (a, b) => this.effectivePriority(a) - this.effectivePriority(b) || a.sequence - b.sequence,
@@ -94,6 +105,14 @@ export class WorkScheduler {
         (job) => job.priority <= 0 || this.runningNonForeground < nonForegroundLimit,
       )
       if (index < 0) return
+      if (this.callsPerMinute && this.starts.length >= this.callsPerMinute) {
+        this.rateTimer = setTimeout(
+          () => this.drain(),
+          Math.max(1, this.starts[0]! + 60_000 - this.now()),
+        )
+        this.rateTimer.unref()
+        return
+      }
       const job = this.queue.splice(index, 1)[0]!
       job.signal?.removeEventListener('abort', job.cancel)
       if (job.signal?.aborted) {
@@ -102,6 +121,7 @@ export class WorkScheduler {
       }
       const nonForeground = job.priority > 0
       this.running++
+      if (this.callsPerMinute) this.starts.push(this.now())
       if (nonForeground) this.runningNonForeground++
       Promise.resolve()
         .then(job.task)

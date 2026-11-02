@@ -578,5 +578,13 @@
   "planner_incomplete_relation_evidence": {
     "summary": "回复计划的关系选择缺少必要证据",
     "advice": "请选择完整返回的关系组，包括必要记录与反向声明，或省略整组。不要为使选择通过而丢弃限定条件。"
+  },
+  "request_timeout": {
+    "summary": "平台请求超时",
+    "advice": "发送结果可能不确定。请检查平台回执，不要盲目重发。"
+  },
+  "model_response_refused": {
+    "summary": "模型拒绝了请求",
+    "advice": "检查请求及供应商策略；拒绝响应不代表无需学习。"
   }
 }

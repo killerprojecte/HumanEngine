@@ -57,7 +57,14 @@ async function advance(t: TestContext, ms: number) {
 }
 function fixture(complete: Router['complete'], quietMs = 100, maxWaitMs = 400) {
   const store = new Store(':memory:')
-  store.set('settings', { ...store.settings, debounceMs: quietMs, maxWaitMs })
+  store.set('settings', {
+    ...store.settings,
+    // These fixtures isolate legacy wait/topic semantics; rate policy has its own integration suite.
+    groupTurnCooldownMs: 0,
+    sceneTurnConcurrency: 32,
+    debounceMs: quietMs,
+    maxWaitMs,
+  })
   store.saveScene({
     ...scene,
     name: 'Offline wait fixture',

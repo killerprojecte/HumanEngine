@@ -221,7 +221,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "actual Engine defaults preserve complete personal reads; read OFF denies model tools without deleting admin-visible records",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -559,7 +559,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "personalization OFF keeps non-person general knowledge but does not disguise person or experience records as general facts",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -897,7 +897,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "a previously exposed direct turn cannot downgrade learning after policy ABA, while a fresh source-only turn can learn with reads OFF",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1235,7 +1235,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "scene read flags and independent revision survive restart; old callers and caller-supplied revision cannot reopen them",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1573,7 +1573,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "read permission is captured before asynchronous Engine search, so an OFF→ON handoff cannot expose a result from the old ticket",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1885,7 +1885,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "read OFF still permits bounded source-only neutral repair without old memory or rejected wording in repair input",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -2184,7 +2184,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "fresh read-OFF current PNG still reaches direct vision without stored library observations or background media learning",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -2470,7 +2470,7 @@
       "scope": "actual_runtime_scene",
       "authorityChange": "read_personalization_ABA",
       "expectedOutcome": "actual Engine embedding respects read OFF without deleting vectors; personalization OFF permits only general-record indexing",
-      "fixtureHash": "05243d43b6be3b4bd655e6f89e5492ee1dd4dd894c1ae17f510f9307ebdcd8b0",
+      "fixtureHash": "cf6e57a0f55df2e853a99a68db9b1298a2e7b9a011dc4391dc2f4c80a40acd99",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },

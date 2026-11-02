@@ -86,6 +86,12 @@ export class TurnWaitCoordinator {
     return wake === this.active && wake.generation === this.generation
   }
 
+  /** Undefined denotes a timer-only recheck, which needs no model admission. */
+  pendingAddressed(): boolean | undefined {
+    if (!this.pending.size) return undefined
+    return [...this.pending.values()].some((event) => event.addressed)
+  }
+
   nextWakeAt(): number | undefined {
     if (this.active) return undefined
     const pendingAt = this.pendingDeadline()

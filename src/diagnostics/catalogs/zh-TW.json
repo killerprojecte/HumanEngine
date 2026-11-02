@@ -80,7 +80,9 @@
     "timeoutMs": "單次逾時毫秒",
     "candidateIndex": "候選模型序號",
     "queryCount": "記憶查詢數",
-    "selectedCount": "選中來源數"
+    "selectedCount": "選中來源數",
+    "stageBudgetMs": "操作總時限毫秒",
+    "reasoningPresent": "包含推理"
   },
   "nextLabels": {
     "none": "本步結束",
@@ -166,7 +168,7 @@
     "not_configured": "尚未設定",
     "no_compatible_model": "沒有相容的可用模型",
     "connection_failed": "無法連線",
-    "request_timeout": "請求逾時",
+    "request_timeout": "平台請求逾時",
     "timeout": "已超過等待上限",
     "unknown_tool": "工具不存在或不可用",
     "recalled": "來源已撤回",
@@ -395,7 +397,11 @@
     "experience_feedback_unavailable": "明確回饋未滿足實驗策略准入條件",
     "planner_unknown_memory_evidence": "回覆計畫的記憶選擇與已檢索回執不符",
     "planner_incomplete_relation_evidence": "回覆計畫的關係選擇缺少必要證據",
-    "planner_unknown_state_evidence": "計畫引用了未實際檢索到的依據"
+    "planner_unknown_state_evidence": "計畫引用了未實際檢索到的依據",
+    "model_response_refused": "模型拒絕了請求",
+    "model_stage_timeout": "模型操作總時限已到",
+    "empty_model_output": "已完成，但沒有文字或工具呼叫",
+    "reasoning_only_response": "已完成推理，但沒有文字或工具呼叫"
   },
   "stageLabels": {
     "ingress": "接收訊息",
@@ -449,7 +455,8 @@
     "provider_retry_wait": "等待後重試同一模型",
     "memory.handoff": "選擇交給 Replyer 的記憶摘錄",
     "learning.contextual": "非同步處理對話學習候選",
-    "turn_wait": "等待後的輕量檢查"
+    "turn_wait": "等待後的輕量檢查",
+    "adapter_send": "等待平台發送回執"
   },
   "statusLabels": {
     "started": "開始",

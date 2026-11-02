@@ -578,5 +578,13 @@
   "planner_incomplete_relation_evidence": {
     "summary": "回覆計畫的關係選擇缺少必要證據",
     "advice": "請選擇完整傳回的關係組，包括必要記錄與反向聲明，或省略整組。不要為使選擇通過而丟棄限定條件。"
+  },
+  "request_timeout": {
+    "summary": "平台請求逾時",
+    "advice": "發送結果可能不確定。請檢查平台回執，不要盲目重發。"
+  },
+  "model_response_refused": {
+    "summary": "模型拒絕了請求",
+    "advice": "檢查請求及供應商政策；拒絕回應不代表無需學習。"
   }
 }

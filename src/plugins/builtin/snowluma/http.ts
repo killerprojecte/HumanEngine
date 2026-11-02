@@ -222,7 +222,9 @@ export class OneBotHttpTransport {
       })
       if (!response.ok) {
         await response.body?.cancel()
-        throw new OneBotError('http_action_failed', true, { httpStatus: response.status })
+        throw new OneBotError('http_action_failed', true, {
+          httpStatus: response.status,
+        })
       }
       const reader = response.body?.getReader()
       if (!reader) throw new OneBotError('invalid_http_response', true)
@@ -266,7 +268,11 @@ export class OneBotHttpTransport {
     } catch (error) {
       if (error instanceof OneBotError) throw error
       throw new OneBotError(
-        combined.aborted ? 'request_cancelled' : 'http_request_failed',
+        controller.signal.aborted && !signal?.aborted && !this.lifetime.signal.aborted
+          ? 'request_timeout'
+          : combined.aborted
+            ? 'request_cancelled'
+            : 'http_request_failed',
         transmitted,
         safeNetworkDetails(error),
       )

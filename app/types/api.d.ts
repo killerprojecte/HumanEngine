@@ -5811,6 +5811,14 @@ export interface components {
             debugModelIO: boolean;
             /** @default 4 */
             modelConcurrency: number;
+            /** @default 3000 */
+            groupTurnCooldownMs: number;
+            /** @default 0 */
+            directTurnCooldownMs: number;
+            /** @default 1 */
+            sceneTurnConcurrency: number;
+            /** @default 0 */
+            modelCallsPerMinute: number;
             /** @default [] */
             participationWindows: {
                 startHour: number;

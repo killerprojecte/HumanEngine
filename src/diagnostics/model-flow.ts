@@ -19,6 +19,8 @@ const safeCodes = new Set([
   'embedding_dimensions_mismatch',
   'provider_not_configured',
   'provider_timeout',
+  'model_stage_timeout',
+  'model_response_refused',
   'provider_request_failed',
   'invalid_provider_url',
   'credential_not_configured',
@@ -64,7 +66,13 @@ export function modelUsageCounts(usage: Usage): Record<string, number> {
       }
 }
 export function completionDetails(value: Completion): FlowDetails {
+  const empty = !value.text && !value.toolCalls.length
   return {
+    reason: empty
+      ? value.responseSummary?.reasoningPresent
+        ? 'reasoning_only_response'
+        : 'empty_model_output'
+      : value.responseSummary?.terminalReason,
     outputKind: value.toolCalls.length
       ? value.text
         ? 'text_and_tools'
@@ -74,6 +82,9 @@ export function completionDetails(value: Completion): FlowDetails {
         : 'empty',
     counts: {
       ...modelUsageCounts(value.usage),
+      ...(value.responseSummary
+        ? { reasoningPresent: Number(value.responseSummary.reasoningPresent) }
+        : {}),
       textCharacters: value.text.length,
       toolCalls: value.toolCalls.length,
     },

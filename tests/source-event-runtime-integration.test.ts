@@ -999,7 +999,7 @@ test('late vision for an actual old Runtime turn cannot populate a matching-loca
     // Cancellation cleanup runs after the local decoder/provider settles; its replacement quiet
     // timer is measured from that cleanup, not from the preceding fake-clock jump.
     for (let i = 0; i < 100 && h.engine.runtime.activeTasks; i++) await immediate()
-    await advance(t, 10)
+    await advance(t, h.store.settings.groupTurnCooldownMs)
     for (let i = 0; i < 100 && h.engine.runtime.activeTasks; i++) await immediate()
     let deadline: ReturnType<typeof setTimeout> | undefined
     try {

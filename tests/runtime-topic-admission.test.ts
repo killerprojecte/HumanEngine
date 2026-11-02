@@ -75,6 +75,9 @@ function fixture(t: TestContext, enabled?: boolean) {
   const store = new Store(':memory:')
   store.set('settings', {
     ...store.settings,
+    // These fixtures isolate legacy wait/topic semantics; rate policy has its own integration suite.
+    groupTurnCooldownMs: 0,
+    sceneTurnConcurrency: 32,
     ...(enabled === undefined ? {} : { topicAdmissionEnabled: enabled }),
     sourceEventRevisionsEnabled: true,
     debounceMs: 100,

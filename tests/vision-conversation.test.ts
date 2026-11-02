@@ -17,8 +17,9 @@ function complete(name?: string, args: Record<string, unknown> = {}, text = ''):
     assistant: { role: 'assistant', content: text, toolCalls },
   }
 }
-async function until(check: () => boolean) {
-  for (let i = 0; i < 300; i++) {
+async function until(check: () => boolean, timeoutMs = 1500) {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
     if (check()) return
     await new Promise((r) => setTimeout(r, 5))
   }
@@ -197,7 +198,7 @@ for (const source of ['recent', 'history', 'quoted-history'] as const) {
       )
       if (source === 'recent') {
         runtime.ingest(message('followup'), scene)
-        await until(() => sends === 2)
+        await until(() => sends === 2, store.settings.groupTurnCooldownMs + 1500)
         assert.equal(
           visionCalls,
           1,

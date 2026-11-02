@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { modelScheduler } from '../src/scheduler.ts'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { once } from 'node:events'
 import test from 'node:test'
@@ -620,6 +621,97 @@ test('HTTP 413 in text containing data:image does not trigger an image retry', a
     )
     assert.equal(requests, 1)
   } finally {
+    await service.close()
+  }
+})
+
+test('native image 413 retry reacquires the global start budget without holding a concurrency slot', async () => {
+  const { default: sharp } = await import('sharp')
+  const { randomBytes } = await import('node:crypto')
+  const source = await sharp(randomBytes(64 * 64 * 3), {
+    raw: { width: 64, height: 64, channels: 3 },
+  })
+    .png()
+    .toBuffer()
+  let requests = 0
+  const service = await fixture((_body, _req, res) => {
+    if (++requests === 1) {
+      res.statusCode = 413
+      res.end('{}')
+    } else res.end(JSON.stringify(chatText))
+  })
+  const controller = new AbortController()
+  modelScheduler.configure(1, 1)
+  let pending: Promise<unknown> | undefined
+  try {
+    pending = new Router(config(service.url, 'openai-chat')).complete(
+      'thinker',
+      [
+        {
+          role: 'user',
+          content: 'describe',
+          images: [`data:image/png;base64,${source.toString('base64')}`],
+        },
+      ],
+      undefined,
+      controller.signal,
+    )
+    // Wait for local IO/compression, not a provider/network or model-dependent response.
+    const until = Date.now() + 3000
+    while (modelScheduler.status.queued === 0 && Date.now() < until)
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    assert.equal(requests, 1)
+    assert.equal(modelScheduler.status.queued, 1)
+    assert.equal(modelScheduler.status.running, 0, 'retry must not deadlock inside its old slot')
+    modelScheduler.configure(1, 0)
+    const result = (await pending) as { text: string }
+    assert.equal(result.text, 'Finished')
+    assert.equal(requests, 2)
+  } finally {
+    controller.abort()
+    await pending?.catch(() => {})
+    modelScheduler.configure(4, 0)
+    await service.close()
+  }
+})
+
+test('a rate-delayed image retry keeps the original provider timeout, not caller-cancel attribution', async () => {
+  const { default: sharp } = await import('sharp')
+  const { randomBytes } = await import('node:crypto')
+  const { sanitizeError } = await import('../src/diagnostics/errors.ts')
+  const source = await sharp(randomBytes(64 * 64 * 3), {
+    raw: { width: 64, height: 64, channels: 3 },
+  })
+    .png()
+    .toBuffer()
+  let requests = 0
+  const service = await fixture((_body, _req, res) => {
+    requests++
+    res.statusCode = 413
+    res.end('{}')
+  })
+  modelScheduler.configure(1, 1)
+  try {
+    const cfg = config(service.url, 'openai-chat')
+    cfg.providers[0]!.timeoutMs = 100
+    cfg.providers[0]!.retryCount = 3
+    await assert.rejects(
+      new Router(cfg).complete('thinker', [
+        {
+          role: 'user',
+          content: 'describe',
+          images: [`data:image/png;base64,${source.toString('base64')}`],
+        },
+      ]),
+      (error) => {
+        assert.equal(sanitizeError(error).rootCause?.errorCode, 'provider_timeout')
+        return true
+      },
+    )
+    assert.equal(requests, 1)
+    assert.equal(modelScheduler.status.queued, 0)
+  } finally {
+    modelScheduler.configure(4, 0)
     await service.close()
   }
 })

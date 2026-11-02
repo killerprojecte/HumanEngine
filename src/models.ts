@@ -120,7 +120,13 @@ export interface Usage {
   /** Fixed allowlisted numeric provider counters only, never a raw response body. */
   rawTokenCounters?: Record<string, number>
 }
+export interface CompletionSummary {
+  protocol: 'openai-chat' | 'openai-responses'
+  terminalReason: 'stop' | 'tool_calls' | 'completed'
+  reasoningPresent: boolean
+}
 export interface Completion {
+  responseSummary?: CompletionSummary
   text: string
   toolCalls: ToolCall[]
   usage: Usage
@@ -138,7 +144,12 @@ export interface ModelDiagnostic {
   role: ModelRole
   modelId: string
   messages: ChatMessage[]
-  output: { text: string; toolCalls: ToolCall[] }
+  output: {
+    text: string
+    toolCalls: ToolCall[]
+    responseSummary?: CompletionSummary
+    usage?: Usage
+  }
 }
 export interface ModelPriceSnapshot {
   apiModelName: string
@@ -440,6 +451,17 @@ const abortError = (cause?: unknown) =>
   new ModelError('request_cancelled', undefined, false, { cause })
 
 /** Protocol state is transient, opaque, and never serialized into logs or persisted messages. */
+/** Internal control flow: a rejected image upload must reacquire a model-start slot. */
+class NativeImageRetry extends ModelError {
+  constructor(
+    readonly provider: Provider,
+    readonly body: unknown,
+    readonly signal: AbortSignal,
+  ) {
+    super('native_image_retry')
+  }
+}
+
 export class Router {
   private readonly state = new WeakMap<ChatMessage, { modelId: string; output: unknown[] }>()
   private readonly continuations = new WeakMap<
@@ -509,7 +531,11 @@ export class Router {
       'model_request',
       {
         role,
-        counts: { messages: messages.length, offeredTools: tools.length },
+        counts: {
+          messages: messages.length,
+          offeredTools: tools.length,
+          stageBudgetMs: this.config.routes.find((route) => route.role === role)?.timeoutMs ?? 0,
+        },
         nextStep: 'select_model',
       },
       signal,
@@ -649,29 +675,25 @@ export class Router {
                         : {}),
                     }
                 const requestSecrets: string[] = []
-                const result = await scheduleModel(
+                const result = await this.scheduledRequest(
                   role === 'planner' || role === 'replyer' || role === 'vision' ? 0 : 1,
+                  provider,
+                  responses ? 'responses' : 'chat/completions',
+                  body,
+                  providerPolicy(provider).timeoutMs,
                   signal,
-                  () =>
-                    this.request(
-                      provider,
-                      responses ? 'responses' : 'chat/completions',
-                      body,
-                      providerPolicy(provider).timeoutMs,
-                      signal,
-                      (secret) => requestSecrets.push(secret),
-                      {
-                        providerId: provider.id,
-                        modelId: model.id,
-                        protocol: provider.protocol,
-                        operation: 'complete',
-                        role,
-                        prices: model,
-                        opaqueInput: messages.some(
-                          (message) => !!message.images?.length || this.state.has(message),
-                        ),
-                      },
+                  (secret) => requestSecrets.push(secret),
+                  {
+                    providerId: provider.id,
+                    modelId: model.id,
+                    protocol: provider.protocol,
+                    operation: 'complete',
+                    role,
+                    prices: model,
+                    opaqueInput: messages.some(
+                      (message) => !!message.images?.length || this.state.has(message),
                     ),
+                  },
                 )
                 if (signal?.aborted) throw abortError()
                 const parsed = responses
@@ -690,7 +712,12 @@ export class Router {
                       role,
                       modelId,
                       messages,
-                      output: { text: parsed.text, toolCalls: parsed.toolCalls },
+                      output: {
+                        text: parsed.text,
+                        toolCalls: parsed.toolCalls,
+                        responseSummary: parsed.responseSummary,
+                        usage: parsed.usage,
+                      },
                     },
                     requestSecrets,
                   )
@@ -901,30 +928,29 @@ export class Router {
                 throw new ModelError('budget_protocol_unsupported')
               if (!isBuiltinProtocol(provider.protocol))
                 return await this.embeddingsProtocol(provider, model, inputs, timeout, signal)
-              const result = await scheduleModel(currentBudgetPriority(1), signal, () =>
-                this.request(
-                  provider,
-                  'embeddings',
-                  {
-                    model: model.apiModelName,
-                    input: inputs,
-                    encoding_format: 'float',
-                    ...(model.embeddingDimensions === undefined
-                      ? {}
-                      : { dimensions: model.embeddingDimensions }),
-                  },
-                  timeout,
-                  signal,
-                  undefined,
-                  {
-                    providerId: provider.id,
-                    modelId: model.id,
-                    protocol: provider.protocol,
-                    operation: 'embedding',
-                    role: 'embedding',
-                    prices: model,
-                  },
-                ),
+              const result = await this.scheduledRequest(
+                currentBudgetPriority(1),
+                provider,
+                'embeddings',
+                {
+                  model: model.apiModelName,
+                  input: inputs,
+                  encoding_format: 'float',
+                  ...(model.embeddingDimensions === undefined
+                    ? {}
+                    : { dimensions: model.embeddingDimensions }),
+                },
+                timeout,
+                signal,
+                undefined,
+                {
+                  providerId: provider.id,
+                  modelId: model.id,
+                  protocol: provider.protocol,
+                  operation: 'embedding',
+                  role: 'embedding',
+                  prices: model,
+                },
               )
               if (signal?.aborted) throw abortError()
               const rows = array(result.data)
@@ -1161,7 +1187,7 @@ export class Router {
         : parent?.aborted
           ? abortError()
           : timeout.aborted
-            ? new ModelError('provider_timeout', undefined, true)
+            ? new ModelError('provider_timeout', undefined, false)
             : new ModelError('provider_request_failed')
     let onAbort: () => void = () => {}
     try {
@@ -1231,7 +1257,9 @@ export class Router {
                 ? 'provider_timeout'
                 : 'provider_request_failed',
           status,
-          error.kind !== 'configuration' && (status ? status === 429 || status >= 500 : true),
+          error.kind !== 'configuration' &&
+            error.kind !== 'timeout' &&
+            (status ? status === 429 || status >= 500 : true),
           { cause: error, retryAfterMs: error.retryAfterMs },
         )
       }
@@ -1576,6 +1604,9 @@ export class Router {
     if (choice.finish_reason !== 'stop' && choice.finish_reason !== 'tool_calls')
       throw new ModelError('incomplete_model_response')
     const message = object(choice.message)
+    if (message.refusal) throw new ModelError('model_response_refused')
+    if (!Object.hasOwn(message, 'content') && !Array.isArray(message.tool_calls))
+      throw new ModelError('invalid_provider_response')
     const toolCalls =
       message.tool_calls === undefined
         ? []
@@ -1587,7 +1618,14 @@ export class Router {
           })
     if (new Set(toolCalls.map((call) => call.id)).size !== toolCalls.length)
       throw new ModelError('duplicate_tool_call_id')
+    if (choice.finish_reason === 'tool_calls' && !toolCalls.length)
+      throw new ModelError('incomplete_tool_call')
     return {
+      responseSummary: {
+        protocol: 'openai-chat',
+        terminalReason: choice.finish_reason,
+        reasoningPresent: !!message.reasoning_content || !!message.reasoning,
+      } as CompletionSummary,
       text: message.content == null ? '' : string(message.content),
       toolCalls,
       usage: usageOf(result.usage),
@@ -1599,6 +1637,7 @@ export class Router {
       throw new ModelError('incomplete_model_response')
     const toolCalls: ToolCall[] = []
     const text: string[] = []
+    let reasoningPresent = false
     for (const item of array(result.output).map(object)) {
       if (item.type === 'function_call') {
         if (item.status && item.status !== 'completed') throw new ModelError('incomplete_tool_call')
@@ -1606,13 +1645,54 @@ export class Router {
       } else if (item.type === 'message') {
         if (item.status && item.status !== 'completed')
           throw new ModelError('incomplete_model_response')
-        for (const part of array(item.content).map(object))
+        for (const part of array(item.content).map(object)) {
           if (part.type === 'output_text') text.push(string(part.text))
-      } else if (item.type !== 'reasoning') throw new ModelError('unsupported_response_item')
+          else if (part.type === 'refusal') throw new ModelError('model_response_refused')
+          else throw new ModelError('unsupported_response_item')
+        }
+      } else if (item.type === 'reasoning') reasoningPresent = true
+      else throw new ModelError('unsupported_response_item')
     }
     if (new Set(toolCalls.map((call) => call.id)).size !== toolCalls.length)
       throw new ModelError('duplicate_tool_call_id')
-    return { text: text.join('\n'), toolCalls, usage: usageOf(result.usage) }
+    return {
+      text: text.join('\n'),
+      toolCalls,
+      usage: usageOf(result.usage),
+      responseSummary: {
+        protocol: 'openai-responses',
+        terminalReason: 'completed',
+        reasoningPresent,
+      } as CompletionSummary,
+    }
+  }
+
+  private async scheduledRequest(
+    priority: number,
+    ...args: Parameters<Router['request']>
+  ): Promise<JsonObject> {
+    let [provider, path, body, timeoutMs, signal, credentialUsed, descriptor] = args
+    for (;;) {
+      try {
+        return await scheduleModel(priority, signal, () =>
+          this.request(provider, path, body, timeoutMs, signal, credentialUsed, descriptor),
+        )
+      } catch (error) {
+        if (!(error instanceof NativeImageRetry)) {
+          // A retry waiting for a fresh slot still owns the first provider deadline.
+          // Do not misclassify that deadline as caller cancellation or amplify it via retries.
+          if (signal !== args[4] && signal?.aborted && !args[4]?.aborted)
+            throw preserveErrorContext(
+              new ModelError('provider_timeout', undefined, false, { cause: error }),
+              { timeoutMs },
+            )
+          throw error
+        }
+        provider = error.provider
+        body = error.body
+        signal = error.signal
+      }
+    }
   }
 
   private async request(
@@ -1719,14 +1799,10 @@ export class Router {
           attempt?.fail()
           attempt = undefined
           const maxRequestBytes = Math.floor(Buffer.byteLength(serializedBody) / 2)
-          return await this.request(
+          throw new NativeImageRetry(
             { ...provider, imageUploadLimits: { ...provider.imageUploadLimits, maxRequestBytes } },
-            path,
             body,
-            timeoutMs,
             signal,
-            credentialUsed,
-            budgetDescriptor,
           )
         }
         throw new ModelError(
@@ -1778,7 +1854,7 @@ export class Router {
       if (parentSignal?.aborted) throw abortError(error)
       if (timeoutSignal.aborted)
         throw preserveErrorContext(
-          new ModelError('provider_timeout', undefined, true, { cause: error }),
+          new ModelError('provider_timeout', undefined, false, { cause: error }),
           { timeoutMs },
         )
       if (error instanceof ModelError) throw error

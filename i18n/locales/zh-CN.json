@@ -1613,5 +1613,13 @@
   "mcImageBytes": "单张图片最大字节数",
   "mcImageWidth": "最大宽度（像素）",
   "mcImageHeight": "最大高度（像素）",
-  "mcImageRequestBytes": "完整请求最大字节数"
+  "mcImageRequestBytes": "完整请求最大字节数",
+  "stGroupCooldown": "普通群聊冷却时间（毫秒）",
+  "stGroupCooldownHelp": "同一会话再次启动普通群聊轮次前的间隔。默认 3,000 毫秒；0 关闭。消息仍进入上下文，短时消息在模型决策前合并。",
+  "stDirectCooldown": "直接消息冷却时间（毫秒）",
+  "stDirectCooldownHelp": "适用于私聊、@机器人和回复机器人。默认 0；不会绕过并发限制或取消。独立计时，避免持续直接消息不断推迟普通群聊任务。",
+  "stSceneConcurrency": "每个会话的并发轮次",
+  "stSceneConcurrencyHelp": "默认 1。待处理话题合并最新上下文，不为每条消息创建任务。较早就绪的批次优先获得空闲位置。适用于自动收到消息的轮次。",
+  "stCallRate": "每滚动分钟的模型启动次数（可选）",
+  "stCallRateHelp": "默认 0（关闭）。所有模型角色、重试和后台任务共享；并发限制仍有效。排队时间计入阶段时限：过低的限制可能导致请求在启动前取消。这不是令牌或金额预算。"
 }

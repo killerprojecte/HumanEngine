@@ -780,6 +780,30 @@
             "maximum": 32,
             "default": 4
           },
+          "groupTurnCooldownMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000,
+            "default": 3000
+          },
+          "directTurnCooldownMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000,
+            "default": 0
+          },
+          "sceneTurnConcurrency": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 32,
+            "default": 1
+          },
+          "modelCallsPerMinute": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6000,
+            "default": 0
+          },
           "participationWindows": {
             "type": "array",
             "items": {

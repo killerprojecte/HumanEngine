@@ -578,5 +578,13 @@
   "planner_incomplete_relation_evidence": {
     "summary": "Plan relation selection omits required evidence",
     "advice": "Select the complete returned relation group, including required records and counterclaims, or omit the group. Do not discard qualifications to make the selection fit."
+  },
+  "request_timeout": {
+    "summary": "Platform request timed out",
+    "advice": "Delivery may be uncertain. Inspect the platform receipt; do not blindly resend."
+  },
+  "model_response_refused": {
+    "summary": "Model refused the request",
+    "advice": "Review the request and provider policy; a refusal is not an empty learning decision."
   }
 }

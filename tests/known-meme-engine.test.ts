@@ -47,8 +47,9 @@ function message(id: string, kind = 'mface', extra: Record<string, unknown> = {}
     parts: imageParts(scene.id, kind, { url: `https://fixture.invalid/${id}`, ...extra }),
   }
 }
-async function until(check: () => boolean) {
-  for (let i = 0; i < 400; i++) {
+async function until(check: () => boolean, timeoutMs = 2000) {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
     if (check()) return
     await new Promise((r) => setTimeout(r, 5))
   }
@@ -177,7 +178,7 @@ test('learning-off inbound stickers are known-only, concurrent turn reuses analy
     assert.deepEqual(engine.memes.search({ sceneId: scene.id, simulation: false }, ''), [])
     assert.throws(() => engine.memes.original({ sceneId: scene.id, simulation: false }, first.id))
     engine.runtime.ingest(message('different-url'), scene)
-    await until(() => sends === 2)
+    await until(() => sends === 2, store.settings.groupTurnCooldownMs + 2000)
     assert.equal(vision, 1)
     assert.equal(engine.memes.adminList().length, 1)
     assert.equal(engine.memes.adminList()[0]!.sources.length, 2)
@@ -190,7 +191,7 @@ test('learning-off inbound stickers are known-only, concurrent turn reuses analy
     const enabled = { ...scene, learningEnabled: true }
     store.saveScene(enabled)
     engine.runtime.ingest(message('after-learning-on'), enabled)
-    await until(() => sends === 3)
+    await until(() => sends === 3, store.settings.groupTurnCooldownMs + 2000)
     assert.equal(vision, 1)
     assert.equal(engine.memes.adminList()[0]!.knownOnly, true)
     assert.equal(reads, 3)
@@ -198,7 +199,7 @@ test('learning-off inbound stickers are known-only, concurrent turn reuses analy
       url: 'https://fixture.invalid/first',
     })
     engine.runtime.ingest(sameReference, enabled)
-    await until(() => sends === 4)
+    await until(() => sends === 4, store.settings.groupTurnCooldownMs + 2000)
     assert.equal(
       reads,
       4,

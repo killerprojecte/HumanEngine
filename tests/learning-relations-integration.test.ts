@@ -239,7 +239,7 @@ function fixture(flags: Partial<Settings> = enabled) {
       engine.settingsChanged()
       store.saveScene({ ...store.scene(scene.id)!, participationEnabled: true })
       engine.runtime.ingest(message, scene)
-      await advance(t, 10)
+      await advance(t, Math.max(store.settings.debounceMs, store.settings.groupTurnCooldownMs))
       await afterTurn?.()
       await advance(t, 100)
       await engine.contextualLearning.queue.whenIdle()

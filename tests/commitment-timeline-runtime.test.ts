@@ -361,7 +361,8 @@ function fixture() {
       engine.settingsChanged()
       store.saveScene({ ...store.scene(scene.id)!, participationEnabled: true })
       engine.runtime.ingest(m, scene, true)
-      await advance(t, 10)
+      // Admission remains enabled while exercising real memory-authority boundaries.
+      await advance(t, Math.max(store.settings.debounceMs, store.settings.groupTurnCooldownMs))
       await advance(t, 100)
       await engine.contextualLearning.queue.whenIdle()
       if (requireIdle) assert.equal(engine.runtime.activeTasks, 0)

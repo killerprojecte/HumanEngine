@@ -80,7 +80,9 @@
     "timeoutMs": "Per-attempt timeout (ms)",
     "candidateIndex": "Candidate model index",
     "queryCount": "Memory queries",
-    "selectedCount": "Selected receipts"
+    "selectedCount": "Selected receipts",
+    "stageBudgetMs": "Operation budget (ms)",
+    "reasoningPresent": "Reasoning present"
   },
   "nextLabels": {
     "none": "Step finished",
@@ -166,7 +168,7 @@
     "not_configured": "Not configured",
     "no_compatible_model": "No compatible model",
     "connection_failed": "Connection failed",
-    "request_timeout": "Request timeout",
+    "request_timeout": "Platform request timed out",
     "timeout": "Timeout",
     "unknown_tool": "Unknown tool",
     "recalled": "Recalled",
@@ -395,7 +397,11 @@
     "experience_feedback_unavailable": "Explicit experimental feedback was not admitted",
     "planner_unknown_memory_evidence": "Plan memory selection does not match a retrieved receipt",
     "planner_incomplete_relation_evidence": "Plan relation selection omits required evidence",
-    "planner_unknown_state_evidence": "Plan referenced evidence that was not retrieved"
+    "planner_unknown_state_evidence": "Plan referenced evidence that was not retrieved",
+    "model_response_refused": "Model refused the request",
+    "model_stage_timeout": "Model operation budget expired",
+    "empty_model_output": "Completed without text or tool calls",
+    "reasoning_only_response": "Completed with reasoning but no text or tool calls"
   },
   "stageLabels": {
     "ingress": "Receive message",
@@ -449,7 +455,8 @@
     "provider_retry_wait": "Wait before provider retry",
     "memory.handoff": "Select memory excerpts for Replyer",
     "learning.contextual": "Process asynchronous contextual learning",
-    "turn_wait": "Cheap wait recheck"
+    "turn_wait": "Cheap wait recheck",
+    "adapter_send": "Wait for platform send receipt"
   },
   "statusLabels": {
     "started": "Started",

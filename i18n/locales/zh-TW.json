@@ -1613,5 +1613,13 @@
   "mcImageBytes": "單張圖片最大位元組數",
   "mcImageWidth": "最大寬度（像素）",
   "mcImageHeight": "最大高度（像素）",
-  "mcImageRequestBytes": "完整請求最大位元組數"
+  "mcImageRequestBytes": "完整請求最大位元組數",
+  "stGroupCooldown": "一般群聊冷卻時間（毫秒）",
+  "stGroupCooldownHelp": "同一會話再次啟動一般群聊輪次前的間隔。預設 3,000 毫秒；0 關閉。訊息仍進入上下文，短時間訊息在模型決策前合併。",
+  "stDirectCooldown": "直接訊息冷卻時間（毫秒）",
+  "stDirectCooldownHelp": "適用於私聊、@機器人及回覆機器人。預設 0；不會繞過並行限制或取消。獨立計時，避免持續直接訊息不斷延後一般群聊工作。",
+  "stSceneConcurrency": "每個會話的並行輪次",
+  "stSceneConcurrencyHelp": "預設 1。待處理話題合併最新上下文，不為每條訊息建立工作。較早就緒的批次優先取得空閒位置。適用於自動收到訊息的輪次。",
+  "stCallRate": "每滾動分鐘的模型啟動次數（選用）",
+  "stCallRateHelp": "預設 0（關閉）。所有模型角色、重試與背景工作共用；並行限制仍有效。排隊時間計入階段時限：過低的限制可能導致請求在啟動前取消。這不是權杖或金額預算。"
 }

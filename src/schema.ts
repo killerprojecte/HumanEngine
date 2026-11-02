@@ -183,6 +183,10 @@ export const SettingsSchema = z
     learningRetryBaseMs: z.number().int().min(100).max(30000).default(1000),
     debugModelIO: z.boolean().default(false),
     modelConcurrency: z.number().int().min(1).max(32).default(4),
+    groupTurnCooldownMs: z.number().int().min(0).max(60000).default(3000),
+    directTurnCooldownMs: z.number().int().min(0).max(60000).default(0),
+    sceneTurnConcurrency: z.number().int().min(1).max(32).default(1),
+    modelCallsPerMinute: z.number().int().min(0).max(6000).default(0),
     participationWindows: z
       .array(
         z

@@ -230,7 +230,8 @@ function fixture() {
     async ask(t: TestContext, text = LIVE) {
       flip({ participationEnabled: true })
       engine.runtime.ingest(source(`question-${++sequence}`, text), scene)
-      await advance(t)
+      // Keep the enabled admission defaults; wait for this ordinary-group batch.
+      await advance(t, Math.max(store.settings.debounceMs, store.settings.groupTurnCooldownMs))
       assert.equal(engine.runtime.activeTasks, 0)
     },
     async reopen() {

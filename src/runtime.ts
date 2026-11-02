@@ -143,6 +143,7 @@ interface SceneState {
   closed: boolean
   recalled: Set<string>
   lastTouched: number
+  lastAutomaticTurn: Partial<Record<'group' | 'direct', number>>
 }
 export interface RuntimeAdapter {
   readonly status?: string
@@ -1113,6 +1114,30 @@ export class Runtime {
     }
   }
 
+  /** Recompute deadlines after saved policy changes; never replay cancelled ingress. */
+  configureAdmission(): void {
+    for (const [id, state] of this.states) {
+      const scene = this.scenes.get(id)
+      if (scene) for (const topicId of state.flowQueue.keys()) this.scheduleTopic(scene, topicId)
+    }
+  }
+
+  private automaticTurnClass(scene: RuntimeScene, admission: TurnWaitCoordinator) {
+    return scene.kind === 'group' && !admission.pendingAddressed() ? 'group' : 'direct'
+  }
+
+  private automaticTurnDue(scene: RuntimeScene, admission: TurnWaitCoordinator): number {
+    if (scene.kind === 'simulation' || admission.pendingAddressed() === undefined) return 0
+    const state = this.state(scene.id)
+    const settings = this.store.settings
+    if (state.tasks.size >= settings.sceneTurnConcurrency) return Infinity
+    const kind = this.automaticTurnClass(scene, admission)
+    const last = state.lastAutomaticTurn[kind]
+    return last === undefined
+      ? 0
+      : last + (kind === 'group' ? settings.groupTurnCooldownMs : settings.directTurnCooldownMs)
+  }
+
   private scheduleTopic(scene: RuntimeScene, topicId: string) {
     const state = this.state(scene.id),
       admission = state.admissions.get(topicId)
@@ -1127,21 +1152,32 @@ export class Runtime {
       maxModelWaitMs: 60000,
       maxPending: 60,
     })
-    const due = admission.nextWakeAt()
-    if (due === undefined) return
+    const readyAt = admission.nextWakeAt()
+    if (readyAt === undefined) return
+    const due = Math.max(readyAt, this.automaticTurnDue(scene, admission))
+    // Running turns own the wakeup; do not poll or allocate a job for each incoming message.
+    if (!Number.isFinite(due)) return
     const timer = setTimeout(
       () => {
         try {
           if (settings.topicAdmissionEnabled) this.store.assertRecoveryReady()
 
           state.timers.delete(topicId)
+          // Other topics may have started since this timer was armed.
+          if (this.automaticTurnDue(scene, admission) > Date.now()) {
+            this.scheduleTopic(scene, topicId)
+            return
+          }
+          const kind = this.automaticTurnClass(scene, admission)
           const wake = admission.takeReady()
           if (!wake) {
             this.scheduleTopic(scene, topicId)
             return
           }
-          if (wake.kind === 'run') void this.run(scene, topicId, false, wake)
-          else {
+          if (wake.kind === 'run') {
+            state.lastAutomaticTurn[kind] = Date.now()
+            void this.run(scene, topicId, false, wake)
+          } else {
             this.store.log('info', 'runtime', 'turn_wait_recheck', {
               sceneId: scene.id,
               stage: 'turn_wait',
@@ -1238,6 +1274,7 @@ export class Runtime {
     for (const t of s.timers.values()) clearTimeout(t)
     s.timers.clear()
     s.firstPending.clear()
+    s.lastAutomaticTurn = {}
     s.routing.cancel()
     for (const admission of s.admissions.values()) admission.cancel()
     s.admissions.clear()
@@ -1251,7 +1288,8 @@ export class Runtime {
     s.flowQueue.clear()
     for (const task of s.tasks.values()) task.controller.abort('scene_cancelled')
   }
-  async proactive(sceneId: string) {
+  /** Explicit invocations retain manual semantics; periodic opportunities yield to ingress. */
+  async proactive(sceneId: string, scheduled = false) {
     const scene = this.scenes.get(sceneId),
       settings = this.store.scene(sceneId),
       state = this.states.get(sceneId)
@@ -1260,13 +1298,21 @@ export class Runtime {
       scene.kind !== 'group' ||
       !settings?.participationEnabled ||
       !settings.proactiveEnabled ||
-      !state
+      !state ||
+      (scheduled &&
+        (state.tasks.size >= this.store.settings.sceneTurnConcurrency ||
+          state.flowQueue.size > 0 ||
+          (state.lastAutomaticTurn.group !== undefined &&
+            Date.now() < state.lastAutomaticTurn.group + this.store.settings.groupTurnCooldownMs)))
     )
       return
     const topic = [...state.topics.values()]
       .filter((t) => Date.now() - t.lastAt < 30 * 60_000)
       .sort((a, b) => this.attention(b) - this.attention(a))[0]
-    if (topic) await withModelPriority(2, () => this.run(scene, topic.id, true))
+    if (topic && !state.tasks.has(topic.id)) {
+      if (scheduled) state.lastAutomaticTurn.group = Date.now()
+      await withModelPriority(2, () => this.run(scene, topic.id, true))
+    }
   }
   dispose() {
     this.imageBytes.clear()
@@ -1304,6 +1350,7 @@ export class Runtime {
         closed: false,
         recalled: new Set(),
         lastTouched: Date.now(),
+        lastAutomaticTurn: {},
       }
       this.states.set(id, state)
     }
@@ -2261,13 +2308,9 @@ export class Runtime {
                       topic.version !== checkedVersion
                     ) {
                       controller.abort('context_changed')
-                      if (!admittedIds) {
-                        const timer = setTimeout(() => {
-                          state.timers.delete(topicId)
-                          void this.run(scene, topicId, false)
-                        }, 0)
-                        state.timers.set(topicId, timer)
-                      }
+                      // Fresh ingress is already coalesced in the admission buffer. Cleanup
+                      // schedules it through the same deterministic policy, never a raw retry.
+                      if (!admittedIds) state.pendingTurns.add(topicId)
                       // ON: only already-buffered fresh ingress may obtain a subsequent wake.
                       // A rejected old proposal never mints a retry generation.
                       return false
@@ -2690,14 +2733,19 @@ export class Runtime {
                   !state.timers.has(topicId)
                 ) {
                   if (state.admissions.has(topicId)) this.scheduleTopic(scene, topicId)
-                  else if (!settings?.topicAdmissionEnabled)
-                    state.timers.set(
-                      topicId,
-                      setTimeout(() => {
-                        state.timers.delete(topicId)
-                        void this.run(scene, topicId, false)
-                      }, settings?.debounceMs ?? 0),
-                    )
+                }
+                if (
+                  recoveryReady &&
+                  mode === 'real' &&
+                  !state.closed &&
+                  this.states.get(scene.id) === state &&
+                  this.store.scene(scene.id)?.participationEnabled &&
+                  this.adapters.has(scene.adapterId)
+                ) {
+                  // Insertion order is the oldest pending batch first; a chatty topic cannot
+                  // repeatedly reclaim the scene slot ahead of an already waiting topic.
+                  for (const pendingId of state.flowQueue.keys())
+                    this.scheduleTopic(scene, pendingId)
                 }
                 if (
                   recoveryReady &&

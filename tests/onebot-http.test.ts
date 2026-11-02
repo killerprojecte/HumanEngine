@@ -56,7 +56,9 @@ async function fixture(
     eventCredentialEnv: 'HTTP_TEST_EVENTS',
     timeoutMs: 250,
   }
-  const adapter = new OneBotAdapter(config, { onMessage: (message) => messages.push(message) })
+  const adapter = new OneBotAdapter(config, {
+    onMessage: (message) => messages.push(message),
+  })
   const post = async (
     body: string,
     headers: Record<string, string> = {},
@@ -108,7 +110,11 @@ test('HTTP sends preserve IDs, signed events, account isolation, recalls and his
     assert.equal((await f.post(JSON.stringify(event()))).status, 204)
     assert.equal(f.messages.length, 1)
     assert.equal(
-      (await f.post(JSON.stringify(event()), { 'X-Signature': 'sha1=' + '0'.repeat(40) })).status,
+      (
+        await f.post(JSON.stringify(event()), {
+          'X-Signature': 'sha1=' + '0'.repeat(40),
+        })
+      ).status,
       401,
     )
     assert.equal((await f.post(JSON.stringify(event({ self_id: 43 })))).status, 403)
@@ -181,15 +187,44 @@ test('HTTP failures are truthful, never retried; cancellation and disposal inval
   }
 })
 
+test('HTTP send deadline is timeout, caller abort is cancellation, both uncertain without retry', async () => {
+  const f = await fixture()
+  try {
+    await f.adapter.connect()
+    const scope = f.adapter.scene('group', '9')
+    const segment = { parts: [{ type: 'text' as const, text: 'fixture' }] }
+    const timeout = await f.adapter.send(scope, segment)
+    assert.equal(timeout.status, 'unknown')
+    assert.equal(timeout.detail, 'request_timeout')
+    const controller = new AbortController()
+    const pending = f.adapter.send(scope, segment, controller.signal)
+    while (f.requests.filter((path) => path.endsWith('/send_group_msg')).length < 2)
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    controller.abort()
+    const cancelled = await pending
+    assert.equal(cancelled.status, 'unknown')
+    assert.equal(cancelled.detail, 'request_cancelled')
+    assert.equal(f.requests.filter((path) => path.endsWith('/send_group_msg')).length, 2)
+  } finally {
+    await f.close()
+  }
+})
+
 test('HTTP refuses missing credentials, mismatched account, unsafe URL and oversized events', async () => {
   const f = await fixture()
   try {
-    const unsafe = new OneBotAdapter({ ...f.config, url: 'http://user:password@127.0.0.1/' })
+    const unsafe = new OneBotAdapter({
+      ...f.config,
+      url: 'http://user:password@127.0.0.1/',
+    })
     await assert.rejects(unsafe.connect(), /invalid_http_url/)
     const wrong = new OneBotAdapter({ ...f.config, accountId: '43' })
     await assert.rejects(wrong.connect(), /account_mismatch/)
     wrong.dispose()
-    const missing = new OneBotAdapter({ ...f.config, eventCredentialEnv: 'NOT_CONFIGURED_TEST' })
+    const missing = new OneBotAdapter({
+      ...f.config,
+      eventCredentialEnv: 'NOT_CONFIGURED_TEST',
+    })
     await assert.rejects(missing.connect(), /event_credential_not_configured/)
     await f.adapter.connect()
     const response = await f.post(JSON.stringify(event({ message: 'x'.repeat(1024 * 1024) })))

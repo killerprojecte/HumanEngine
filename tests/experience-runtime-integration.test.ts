@@ -243,7 +243,8 @@ function fixture(initialFlags: Partial<Settings> = flags) {
         beforeErrors = modelErrors.length,
         beforePlans = planners.length
       engine.runtime.ingest(message, target)
-      await advance(t)
+      // Keep the enabled admission defaults; wait for this ordinary-group batch.
+      await advance(t, Math.max(store.settings.debounceMs, store.settings.groupTurnCooldownMs))
       if (modelErrors.length > beforeErrors) throw modelErrors.at(-1)
       assert.ok(planners.length > beforePlans, 'actual Planner callback ran')
       assert.equal(engine.runtime.activeTasks, 0, 'actual foreground turn settles')

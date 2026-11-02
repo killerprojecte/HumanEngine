@@ -127,7 +127,7 @@ export class Engine {
     this.topicAdmissionEnabled = store.settings.topicAdmissionEnabled
     this.budget = new BudgetService(store)
     if (store.recoveryQuarantined) throw new Error('recovery_quarantined')
-    modelScheduler.configure(store.settings.modelConcurrency)
+    modelScheduler.configure(store.settings.modelConcurrency, store.settings.modelCallsPerMinute)
     this.runtime = new Runtime(
       store,
       (config, context) =>
@@ -1208,7 +1208,8 @@ export class Engine {
       }
     this.proactiveTimer = setInterval(() => {
       for (const scene of this.store.scenes())
-        if (scene.kind === 'group' && scene.proactiveEnabled) void this.runtime.proactive(scene.id)
+        if (scene.kind === 'group' && scene.proactiveEnabled)
+          void this.runtime.proactive(scene.id, true)
     }, 60000)
     this.proactiveTimer.unref()
   }
@@ -1230,7 +1231,11 @@ export class Engine {
     this.memory.workspace.configure()
     this.workspaceMaintenance.configure()
     this.semanticLearning.configure()
-    modelScheduler.configure(this.store.settings.modelConcurrency)
+    modelScheduler.configure(
+      this.store.settings.modelConcurrency,
+      this.store.settings.modelCallsPerMinute,
+    )
+    this.runtime.configureAdmission()
     if (!this.store.settings.debugModelIO) this.store.clearDiagnostics()
   }
   router(config: RouterConfig = this.store.models, admit?: () => void) {

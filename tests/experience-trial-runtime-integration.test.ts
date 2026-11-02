@@ -267,7 +267,8 @@ function fixture(initialFlags: Partial<Settings> = flags) {
         beforeErrors = modelErrors.length,
         beforePlans = planners.length
       engine.runtime.ingest(message, target)
-      await advance(t)
+      // Keep the enabled admission defaults; wait for this ordinary-group batch.
+      await advance(t, Math.max(store.settings.debounceMs, store.settings.groupTurnCooldownMs))
       if (modelErrors.length > beforeErrors) throw modelErrors.at(-1)
       assert.ok(planners.length > beforePlans, 'actual Planner callback ran')
       if (requireIdle) assert.equal(engine.runtime.activeTasks, 0, 'actual foreground turn settles')
@@ -1092,6 +1093,52 @@ test("Bob mentioning Alice cannot consume Alice's personal trial; Alice self-que
       },
       bobQuestion('bob-after-administrator-review'),
     )
+  } finally {
+    await h.close()
+  }
+})
+
+test('default group admission delays Engine exposure, coalesces latest input, and cannot resurrect recalled trial evidence across read ABA', async (t) => {
+  clock(t)
+  const h = fixture()
+  try {
+    await seed(t, h, 'person', 'rate-recalled-instruction')
+    assert.equal(h.store.settings.groupTurnCooldownMs, 3000)
+    assert.equal(h.store.settings.sceneTurnConcurrency, 1)
+    const before = {
+      decisions: h.decisions.length,
+      plans: h.planners.length,
+      replies: h.replies.length,
+    }
+    h.store.saveScene({ ...h.store.scene(scene.id)!, participationEnabled: true })
+    for (let index = 0; index < 20; index++)
+      h.engine.runtime.ingest(question(`rate-pending-${index}`), scene)
+    await advance(t, h.store.settings.debounceMs)
+    assert.deepEqual(
+      { decisions: h.decisions.length, plans: h.planners.length, replies: h.replies.length },
+      before,
+      'no decision, memory exposure, or Replyer call is purchased before admission',
+    )
+    assert.equal(h.engine.runtime.activeTasks, 0)
+    h.read(false)
+    h.read(true)
+    h.engine.runtime.recall(scene.id, 'rate-recalled-instruction')
+    await advance(t, h.store.settings.groupTurnCooldownMs - h.store.settings.debounceMs - 1)
+    assert.equal(h.decisions.length, before.decisions)
+    await advance(t, 1)
+    assert.equal(
+      h.decisions.length,
+      before.decisions + 1,
+      'one coalesced decision, not one per message',
+    )
+    assert.equal(h.planners.length, before.plans + 1)
+    assert.equal(h.replies.length, before.replies + 1)
+    assert.match(JSON.stringify(h.decisions.at(-1)), /rate-pending-19/)
+    assert.deepEqual(hints(h.planners.at(-1)!), [], 'the recalled instruction grants no trial hint')
+    assert.doesNotMatch(JSON.stringify(h.planners.at(-1)), /rate-recalled-instruction/)
+    assert.equal(h.engine.runtime.activeTasks, 0)
+    await advance(t, h.store.settings.groupTurnCooldownMs * 2)
+    assert.equal(h.decisions.length, before.decisions + 1, 'consumed ingress is never replayed')
   } finally {
     await h.close()
   }

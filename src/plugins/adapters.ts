@@ -1,3 +1,6 @@
+import { outcomeError, preserveOutcomeError } from '../diagnostics/error-context.ts'
+import { knownDiagnosticCode } from '../diagnostics/error-codes.ts'
+import { awaitSendStage, abortContainedAdapter } from '../runtime/dispatch.ts'
 import type { SourceEventResult, TrustedSourceChange } from '../memory/domain/events.ts'
 import { createHash } from 'node:crypto'
 import type { Runtime, RuntimeAdapter } from '../runtime.ts'
@@ -117,7 +120,11 @@ export function installAdapter(
           : part.type === 'mention'
             ? { type: 'mention', userId: part.userId }
             : part.type === 'media'
-              ? { type: 'media', assetId: part.assetId, mediaType: part.mediaType }
+              ? {
+                  type: 'media',
+                  assetId: part.assetId,
+                  mediaType: part.mediaType,
+                }
               : { type: 'unsupported', description: part.description },
       ),
     }
@@ -197,65 +204,85 @@ export function installAdapter(
     return {
       ...value,
       items: value.items
-        .map((message) => ({ ...checkMessage(message, scope), origin: 'history' as const }))
+        .map((message) => ({
+          ...checkMessage(message, scope),
+          origin: 'history' as const,
+        }))
         .filter((message) => message.status !== 'recalled'),
     }
   }
-  runtime.addAdapter(id, {
-    get status() {
-      return status
-    },
-    send: async (scope, segment, other): Promise<SendResult> => {
-      checkScene(scope)
-      if (segment.replyToId && !segment.replyToId.startsWith(scope.id + ':'))
-        return { status: 'failed', detail: 'quote_scope_mismatch' }
-      const combined = linked(other)
-      if (!active() || combined.aborted)
-        return { status: 'cancelled', detail: 'cancelled_before_send' }
-      try {
-        const result = await untilAbort(
-          adapter.send(Object.freeze({ ...scope }), structuredClone(segment), combined),
-          combined,
-        )
-        if (
-          !['sent', 'failed', 'unknown', 'cancelled'].includes(result.status) ||
-          (result.messageId && !result.messageId.startsWith(scope.id + ':'))
-        )
-          return { status: 'unknown', detail: 'invalid_send_receipt' }
-        return {
-          status: result.status,
-          ...(result.messageId ? { messageId: result.messageId } : {}),
+  runtime.addAdapter(
+    id,
+    abortContainedAdapter({
+      get status() {
+        return status
+      },
+      send: async (scope, segment, other): Promise<SendResult> => {
+        checkScene(scope)
+        if (segment.replyToId && !segment.replyToId.startsWith(scope.id + ':'))
+          return { status: 'failed', detail: 'quote_scope_mismatch' }
+        const combined = linked(other)
+        if (!active() || combined.aborted)
+          return { status: 'cancelled', detail: 'cancelled_before_send' }
+        try {
+          const result = await awaitSendStage(
+            () => adapter.send(Object.freeze({ ...scope }), structuredClone(segment), combined),
+            combined,
+          )
+          if (
+            !['sent', 'failed', 'unknown', 'cancelled'].includes(result.status) ||
+            (result.messageId && !result.messageId.startsWith(scope.id + ':'))
+          )
+            return { status: 'unknown', detail: 'invalid_send_receipt' }
+          const receipt: SendResult = {
+            status: result.status,
+            ...(result.messageId ? { messageId: result.messageId } : {}),
+            ...(knownDiagnosticCode(result.detail) ? { detail: result.detail } : {}),
+          }
+          const error = outcomeError(result)
+          return error === undefined ? receipt : preserveOutcomeError(receipt, error)
+        } catch (error) {
+          return preserveOutcomeError(
+            {
+              status: 'unknown' as const,
+              detail: combined.aborted
+                ? combined.reason?.name === 'TimeoutError'
+                  ? 'request_timeout'
+                  : 'request_cancelled'
+                : 'delivery_unknown',
+            },
+            combined.aborted ? (combined.reason ?? error) : error,
+            { operation: 'adapter.send', stage: 'adapter_send' },
+          )
         }
-      } catch {
-        return { status: 'unknown', detail: 'adapter_send_outcome_unknown' }
-      }
-    },
-    getMessage: (scope, messageId, other) => {
-      if (!messageId.startsWith(scope.id + ':'))
-        return Promise.reject(new Error('adapter_message_scope_mismatch'))
-      return read(
-        scope,
-        (signal) => adapter.getMessage(Object.freeze({ ...scope }), messageId, signal),
-        other,
-      ).then((result) => ({
-        ...result,
-        items: result.items.filter((message) => message.id === messageId),
-      }))
-    },
-    history: (scope, input, other) =>
-      read(
-        scope,
-        (signal) => adapter.history(Object.freeze({ ...scope }), structuredClone(input), signal),
-        other,
-      ),
-    dispose: () => {
-      if (disposed) return
-      disposed = true
-      installed = false
-      status = 'disconnected'
-      adapter.dispose()
-    },
-  })
+      },
+      getMessage: (scope, messageId, other) => {
+        if (!messageId.startsWith(scope.id + ':'))
+          return Promise.reject(new Error('adapter_message_scope_mismatch'))
+        return read(
+          scope,
+          (signal) => adapter.getMessage(Object.freeze({ ...scope }), messageId, signal),
+          other,
+        ).then((result) => ({
+          ...result,
+          items: result.items.filter((message) => message.id === messageId),
+        }))
+      },
+      history: (scope, input, other) =>
+        read(
+          scope,
+          (signal) => adapter.history(Object.freeze({ ...scope }), structuredClone(input), signal),
+          other,
+        ),
+      dispose: () => {
+        if (disposed) return
+        disposed = true
+        installed = false
+        status = 'disconnected'
+        adapter.dispose()
+      },
+    }),
+  )
   installed = true
   return {
     start: () =>

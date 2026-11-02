@@ -44,7 +44,14 @@ const send = (operationId = 'send-1') => ({
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 function setup(complete: (role: string, messages: ChatMessage[]) => Promise<Completion>) {
   const store = new Store(':memory:')
-  store.set('settings', { ...store.settings, debounceMs: 0, maxWaitMs: 100 })
+  store.set('settings', {
+    ...store.settings,
+    // These fixtures isolate legacy wait/topic semantics; rate policy has its own integration suite.
+    groupTurnCooldownMs: 0,
+    sceneTurnConcurrency: 32,
+    debounceMs: 0,
+    maxWaitMs: 100,
+  })
   const runtime = new Runtime(store, () => ({ complete: withFixturePlan(complete) }) as Router)
   return { store, runtime }
 }

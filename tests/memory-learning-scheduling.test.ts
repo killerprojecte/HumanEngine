@@ -710,7 +710,7 @@ for (const window of ['planner-completion', 'submission'] as const)
       )
 
       h.ingest('fresh-exposure-source')
-      await advance(t, 10)
+      await advance(t, h.store.settings.groupTurnCooldownMs)
       assert.equal(rounds, 4, 'the fresh turn must search again, not reuse the stale exposure')
       assert.equal(submissions.at(-1)!.status, 'queued')
       assert.equal(h.engine.contextualLearning.queue.stats().accepted, 1)

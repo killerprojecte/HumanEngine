@@ -327,7 +327,9 @@ export class Store {
   }
   scene(id: string): Scene | undefined {
     this.assertRecoveryReady()
-    return this.scenes().find((s) => s.id === id)
+    const row = this.db.prepare('SELECT value FROM scenes WHERE id=?').get(id) as
+      { value: string } | undefined
+    return row ? JSON.parse(row.value) : undefined
   }
   saveScene(scene: Scene) {
     this.assertRecoveryReady()

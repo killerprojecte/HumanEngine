@@ -8,7 +8,8 @@ const { client, authenticatedFetch } = useApi()
 const memories = ref<Memory[]>([]),
   scenes = ref<Scene[]>([])
 const error = ref(''),
-  busy = ref(false),
+  mutationBusy = ref(false),
+  pageBusy = ref(false),
   loaded = ref(false),
   saved = ref(false)
 const sceneFilter = ref('all'),
@@ -18,6 +19,17 @@ const sceneFilter = ref('all'),
   statusFilter = ref('all'),
   page = ref(1)
 const pageSize = 20
+const busy = computed(() => mutationBusy.value || pageBusy.value)
+const total = ref(0),
+  matched = ref(0),
+  administrationPersonIds = ref<string[]>([])
+let pageReadEpoch = 0,
+  appliedPage = 1,
+  searchDeadline = 0
+let appliedPageKey = ''
+let deferredPageRead = false
+let pageController: AbortController | undefined
+let pageTimer: ReturnType<typeof setTimeout> | undefined
 const recordsRegion = ref<HTMLElement>()
 const section = ref('records'),
   knowledgeTab = ref('knowledge'),
@@ -47,21 +59,14 @@ let labelQueue: string[] = [],
 const peopleBusy = ref(false),
   peopleError = ref(false)
 let peopleEpoch = 0
-const scopedPeople = computed(() => {
-  const ids = new Set(
-    memories.value.flatMap((memory) =>
-      memory.scope.kind === 'scene' &&
-      memory.scope.sceneId === currentSceneId.value &&
-      memory.scope.personId
-        ? [memory.scope.personId]
-        : [],
-    ),
-  )
-  return [...ids].map((personId) => ({
+// Facets cover the complete same-scene administration domain, not just this page
+// or the current-use people projection (which omits future/inactive records).
+const scopedPeople = computed(() =>
+  administrationPersonIds.value.map((personId) => ({
     personId,
     displayName: people.value.find((person) => person.personId === personId)?.displayName,
-  }))
-})
+  })),
+)
 const personOptions = computed(() => [
   { label: t('mxAllPeople'), value: '' },
   ...scopedPeople.value.map((person, index) => ({
@@ -161,14 +166,20 @@ async function loadPeople() {
     if (epoch === peopleEpoch) peopleBusy.value = false
   }
 }
-watch([sceneFilter, kindFilter, statusFilter, personFilter, query], () => {
+watch([sceneFilter, kindFilter, statusFilter, personFilter, query], (next, previous) => {
+  if (next[4] !== previous[4]) searchDeadline = Date.now() + 250
   page.value = 1
+  queuePageRead()
 })
-watch(sceneFilter, loadPeople)
+watch(sceneFilter, () => {
+  administrationPersonIds.value = []
+  void loadPeople()
+})
 const modalOpen = ref(false),
   mode = ref<'view' | 'edit' | 'new'>('view'),
   selectedId = ref('')
-const selected = computed(() => memories.value.find((memory) => memory.id === selectedId.value))
+// A page change must not discard the revision captured by an open detail/editor.
+const selected = ref<Memory>()
 const currentSceneId = computed(() =>
   sceneFilter.value.startsWith('scene:') ? sceneFilter.value.slice(6) : '',
 )
@@ -241,37 +252,12 @@ watch(
     if (mode.value === 'new') draft.value.personId = ''
   },
 )
-const visible = computed(() =>
-  memories.value.filter((memory) => {
-    const scope = memory.scope
-    return (
-      (sceneFilter.value === 'all' ||
-        (sceneFilter.value === 'public' && scope.kind === 'sharedPublicKnowledge') ||
-        (scope.kind === 'scene' && scope.sceneId === currentSceneId.value)) &&
-      (!personFilter.value.trim() ||
-        (!!currentSceneId.value &&
-          scope.kind === 'scene' &&
-          scope.sceneId === currentSceneId.value &&
-          scope.personId === personFilter.value.trim())) &&
-      (kindFilter.value === 'all' || memory.kind === kindFilter.value) &&
-      (statusFilter.value === 'all' || memory.status === statusFilter.value) &&
-      (!query.value.trim() ||
-        memory.content.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase()))
-    )
-  }),
-)
-const ordered = computed(() =>
-  [...visible.value].sort((a, b) => b.learnedAt.localeCompare(a.learnedAt)),
-)
-const pageCount = computed(() => Math.max(1, Math.ceil(ordered.value.length / pageSize)))
-const pageItems = computed(() =>
-  ordered.value.slice((page.value - 1) * pageSize, page.value * pageSize),
-)
+const pageItems = computed(() => memories.value)
 watch(pageItems, () => {
   void loadVisiblePersonNames()
 })
-watch(pageCount, (count) => {
-  if (page.value > count) page.value = count
+watch(page, () => {
+  if (page.value !== appliedPage) queuePageRead()
 })
 watch(page, async () => {
   if (section.value !== 'records' || modalOpen.value || filtersOpen.value) return
@@ -354,19 +340,133 @@ const modalTitle = computed(() =>
 const modalDescription = computed(() =>
   mode.value === 'new' ? t('mmCreateHelp') : selected.value ? scopeLabel(selected.value) : '',
 )
+function cancelPageRead() {
+  pageReadEpoch++
+  pageController?.abort()
+  pageController = undefined
+  if (pageTimer !== undefined) clearTimeout(pageTimer)
+  pageTimer = undefined
+  pageBusy.value = false
+}
+function pageQuery() {
+  return {
+    page: page.value,
+    limit: pageSize,
+    scene: sceneFilter.value,
+    person: personFilter.value,
+    kind: kindFilter.value as Memory['kind'] | 'all',
+    status: statusFilter.value as Memory['status'] | 'all',
+    q: query.value,
+    // Match the browser's former default-locale search and ordering.
+    locale: Intl.DateTimeFormat().resolvedOptions().locale,
+  }
+}
+function flushDeferredPageRead() {
+  if (!deferredPageRead || mutationBusy.value || modalOpen.value || labelsDisposed) return
+  deferredPageRead = false
+  if (JSON.stringify(pageQuery()) === appliedPageKey) return
+  if (loaded.value) queuePageRead()
+  else void load()
+}
+function finishMutation() {
+  if (deferredPageRead && !modalOpen.value && JSON.stringify(pageQuery()) !== appliedPageKey) {
+    // Retire rows for old controls before unlocking their action buttons.
+    memories.value = []
+    appliedPageKey = ''
+  }
+  mutationBusy.value = false
+  flushDeferredPageRead()
+}
+function queuePageRead() {
+  if (labelsDisposed) return
+  if (mutationBusy.value || modalOpen.value) {
+    deferredPageRead = true
+    return
+  }
+  if (!loaded.value) return
+  deferredPageRead = false
+  cancelPageRead()
+  // Never leave rows from the previous scene/filter actionable under new controls.
+  memories.value = []
+  appliedPageKey = ''
+  pageBusy.value = true
+  pageTimer = setTimeout(
+    () => {
+      pageTimer = undefined
+      void readPage()
+    },
+    Math.max(0, searchDeadline - Date.now()),
+  )
+}
+async function readPage(allowModal = false): Promise<boolean> {
+  if (labelsDisposed || (modalOpen.value && !allowModal)) return false
+  cancelPageRead()
+  const epoch = pageReadEpoch
+  const controller = new AbortController()
+  const requestedQuery = pageQuery()
+  const requestKey = JSON.stringify(requestedQuery)
+  deferredPageRead = false
+  pageController = controller
+  pageBusy.value = true
+  error.value = ''
+  try {
+    const records = await client.GET('/api/memories/page', {
+      params: { query: requestedQuery },
+      signal: controller.signal,
+    })
+    if (
+      epoch !== pageReadEpoch ||
+      controller.signal.aborted ||
+      labelsDisposed ||
+      requestKey !== JSON.stringify(pageQuery())
+    )
+      return false
+    if (!records.data) throw new Error(records.error?.error ?? t('networkError'))
+    memories.value = records.data.items
+    total.value = records.data.total
+    matched.value = records.data.matched
+    administrationPersonIds.value = records.data.personIds
+    appliedPageKey = JSON.stringify({ ...requestedQuery, page: records.data.page })
+    appliedPage = records.data.page
+    page.value = records.data.page
+    if (selected.value && mode.value === 'view' && !confirmation.value) {
+      const current = records.data.items.find((record) => record.id === selected.value?.id)
+      if (current) selected.value = current
+    }
+    loaded.value = true
+    return true
+  } catch (cause) {
+    if (
+      epoch !== pageReadEpoch ||
+      controller.signal.aborted ||
+      labelsDisposed ||
+      requestKey !== JSON.stringify(pageQuery())
+    )
+      return false
+    error.value = cause instanceof Error ? cause.message : t('networkError')
+    if (confirmation.value) confirmationError.value = error.value
+    return false
+  } finally {
+    if (epoch === pageReadEpoch) {
+      pageBusy.value = false
+      pageController = undefined
+    }
+  }
+}
 async function load(reconcile = false) {
   if (busy.value || (modalOpen.value && !reconcile)) return
-  busy.value = true
+  mutationBusy.value = true
   error.value = ''
   confirmationError.value = ''
   saved.value = false
   try {
-    const [records, places] = await Promise.all([
-      client.GET('/api/memories'),
+    const [recordsLoaded, places] = await Promise.all([
+      readPage(reconcile),
       client.GET('/api/scenes'),
     ])
-    if (!records.data || !places.data)
-      throw new Error(records.error?.error ?? places.error?.error ?? t('networkError'))
+    if (!recordsLoaded || !places.data)
+      throw new Error(places.error?.error ?? (error.value || t('networkError')))
+    if (labelsDisposed) return
     labelEpoch++
     labelQueue = []
     labelRequests.clear()
@@ -376,21 +476,22 @@ async function load(reconcile = false) {
     peopleBusy.value = false
     if (currentSceneId.value) void loadPeople()
     for (const key of Object.keys(personLabels)) delete personLabels[key]
-    memories.value = records.data
     scenes.value = places.data
-    loaded.value = true
-    recoveryRequired.value = false
+    if (JSON.stringify(pageQuery()) === appliedPageKey) recoveryRequired.value = false
+    void loadVisiblePersonNames()
   } catch (cause) {
+    if (labelsDisposed) return
     error.value = cause instanceof Error ? cause.message : t('networkError')
     if (confirmation.value) confirmationError.value = error.value
   } finally {
-    busy.value = false
+    finishMutation()
   }
 }
 function openDetails(memory: Memory) {
   if (busy.value || recoveryRequired.value) return
   editorUncertain.value = false
   selectedId.value = memory.id
+  selected.value = memory
   mode.value = 'view'
   error.value = ''
   saved.value = false
@@ -421,6 +522,7 @@ function begin(memory?: Memory) {
       }
   openingDraft = JSON.stringify(draft.value)
   selectedId.value = memory?.id ?? ''
+  selected.value = memory
   mode.value = memory ? 'edit' : 'new'
   publicConfirmed.value = false
   error.value = ''
@@ -460,6 +562,7 @@ function closeModal() {
   modalOpen.value = false
   confirmation.value = undefined
   error.value = ''
+  flushDeferredPageRead()
 }
 function requestClose(open = false) {
   if (open || busy.value) return
@@ -495,6 +598,7 @@ onMounted(() => {
   window.addEventListener('beforeunload', warnBeforeUnload)
 })
 onBeforeUnmount(() => {
+  cancelPageRead()
   labelsDisposed = true
   labelEpoch++
   peopleEpoch++
@@ -503,6 +607,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', warnBeforeUnload)
 })
 function replace(memory: Memory) {
+  if (selectedId.value === memory.id) selected.value = memory
   const index = memories.value.findIndex((item) => item.id === memory.id)
   if (index < 0) memories.value.unshift(memory)
   else memories.value[index] = memory
@@ -516,7 +621,7 @@ async function save() {
     mode.value === 'view'
   )
     return
-  busy.value = true
+  mutationBusy.value = true
   error.value = ''
   try {
     let record: Memory | undefined
@@ -548,6 +653,7 @@ async function save() {
       kindFilter.value = 'all'
       statusFilter.value = 'all'
       section.value = 'records'
+      page.value = 1
     } else if (original) {
       const patch: { content?: string; status?: Memory['status']; locked?: boolean } = {}
       if (draft.value.content.trim() !== original.content)
@@ -582,12 +688,13 @@ async function save() {
       selectedId.value = record.id
       saved.value = true
       closeModal()
+      await readPage(true)
     }
   } catch (cause) {
     trackUncertain(cause)
     error.value = cause instanceof Error ? cause.message : t('networkError')
   } finally {
-    busy.value = false
+    finishMutation()
   }
 }
 async function confirmAction() {
@@ -600,7 +707,7 @@ async function confirmAction() {
   const record = selected.value
   if (!record) return
   const action = confirmation.value
-  busy.value = true
+  mutationBusy.value = true
   confirmationError.value = ''
   try {
     if (action === 'delete') {
@@ -610,6 +717,7 @@ async function confirmAction() {
       if (!response.data?.ok)
         mutationFailure(response.response, response.error?.error ?? t('networkError'))
       memories.value = memories.value.filter((memory) => memory.id !== record.id)
+      selected.value = undefined
       closeModal()
     } else {
       const response = await client.PATCH('/api/memories/{id}', {
@@ -634,11 +742,12 @@ async function confirmAction() {
       replace(response.data)
       confirmation.value = undefined
     }
+    await readPage(true)
   } catch (cause) {
     trackUncertain(cause)
     confirmationError.value = cause instanceof Error ? cause.message : t('networkError')
   } finally {
-    busy.value = false
+    finishMutation()
   }
 }
 function date(value: string) {
@@ -655,11 +764,9 @@ function date(value: string) {
           color="neutral"
           variant="subtle"
           class="tabular"
-          :aria-label="t('mxTotal', { count: memories.length })"
-          ><span class="sm:hidden">{{ memories.length }}</span
-          ><span class="hidden sm:inline">{{
-            t('mxTotal', { count: memories.length })
-          }}</span></UBadge
+          :aria-label="t('mxTotal', { count: total })"
+          ><span class="sm:hidden">{{ total }}</span
+          ><span class="hidden sm:inline">{{ t('mxTotal', { count: total }) }}</span></UBadge
         >
       </div>
       <div class="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -837,7 +944,7 @@ function date(value: string) {
                     >{{ t('mxClearFilters') }}</UButton
                   >
                   <UButton @click="filtersOpen = false">{{
-                    t('mxShowResults', { count: visible.length })
+                    t('mxShowResults', { count: matched })
                   }}</UButton>
                 </template>
               </USlideover>
@@ -905,12 +1012,16 @@ function date(value: string) {
                 >
               </div>
               <span class="tabular"
-                >{{ t('mxMatchCount', { count: visible.length, total: memories.length }) }}
+                >{{ t('mxMatchCount', { count: matched, total }) }}
                 <span class="hidden sm:inline"> · {{ t('mxNewestFirst') }}</span></span
               >
             </div>
           </div>
-          <div v-if="!loaded && busy" class="p-12 text-center text-muted text-sm" role="status">
+          <div
+            v-if="pageBusy || (!loaded && busy)"
+            class="p-12 text-center text-muted text-sm"
+            role="status"
+          >
             {{ t('mmLoading') }}
           </div>
           <div v-else-if="!loaded && error" class="py-12 px-6 text-center space-y-3">
@@ -918,7 +1029,7 @@ function date(value: string) {
             <p class="font-medium">{{ t('mxLoadFailed') }}</p>
             <UButton variant="outline" color="neutral" @click="load()">{{ t('mpRetry') }}</UButton>
           </div>
-          <div v-else-if="!visible.length" class="py-14 px-6 text-center space-y-3">
+          <div v-else-if="!matched" class="py-14 px-6 text-center space-y-3">
             <UIcon name="i-lucide-search" class="size-8 text-dimmed" />
             <p class="font-medium">{{ t(filtersActive ? 'mxNoMatches' : 'mxNoRecords') }}</p>
             <p class="text-sm text-muted">
@@ -1022,14 +1133,14 @@ function date(value: string) {
               <span class="text-xs text-muted tabular">{{
                 t('mxPageRange', {
                   from: (page - 1) * pageSize + 1,
-                  to: Math.min(page * pageSize, visible.length),
-                  total: visible.length,
+                  to: Math.min(page * pageSize, matched),
+                  total: matched,
                 })
               }}</span>
               <UPagination
                 v-model:page="page"
                 :items-per-page="pageSize"
-                :total="visible.length"
+                :total="matched"
                 :sibling-count="1"
                 size="sm"
                 :show-edges="false"

@@ -26,7 +26,8 @@ test('memory browser retains real tab panels, bounded record rendering and detai
     assert.match(page, new RegExp(`<${component}\\b`))
   assert.match(page, /v-for="memory in pageItems"/)
   assert.doesNotMatch(page, /v-for="memory in (?:memories|visible)"/)
-  assert.match(page, /if \(page\.value > count\) page\.value = count/)
+  assert.match(page, /appliedPage = records\.data\.page/)
+  assert.match(page, /page\.value = records\.data\.page/)
   for (const command of ['delete', 'lock', 'revalidate'])
     assert.match(page, new RegExp(`ask\\('${command}'\\)`))
 })
@@ -36,9 +37,10 @@ test('person filter derives its domain from same-scene administration records, n
     page.indexOf('const scopedPeople ='),
     page.indexOf('const personOptions ='),
   )
-  assert.match(scoped, /memories\.value\.flatMap/)
-  assert.match(scoped, /memory\.scope\.kind === 'scene'/)
-  assert.match(scoped, /memory\.scope\.sceneId === currentSceneId\.value/)
+  assert.match(scoped, /administrationPersonIds\.value\.map/)
+  assert.match(page, /administrationPersonIds\.value = records\.data\.personIds/)
+  assert.match(page, /scene: sceneFilter\.value/)
+  assert.doesNotMatch(scoped, /memories\.value/)
   assert.match(page, /\.\.\.scopedPeople\.value\.map/)
   // Reka SelectItem disallows the empty value used by the all-people option.
   assert.match(page, /<select\b[^>]*v-model="personFilter"[^>]*>/s)

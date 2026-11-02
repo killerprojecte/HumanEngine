@@ -4275,6 +4275,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/memories/page": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    scene?: string;
+                    person?: string;
+                    kind?: "all" | ("fact" | "claim" | "term" | "experience" | "summary");
+                    status?: "all" | "active" | "disputed" | "superseded" | "invalidated";
+                    q?: string;
+                    locale?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MemoryAdminPage"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Service unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/memories/{id}": {
         parameters: {
             query?: never;
@@ -7238,6 +7309,14 @@ export interface components {
             origin: "manual" | "learned";
             /** @enum {string} */
             lineageStatus?: "verified" | "unverified" | "quarantined";
+        };
+        MemoryAdminPage: {
+            items: components["schemas"]["Memory"][];
+            total: number;
+            matched: number;
+            page: number;
+            limit: number;
+            personIds: string[];
         };
         Rule: {
             id: string;

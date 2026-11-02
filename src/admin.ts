@@ -1,3 +1,4 @@
+import { selectAdminMemoryPage } from './memory/interfaces/admin-page.ts'
 import { MAX_IMAGE_SOURCE_BYTES } from './image-upload.ts'
 import { registerExternalCostRoutes } from './budget/external-cost/admin-routes.ts'
 import { installSemanticRoutes } from './memory/interfaces/semantic-routes.ts'
@@ -820,6 +821,69 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
           .map(presentMemory),
         200,
       ),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/memories/page',
+      request: {
+        query: z.object({
+          page: z.coerce.number().int().min(1).max(Number.MAX_SAFE_INTEGER).default(1),
+          limit: z.coerce.number().int().min(1).max(100).default(20),
+          scene: z
+            .string()
+            .refine(
+              (value) =>
+                value === 'all' ||
+                value === 'public' ||
+                (value.startsWith('scene:') && value.length > 6),
+            )
+            .default('all'),
+          person: z.string().default(''),
+          kind: z.union([z.literal('all'), MemoryInput.shape.kind]).default('all'),
+          status: z.enum(['all', 'active', 'disputed', 'superseded', 'invalidated']).default('all'),
+          q: z.string().default(''),
+          locale: z
+            .string()
+            .max(128)
+            .refine((value) => {
+              try {
+                return (
+                  Intl.getCanonicalLocales(value).length === 1 &&
+                  Intl.Collator.supportedLocalesOf(value).length === 1
+                )
+              } catch {
+                return false
+              }
+            })
+            .default('en'),
+        }),
+      },
+      responses: {
+        200: json(
+          z
+            .object({
+              items: z.array(Memory),
+              total: z.number().int().nonnegative(),
+              matched: z.number().int().nonnegative(),
+              page: z.number().int().positive(),
+              limit: z.number().int().min(1).max(100),
+              personIds: z.array(z.string()),
+            })
+            .openapi('MemoryAdminPage'),
+        ),
+        ...errors,
+      },
+    }),
+    (c) => {
+      // Preserve the legacy endpoint's complete eager read/presentation, including
+      // errors in off-page rows. Only response selection/serialization is paged.
+      const records = memory
+        .adminList()
+        .filter((record) => !record.internalUse)
+        .map(presentMemory)
+      return c.json(selectAdminMemoryPage(records, c.req.valid('query')), 200)
+    },
   )
   app.openapi(
     createRoute({

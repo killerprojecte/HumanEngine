@@ -565,3 +565,61 @@ test('Custom embedding protocols preserve accounting when strict output validati
     controller.abort()
   }
 })
+
+test('native image upload adapts to a real HTTP 413 and sends measured smaller payloads', async () => {
+  const { default: sharp } = await import('sharp')
+  const { randomBytes } = await import('node:crypto')
+  const source = await sharp(randomBytes(128 * 128 * 3), {
+    raw: { width: 128, height: 128, channels: 3 },
+  })
+    .png()
+    .toBuffer()
+  const sizes: number[] = []
+  const service = await fixture((body, _req, res) => {
+    sizes.push(Buffer.byteLength(JSON.stringify(body)))
+    if (sizes.length < 5) {
+      res.statusCode = 413
+      res.end('{}')
+      return
+    }
+    res.end(JSON.stringify(chatText))
+  })
+  try {
+    const cfg = config(service.url, 'openai-chat')
+    cfg.providers[0]!.imageUploadLimits = { maxImageBytes: 100000, maxRequestBytes: 100000 }
+    const router = new Router(cfg)
+    const result = await router.complete('thinker', [
+      {
+        role: 'user',
+        content: 'describe',
+        images: [`data:image/png;base64,${source.toString('base64')}`],
+      },
+    ])
+    assert.equal(result.text, 'Finished')
+    assert.equal(sizes.length, 5)
+    for (let index = 1; index < sizes.length; index++)
+      assert.ok(sizes[index]! <= Math.floor(sizes[index - 1]! / 2))
+  } finally {
+    await service.close()
+  }
+})
+
+test('HTTP 413 in text containing data:image does not trigger an image retry', async () => {
+  let requests = 0
+  const service = await fixture((_body, _req, res) => {
+    requests++
+    res.statusCode = 413
+    res.end('{}')
+  })
+  try {
+    await assert.rejects(
+      new Router(config(service.url, 'openai-chat')).complete('thinker', [
+        { role: 'user', content: 'literal data:image/png;base64,not-an-image-field' },
+      ]),
+      /all_models_failed/,
+    )
+    assert.equal(requests, 1)
+  } finally {
+    await service.close()
+  }
+})

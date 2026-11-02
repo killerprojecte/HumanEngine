@@ -1607,5 +1607,11 @@
   "mxFilters": "篩選",
   "mxShowResults": "查看 {count} 條記憶",
   "eiReplacePaused": "如有暫停任務，新任務將取代它。",
-  "eiConfirmRebuild": "確認重建"
+  "eiConfirmRebuild": "確認重建",
+  "mcImageUpload": "圖片上傳壓縮",
+  "mcImageUploadHelp": "僅在需要時壓縮圖片。預設每張 10 MiB、1536 × 1536 像素；來源解碼保護為 64 MiB / 4000 萬像素。請依此原生 API 的實際限制設定。請求位元組數包括全部圖片、base64、文字與 JSON；留空則不額外限制請求大小。保留原圖。",
+  "mcImageBytes": "單張圖片最大位元組數",
+  "mcImageWidth": "最大寬度（像素）",
+  "mcImageHeight": "最大高度（像素）",
+  "mcImageRequestBytes": "完整請求最大位元組數"
 }

@@ -338,3 +338,25 @@ test('Administrative thumbnails flatten animations and preserve original files',
     await close()
   }
 })
+
+test('oversized source recognition and import do not block the adaptive vision upload path', async () => {
+  const { randomBytes } = await import('node:crypto')
+  const { imageDataUrl } = await import('../src/media.ts')
+  const f = await setup()
+  try {
+    const bytes = await sharp(randomBytes(2000 * 2000 * 3), {
+      raw: { width: 2000, height: 2000, channels: 3 },
+    })
+      .png({ compressionLevel: 0 })
+      .toBuffer()
+    assert.ok(bytes.length > 10 * 1024 * 1024)
+    assert.equal(await f.memes.recognizeBytes(ctx(), bytes), undefined)
+    const imported = await f.memes.import(ctx(), bytes, source(ctx()))
+    assert.equal(imported.bytes, bytes.length)
+    assert.equal((await f.memes.recognizeBytes(ctx(), bytes))?.id, imported.id)
+    const compressed = Buffer.from((await imageDataUrl(bytes)).split(',')[1]!, 'base64')
+    assert.ok(compressed.length <= 10 * 1024 * 1024)
+  } finally {
+    await f.close()
+  }
+})

@@ -29,6 +29,7 @@ function fixture(body: string | Buffer, contentType = 'text/html; charset=utf-8'
         const response = new PassThrough() as unknown as IncomingMessage
         response.statusCode = status
         response.headers = { 'content-type': contentType }
+        response.rawHeaders = ['Content-Type', contentType]
         callback(response)
         ;(response as unknown as PassThrough).end(body)
       })
@@ -57,7 +58,10 @@ test('public URL read is inert, domain-free, bounded and untrusted; entity text 
   assert.equal(result.sourceUrl, 'https://arbitrary-public.example/article')
   assert.equal(calls.length, 1)
   assert.equal(calls[0]!.hostname, '93.184.215.14')
-  assert.deepEqual(calls[0]!.headers, { Host: 'arbitrary-public.example' })
+  assert.deepEqual(calls[0]!.headers, {
+    'accept-encoding': 'identity',
+    Host: 'arbitrary-public.example',
+  })
 })
 test('plaintext JSON, charset, character truncation and unsupported MIME are explicit', async () => {
   for (const mime of ['text/plain', 'application/json']) {
@@ -91,7 +95,7 @@ test('plaintext JSON, charset, character truncation and unsupported MIME are exp
     )
   }
 })
-test('size budget, private destinations, credentials, cancellation, access denial and challenge pages are not bypassed', async () => {
+test('legacy size settings no longer truncate downloads;  private destinations, credentials, cancellation, access denial and challenge pages are not bypassed', async () => {
   const f = fixture('x'.repeat(5000), 'text/plain')
   assert.equal(
     (
@@ -100,7 +104,7 @@ test('size budget, private destinations, credentials, cancellation, access denia
         signal(),
       )
     ).status,
-    'response_too_large',
+    'ok',
   )
   for (const url of [
     'http://127.0.0.1/',
@@ -430,7 +434,7 @@ test('redirects are followed with fresh pinned DNS, no header forwarding and a h
       },
       get(options, callback) {
         calls++
-        assert.deepEqual(Object.keys(options.headers ?? {}), ['Host'])
+        assert.deepEqual(Object.keys(options.headers ?? {}), ['accept-encoding', 'Host'])
         if (calls > 1 && destination === 'https://second.example/page')
           return f.network.get(options, callback)
         const request = new EventEmitter() as ClientRequest
@@ -439,6 +443,7 @@ test('redirects are followed with fresh pinned DNS, no header forwarding and a h
           const response = new PassThrough() as unknown as IncomingMessage
           response.statusCode = 302
           response.headers = { location: destination, 'set-cookie': ['private=not-forwarded'] }
+          response.rawHeaders = ['Location', destination]
           callback(response)
         })
         return request
@@ -454,7 +459,7 @@ test('redirects are followed with fresh pinned DNS, no header forwarding and a h
       assert.deepEqual(resolved, ['first.example', 'second.example'])
     } else if (destination.includes('loop')) {
       assert.equal(result.status, 'redirect_not_supported')
-      assert.equal(calls, 4)
+      assert.equal(calls, 11)
     } else {
       assert.ok(['address_not_public', 'redirect_not_supported'].includes(result.status))
       assert.equal(calls, 1)
@@ -486,4 +491,45 @@ test('concurrency slots recover after cancellation and per-call budget overrides
       'invalid_input',
     )
   assert.equal(f.calls.length, before)
+})
+
+test('large and binary HTTP error responses preserve full cached bytes beyond the preview', async () => {
+  const { ToolResultCache } = await import('../src/tool-results.ts')
+  const cache = new ToolResultCache()
+  const owner = {
+    scope: 'fixture',
+    sceneId: 'fixture',
+    pluginId: 'web-read',
+    dependencies: [],
+    validations: [],
+  }
+  const bytes = Buffer.alloc(2 * 1024 * 1024 + 17, 0xff)
+  bytes.write('tail-marker', bytes.length - 11)
+  const f = fixture(bytes, 'application/octet-stream', 404)
+  const service = new WebReadService(config({ maxResponseBytes: 4096 }), f.network)
+  try {
+    const result = await service.request(
+      { url: 'https://public.test/large' },
+      signal(),
+      (source, options) => cache.store(source, owner, signal(), options),
+    )
+    assert.equal(result.status, 'ok', 'HTTP transport completed, regardless of response status')
+    assert.equal(result.ok, false, 'HTTP error is not reported as a successful action')
+    assert.ok('body' in result && result.body)
+    assert.equal(result.httpStatus, 404)
+    assert.equal(result.body.totalBytes, bytes.length)
+    assert.equal(result.body.complete, true)
+    assert.equal(result.body.encoding, 'base64')
+    const tail = await cache.read(
+      { resultId: result.body.resultId, offset: bytes.length - 11, full: true, encoding: 'utf8' },
+      owner.scope,
+      signal(),
+    )
+    assert.equal(tail.content, 'tail-marker')
+    assert.equal(tail.requestComplete, true)
+    assert.equal(f.calls.length, 1, 'range retrieval does not repeat the request')
+  } finally {
+    await service.dispose()
+    await cache.dispose()
+  }
 })

@@ -1,5 +1,10 @@
 import type { WebSearchConfig } from './config.ts'
-import { SearchError, type ProviderId, type SearchResponse } from './types.ts'
+import {
+  SearchError,
+  type ProviderId,
+  type SearchResponse,
+  type CacheSearchResult,
+} from './types.ts'
 import { buildApiRequest, parseApi } from './providers/api.ts'
 import { buildHtmlRequest, parseHtml } from './providers/html.ts'
 import { uniqueResults } from './providers/results.ts'
@@ -17,6 +22,7 @@ export class WebSearchService {
     query: string,
     requestedLimit: number | undefined,
     signal: AbortSignal,
+    cacheResult: CacheSearchResult,
   ): Promise<SearchResponse> {
     if (typeof query !== 'string' || !query.trim() || Array.from(query).length > 128)
       throw new SearchError('invalid_response')
@@ -63,9 +69,20 @@ export class WebSearchService {
             combined,
             this.config.maxResponseBytes,
             this.fetcher,
+            cacheResult,
           )
+          response.body = body.body
+          response.bodyProvider = provider
+          response.parseLimited = body.parseLimited
+          response.parserBudgetBytes = body.parserBudgetBytes
+          response.httpStatus = body.httpStatus
+          if (body.parseLimited) {
+            response.status = 'partial'
+            // The complete response is cached. A parser budget is not a provider failure.
+            return response
+          }
           response.results = uniqueResults(
-            html ? parseHtml(provider, body) : parseApi(provider, body),
+            html ? parseHtml(provider, body.text!) : parseApi(provider, body.text!),
             input.limit,
           )
           response.status = response.results.length ? 'ok' : 'no_results'
@@ -73,6 +90,16 @@ export class WebSearchService {
           return response
         } catch (error) {
           if (combined.aborted) throw new SearchError(signal.aborted ? 'cancelled' : 'timeout')
+          if (error instanceof Error && error.message.startsWith('tool_result_')) {
+            // A local cache failure/invalidation is not an upstream failure and must not incur another search.
+            this.log(`web_search.${provider}.result_cache_failed`)
+            return response
+          }
+          if (error instanceof SearchError && error.code === 'parse_limit') {
+            response.status = 'partial'
+            response.parseLimited = true
+            return response
+          }
           const code = error instanceof SearchError ? error.code : 'network_error'
           this.log(`web_search.${provider}.${code}`)
         }

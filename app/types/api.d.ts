@@ -5654,6 +5654,12 @@ export interface components {
             /** @default  */
             credentialEnv: string;
             credentialConfigured?: boolean;
+            imageUploadLimits?: {
+                maxImageBytes?: number;
+                maxWidth?: number;
+                maxHeight?: number;
+                maxRequestBytes?: number;
+            };
             /** @default 2 */
             retryCount: number;
             /** @default 30000 */

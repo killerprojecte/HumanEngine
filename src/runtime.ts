@@ -186,6 +186,8 @@ function freezeData<T>(value: T): Readonly<T> {
   return value
 }
 export interface RuntimeExtension {
+  /** Detached data-authority checks for cached results; must not retain turn liveness. */
+  captureToolResultGuards?(context: TurnContext): Array<() => boolean>
   tools: ToolDefinition[]
   contextPrompt?(context: TurnContext): string
   contextData?(context: TurnContext): unknown
@@ -616,6 +618,11 @@ export class Runtime {
     if (adapter) this.imageBytes.clear(undefined, adapter)
     this.botUserIds.delete(id)
     adapter?.dispose()
+  }
+  captureToolResultGuards(context: TurnContext): Array<() => boolean> {
+    return this.extensions.flatMap(
+      (extension) => extension.captureToolResultGuards?.(context) ?? [],
+    )
   }
   addExtension(extension: RuntimeExtension) {
     this.extensions.push(extension)

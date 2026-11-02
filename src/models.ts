@@ -1,3 +1,8 @@
+import {
+  prepareImageRequest,
+  hasNativeInlineImages,
+  type ImageUploadLimits,
+} from './image-upload.ts'
 import { nativeToolSchema } from './models/native-tool-schema.ts'
 import {
   measureSerializedRequest,
@@ -50,6 +55,7 @@ export interface Provider {
   baseUrl: string
   credentialEnv: string
   credentialConfigured?: boolean
+  imageUploadLimits?: ImageUploadLimits
   retryCount?: number
   timeoutMs?: number
 }
@@ -1663,7 +1669,10 @@ export class Router {
               : this.config.nativeMaxOutputTokens,
         }
       }
-      const serializedBody = body === undefined ? undefined : JSON.stringify(body)
+      const serializedBody =
+        body === undefined
+          ? undefined
+          : await prepareImageRequest(body, provider.imageUploadLimits, signal)
       const model =
         budgetDescriptor && this.config.models.find((item) => item.id === budgetDescriptor.modelId)
       const measurement =
@@ -1702,6 +1711,24 @@ export class Router {
       })
       if (!response.ok) {
         await response.body?.cancel()
+        // A rejected 413 has no generated response to replay. Adapt only inline image
+        // requests, never arbitrary HTTP errors or URL-only media. Each retry gets
+        // normal budget admission and shares the original deadline/cancellation.
+        // Strict halving ends at the irreducible envelope/image minimum, not a preset retry count.
+        if (response.status === 413 && serializedBody && hasNativeInlineImages(body)) {
+          attempt?.fail()
+          attempt = undefined
+          const maxRequestBytes = Math.floor(Buffer.byteLength(serializedBody) / 2)
+          return await this.request(
+            { ...provider, imageUploadLimits: { ...provider.imageUploadLimits, maxRequestBytes } },
+            path,
+            body,
+            timeoutMs,
+            signal,
+            credentialUsed,
+            budgetDescriptor,
+          )
+        }
         throw new ModelError(
           `provider_http_${response.status}`,
           response.status,

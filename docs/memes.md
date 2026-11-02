@@ -9,7 +9,7 @@ with its own network policy; this service never follows arbitrary media URLs.
 
 `import(context, bytes, source)` validates a real, available, nonbot source from
 the core's evidence and checks the current learning switch and recall tombstones
-both before decoding and before committing. Uploads are limited to 10 MiB,
+both before decoding and before committing. Original source admission has a 64 MiB resource ceiling (separate from adaptive model upload limits),
 20 million pixels per frame, 400 frames, and 80 million aggregate frame pixels.
 Magic signatures and sharp decoding must identify PNG, JPEG, GIF, or WebP. SVG,
 HTML, and other formats are rejected. Files are stored by SHA-256 with restrictive

@@ -34,7 +34,7 @@ test('Bing tracking URLs decode without a network follow-up', () => {
   const html = `<html><li class="b_algo"><h2><a href="https://www.bing.com/ck/a?u=a1${encoded}">Story</a></h2></li></html>`
   assert.equal(parseHtml('bing', html)[0]?.url, 'https://example.com/story')
 })
-test('fail closed on challenge, malformed, oversized and unsafe-only results', () => {
+test('fail closed on challenge, malformed, unsupported and unsafe-only results', () => {
   for (const html of [
     '{"results": []}',
     '<html><title>Just a moment</title></html>',
@@ -74,4 +74,13 @@ test('many whitespace-only attribute tails are scanned monotonically', () => {
   const started = performance.now()
   assert.throws(() => parseHtml('bing', body), { message: 'invalid_response' })
   assert.ok(performance.now() - started < 1500)
+})
+
+test('HTML parser no longer imposes a 1 MiB byte ceiling but reports structural exhaustion explicitly', () => {
+  const html =
+    '<html><div>' +
+    'x'.repeat(1048576 + 1) +
+    '</div><li class="b_algo"><h2><a href="https://example.com/">Large page</a></h2></li></html>'
+  assert.equal(parseHtml('bing', html)[0]?.title, 'Large page')
+  assert.throws(() => parseHtml('bing', '<html>' + '<div>'.repeat(130)), /parse_limit/)
 })

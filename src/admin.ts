@@ -1,3 +1,4 @@
+import { MAX_IMAGE_SOURCE_BYTES } from './image-upload.ts'
 import { registerExternalCostRoutes } from './budget/external-cost/admin-routes.ts'
 import { installSemanticRoutes } from './memory/interfaces/semantic-routes.ts'
 import { installKnowledgeRoutes } from './memory/interfaces/knowledge-routes.ts'
@@ -629,7 +630,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
             .object({
               sceneId: z.string(),
               messageId: z.string(),
-              base64: z.string().max(14000000),
+              base64: z.string().max(Math.ceil(MAX_IMAGE_SOURCE_BYTES / 3) * 4),
             })
             .strict(),
         ),

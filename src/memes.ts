@@ -1,3 +1,4 @@
+import { MAX_IMAGE_SOURCE_BYTES } from './image-upload.ts'
 import { domainSourceCurrent } from './memory/read/domain-source-events.ts'
 import {
   assertDomainReady,
@@ -83,7 +84,7 @@ const emptyTags = (): MemeTags => ({
   ocr: '',
 })
 const digest = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex')
-const MAX_BYTES = 10 * 1024 * 1024
+const MAX_BYTES = MAX_IMAGE_SOURCE_BYTES
 const MAX_PIXELS = 20_000_000
 const sniff = (bytes: Buffer): MemeAsset['format'] => {
   if (bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) return 'png'

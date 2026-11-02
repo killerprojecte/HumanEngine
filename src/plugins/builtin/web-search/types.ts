@@ -1,3 +1,4 @@
+import type { PluginToolContext } from '../../types.ts'
 export const providerIds = [
   'bing',
   'google',
@@ -24,12 +25,25 @@ export interface ProviderRequest {
   init: RequestInit
   format: 'json' | 'html'
 }
+export type CacheSearchResult = PluginToolContext['cacheResult']
+export interface ProviderResponse {
+  text?: string
+  body: Awaited<ReturnType<CacheSearchResult>>
+  parseLimited: boolean
+  parserBudgetBytes: number
+  httpStatus: number
+}
 export interface SearchResponse {
   trust: 'untrusted_web_content'
   instruction: string
   results: SearchResult[]
   attemptedProviders: ProviderId[]
-  status: 'ok' | 'no_results' | 'unavailable'
+  status: 'ok' | 'no_results' | 'unavailable' | 'partial'
+  body?: ProviderResponse['body']
+  bodyProvider?: ProviderId
+  parseLimited?: boolean
+  parserBudgetBytes?: number
+  httpStatus?: number
 }
 export class SearchError extends Error {
   constructor(
@@ -41,7 +55,7 @@ export class SearchError extends Error {
       | 'http_error'
       | 'authentication_failed'
       | 'rate_limited'
-      | 'response_too_large'
+      | 'parse_limit'
       | 'invalid_response'
       | 'network_error'
       | 'provider_disabled',

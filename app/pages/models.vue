@@ -460,6 +460,22 @@ async function persist(deleting = false) {
     busy.value = false
   }
 }
+const imageUploadFields = [
+  { key: 'maxImageBytes', label: 'mcImageBytes', placeholder: '10485760' },
+  { key: 'maxWidth', label: 'mcImageWidth', placeholder: '1536' },
+  { key: 'maxHeight', label: 'mcImageHeight', placeholder: '1536' },
+  { key: 'maxRequestBytes', label: 'mcImageRequestBytes', placeholder: '' },
+] as const
+function setImageUploadLimit(
+  key: (typeof imageUploadFields)[number]['key'],
+  value: string | number,
+) {
+  if (!selectedProvider.value) return
+  const limits = { ...selectedProvider.value.imageUploadLimits }
+  if (value === '') delete limits[key]
+  else limits[key] = Number(value)
+  selectedProvider.value.imageUploadLimits = Object.keys(limits).length ? limits : undefined
+}
 function setProviderField(
   field: 'name' | 'protocol' | 'baseUrl' | 'credentialEnv',
   value: string | number,
@@ -1089,6 +1105,33 @@ watch(section, () => {
                   class="w-full"
                 />
               </UFormField>
+              <fieldset
+                v-if="
+                  selectedProvider &&
+                  ['openai-chat', 'openai-responses'].includes(selectedProvider.protocol)
+                "
+                class="space-y-3"
+              >
+                <legend>{{ t('mcImageUpload') }}</legend>
+                <p class="text-sm text-muted">{{ t('mcImageUploadHelp') }}</p>
+                <UFormField
+                  v-for="field in imageUploadFields"
+                  :key="field.key"
+                  :label="t(field.label)"
+                >
+                  <UInput
+                    :model-value="String(selectedProvider.imageUploadLimits?.[field.key] ?? '')"
+                    @update:model-value="
+                      (value: string | number) => setImageUploadLimit(field.key, value)
+                    "
+                    :placeholder="field.placeholder"
+                    type="number"
+                    min="1"
+                    step="1"
+                    class="w-full"
+                  />
+                </UFormField>
+              </fieldset>
               <details class="border-t border-default pt-4">
                 <summary class="text-sm text-muted cursor-pointer">
                   {{ t('mcInternalDetails') }}

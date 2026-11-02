@@ -1607,5 +1607,11 @@
   "mxFilters": "Filters",
   "mxShowResults": "Show {count} memories",
   "eiReplacePaused": "If a paused job exists, the new job will replace it.",
-  "eiConfirmRebuild": "Confirm rebuild"
+  "eiConfirmRebuild": "Confirm rebuild",
+  "mcImageUpload": "Image upload compression",
+  "mcImageUploadHelp": "Images are compressed only when needed. Defaults: 10 MiB per image, 1536 × 1536 pixels; source decode guard: 64 MiB / 40 megapixels. Set the actual limits for this native API. Request bytes include all images, base64, text and JSON; blank means no additional request cap. Originals are retained.",
+  "mcImageBytes": "Maximum image bytes",
+  "mcImageWidth": "Maximum width (pixels)",
+  "mcImageHeight": "Maximum height (pixels)",
+  "mcImageRequestBytes": "Maximum complete request bytes"
 }

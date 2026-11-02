@@ -1,14 +1,18 @@
+import type { ResultSource, ResultOptions, ToolResultCache } from '../tool-results.ts'
 import type { AdapterFactory } from './adapters.ts'
 import type { ModelProtocol } from '../model-protocols.ts'
 import type { SendHook, TurnContext, RuntimeEvent } from '../runtime.ts'
 import type { ToolDefinition } from '../models.ts'
 import type { SendResult } from '../onebot.ts'
 export interface PluginToolContext extends TurnContext {
+  cacheResult(source: ResultSource, options?: ResultOptions): ReturnType<ToolResultCache['store']>
   send(input: unknown): Promise<SendResult[]>
 }
 
 export interface PluginTool extends ToolDefinition {
   effect: 'read' | 'learningCandidate' | 'send'
+  /** Opt in to lossless cached JSON results with a bounded model preview. */
+  resultPreviewBytes?: number
   outputSchema?: Record<string, unknown>
   execute(input: Record<string, unknown>, context: PluginToolContext): Promise<unknown>
 }

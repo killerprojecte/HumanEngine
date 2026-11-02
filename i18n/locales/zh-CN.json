@@ -1607,5 +1607,11 @@
   "mxFilters": "筛选",
   "mxShowResults": "查看 {count} 条记忆",
   "eiReplacePaused": "如有暂停任务，新任务将替换它。",
-  "eiConfirmRebuild": "确认重建"
+  "eiConfirmRebuild": "确认重建",
+  "mcImageUpload": "图片上传压缩",
+  "mcImageUploadHelp": "仅在需要时压缩图片。默认每张 10 MiB、1536 × 1536 像素；源文件解码保护为 64 MiB / 4000 万像素。请按此原生 API 的实际限制设置。请求字节数包括全部图片、base64、文本和 JSON；留空则不额外限制请求大小。保留原图。",
+  "mcImageBytes": "单张图片最大字节数",
+  "mcImageWidth": "最大宽度（像素）",
+  "mcImageHeight": "最大高度（像素）",
+  "mcImageRequestBytes": "完整请求最大字节数"
 }

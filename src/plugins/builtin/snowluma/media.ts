@@ -1,8 +1,9 @@
+import { MAX_IMAGE_SOURCE_BYTES } from '../../../image-upload.ts'
 import { fetchQqMedia } from '../../../media-fetch.ts'
 import { OneBotError, decode, object, type SceneRef } from './protocol.ts'
 
 export type MediaFetcher = (url: string, signal?: AbortSignal) => Promise<Buffer>
-const MAX_BYTES = 10 * 1024 * 1024
+const MAX_BYTES = MAX_IMAGE_SOURCE_BYTES
 const inlineBytes = (value: string): Buffer | undefined => {
   const payload = value.startsWith('base64://')
     ? value.slice(9)

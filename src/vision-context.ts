@@ -326,7 +326,7 @@ export async function describeCurrentImages(
               )
                 throw new ModelError('route_not_configured')
               operation = 'image.decode'
-              const dataUrl = await imageDataUrl(bytes)
+              const dataUrl = await imageDataUrl(bytes, context.signal)
               ensure(message, assetId)
               operation = 'image.describe'
               const result = await router().complete(

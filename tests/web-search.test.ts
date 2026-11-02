@@ -1,4 +1,6 @@
-import test from 'node:test'
+import test, { after } from 'node:test'
+import { ToolResultCache } from '../src/tool-results.ts'
+import type { CacheSearchResult } from '../src/plugins/builtin/web-search/types.ts'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
@@ -13,6 +15,17 @@ import { Store } from '../src/store.ts'
 import { Runtime } from '../src/runtime.ts'
 import { PluginManager } from '../src/plugins/manager.ts'
 import type { ProviderId } from '../src/plugins/builtin/web-search/types.ts'
+const cache = new ToolResultCache()
+const cacheOwner = {
+  scope: 'fixture',
+  sceneId: 'fixture',
+  pluginId: 'web-search',
+  dependencies: [],
+  validations: [],
+}
+const cacheResult: CacheSearchResult = (source, options) =>
+  cache.store(source, cacheOwner, new AbortController().signal, options)
+after(() => cache.dispose())
 const row = {
   title: 'Fixture title',
   url: 'https://example.com/source',
@@ -62,7 +75,7 @@ test('failure fallback is explicit, bounded and logs only fixed safe codes', asy
       return Response.json(fixtures.deepseek)
     }),
   )
-  const result = await service.search('fixture', 2, new AbortController().signal)
+  const result = await service.search('fixture', 2, new AbortController().signal, cacheResult)
   assert.equal(result.status, 'ok')
   assert.equal(result.trust, 'untrusted_web_content')
   assert.deepEqual(result.attemptedProviders, ['tavily', 'deepseek'])
@@ -81,7 +94,7 @@ test('valid empty results do not silently trigger paid fallback; failures are no
     }),
   )
   assert.equal(
-    (await service.search('fixture', undefined, new AbortController().signal)).status,
+    (await service.search('fixture', undefined, new AbortController().signal, cacheResult)).status,
     'no_results',
   )
   assert.equal(calls, 1)
@@ -91,7 +104,10 @@ test('valid empty results do not silently trigger paid fallback; failures are no
     () => {},
     fake(async () => Response.json({ unexpected: 'secret' })),
   )
-  assert.equal((await bad.search('fixture', 1, new AbortController().signal)).status, 'unavailable')
+  assert.equal(
+    (await bad.search('fixture', 1, new AbortController().signal, cacheResult)).status,
+    'unavailable',
+  )
 })
 test('concurrency and cancellation bound active searches; cancelled searches do not fallback', async () => {
   let calls = 0
@@ -105,12 +121,15 @@ test('concurrency and cancellation bound active searches; cancelled searches do 
     }),
   )
   const controller = new AbortController()
-  const first = service.search('fixture', 1, controller.signal)
-  await assert.rejects(service.search('fixture', 1, new AbortController().signal), /busy/)
+  const first = service.search('fixture', 1, controller.signal, cacheResult)
+  await assert.rejects(
+    service.search('fixture', 1, new AbortController().signal, cacheResult),
+    /busy/,
+  )
   controller.abort()
   await assert.rejects(first, /cancelled/)
   assert.equal(calls, 1)
-  await assert.rejects(service.search('fixture', 1, controller.signal), /cancelled/)
+  await assert.rejects(service.search('fixture', 1, controller.signal, cacheResult), /cancelled/)
 })
 test('timeout covers fetch and response stream, with no fallback after budget exhaustion', async () => {
   const keepalive = setInterval(() => {}, 100)
@@ -121,29 +140,45 @@ test('timeout covers fetch and response stream, with no fallback after budget ex
       () => {},
       fake(async () => new Response(new ReadableStream({ start() {} }))),
     )
-    await assert.rejects(service.search('fixture', 1, new AbortController().signal), /timeout/)
+    await assert.rejects(
+      service.search('fixture', 1, new AbortController().signal, cacheResult),
+      /timeout/,
+    )
   } finally {
     clearInterval(keepalive)
   }
 })
-test('transport rejects non-allowlisted endpoints, redirects, oversize streamed payloads and unsafe links', async () => {
+test('transport rejects non-allowlisted endpoints and redirects while parser limits preserve full cached payloads', async () => {
   const request = buildApiRequest('tavily', { query: 'fixture', limit: 1 }, 'fixture')
   await assert.rejects(
     readProvider(
       { ...request, url: new URL('http://127.0.0.1/') },
       new AbortController().signal,
       4096,
+      undefined,
+      cacheResult,
     ),
     /provider_disabled/,
   )
-  await assert.rejects(
-    readProvider(
-      request,
-      new AbortController().signal,
-      10,
-      fake(async () => new Response('xxxxxxxxxxx')),
-    ),
-    /response_too_large/,
+  const partial = await readProvider(
+    request,
+    new AbortController().signal,
+    10,
+    fake(async () => new Response('xxxxxxxxxxx')),
+    cacheResult,
+  )
+  assert.equal(partial.parseLimited, true)
+  assert.equal(partial.text, undefined)
+  assert.equal(partial.body.totalBytes, 11)
+  assert.equal(
+    (
+      await cache.read(
+        { resultId: partial.body.resultId, full: true },
+        cacheOwner.scope,
+        new AbortController().signal,
+      )
+    ).content,
+    'xxxxxxxxxxx',
   )
   await assert.rejects(
     readProvider(
@@ -153,6 +188,7 @@ test('transport rejects non-allowlisted endpoints, redirects, oversize streamed 
       fake(
         async () => new Response('', { status: 302, headers: { location: 'http://127.0.0.1/' } }),
       ),
+      cacheResult,
     ),
     /http_error/,
   )
@@ -454,7 +490,7 @@ test('limits and HTML consent cannot be selected by tool input; API diagnostics 
     }),
   )
   assert.equal(
-    (await service.search('fixture', 1, new AbortController().signal)).status,
+    (await service.search('fixture', 1, new AbortController().signal, cacheResult)).status,
     'unavailable',
   )
   assert.equal(called, false)
@@ -470,7 +506,7 @@ test('limits and HTML consent cannot be selected by tool input; API diagnostics 
       fake(async () => new Response('synthetic-only-key private query', { status })),
     )
     assert.equal(
-      (await failed.search('private fixture', 1, new AbortController().signal)).status,
+      (await failed.search('private fixture', 1, new AbortController().signal, cacheResult)).status,
       'unavailable',
     )
     assert.deepEqual(logs, [`web_search.tavily.${code}`])
@@ -578,4 +614,109 @@ test('disabling the plugin aborts an active transport and prevents late result d
     runtime.dispose()
     store.close()
   }
+})
+
+test('large API provider bodies are cached without fallback or false empty success; parser budget is not a network limit', async () => {
+  const raw = JSON.stringify({ results: [row], padding: 'x'.repeat(2 * 1024 * 1024) })
+  let calls = 0
+  const logs: string[] = []
+  const service = new WebSearchService(
+    config({ maxResponseBytes: 4096, fallbackProvider: 'deepseek' }),
+    () => 'fixture',
+    (code) => logs.push(code),
+    fake(async () => {
+      calls++
+      const bytes = Buffer.from(raw)
+      let offset = 0
+      return new Response(
+        new ReadableStream({
+          pull(controller) {
+            if (offset === bytes.length) {
+              controller.close()
+              return
+            }
+            const end = Math.min(bytes.length, offset + 7001)
+            controller.enqueue(bytes.subarray(offset, end))
+            offset = end
+          },
+        }),
+        { headers: { 'content-type': 'application/json' } },
+      )
+    }),
+  )
+  const result = await service.search('fixture', 1, new AbortController().signal, cacheResult)
+  assert.equal(result.status, 'partial')
+  assert.equal(result.parseLimited, true)
+  assert.equal(result.parserBudgetBytes, 4096)
+  assert.equal(result.httpStatus, 200)
+  assert.equal(result.bodyProvider, 'tavily')
+  assert.deepEqual(result.attemptedProviders, ['tavily'])
+  assert.equal(calls, 1)
+  assert.deepEqual(logs, [])
+  assert.ok(result.body)
+  assert.equal(result.body.totalBytes, Buffer.byteLength(raw))
+  assert.equal(result.body.complete, true)
+  const chunks: Buffer[] = []
+  let offset = 0
+  do {
+    const part = await cache.read(
+      { resultId: result.body.resultId, offset, full: true, encoding: 'base64' },
+      cacheOwner.scope,
+      new AbortController().signal,
+    )
+    chunks.push(Buffer.from(part.content, 'base64'))
+    offset = part.returnedRange.end
+  } while (offset < result.body.totalBytes)
+  assert.equal(Buffer.concat(chunks).toString(), raw)
+  assert.equal(calls, 1, 'cached follow-up reads never refetch the provider')
+  assert.equal(config({ maxResponseBytes: 2 * 1024 * 1024 }).maxResponseBytes, 2 * 1024 * 1024)
+})
+
+test('local cache failure cancels the response and never triggers a paid provider fallback', async () => {
+  let calls = 0
+  let cancelled = false
+  const logs: string[] = []
+  const service = new WebSearchService(
+    config({ fallbackProvider: 'deepseek' }),
+    () => 'fixture',
+    (code) => logs.push(code),
+    fake(async () => {
+      calls++
+      return new Response(
+        new ReadableStream({
+          cancel() {
+            cancelled = true
+          },
+        }),
+      )
+    }),
+  )
+  const result = await service.search('fixture', 1, new AbortController().signal, async () => {
+    throw new Error('tool_result_storage_failed')
+  })
+  assert.equal(result.status, 'unavailable')
+  assert.equal(calls, 1)
+  assert.equal(cancelled, true)
+  assert.deepEqual(logs, ['web_search.tavily.result_cache_failed'])
+})
+
+test('HTML structural parser exhaustion remains a partial cached result instead of paid fallback', async () => {
+  let calls = 0
+  const service = new WebSearchService(
+    config({ provider: 'bing', allowExperimentalHtml: true, fallbackProvider: 'deepseek' }),
+    () => 'fixture',
+    () => {},
+    fake(async () => {
+      calls++
+      return new Response('<html>' + '<div>'.repeat(130), {
+        headers: { 'content-type': 'text/html' },
+      })
+    }),
+  )
+  const result = await service.search('fixture', 1, new AbortController().signal, cacheResult)
+  assert.equal(result.status, 'partial')
+  assert.equal(result.parseLimited, true)
+  assert.equal(result.bodyProvider, 'bing')
+  assert.equal(result.body?.complete, true)
+  assert.equal(calls, 1)
 })

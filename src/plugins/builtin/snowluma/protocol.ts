@@ -1,3 +1,4 @@
+import { MAX_IMAGE_SOURCE_BYTES } from '../../../image-upload.ts'
 import type { sanitizeError } from '../../../diagnostics/errors.ts'
 import { safeNetworkDetails } from '../../errors.ts'
 
@@ -162,7 +163,9 @@ export interface Pending {
 
 export function rawIdOrUrl(value: unknown): string {
   if (typeof value !== 'string' || !value) throw new OneBotError('invalid_media_reference')
-  const limit = /^(?:base64:\/\/|data:image\/)/i.test(value) ? 14 * 1024 * 1024 : 16_384
+  const limit = /^(?:base64:\/\/|data:image\/)/i.test(value)
+    ? Math.ceil(MAX_IMAGE_SOURCE_BYTES / 3) * 4 + 64
+    : 16_384
   if (value.length > limit) throw new OneBotError('invalid_media_reference')
   return value
 }

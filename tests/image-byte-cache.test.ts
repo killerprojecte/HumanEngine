@@ -40,7 +40,7 @@ test('byte cache coalesces exact sources, isolates scenes/accounts/parts, expire
       'big',
       signal,
       () => true,
-      async () => Buffer.alloc(10 * 1024 * 1024 + 1),
+      async () => Buffer.alloc(64 * 1024 * 1024 + 1),
     ),
     /media_size_limit/,
   )

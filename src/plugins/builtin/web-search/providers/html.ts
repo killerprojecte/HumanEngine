@@ -98,8 +98,7 @@ function* tokens(body: string): Generator<string> {
   }
 }
 function parse(body: string): Element[] {
-  if (body.length > 1_048_576 || !/<(?:html|body|div|ol)\b/i.test(body))
-    throw new SearchError('invalid_response')
+  if (!/<(?:html|body|div|ol)\b/i.test(body)) throw new SearchError('invalid_response')
   const root: Element = { tag: 'root', attrs: {}, children: [] }
   const stack = [root]
   const elements: Element[] = []
@@ -126,7 +125,7 @@ function parse(body: string): Element[] {
       stack.at(-1)!.children.push(decode(value))
       continue
     }
-    if (elements.length >= 30_000 || stack.length >= 128) throw new SearchError('invalid_response')
+    if (elements.length >= 30_000 || stack.length >= 128) throw new SearchError('parse_limit')
     const attrs: Record<string, string> = Object.create(null)
     // Sticky matching never restarts a failed attribute match at every suffix.
     const attributes = /([^\s=<>/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/y

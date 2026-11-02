@@ -89,7 +89,7 @@ test('SnowLuma array and CQ representations preserve image source and token with
   }
 })
 
-test('image bytes override claimed MIME; PNG JPEG GIF WebP become verified PNG model data', async () => {
+test('image bytes override claimed MIME; PNG JPEG GIF WebP retain verified acceptable model data', async () => {
   for (const format of ['png', 'jpeg', 'gif', 'webp'] as const) {
     const bytes = await sharp(await png())
       .toFormat(format)
@@ -102,10 +102,10 @@ test('image bytes override claimed MIME; PNG JPEG GIF WebP become verified PNG m
         throw new Error('unexpected action')
       })
       const image = await imageDataUrl(result)
-      assert.match(image, /^data:image\/png;base64,/)
+      assert.match(image, new RegExp(`^data:image/${format};base64,`))
       assert.equal(
         (await sharp(Buffer.from(image.split(',')[1]!, 'base64')).metadata()).format,
-        'png',
+        format,
       )
     }
   }
@@ -117,7 +117,7 @@ test('image bytes override claimed MIME; PNG JPEG GIF WebP become verified PNG m
     readOneBotImage(scene, asset('base64://invalid!'), async () => ({})),
     /invalid_image_data/,
   )
-  await assert.rejects(imageDataUrl(Buffer.alloc(10 * 1024 * 1024 + 1)), /media_size_limit/)
+  await assert.rejects(imageDataUrl(Buffer.alloc(64 * 1024 * 1024 + 1)), /media_size_limit/)
 })
 
 test('media schemes, credentials and private hosts are rejected without remote requests', async () => {

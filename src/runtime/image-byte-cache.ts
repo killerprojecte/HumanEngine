@@ -1,3 +1,4 @@
+import { MAX_IMAGE_SOURCE_BYTES } from '../image-upload.ts'
 import { createHash } from 'node:crypto'
 
 interface Entry {
@@ -83,19 +84,21 @@ export class ImageByteCache {
       current.promise = Promise.resolve()
         .then(() => load(controller.signal))
         .then((bytes) => {
-          if (!bytes.length || bytes.length > 10 * 1024 * 1024) throw new Error('media_size_limit')
+          if (!bytes.length || bytes.length > MAX_IMAGE_SOURCE_BYTES)
+            throw new Error('media_size_limit')
           if (
             controller.signal.aborted ||
             this.flights.get(key) !== current ||
             ![...current.waiters].some((waiter) => !waiter.signal.aborted && waiter.available())
           )
             throw new Error('image_source_unavailable')
-          this.entries.set(key, {
-            adapter,
-            sceneId,
-            bytes: Buffer.from(bytes),
-            expires: this.now() + 300000,
-          })
+          if (bytes.length <= 32 * 1024 * 1024)
+            this.entries.set(key, {
+              adapter,
+              sceneId,
+              bytes: Buffer.from(bytes),
+              expires: this.now() + 300000,
+            })
           let total = [...this.entries.values()].reduce((sum, entry) => sum + entry.bytes.length, 0)
           while (this.entries.size > 24 || total > 32 * 1024 * 1024) {
             const first = this.entries.keys().next().value!

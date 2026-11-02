@@ -1,3 +1,4 @@
+import { MAX_IMAGE_SOURCE_BYTES } from './image-upload.ts'
 import { lookup } from 'node:dns/promises'
 import { get as httpsGet } from 'node:https'
 import {
@@ -77,7 +78,11 @@ export function publicMediaAddress(address: string): boolean {
     ? !reserved.check(address, 'ipv4')
     : family === 6 && globalV6.check(address, 'ipv6') && !reserved.check(address, 'ipv6')
 }
-async function resolveMediaHost(hostname: string, signal: AbortSignal, transport: MediaNetwork) {
+export async function resolveMediaHost(
+  hostname: string,
+  signal: AbortSignal,
+  transport: Pick<MediaNetwork, 'lookup'>,
+) {
   const host = hostname.replace(/^\[|\]$/g, '')
   const addresses = isIP(host)
     ? [{ address: host, family: isIP(host) }]
@@ -131,7 +136,7 @@ export async function fetchPublicResource(
   if (
     !Number.isInteger(maxBytes) ||
     maxBytes < 1 ||
-    maxBytes > 10 * 1024 * 1024 ||
+    maxBytes > MAX_IMAGE_SOURCE_BYTES ||
     !Number.isInteger(timeoutMs) ||
     timeoutMs < 1 ||
     timeoutMs > 60000
@@ -232,4 +237,11 @@ export async function fetchPublicBytes(
 }
 
 /** Existing adapter interface; no domain restriction is applied. */
-export const fetchQqMedia = fetchPublicBytes
+export async function fetchQqMedia(
+  value: string,
+  signal?: AbortSignal,
+  transport: MediaNetwork = network,
+): Promise<Buffer> {
+  return (await fetchPublicResource(value, { signal, maxBytes: MAX_IMAGE_SOURCE_BYTES }, transport))
+    .bytes
+}

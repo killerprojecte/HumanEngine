@@ -18,7 +18,15 @@ export const WebSearchConfigSchema = z
       ),
     maxResults: z.number().int().min(1).max(10).default(5),
     timeoutMs: z.number().int().min(500).max(30000).default(10000),
-    maxResponseBytes: z.number().int().min(4096).max(1048576).default(262144),
+    maxResponseBytes: z
+      .number()
+      .int()
+      .min(4096)
+      .max(16 * 1024 * 1024)
+      .default(262144)
+      .describe(
+        'Legacy setting name: parser memory budget only (4 KiB–16 MiB), not a download limit. Complete responses are streamed to the shared result cache; larger responses return parseLimited and can be read in full or by range.',
+      ),
     maxConcurrency: z.number().int().min(1).max(4).default(2),
     tavilyKey: key,
     clearTavilyKey: z.boolean().optional(),

@@ -260,6 +260,32 @@
           "credentialConfigured": {
             "type": "boolean"
           },
+          "imageUploadLimits": {
+            "type": "object",
+            "properties": {
+              "maxImageBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 67108864
+              },
+              "maxWidth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 40000000
+              },
+              "maxHeight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 40000000
+              },
+              "maxRequestBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1073741824
+              }
+            },
+            "additionalProperties": false
+          },
           "retryCount": {
             "type": "integer",
             "minimum": 0,
@@ -13373,7 +13399,7 @@
                   },
                   "base64": {
                     "type": "string",
-                    "maxLength": 14000000
+                    "maxLength": 89478488
                   }
                 },
                 "required": [

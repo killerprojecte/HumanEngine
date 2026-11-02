@@ -695,6 +695,22 @@ export class Engine {
             },
           },
         ),
+      captureToolResultGuards: (context) =>
+        [
+          this.modelRead.captureGuard(context)?.valid,
+          ...this.memoryExposure
+            .readExposed(context)
+            .map((record) => this.memoryExposure.captureExactGuard(context, record.id)),
+          this.relationExposure.captureLearningGuard(context),
+          this.commitmentExposure.captureGuard(context),
+          this.commitmentHistoryExposure.captureGuard(context),
+          this.commitmentTimelineExposure.captureGuard(context),
+          this.historicalExposure.captureGuard(context),
+          this.identityExposure.captureGuard(context),
+          this.workspaceExposure.captureGuard(context),
+          this.knowledgeExposure.captureGuard(context),
+          this.semanticExposure.captureGuard(context),
+        ].filter((guard): guard is () => boolean => guard !== undefined),
       contextPrompt: (context) => {
         const configured = this.store.get<Rule[]>('rules', [])
         const matched = this.rules(context)

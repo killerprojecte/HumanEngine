@@ -25,17 +25,23 @@ Keys are write-only and stored in the existing encrypted SQLite secret store und
 
 Choose at most one fallback provider. The default is `none`. Fallback can incur that provider's charges and only occurs after failure; valid empty results do not trigger another paid request. There are no automatic retries. The model cannot choose providers, fallback, endpoint URLs, keys or resource budgets.
 
-Defaults: 5 results, 10-second **total** timeout, 256 KiB response cap, two simultaneous searches. Configurable bounds: 1–10 results, 0.5–30 seconds, 4 KiB–1 MiB response, concurrency 1–4. Excess concurrency is rejected, not queued. Disabling/reconfiguring aborts in-flight searches through the plugin manager lifecycle.
+Defaults: 5 results, 10-second **total** timeout, 256 KiB parser memory budget, two simultaneous searches. There is no response-download byte cap: successful response bodies stream to the shared private tool-result cache before any model-facing preview. The existing `maxResponseBytes` configuration name is retained for compatibility, but now controls only parsing (4 KiB–16 MiB), not transport/storage. Configurable bounds: 1–10 results, 0.5–30 seconds, concurrency 1–4. Excess concurrency is rejected, not queued. Disabling/reconfiguring aborts in-flight searches through the plugin manager lifecycle.
+
+### Full response retrieval
+
+Every successfully downloaded provider response has a `bodyProvider` provenance field and a `body` cache descriptor containing a result ID, complete byte length, encoding, byte ranges, expiry and retrieval tool. When the body exceeds the configured parser budget, or HTML exceeds the parser's structural complexity limits, the search returns `status: partial` and `parseLimited: true`, not `no_results` or a provider failure. It does not issue a fallback search. Use `tool-results.read` with `body.resultId`, optionally `offset`/`length`, or `full: true`; large full reads explicitly paginate with `nextOffset`/`requestComplete` under the model-view budget. Repeated reads use the original complete cache, without contacting the provider again. UTF-8 ranges that split codepoints are returned losslessly as base64.
+
+Search uses Fetch, so cached bytes are the complete decoded HTTP body (after HTTP content-encoding decompression), not compressed wire bytes. The parser budget protects parser memory only; no replacement tiny download ceiling is imposed. Cached bytes are scoped by the shared result ownership rules and expire on the descriptor's deadline, source invalidation, plugin disable, or runtime shutdown. Incomplete/cancelled downloads are never published as complete results. Request credentials and headers are not part of the returned cache descriptor or logs. Provider response text itself remains untrusted data.
 
 ## Trust boundary
 
-Results are `{title,url,snippet,provider}` plus `trust: untrusted_web_content`, a fixed instruction reminder, attempt metadata and status (`ok`, `no_results`, `unavailable`). Retrieved text remains lower-trust tool data, never system instructions. No page HTML or scripts are executed. The plugin does not follow result links or fetch page bodies. Only fixed HTTPS provider endpoints are requested; redirects and arbitrary endpoint configuration are prohibited. Local, IP-literal and active-content result URLs are filtered.
+Results are `{title,url,snippet,provider}` plus `trust: untrusted_web_content`, a fixed instruction reminder, attempt metadata and status (`ok`, `no_results`, `unavailable`, `partial`). Retrieved text remains lower-trust tool data, never system instructions. No page HTML or scripts are executed. The plugin does not follow result links or fetch page bodies. Only fixed HTTPS provider endpoints are requested; redirects and arbitrary endpoint configuration are prohibited. Local, IP-literal and active-content result URLs are filtered.
 
-Logs use fixed provider/error codes only: no queries, credentials, response bodies or upstream exception text. Failure, authentication failure, rate limits, invalid markup, oversized responses, timeout and cancellation are not presented as successful empty search results.
+Logs use fixed provider/error codes only: no queries, credentials, response bodies or upstream exception text. Failure, authentication failure, rate limits, invalid markup, timeout and cancellation are not presented as successful empty search results.
 
 ## Verification and sources
 
-Automated tests use independently authored synthetic fixtures: all eight provider parsers, explicit fallback, no-results handling, timeout/cancellation/concurrency, response-size and URL restrictions, encrypted key preserve/clear, plus real Runtime model-tool dispatch and plugin disable. These are not live-provider availability tests; no live credentials or paid calls are required.
+Automated tests use independently authored synthetic fixtures: all eight provider parsers, explicit fallback, no-results handling, timeout/cancellation/concurrency, large streamed responses, bounded parsing and URL restrictions, encrypted key preserve/clear, plus real Runtime model-tool dispatch and plugin disable. These are not live-provider availability tests; no live credentials or paid calls are required.
 
 Protocol sources checked 2026-10-27:
 

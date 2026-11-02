@@ -45,6 +45,25 @@ export const ProviderSchema = z
       .regex(/^(?:[A-Z][A-Z0-9_]*)?$/)
       .default(''),
     credentialConfigured: z.boolean().optional(),
+    imageUploadLimits: z
+      .object({
+        maxImageBytes: z
+          .number()
+          .int()
+          .min(1)
+          .max(64 * 1024 * 1024)
+          .optional(),
+        maxWidth: z.number().int().min(1).max(40000000).optional(),
+        maxHeight: z.number().int().min(1).max(40000000).optional(),
+        maxRequestBytes: z
+          .number()
+          .int()
+          .min(1)
+          .max(1024 * 1024 * 1024)
+          .optional(),
+      })
+      .strict()
+      .optional(),
     retryCount: z.number().int().min(0).max(5).default(2),
     timeoutMs: z.number().int().min(100).max(300000).default(30000),
   })

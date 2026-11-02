@@ -1,3 +1,4 @@
+import { MAX_IMAGE_SOURCE_BYTES } from './image-upload.ts'
 import { createHash } from 'node:crypto'
 import sharp from 'sharp'
 import { WorkScheduler } from './scheduler.ts'
@@ -62,7 +63,7 @@ export class ChatMediaError extends Error {
   }
 }
 export async function validateDisplayImage(bytes: Buffer): Promise<string> {
-  if (!bytes.length || bytes.length > 10 * 1024 * 1024)
+  if (!bytes.length || bytes.length > MAX_IMAGE_SOURCE_BYTES)
     throw new ChatMediaError(415, 'image_size_limit')
   try {
     const image = sharp(bytes, { limitInputPixels: 40_000_000, failOn: 'warning' })

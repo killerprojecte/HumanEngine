@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { components } from '~/types/api'
+import { PreviewQueue } from '~/utils/preview-queue'
 type Meme = components['schemas']['Meme']
 type Scene = components['schemas']['Scene']
 type Patch = {
@@ -111,9 +112,7 @@ const confirmation = ref<'discard' | 'share' | 'analyze' | 'include' | 'exclude'
 const confirmationCopy = ref({ title: '', help: '', action: '', preview: '' }),
   confirmationError = ref('')
 let pendingNavigation: ((allow: boolean) => void) | undefined
-let disposed = false,
-  previewGeneration = 0,
-  previewController: AbortController | undefined
+let disposed = false
 let listGeneration = 0,
   listController: AbortController | undefined
 let searchTimer: ReturnType<typeof setTimeout> | undefined
@@ -393,42 +392,34 @@ async function confirm() {
 const wantedPreviewIds = computed(() =>
   displayed.value.filter((asset) => observedIds.value.has(asset.id)).map((asset) => asset.id),
 )
-async function previews(ids: string[]) {
-  previewController?.abort()
-  const generation = ++previewGeneration
-  previewController = new AbortController()
-  const signal = previewController.signal
+const previewQueue = new PreviewQueue(async (id, signal) => {
+  if (images.value[id]) return
+  imageState.value[id] = 'loading'
+  try {
+    const result = await client.GET('/api/memes/{id}/thumbnail', {
+      params: { path: { id } },
+      parseAs: 'blob',
+      signal,
+    })
+    if (disposed || signal.aborted) return
+    if (!result.data) {
+      imageState.value[id] = 'failed'
+      return
+    }
+    images.value[id] = URL.createObjectURL(result.data)
+    delete imageState.value[id]
+  } catch {
+    if (!disposed && !signal.aborted) imageState.value[id] = 'failed'
+  }
+})
+function previews(ids: string[]) {
   for (const id of Object.keys(images.value))
     if (!ids.includes(id)) {
       URL.revokeObjectURL(images.value[id]!)
       delete images.value[id]
     }
   for (const id of Object.keys(imageState.value)) if (!ids.includes(id)) delete imageState.value[id]
-  const queue = ids.filter((id) => !images.value[id])
-  await Promise.all(
-    Array.from({ length: Math.min(3, queue.length) }, async () => {
-      while (queue.length && !disposed && generation === previewGeneration) {
-        const id = queue.shift()!
-        imageState.value[id] = 'loading'
-        try {
-          const result = await client.GET('/api/memes/{id}/thumbnail', {
-            params: { path: { id } },
-            parseAs: 'blob',
-            signal,
-          })
-          if (disposed || generation !== previewGeneration) return
-          if (!result.data) {
-            imageState.value[id] = 'failed'
-            continue
-          }
-          images.value[id] = URL.createObjectURL(result.data)
-          delete imageState.value[id]
-        } catch {
-          if (!disposed && generation === previewGeneration) imageState.value[id] = 'failed'
-        }
-      }
-    }),
-  )
+  previewQueue.update(ids)
 }
 function imageFailed(id: string) {
   if (images.value[id]) URL.revokeObjectURL(images.value[id]!)
@@ -513,14 +504,13 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   disposed = true
-  ++previewGeneration
   ++listGeneration
   clearTimeout(searchTimer)
   listController?.abort()
   originalController?.abort()
   observer?.disconnect()
   if (originalImage.value) URL.revokeObjectURL(originalImage.value)
-  previewController?.abort()
+  previewQueue.dispose()
   Object.values(images.value).forEach((url) => URL.revokeObjectURL(url))
   pendingNavigation?.(false)
   window.removeEventListener('beforeunload', beforeUnload)

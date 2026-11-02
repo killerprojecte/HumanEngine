@@ -108,6 +108,18 @@ test('shared cache integrates plugin opt-in, oversized reads, planner delivery a
     )) as Record<string, any>
     assert.equal(page.content, JSON.stringify({ text: payload }).slice(1000000, 1000128))
     assert.ok(later.dependencies.has('source'))
+    const adoptedGuardCount = later.validations.length
+    for (const offset of [0, 50, 100])
+      await retrieval.execute(
+        'tool-results.read',
+        { resultId: receipt.resultId, offset, length: 10 },
+        later,
+      )
+    assert.equal(
+      later.validations.length,
+      adoptedGuardCount,
+      'repeated pages adopt identical guards only once',
+    )
     assert.equal(executions, 1, 'retrieval never re-executes original tool')
     const full = (await retrieval.execute(
       'tool-results.read',
@@ -136,6 +148,11 @@ test('shared cache integrates plugin opt-in, oversized reads, planner delivery a
       any
     >
     assert.equal(explicit.returnedRange.length, 16)
+    await retrieval.execute('tool-results.read', { resultId: explicit.resultId }, later)
+    assert.ok(
+      later.validations.length > adoptedGuardCount,
+      'a distinct result keeps its distinct source guard',
+    )
     const complete = (await retrieval.execute(
       'tool-results.read',
       { resultId: explicit.resultId, full: true },

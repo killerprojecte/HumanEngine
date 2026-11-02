@@ -13920,6 +13920,19 @@
             "required": true,
             "name": "id",
             "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "local",
+                "remote"
+              ],
+              "default": "remote"
+            },
+            "required": false,
+            "name": "source",
+            "in": "query"
           }
         ],
         "responses": {
@@ -13934,7 +13947,9 @@
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/Message"
-                      }
+                      },
+                      "maxItems": 60,
+                      "description": "Recent platform and current local messages; local-only reads return at most 30."
                     },
                     "coverage": {
                       "type": "string",

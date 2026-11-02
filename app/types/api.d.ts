@@ -4007,7 +4007,9 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    source?: "local" | "remote";
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -4023,6 +4025,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
+                            /** @description Recent platform and current local messages; local-only reads return at most 30. */
                             items: components["schemas"]["Message"][];
                             /** @enum {string} */
                             coverage: "complete" | "partial" | "unavailable";

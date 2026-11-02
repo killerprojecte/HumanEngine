@@ -360,3 +360,61 @@ test('oversized source recognition and import do not block the adaptive vision u
     await f.close()
   }
 })
+
+test('thumbnail work shares three server slots and failures release capacity', async () => {
+  const { memes, close } = await setup()
+  try {
+    const slots = memes as unknown as {
+      withThumbnailSlot<T>(action: () => Promise<T>): Promise<T>
+    }
+    let active = 0,
+      maximum = 0
+    const tasks = Array.from({ length: 12 }, (_, index) =>
+      slots.withThumbnailSlot(async () => {
+        maximum = Math.max(maximum, ++active)
+        try {
+          await new Promise<void>((resolve) => setImmediate(resolve))
+          if (index === 0) throw new Error('fixture_failure')
+        } finally {
+          active--
+        }
+      }),
+    )
+    const results = await Promise.allSettled(tasks)
+    assert.equal(maximum, 3)
+    assert.equal(active, 0)
+    assert.equal(results.filter((result) => result.status === 'rejected').length, 1)
+    assert.equal(await slots.withThumbnailSlot(async () => 'released'), 'released')
+  } finally {
+    await close()
+  }
+})
+
+test('queued thumbnail rejects an asset deleted before its image slot is available', async () => {
+  const { memes, close } = await setup()
+  const releases: Array<() => void> = []
+  try {
+    const bytes = await sharp({
+      create: { width: 2, height: 2, channels: 4, background: '#12345678' },
+    })
+      .png()
+      .toBuffer()
+    const context = ctx()
+    const asset = await memes.import(context, bytes, source(context))
+    const slots = memes as unknown as {
+      withThumbnailSlot<T>(action: () => Promise<T>): Promise<T>
+    }
+    const blockers = Array.from({ length: 3 }, () =>
+      slots.withThumbnailSlot(() => new Promise<void>((resolve) => releases.push(resolve))),
+    )
+    const preview = memes.thumbnail(asset.id)
+    const rejected = assert.rejects(preview, /meme_not_found/)
+    await memes.adminDelete(asset.id)
+    releases.splice(0).forEach((release) => release())
+    await Promise.all(blockers)
+    await rejected
+  } finally {
+    releases.splice(0).forEach((release) => release())
+    await close()
+  }
+})

@@ -565,3 +565,169 @@ test('disabled suggestions reject a planner-supplied draft before any Replyer in
     fixture.close()
   }
 })
+
+for (const changeDuringReply of [false, true]) {
+  test(
+    `completed Replyer send call ${changeDuringReply ? 'waits at revalidation but terminates at remaining dialogue deadline' : 'reaches adapter without another model call when topic unchanged'}`,
+    { timeout: 3000 },
+    async () => {
+      const validationStarted = deferred()
+      let replyCompletions = 0,
+        validations = 0
+      const fixture = setup(async (role, messages, tools) => {
+        if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+        if (tools.some((tool) => tool.name === 'reply.validate')) {
+          validations++
+          validationStarted.resolve()
+          return new Promise<Completion>(() => {})
+        }
+        if (role === 'planner') return plan(messages)
+        if (messages.some((message) => message.role === 'tool')) return result([])
+        replyCompletions++
+        if (changeDuringReply) fixture.ingest('correction-after-reply')
+        return result([send('completed-reply')])
+      })
+      fixture.store.saveModels({
+        providers: [],
+        models: [],
+        routes: [
+          { role: 'planner', orderedModelIds: [], timeoutMs: 1000 },
+          { role: 'replyer', orderedModelIds: [], timeoutMs: 100 },
+        ],
+      })
+      const keepalive = setInterval(() => {}, 100)
+      try {
+        const running = fixture.runtime.proactive(scene.id)
+        if (changeDuringReply) {
+          await validationStarted.promise
+          assert.equal(replyCompletions, 1)
+          assert.equal(fixture.sends(), 0)
+          const validation = fixture.store.logs.filter((row) => row.stage === 'send_validation')
+          assert.deepEqual(
+            validation.map((row) => row.status),
+            ['started'],
+          )
+          assert.equal(fixture.store.logs.at(-1)?.stage, 'send_validation')
+          assert.equal(fixture.store.logs.at(-1)?.nextStep, 'adapter_send')
+          // This reproduces the reported visible snapshot after Replyer has returned.
+          // It must NOT remain the final state once the existing stage deadline expires.
+        }
+        await running
+        assert.equal(replyCompletions, 1)
+        assert.equal(validations, changeDuringReply ? 1 : 0)
+        assert.equal(fixture.sends(), changeDuringReply ? 0 : 1)
+        assert.equal(fixture.runtime.activeTasks, 0)
+        if (changeDuringReply) {
+          assert(
+            fixture.store.logs.some(
+              (row) => row.stage === 'send_validation' && row.status === 'cancelled',
+            ),
+          )
+          assert(
+            fixture.store.logs.some(
+              (row) => row.stage === 'turn_cleanup' && row.status === 'completed',
+            ),
+          )
+          assert(!fixture.store.logs.some((row) => row.stage === 'adapter_send'))
+        }
+      } finally {
+        clearInterval(keepalive)
+        fixture.close()
+      }
+    },
+  )
+}
+
+test(
+  'real Router revalidation keeps send trace and deadline through protocol scheduling after completed Replyer',
+  { timeout: 3000 },
+  async () => {
+    const { Router: RealRouter } = await import('../src/models.ts')
+    const { ModelProtocolRegistry } = await import('../src/model-protocols.ts')
+    const registry = new ModelProtocolRegistry()
+    const validationStarted = deferred()
+    let router!: InstanceType<typeof RealRouter>
+    let replies = 0
+    const fixture = setup((role, messages, tools, signal) =>
+      router.complete(role as 'planner' | 'replyer', messages, tools, signal),
+    )
+    registry.register(
+      'fixture:sendcheck',
+      'Send validation fixture',
+      {
+        complete: async (_context, messages, tools) => {
+          if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+          if (tools.some((tool) => tool.name === 'reply.plan')) return plan(messages)
+          if (tools.some((tool) => tool.name === 'reply.validate')) {
+            validationStarted.resolve()
+            return new Promise<Completion>(() => {})
+          }
+          replies++
+          fixture.ingest('correction-after-real-router-reply')
+          return result([send('real-router-reply')])
+        },
+      },
+      new AbortController().signal,
+    )
+    const config = {
+      providers: [
+        {
+          id: 'p',
+          name: 'fixture',
+          protocol: 'fixture:sendcheck',
+          credentialEnv: '',
+          baseUrl: 'https://example.invalid',
+          timeoutMs: 1000,
+          retryCount: 0,
+        },
+      ],
+      models: [
+        {
+          id: 'm',
+          displayName: 'fixture',
+          providerId: 'p',
+          apiModelName: 'fixture',
+          capabilities: ['text' as const, 'tools' as const],
+        },
+      ],
+      routes: [
+        { role: 'planner' as const, orderedModelIds: ['m'], timeoutMs: 1000 },
+        { role: 'replyer' as const, orderedModelIds: ['m'], timeoutMs: 150 },
+      ],
+    }
+    fixture.store.saveModels(config)
+    router = new RealRouter(config, undefined, undefined, registry, undefined, fixture.store)
+    const keepalive = setInterval(() => {}, 100)
+    try {
+      const running = fixture.runtime.proactive(scene.id)
+      await validationStarted.promise
+      assert.equal(replies, 1)
+      assert.equal(fixture.sends(), 0)
+      const validation = fixture.store.logs.findLast(
+        (row) => row.stage === 'send_validation' && row.status === 'started',
+      )!
+      assert(validation)
+      const following = fixture.store.logs.slice(fixture.store.logs.indexOf(validation) + 1)
+      for (const stage of ['model_request', 'model_attempt', 'model_queue']) {
+        const row = following.find((row) => row.stage === stage && row.status === 'started')
+        assert(row, `missing ${stage}`)
+        assert.equal(row.traceId, validation.traceId)
+        assert.equal(row.turnId, validation.turnId)
+      }
+      await running
+      assert.equal(fixture.runtime.activeTasks, 0)
+      assert.equal(fixture.sends(), 0)
+      assert(
+        fixture.store.logs.some(
+          (row) =>
+            row.stage === 'turn_cleanup' &&
+            row.status === 'completed' &&
+            row.traceId === validation.traceId,
+        ),
+      )
+    } finally {
+      clearInterval(keepalive)
+      fixture.close()
+    }
+  },
+)

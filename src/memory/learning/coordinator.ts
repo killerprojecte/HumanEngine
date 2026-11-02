@@ -228,9 +228,10 @@ export class LearningCoordinator {
       counts: { queueDepth: batch.length },
       nextStep: 'learning_batch',
     })
-    this.scheduleLearning(sceneId)
+    // This synchronous path just admitted this source; repair is for exceptional rescheduling.
+    this.scheduleLearning(sceneId, false)
   }
-  private scheduleLearning(sceneId: string) {
+  private scheduleLearning(sceneId: string, repairAdmission = true) {
     if (
       this.disposed ||
       (!this.learningBatches.get(sceneId)?.length && !this.learningRetries.has(sceneId)) ||
@@ -242,7 +243,7 @@ export class LearningCoordinator {
     const retry = this.learningRetries.get(sceneId)
     // Payloads are the existing bounded, authorized pending queue. Repair metadata
     // only; never restore sources from completed/failed/unknown batches.
-    for (const message of this.learningBatches.get(sceneId) ?? []) {
+    for (const message of repairAdmission ? (this.learningBatches.get(sceneId) ?? []) : []) {
       if (message.status === 'available' && !this.store.recalled(sceneId, message.id))
         this.admission.admit(sceneId, message.id)
     }

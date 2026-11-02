@@ -765,11 +765,19 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
     createRoute({
       method: 'get',
       path: '/api/scenes/{id}/history',
-      request: { params },
+      request: {
+        params,
+        query: z.object({ source: z.enum(['local', 'remote']).default('remote') }),
+      },
       responses: {
         200: json(
           z.object({
-            items: z.array(Message),
+            items: z
+              .array(Message)
+              .max(60)
+              .describe(
+                'Recent platform and current local messages; local-only reads return at most 30.',
+              ),
             coverage: z.enum(['complete', 'partial', 'unavailable']),
             nextCursor: z.string().optional(),
             reason: z.string().optional(),
@@ -779,8 +787,23 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       },
     }),
     async (c) => {
-      const history = await runtime.previewHistory(c.req.valid('param').id)
-      return c.json({ ...history, items: history.items.map(presentChatMessage) }, 200)
+      try {
+        const history = await runtime.previewHistory(
+          c.req.valid('param').id,
+          c.req.valid('query').source,
+          c.req.raw.signal,
+        )
+        return c.json(
+          {
+            ...history,
+            items: history.items.map((message) => Message.parse(presentChatMessage(message))),
+          },
+          200,
+        )
+      } catch (error) {
+        if (c.req.raw.signal.aborted) return c.json({ error: 'request_cancelled' }, 503)
+        throw error
+      }
     },
   )
   app.openapi(

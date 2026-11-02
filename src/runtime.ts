@@ -1,3 +1,5 @@
+import { mergeRecentHistory } from './runtime/chat-history.ts'
+import { validateSourceSnapshots } from './memory/recovery/ledger.ts'
 import type {
   SourceEventRef,
   TrustedSourceChange,
@@ -570,6 +572,11 @@ export class Runtime {
   sceneState(id: string) {
     const state = this.states.get(id)
     if (state) this.trim(state)
+    const availableIds = new Set(
+      state?.messages
+        .filter((message) => message.status === 'available')
+        .map((message) => message.id),
+    )
     const last = state?.messages
       .filter((m) => m.senderId === 'bot' && m.status === 'available')
       .at(-1)
@@ -591,9 +598,7 @@ export class Runtime {
         id: topic.id,
         attention: this.attention(topic),
         ageMs: Math.max(0, Date.now() - topic.lastAt),
-        messageCount: topic.messageIds.filter((id) =>
-          state?.messages.some((m) => m.id === id && m.status === 'available'),
-        ).length,
+        messageCount: topic.messageIds.filter((id) => availableIds.has(id)).length,
       })),
     }
   }
@@ -711,22 +716,60 @@ export class Runtime {
       ),
     )
   }
-  async previewHistory(id: string): Promise<HistoryResult> {
+  async previewHistory(
+    id: string,
+    source: 'local' | 'remote' = 'remote',
+    signal?: AbortSignal,
+  ): Promise<HistoryResult> {
     const scene = this.scenes.get(id) ?? this.store.scene(id)
     if (!scene || scene.kind === 'simulation')
       return { items: [], coverage: 'unavailable', reason: 'real_scene_required' }
-    const adapter = this.adapters.get(scene.adapterId)
-    if (!adapter)
+    const local = (): HistoryResult => {
+      const state = this.states.get(id)
+      if (state) this.trim(state)
       return {
-        items: this.preview(id).map((m) => ({ ...m, origin: 'history' })),
+        // Bound before identity projection/cloning, not after serializing the entire cache.
+        items: structuredClone(
+          (state?.messages ?? [])
+            .slice(-30)
+            .map((message) =>
+              this.isRecalled(id, message.id)
+                ? { ...message, origin: 'history' as const, parts: [], status: 'recalled' as const }
+                : this.store.presentMessage({ ...message, origin: 'history' as const }),
+            ),
+        ),
         coverage: 'partial',
+        reason: 'local_history_window',
+      }
+    }
+    if (source === 'local') return local()
+    const adapter = this.adapters.get(scene.adapterId)
+    if (!adapter) {
+      const snapshot = local()
+      return {
+        ...snapshot,
+        items: snapshot.items.filter((message) => message.status !== 'recalled'),
         reason: 'adapter_unavailable',
       }
-    const result = await adapter.history(scene as SceneRef, { limit: 30 })
-    result.items = result.items
+    }
+    signal?.throwIfAborted()
+    const result = await adapter.history(scene as SceneRef, { limit: 30 }, signal)
+    signal?.throwIfAborted()
+    const remote = (result.coverage === 'unavailable' ? [] : result.items)
       .filter((m) => m.sceneId === id && !this.isRecalled(id, m.id))
+      .slice(-30)
       .map((m) => this.store.presentMessage(this.normalizeBot(m, scene.adapterId)))
-    return result
+    // Re-read after the platform wait: never merge an old browser snapshot that can
+    // predate a live edit, arrival, recall or local retention expiry.
+    return {
+      ...result,
+      // The default remote history contract omits recalled rows, including local
+      // tombstones. Replacing the UI snapshot then removes any earlier cached body.
+      items: mergeRecentHistory(local().items, remote).filter(
+        (message) => message.status !== 'recalled',
+      ),
+      coverage: result.coverage === 'unavailable' ? 'unavailable' : 'partial',
+    }
   }
   sceneChanged(scene: Scene) {
     if (!scene.participationEnabled) this.cancel(scene.id)
@@ -1421,27 +1464,29 @@ export class Runtime {
         delete metadata.cue
         delete metadata.cueSourceId
       }
-    const snapshots: TopicSnapshot[] = [...state.topics.values()].map((topic) => ({
-      id: topic.id,
-      sceneId: message.sceneId,
-      touchedAt: topic.lastAt,
-      participants: [
-        ...new Set(
-          state.messages
-            .filter(
-              (m) =>
-                topic.messageIds.includes(m.id) && m.status === 'available' && m.senderId !== 'bot',
-            )
-            .map((m) => m.senderId),
-        ),
-      ],
-      provisional: state.routing.metadata.get(topic.id)?.provisional ?? false,
-      cue: state.routing.metadata.get(topic.id)?.cue,
-      active: state.tasks.has(topic.id),
-      pending: this.topicProtected(state, topic.id),
-      waiting: false,
-      sendState: state.routing.protectedSends.has(topic.id) ? 'unknown' : 'none',
-    }))
+    const snapshots: TopicSnapshot[] = [...state.topics.values()].map((topic) => {
+      const messageIds = new Set(topic.messageIds)
+      return {
+        id: topic.id,
+        sceneId: message.sceneId,
+        touchedAt: topic.lastAt,
+        participants: [
+          ...new Set(
+            state.messages
+              .filter(
+                (m) => messageIds.has(m.id) && m.status === 'available' && m.senderId !== 'bot',
+              )
+              .map((m) => m.senderId),
+          ),
+        ],
+        provisional: state.routing.metadata.get(topic.id)?.provisional ?? false,
+        cue: state.routing.metadata.get(topic.id)?.cue,
+        active: state.tasks.has(topic.id),
+        pending: this.topicProtected(state, topic.id),
+        waiting: false,
+        sendState: state.routing.protectedSends.has(topic.id) ? 'unknown' : 'none',
+      }
+    })
     const target = message.replyToId
       ? state.messages.find(
           (m) =>
@@ -1712,9 +1757,7 @@ export class Runtime {
                 .slice(-24)
               context.sourceSnapshots = structuredClone(recent)
               context.validations.push(() =>
-                context.sourceSnapshots!.every((message) =>
-                  currentSourceSnapshot(this.store, message),
-                ),
+                validateSourceSnapshots(this.store, context.sourceSnapshots!),
               )
               const preparation = startFlow(this.store, 'context_prepare', {
                 counts: { recentMessages: recent.length, extensions: this.extensions.length },

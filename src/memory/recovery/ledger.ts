@@ -1,3 +1,6 @@
+import type { Store } from '../../store.ts'
+import type { RuntimeMessage } from '../../runtime.ts'
+import { currentSourceSnapshot } from '../../runtime/source-events.ts'
 import {
   parseExternalCostRecoveryEvent,
   type ExternalCostRecoveryEvent,
@@ -63,6 +66,18 @@ const zero = '0'.repeat(64)
 const maintenanceConnections = new WeakSet<object>()
 const replayEffectCollectors = new WeakMap<Database.Database, Revocation[]>()
 const bindings = new WeakMap<Database.Database, RecoveryAuthority>()
+interface SourceReadScope {
+  main: Database.Database
+  head: Readonly<Head>
+  authorityChanges: number
+  mainChanges: number
+  authoritySchema: unknown
+  mainSchema: unknown
+}
+const sourceReadScopes = new WeakMap<RecoveryAuthority, SourceReadScope>()
+const changes = (db: Database.Database) =>
+  (db.prepare('SELECT total_changes() AS n').get() as { n: number }).n
+
 function inside(child: string, parent: string) {
   const r = relative(parent, child)
   return r === '' || (!r.startsWith('..') && !r.startsWith('/'))
@@ -184,6 +199,22 @@ export class RecoveryAuthority {
     return result
   }
   head(): Head {
+    const scope = sourceReadScopes.get(this)
+    if (scope) {
+      if (
+        !this.db.inTransaction ||
+        !scope.main.inTransaction ||
+        this.db.pragma('query_only', { simple: true }) !== 1 ||
+        scope.main.pragma('query_only', { simple: true }) !== 1 ||
+        changes(this.db) !== scope.authorityChanges ||
+        changes(scope.main) !== scope.mainChanges ||
+        this.db.pragma('schema_version', { simple: true }) !== scope.authoritySchema ||
+        scope.main.pragma('schema_version', { simple: true }) !== scope.mainSchema ||
+        bindings.get(scope.main) !== this
+      )
+        throw new Error('recovery_read_scope_changed')
+      return { ...scope.head }
+    }
     this.entries()
     const id = readRecoveryStatement(this.db, 'identity') as { id: string }
     const last = readRecoveryStatement(this.db, 'latest') as
@@ -201,6 +232,7 @@ export class RecoveryAuthority {
     return { instanceId: head.instanceId, sequence, hash: row.hash }
   }
   append(input: Revocation, expectedHead: Head, forceAppend = false): Head {
+    if (sourceReadScopes.has(this)) throw new Error('recovery_read_scope_write_denied')
     const payload = JSON.stringify(event(input))
     return this.db
       .transaction(() => {
@@ -230,6 +262,7 @@ export class RecoveryAuthority {
       .immediate()
   }
   close() {
+    if (sourceReadScopes.has(this)) throw new Error('recovery_read_scope_write_denied')
     this.db.close()
   }
 }
@@ -404,6 +437,66 @@ export function assertRecoveryReady(db: Database.Database) {
     throw new Error('recovery_format_unsupported')
   if (!gate || gate.state !== 'ready' || !sameHead(gate.head, authority.head()))
     throw new Error('recovery_authority_head_changed')
+}
+
+/** Fixed synchronous source-read loop only; no caller callback or reusable validity token escapes. */
+export function validateSourceSnapshots(
+  store: Store,
+  messages: readonly RuntimeMessage[],
+): boolean {
+  const db = store.db
+  const authority = bindings.get(db)
+  const read = () => messages.every((message) => currentSourceSnapshot(store, message))
+  // Preserve nested callers and nonstandard configurations without reducing any checks.
+  if (
+    !authority ||
+    db.inTransaction ||
+    authority.db.inTransaction ||
+    db.pragma('journal_mode', { simple: true }) !== 'wal' ||
+    authority.db.pragma('journal_mode', { simple: true }) !== 'delete' ||
+    db.pragma('query_only', { simple: true }) !== 0 ||
+    authority.db.pragma('query_only', { simple: true }) !== 0
+  )
+    return read()
+  let result: boolean
+  try {
+    db.pragma('query_only = ON')
+    authority.db.pragma('query_only = ON')
+    result = db.transaction(() => {
+      // Pin the main snapshot first, matching normal main -> authority lock order.
+      metadata(db)
+      return authority.db.transaction(() => {
+        assertRecoveryReady(db) // Full chain verification pins the authority read lock.
+        const head = authority.head()
+        sourceReadScopes.set(authority, {
+          main: db,
+          head: Object.freeze({ ...head }),
+          authorityChanges: changes(authority.db),
+          mainChanges: changes(db),
+          authoritySchema: authority.db.pragma('schema_version', { simple: true }),
+          mainSchema: db.pragma('schema_version', { simple: true }),
+        })
+        try {
+          const valid = read()
+          authority.head() // Recheck invariants even after the final source read.
+          return valid
+        } finally {
+          sourceReadScopes.delete(authority)
+        }
+      })()
+    })()
+  } finally {
+    sourceReadScopes.delete(authority)
+    // Transactions have ended before restoring writes, including exceptional paths.
+    try {
+      authority.db.pragma('query_only = OFF')
+    } finally {
+      db.pragma('query_only = OFF')
+    }
+  }
+  // A fresh full check after releasing both snapshots: no permission survives this call.
+  assertRecoveryReady(db)
+  return result
 }
 
 export interface DurableRevocationTicket {

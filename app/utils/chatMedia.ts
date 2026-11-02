@@ -9,6 +9,7 @@ export const chatImageByteLimit = 10 * 1024 * 1024
 
 /** Transport diagnostics are enums, not user text or a safe UI caption. */
 export function historyReasonKey(reason: string): string {
+  if (reason === 'local_history_window') return 'cwHistoryLocal'
   if (reason === 'platform_history_window') return 'cwHistoryWindow'
   if (reason === 'history_exhausted_or_unavailable') return 'cwHistoryNoMore'
   if (reason === 'unsupported') return 'cwHistoryUnsupported'

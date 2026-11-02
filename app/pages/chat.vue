@@ -34,6 +34,7 @@ const transcript = ref<HTMLElement>(),
 let leaveResolve: ((value: boolean) => void) | undefined
 let disposed = false,
   historyGeneration = 0,
+  historyRenderGeneration = 0,
   operationGeneration = 0,
   sendController: AbortController | undefined,
   historyController: AbortController | undefined
@@ -264,32 +265,85 @@ async function send() {
     }
   }
 }
-async function preview() {
+async function replaceHistory(items: Message[], version: number) {
+  const revision = ++historyRenderGeneration
+  const pane = transcript.value
+  const top = pane?.getBoundingClientRect().top ?? 0
+  const anchor = !following.value
+    ? Array.from(pane?.querySelectorAll<HTMLElement>('[data-chat-message]') ?? []).find(
+        (element) => element.getBoundingClientRect().bottom > top,
+      )
+    : undefined
+  const offset = anchor?.getBoundingClientRect().top ?? 0
+  history.value = items
+  if (!anchor || !pane) return
+  await nextTick()
+  if (
+    !disposed &&
+    version === historyGeneration &&
+    revision === historyRenderGeneration &&
+    !following.value &&
+    pane === transcript.value &&
+    pane.contains(anchor)
+  )
+    pane.scrollTop += anchor.getBoundingClientRect().top - offset
+}
+async function preview(localFirst = false) {
   if (!sceneId.value || mode.value !== 'real') return
   historyController?.abort()
-  historyController = new AbortController()
+  const requestController = new AbortController()
+  historyController = requestController
+  const id = sceneId.value
   const version = ++historyGeneration
+  const current = () => !disposed && version === historyGeneration
   historyLoading.value = true
   historyError.value = ''
+  let remoteFinished = false
+  // Run independently: a slow platform must not hold already-retained messages off screen.
+  if (localFirst)
+    void (async () => {
+      try {
+        const local = await client.GET('/api/scenes/{id}/history', {
+          params: { path: { id }, query: { source: 'local' } },
+          signal: requestController.signal,
+        })
+        if (!current() || remoteFinished || !local.data || local.error) return
+        void replaceHistory(local.data.items, version)
+        lastMessages.value[id] = local.data.items.at(-1)
+        coverage.value = local.data.coverage
+        historyReason.value = local.data.reason ?? ''
+        historyAt.value = new Date().toISOString()
+      } catch {
+        // The independent platform request remains the authority for refresh errors.
+      }
+    })()
   try {
     const r = await client.GET('/api/scenes/{id}/history', {
-      params: { path: { id: sceneId.value } },
-      signal: historyController.signal,
+      params: { path: { id } },
+      signal: requestController.signal,
     })
-    if (disposed || version !== historyGeneration) return
+    if (!current()) return
     if (!r.data || r.error) {
-      historyError.value = r.error?.error ?? t('networkError')
+      historyError.value = t('cwHistoryRefreshFailed')
       return
     }
-    history.value = r.data.items
-    lastMessages.value[sceneId.value] = r.data.items.at(-1)
-    coverage.value = r.data.coverage
+    remoteFinished = true
+    void replaceHistory(r.data.items, version)
+    lastMessages.value[id] = history.value.at(-1)
+    if (r.data.coverage === 'unavailable') {
+      historyError.value = t('cwHistoryRefreshFailed')
+      coverage.value = history.value.length ? 'partial' : r.data.coverage
+      historyReason.value = history.value.length ? 'local_history_window' : (r.data.reason ?? '')
+      historyAt.value = new Date().toISOString()
+      return
+    }
+    coverage.value = 'partial'
     historyReason.value = r.data.reason ?? ''
     historyAt.value = new Date().toISOString()
   } catch {
-    if (!disposed && version === historyGeneration) historyError.value = t('networkError')
+    if (current()) historyError.value = t('cwHistoryRefreshFailed')
   } finally {
-    if (!disposed && version === historyGeneration) historyLoading.value = false
+    if (current()) historyLoading.value = false
   }
 }
 function selectScene(id: string) {
@@ -308,7 +362,7 @@ watch([mode, sceneId], () => {
     historyReason.value = ''
     historyAt.value = ''
     historyError.value = ''
-    void preview()
+    void preview(true)
   }
   void bottom()
 })
@@ -504,7 +558,7 @@ onBeforeUnmount(() => {
             variant="outline"
             :loading="historyLoading"
             :disabled="!sceneId || historyLoading"
-            @click="preview"
+            @click="preview()"
             >{{ t('refresh') }}</UButton
           >
         </header>
@@ -541,6 +595,9 @@ onBeforeUnmount(() => {
         </div>
         <div v-else class="shrink-0 px-4 sm:px-6 pt-3 space-y-2">
           <UAlert v-if="historyError" color="error" :title="historyError" />
+          <p v-if="historyLoading" role="status" class="text-xs text-muted">
+            {{ t('cwHistoryRefreshing') }}
+          </p>
           <p v-if="historyAt" class="text-xs text-muted">
             {{ t(historyError ? 'cfStaleAt' : 'cfFetchedAt', { time: time(historyAt) }) }} ·
             {{ t(coverage) }}
@@ -576,6 +633,7 @@ onBeforeUnmount(() => {
             <article
               v-for="message in shown"
               :key="message.id"
+              data-chat-message
               class="flex items-start gap-3"
               :class="{
                 'flex-row-reverse': mode === 'simulation' && message.senderId === 'simulation-user',

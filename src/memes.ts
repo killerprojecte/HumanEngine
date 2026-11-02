@@ -182,6 +182,20 @@ export class MemeService {
   readonly mediaRoot: string
   private readonly thumbnails = new Map<string, Buffer>()
   private readonly thumbnailTasks = new Map<string, Promise<Buffer>>()
+  private thumbnailActive = 0
+  private readonly thumbnailWaiters: Array<() => void> = []
+  private async withThumbnailSlot<T>(action: () => Promise<T>): Promise<T> {
+    if (this.thumbnailActive >= 3)
+      await new Promise<void>((resolve) => this.thumbnailWaiters.push(resolve))
+    else this.thumbnailActive++
+    try {
+      return await action()
+    } finally {
+      const next = this.thumbnailWaiters.shift()
+      if (next) next()
+      else this.thumbnailActive--
+    }
+  }
   private readonly analyses = new Map<string, Promise<MemeAsset>>()
   private readonly analysisControllers = new Map<string, AbortController>()
   private readonly observations = new Map<
@@ -737,7 +751,9 @@ export class MemeService {
     }
     const pending = this.thumbnailTasks.get(id)
     if (pending) return pending
-    const task = (async () => {
+    const task = this.withThumbnailSlot(async () => {
+      if (this.deletingAssets.has(id) || (this.assetEpochs.get(id) ?? 0) !== epoch)
+        throw new Error('meme_not_found')
       // Decode only the first frame; grid previews must never animate or fetch full originals.
       const bytes = await sharp(this.file(id, asset.format), {
         page: 0,
@@ -754,7 +770,7 @@ export class MemeService {
       while (this.thumbnails.size > 128)
         this.thumbnails.delete(this.thumbnails.keys().next().value!)
       return bytes
-    })()
+    })
     this.thumbnailTasks.set(id, task)
     try {
       const result = await task

@@ -131,9 +131,12 @@ export class PluginManager {
             context.signal,
             (owner) => {
               for (const dependency of owner.dependencies) context.dependencies.add(dependency)
-              context.validations.push(...owner.validations)
               const retained = this.adoptedResultGuards.get(context) ?? new Set<() => boolean>()
-              for (const guard of owner.validations) retained.add(guard)
+              for (const guard of owner.validations) {
+                if (!retained.has(guard) && !context.validations.includes(guard))
+                  context.validations.push(guard)
+                retained.add(guard)
+              }
               this.adoptedResultGuards.set(context, retained)
             },
           )

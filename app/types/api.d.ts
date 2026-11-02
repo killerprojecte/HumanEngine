@@ -5746,6 +5746,8 @@ export interface components {
             /** @default 131072 */
             plannerEvidenceMaxBytes: number;
             cacheHours: number;
+            /** @default 2048 */
+            topicHistoryMaxMessages: number;
             debounceMs: number;
             maxWaitMs: number;
             /** @default 30000 */

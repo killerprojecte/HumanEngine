@@ -78,8 +78,27 @@ export class TurnWaitCoordinator {
   }
 
   /** Read-only eviction guard; grants no wake, retry or generation transition. */
-  retention(): Readonly<{ active: boolean; pending: boolean; waiting: boolean }> {
-    return { active: !!this.active, pending: this.pending.size > 0, waiting: !!this.waiting }
+  retention(): Readonly<{
+    active: boolean
+    pending: boolean
+    waiting: boolean
+  }> {
+    return {
+      active: !!this.active,
+      pending: this.pending.size > 0,
+      waiting: !!this.waiting,
+    }
+  }
+
+  /** Exact live references only; excludes the separately bounded replay-deduplication set. */
+  retainedEventIds(): readonly string[] {
+    return [
+      ...new Set([
+        ...this.pending.keys(),
+        ...(this.active?.eventIds ?? []),
+        ...(this.waiting?.eventIds ?? []),
+      ]),
+    ]
   }
 
   isCurrent(wake: TurnWake): boolean {
@@ -109,7 +128,12 @@ export class TurnWaitCoordinator {
       if (!this.waiting || this.waiting.at > now) return undefined
       const generation = this.waiting.generation
       this.waiting = undefined
-      return { kind: 'recheck', generation, eventIds: [], reason: 'model_wait' }
+      return {
+        kind: 'recheck',
+        generation,
+        eventIds: [],
+        reason: 'model_wait',
+      }
     }
     const events = [...this.pending.values()]
     const meaningful = events.some((event) => event.meaningful || event.addressed)

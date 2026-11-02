@@ -2,6 +2,8 @@
   "countLabels": {
     "inputCount": "Input count",
     "messageCount": "Message count",
+    "affectedMessageIds": "Affected routing references",
+    "retainedRoutingIds": "Retained routing references",
     "partCount": "Part count",
     "mediaCount": "Media count",
     "queueDepth": "Queue depth",
@@ -199,6 +201,8 @@
     "scene_cancelled": "Scene cancelled",
     "scene_closed": "Scene closed",
     "topic_unavailable": "Topic unavailable",
+    "topic_history_trimmed": "Expired or over-limit topic routing references were released; protected turn references remain",
+    "topic_history_reply_unavailable": "The old reply anchor is outside retained routing history; normal routing fallback applies",
     "proactive": "Proactive",
     "incoming_message": "Incoming message",
     "context_prepare_failed": "Context prepare failed",

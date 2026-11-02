@@ -1,4 +1,5 @@
 import { mergeRecentHistory } from './runtime/chat-history.ts'
+import { TopicRoutingHistory } from './runtime/topic-history.ts'
 import { validateSourceSnapshots } from './memory/recovery/ledger.ts'
 import type {
   SourceEventRef,
@@ -130,6 +131,9 @@ interface Topic {
   attention: number
 }
 interface SceneState {
+  sceneId: string
+  topicHistory: TopicRoutingHistory
+  historyNotices: Map<string, { count: number; lastAt: number }>
   routing: TopicRoutingState
   messages: RuntimeMessage[]
   topics: Map<string, Topic>
@@ -140,7 +144,12 @@ interface SceneState {
   flowQueue: Map<string, { span: ReturnType<typeof startFlow>; count: number }>
   tasks: Map<
     string,
-    { controller: AbortController; dependencies: Set<string>; validations: Array<() => boolean> }
+    {
+      controller: AbortController
+      dependencies: Set<string>
+      validations: Array<() => boolean>
+      context?: TurnContext
+    }
   >
   closed: boolean
   recalled: Set<string>
@@ -989,7 +998,8 @@ export class Runtime {
       }
     }
     if (!schedule || !this.store.scene(scene.id)?.participationEnabled) {
-      if (scene.kind !== 'simulation' && !this.store.settings.cacheEnabled) state.messages = []
+      if (scene.kind !== 'simulation' && !this.store.settings.cacheEnabled)
+        this.clearRoutingCache(state)
       ingress.finish('completed', {
         reason: !schedule ? 'automatic_scheduling_disabled' : 'participation_disabled',
         nextStep: 'none',
@@ -1161,6 +1171,7 @@ export class Runtime {
   configureAdmission(): void {
     for (const [id, state] of this.states) {
       const scene = this.scenes.get(id)
+      if (scene && scene.kind !== 'simulation') this.trim(state)
       if (scene) for (const topicId of state.flowQueue.keys()) this.scheduleTopic(scene, topicId)
     }
   }
@@ -1381,6 +1392,9 @@ export class Runtime {
     let state = this.states.get(id)
     if (!state) {
       state = {
+        sceneId: id,
+        topicHistory: new TopicRoutingHistory(),
+        historyNotices: new Map(),
         routing: new TopicRoutingState(),
         messages: [],
         topics: new Map(),
@@ -1399,6 +1413,62 @@ export class Runtime {
     }
     return state
   }
+  private protectedTopicMessageIds(state: SceneState): Set<string> {
+    const ids = new Set(state.routing.deferred.keys())
+    for (const admission of state.admissions.values())
+      for (const id of admission.retainedEventIds()) ids.add(id)
+    for (const task of state.tasks.values()) {
+      for (const id of task.dependencies) ids.add(id)
+      // Source snapshots are assigned before history/image awaits, before dependencies are complete.
+      for (const message of task.context?.sourceSnapshots ?? []) ids.add(message.id)
+    }
+    for (const guard of this.sendGuards.values()) {
+      if (guard.context.scene.id !== state.sceneId) continue
+      for (const message of guard.context.sourceSnapshots ?? []) ids.add(message.id)
+      for (const id of guard.plan?.targetMessageIds ?? []) ids.add(id)
+      for (const id of guard.plan?.contextMessageIds ?? []) ids.add(id)
+    }
+    return ids
+  }
+  private topicHistoryNotice(
+    state: SceneState,
+    code: 'topic_history_trimmed' | 'topic_history_reply_unavailable',
+    count: number,
+  ): void {
+    if (!count) return
+    const notice = state.historyNotices.get(code) ?? { count: 0, lastAt: -Infinity }
+    notice.count = Math.min(Number.MAX_SAFE_INTEGER, notice.count + count)
+    state.historyNotices.set(code, notice)
+    const minimum = code === 'topic_history_trimmed' ? 32 : 1
+    if (notice.count < minimum || Date.now() - notice.lastAt < 60_000) return
+    this.store.log('info', 'runtime', code, {
+      sceneId: state.sceneId,
+      reason: code,
+      counts: { affectedMessageIds: notice.count, retainedRoutingIds: state.topicHistory.size },
+    })
+    notice.count = 0
+    notice.lastAt = Date.now()
+  }
+  private pruneTopicHistory(state: SceneState, cutoff: number, maxUnprotected: number): void {
+    const protectedIds = this.protectedTopicMessageIds(state)
+    const preferred = new Set(state.messages.map((message) => message.id))
+    for (const message of state.messages) state.topicHistory.observe(message.id, message.receivedAt)
+    let removed = state.topicHistory.prune({
+      cutoff,
+      maxUnprotected,
+      preferred,
+      protected: protectedIds,
+    })
+    for (const topic of state.topics.values()) {
+      const before = topic.messageIds.length
+      const retained = topic.messageIds.filter(
+        (id) => state.topicHistory.has(id) || protectedIds.has(id),
+      )
+      if (retained.length !== before) topic.messageIds = retained
+      removed = Math.max(removed, before - retained.length)
+    }
+    this.topicHistoryNotice(state, 'topic_history_trimmed', removed)
+  }
   private clearRoutingCache(state: SceneState): void {
     state.messages = []
     for (const meta of state.routing.metadata.values()) {
@@ -1406,6 +1476,7 @@ export class Runtime {
       delete meta.cueSourceId
     }
     state.routing.acknowledged.clear()
+    this.pruneTopicHistory(state, Infinity, 0)
   }
   private trim(state: SceneState, pending = false) {
     const settings = this.store.settings
@@ -1416,6 +1487,7 @@ export class Runtime {
         delete meta.cueSourceId
       }
       state.routing.acknowledged.clear()
+      this.pruneTopicHistory(state, Infinity, 0)
       return
     }
     const cutoff = Date.now() - (settings.cacheEnabled ? settings.cacheHours * 3600000 : 60000)
@@ -1430,6 +1502,7 @@ export class Runtime {
       }
     for (const id of state.routing.acknowledged.keys())
       if (!retained.has(id)) state.routing.acknowledged.delete(id)
+    this.pruneTopicHistory(state, cutoff, settings.topicHistoryMaxMessages)
   }
   private topicProtected(state: SceneState, id: string): boolean {
     const retention = state.admissions.get(id)?.retention()
@@ -1542,6 +1615,8 @@ export class Runtime {
     let topic = message.replyToId
       ? [...state.topics.values()].find((t) => t.messageIds.includes(message.replyToId!))
       : undefined
+    if (message.replyToId && !topic)
+      this.topicHistoryNotice(state, 'topic_history_reply_unavailable', 1)
     topic ??= [...state.topics.values()]
       .filter((t) => Date.now() - t.lastAt < 120000)
       .sort((a, b) => this.attention(b) - this.attention(a))[0]
@@ -1725,7 +1800,12 @@ export class Runtime {
               dependencies,
               validations: [],
             }
-            state.tasks.set(topicId, { controller, dependencies, validations: context.validations })
+            state.tasks.set(topicId, {
+              controller,
+              dependencies,
+              validations: context.validations,
+              context,
+            })
             const toolIssues: unknown[] = []
             let settings: Settings | undefined
             try {
@@ -2798,8 +2878,16 @@ export class Runtime {
                   !state.closed
                 )
                   this.drainDeferred(scene)
-                if (mode === 'real' && settings && !settings.cacheEnabled && !state.timers.size)
-                  this.clearRoutingCache(state)
+                if (
+                  mode === 'real' &&
+                  settings &&
+                  recoveryReady &&
+                  this.states.get(scene.id) === state &&
+                  !state.closed
+                ) {
+                  if (!settings.cacheEnabled && !state.timers.size) this.clearRoutingCache(state)
+                  else this.trim(state)
+                }
                 cleanup.finish('completed', {
                   reason: 'turn_cleanup_finished',
                   counts: { activeTurns: state.tasks.size },

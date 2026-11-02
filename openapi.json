@@ -618,6 +618,12 @@
             "minimum": 0.1,
             "maximum": 168
           },
+          "topicHistoryMaxMessages": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 20000,
+            "default": 2048
+          },
           "debounceMs": {
             "type": "integer",
             "minimum": 0,

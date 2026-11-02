@@ -148,6 +148,7 @@ export const SettingsSchema = z
     replyEvidenceMaxBytes: z.number().int().min(4096).max(1048576).default(65536),
     plannerEvidenceMaxBytes: z.number().int().min(8192).max(2097152).default(131072),
     cacheHours: z.number().min(0.1).max(168),
+    topicHistoryMaxMessages: z.number().int().min(500).max(20000).default(2048),
     debounceMs: z.number().int().min(0).max(30000),
     maxWaitMs: z.number().int().min(100).max(60000),
     learningBatchMs: z.number().int().min(100).max(300000).default(30000),

@@ -51,6 +51,7 @@ for (const enabled of [false, true]) {
     const f = fixture(enabled)
     try {
       const ids = [...Array.from({ length: 1000 }, (_, i) => `gone-${i}`), 'a', 'a', 'b', 'missing']
+      for (const id of ids) f.state.topicHistory.observe(id, new Date().toISOString())
       f.state.messages = [
         f.message('a'),
         { ...f.message('b'), status: 'recalled' },
@@ -78,6 +79,7 @@ test('admission routes a reply to a retained topic without changing membership o
   const f = fixture(true)
   try {
     const ids = [...Array.from({ length: 1000 }, (_, i) => `gone-${i}`), 'anchor']
+    for (const id of ids) f.state.topicHistory.observe(id, new Date().toISOString())
     f.state.messages = [f.message('anchor')]
     f.state.topics.set('topic', {
       id: 'topic',

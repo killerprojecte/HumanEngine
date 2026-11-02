@@ -2,6 +2,8 @@
   "countLabels": {
     "inputCount": "输入数",
     "messageCount": "消息数",
+    "affectedMessageIds": "受影响的路由引用数",
+    "retainedRoutingIds": "保留的路由引用数",
     "partCount": "内容片段数",
     "mediaCount": "媒体数",
     "queueDepth": "等待数",
@@ -199,6 +201,8 @@
     "scene_cancelled": "场景工作已取消",
     "scene_closed": "场景已关闭",
     "topic_unavailable": "话题已不存在",
+    "topic_history_trimmed": "已释放过期或超出上限的话题路由引用；受保护的回合引用仍保留",
+    "topic_history_reply_unavailable": "旧回复锚点已不在保留的路由历史中，使用正常路由回退",
     "proactive": "按主动回复配置启动",
     "incoming_message": "收到新消息",
     "context_prepare_failed": "准备上下文失败",

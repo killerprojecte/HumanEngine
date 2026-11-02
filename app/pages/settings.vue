@@ -710,6 +710,25 @@ const timingFields = [
                   :disabled="!settings.cacheEnabled || locked"
                   class="w-full"
               /></UFormField>
+              <details class="rounded-md border border-default p-3">
+                <summary class="cursor-pointer font-medium">
+                  {{ t('stTopicHistoryAdvanced') }}
+                </summary>
+                <UFormField
+                  :label="t('stTopicHistoryMaxMessages')"
+                  :help="t('stTopicHistoryMaxMessagesHelp')"
+                  class="mt-3 max-w-xl"
+                  ><UInput
+                    v-model.number="settings.topicHistoryMaxMessages"
+                    type="number"
+                    required
+                    min="500"
+                    max="20000"
+                    step="1"
+                    :disabled="locked"
+                    class="w-full max-w-xs"
+                /></UFormField>
+              </details>
             </div>
             <div id="diagnostics" class="border-t border-default pt-5 space-y-3">
               <USwitch

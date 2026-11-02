@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM node:24.22.1-bookworm-slim AS build
 WORKDIR /app
-# Native dependencies use prebuilds when available and can compile on this ABI otherwise.
-RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+# Native dependencies can compile on this ABI; openssl generates ephemeral HTTPS test certificates.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ openssl \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 # Root postinstall needs the Nuxt configuration, so install after copying safe sources.

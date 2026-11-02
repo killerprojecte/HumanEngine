@@ -130,7 +130,7 @@ export function readableLog(log: ReadableLog, locale = 'zh-CN'): string {
   if (log.nextStep) result.push(`${w.next}: ${nextLabels[log.nextStep] ?? log.nextStep}`)
   return result.filter(Boolean).join(language === 'en' ? '; ' : '；')
 }
-export function stdoutLog(log: Log): string {
+export function stdoutLog(log: Log, serialized = JSON.stringify(log)): string {
   const w = presentationCatalog('zh-CN').words
   const correlation = [
     log.traceId ? `${w.trace}=${log.traceId}` : undefined,
@@ -139,5 +139,5 @@ export function stdoutLog(log: Log): string {
   ]
     .filter(Boolean)
     .join(' ')
-  return `${log.at} ${log.level.toUpperCase()} ${correlation ? `[${correlation}] ` : ''}${readableLog(log, 'zh-CN')} | ${JSON.stringify(log)}\n`
+  return `${log.at} ${log.level.toUpperCase()} ${correlation ? `[${correlation}] ` : ''}${readableLog(log, 'zh-CN')} | ${serialized}\n`
 }

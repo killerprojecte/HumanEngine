@@ -17,6 +17,16 @@ const errorFrames = (log: Log) => {
     ]),
   ]
 }
+const delivery = ref<components['schemas']['LogDelivery']>()
+const deliveryDegraded = computed(
+  () =>
+    delivery.value?.initializationFailed ||
+    delivery.value?.shutdownComplete === false ||
+    delivery.value?.unserializableRecords ||
+    delivery.value?.closedRejectedRecords ||
+    delivery.value?.memory.oversizedRecords ||
+    [delivery.value?.file, delivery.value?.stdout].some((sink) => sink?.state === 'degraded'),
+)
 const latest = ref<Log[]>([])
 const lastFetched = ref(''),
   logError = ref('')
@@ -132,12 +142,15 @@ async function refresh(force = false) {
   busy.value = true
   const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(10000)])
   try {
-    const [result, detail] = await Promise.all([
+    const [result, detail, health] = await Promise.all([
       client.GET('/api/logs', { signal }),
       client.GET('/api/diagnostics', { signal }),
+      client.GET('/api/logs/status', { signal }),
     ])
     if (disposed || current !== generation) return
     error.value = ''
+    delivery.value = health.data
+    if (!health.data) error.value = health.error?.error ?? t('networkError')
     if (result.data) {
       lastFetched.value = new Date().toISOString()
       logError.value = ''
@@ -253,6 +266,12 @@ onBeforeUnmount(() => {
       </div>
     </header>
     <UAlert v-if="error" color="error" :title="error" />
+    <UAlert
+      v-if="deliveryDegraded"
+      color="warning"
+      :title="t('logDeliveryDegraded')"
+      :description="t('logDeliveryDegradedHelp')"
+    />
     <p class="text-sm text-muted">{{ t('flowHelp') }}</p>
     <section
       class="overflow-hidden rounded-lg border border-default"

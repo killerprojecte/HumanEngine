@@ -37,7 +37,8 @@ import Database from 'better-sqlite3'
 import { SecretStore, type SecretMutation } from './secrets/store.ts'
 import type { Provider } from './models.ts'
 import * as sqliteVec from 'sqlite-vec'
-import { mkdirSync, appendFileSync, existsSync, statSync, renameSync, rmSync } from 'node:fs'
+import { mkdirSync } from 'node:fs'
+import { acquireLogChannel, type LogFlushResult } from './diagnostics/log-writer.ts'
 import { dirname, join } from 'node:path'
 import type { ModelLog, ModelDiagnostic, RouterConfig } from './models.ts'
 import { randomUUID } from 'node:crypto'
@@ -96,12 +97,26 @@ export class Store {
   }> = []
   private diagnosticTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private readonly logDirectory?: string
+  private fileLogs?: ReturnType<typeof acquireLogChannel>
+  private stdoutLogs?: ReturnType<typeof acquireLogChannel>
+  private loggingClosed = false
+  private loggingShutdownComplete: boolean | null = null
+  private closedLogRejections = 0
+  private logBytes: number[] = []
+  private retainedLogBytes = 0
+  private evictedLogs = 0
+  private oversizedLogs = 0
+  private unserializableLogs = 0
+  private loggingNoticeAt = -Infinity
+  private loggingInitializationFailure = false
   readonly recoveryQuarantined: boolean
   private recoveryAuthority?: RecoveryAuthority
   constructor(
     path = process.env.HUMANENGINE_DB || 'data/humanengine.sqlite',
     maintenance?: { authority: RecoveryAuthority },
+    logging?: { stdout?: ReturnType<typeof acquireLogChannel> },
   ) {
+    this.stdoutLogs = logging?.stdout
     this.recoveryQuarantined = !!maintenance
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
     if (path !== ':memory:')
@@ -470,33 +485,123 @@ export class Store {
     }
     if (row.role) row.role = canonicalModelRole(row.role)
     row.message = readableLog(row)
-    // Emit the same structured, sanitized record to container logs.
+    let encoded: string
     try {
-      process.stdout.write(stdoutLog(row))
+      encoded = JSON.stringify(row) + '\n'
     } catch {
-      /* Diagnostics must not stop runtime work. */
+      this.unserializableLogs++
+      this.loggingNotice()
+      return row
     }
-    this.logs.push(row)
-    if (this.logs.length > 500) this.logs.shift()
-    if (this.logDirectory) {
-      try {
-        mkdirSync(this.logDirectory, { recursive: true, mode: 0o700 })
-        const file = join(this.logDirectory, 'runtime.jsonl')
-        if (existsSync(file) && statSync(file).size > 2 * 1024 * 1024) {
-          for (let index = 2; index >= 1; index--) {
-            const from = index === 1 ? file : `${file}.${index - 1}`,
-              to = `${file}.${index}`
-            if (existsSync(to)) rmSync(to)
-            if (existsSync(from)) renameSync(from, to)
-          }
-        }
-        appendFileSync(file, JSON.stringify(row) + '\n', { mode: 0o600 })
-      } catch {
-        /* Logging must not break chat execution. */
+    this.retainLog(row, Buffer.byteLength(encoded))
+    if (this.loggingClosed) {
+      this.closedLogRejections++
+      this.loggingNotice()
+      return row
+    }
+    try {
+      if (!this.loggingClosed) {
+        this.stdoutLogs ??= acquireLogChannel()
+        if (this.logDirectory) this.fileLogs ??= acquireLogChannel(this.logDirectory)
       }
+      const priority = level === 'warn' || level === 'error'
+      this.stdoutLogs?.enqueue(stdoutLog(row, encoded.slice(0, -1)), priority)
+      this.fileLogs?.enqueue(encoded, priority)
+    } catch {
+      // Admission failures are observable, not thrown into chat execution.
+      this.loggingInitializationFailure = true
     }
+    this.loggingNotice()
     return row
   }
+  private retainLog(row: Log, bytes: number) {
+    if (bytes > 4 * 1024 * 1024) {
+      this.oversizedLogs++
+      return
+    }
+    this.logs.push(row)
+    this.logBytes.push(bytes)
+    this.retainedLogBytes += bytes
+    while (this.logs.length > 500 || this.retainedLogBytes > 4 * 1024 * 1024) {
+      this.logs.shift()
+      this.retainedLogBytes -= this.logBytes.shift()!
+      this.evictedLogs++
+    }
+  }
+  private loggingNotice() {
+    const failed =
+      this.loggingInitializationFailure ||
+      this.closedLogRejections > 0 ||
+      this.oversizedLogs > 0 ||
+      this.unserializableLogs > 0 ||
+      this.stdoutLogs?.status.state === 'degraded' ||
+      this.fileLogs?.status.state === 'degraded'
+    if (!failed || Date.now() - this.loggingNoticeAt < 60000) return
+    this.loggingNoticeAt = Date.now()
+    const row: Log = {
+      id: randomUUID(),
+      at: new Date().toISOString(),
+      level: 'warn',
+      module: 'logging',
+      code: 'log_delivery_degraded',
+      counts: {
+        rejectedRecords:
+          (this.stdoutLogs?.status.rejectedRecords ?? 0) +
+          (this.fileLogs?.status.rejectedRecords ?? 0),
+        failedRecords:
+          (this.stdoutLogs?.status.failedRecords ?? 0) + (this.fileLogs?.status.failedRecords ?? 0),
+      },
+    }
+    row.message = readableLog(row)
+    // Do not recursively write a sink failure into the failed sinks.
+    this.retainLog(row, Buffer.byteLength(JSON.stringify(row)))
+  }
+  get loggingStatus() {
+    this.loggingNotice()
+    return {
+      file: this.fileLogs?.status ?? null,
+      stdout: this.stdoutLogs?.status ?? null,
+      initializationFailed: this.loggingInitializationFailure,
+      unserializableRecords: this.unserializableLogs,
+      closed: this.loggingClosed,
+      shutdownComplete: this.loggingShutdownComplete,
+      closedRejectedRecords: this.closedLogRejections,
+      memory: {
+        retainedRecords: this.logs.length,
+        retainedBytes: this.retainedLogBytes,
+        evictedRecords: this.evictedLogs,
+        oversizedRecords: this.oversizedLogs,
+        maxBytes: 4 * 1024 * 1024,
+        maxRecords: 500,
+      },
+    }
+  }
+  async closeLogs(): Promise<Array<LogFlushResult>> {
+    this.loggingClosed = true
+    try {
+      const results = await Promise.allSettled(
+        [this.fileLogs, this.stdoutLogs].map((channel) =>
+          Promise.resolve().then(() => channel?.close()),
+        ),
+      )
+      const rejected = results.find((result) => result.status === 'rejected')
+      if (rejected?.status === 'rejected') throw rejected.reason
+      const delivery = results.flatMap((result) =>
+        result.status === 'fulfilled' && result.value ? [result.value] : [],
+      )
+      this.loggingShutdownComplete =
+        (this.loggingShutdownComplete ?? true) &&
+        !this.loggingInitializationFailure &&
+        this.unserializableLogs === 0 &&
+        this.closedLogRejections === 0 &&
+        delivery.every((result) => result.complete)
+      return delivery
+    } catch (error) {
+      this.loggingShutdownComplete = false
+      throw error
+    }
+  }
+
   recordModel(entry: ModelLog, config: RouterConfig = this.models) {
     // Measurement is independently observable inside flow spans; it is not provider usage or cost.
     const measurement = RequestMeasurementSummarySchema.safeParse(entry.requestMeasurement)
@@ -693,8 +798,28 @@ export class Store {
     this.diagnosticTimers.set(row.id, timer)
   }
   close() {
+    this.loggingClosed = true
+    const deadline = Date.now() + 5000
+    let complete =
+      (this.loggingShutdownComplete ?? true) &&
+      !this.loggingInitializationFailure &&
+      this.unserializableLogs === 0 &&
+      this.closedLogRejections === 0
+    for (const channel of [this.fileLogs, this.stdoutLogs]) {
+      try {
+        const result = channel?.closeSync(Math.max(0, deadline - Date.now()))
+        if (result && !result.complete) complete = false
+      } catch {
+        // Diagnostic delivery failure must not skip database/authority cleanup.
+        complete = false
+      }
+    }
+    this.loggingShutdownComplete = complete
     this.clearDiagnostics()
-    this.recoveryAuthority?.close()
-    this.db.close()
+    try {
+      this.recoveryAuthority?.close()
+    } finally {
+      this.db.close()
+    }
   }
 }

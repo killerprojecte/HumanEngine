@@ -13,11 +13,17 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import Database from 'better-sqlite3'
 import { Store } from '../src/store.ts'
+import { Engine } from '../src/engine.ts'
 import { metadata } from '../src/memory/recovery/ledger.ts'
 import { enrollLegacy } from '../scripts/recovery-authority.ts'
 import { startupDiagnostic } from '../src/diagnostics/startup.ts'
 import { createSessionGateway } from '../src/auth/session.ts'
-import { initializeEngine, handleEngineRequest, closeEngine } from '../server/utils/engine.ts'
+import {
+  getEngine,
+  initializeEngine,
+  handleEngineRequest,
+  closeEngine,
+} from '../server/utils/engine.ts'
 
 const token = 'synthetic-upgrade-admin-token'
 async function fixture(run: (database: string, authority: string, root: string) => Promise<void>) {
@@ -199,4 +205,79 @@ test('damaged gate and unknown errors produce bounded diagnostics without retry 
   )
   assert.equal(diagnostic.code, 'engine_startup_failed')
   assert.doesNotMatch(JSON.stringify(diagnostic), /key.sqlite|SYNTHETIC_SECRET/)
+})
+
+test('rejected asynchronous log drain never skips actual server database cleanup', async () => {
+  await fixture(async () => {
+    const runtime = await getEngine(),
+      errors: unknown[][] = []
+    const error = console.error
+    console.error = (...values) => {
+      errors.push(values)
+    }
+    runtime.store.closeLogs = async () => {
+      throw new Error('PRIVATE_LOG_DRAIN_FAILURE')
+    }
+    try {
+      await closeEngine()
+      assert.equal(runtime.store.db.open, false)
+      assert.match(JSON.stringify(errors), /Log delivery failed during shutdown/)
+      assert.doesNotMatch(JSON.stringify(errors), /PRIVATE_LOG_DRAIN_FAILURE/)
+    } finally {
+      console.error = error
+    }
+  })
+})
+
+test('startup root error survives a rejected logging cleanup and the database still closes', async () => {
+  await fixture(async () => {
+    const start = Engine.prototype.start,
+      drain = Store.prototype.closeLogs,
+      close = Store.prototype.close,
+      error = console.error
+    const rootError = new Error('ORIGINAL_STARTUP_FAILURE')
+    let closed = false
+    Engine.prototype.start = async () => {
+      throw rootError
+    }
+    Store.prototype.closeLogs = async () => {
+      throw new Error('PRIVATE_LOG_CLEANUP_FAILURE')
+    }
+    Store.prototype.close = function () {
+      close.call(this)
+      closed = !this.db.open
+    }
+    console.error = () => {}
+    try {
+      await assert.rejects(getEngine(), (failure) => failure === rootError)
+      assert.equal(closed, true)
+    } finally {
+      Engine.prototype.start = start
+      Store.prototype.closeLogs = drain
+      Store.prototype.close = close
+      console.error = error
+    }
+  })
+})
+
+test('server shutdown reports Store-level serialization loss even without a failed sink result', async () => {
+  await fixture(async () => {
+    const runtime = await getEngine(),
+      errors: unknown[][] = []
+    const error = console.error
+    console.error = (...values) => {
+      errors.push(values)
+    }
+    try {
+      runtime.store.log('warn', 'fixture', 'non_json', {
+        counts: { invalid: 1n as unknown as number },
+      })
+      await closeEngine()
+      assert.equal(runtime.store.db.open, false)
+      assert.equal(runtime.store.loggingStatus.shutdownComplete, false)
+      assert.match(JSON.stringify(errors), /Log delivery incomplete during shutdown/)
+    } finally {
+      console.error = error
+    }
+  })
 })

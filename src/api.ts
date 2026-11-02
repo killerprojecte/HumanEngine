@@ -14,6 +14,7 @@ import {
   SettingsSchema,
   SceneSchema,
   LogSchema,
+  LogDeliverySchema,
   StatusSchema,
   SceneStateSchema,
   ErrorSchema,
@@ -206,6 +207,14 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       responses: { 200: json(z.array(LogSchema)), ...errorResponses },
     }),
     (c) => c.json(store.logs.toReversed(), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
+      path: '/api/logs/status',
+      responses: { 200: json(LogDeliverySchema), ...errorResponses },
+    }),
+    (c) => c.json(store.loggingStatus, 200),
   )
   app.openapi(
     createRoute({

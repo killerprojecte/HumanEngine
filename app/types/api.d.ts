@@ -543,6 +543,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/logs/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LogDelivery"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Service unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/usage": {
         parameters: {
             query?: never;
@@ -5996,6 +6058,53 @@ export interface components {
             modelId?: string;
             providerId?: string;
             durationMs?: number;
+        };
+        LogDelivery: {
+            file: {
+                /** @enum {string} */
+                state: "ready" | "degraded" | "closed";
+                backpressured: boolean;
+                acceptedRecords: number;
+                writtenRecords: number;
+                rejectedRecords: number;
+                rejectedBytes: number;
+                failedRecords: number;
+                unconfirmedRecords: number;
+                pendingRecords: number;
+                pendingBytes: number;
+                maxPendingBytes: number;
+                maxPendingRecords: number;
+                lastFailure: string | null;
+            } | null;
+            stdout: {
+                /** @enum {string} */
+                state: "ready" | "degraded" | "closed";
+                backpressured: boolean;
+                acceptedRecords: number;
+                writtenRecords: number;
+                rejectedRecords: number;
+                rejectedBytes: number;
+                failedRecords: number;
+                unconfirmedRecords: number;
+                pendingRecords: number;
+                pendingBytes: number;
+                maxPendingBytes: number;
+                maxPendingRecords: number;
+                lastFailure: string | null;
+            } | null;
+            initializationFailed: boolean;
+            unserializableRecords: number;
+            shutdownComplete: boolean | null;
+            closed: boolean;
+            closedRejectedRecords: number;
+            memory: {
+                retainedRecords: number;
+                retainedBytes: number;
+                evictedRecords: number;
+                oversizedRecords: number;
+                maxBytes: number;
+                maxRecords: number;
+            };
         };
         Usage: {
             day: string;

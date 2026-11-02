@@ -4,6 +4,20 @@ import { createApp } from '../../src/api.ts'
 import { startupDiagnostic, startupUnavailable } from '../../src/diagnostics/startup.ts'
 let pending:
   Promise<{ store: Store; engine: Engine; app: ReturnType<typeof createApp> }> | undefined
+async function closeStore(store: Store, phase: 'startup cleanup' | 'shutdown') {
+  try {
+    const delivery = await store.closeLogs()
+    if (
+      delivery.some((result) => !result.complete) ||
+      store.loggingStatus.shutdownComplete === false
+    )
+      console.error(`[HumanEngine] Log delivery incomplete during ${phase}`)
+  } catch {
+    console.error(`[HumanEngine] Log delivery failed during ${phase}`)
+  } finally {
+    store.close()
+  }
+}
 export function getEngine() {
   pending ??= (async () => {
     const store = new Store()
@@ -16,7 +30,7 @@ export function getEngine() {
       try {
         await engine?.dispose()
       } finally {
-        store.close()
+        await closeStore(store, 'startup cleanup')
       }
       throw error
     }
@@ -50,7 +64,10 @@ export async function closeEngine() {
   try {
     if (runtime) await runtime.engine.dispose()
   } finally {
-    runtime?.store.close()
-    pending = undefined
+    try {
+      if (runtime) await closeStore(runtime.store, 'shutdown')
+    } finally {
+      pending = undefined
+    }
   }
 }

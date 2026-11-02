@@ -1627,5 +1627,7 @@
   "stCallRateHelp": "預設 0（關閉）。所有模型角色、重試與背景工作共用；並行限制仍有效。排隊時間計入階段時限：過低的限制可能導致請求在啟動前取消。這不是權杖或金額預算。",
   "cwHistoryLocal": "正在顯示本機保留的近期訊息，並非完整歷史。",
   "cwHistoryRefreshing": "正在從平台取得近期訊息…",
-  "cwHistoryRefreshFailed": "平台歷史重新整理失敗，已顯示的訊息仍可查看。"
+  "cwHistoryRefreshFailed": "平台歷史重新整理失敗，已顯示的訊息仍可查看。",
+  "logDeliveryDegraded": "日誌投遞不完整",
+  "logDeliveryDegradedHelp": "部分記錄遭拒、寫入失敗或尚未確認。最近的記憶體日誌不代表檔案已持久化。匯出診斷前請檢查 /api/logs/status。"
 }

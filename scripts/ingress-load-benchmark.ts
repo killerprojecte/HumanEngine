@@ -18,7 +18,7 @@ process.env.HUMANENGINE_LOG_DIR = join(root, 'logs')
 process.env.HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY = join(root, 'authority')
 const cleanup: Array<() => void | Promise<void>> = []
 try {
-  const store = new Store(join(root, 'humanengine.sqlite'))
+  const store = new Store(join(root, 'data', 'humanengine.sqlite'))
   cleanup.push(() => store.close())
   const engine = new Engine(store)
   cleanup.push(() => engine.dispose())

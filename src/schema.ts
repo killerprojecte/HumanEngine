@@ -307,6 +307,40 @@ export const LogSchema = z
     durationMs: z.number().optional(),
   })
   .openapi('Log')
+const LogSinkStatusSchema = z.object({
+  state: z.enum(['ready', 'degraded', 'closed']),
+  backpressured: z.boolean(),
+  acceptedRecords: z.number(),
+  writtenRecords: z.number(),
+  rejectedRecords: z.number(),
+  rejectedBytes: z.number(),
+  failedRecords: z.number(),
+  unconfirmedRecords: z.number(),
+  pendingRecords: z.number(),
+  pendingBytes: z.number(),
+  maxPendingBytes: z.number(),
+  maxPendingRecords: z.number(),
+  lastFailure: z.string().nullable(),
+})
+export const LogDeliverySchema = z
+  .object({
+    file: LogSinkStatusSchema.nullable(),
+    stdout: LogSinkStatusSchema.nullable(),
+    initializationFailed: z.boolean(),
+    unserializableRecords: z.number(),
+    shutdownComplete: z.boolean().nullable(),
+    closed: z.boolean(),
+    closedRejectedRecords: z.number(),
+    memory: z.object({
+      retainedRecords: z.number(),
+      retainedBytes: z.number(),
+      evictedRecords: z.number(),
+      oversizedRecords: z.number(),
+      maxBytes: z.number(),
+      maxRecords: z.number(),
+    }),
+  })
+  .openapi('LogDelivery')
 export const StatusSchema = z
   .object({
     name: z.string(),

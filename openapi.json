@@ -1460,6 +1460,210 @@
           "code"
         ]
       },
+      "LogDelivery": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "degraded",
+                  "closed"
+                ]
+              },
+              "backpressured": {
+                "type": "boolean"
+              },
+              "acceptedRecords": {
+                "type": "number"
+              },
+              "writtenRecords": {
+                "type": "number"
+              },
+              "rejectedRecords": {
+                "type": "number"
+              },
+              "rejectedBytes": {
+                "type": "number"
+              },
+              "failedRecords": {
+                "type": "number"
+              },
+              "unconfirmedRecords": {
+                "type": "number"
+              },
+              "pendingRecords": {
+                "type": "number"
+              },
+              "pendingBytes": {
+                "type": "number"
+              },
+              "maxPendingBytes": {
+                "type": "number"
+              },
+              "maxPendingRecords": {
+                "type": "number"
+              },
+              "lastFailure": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "state",
+              "backpressured",
+              "acceptedRecords",
+              "writtenRecords",
+              "rejectedRecords",
+              "rejectedBytes",
+              "failedRecords",
+              "unconfirmedRecords",
+              "pendingRecords",
+              "pendingBytes",
+              "maxPendingBytes",
+              "maxPendingRecords",
+              "lastFailure"
+            ]
+          },
+          "stdout": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "ready",
+                  "degraded",
+                  "closed"
+                ]
+              },
+              "backpressured": {
+                "type": "boolean"
+              },
+              "acceptedRecords": {
+                "type": "number"
+              },
+              "writtenRecords": {
+                "type": "number"
+              },
+              "rejectedRecords": {
+                "type": "number"
+              },
+              "rejectedBytes": {
+                "type": "number"
+              },
+              "failedRecords": {
+                "type": "number"
+              },
+              "unconfirmedRecords": {
+                "type": "number"
+              },
+              "pendingRecords": {
+                "type": "number"
+              },
+              "pendingBytes": {
+                "type": "number"
+              },
+              "maxPendingBytes": {
+                "type": "number"
+              },
+              "maxPendingRecords": {
+                "type": "number"
+              },
+              "lastFailure": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "state",
+              "backpressured",
+              "acceptedRecords",
+              "writtenRecords",
+              "rejectedRecords",
+              "rejectedBytes",
+              "failedRecords",
+              "unconfirmedRecords",
+              "pendingRecords",
+              "pendingBytes",
+              "maxPendingBytes",
+              "maxPendingRecords",
+              "lastFailure"
+            ]
+          },
+          "initializationFailed": {
+            "type": "boolean"
+          },
+          "unserializableRecords": {
+            "type": "number"
+          },
+          "shutdownComplete": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "closedRejectedRecords": {
+            "type": "number"
+          },
+          "memory": {
+            "type": "object",
+            "properties": {
+              "retainedRecords": {
+                "type": "number"
+              },
+              "retainedBytes": {
+                "type": "number"
+              },
+              "evictedRecords": {
+                "type": "number"
+              },
+              "oversizedRecords": {
+                "type": "number"
+              },
+              "maxBytes": {
+                "type": "number"
+              },
+              "maxRecords": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "retainedRecords",
+              "retainedBytes",
+              "evictedRecords",
+              "oversizedRecords",
+              "maxBytes",
+              "maxRecords"
+            ]
+          }
+        },
+        "required": [
+          "file",
+          "stdout",
+          "initializationFailed",
+          "unserializableRecords",
+          "shutdownComplete",
+          "closed",
+          "closedRejectedRecords",
+          "memory"
+        ]
+      },
       "Usage": {
         "type": "object",
         "properties": {
@@ -8881,6 +9085,52 @@
                   "items": {
                     "$ref": "#/components/schemas/Log"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logs/status": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogDelivery"
                 }
               }
             }

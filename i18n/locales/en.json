@@ -1627,5 +1627,7 @@
   "stCallRateHelp": "0 disables (default). Shared by all model roles, retries and background work; existing concurrency still applies. Queue time consumes stage deadlines: a low limit can cancel requests before they start. This is not a token or money budget.",
   "cwHistoryLocal": "Showing recent messages retained locally; this is not complete history.",
   "cwHistoryRefreshing": "Fetching recent messages from the platform…",
-  "cwHistoryRefreshFailed": "Could not refresh platform history. Any messages already shown remain available."
+  "cwHistoryRefreshFailed": "Could not refresh platform history. Any messages already shown remain available.",
+  "logDeliveryDegraded": "Log delivery is incomplete",
+  "logDeliveryDegradedHelp": "Some records were rejected, failed or remain unconfirmed. The recent in-memory view is not proof of file persistence. Check /api/logs/status before exporting diagnostics."
 }

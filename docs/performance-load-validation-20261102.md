@@ -114,3 +114,16 @@ the repository under the task workspace (`ingress-off-baseline.*`, `ingress-off-
 `ingress-off-after-manifest.txt`, `ingress-off-proof.*`, `ingress-off-proof-manifest.txt`,
 `load-baseline-f1e0006.json`). They are local evidence,
 not durable public download links. Do not commit private production diagnostic attachments.
+
+## Benchmark fixture-layout correction
+
+The initial cleanup-hardening change placed the temporary authority directory below the
+SQLite database directory. The recovery guard correctly rejected that layout. The harness
+now keeps `data/humanengine.sqlite` and the independent `authority/` directory as siblings
+inside its disposable root; no production guard is weakened. Failed setup attempts are not
+performance measurements and are excluded from the tables above.
+
+The earlier fault test caught any exception, which did not prove it had reached the HTTP
+failure path. The strengthened check verifies a real HTTP 200 response followed by the
+intentional 200-versus-999 assertion, then confirms database/authority/log cleanup and exact
+restoration of pre-existing authority/log environment settings and untouched sentinel data.

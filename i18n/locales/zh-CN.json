@@ -1627,5 +1627,7 @@
   "stCallRateHelp": "默认 0（关闭）。所有模型角色、重试和后台任务共享；并发限制仍有效。排队时间计入阶段时限：过低的限制可能导致请求在启动前取消。这不是令牌或金额预算。",
   "cwHistoryLocal": "正在显示本地保留的近期消息，并非完整历史。",
   "cwHistoryRefreshing": "正在从平台获取近期消息…",
-  "cwHistoryRefreshFailed": "平台历史刷新失败，已显示的消息仍可查看。"
+  "cwHistoryRefreshFailed": "平台历史刷新失败，已显示的消息仍可查看。",
+  "logDeliveryDegraded": "日志投递不完整",
+  "logDeliveryDegradedHelp": "部分记录被拒绝、写入失败或尚未确认。最近的内存日志不代表文件已持久化。导出诊断前请检查 /api/logs/status。"
 }

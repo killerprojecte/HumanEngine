@@ -21,7 +21,7 @@ The matched synthetic workload improved from 111.14 to 26.16 seconds of process 
 | High                   | Scene point lookup fetched and parsed all scenes, and validated recovery twice    | 2,000 lookups over 1,000 synthetic scenes consumed 2.43–2.54 seconds of CPU                                            | Parameterized primary-key query, one mandatory gate, fresh result objects                                                                                                           |
 | Medium                 | Normal learning enqueue rescans every pending source to repair admission metadata | Matched 100-message burst: 5,150 recall checks before, 100 after; the old repair loop is quadratic in pending arrivals | Integrated repair skip only immediately after successful normal admission; 15 focused/regression tests and independent review pass                                                  |
 | Medium                 | Topic IDs are not bounded by the message-body cache                               | A topic with 50,000 IDs retained 50,020 after another 20 messages while bodies stayed capped at 500                    | Follow-on bounded routing-history index retains exact live references; see [retention policy](topic-routing-retention.md). The earlier Set optimization alone did not fix retention |
-| Medium                 | Logging performs synchronous filesystem work for each record                      | 2,000 synthetic records blocked the local event loop for roughly 39 ms with disk output                                | Preserve diagnostic durability; any asynchronous writer needs bounded buffering, rotation, flush and failure semantics                                                              |
+| Medium                 | Logging performs synchronous filesystem work for each record                      | 2,000 synthetic records blocked the local event loop for roughly 39 ms with disk output                                | Bounded asynchronous workers now provide explicit loss/flush health; see the matched logging workload and tradeoffs                                                                 |
 | Investigate separately | Slow chat history and meme loading                                                | Separate UI/API audit owners identified adapter-history waiting and thumbnail request churn                            | Do not misattribute these to the scene-state endpoint; validate their own request/cancellation paths                                                                                |
 
 ## Matched post-Replyer measurement
@@ -35,7 +35,7 @@ The fixture uses the actual Runtime with scripted Planner/Replyer and a mock ada
 
 The heartbeat includes subsequent synchronous guards and promise continuations, not only the named validation span. Full-chain scans until that heartbeat fell from 1,197 to 210. `head()` invocation counts do not fall equivalently: most calls inside the new scope reuse a privately validated, transaction-pinned head, while still checking scope invariants and local gate metadata.
 
-**The remaining delay is material.** Dependency recall checks and extension validation callbacks remain unchanged. This result is not a claim that all sending stalls are solved, nor that production CPU will fall by the same ratio. Earlier historical measurements counted 195 scans; use the matched 170-scan baseline above because it includes the scene lookup optimization.
+**The remaining delay is material.** Dependency recall checks and extension validation callbacks were unchanged in this particular comparison. Later fixed-list dependency batching and pure row-hash proof reuse are documented below; these historical measurements must not be presented as measurements of the later combined implementation. This result is not a claim that all sending stalls are solved, nor that production CPU will fall by the same ratio. Earlier historical measurements counted 195 scans; use the matched 170-scan baseline above because it includes the scene lookup optimization.
 
 ## Recovery safety boundaries
 
@@ -62,7 +62,7 @@ Focused tests cover external writer blocking, external corruption and valid appe
 - **Native image processing:** two parallel 512-pixel compressions used about 82 ms aggregate CPU over 51 ms wall time with a 2.2 ms maximum event-loop delay. Native asynchronous offload is already effective for this small case; 40-megapixel worst cases were not measured.
 - **Logging:** 2,000 records consumed about 35 ms CPU in memory versus 53 ms with a temporary local disk log. Standard output was redirected to a counting sink, so production stdout backpressure and slow volumes remain unmeasured.
 
-Short heap deltas are GC-sensitive and are not presented as leak measurements. Image caches, description caches, operation receipts and learning queues have explicit bounds. Real-scene state lifetimes still need separate lifecycle analysis. The follow-on [topic retention policy](topic-routing-retention.md) bounds unprotected routing IDs per scene while preserving exact live references. Recall tombstones are safety authority, not disposable cache entries.
+Short heap deltas are GC-sensitive and are not presented as leak measurements. Image caches, description caches, operation receipts and learning queues have explicit bounds. At this initial measurement stage, real-scene state lifetimes still needed separate lifecycle analysis; the later conservative cleanup is recorded below. The follow-on [topic retention policy](topic-routing-retention.md) bounds unprotected routing IDs per scene while preserving exact live references. Recall tombstones are safety authority, not disposable cache entries.
 
 ## Async and worker-thread assessment
 
@@ -70,22 +70,66 @@ Adding `async` does not make synchronous SQLite, hashing, JSON parsing or array 
 
 - **Sharp already executes native asynchronous work.** Wrapping it in another Worker can add buffer copies without improving the bottleneck. Keep bounded image concurrency and measure larger inputs before changing architecture.
 - **SQLite workers need ownership design.** A safe design requires a single database/authority owner, bounded ordered requests, confined transactions, immediate revocation visibility, cancellation before effects versus unknown outcomes after effects, and shutdown/flush handling. Sharing database objects or moving only selected checks to a worker is not a safe drop-in fix.
-- **Asynchronous logging needs a contract.** Decide maximum buffered bytes, backpressure or loss policy, serialized rotation, error reporting and shutdown flushing before replacing synchronous writes. A lazy directory-initialization optimization alone does not remove append blocking.
+- **Asynchronous logging requires an explicit contract.** The implemented [delivery policy](asynchronous-log-delivery.md) defines buffered bytes, visible overload loss, serialized rotation, errors and shutdown flushing. A lazy directory-initialization optimization alone would not remove append blocking.
 - **Timers are not hard deadlines during synchronous stalls.** Timeout callbacks cannot run while validation blocks the event loop. Conversely, inserting a yield between a freshness check and adapter invocation creates a new race unless the necessary checks are repeated afterward.
 
 ## Published verification and remaining work
 
-The first four implementation slices are published through commit `f1e0006`. The final merged candidate passed 1,809 tests, contract generation checks, runtime and UI typechecks, the production build, and both Check and Container CI workflows. This includes the learning admission repair, bounded topic routing history, chat history cancellation/reconciliation, and thumbnail queue changes. These are completed implementation checks, not pending candidate work.
+The first four implementation slices are published through `f1e0006`: learning
+admission repair, bounded routing history, chat history reconciliation/cancellation,
+and thumbnail queue fixes. That merged candidate passed 1,809 tests, contract/types,
+production build and both CI workflows. These are completed implementation checks,
+not pending proposals.
 
-The remaining work is distinct:
+Later published changes are also distinct from the earlier measurements:
 
-1. Remove synchronous logging from the normal event-loop path with bounded buffering, explicit saturation/failure policy, ordered rotation and shutdown flushing. Existing silent write-error handling and unchecked stdout backpressure also need attention.
-2. Profile residual dependency and extension guards separately. Do not broaden the source-read scope or add a stale permission cache without another security review.
-3. Audit real-scene state lifetimes independently of the now-bounded topic-ID index. Retained source authority, receipts and active work are not disposable cache entries.
-4. Exercise browser chat/meme navigation and pressure behavior, slow sinks, larger concurrent images, and sustained-memory workloads. Existing API/queue tests are not a browser latency or production saturation measurement.
-5. If user-environment access becomes available, collect process/container CPU, event-loop delay, queue depths, recovery-chain length, scene/topic sizes and adapter timing together. Do not record raw chats, credentials or media in performance artifacts.
+- `70c4d55` added fixed-list dependency validation, exact meme ID/hash SQL filtering,
+  unchanged identity-write avoidance, no-anchor preview bypass, pure exact-row SHA
+  proof reuse, and conservative idle scene-state cleanup. Its 1,857 tests and final
+  checks/CI passed. Replay-bearing, uncertain-send and active states remain pinned;
+  this is not a hard cap on all scenes.
+- `634c0b9` added indexed budget queries, existence-only meme iteration and an
+  operation-local purge graph. The original local run had 1,865 passes and two stale
+  fixture-hash failures. Corrected acceptance, types/build and final full CI passed;
+  the original failed command is not relabeled a pass.
+- `b6a08ae` narrowed memory exposure and embedding revalidation to exact IDs while
+  preserving global lifecycle refresh. The original run had 1,871 passes and two
+  obsolete method-counter failures; corrected affected/acceptance groups passed
+  47 tests, and final full CI passed. Content/privacy assertions were unchanged.
+- `e6e5b2e` moved authorized outbound original-media encoding off the event loop,
+  added a nonunique scalar source-event lookup index, and replaced repeated first-ID
+  searches with a local Map. All 1,899 tests, contract/types/build and production
+  worker byte/startup smoke checks passed before publication. Check CI passed, but
+  the container test stage lacked `openssl` for its ephemeral HTTPS certificate
+  fixture. Build-stage-only correction `2d4c59f` preserves the TLS test and runtime
+  image; its automatic CI must pass before the new image is considered ready.
+- The current logging implementation uses [bounded asynchronous delivery](asynchronous-log-delivery.md):
+  separate stdout/file workers, explicit saturation/failure health and graceful
+  flush. Its [matched workload evidence](logging-performance-validation.md) reports
+  mixed CPU effects, additional worker memory, and overload losses explicitly.
 
-No full production workload, browser-rendering profile, slow-storage test, exhaustive GC study, or large-image saturation test has been performed. The audit identifies and verifies specific causes; it does not declare the whole system performance problem closed.
+[Receive-only measurements](performance-load-validation-20261102.md) exercise replies
+and learning disabled with concurrent administration requests. Process CPU fell
+from 111.1 to 26.2 seconds in that controlled synthetic workload. Do not attribute
+that earlier reduction to logging or promise the same ratio in production.
+
+Remaining work and limitations:
+
+1. Global memory lifecycle invalidation and arbitrary extension callbacks still
+   require fresh authority. Narrower scans must not silently change synchronous
+   privacy erasure, ranking or failure atomicity. No blanket permission cache or
+   automatic database-worker migration is approved by these optimizations.
+2. Replay-bearing scene states are different from reclaimable idle cache-only
+   states. Durable source authority, receipts and active work are not disposable.
+3. Browser-rendering, slow-storage, sustained-memory and large-image saturation
+   coverage is not exhaustive. Bounded image/cache and sink-pressure fixtures are
+   documented separately; API/queue tests do not establish browser latency.
+4. Further production validation needs synchronized process/container CPU,
+   event-loop delay, queue depths, chain length and adapter timing. Raw chats,
+   credentials, media and private profiles must not enter performance artifacts.
+
+This audit verifies specific causes and fixes; it does not declare every possible
+whole-system performance problem closed.
 
 ### Follow-on bounded topic-ID retention
 

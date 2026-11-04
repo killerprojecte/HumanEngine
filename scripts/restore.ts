@@ -7,18 +7,17 @@ import {
   sameHead,
 } from '../src/memory/recovery/ledger.ts'
 import { reconcileRecovery } from '../src/memory/recovery/reconcile.ts'
-import { mkdir, writeFile, rm, rename, rmdir, lstat } from 'node:fs/promises'
+import { mkdir, rm, rename, rmdir, lstat } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Store } from '../src/store.ts'
+import { checkIntegrity, mediaFiles, mediaRecords, type BackupManifest } from './backup.ts'
 import {
-  checkIntegrity,
-  digest,
-  mediaFiles,
-  mediaRecords,
-  regularFile,
-  type BackupManifest,
-} from './backup.ts'
+  copyRegularFile,
+  hashRegularFile,
+  readSmallRegularFile,
+  MAX_MANIFEST_BYTES,
+} from './backup-file-io.ts'
 
 export async function restore(options: {
   backupRoot: string
@@ -32,7 +31,7 @@ export async function restore(options: {
   authorityPath(join(finalDestination, 'humanengine.sqlite'), options.authorityDirectory)
   authorityPath(join(root, 'humanengine.sqlite'), options.authorityDirectory)
   const manifest: BackupManifest = JSON.parse(
-    (await regularFile(join(root, 'manifest.json'))).toString('utf8'),
+    (await readSmallRegularFile(join(root, 'manifest.json'), MAX_MANIFEST_BYTES)).toString('utf8'),
   )
   if (
     manifest.version !== 1 ||
@@ -52,7 +51,8 @@ export async function restore(options: {
       paths.has(file.path) ||
       !/^[a-f0-9]{64}$/.test(file.sha256) ||
       !Number.isSafeInteger(file.bytes) ||
-      file.bytes < 0
+      file.bytes < 0 ||
+      (file.path === '.secrets.key' && file.bytes !== 32)
     )
       throw new Error('invalid_backup_manifest')
     paths.add(file.path)
@@ -62,15 +62,12 @@ export async function restore(options: {
   let store: Store | undefined
   let authority: RecoveryAuthority | undefined
   let published = false
-  const stagingIdentity = await lstat(destination)
+  const stagingIdentity = await lstat(destination, { bigint: true })
   try {
     authority = new RecoveryAuthority(options.authorityDirectory)
     await mkdir(join(destination, 'media'), { mode: 0o700 })
     for (const file of manifest.files) {
-      const bytes = await regularFile(join(root, file.path))
-      if (bytes.length !== file.bytes || digest(bytes) !== file.sha256)
-        throw new Error('backup_hash_mismatch')
-      await writeFile(join(destination, file.path), bytes, { flag: 'wx', mode: 0o600 })
+      await copyRegularFile(join(root, file.path), join(destination, file.path), file)
     }
     const database = join(destination, 'humanengine.sqlite')
     const raw = new Database(database)
@@ -89,7 +86,7 @@ export async function restore(options: {
     store = new Store(database, { authority })
     checkIntegrity(store.db)
     for (const record of mediaRecords(store.db)) {
-      if (digest(await regularFile(join(destination, record.path))) !== record.sha256)
+      if ((await hashRegularFile(join(destination, record.path))).sha256 !== record.sha256)
         throw new Error('media_content_hash_mismatch')
     }
     const hasSecrets = !!store.db.prepare('SELECT 1 FROM secrets LIMIT 1').get()
@@ -127,10 +124,20 @@ export async function restore(options: {
   } catch (error) {
     store?.close()
     authority?.close()
-    await rm(destination, { recursive: true, force: true })
+    const staging = await lstat(destination, { bigint: true }).catch(() => undefined)
+    if (
+      staging?.isDirectory() &&
+      staging.dev === stagingIdentity.dev &&
+      staging.ino === stagingIdentity.ino
+    )
+      await rm(destination, { recursive: true, force: true })
     if (published) {
-      const current = await lstat(finalDestination).catch(() => undefined)
-      if (current?.dev === stagingIdentity.dev && current.ino === stagingIdentity.ino)
+      const current = await lstat(finalDestination, { bigint: true }).catch(() => undefined)
+      if (
+        current?.isDirectory() &&
+        current.dev === stagingIdentity.dev &&
+        current.ino === stagingIdentity.ino
+      )
         await rm(finalDestination, { recursive: true, force: true })
     }
     throw error

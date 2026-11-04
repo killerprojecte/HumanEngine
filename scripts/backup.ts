@@ -1,10 +1,10 @@
 import { metadata, RecoveryAuthority, sameHead } from '../src/memory/recovery/ledger.ts'
 import Database from 'better-sqlite3'
-import { constants } from 'node:fs'
-import { copyFile, mkdir, readFile, writeFile, lstat, rm, chmod } from 'node:fs/promises'
+import { mkdir, writeFile, lstat, rm, chmod } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { copyRegularFile, hashRegularFile, readSmallRegularFile } from './backup-file-io.ts'
 
 export interface BackupManifest {
   version: 1
@@ -13,10 +13,6 @@ export interface BackupManifest {
   files: { path: string; sha256: string; bytes: number }[]
 }
 export const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
-export async function regularFile(path: string): Promise<Buffer> {
-  if (!(await lstat(path)).isFile()) throw new Error('regular_file_required')
-  return readFile(path)
-}
 export function mediaRecords(db: Database.Database): { path: string; sha256: string }[] {
   if (!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='meme_assets'").get())
     return []
@@ -53,6 +49,7 @@ export async function backup(options: {
 }): Promise<BackupManifest> {
   const destination = resolve(options.destination)
   await mkdir(destination, { mode: 0o700 })
+  const destinationIdentity = await lstat(destination, { bigint: true })
   let source: Database.Database | undefined
   let snapshot: Database.Database | undefined
   try {
@@ -89,32 +86,31 @@ export async function backup(options: {
       node: process.version,
       files: [],
     }
-    const dbBytes = await regularFile(databasePath)
+    const dbDigest = await hashRegularFile(databasePath)
     manifest.files.push({
       path: 'humanengine.sqlite',
-      sha256: digest(dbBytes),
-      bytes: dbBytes.length,
+      ...dbDigest,
     })
     if (hasSecrets) {
       const keyPath = join(dirname(options.database), '.secrets.key')
       const keyStat = await lstat(keyPath)
       if (!keyStat.isFile() || (keyStat.mode & 0o077) !== 0)
         throw new Error('secret_key_permissions')
-      const key = await regularFile(keyPath)
+      const key = await readSmallRegularFile(keyPath, 32, true)
       if (key.length !== 32) throw new Error('secret_key_invalid')
       await writeFile(join(destination, '.secrets.key'), key, { flag: 'wx', mode: 0o600 })
       manifest.files.push({ path: '.secrets.key', sha256: digest(key), bytes: key.length })
     }
     for (const { path, sha256 } of media) {
       const original = join(options.mediaRoot, path.slice('media/'.length))
-      const bytes = await regularFile(original)
-      if (digest(bytes) !== sha256) throw new Error('media_content_hash_mismatch')
       const target = join(destination, path)
-      await copyFile(original, target, constants.COPYFILE_EXCL)
-      await chmod(target, 0o600)
-      const copied = await regularFile(target)
-      if (digest(copied) !== digest(bytes)) throw new Error('media_changed_during_backup')
-      manifest.files.push({ path, sha256: digest(copied), bytes: copied.length })
+      const copied = await copyRegularFile(
+        original,
+        target,
+        { sha256 },
+        'media_content_hash_mismatch',
+      )
+      manifest.files.push({ path, ...copied })
     }
     await writeFile(join(destination, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', {
       flag: 'wx',
@@ -124,7 +120,13 @@ export async function backup(options: {
   } catch (error) {
     source?.close()
     snapshot?.close()
-    await rm(destination, { recursive: true, force: true })
+    const current = await lstat(destination, { bigint: true }).catch(() => undefined)
+    if (
+      current?.isDirectory() &&
+      current.dev === destinationIdentity.dev &&
+      current.ino === destinationIdentity.ino
+    )
+      await rm(destination, { recursive: true, force: true })
     throw error
   }
 }

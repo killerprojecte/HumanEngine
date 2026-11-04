@@ -95,12 +95,13 @@ export function inspectBackup(root: string, name: string) {
   }
 }
 function checkEntries(directory: string, allowed: readonly string[]) {
+  const members = new Set(allowed)
   for (const entry of readdirSync(directory)) {
     if (entry === 'media') {
       safeDirectory(join(directory, 'media'))
       for (const media of readdirSync(join(directory, 'media')))
-        if (!allowed.includes('media/' + media)) throw new Error('retention_unsafe_entry')
-    } else if (!allowed.includes(entry)) throw new Error('retention_unsafe_entry')
+        if (!members.has('media/' + media)) throw new Error('retention_unsafe_entry')
+    } else if (!members.has(entry)) throw new Error('retention_unsafe_entry')
   }
 }
 /** Pending permits already removed members, but never replacement files or new members. */

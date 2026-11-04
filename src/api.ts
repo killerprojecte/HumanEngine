@@ -220,9 +220,49 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
     createRoute({
       method: 'get',
       path: '/api/usage',
-      responses: { 200: json(z.array(UsageSchema)), ...errorResponses },
+      request: {
+        query: z
+          .object({
+            bucket: z
+              .enum(['hour', 'day'])
+              .describe('UTC aggregation bucket; requires start and end. Defaults to day.')
+              .optional(),
+            start: z.iso
+              .datetime({ offset: true })
+              .describe('Inclusive accounting timestamp. Must be supplied with end.')
+              .optional(),
+            end: z.iso
+              .datetime({ offset: true })
+              .describe('Exclusive accounting timestamp, later than start.')
+              .optional(),
+          })
+          .refine(
+            (q) =>
+              (!q.start && !q.end && !q.bucket) ||
+              (!!q.start && !!q.end && Date.parse(q.start) < Date.parse(q.end)),
+            'Supply an ordered start and end',
+          ),
+      },
+      responses: {
+        200: {
+          ...json(z.array(UsageSchema)),
+          headers: {
+            'X-Usage-Incomplete': {
+              description:
+                'True when historical daily records overlap but cannot be precisely included in the requested range or hourly buckets.',
+              schema: { type: 'string', enum: ['true', 'false'] },
+            },
+          },
+        },
+        ...errorResponses,
+      },
     }),
-    (c) => c.json(store.usage(), 200),
+    (c) => {
+      const { start, end, bucket } = c.req.valid('query')
+      const range = start && end ? { start, end, bucket } : undefined
+      c.header('X-Usage-Incomplete', range && store.usageIncomplete(range) ? 'true' : 'false')
+      return c.json(store.usage(range), 200)
+    },
   )
   app.openapi(
     createRoute({

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usageRange, type UsagePreset } from '../utils/usage-range'
 import { createClientId } from '../utils/create-id'
 import type { components, paths } from '~/types/api'
 type Config = components['schemas']['ModelConfig']
@@ -26,6 +27,109 @@ const section = ref<Section>('models'),
 const protocols = ref<Array<{ id: string; label: string }>>([])
 const usage = ref<components['schemas']['Usage'][]>([]),
   usageBusy = ref(false)
+const usagePreset = ref<UsagePreset>('24h')
+const customStart = ref(''),
+  customEnd = ref(''),
+  usageError = ref('')
+const usageIncomplete = ref(false),
+  timelineIncomplete = ref(false)
+const usageTimezone = ref('')
+const selectedRange = ref<{ start: string; end: string }>()
+const timeline = ref<components['schemas']['Usage'][]>([])
+const rangeOptions = computed(() =>
+  ['24h', 'today', 'yesterday', '7d', '14d', 'month', 'custom'].map((value) => ({
+    value,
+    label: t(`usageRange_${value}`),
+  })),
+)
+const timelineRows = computed(() => {
+  const buckets = new Map<
+    string,
+    {
+      at: string
+      input: number
+      output: number
+      read: number
+      write: number
+      calls: number
+      known: number
+      readKnown: number
+      writeKnown: number
+    }
+  >()
+  for (const row of timeline.value) {
+    const point = buckets.get(row.day) ?? {
+      at: row.day,
+      input: 0,
+      output: 0,
+      read: 0,
+      write: 0,
+      calls: 0,
+      known: 0,
+      readKnown: 0,
+      writeKnown: 0,
+    }
+    point.input += row.inputTokens
+    point.output += row.outputTokens
+    point.read += row.cacheReadInputTokens
+    point.write += row.cacheWriteInputTokens
+    point.calls += row.calls
+    point.known += row.unknownUsageCalls
+    point.readKnown += row.cacheReadKnownCalls
+    point.writeKnown += row.cacheWriteKnownCalls
+    buckets.set(row.day, point)
+  }
+  return [...buckets.values()].sort((a, b) => a.at.localeCompare(b.at))
+})
+const usageTotals = computed(() =>
+  usage.value.reduce(
+    (total, row) => ({
+      calls: total.calls + row.calls,
+      input: total.input + row.inputTokens,
+      read: total.read + row.cacheReadInputTokens,
+      known: total.known + row.unknownUsageCalls,
+      readKnown: total.readKnown + row.cacheReadKnownCalls,
+      usd: total.usd + row.estimatedUsd,
+      priced: total.priced + row.pricedCalls,
+      partial: total.partial + row.partialPricedCalls,
+    }),
+    { calls: 0, input: 0, read: 0, known: 0, readKnown: 0, usd: 0, priced: 0, partial: 0 },
+  ),
+)
+const timelineMax = computed(() =>
+  Math.max(
+    1,
+    ...timelineRows.value.map((p) =>
+      Math.max(
+        p.known ? 0 : p.input,
+        p.known ? 0 : p.output,
+        p.readKnown ? p.read : 0,
+        p.writeKnown ? p.write : 0,
+      ),
+    ),
+  ),
+)
+const timelineTooltip = (point: (typeof timelineRows.value)[number]) => {
+  const input = point.known ? t('usageCounterUnknown') : String(point.input)
+  const output = point.known ? t('usageCounterUnknown') : String(point.output)
+  const counter = (value: number, known: number) =>
+    !known
+      ? t('usageCounterUnknown')
+      : known < point.calls
+        ? t('usagePartialCounter', { value, known, total: point.calls })
+        : String(value)
+  return `${point.at} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
+}
+const cacheRate = (point: {
+  input: number
+  read: number
+  calls: number
+  known: number
+  readKnown: number
+}) =>
+  point.known === 0 && point.readKnown === point.calls && point.input > 0
+    ? `${((point.read / point.input) * 100).toFixed(1)}%`
+    : t('usageCounterUnknown')
 const embeddingPanel = ref<{ refresh: () => Promise<void> }>()
 const roles = ['planner', 'replyer', 'learning', 'vision', 'embedding'] as const
 const priceFields = [
@@ -230,20 +334,48 @@ async function load() {
     busy.value = false
   }
 }
+let usageRequest = 0
 async function loadUsage() {
-  if (usageBusy.value) return
+  const range = usageRange(usagePreset.value, new Date(), customStart.value, customEnd.value)
+  if (!range) {
+    usageError.value = t('usageInvalidRange')
+    return
+  }
+  const request = ++usageRequest
   usageBusy.value = true
+  usageError.value = ''
+  usageIncomplete.value = false
+  timelineIncomplete.value = false
+  usage.value = []
+  timeline.value = []
+  selectedRange.value = range
+  const bucket = Date.parse(range.end) - Date.parse(range.start) <= 2 * 86400000 ? 'hour' : 'day'
   try {
-    const result = await client.GET('/api/usage')
-    if (result.data) usage.value = result.data
-    else error.value = result.error?.error ?? t('networkError')
+    const [result, points] = await Promise.all([
+      client.GET('/api/usage', { params: { query: range } }),
+      client.GET('/api/usage', { params: { query: { ...range, bucket } } }),
+    ])
+    if (request !== usageRequest) return
+    if (!result.data || !points.data) {
+      usageError.value = result.error?.error ?? points.error?.error ?? t('networkError')
+      return
+    }
+    usage.value = result.data
+    timeline.value = points.data
+    usageIncomplete.value = result.response.headers.get('X-Usage-Incomplete') === 'true'
+    timelineIncomplete.value = points.response.headers.get('X-Usage-Incomplete') === 'true'
   } catch {
-    error.value = t('networkError')
+    if (request === usageRequest) usageError.value = t('networkError')
   } finally {
-    usageBusy.value = false
+    if (request === usageRequest) usageBusy.value = false
   }
 }
+watch(usagePreset, () => {
+  if (usagePreset.value !== 'custom') void loadUsage()
+})
+
 onMounted(() => {
+  usageTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone
   void load()
   void loadUsage()
 })
@@ -849,7 +981,131 @@ watch(section, () => {
         </p>
       </template>
       <template v-else>
-        <p class="p-4 text-sm text-muted">{{ t('usageEstimateHelp') }}</p>
+        <div class="p-4 space-y-3">
+          <div class="flex flex-wrap items-end gap-3">
+            <UFormField :label="t('usageTimeRange')"
+              ><USelect v-model="usagePreset" :items="rangeOptions" class="min-w-40"
+            /></UFormField>
+            <template v-if="usagePreset === 'custom'">
+              <UFormField :label="t('usageStart')"
+                ><UInput v-model="customStart" type="datetime-local"
+              /></UFormField>
+              <UFormField :label="t('usageEnd')"
+                ><UInput v-model="customEnd" type="datetime-local"
+              /></UFormField>
+              <UButton :loading="usageBusy" @click="loadUsage">{{ t('usageApply') }}</UButton>
+            </template>
+          </div>
+          <p class="text-sm text-muted">{{ t('usageTimezone', { timezone: usageTimezone }) }}</p>
+          <p v-if="selectedRange" class="text-xs text-muted">
+            {{ selectedRange.start }} ≤ {{ t('usageTime') }} &lt; {{ selectedRange.end }}
+          </p>
+          <p v-if="usageError" role="alert" class="text-error">{{ usageError }}</p>
+          <p v-if="usageIncomplete || timelineIncomplete" role="status" class="text-warning">
+            {{ t('usageIncompleteRange') }}
+          </p>
+          <p class="text-sm text-muted">{{ t('usageEstimateHelp') }}</p>
+          <div
+            v-if="!usageBusy && !usageError"
+            class="flex flex-wrap gap-6 rounded-lg bg-elevated p-3"
+          >
+            <div>
+              <div class="text-sm text-muted">{{ t('usageCost') }}</div>
+              <strong>{{
+                usageTotals.priced || usageTotals.partial
+                  ? usd(usageTotals.usd)
+                  : t('usageUnknownCost')
+              }}</strong>
+              <p class="text-xs text-muted">
+                {{ t('usagePriced', { priced: usageTotals.priced, total: usageTotals.calls }) }}
+              </p>
+            </div>
+            <div>
+              <div class="text-sm text-muted">{{ t('usageCalls') }}</div>
+              <strong>{{ usageTotals.calls }}</strong>
+            </div>
+            <div>
+              <div class="text-sm text-muted">{{ t('usageCacheRate') }}</div>
+              <strong>{{ cacheRate(usageTotals) }}</strong>
+            </div>
+          </div>
+          <p class="text-xs text-muted">{{ t('usageWholeRange') }}</p>
+          <h3 class="font-semibold">{{ t('usageTimeline') }}</h3>
+          <p class="text-xs text-muted">{{ t('usageTimelineHelp') }}</p>
+          <div v-if="timelineRows.length" class="overflow-x-auto">
+            <div class="flex items-end gap-2 h-36 min-w-max" aria-hidden="true">
+              <div
+                v-for="point in timelineRows"
+                :key="point.at"
+                class="flex flex-col items-center justify-end h-full w-12"
+                :title="timelineTooltip(point)"
+              >
+                <div class="flex items-end gap-0.5 h-28">
+                  <div
+                    v-if="!point.known"
+                    class="bg-blue-500 w-2"
+                    :style="{ height: `${(point.input / timelineMax) * 100}%` }"
+                  />
+                  <span v-else class="text-xs text-muted w-2">?</span>
+                  <div
+                    v-if="!point.known"
+                    class="bg-violet-500 w-2"
+                    :style="{ height: `${(point.output / timelineMax) * 100}%` }"
+                  />
+                  <span v-else class="text-xs text-muted w-2">?</span>
+                  <div
+                    v-if="point.readKnown"
+                    class="bg-emerald-500 w-2"
+                    :style="{ height: `${(point.read / timelineMax) * 100}%` }"
+                  />
+                  <span v-else class="text-xs text-muted w-2">?</span>
+                  <div
+                    v-if="point.writeKnown"
+                    class="bg-amber-500 w-2"
+                    :style="{ height: `${(point.write / timelineMax) * 100}%` }"
+                  />
+                  <span v-else class="text-xs text-muted w-2">?</span>
+                </div>
+                <span class="text-[10px] text-muted text-center mt-1"
+                  >{{ point.at.slice(5, 10) }}<br v-if="point.at.length > 10" />{{
+                    point.at.slice(11, 16)
+                  }}</span
+                >
+              </div>
+            </div>
+            <p class="text-xs my-2">{{ t('usageChartLegend') }}</p>
+            <table class="model-table w-full text-sm text-left">
+              <thead>
+                <tr>
+                  <th>{{ t('usageTime') }} (UTC)</th>
+                  <th>{{ t('usageInput') }}</th>
+                  <th>{{ t('usageOutput') }}</th>
+                  <th>{{ t('usageCacheRead') }}</th>
+                  <th>{{ t('usageCacheWrite') }}</th>
+                  <th>{{ t('usageCacheRate') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="point in timelineRows" :key="point.at">
+                  <td>{{ point.at }}</td>
+                  <td>{{ point.known ? t('usageCounterUnknown') : point.input }}</td>
+                  <td>{{ point.known ? t('usageCounterUnknown') : point.output }}</td>
+                  <td>
+                    {{ point.readKnown ? point.read : t('usageCounterUnknown') }} ({{
+                      point.readKnown
+                    }}/{{ point.calls }})
+                  </td>
+                  <td>
+                    {{ point.writeKnown ? point.write : t('usageCounterUnknown') }} ({{
+                      point.writeKnown
+                    }}/{{ point.calls }})
+                  </td>
+                  <td>{{ cacheRate(point) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <div class="overflow-x-auto">
           <table class="model-table w-full text-left text-sm">
             <thead>
@@ -886,7 +1142,12 @@ watch(section, () => {
                   }}
                 </td>
                 <td>{{ row.calls }}</td>
-                <td class="whitespace-nowrap">{{ row.inputTokens }} / {{ row.outputTokens }}</td>
+                <td class="whitespace-nowrap">
+                  {{ row.inputTokens }} / {{ row.outputTokens }}
+                  <p v-if="row.unknownUsageCalls" class="text-xs text-warning">
+                    {{ t('usageUnknownCalls', { count: row.unknownUsageCalls, total: row.calls }) }}
+                  </p>
+                </td>
                 <td class="min-w-64">
                   <template
                     v-if="
@@ -985,7 +1246,7 @@ watch(section, () => {
               </tr>
               <tr v-if="!filteredUsage.length">
                 <td colspan="8" class="p-8 text-center text-muted">
-                  {{ t(usage.length ? 'uxNoMatches' : 'usageEmpty') }}
+                  {{ t(usageBusy ? 'usageLoading' : usage.length ? 'uxNoMatches' : 'usageEmpty') }}
                 </td>
               </tr>
             </tbody>

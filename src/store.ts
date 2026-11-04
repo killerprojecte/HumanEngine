@@ -72,6 +72,19 @@ const usageColumns = {
   cache_write_usd: 'cacheWriteUsd',
   legacy_estimated_usd: 'legacyEstimatedUsd',
 } as const
+const usageKeys = ['day', 'model_id', 'provider_id', 'api_model', 'role']
+const usageValues = [
+  'calls',
+  'input_tokens',
+  'output_tokens',
+  'duration_ms',
+  'priced_calls',
+  'estimated_usd',
+  ...Object.keys(usageColumns),
+]
+const usageAllColumns = [...usageKeys, ...usageValues]
+export type UsageRange = { start: string; end: string; bucket?: 'hour' | 'day' }
+
 type UsageBreakdown = Record<(typeof usageColumns)[keyof typeof usageColumns], number>
 
 export class Store {
@@ -166,6 +179,18 @@ export class Store {
         this.db.exec('UPDATE model_usage SET cache_write_known_calls=cache_known_calls')
       if (legacy)
         this.db.exec('UPDATE model_usage SET legacy_calls=calls,legacy_estimated_usd=estimated_usd')
+    })()
+    this.db.transaction(() => {
+      // Snapshot only once: historical daily totals have no recoverable call timestamps.
+      const exists = this.db
+        .prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='model_usage_events'")
+        .get()
+      if (!exists) {
+        this.db.exec(`CREATE TABLE model_usage_history AS SELECT * FROM model_usage;
+          CREATE UNIQUE INDEX model_usage_history_key ON model_usage_history(day,model_id,provider_id,api_model,role);
+          CREATE TABLE model_usage_events AS SELECT *, '' AS at FROM model_usage WHERE 0;
+          CREATE INDEX model_usage_events_at ON model_usage_events(at);`)
+      }
     })()
     this.db.transaction(() => ensureSourceEventLookupIndex(this.db))()
   }
@@ -680,26 +705,76 @@ export class Store {
       .slice(5)
       .map((column) => `${column}=${column}+excluded.${column}`)
       .join(',')
+    const at = new Date().toISOString()
+    const values = [
+      at.slice(0, 10),
+      entry.modelId,
+      entry.providerId,
+      snapshot?.apiModelName ?? model?.apiModelName ?? 'unknown',
+      canonicalModelRole(entry.role),
+      1,
+      validTokenCount(usage.inputTokens) ? usage.inputTokens : 0,
+      validTokenCount(usage.outputTokens) ? usage.outputTokens : 0,
+      entry.durationMs,
+      cost?.fullyPriced ? 1 : 0,
+      cost?.estimatedUsd ?? 0,
+      ...Object.values(usageColumns).map((key) => breakdown[key]),
+    ]
+    this.db.transaction(() => {
+      this.db
+        .prepare(
+          `INSERT INTO model_usage (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')}) ON CONFLICT(day,model_id,provider_id,api_model,role) DO UPDATE SET ${sums}`,
+        )
+        .run(...values)
+      this.db
+        .prepare(
+          `INSERT INTO model_usage_events (${columns.join(',')},at) VALUES (${[...columns, 'at'].map(() => '?').join(',')})`,
+        )
+        .run(...values, at)
+      this.compactUsage(at)
+    })()
+  }
+  private usageCompactedDay = ''
+  private compactUsage(at: string) {
+    const day = at.slice(0, 10)
+    if (this.usageCompactedDay === day) return
+    // Bound detailed retention to 90 days; preserve older totals without inventing timestamps.
+    const cutoff = new Date(Date.parse(at) - 90 * 86400000).toISOString().slice(0, 10)
     this.db
       .prepare(
-        `INSERT INTO model_usage (${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')}) ON CONFLICT(day,model_id,provider_id,api_model,role) DO UPDATE SET ${sums}`,
+        `INSERT INTO model_usage_history (${usageAllColumns.join(',')})
+      SELECT ${usageKeys.join(',')},${usageValues.map((c) => `SUM(${c})`).join(',')}
+      FROM model_usage_events WHERE at < ? GROUP BY ${usageKeys.join(',')}
+      ON CONFLICT(day,model_id,provider_id,api_model,role) DO UPDATE SET ${usageValues.map((c) => `${c}=${c}+excluded.${c}`).join(',')}`,
       )
-      .run(
-        new Date().toISOString().slice(0, 10),
-        entry.modelId,
-        entry.providerId,
-        snapshot?.apiModelName ?? model?.apiModelName ?? 'unknown',
-        canonicalModelRole(entry.role),
-        1,
-        validTokenCount(usage.inputTokens) ? usage.inputTokens : 0,
-        validTokenCount(usage.outputTokens) ? usage.outputTokens : 0,
-        entry.durationMs,
-        cost?.fullyPriced ? 1 : 0,
-        cost?.estimatedUsd ?? 0,
-        ...Object.values(usageColumns).map((key) => breakdown[key]),
-      )
+      .run(cutoff)
+    this.db.prepare('DELETE FROM model_usage_events WHERE at < ?').run(cutoff)
+    this.usageCompactedDay = day
   }
-  usage() {
+
+  usageIncomplete(range: UsageRange) {
+    const start = new Date(range.start).toISOString(),
+      end = new Date(range.end).toISOString()
+    return !!this.db
+      .prepare(
+        `SELECT 1 FROM model_usage_history WHERE
+      day >= substr(@start,1,10) AND day <= substr(@end,1,10) AND day || 'T00:00:00.000Z' < @end AND strftime('%Y-%m-%dT00:00:00.000Z',day,'+1 day') > @start
+      AND (@hour = 1 OR day || 'T00:00:00.000Z' < @start OR strftime('%Y-%m-%dT00:00:00.000Z',day,'+1 day') > @end) LIMIT 1`,
+      )
+      .get({ start, end, hour: range.bucket === 'hour' ? 1 : 0 })
+  }
+  usage(range?: UsageRange) {
+    if (
+      range &&
+      (!Number.isFinite(Date.parse(range.start)) ||
+        !Number.isFinite(Date.parse(range.end)) ||
+        Date.parse(range.start) >= Date.parse(range.end))
+    )
+      throw new Error('Invalid usage range')
+    const source = range
+      ? `(SELECT ${range.bucket === 'hour' ? "strftime('%Y-%m-%dT%H:00:00Z',at) AS day," + usageAllColumns.slice(1).join(',') : usageAllColumns.join(',')} FROM model_usage_events WHERE at >= @start AND at < @end
+      UNION ALL SELECT ${usageAllColumns.join(',')} FROM model_usage_history WHERE ${range.bucket === 'hour' ? '0 AND ' : ''}day >= substr(@start,1,10) AND day <= substr(@end,1,10) AND day || 'T00:00:00.000Z' >= @start AND strftime('%Y-%m-%dT00:00:00.000Z',day,'+1 day') <= @end)`
+      : 'model_usage'
     return this.db
       .prepare(
         `SELECT day,model_id AS modelId,provider_id AS providerId,api_model AS apiModelName,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END AS role,SUM(calls) AS calls,SUM(input_tokens) AS inputTokens,SUM(output_tokens) AS outputTokens,SUM(duration_ms) AS durationMs,SUM(priced_calls) AS pricedCalls,SUM(estimated_usd) AS estimatedUsd,${Object.entries(
@@ -708,9 +783,13 @@ export class Store {
           .map(([column, alias]) => `SUM(${column}) AS ${alias}`)
           .join(
             ',',
-          )} FROM model_usage GROUP BY day,model_id,provider_id,api_model,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END ORDER BY day DESC,model_id`,
+          )} FROM ${source} GROUP BY day,model_id,provider_id,api_model,CASE role WHEN 'thinker' THEN 'replyer' ELSE role END ORDER BY day DESC,model_id`,
       )
-      .all() as Array<
+      .all(
+        ...(range
+          ? [{ start: new Date(range.start).toISOString(), end: new Date(range.end).toISOString() }]
+          : []),
+      ) as Array<
       {
         day: string
         modelId: string

@@ -614,7 +614,14 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description UTC aggregation bucket; requires start and end. Defaults to day. */
+                    bucket?: "hour" | "day";
+                    /** @description Inclusive accounting timestamp. Must be supplied with end. */
+                    start?: string;
+                    /** @description Exclusive accounting timestamp, later than start. */
+                    end?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -624,6 +631,8 @@ export interface paths {
                 /** @description Success */
                 200: {
                     headers: {
+                        /** @description True when historical daily records overlap but cannot be precisely included in the requested range or hourly buckets. */
+                        "X-Usage-Incomplete"?: "true" | "false";
                         [name: string]: unknown;
                     };
                     content: {

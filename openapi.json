@@ -9212,9 +9212,59 @@
     },
     "/api/usage": {
       "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "hour",
+                "day"
+              ],
+              "description": "UTC aggregation bucket; requires start and end. Defaults to day."
+            },
+            "required": false,
+            "description": "UTC aggregation bucket; requires start and end. Defaults to day.",
+            "name": "bucket",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Inclusive accounting timestamp. Must be supplied with end."
+            },
+            "required": false,
+            "description": "Inclusive accounting timestamp. Must be supplied with end.",
+            "name": "start",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Exclusive accounting timestamp, later than start."
+            },
+            "required": false,
+            "description": "Exclusive accounting timestamp, later than start.",
+            "name": "end",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
+            "headers": {
+              "X-Usage-Incomplete": {
+                "description": "True when historical daily records overlap but cannot be precisely included in the requested range or hourly buckets.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {

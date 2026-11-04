@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { EmbeddingIndex } from '../src/embedding-index.ts'
+import { EmbeddingIndex, type RebuildJob } from '../src/embedding-index.ts'
 import { MemoryService } from '../src/memory.ts'
 import { Router, type RouterConfig } from '../src/models.ts'
 import { ModelProtocolRegistry } from '../src/model-protocols.ts'
@@ -196,6 +196,91 @@ test('changed content, deletes and recalled provenance during a batch cannot res
     assert.ok(rows.some((r) => r.memory_id === edited.id))
     assert.ok(!rows.some((r) => r.memory_id === removed.id))
     assert.equal(f.calls, 2)
+  } finally {
+    await f.index.dispose()
+    f.store.db.close()
+  }
+})
+
+test('batch commit completes cascaded history invalidation before saving progress or yielding', async () => {
+  const f = fixture()
+  try {
+    const context = { sceneId: 's', simulation: false }
+    const propose = (content: string, messageId: string, parents: string[] = []) => {
+      const source = { sceneId: 's', messageId, senderId: 'synthetic-person' }
+      const references = parents.map((id) => {
+        const record = f.memory.list(context).find((memory) => memory.id === id)!
+        return f.memory.captureParentReference(context, record)!
+      })
+      const result = f.memory.propose(
+        {
+          ...context,
+          provenance: parents.length ? 'contextual' : 'source-only',
+          dependencyMemoryIds: parents,
+          dependencyParentReferences: references,
+          sourceEvidence: [{ ...source, available: true, isBot: false }],
+        },
+        { kind: 'fact', content, sources: [source] },
+      )
+      assert.equal(result.status, 'saved')
+      if (result.status !== 'saved') throw new Error('synthetic_proposal_not_saved')
+      return result.memory
+    }
+    const parent = propose('Synthetic recalled parent', 'parent-source')
+    const child = propose('Synthetic independently supported child', 'child-source', [parent.id])
+    propose(child.content, 'independent-child-source')
+    const grandchild = propose('Synthetic bound grandchild', 'grandchild-source', [child.id])
+    const priorSpace = f.memory.registerSpace({
+      providerId: 'synthetic',
+      modelId: 'synthetic',
+      apiModelName: 'synthetic',
+      deployment: 'local',
+      preprocessing: 'text-v1',
+      dimensions: 2,
+      normalized: false,
+    })
+    for (const record of [parent, child, grandchild]) f.memory.index(record.id, priorSpace, [1, 0])
+    f.setHook(() => f.store.recall('s', 'parent-source'))
+
+    let observed:
+      | { status: string; vectors: number; total: number; processed: number; epoch: number }
+      | undefined
+    const set = f.store.set.bind(f.store)
+    f.store.set = (key, value) => {
+      set(key, value)
+      if (key !== 'embedding.rebuild' || observed) return
+      const job = value as RebuildJob
+      if (job.state !== 'running' || !job.spaceId || job.requiresRetryConfirmation) return
+      // The first refresh purges the OR-surviving child's old history, invalidating
+      // the grandchild's bound epoch. A second refresh must remove that descendant
+      // and its prior vector before this checkpoint is visible or a timer can run.
+      observed = {
+        status: f.memory.adminList().find((memory) => memory.id === grandchild.id)!.status,
+        vectors: (
+          f.store.db
+            .prepare('SELECT count(*) n FROM memory_vectors WHERE memory_id=?')
+            .get(grandchild.id) as { n: number }
+        ).n,
+        total: job.total,
+        processed: job.processed,
+        epoch: f.memory.revisionState(grandchild.id).deletionEpoch,
+      }
+      f.index.pause()
+    }
+    f.index.start()
+    await f.index.settled()
+    assert.equal(f.calls, 1)
+    assert.deepEqual(observed, {
+      status: 'invalidated',
+      vectors: 0,
+      total: 1,
+      processed: 1,
+      epoch: 2,
+    })
+    assert.equal(
+      f.store.get<RebuildJob | undefined>('embedding.rebuild', undefined)?.state,
+      'paused',
+    )
   } finally {
     await f.index.dispose()
     f.store.db.close()

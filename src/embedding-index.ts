@@ -402,9 +402,15 @@ export class EmbeddingIndex {
       ).map((row) => [row.memory_id, row]),
     )
     const pending = eligible.filter((memory) => {
+      // Missing index state is already conclusive. Hash only candidates that could
+      // be complete; this is pure work avoidance, never an eligibility cache.
       const checkpoint = checkpoints.get(memory.id)
       return (
-        checkpoint?.content_hash !== contentHash(memory) || !job.spaceId || checkpoint.indexed !== 1
+        !job.spaceId ||
+        !checkpoint ||
+        checkpoint.indexed !== 1 ||
+        checkpoint.content_hash === null ||
+        checkpoint.content_hash !== contentHash(memory)
       )
     })
     job.total = eligible.length
@@ -475,14 +481,16 @@ export class EmbeddingIndex {
           )
           batch.forEach((before, i) => {
             const now = eligible.get(before.id)
-            if (!now || contentHash(now) !== contentHash(before)) return
+            if (!now) return
+            const currentHash = contentHash(now)
+            if (currentHash !== contentHash(before)) return
             this.memory.index(now.id, job.spaceId!, result.vectors[i]!)
             this.store.db
               .prepare(
                 `INSERT INTO embedding_rebuild_items VALUES(?,?,?)
               ON CONFLICT(job_id,memory_id) DO UPDATE SET content_hash=excluded.content_hash`,
               )
-              .run(job.id, now.id, contentHash(now))
+              .run(job.id, now.id, currentHash)
           })
           job.requiresRetryConfirmation = false
           this.pending(job)

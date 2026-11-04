@@ -152,3 +152,73 @@ test('pending joins only eligible checkpoints/vectors with exact full counts and
     await f.close()
   }
 })
+
+test('pending hashes only indexed checkpoints that could be complete, without caching eligibility', async () => {
+  const f = fixture()
+  const stringify = JSON.stringify
+  try {
+    const complete = f.create('complete'),
+      changed = f.create('changed'),
+      absent = f.create('absent')
+    const spaceId = f.memory.registerSpace({
+      providerId: 'synthetic',
+      modelId: 'synthetic',
+      apiModelName: 'synthetic',
+      deployment: 'local',
+      preprocessing: 'text-v1',
+      dimensions: 2,
+      normalized: false,
+    })
+    f.memory.index(complete.id, spaceId, [1, 0])
+    f.memory.index(changed.id, spaceId, [1, 0])
+    const job: RebuildJob = {
+      id: 'hash-job',
+      encoderRevision: 'synthetic',
+      modelId: 'synthetic',
+      state: 'running',
+      processed: 0,
+      total: 0,
+      requiresRetryConfirmation: false,
+    }
+    const done = f.store.db.prepare('INSERT INTO embedding_rebuild_items VALUES(?,?,?)')
+    done.run(job.id, complete.id, hash(complete))
+    done.run(job.id, changed.id, 'old-hash')
+    done.run(job.id, absent.id, hash(absent))
+    const records = new Map(
+      [complete, changed, absent].map((record) => [record.id, record.content]),
+    )
+    let hashes = 0
+    JSON.stringify = ((value: unknown, ...args: unknown[]) => {
+      if (Array.isArray(value) && value.length === 2 && records.get(value[0]) === value[1]) hashes++
+      return Reflect.apply(stringify, JSON, [value, ...args])
+    }) as typeof JSON.stringify
+    const pending = (
+      f.index as unknown as { pending(job: RebuildJob): MemoryRecord[] }
+    ).pending.bind(f.index)
+    assert.equal(pending(job).length, 3)
+    assert.equal(hashes, 0, 'no generation cannot have complete checkpoints')
+    hashes = 0
+    job.spaceId = spaceId
+    assert.deepEqual(
+      pending(job).map((record) => record.id),
+      [absent.id, changed.id],
+    )
+    assert.equal(hashes, 2, 'missing vector is conclusive without content hashing')
+    assert.equal(job.total, 3)
+    assert.equal(job.processed, 1)
+    JSON.stringify = stringify
+    f.memory.delete(complete.id)
+    hashes = 0
+    JSON.stringify = ((value: unknown, ...args: unknown[]) => {
+      if (Array.isArray(value) && value.length === 2 && records.get(value[0]) === value[1]) hashes++
+      return Reflect.apply(stringify, JSON, [value, ...args])
+    }) as typeof JSON.stringify
+    assert.equal(pending(job).length, 2)
+    assert.equal(job.total, 2)
+    assert.equal(job.processed, 0)
+    assert.equal(hashes, 1)
+  } finally {
+    JSON.stringify = stringify
+    await f.close()
+  }
+})

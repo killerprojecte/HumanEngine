@@ -335,3 +335,24 @@ test('Planner cache metrics stay role-scoped and token-weighted while costs and 
     close()
   }
 })
+
+test('Planner coverage headers do not inherit unrelated historical gaps and chart requests carry browser timezone', async () => {
+  const queries: any[] = []
+  const { state, close } = page(async (_path, options) => {
+    queries.push(options.params.query)
+    const result = reply(1, true)
+    result.response.headers.set('X-Usage-Planner-Incomplete', 'false')
+    return result
+  })
+  try {
+    await state.loadUsage()
+    assert.equal(state.usageIncomplete.value, true)
+    assert.equal(state.timelineIncomplete.value, true)
+    assert.equal(state.plannerUsageIncomplete.value, false)
+    assert.equal(state.plannerTimelineIncomplete.value, false)
+    assert.equal(queries[1].timeZone, Intl.DateTimeFormat().resolvedOptions().timeZone)
+    assert.equal(queries[0].timeZone, undefined, 'summary preserves original historical-day totals')
+  } finally {
+    close()
+  }
+})

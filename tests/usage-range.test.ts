@@ -139,6 +139,8 @@ test('usage API validates range pairs and reports legacy coverage', async () => 
       'start=2026-01-01T00:00:00Z',
       'start=2026-02-01T00:00:00Z&end=2026-01-01T00:00:00Z',
       'bucket=invalid',
+      'timeZone=Asia%2FTaipei',
+      'start=2026-01-01T00:00:00Z&end=2026-01-02T00:00:00Z&timeZone=Not%2FAZone',
     ]) {
       assert.equal((await app.request(`/api/usage?${query}`, { headers })).status, 400)
     }
@@ -150,6 +152,16 @@ test('usage API validates range pairs and reports legacy coverage', async () => 
     assert.equal(response.status, 200)
     assert.equal(response.headers.get('X-Usage-Incomplete'), 'false')
     assert.deepEqual(await response.json(), [])
+    store.recordModel(log)
+    store.db.exec(
+      "INSERT INTO model_usage_history SELECT * FROM model_usage; UPDATE model_usage_history SET day='2026-11-03'",
+    )
+    const scoped = await app.request(
+      `/api/usage?${new URLSearchParams({ ...range, bucket: 'hour', timeZone: 'Asia/Taipei' })}`,
+      { headers },
+    )
+    assert.equal(scoped.headers.get('X-Usage-Incomplete'), 'true')
+    assert.equal(scoped.headers.get('X-Usage-Planner-Incomplete'), 'false')
   } finally {
     store.close()
   }
@@ -210,6 +222,50 @@ test('missing cache counters remain unknown and explicit zero remains known in t
     assert.equal(rows[0]!.calls, 2)
     assert.equal(rows[0]!.cacheReadKnownCalls, 1)
     assert.equal(rows[0]!.cacheReadInputTokens, 0)
+  } finally {
+    store.close()
+  }
+})
+
+test('Planner range coverage ignores unrelated role history without claiming missing Planner hours', () => {
+  const store = new Store(':memory:')
+  try {
+    store.recordModel(log)
+    store.db.exec(
+      "INSERT INTO model_usage_history SELECT * FROM model_usage; UPDATE model_usage_history SET day='2026-11-03'",
+    )
+    assert.equal(store.usageIncomplete(range), true)
+    assert.equal(store.usageIncomplete(range, 'planner'), false)
+    store.db.exec("UPDATE model_usage_history SET role='planner'")
+    assert.equal(store.usageIncomplete(range, 'planner'), true)
+  } finally {
+    store.close()
+  }
+})
+
+test('browser timezone buckets preserve local days, fractional offsets and distinct DST hours', () => {
+  const store = new Store(':memory:')
+  try {
+    store.recordModel(log)
+    store.db
+      .prepare('UPDATE model_usage_events SET at=?,day=?')
+      .run('2026-11-03T18:45:00.000Z', '2026-11-03')
+    const selection = {
+      start: '2026-11-03T00:00:00Z',
+      end: '2026-11-05T00:00:00Z',
+      timeZone: 'Asia/Kathmandu',
+    }
+    assert.equal(store.usage({ ...selection, bucket: 'day' })[0]!.day, '2026-11-04')
+    assert.equal(store.usage({ ...selection, bucket: 'hour' })[0]!.day, '2026-11-03T18:15:00.000Z')
+    store.db.exec('INSERT INTO model_usage_history SELECT * FROM model_usage')
+    store.db.exec("UPDATE model_usage_history SET day='2026-11-03'")
+    assert.equal(store.usageIncomplete({ ...selection, bucket: 'day' }), true)
+    assert.equal(
+      store.usage({ ...selection, bucket: 'day' }).reduce((n, r) => n + r.calls, 0),
+      1,
+      'local day chart must not duplicate or fabricate historical UTC days',
+    )
+    assert.throws(() => store.usage({ ...selection, timeZone: 'Not/AZone' }))
   } finally {
     store.close()
   }

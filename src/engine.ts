@@ -1262,6 +1262,7 @@ export class Engine {
         return this.budget.gate()
       },
       this.options.tokenizerRegistry,
+      (entry) => this.store.recordModelCall(entry),
     )
   }
   sceneChanged(scene: Scene) {

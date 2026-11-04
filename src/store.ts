@@ -1,3 +1,11 @@
+import {
+  initializeModelCalls,
+  recordModelCall,
+  modelCalls,
+  type ModelCallObservation,
+  type ModelCallsQuery,
+} from './model-calls.ts'
+import { usageBucket, usageTimeZone } from './usage-time.ts'
 import { RequestMeasurementSummarySchema } from './model-measurement/schema.ts'
 import { SourceEventStore, ensureSourceEventLookupIndex } from './memory/storage/event-revisions.ts'
 import { recordSourceEventMutation } from './memory/recovery/source-events.ts'
@@ -83,7 +91,7 @@ const usageValues = [
   ...Object.keys(usageColumns),
 ]
 const usageAllColumns = [...usageKeys, ...usageValues]
-export type UsageRange = { start: string; end: string; bucket?: 'hour' | 'day' }
+export type UsageRange = { start: string; end: string; bucket?: 'hour' | 'day'; timeZone?: string }
 
 type UsageBreakdown = Record<(typeof usageColumns)[keyof typeof usageColumns], number>
 
@@ -135,6 +143,9 @@ export class Store {
     if (path !== ':memory:')
       this.logDirectory = process.env.HUMANENGINE_LOG_DIR || join(dirname(path), 'logs')
     this.db = new Database(path)
+    this.db.function('usage_bucket', { deterministic: true }, (at, zone, bucket) =>
+      usageBucket(String(at), String(zone), bucket === 'hour' ? 'hour' : 'day'),
+    )
     try {
       if (maintenance) maintenanceGate(this.db, path, maintenance.authority)
       else this.recoveryAuthority = openGate(this.db, path)
@@ -192,6 +203,7 @@ export class Store {
           CREATE INDEX model_usage_events_at ON model_usage_events(at);`)
       }
     })()
+    initializeModelCalls(this.db)
     this.db.transaction(() => ensureSourceEventLookupIndex(this.db))()
   }
   assertRecoveryReady() {
@@ -627,6 +639,14 @@ export class Store {
     }
   }
 
+  recordModelCall(entry: ModelCallObservation) {
+    recordModelCall(this.db, entry)
+  }
+  modelCalls(query: ModelCallsQuery) {
+    this.assertRecoveryReady()
+    return modelCalls(this.db, query)
+  }
+
   recordModel(entry: ModelLog, config: RouterConfig = this.models) {
     // Measurement is independently observable inside flow spans; it is not provider usage or cost.
     const measurement = RequestMeasurementSummarySchema.safeParse(entry.requestMeasurement)
@@ -752,16 +772,24 @@ export class Store {
     this.usageCompactedDay = day
   }
 
-  usageIncomplete(range: UsageRange) {
+  usageIncomplete(range: UsageRange, role?: string) {
     const start = new Date(range.start).toISOString(),
       end = new Date(range.end).toISOString()
     return !!this.db
       .prepare(
-        `SELECT 1 FROM model_usage_history WHERE
+        `SELECT 1 FROM model_usage_history WHERE (@role IS NULL OR role = @role) AND
       day >= substr(@start,1,10) AND day <= substr(@end,1,10) AND day || 'T00:00:00.000Z' < @end AND strftime('%Y-%m-%dT00:00:00.000Z',day,'+1 day') > @start
       AND (@hour = 1 OR day || 'T00:00:00.000Z' < @start OR strftime('%Y-%m-%dT00:00:00.000Z',day,'+1 day') > @end) LIMIT 1`,
       )
-      .get({ start, end, hour: range.bucket === 'hour' ? 1 : 0 })
+      .get({
+        start,
+        end,
+        role: role ?? null,
+        hour:
+          range.bucket === 'hour' || (range.timeZone && usageTimeZone(range.timeZone) !== 'UTC')
+            ? 1
+            : 0,
+      })
   }
   usage(range?: UsageRange) {
     if (
@@ -771,9 +799,13 @@ export class Store {
         Date.parse(range.start) >= Date.parse(range.end))
     )
       throw new Error('Invalid usage range')
+    const zone = range?.timeZone ? usageTimeZone(range.timeZone) : undefined
+    if (range?.timeZone && !zone) throw new Error('Invalid usage timezone')
+    const local = !!zone
+    const omitHistory = range?.bucket === 'hour' || (local && zone !== 'UTC')
     const source = range
-      ? `(SELECT ${range.bucket === 'hour' ? "strftime('%Y-%m-%dT%H:00:00Z',at) AS day," + usageAllColumns.slice(1).join(',') : usageAllColumns.join(',')} FROM model_usage_events WHERE at >= @start AND at < @end
-      UNION ALL SELECT ${usageAllColumns.join(',')} FROM model_usage_history WHERE ${range.bucket === 'hour' ? '0 AND ' : ''}day >= substr(@start,1,10) AND day <= substr(@end,1,10) AND day || 'T00:00:00.000Z' >= @start AND strftime('%Y-%m-%dT00:00:00.000Z',day,'+1 day') <= @end)`
+      ? `(SELECT ${local ? 'usage_bucket(at,@zone,@bucket) AS day,' + usageAllColumns.slice(1).join(',') : range.bucket === 'hour' ? "strftime('%Y-%m-%dT%H:00:00Z',at) AS day," + usageAllColumns.slice(1).join(',') : usageAllColumns.join(',')} FROM model_usage_events WHERE at >= @start AND at < @end
+      UNION ALL SELECT ${usageAllColumns.join(',')} FROM model_usage_history WHERE ${omitHistory ? '0 AND ' : ''}day >= substr(@start,1,10) AND day <= substr(@end,1,10) AND day || 'T00:00:00.000Z' >= @start AND strftime('%Y-%m-%dT00:00:00.000Z',day,'+1 day') <= @end)`
       : 'model_usage'
     return this.db
       .prepare(
@@ -787,7 +819,13 @@ export class Store {
       )
       .all(
         ...(range
-          ? [{ start: new Date(range.start).toISOString(), end: new Date(range.end).toISOString() }]
+          ? [
+              {
+                start: new Date(range.start).toISOString(),
+                end: new Date(range.end).toISOString(),
+                ...(local ? { zone, bucket: range.bucket ?? 'day' } : {}),
+              },
+            ]
           : []),
       ) as Array<
       {

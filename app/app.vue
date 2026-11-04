@@ -28,6 +28,7 @@ const links = computed(() =>
     { label: t('scenes'), icon: 'i-lucide-messages-square', to: '/scenes' },
     { label: t('settings'), icon: 'i-lucide-sliders-horizontal', to: '/settings' },
     { label: t('logs'), icon: 'i-lucide-scroll-text', to: '/logs' },
+    { label: t('mcallsTitle'), icon: 'i-lucide-gauge', to: '/model-calls' },
   ].map((item) => ({ ...item, 'aria-label': item.label })),
 )
 let authChannel: BroadcastChannel | undefined
@@ -191,6 +192,7 @@ onBeforeUnmount(() => {
               : [
                     '/',
                     '/logs',
+                    '/model-calls',
                     '/models',
                     '/scenes',
                     '/memories',

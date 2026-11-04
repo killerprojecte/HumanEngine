@@ -67,6 +67,8 @@ export async function probe(
       }
       return typeof budget === 'function' ? budget() : budget
     },
+    undefined,
+    (entry) => store.recordModelCall(entry),
   )
   const signal = AbortSignal.timeout(providerOperationBudget(provider))
   try {

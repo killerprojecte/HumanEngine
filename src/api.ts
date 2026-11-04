@@ -1,3 +1,5 @@
+import { ModelCallsQuerySchema, ModelCallsPageSchema } from './model-calls.ts'
+import { usageTimeZone } from './usage-time.ts'
 import { installWorkspaceRoutes } from './memory/api/workspace-routes.ts'
 import { installCommitmentRoutes } from './memory/interfaces/commitment-routes.ts'
 import { requestIdFor, requestOperation, sanitizeError } from './diagnostics/errors.ts'
@@ -219,13 +221,30 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
   app.openapi(
     createRoute({
       method: 'get',
+      path: '/api/model-calls',
+      request: { query: ModelCallsQuerySchema },
+      responses: { 200: json(ModelCallsPageSchema), ...errorResponses },
+    }),
+    (c) => c.json(store.modelCalls(c.req.valid('query')), 200),
+  )
+  app.openapi(
+    createRoute({
+      method: 'get',
       path: '/api/usage',
       request: {
         query: z
           .object({
+            timeZone: z
+              .string()
+              .max(100)
+              .refine((value) => !!usageTimeZone(value), 'Invalid IANA timezone')
+              .optional()
+              .describe(
+                'Browser IANA timezone for precise buckets; defaults to UTC. Historical UTC daily aggregates cannot be rebucketed into non-UTC days.',
+              ),
             bucket: z
               .enum(['hour', 'day'])
-              .describe('UTC aggregation bucket; requires start and end. Defaults to day.')
+              .describe('Aggregation bucket; requires start and end. Defaults to day.')
               .optional(),
             start: z.iso
               .datetime({ offset: true })
@@ -238,7 +257,7 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
           })
           .refine(
             (q) =>
-              (!q.start && !q.end && !q.bucket) ||
+              (!q.start && !q.end && !q.bucket && !q.timeZone) ||
               (!!q.start && !!q.end && Date.parse(q.start) < Date.parse(q.end)),
             'Supply an ordered start and end',
           ),
@@ -247,6 +266,10 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
         200: {
           ...json(z.array(UsageSchema)),
           headers: {
+            'X-Usage-Planner-Incomplete': {
+              description: 'Same coverage test limited to Planner records.',
+              schema: { type: 'string', enum: ['true', 'false'] },
+            },
             'X-Usage-Incomplete': {
               description:
                 'True when historical daily records overlap but cannot be precisely included in the requested range or hourly buckets.',
@@ -258,9 +281,13 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       },
     }),
     (c) => {
-      const { start, end, bucket } = c.req.valid('query')
-      const range = start && end ? { start, end, bucket } : undefined
+      const { start, end, bucket, timeZone } = c.req.valid('query')
+      const range = start && end ? { start, end, bucket, timeZone } : undefined
       c.header('X-Usage-Incomplete', range && store.usageIncomplete(range) ? 'true' : 'false')
+      c.header(
+        'X-Usage-Planner-Incomplete',
+        range && store.usageIncomplete(range, 'planner') ? 'true' : 'false',
+      )
       return c.json(store.usage(range), 200)
     },
   )

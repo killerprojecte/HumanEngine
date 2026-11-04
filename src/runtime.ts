@@ -550,6 +550,8 @@ export class Runtime {
           if (context && !this.eligible(context)) throw new Error('memory_read_revoked')
           return (this.defaultBudget ??= new BudgetService(store)).gate()
         },
+        undefined,
+        (entry) => store.recordModelCall(entry),
       ),
     private readonly managedImage?: (
       sceneId: string,

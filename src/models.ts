@@ -1,3 +1,4 @@
+import type { ModelCallObservation } from './model-calls.ts'
 import { expandContextMessages } from './models/prompt-context.ts'
 import { supportsOpenAIPromptBreakpoints } from './models/prompt-cache.ts'
 import {
@@ -492,6 +493,7 @@ export class Router {
     private readonly flowWriter?: FlowWriter,
     private readonly budget?: NativeBudgetGate | (() => NativeBudgetGate | undefined),
     private readonly tokenizerRegistry?: TargetTokenizerRegistry,
+    private readonly callObserver?: (entry: ModelCallObservation) => void,
   ) {
     if (
       config.nativeMaxOutputTokens !== undefined &&
@@ -1147,7 +1149,38 @@ export class Router {
             nextStep: 'call_model_provider',
           },
           signal,
-          task,
+          async () => {
+            const at = new Date().toISOString(),
+              started = performance.now()
+            let value: T | undefined
+            let completed = false
+            try {
+              value = await task()
+              completed = true
+              return value
+            } finally {
+              if (details.modelId && details.role !== 'models') {
+                // The adapter contract returns complete responses, not streamed first-content timing.
+                // Record each retry separately without changing aggregate billing callbacks.
+                const usage = completed ? (object(value).usage as Usage | undefined) : undefined
+                try {
+                  this.callObserver?.({
+                    event: completed ? 'model.completed' : 'model.failed',
+                    modelId: details.modelId,
+                    providerId: provider.id,
+                    role: details.role as ModelRole,
+                    at,
+                    attempt,
+                    durationMs: Math.max(0, performance.now() - started),
+                    usage,
+                    pricing: { apiModelName: details.apiModel ?? 'unknown' },
+                  })
+                } catch {
+                  /* Diagnostics cannot repeat or fail a model operation. */
+                }
+              }
+            }
+          },
           () => ({ reason: 'provider_attempt_succeeded', nextStep: 'model_response_ready' }),
         ),
       {

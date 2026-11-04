@@ -9240,9 +9240,242 @@
         }
       }
     },
+    "/api/model-calls": {
+      "get": {
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "required": false,
+            "name": "beforeId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "planner",
+                "replyer",
+                "learning",
+                "vision",
+                "embedding"
+              ]
+            },
+            "required": false,
+            "name": "role",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "required": false,
+            "name": "modelId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "completed",
+                "failed"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                          },
+                          "at": {
+                            "type": "string"
+                          },
+                          "modelId": {
+                            "type": "string"
+                          },
+                          "providerId": {
+                            "type": "string"
+                          },
+                          "apiModelName": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "completed",
+                              "failed"
+                            ]
+                          },
+                          "attempt": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                          },
+                          "inputTokens": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "outputTokens": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "cacheReadInputTokens": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "cacheWriteInputTokens": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "durationMs": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "firstTokenMs": {
+                            "type": "null"
+                          },
+                          "tokensPerSecond": {
+                            "type": [
+                              "number",
+                              "null"
+                            ],
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "at",
+                          "modelId",
+                          "providerId",
+                          "apiModelName",
+                          "role",
+                          "status",
+                          "attempt",
+                          "inputTokens",
+                          "outputTokens",
+                          "cacheReadInputTokens",
+                          "cacheWriteInputTokens",
+                          "durationMs",
+                          "firstTokenMs",
+                          "tokensPerSecond"
+                        ]
+                      }
+                    },
+                    "nextCursor": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "exclusiveMinimum": 0
+                    },
+                    "retentionDays": {
+                      "type": "number"
+                    },
+                    "maxRecords": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "nextCursor",
+                    "retentionDays",
+                    "maxRecords"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/usage": {
       "get": {
         "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Browser IANA timezone for precise buckets; defaults to UTC. Historical UTC daily aggregates cannot be rebucketed into non-UTC days."
+            },
+            "required": false,
+            "description": "Browser IANA timezone for precise buckets; defaults to UTC. Historical UTC daily aggregates cannot be rebucketed into non-UTC days.",
+            "name": "timeZone",
+            "in": "query"
+          },
           {
             "schema": {
               "type": "string",
@@ -9250,10 +9483,10 @@
                 "hour",
                 "day"
               ],
-              "description": "UTC aggregation bucket; requires start and end. Defaults to day."
+              "description": "Aggregation bucket; requires start and end. Defaults to day."
             },
             "required": false,
-            "description": "UTC aggregation bucket; requires start and end. Defaults to day.",
+            "description": "Aggregation bucket; requires start and end. Defaults to day.",
             "name": "bucket",
             "in": "query"
           },
@@ -9284,6 +9517,16 @@
           "200": {
             "description": "Success",
             "headers": {
+              "X-Usage-Planner-Incomplete": {
+                "description": "Same coverage test limited to Planner records.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                }
+              },
               "X-Usage-Incomplete": {
                 "description": "True when historical daily records overlap but cannot be precisely included in the requested range or hourly buckets.",
                 "schema": {

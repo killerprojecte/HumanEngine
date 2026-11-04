@@ -605,6 +605,96 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/model-calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    beforeId?: number;
+                    role?: "planner" | "replyer" | "learning" | "vision" | "embedding";
+                    modelId?: string;
+                    status?: "completed" | "failed";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                id: number;
+                                at: string;
+                                modelId: string;
+                                providerId: string;
+                                apiModelName: string;
+                                role: string;
+                                /** @enum {string} */
+                                status: "completed" | "failed";
+                                attempt: number;
+                                inputTokens: number | null;
+                                outputTokens: number | null;
+                                cacheReadInputTokens: number | null;
+                                cacheWriteInputTokens: number | null;
+                                durationMs: number;
+                                firstTokenMs: null;
+                                tokensPerSecond: number | null;
+                            }[];
+                            nextCursor: number | null;
+                            retentionDays: number;
+                            maxRecords: number;
+                        };
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Service unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/usage": {
         parameters: {
             query?: never;
@@ -615,7 +705,9 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description UTC aggregation bucket; requires start and end. Defaults to day. */
+                    /** @description Browser IANA timezone for precise buckets; defaults to UTC. Historical UTC daily aggregates cannot be rebucketed into non-UTC days. */
+                    timeZone?: string;
+                    /** @description Aggregation bucket; requires start and end. Defaults to day. */
                     bucket?: "hour" | "day";
                     /** @description Inclusive accounting timestamp. Must be supplied with end. */
                     start?: string;
@@ -631,6 +723,8 @@ export interface paths {
                 /** @description Success */
                 200: {
                     headers: {
+                        /** @description Same coverage test limited to Planner records. */
+                        "X-Usage-Planner-Incomplete"?: "true" | "false";
                         /** @description True when historical daily records overlap but cannot be precisely included in the requested range or hourly buckets. */
                         "X-Usage-Incomplete"?: "true" | "false";
                         [name: string]: unknown;

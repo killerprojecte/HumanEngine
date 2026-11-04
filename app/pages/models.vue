@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { compactNumber, usageBars, usageLines, usageKeys } from '../utils/usage-chart'
+import { formatUsageTime, formatUsageBucket } from '../utils/usage-time'
 import { usageRange, type UsagePreset } from '../utils/usage-range'
 import { createClientId } from '../utils/create-id'
 import type { components, paths } from '~/types/api'
@@ -34,7 +35,12 @@ const customStart = ref(''),
   usageError = ref('')
 const usageIncomplete = ref(false),
   timelineIncomplete = ref(false)
+const plannerUsageIncomplete = ref(false),
+  plannerTimelineIncomplete = ref(false)
 const usageTimezone = ref('')
+const localTime = (value: string) => formatUsageTime(value, locale.value, usageTimezone.value)
+const localBucket = (value: string, compact = false) =>
+  formatUsageBucket(value, locale.value, usageTimezone.value, compact)
 const selectedRange = ref<{ start: string; end: string }>()
 const timeline = ref<components['schemas']['Usage'][]>([])
 const rangeOptions = computed(() =>
@@ -182,7 +188,7 @@ const timelineTooltip = (point: (typeof timelineRows.value)[number]) => {
       : known < point.calls
         ? t('usagePartialCounter', { value, known, total: point.calls })
         : String(value)
-  return `${point.at} UTC · ${t('usagePlannerCacheRate')}: ${plannerCacheRate(point.planner, timelineIncomplete.value)} · ${plannerCoverage(point.planner)} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
+  return `${localBucket(point.at)} · ${t('usagePlannerCacheRate')}: ${plannerCacheRate(point.planner, plannerTimelineIncomplete.value)} · ${plannerCoverage(point.planner)} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
 }
 const cacheRate = (point: {
   input: number
@@ -420,6 +426,7 @@ async function load() {
 }
 let usageRequest = 0
 async function loadUsage() {
+  usageTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone
   const range = usageRange(usagePreset.value, new Date(), customStart.value, customEnd.value)
   if (!range) {
     usageError.value = t('usageInvalidRange')
@@ -430,6 +437,8 @@ async function loadUsage() {
   usageError.value = ''
   usageIncomplete.value = false
   timelineIncomplete.value = false
+  plannerUsageIncomplete.value = false
+  plannerTimelineIncomplete.value = false
   usage.value = []
   timeline.value = []
   selectedRange.value = range
@@ -437,7 +446,9 @@ async function loadUsage() {
   try {
     const [result, points] = await Promise.all([
       client.GET('/api/usage', { params: { query: range } }),
-      client.GET('/api/usage', { params: { query: { ...range, bucket } } }),
+      client.GET('/api/usage', {
+        params: { query: { ...range, bucket, timeZone: usageTimezone.value } },
+      }),
     ])
     if (request !== usageRequest) return
     if (!result.data || !points.data) {
@@ -448,6 +459,12 @@ async function loadUsage() {
     timeline.value = points.data
     usageIncomplete.value = result.response.headers.get('X-Usage-Incomplete') === 'true'
     timelineIncomplete.value = points.response.headers.get('X-Usage-Incomplete') === 'true'
+    plannerUsageIncomplete.value =
+      (result.response.headers.get('X-Usage-Planner-Incomplete') ??
+        String(usageIncomplete.value)) === 'true'
+    plannerTimelineIncomplete.value =
+      (points.response.headers.get('X-Usage-Planner-Incomplete') ??
+        String(timelineIncomplete.value)) === 'true'
   } catch {
     if (request === usageRequest) usageError.value = t('networkError')
   } finally {
@@ -1090,7 +1107,8 @@ watch(section, () => {
             <summary class="cursor-pointer">{{ t('usageAccountingDetails') }}</summary>
             <p class="mt-2">{{ t('usageTimezone', { timezone: usageTimezone }) }}</p>
             <p v-if="selectedRange" class="text-xs text-muted">
-              {{ selectedRange.start }} ≤ {{ t('usageTime') }} &lt; {{ selectedRange.end }}
+              {{ localTime(selectedRange.start) }} ≤ {{ t('usageTime') }} &lt;
+              {{ localTime(selectedRange.end) }}
             </p>
             <p class="mt-2">{{ t('usageEstimateHelp') }}</p>
           </details>
@@ -1147,7 +1165,7 @@ watch(section, () => {
                 <UIcon name="i-lucide-zap" />{{ t('usagePlannerCacheRate') }}
               </div>
               <strong class="usage-stat-value text-emerald-500">{{
-                plannerCacheRate(plannerTotals, usageIncomplete)
+                plannerCacheRate(plannerTotals, plannerUsageIncomplete)
               }}</strong>
               <p class="usage-stat-note">{{ t('usagePlannerWeightedRate') }}</p>
               <p class="usage-stat-note">{{ plannerCoverage(plannerTotals) }}</p>
@@ -1193,14 +1211,14 @@ watch(section, () => {
                     <td :title="group.readKnown ? String(group.read) : t('usageCounterUnknown')">
                       {{ group.readKnown ? compactNumber(group.read) : t('usageCounterUnknown') }}
                     </td>
-                    <td>{{ plannerCacheRate(group, usageIncomplete) }}</td>
+                    <td>{{ plannerCacheRate(group, plannerUsageIncomplete) }}</td>
                     <td>{{ plannerCoverage(group) }}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <p v-else class="px-4 pb-4 text-sm text-muted">
-              {{ plannerCacheRate(plannerTotals, usageIncomplete) }}
+              {{ plannerCacheRate(plannerTotals, plannerUsageIncomplete) }}
             </p>
           </details>
           <p class="text-xs text-muted">{{ t('usageWholeRange') }}</p>
@@ -1209,7 +1227,11 @@ watch(section, () => {
               <div>
                 <h3 class="font-semibold">{{ t('usageTimeline') }}</h3>
                 <p class="text-xs text-muted mt-1">
-                  {{ t(chartMode === 'line' ? 'usageLineHelp' : 'usageStackHelp') }}
+                  {{
+                    t(chartMode === 'line' ? 'usageLineHelp' : 'usageStackHelp', {
+                      timezone: usageTimezone,
+                    })
+                  }}
                 </p>
               </div>
               <div class="flex items-center gap-4 flex-wrap">
@@ -1328,9 +1350,7 @@ watch(section, () => {
                       </div>
                       <span
                         class="h-7 pt-2 text-[10px] text-muted tabular-nums whitespace-nowrap"
-                        >{{
-                          point.at.length > 10 ? point.at.slice(11, 16) : point.at.slice(5, 10)
-                        }}</span
+                        >{{ localBucket(point.at, true) }}</span
                       >
                     </div>
                   </div>
@@ -1354,7 +1374,7 @@ watch(section, () => {
               <table class="model-table w-full text-sm text-left">
                 <thead>
                   <tr>
-                    <th>{{ t('usageTime') }} (UTC)</th>
+                    <th>{{ t('usageTime') }} ({{ usageTimezone }})</th>
                     <th>{{ t('usageInput') }}</th>
                     <th>{{ t('usageOutput') }}</th>
                     <th>{{ t('usageCacheRead') }}</th>
@@ -1364,7 +1384,7 @@ watch(section, () => {
                 </thead>
                 <tbody>
                   <tr v-for="point in timelineRows" :key="point.at">
-                    <td>{{ point.at }}</td>
+                    <td>{{ localBucket(point.at) }}</td>
                     <td :title="point.known ? t('usageCounterUnknown') : String(point.input)">
                       {{ point.known ? t('usageCounterUnknown') : compactNumber(point.input) }}
                     </td>
@@ -1380,7 +1400,7 @@ watch(section, () => {
                       ({{ point.writeKnown }}/{{ point.calls }})
                     </td>
                     <td>
-                      {{ plannerCacheRate(point.planner, timelineIncomplete) }}
+                      {{ plannerCacheRate(point.planner, plannerTimelineIncomplete) }}
                       <p class="text-xs text-muted">{{ plannerCoverage(point.planner) }}</p>
                     </td>
                   </tr>
@@ -1410,7 +1430,7 @@ watch(section, () => {
                   JSON.stringify([row.day, row.modelId, row.providerId, row.apiModelName, row.role])
                 "
               >
-                <td class="whitespace-nowrap">{{ row.day }}</td>
+                <td class="whitespace-nowrap">{{ localTime(row.day) }}</td>
                 <td class="min-w-52">
                   <div>{{ modelName(row.modelId) }}</div>
                   <p class="text-xs text-muted mt-1">

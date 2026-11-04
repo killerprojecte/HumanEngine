@@ -170,6 +170,7 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
   const { state, close } = page(async () => reply(2))
   try {
     state.section.value = 'usage'
+    state.chartMode.value = 'bar'
     const unknown = {
       ...reply(2).data[0],
       inputTokens: 999,
@@ -187,22 +188,61 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
       return renderToString(app)
     }
     let html = await render()
-    assert.doesNotMatch(html, /bg-(blue|violet|emerald|amber)-500/)
+    assert.doesNotMatch(html, /data-segment=/)
     assert.match(html, /title="[^"]*usageInput: usageCounterUnknown/)
     assert.equal(
       state.timelineMax.value,
       1,
       'unknown token counts must not distort the chart scale',
     )
-    assert.equal((html.match(/text-xs text-muted w-2/g) ?? []).length, 4)
+    assert.equal((html.match(/data-unknown="true"/g) ?? []).length, 1)
     state.timeline.value = [
       { ...unknown, unknownUsageCalls: 0, cacheReadKnownCalls: 1, cacheReadInputTokens: 50 },
     ]
     html = await render()
-    assert.match(html, /bg-blue-500/)
-    assert.match(html, /bg-emerald-500/)
-    assert.doesNotMatch(html, /bg-amber-500/)
+    assert.match(html, /data-segment="input"/)
+    assert.doesNotMatch(html, /data-segment="read"/)
+    assert.doesNotMatch(html, /data-segment="write"/)
     assert.match(html, /title="[^"]*usageCacheRead: usagePartialCounter/)
+    state.timeline.value = [
+      {
+        ...reply(2).data[0],
+        inputTokens: 10000,
+        outputTokens: 2000,
+        cacheReadInputTokens: 6000,
+        cacheWriteInputTokens: 1000,
+      },
+    ]
+    html = await render()
+    assert.equal(state.timelineMax.value, 10000)
+    assert.equal((html.match(/data-segment=/g) ?? []).length, 4)
+    assert.match(html, /data-segment="input" style="height:100%;"/)
+    assert.match(html, /role="img"[^>]*aria-label="[^"]*usageInput: 10000/)
+    assert.match(html, /title="10000">10K/)
+    state.chartMode.value = 'line'
+    html = await render()
+    assert.equal((html.match(/data-series=/g) ?? []).length, 4)
+    assert.doesNotMatch(html, /data-segment=/)
+    assert.match(html, /polyline/)
+    state.timeline.value = Array.from({ length: 49 }, (_, i) => ({
+      ...reply(2).data[0],
+      day: new Date(Date.UTC(2026, 10, 1, i)).toISOString(),
+    }))
+    html = await render()
+    assert.match(html, /min-width:1764px/)
+    state.timeline.value = [
+      {
+        ...reply(2).data[0],
+        inputTokens: 10000,
+        outputTokens: 2000,
+        cacheReadInputTokens: 6000,
+        cacheWriteInputTokens: 1000,
+      },
+    ]
+
+    state.chartMode.value = 'bar'
+    html = await render()
+    assert.equal((html.match(/data-segment=/g) ?? []).length, 4)
   } finally {
     close()
   }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { compactNumber, usageBars, usageLines, usageKeys } from '../utils/usage-chart'
 import { usageRange, type UsagePreset } from '../utils/usage-range'
 import { createClientId } from '../utils/create-id'
 import type { components, paths } from '~/types/api'
@@ -86,6 +87,7 @@ const usageTotals = computed(() =>
     (total, row) => ({
       calls: total.calls + row.calls,
       input: total.input + row.inputTokens,
+      output: total.output + row.outputTokens,
       read: total.read + row.cacheReadInputTokens,
       known: total.known + row.unknownUsageCalls,
       readKnown: total.readKnown + row.cacheReadKnownCalls,
@@ -93,22 +95,43 @@ const usageTotals = computed(() =>
       priced: total.priced + row.pricedCalls,
       partial: total.partial + row.partialPricedCalls,
     }),
-    { calls: 0, input: 0, read: 0, known: 0, readKnown: 0, usd: 0, priced: 0, partial: 0 },
+    {
+      calls: 0,
+      input: 0,
+      output: 0,
+      read: 0,
+      known: 0,
+      readKnown: 0,
+      usd: 0,
+      priced: 0,
+      partial: 0,
+    },
   ),
 )
+const chartMode = ref<'line' | 'bar'>('line')
 const timelineMax = computed(() =>
-  Math.max(
-    1,
-    ...timelineRows.value.map((p) =>
-      Math.max(
-        p.known ? 0 : p.input,
-        p.known ? 0 : p.output,
-        p.readKnown ? p.read : 0,
-        p.writeKnown ? p.write : 0,
-      ),
-    ),
-  ),
+  Math.max(1, ...timelineRows.value.flatMap((p) => usageBars(p).map((s) => s.value))),
 )
+const chartLines = computed(() =>
+  usageKeys.map((key) => ({
+    key,
+    segments: usageLines(timelineRows.value, key, timelineMax.value),
+  })),
+)
+const lineColors = { input: '#3b82f6', read: '#10b981', write: '#f59e0b', output: '#8b5cf6' }
+const chartTicks = computed(() =>
+  [1, 0.75, 0.5, 0.25, 0].map((ratio) => ({
+    ratio,
+    label: compactNumber(timelineMax.value * ratio),
+  })),
+)
+const stackColors = {
+  input: 'bg-blue-500',
+  read: 'bg-emerald-500',
+  write: 'bg-amber-400',
+  output: 'bg-violet-500',
+}
+const stackKeys = usageKeys
 const timelineTooltip = (point: (typeof timelineRows.value)[number]) => {
   const input = point.known ? t('usageCounterUnknown') : String(point.input)
   const output = point.known ? t('usageCounterUnknown') : String(point.output)
@@ -118,7 +141,7 @@ const timelineTooltip = (point: (typeof timelineRows.value)[number]) => {
       : known < point.calls
         ? t('usagePartialCounter', { value, known, total: point.calls })
         : String(value)
-  return `${point.at} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
+  return `${point.at} UTC · ${t('usageCacheRate')}: ${cacheRate(point)} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
 }
 const cacheRate = (point: {
   input: number
@@ -981,130 +1004,284 @@ watch(section, () => {
         </p>
       </template>
       <template v-else>
-        <div class="p-4 space-y-3">
-          <div class="flex flex-wrap items-end gap-3">
-            <UFormField :label="t('usageTimeRange')"
-              ><USelect v-model="usagePreset" :items="rangeOptions" class="min-w-40"
-            /></UFormField>
-            <template v-if="usagePreset === 'custom'">
-              <UFormField :label="t('usageStart')"
-                ><UInput v-model="customStart" type="datetime-local"
+        <div class="p-4 sm:p-6 space-y-6">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold tracking-tight">{{ t('usageOverview') }}</h2>
+              <p class="text-sm text-muted mt-1">{{ t('usageOverviewHelp') }}</p>
+            </div>
+            <div class="flex flex-wrap items-end gap-3">
+              <UFormField :label="t('usageTimeRange')"
+                ><USelect v-model="usagePreset" :items="rangeOptions" class="min-w-40"
               /></UFormField>
-              <UFormField :label="t('usageEnd')"
-                ><UInput v-model="customEnd" type="datetime-local"
-              /></UFormField>
-              <UButton :loading="usageBusy" @click="loadUsage">{{ t('usageApply') }}</UButton>
-            </template>
+              <template v-if="usagePreset === 'custom'">
+                <UFormField :label="t('usageStart')"
+                  ><UInput v-model="customStart" type="datetime-local"
+                /></UFormField>
+                <UFormField :label="t('usageEnd')"
+                  ><UInput v-model="customEnd" type="datetime-local"
+                /></UFormField>
+                <UButton :loading="usageBusy" @click="loadUsage">{{ t('usageApply') }}</UButton>
+              </template>
+            </div>
           </div>
-          <p class="text-sm text-muted">{{ t('usageTimezone', { timezone: usageTimezone }) }}</p>
-          <p v-if="selectedRange" class="text-xs text-muted">
-            {{ selectedRange.start }} ≤ {{ t('usageTime') }} &lt; {{ selectedRange.end }}
-          </p>
+          <details class="text-xs text-muted rounded-lg border border-default px-3 py-2">
+            <summary class="cursor-pointer">{{ t('usageAccountingDetails') }}</summary>
+            <p class="mt-2">{{ t('usageTimezone', { timezone: usageTimezone }) }}</p>
+            <p v-if="selectedRange" class="text-xs text-muted">
+              {{ selectedRange.start }} ≤ {{ t('usageTime') }} &lt; {{ selectedRange.end }}
+            </p>
+            <p class="mt-2">{{ t('usageEstimateHelp') }}</p>
+          </details>
           <p v-if="usageError" role="alert" class="text-error">{{ usageError }}</p>
           <p v-if="usageIncomplete || timelineIncomplete" role="status" class="text-warning">
             {{ t('usageIncompleteRange') }}
           </p>
-          <p class="text-sm text-muted">{{ t('usageEstimateHelp') }}</p>
-          <div
-            v-if="!usageBusy && !usageError"
-            class="flex flex-wrap gap-6 rounded-lg bg-elevated p-3"
-          >
-            <div>
-              <div class="text-sm text-muted">{{ t('usageCost') }}</div>
-              <strong>{{
+
+          <div v-if="!usageBusy && !usageError" class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="usage-stat">
+              <div class="usage-stat-label">
+                <UIcon name="i-lucide-wallet" />{{ t('usageCost') }}
+              </div>
+              <strong class="usage-stat-value">{{
                 usageTotals.priced || usageTotals.partial
                   ? usd(usageTotals.usd)
                   : t('usageUnknownCost')
               }}</strong>
-              <p class="text-xs text-muted">
-                {{ t('usagePriced', { priced: usageTotals.priced, total: usageTotals.calls }) }}
+              <p class="usage-stat-note">
+                {{
+                  t('usagePriced', {
+                    priced: compactNumber(usageTotals.priced),
+                    total: compactNumber(usageTotals.calls),
+                  })
+                }}
               </p>
             </div>
-            <div>
-              <div class="text-sm text-muted">{{ t('usageCalls') }}</div>
-              <strong>{{ usageTotals.calls }}</strong>
+            <div class="usage-stat">
+              <div class="usage-stat-label">
+                <UIcon name="i-lucide-layers" />{{ t('usageTotalTokens') }}
+              </div>
+              <strong
+                class="usage-stat-value"
+                :title="
+                  usageTotals.known
+                    ? t('usageCounterUnknown')
+                    : String(usageTotals.input + usageTotals.output)
+                "
+                >{{
+                  usageTotals.known
+                    ? t('usageCounterUnknown')
+                    : compactNumber(usageTotals.input + usageTotals.output)
+                }}</strong
+              >
+              <p class="usage-stat-note">
+                {{ t('usageInput') }}
+                {{ usageTotals.known ? '—' : compactNumber(usageTotals.input) }} ·
+                {{ t('usageOutput') }}
+                {{ usageTotals.known ? '—' : compactNumber(usageTotals.output) }}
+              </p>
             </div>
-            <div>
-              <div class="text-sm text-muted">{{ t('usageCacheRate') }}</div>
-              <strong>{{ cacheRate(usageTotals) }}</strong>
+            <div class="usage-stat">
+              <div class="usage-stat-label">
+                <UIcon name="i-lucide-zap" />{{ t('usageCacheRate') }}
+              </div>
+              <strong class="usage-stat-value text-emerald-500">{{
+                cacheRate(usageTotals)
+              }}</strong>
+              <p class="usage-stat-note">{{ t('usageWeightedRate') }}</p>
+            </div>
+            <div class="usage-stat">
+              <div class="usage-stat-label">
+                <UIcon name="i-lucide-activity" />{{ t('usageCalls') }}
+              </div>
+              <strong class="usage-stat-value" :title="String(usageTotals.calls)">{{
+                compactNumber(usageTotals.calls)
+              }}</strong>
+              <p class="usage-stat-note">{{ t('usageSelectedRange') }}</p>
             </div>
           </div>
           <p class="text-xs text-muted">{{ t('usageWholeRange') }}</p>
-          <h3 class="font-semibold">{{ t('usageTimeline') }}</h3>
-          <p class="text-xs text-muted">{{ t('usageTimelineHelp') }}</p>
-          <div v-if="timelineRows.length" class="overflow-x-auto">
-            <div class="flex items-end gap-2 h-36 min-w-max" aria-hidden="true">
-              <div
-                v-for="point in timelineRows"
-                :key="point.at"
-                class="flex flex-col items-center justify-end h-full w-12"
-                :title="timelineTooltip(point)"
-              >
-                <div class="flex items-end gap-0.5 h-28">
-                  <div
-                    v-if="!point.known"
-                    class="bg-blue-500 w-2"
-                    :style="{ height: `${(point.input / timelineMax) * 100}%` }"
-                  />
-                  <span v-else class="text-xs text-muted w-2">?</span>
-                  <div
-                    v-if="!point.known"
-                    class="bg-violet-500 w-2"
-                    :style="{ height: `${(point.output / timelineMax) * 100}%` }"
-                  />
-                  <span v-else class="text-xs text-muted w-2">?</span>
-                  <div
-                    v-if="point.readKnown"
-                    class="bg-emerald-500 w-2"
-                    :style="{ height: `${(point.read / timelineMax) * 100}%` }"
-                  />
-                  <span v-else class="text-xs text-muted w-2">?</span>
-                  <div
-                    v-if="point.writeKnown"
-                    class="bg-amber-500 w-2"
-                    :style="{ height: `${(point.write / timelineMax) * 100}%` }"
-                  />
-                  <span v-else class="text-xs text-muted w-2">?</span>
-                </div>
-                <span class="text-[10px] text-muted text-center mt-1"
-                  >{{ point.at.slice(5, 10) }}<br v-if="point.at.length > 10" />{{
-                    point.at.slice(11, 16)
-                  }}</span
+          <section class="rounded-xl border border-default bg-default p-4 sm:p-5">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+              <div>
+                <h3 class="font-semibold">{{ t('usageTimeline') }}</h3>
+                <p class="text-xs text-muted mt-1">
+                  {{ t(chartMode === 'line' ? 'usageLineHelp' : 'usageStackHelp') }}
+                </p>
+              </div>
+              <div class="flex items-center gap-4 flex-wrap">
+                <div
+                  class="inline-flex rounded-lg border border-default p-1 gap-1"
+                  role="group"
+                  :aria-label="t('usageChartMode')"
                 >
+                  <UButton
+                    size="xs"
+                    :variant="chartMode === 'line' ? 'soft' : 'ghost'"
+                    :aria-pressed="chartMode === 'line'"
+                    icon="i-lucide-chart-line"
+                    @click="chartMode = 'line'"
+                    >{{ t('usageLineMode') }}</UButton
+                  ><UButton
+                    size="xs"
+                    :variant="chartMode === 'bar' ? 'soft' : 'ghost'"
+                    :aria-pressed="chartMode === 'bar'"
+                    icon="i-lucide-chart-column"
+                    @click="chartMode = 'bar'"
+                    >{{ t('usageBarMode') }}</UButton
+                  >
+                </div>
+                <div class="flex flex-wrap gap-4 text-xs text-muted">
+                  <span v-for="key in stackKeys" :key="key" class="inline-flex items-center gap-1.5"
+                    ><span class="size-2.5 rounded-sm" :class="stackColors[key]" />{{
+                      t(`usageStack_${key}`)
+                    }}</span
+                  >
+                </div>
               </div>
             </div>
-            <p class="text-xs my-2">{{ t('usageChartLegend') }}</p>
-            <table class="model-table w-full text-sm text-left">
-              <thead>
-                <tr>
-                  <th>{{ t('usageTime') }} (UTC)</th>
-                  <th>{{ t('usageInput') }}</th>
-                  <th>{{ t('usageOutput') }}</th>
-                  <th>{{ t('usageCacheRead') }}</th>
-                  <th>{{ t('usageCacheWrite') }}</th>
-                  <th>{{ t('usageCacheRate') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="point in timelineRows" :key="point.at">
-                  <td>{{ point.at }}</td>
-                  <td>{{ point.known ? t('usageCounterUnknown') : point.input }}</td>
-                  <td>{{ point.known ? t('usageCounterUnknown') : point.output }}</td>
-                  <td>
-                    {{ point.readKnown ? point.read : t('usageCounterUnknown') }} ({{
-                      point.readKnown
-                    }}/{{ point.calls }})
-                  </td>
-                  <td>
-                    {{ point.writeKnown ? point.write : t('usageCounterUnknown') }} ({{
-                      point.writeKnown
-                    }}/{{ point.calls }})
-                  </td>
-                  <td>{{ cacheRate(point) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            <div v-if="timelineRows.length" class="relative pl-12">
+              <div
+                class="absolute left-0 top-0 bottom-8 w-10 flex flex-col justify-between text-[10px] text-muted tabular-nums text-right pr-2"
+                aria-hidden="true"
+              >
+                <span v-for="tick in chartTicks" :key="tick.ratio">{{ tick.label }}</span>
+              </div>
+              <div class="overflow-x-auto pb-1">
+                <div
+                  class="relative h-56"
+                  :style="{ minWidth: `${Math.max(560, timelineRows.length * 36)}px` }"
+                >
+                  <div
+                    class="absolute inset-x-0 top-0 bottom-7 flex flex-col justify-between pointer-events-none"
+                    aria-hidden="true"
+                  >
+                    <div
+                      v-for="tick in chartTicks"
+                      :key="tick.ratio"
+                      class="border-t border-dashed border-default w-full"
+                    />
+                  </div>
+                  <svg
+                    v-if="chartMode === 'line'"
+                    class="absolute inset-x-0 top-0 w-full h-[calc(100%-28px)] overflow-visible"
+                    viewBox="0 0 1000 200"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    <g
+                      v-for="series in chartLines"
+                      :key="series.key"
+                      :data-series="series.key"
+                      :stroke="lineColors[series.key]"
+                      :fill="lineColors[series.key]"
+                    >
+                      <g v-for="(segment, index) in series.segments" :key="index">
+                        <polyline
+                          :points="segment.map((p) => `${p.x},${p.y}`).join(' ')"
+                          fill="none"
+                          stroke-width="2.5"
+                          vector-effect="non-scaling-stroke"
+                        />
+                        <circle
+                          v-for="(point, i) in segment"
+                          :key="i"
+                          :cx="point.x"
+                          :cy="point.y"
+                          r="2.5"
+                          stroke="none"
+                        />
+                      </g>
+                    </g>
+                  </svg>
+                  <div class="relative flex h-full items-end">
+                    <div
+                      v-for="point in timelineRows"
+                      :key="point.at"
+                      class="group flex flex-1 min-w-5 h-full flex-col items-center justify-end"
+                    >
+                      <div
+                        class="relative flex flex-col justify-end w-full max-w-8 h-[calc(100%-28px)] rounded-t overflow-hidden focus-visible:ring-2 focus-visible:ring-primary outline-none"
+                        tabindex="0"
+                        role="img"
+                        :aria-label="timelineTooltip(point)"
+                        :title="timelineTooltip(point)"
+                      >
+                        <template v-if="chartMode === 'bar'"
+                          ><div
+                            v-for="segment in usageBars(point)"
+                            :key="segment.key"
+                            :class="stackColors[segment.key]"
+                            class="absolute bottom-0 w-full opacity-90"
+                            :data-segment="segment.key"
+                            :style="{ height: `${(segment.value / timelineMax) * 100}%` }"
+                        /></template>
+                        <span
+                          v-if="!usageBars(point).length"
+                          class="text-muted text-center"
+                          data-unknown="true"
+                          >?</span
+                        >
+                      </div>
+                      <span
+                        class="h-7 pt-2 text-[10px] text-muted tabular-nums whitespace-nowrap"
+                        >{{
+                          point.at.length > 10 ? point.at.slice(11, 16) : point.at.slice(5, 10)
+                        }}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p v-else class="py-12 text-center text-sm text-muted">{{ t('usageNoData') }}</p>
+            <p class="text-[11px] text-muted mt-3">{{ t('usageTimelineHelp') }}</p>
+          </section>
+          <details
+            v-if="timelineRows.length"
+            class="rounded-xl border border-default overflow-hidden"
+          >
+            <summary class="px-4 py-3 text-sm font-medium cursor-pointer">
+              {{ t('usageTimeDetails') }}
+              <span class="text-muted font-normal ml-2"
+                >{{ timelineRows.length }} {{ t('usageBuckets') }}</span
+              >
+            </summary>
+            <div class="overflow-x-auto">
+              <table class="model-table w-full text-sm text-left">
+                <thead>
+                  <tr>
+                    <th>{{ t('usageTime') }} (UTC)</th>
+                    <th>{{ t('usageInput') }}</th>
+                    <th>{{ t('usageOutput') }}</th>
+                    <th>{{ t('usageCacheRead') }}</th>
+                    <th>{{ t('usageCacheWrite') }}</th>
+                    <th>{{ t('usageCacheRate') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="point in timelineRows" :key="point.at">
+                    <td>{{ point.at }}</td>
+                    <td :title="point.known ? t('usageCounterUnknown') : String(point.input)">
+                      {{ point.known ? t('usageCounterUnknown') : compactNumber(point.input) }}
+                    </td>
+                    <td :title="point.known ? t('usageCounterUnknown') : String(point.output)">
+                      {{ point.known ? t('usageCounterUnknown') : compactNumber(point.output) }}
+                    </td>
+                    <td :title="timelineTooltip(point)" :aria-label="timelineTooltip(point)">
+                      {{ point.readKnown ? compactNumber(point.read) : t('usageCounterUnknown') }}
+                      ({{ point.readKnown }}/{{ point.calls }})
+                    </td>
+                    <td :title="timelineTooltip(point)" :aria-label="timelineTooltip(point)">
+                      {{ point.writeKnown ? compactNumber(point.write) : t('usageCounterUnknown') }}
+                      ({{ point.writeKnown }}/{{ point.calls }})
+                    </td>
+                    <td>{{ cacheRate(point) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
         </div>
         <div class="overflow-x-auto">
           <table class="model-table w-full text-left text-sm">
@@ -1141,9 +1318,13 @@ watch(section, () => {
                       : row.role
                   }}
                 </td>
-                <td>{{ row.calls }}</td>
-                <td class="whitespace-nowrap">
-                  {{ row.inputTokens }} / {{ row.outputTokens }}
+                <td :title="String(row.calls)">{{ compactNumber(row.calls) }}</td>
+                <td
+                  class="whitespace-nowrap"
+                  :title="`${row.inputTokens} / ${row.outputTokens}`"
+                  :aria-label="`${t('usageInput')}: ${row.inputTokens}; ${t('usageOutput')}: ${row.outputTokens}`"
+                >
+                  {{ compactNumber(row.inputTokens) }} / {{ compactNumber(row.outputTokens) }}
                   <p v-if="row.unknownUsageCalls" class="text-xs text-warning">
                     {{ t('usageUnknownCalls', { count: row.unknownUsageCalls, total: row.calls }) }}
                   </p>
@@ -1154,25 +1335,37 @@ watch(section, () => {
                       row.cacheKnownCalls || row.cacheReadKnownCalls || row.cacheWriteKnownCalls
                     "
                   >
-                    <div v-if="row.cacheKnownCalls">
-                      {{ t('usageOrdinary') }}: {{ row.ordinaryInputTokens }}
+                    <div v-if="row.cacheKnownCalls" :title="String(row.ordinaryInputTokens)">
+                      {{ t('usageOrdinary') }}: {{ compactNumber(row.ordinaryInputTokens) }}
                     </div>
-                    <div>
+                    <div
+                      :title="
+                        row.cacheReadKnownCalls
+                          ? String(row.cacheReadInputTokens)
+                          : t('usageCounterUnknown')
+                      "
+                    >
                       {{ t('usageCacheRead') }}:
                       {{
                         row.cacheReadKnownCalls
-                          ? row.cacheReadInputTokens
+                          ? compactNumber(row.cacheReadInputTokens)
                           : t('usageCounterUnknown')
                       }}
                       <span class="text-xs text-muted"
                         >({{ row.cacheReadKnownCalls }}/{{ row.calls }})</span
                       >
                     </div>
-                    <div>
+                    <div
+                      :title="
+                        row.cacheWriteKnownCalls
+                          ? String(row.cacheWriteInputTokens)
+                          : t('usageCounterUnknown')
+                      "
+                    >
                       {{ t('usageCacheWrite') }}:
                       {{
                         row.cacheWriteKnownCalls
-                          ? row.cacheWriteInputTokens
+                          ? compactNumber(row.cacheWriteInputTokens)
                           : t('usageCounterUnknown')
                       }}
                       <span class="text-xs text-muted"
@@ -1734,6 +1927,34 @@ watch(section, () => {
   </div>
 </template>
 <style scoped>
+.usage-stat {
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  padding: 20px;
+  background: var(--ui-bg);
+}
+.usage-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+.usage-stat-value {
+  display: block;
+  margin-top: 12px;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.usage-stat-note {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--ui-text-muted);
+}
+
 .model-table th {
   height: 44px;
   padding: 0 16px;

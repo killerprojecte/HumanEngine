@@ -1663,7 +1663,7 @@
   "usageCacheRate": "快取命中率",
   "usageUnknownCalls": "未知用量：{count}/{total} 次呼叫。顯示的 Token 僅為已報告部分。",
   "usageLoading": "正在載入用量…",
-  "usageWholeRange": "總計和圖表涵蓋已套用的時間範圍；搜尋僅篩選下方模型明細。",
+  "usageWholeRange": "費用、總 Token、呼叫次數與 Token 圖表涵蓋所選範圍內全部角色；快取率與快取分組明細僅統計 Planner。搜尋僅篩選下方模型明細。",
   "usagePartialCounter": "{value}（部分統計：{known}/{total} 次呼叫）",
   "usageOverview": "消耗總覽",
   "usageOverviewHelp": "按時間追蹤 Token 使用、快取效率與費用",
@@ -1682,5 +1682,18 @@
   "usageLineHelp": "各項獨立比較 · UTC",
   "usageChartMode": "圖表模式",
   "usageLineMode": "折線圖",
-  "usageBarMode": "柱狀圖"
+  "usageBarMode": "柱狀圖",
+  "usagePlannerCacheRate": "Planner 快取命中率",
+  "usagePlannerWeightedRate": "Planner 快取讀取 / Planner 輸入 Token",
+  "usagePlannerCoverage": "已回報讀取計數：{known} / {total} 次 Planner 呼叫",
+  "usagePlannerCoverageLabel": "計數覆蓋情況",
+  "usagePlannerIncomplete": "時間範圍資料不完整",
+  "usagePlannerNoCalls": "暫無 Planner 呼叫",
+  "usagePlannerDetails": "Planner 快取明細 · 按提供商與模型",
+  "usagePlannerScope": "包含所有記為 Planner 的呼叫，包括參與決策、規劃、工具續輪與修復。未知計數不當零，部分已知計數小計不等於完整命中率。總費用與總 Token 仍包含全部角色。歷史日彙總在範圍邊界可能不完整。",
+  "mcPromptCacheMode": "Planner 提示快取能力",
+  "mcPromptCache_auto": "自動 · 已確認的官方 OpenAI 模型",
+  "mcPromptCache_off": "關閉 · 不傳送顯式快取邊界",
+  "mcPromptCache_openai": "OpenAI 相容 · 顯式啟用",
+  "mcPromptCacheHelp": "僅作用於帶穩定歷史邊界的 Planner 請求。自動模式要求官方 https://api.openai.com/v1 端點及已知支援的 GPT-5.6+/6 系列模型。顯式相容模式需確認閘道支援新版 OpenAI 快取協定，不能只憑模型名稱判斷。關閉只停用顯式邊界，不關閉供應商自身的自動快取。不額外設定保留時長，也不傳送預熱請求。"
 }

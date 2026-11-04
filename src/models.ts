@@ -1,4 +1,5 @@
 import { expandContextMessages } from './models/prompt-context.ts'
+import { supportsOpenAIPromptBreakpoints } from './models/prompt-cache.ts'
 import {
   prepareImageRequest,
   hasNativeInlineImages,
@@ -78,6 +79,8 @@ export interface ModelInstance {
   embeddingBatchSize?: number
   /** Omit for provider-native output; explicit values require provider support. */
   embeddingDimensions?: number
+  /** Explicit capability override for gateways; auto is conservative for official endpoints. */
+  promptCacheMode?: 'auto' | 'off' | 'openai'
 }
 export interface RoleRoute {
   role: ModelRole
@@ -100,6 +103,10 @@ export interface ChatMessage {
   content: string
   /** Internal layout hint, consumed before protocol serialization. */
   contextLayout?: 'messages' | 'evidence'
+  /** Internal history-item indexes; never included in user content or custom adapters. */
+  contextCacheBoundaries?: number[]
+  /** Internal marker emitted only by capability-gated native serializers. */
+  promptCacheBreakpoint?: true
   images?: string[]
   toolCalls?: ToolCall[]
   toolCallId?: string
@@ -641,10 +648,20 @@ export class Router {
                     signal,
                   )
                 const responses = provider.protocol === 'openai-responses'
+                const cacheBreakpoints =
+                  role === 'planner' &&
+                  supportsOpenAIPromptBreakpoints(provider, model) &&
+                  messages.some((message) => message.promptCacheBreakpoint)
+                // Keep the implicit write for tool continuations. Stable explicit boundaries
+                // use at most three other write slots; no prewarming or longer TTL is requested.
+                const cacheOptions = cacheBreakpoints
+                  ? { prompt_cache_options: { mode: 'implicit' as const } }
+                  : {}
                 const body = responses
                   ? {
                       model: model.apiModelName,
-                      input: this.responsesInput(messages, modelId),
+                      input: this.responsesInput(messages, modelId, cacheBreakpoints),
+                      ...cacheOptions,
                       store: false,
                       stream: false,
                       include: ['reasoning.encrypted_content'],
@@ -662,7 +679,10 @@ export class Router {
                     }
                   : {
                       model: model.apiModelName,
-                      messages: messages.map((message) => this.chatInput(message)),
+                      messages: messages.map((message) =>
+                        this.chatInput(message, cacheBreakpoints),
+                      ),
+                      ...cacheOptions,
                       stream: false,
                       ...(tools.length
                         ? {
@@ -1525,7 +1545,11 @@ export class Router {
     }
   }
 
-  private chatInput(message: ChatMessage): JsonObject {
+  private chatInput(message: ChatMessage, cacheBreakpoints = false): JsonObject {
+    const breakpoint =
+      cacheBreakpoints && message.promptCacheBreakpoint
+        ? { prompt_cache_breakpoint: { mode: 'explicit' } }
+        : {}
     if (message.role === 'tool') {
       if (!message.toolCallId) throw new ModelError('missing_tool_call_id')
       return { role: 'tool', content: message.content, tool_call_id: message.toolCallId }
@@ -1537,7 +1561,9 @@ export class Router {
             { type: 'text', text: message.content },
             ...message.images.map((url) => ({ type: 'image_url', image_url: { url } })),
           ]
-        : message.content,
+        : cacheBreakpoints && message.promptCacheBreakpoint
+          ? [{ type: 'text', text: message.content, ...breakpoint }]
+          : message.content,
       ...(message.toolCalls?.length
         ? {
             tool_calls: message.toolCalls.map((call) => ({
@@ -1550,7 +1576,11 @@ export class Router {
     }
   }
 
-  private responsesInput(messages: ChatMessage[], modelId: string): JsonObject[] {
+  private responsesInput(
+    messages: ChatMessage[],
+    modelId: string,
+    cacheBreakpoints = false,
+  ): JsonObject[] {
     return messages.flatMap((message) => {
       if (message.role === 'tool') {
         if (!message.toolCallId) throw new ModelError('missing_tool_call_id')
@@ -1573,7 +1603,15 @@ export class Router {
                   detail: 'auto',
                 })),
               ]
-            : message.content,
+            : cacheBreakpoints && message.promptCacheBreakpoint
+              ? [
+                  {
+                    type: 'input_text',
+                    text: message.content,
+                    prompt_cache_breakpoint: { mode: 'explicit' },
+                  },
+                ]
+              : message.content,
         })
       for (const call of message.toolCalls ?? [])
         result.push({

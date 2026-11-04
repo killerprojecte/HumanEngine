@@ -352,6 +352,14 @@
             "minimum": 1,
             "maximum": 16384
           },
+          "promptCacheMode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "off",
+              "openai"
+            ]
+          },
           "inputUsdPerMillion": {
             "type": "number",
             "minimum": 0

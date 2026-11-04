@@ -27,6 +27,7 @@ export class PromptContextWindows {
     current: readonly T[],
     options: PromptWindowOptions,
     authority: unknown,
+    requiredIds: readonly string[] = [],
   ): T[] {
     if (!options.enabled) {
       this.windows.delete(key)
@@ -34,11 +35,17 @@ export class PromptContextWindows {
     }
     if (!current.length) {
       this.windows.delete(key)
+      if (requiredIds.length) throw new Error('prompt_context_target_budget_exhausted')
       return []
     }
     // Anything older than this suffix cannot survive a full window or its next
     // rollover. Bound hashing work as well as retained membership, including simulations.
     current = current.slice(-(options.maxMessages + 1))
+    const required = new Set(requiredIds)
+    if ([...required].some((id) => !current.some((message) => message.id === id))) {
+      this.windows.delete(key)
+      throw new Error('prompt_context_target_budget_exhausted')
+    }
     const signature = hash([options, authority])
     const entries = current.map((value) => ({ id: value.id, hash: hash(value) }))
     if (new Set(entries.map((value) => value.id)).size !== entries.length)
@@ -60,7 +67,21 @@ export class PromptContextWindows {
     const size = (values: readonly T[]) => Buffer.byteLength(JSON.stringify(values))
     if (selected.length > options.maxMessages || size(selected) > options.maxBytes)
       selected = current.slice(-Math.min(options.retainMessages, options.maxMessages))
-    while (selected.length > 1 && size(selected) > options.maxBytes) selected.shift()
+    // Required targets may enlarge a cold/rebuilt suffix without changing the
+    // configuration signature. Never lose an authorized target silently to rollover.
+    const firstRequired = current.findIndex((message) => required.has(message.id))
+    if (firstRequired >= 0 && firstRequired < current.length - selected.length)
+      selected = current.slice(firstRequired)
+    if (selected.length > options.maxMessages) {
+      this.windows.delete(key)
+      throw new Error('prompt_context_target_budget_exhausted')
+    }
+    while (
+      selected.length > 1 &&
+      size(selected) > options.maxBytes &&
+      !required.has(selected[0]!.id)
+    )
+      selected.shift()
     if (size(selected) > options.maxBytes) {
       this.windows.delete(key)
       throw new Error('prompt_context_message_budget_exhausted')

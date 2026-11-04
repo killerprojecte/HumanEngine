@@ -41,8 +41,9 @@ The Router emits each eligible history item as a separate user JSON message, fol
 by the current decision, evidence qualifiers, and exact clock. A fixed instruction explains
 that these JSON blocks form one context. Model text is not promoted to instructions.
 Tool calls and tool results remain intact, and the same transformation is used for native
-Chat Completions, Responses, and custom protocol adapters. No provider-specific cache
-parameter is guessed. Providers may still merge blocks or apply their own cache policy.
+Chat Completions, Responses, and custom protocol adapters. Native OpenAI cache markers
+are gated separately by the model's `promptCacheMode`; custom adapters never receive
+these internal marker hints. Providers may still merge blocks or apply their own policy.
 
 Windows store only message IDs and content hashes. Each turn resolves those IDs from
 currently authorized source rows. Missing, edited, expired, or reassigned messages force
@@ -55,9 +56,9 @@ projection order, before changing top-level serialization order.
 
 A single newest message exceeding the configured history byte limit fails safely rather
 than truncating its content. A decision target that cannot fit the planning window also
-fails safely rather than silently answering without its evidence. The planner preserves
-all currently selected participation candidates where the limits permit; the retention
-count controls participation-window rebuilds. Both role evidence budgets and serialized
+fails safely rather than silently answering without its evidence. Both windows use the
+configured retention count when rebuilding. The Planner may enlarge a rebuilt suffix
+to preserve the earliest selected target within the existing count and byte limits. Both role evidence budgets and serialized
 message-block overhead remain enforced separately.
 
 Window membership is transient and bounded to 256 keys with least-recently-used eviction.
@@ -65,9 +66,10 @@ There is no restart replay, paid summarization, opaque provider conversation reu
 reuse of an old authorization result. Disabling the feature restores the prior last-24
 history selection and unsplit request layout.
 
-## Verification and trade-offs
+## Prior window verification and trade-offs
 
-Synthetic runtime checks exercise 24 → 34 → 24 message growth/rollover, recall, and
+The following describes validation of the previously published window implementation,
+not runtime validation of the Planner-boundary changes below. Existing synthetic runtime checks exercise 24 → 34 → 24 message growth/rollover, recall, and
 policy changes while participation is pending. Transport tests reconstruct the exact
 logical context from both Chat Completions and Responses message blocks, preserving
 chronology, current clocks, source-event references, tool-call pairing, and continuation
@@ -83,3 +85,66 @@ send-validation profile (100 and 1,000 ledger entries), the original eight recov
 scans remain eight and the added configuration guard contributes one, rather than
 checking each setting separately. It never caches a positive authorization decision.
 This is a measured operation-count trade-off, not a production CPU or latency claim.
+
+## Planner cache boundaries
+
+Planner now resolves its candidates independently from participation's rolling suffix,
+using fresh source rows. It retains currently offered context and may add only current
+same-topic history, including bot reply chains rooted there. Explicit decision-topic
+selection and admission restrictions still narrow the candidate scope. Planner aliases
+are assigned in a separate projection, so participation rollover cannot renumber an
+otherwise unchanged Planner prefix. Required targets may enlarge a rebuilt suffix but
+never bypass count/byte limits. The existing topic membership cap and source retention
+still apply; a larger prompt setting does not manufacture older topic membership.
+
+Model settings expose `promptCacheMode`:
+
+- `auto` (also used when omitted): only the official HTTPS `api.openai.com/v1`
+  endpoint and explicitly recognized model IDs enable native cache markers. The
+  initial allowlist is `gpt-5.6`, `gpt-6.1-sol`, `gpt-6.1-terra`, and dated snapshots
+  of those names. Other names remain conservative until their capability is verified.
+- `off`: do not send explicit cache parameters. This does not disable the provider's
+  own default caching or disable the local context-window configuration.
+- `openai`: the operator explicitly confirms that this endpoint/model implements the
+  new OpenAI cache-breakpoint contract. Use this for a verified compatible gateway;
+  the protocol still must be native `openai-chat` or `openai-responses`.
+
+Only planning requests with runtime-supplied history boundaries use this capability.
+Participation, validation, Replyer, Vision, and custom adapters do not gain markers.
+The native request keeps `prompt_cache_options: { mode: "implicit" }` so tool-result
+continuations retain the normal implicit cache point. At most three explicit points
+cover the fixed system prefix, the previous successful history endpoint when it is
+still an identical prefix, and the latest current history endpoint. The timestamp,
+decision, current learned hints, and other current state remain after the history
+boundary. No previous timestamp, decision, tool receipt, or permission is replayed.
+
+Chat Completions uses a `text` content block; Responses uses an `input_text` content
+block. Each marked block has `prompt_cache_breakpoint: { mode: "explicit" }`.
+Original message roles, text, tool definitions, call/result pairs, and opaque native
+continuations are preserved. No `prompt_cache_key`, prewarm request, increased TTL,
+or automatic retry with different cache parameters is introduced.
+
+This addresses the distinction between a matching prefix and a prefix actually
+written at a reusable boundary. It does not prove a cache hit, and the local boundary
+tracker is not a record of provider cache residency. Measure provider-reported cached,
+written, and total input tokens and actual costs after validation; do not infer them
+from window size or serialized request bytes.
+
+References (reviewed 2026-11-04):
+
+- https://developers.openai.com/api/docs/guides/prompt-caching#gotchas
+- https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create
+- https://developers.openai.com/api/reference/resources/responses/methods/create
+
+Local tests and real-provider requests for this change are deferred at the user's
+request. Publication includes regenerated API contracts and non-test checks; those
+checks do not establish runtime correctness or real-provider cache improvement.
+Repository CI runs automatically after publication.
+
+Deferred validation must cover both native wire formats, no new fields for unsupported
+or disabled targets/custom adapters, retained previous endpoints when new history is
+appended, window rollover, explicit topic narrowing, edits/recalls/expiry, concurrent
+completion tickets, mandatory decision targets at count/byte boundaries, native
+assistant/tool continuation identity, and fresh current-state reconstruction. Provider
+cache reads and cost require a later authorized real-provider comparison, separate
+from these local correctness checks.

@@ -1663,7 +1663,7 @@
   "usageCacheRate": "Cache hit rate",
   "usageUnknownCalls": "Unknown usage: {count}/{total} calls. Shown tokens are reported subtotals.",
   "usageLoading": "Loading usage…",
-  "usageWholeRange": "Totals and chart cover the applied range; search filters the model details below.",
+  "usageWholeRange": "Costs, total tokens, calls and token charts include all roles in the applied range. Cache rates and cache detail groups include Planner only. Search filters only the model rows below.",
   "usagePartialCounter": "{value} (subtotal: {known}/{total} calls)",
   "usageOverview": "Usage overview",
   "usageOverviewHelp": "Understand token usage and costs over time",
@@ -1682,5 +1682,18 @@
   "usageLineHelp": "Independent series · UTC",
   "usageChartMode": "Chart mode",
   "usageLineMode": "Line",
-  "usageBarMode": "Bar"
+  "usageBarMode": "Bar",
+  "usagePlannerCacheRate": "Planner cache hit rate",
+  "usagePlannerWeightedRate": "Planner cache-read tokens / Planner input tokens",
+  "usagePlannerCoverage": "Cache-read counters: {known} / {total} Planner calls",
+  "usagePlannerCoverageLabel": "Reported counter coverage",
+  "usagePlannerIncomplete": "Incomplete time range",
+  "usagePlannerNoCalls": "No Planner calls",
+  "usagePlannerDetails": "Planner cache details by provider and model",
+  "usagePlannerScope": "Includes every call recorded as Planner, including participation, planning, tool continuations and repair. Unknown counters are not zero. A partial counter subtotal is not a complete hit rate. All-role cost and token totals remain unchanged. Historical daily boundaries may be incomplete.",
+  "mcPromptCacheMode": "Planner prompt-cache capability",
+  "mcPromptCache_auto": "Automatic — verified official OpenAI models",
+  "mcPromptCache_off": "Off — no explicit cache boundary",
+  "mcPromptCache_openai": "OpenAI-compatible — explicitly enable",
+  "mcPromptCacheHelp": "Only Planner requests with a stable-history boundary use this setting. Automatic requires the official https://api.openai.com/v1 endpoint and a known supported GPT-5.6+/6-series model. Explicit OpenAI-compatible mode requires your gateway to support the new OpenAI caching protocol; its model name alone is not proof. Off disables explicit boundaries, not provider-side automatic caching. No extra retention TTL or warm-up requests are enabled."
 }

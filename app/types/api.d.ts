@@ -5819,6 +5819,8 @@ export interface components {
             /** @default 4 */
             embeddingBatchSize: number;
             embeddingDimensions?: number;
+            /** @enum {string} */
+            promptCacheMode?: "auto" | "off" | "openai";
             inputUsdPerMillion?: number;
             outputUsdPerMillion?: number;
             cacheReadUsdPerMillion?: number;

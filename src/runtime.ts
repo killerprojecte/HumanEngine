@@ -1,3 +1,4 @@
+import { PromptCacheBoundaries } from './runtime/prompt-cache-boundaries.ts'
 import { PromptContextWindows, promptWindowAuthority } from './runtime/prompt-context-window.ts'
 import { mergeRecentHistory } from './runtime/chat-history.ts'
 import { TopicRoutingHistory } from './runtime/topic-history.ts'
@@ -463,6 +464,7 @@ class GroundingError extends Error {
 export class Runtime {
   private readonly imageBytes = new ImageByteCache()
   private readonly promptWindows = new PromptContextWindows()
+  private readonly promptCacheBoundaries = new PromptCacheBoundaries()
   get imageByteCacheStats() {
     return { ...this.imageBytes.stats }
   }
@@ -1377,6 +1379,7 @@ export class Runtime {
   }
   dispose() {
     this.promptWindows.clear()
+    this.promptCacheBoundaries.clear()
     this.imageBytes.clear()
     this.typingDelay?.dispose()
     this.typingDelay = undefined
@@ -1969,7 +1972,7 @@ export class Runtime {
                 )
                 throw error
               }
-              const projection = new ContextProjection(scene.id)
+              let projection = new ContextProjection(scene.id)
               // Reserve only current authorized history evidence before volatile topic IDs
               // consume the same reference namespace. Append-only windows then retain
               // the same evidence aliases even when participation discovers new topics.
@@ -2127,6 +2130,7 @@ export class Runtime {
               )
                 throw new Error('planner_target_outside_admitted_topic')
               let replyerRecent = recent
+              let selectedTopicIds: Set<string> | undefined
               if (decision.topics?.length) {
                 if (
                   new Set(decision.topics.map((t) => t.topicId)).size !== decision.topics.length ||
@@ -2198,6 +2202,7 @@ export class Runtime {
                 if (selected) {
                   decision.topicId = topicId
                   const ids = new Set([...selected.messageIds, ...decision.targetMessageIds])
+                  selectedTopicIds = ids
                   replyerRecent = recent.filter(
                     (m) => ids.has(m.id) || (m.replyToId && ids.has(m.replyToId)),
                   )
@@ -2206,11 +2211,50 @@ export class Runtime {
                   for (const message of replyerRecent) dependencies.add(message.id)
                 }
               }
+              // Resolve candidates from current state, not participation's rolling suffix.
+              // Preserve already offered context, supplementing only this topic's history.
+              // An explicit decision selection remains a hard narrowing boundary.
+              const plannerKey = JSON.stringify([mode, scene.id, topicId, 'planner'])
+              const offeredIds = new Set(replyerRecent.map((message) => message.id))
+              const topicIds = new Set([
+                ...topic.messageIds,
+                ...[...state.routing.acknowledged]
+                  .filter(([, owner]) => owner === topicId)
+                  .map(([id]) => id),
+              ])
+              // Bot replies are not always inserted into topic.messageIds. Only retain
+              // their reply chains when rooted in this topic; never borrow another topic.
+              for (const message of state.messages)
+                if (
+                  message.senderId === 'bot' &&
+                  message.replyToId &&
+                  topicIds.has(message.replyToId)
+                )
+                  topicIds.add(message.id)
+              const cutoff =
+                mode === 'real'
+                  ? Date.now() - (settings.cacheEnabled ? settings.cacheHours * 3600000 : 60000)
+                  : -Infinity
+              const plannerCandidates = windowOptions.enabled
+                ? state.messages.filter(
+                    (message) =>
+                      message.status === 'available' &&
+                      !this.isRecalled(scene.id, message.id) &&
+                      Date.parse(message.receivedAt) >= cutoff &&
+                      (!admittedIds ||
+                        (admittedIds.has(message.id) && !state.routing.deferred.has(message.id))) &&
+                      (offeredIds.has(message.id) || topicIds.has(message.id)) &&
+                      (!selectedTopicIds ||
+                        selectedTopicIds.has(message.id) ||
+                        (!!message.replyToId && selectedTopicIds.has(message.replyToId))),
+                  )
+                : replyerRecent
               replyerRecent = this.promptWindows.select(
-                JSON.stringify([mode, scene.id, topicId, 'planner']),
-                replyerRecent,
-                { ...windowOptions, retainMessages: windowOptions.maxMessages },
+                plannerKey,
+                plannerCandidates,
+                windowOptions,
                 windowAuthority,
+                decision.targetMessageIds,
               )
               if (
                 decision.targetMessageIds.some(
@@ -2221,9 +2265,16 @@ export class Runtime {
               dependencies.clear()
               for (const id of extensionDependencies) dependencies.add(id)
               for (const message of replyerRecent) dependencies.add(message.id)
-              // The Planner only receives this selected topic. Keep its immutable source
-              // snapshots aligned with the narrowed dependency set, not unrelated decisions.
+              // Keep the Planner source snapshots aligned with its current authorized
+              // candidate scope and dependency set, not unrelated decisions.
               context.sourceSnapshots = structuredClone(replyerRecent)
+              if (settings.promptContextWindowEnabled) {
+                // Planning owns a fresh alias space. Participation's window and topic
+                // labels must not influence the reusable history prefix or later tools.
+                projection = new ContextProjection(scene.id)
+                for (const message of replyerRecent)
+                  projection.project({ evidenceId: `message:${message.id}`, value: message })
+              }
               const grounding = new ReplyGrounding()
               for (const message of replyerRecent)
                 grounding.addFeedbackSource(message.id, message.parts)
@@ -2244,6 +2295,17 @@ export class Runtime {
                 })),
                 ...learnedData.map((value, index) => ({ id: `context:${index}`, value })),
               ]
+              const cacheBoundaryTicket = windowOptions.enabled
+                ? this.promptCacheBoundaries.prepare(
+                    plannerKey,
+                    replyerRecent.map((message, index) => ({
+                      id: message.id,
+                      value: projection.project(initialEvidence[index]),
+                    })),
+                    [windowAuthority, manualContext, readTools],
+                  )
+                : undefined
+              if (!cacheBoundaryTicket) this.promptCacheBoundaries.delete(plannerKey)
               const planningSignal = stageSignal('planner')
               context.signal = planningSignal
               const plannerContext = this.extensions
@@ -2307,6 +2369,9 @@ export class Runtime {
                         ...(settings!.promptContextWindowEnabled
                           ? { contextLayout: 'evidence' as const }
                           : {}),
+                        ...(cacheBoundaryTicket
+                          ? { contextCacheBoundaries: cacheBoundaryTicket.contextCacheBoundaries }
+                          : {}),
                       },
                     ],
                     readTools,
@@ -2317,8 +2382,14 @@ export class Runtime {
                     contextMessageIds: replyerRecent.map((m) => m.id),
                     signal: planningSignal,
                     eligible: () => this.eligible(context),
-                    complete: (messages, tools, signal) =>
-                      router.complete('planner', messages, tools, signal),
+                    complete: async (messages, tools, signal) => {
+                      if (!this.eligible(context)) throw new Error('planner_context_ineligible')
+                      const result = await router.complete('planner', messages, tools, signal)
+                      // Revocation/expiry can race the provider. A successful transport
+                      // is not permission to promote a now-ineligible prefix.
+                      if (this.eligible(context)) cacheBoundaryTicket?.commit()
+                      return result
+                    },
                     deliver: (name, value, input) => {
                       const extension = this.extensions.find((entry) =>
                         entry.tools.some((tool) => tool.name === name),

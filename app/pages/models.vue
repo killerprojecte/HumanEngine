@@ -43,6 +43,44 @@ const rangeOptions = computed(() =>
     label: t(`usageRange_${value}`),
   })),
 )
+type CacheSummary = { input: number; read: number; calls: number; known: number; readKnown: number }
+const emptyCacheSummary = (): CacheSummary => ({
+  input: 0,
+  read: 0,
+  calls: 0,
+  known: 0,
+  readKnown: 0,
+})
+const addCacheUsage = (total: CacheSummary, row: components['schemas']['Usage']) => {
+  total.input += row.inputTokens
+  total.read += row.cacheReadInputTokens
+  total.calls += row.calls
+  total.known += row.unknownUsageCalls
+  total.readKnown += row.cacheReadKnownCalls
+  return total
+}
+const plannerTotals = computed(() =>
+  usage.value.filter((row) => row.role === 'planner').reduce(addCacheUsage, emptyCacheSummary()),
+)
+const plannerGroups = computed(() => {
+  const groups = new Map<
+    string,
+    CacheSummary & { modelId: string; providerId: string; apiModelName: string }
+  >()
+  for (const row of usage.value) {
+    if (row.role !== 'planner') continue
+    const key = JSON.stringify([row.providerId, row.modelId, row.apiModelName])
+    const group = groups.get(key) ?? {
+      ...emptyCacheSummary(),
+      modelId: row.modelId,
+      providerId: row.providerId,
+      apiModelName: row.apiModelName,
+    }
+    addCacheUsage(group, row)
+    groups.set(key, group)
+  }
+  return [...groups.values()]
+})
 const timelineRows = computed(() => {
   const buckets = new Map<
     string,
@@ -56,6 +94,7 @@ const timelineRows = computed(() => {
       known: number
       readKnown: number
       writeKnown: number
+      planner: CacheSummary
     }
   >()
   for (const row of timeline.value) {
@@ -69,6 +108,7 @@ const timelineRows = computed(() => {
       known: 0,
       readKnown: 0,
       writeKnown: 0,
+      planner: emptyCacheSummary(),
     }
     point.input += row.inputTokens
     point.output += row.outputTokens
@@ -78,6 +118,7 @@ const timelineRows = computed(() => {
     point.known += row.unknownUsageCalls
     point.readKnown += row.cacheReadKnownCalls
     point.writeKnown += row.cacheWriteKnownCalls
+    if (row.role === 'planner') addCacheUsage(point.planner, row)
     buckets.set(row.day, point)
   }
   return [...buckets.values()].sort((a, b) => a.at.localeCompare(b.at))
@@ -141,7 +182,7 @@ const timelineTooltip = (point: (typeof timelineRows.value)[number]) => {
       : known < point.calls
         ? t('usagePartialCounter', { value, known, total: point.calls })
         : String(value)
-  return `${point.at} UTC · ${t('usageCacheRate')}: ${cacheRate(point)} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
+  return `${point.at} UTC · ${t('usagePlannerCacheRate')}: ${plannerCacheRate(point.planner, timelineIncomplete.value)} · ${plannerCoverage(point.planner)} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
 }
 const cacheRate = (point: {
   input: number
@@ -153,6 +194,26 @@ const cacheRate = (point: {
   point.known === 0 && point.readKnown === point.calls && point.input > 0
     ? `${((point.read / point.input) * 100).toFixed(1)}%`
     : t('usageCounterUnknown')
+// A partial historic interval must not be presented as a complete Planner rate.
+const plannerCacheRate = (point: CacheSummary, incomplete = false) =>
+  incomplete
+    ? t('usagePlannerIncomplete')
+    : point.calls === 0
+      ? t('usagePlannerNoCalls')
+      : cacheRate(point)
+const plannerCoverage = (point: CacheSummary) =>
+  t('usagePlannerCoverage', {
+    known: compactNumber(point.readKnown),
+    total: compactNumber(point.calls),
+  })
+const promptCacheOptions = computed(() =>
+  ['auto', 'off', 'openai'].map((value) => ({ value, label: t(`mcPromptCache_${value}`) })),
+)
+const setPromptCacheMode = (value: unknown) => {
+  if (!modelDraft.value || (value !== 'auto' && value !== 'off' && value !== 'openai')) return
+  if (value === 'auto') delete modelDraft.value.promptCacheMode
+  else modelDraft.value.promptCacheMode = value
+}
 const embeddingPanel = ref<{ refresh: () => Promise<void> }>()
 const roles = ['planner', 'replyer', 'learning', 'vision', 'embedding'] as const
 const priceFields = [
@@ -1083,12 +1144,13 @@ watch(section, () => {
             </div>
             <div class="usage-stat">
               <div class="usage-stat-label">
-                <UIcon name="i-lucide-zap" />{{ t('usageCacheRate') }}
+                <UIcon name="i-lucide-zap" />{{ t('usagePlannerCacheRate') }}
               </div>
               <strong class="usage-stat-value text-emerald-500">{{
-                cacheRate(usageTotals)
+                plannerCacheRate(plannerTotals, usageIncomplete)
               }}</strong>
-              <p class="usage-stat-note">{{ t('usageWeightedRate') }}</p>
+              <p class="usage-stat-note">{{ t('usagePlannerWeightedRate') }}</p>
+              <p class="usage-stat-note">{{ plannerCoverage(plannerTotals) }}</p>
             </div>
             <div class="usage-stat">
               <div class="usage-stat-label">
@@ -1100,6 +1162,47 @@ watch(section, () => {
               <p class="usage-stat-note">{{ t('usageSelectedRange') }}</p>
             </div>
           </div>
+          <details class="rounded-xl border border-default overflow-hidden">
+            <summary class="px-4 py-3 text-sm font-medium cursor-pointer">
+              {{ t('usagePlannerDetails') }}
+            </summary>
+            <p class="px-4 pb-3 text-xs text-muted">{{ t('usagePlannerScope') }}</p>
+            <div v-if="plannerGroups.length" class="overflow-x-auto">
+              <table class="model-table w-full text-left text-sm">
+                <thead>
+                  <tr>
+                    <th>{{ t('provider') }} / {{ t('mcModelName') }}</th>
+                    <th>{{ t('usageInput') }}</th>
+                    <th>{{ t('usageCacheRead') }}</th>
+                    <th>{{ t('usagePlannerCacheRate') }}</th>
+                    <th>{{ t('usagePlannerCoverageLabel') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="group in plannerGroups"
+                    :key="JSON.stringify([group.providerId, group.modelId, group.apiModelName])"
+                  >
+                    <td>
+                      {{ providerName(group.providerId) }} · {{ modelName(group.modelId) }}
+                      <p class="text-xs text-muted">{{ group.apiModelName }}</p>
+                    </td>
+                    <td :title="group.known ? t('usageCounterUnknown') : String(group.input)">
+                      {{ group.known ? t('usageCounterUnknown') : compactNumber(group.input) }}
+                    </td>
+                    <td :title="group.readKnown ? String(group.read) : t('usageCounterUnknown')">
+                      {{ group.readKnown ? compactNumber(group.read) : t('usageCounterUnknown') }}
+                    </td>
+                    <td>{{ plannerCacheRate(group, usageIncomplete) }}</td>
+                    <td>{{ plannerCoverage(group) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p v-else class="px-4 pb-4 text-sm text-muted">
+              {{ plannerCacheRate(plannerTotals, usageIncomplete) }}
+            </p>
+          </details>
           <p class="text-xs text-muted">{{ t('usageWholeRange') }}</p>
           <section class="rounded-xl border border-default bg-default p-4 sm:p-5">
             <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
@@ -1256,7 +1359,7 @@ watch(section, () => {
                     <th>{{ t('usageOutput') }}</th>
                     <th>{{ t('usageCacheRead') }}</th>
                     <th>{{ t('usageCacheWrite') }}</th>
-                    <th>{{ t('usageCacheRate') }}</th>
+                    <th>{{ t('usagePlannerCacheRate') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1276,7 +1379,10 @@ watch(section, () => {
                       {{ point.writeKnown ? compactNumber(point.write) : t('usageCounterUnknown') }}
                       ({{ point.writeKnown }}/{{ point.calls }})
                     </td>
-                    <td>{{ cacheRate(point) }}</td>
+                    <td>
+                      {{ plannerCacheRate(point.planner, timelineIncomplete) }}
+                      <p class="text-xs text-muted">{{ plannerCoverage(point.planner) }}</p>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -1610,6 +1716,13 @@ watch(section, () => {
               /></UFormField>
               <UFormField :label="t('apiModel')" :help="t('mcApiNameHelp')" required
                 ><UInput v-model="selectedModel.apiModelName" class="w-full" required
+              /></UFormField>
+              <UFormField :label="t('mcPromptCacheMode')" :help="t('mcPromptCacheHelp')"
+                ><USelect
+                  :model-value="selectedModel.promptCacheMode ?? 'auto'"
+                  :items="promptCacheOptions"
+                  class="w-full"
+                  @update:model-value="setPromptCacheMode"
               /></UFormField>
               <div class="space-y-2">
                 <UButton

@@ -8,6 +8,7 @@ export const contextLayoutInstruction =
  */
 export function expandContextMessages(messages: readonly ChatMessage[]): ChatMessage[] {
   let expanded = false
+  let cacheHistory = false
   const result = messages.flatMap((message): ChatMessage[] => {
     const field = message.contextLayout
     if (
@@ -24,6 +25,16 @@ export function expandContextMessages(messages: readonly ChatMessage[]): ChatMes
     const entries = Object.entries(payload)
     const history = (payload as Record<string, unknown>)[field]
     if (!Array.isArray(history)) throw new Error('prompt_context_invalid_history')
+    const boundaries = message.contextCacheBoundaries ?? []
+    if (
+      boundaries.length > 2 ||
+      boundaries.some(
+        (index) => !Number.isSafeInteger(index) || index < 0 || index >= history.length,
+      )
+    )
+      throw new Error('prompt_context_invalid_history')
+    const marked = new Set(boundaries)
+    cacheHistory ||= marked.size > 0
     expanded = true
     const baseKeys = new Set(['timezone', 'sceneKind', 'botUserId'])
     const base = Object.fromEntries(entries.filter(([key]) => baseKeys.has(key)))
@@ -35,7 +46,10 @@ export function expandContextMessages(messages: readonly ChatMessage[]): ChatMes
     return [
       ...(Object.keys(base).length ? [block(base)] : []),
       ...(history.length
-        ? history.map((item) => block({ [field]: [item] }))
+        ? history.map((item, index) => ({
+            ...block({ [field]: [item] }),
+            ...(marked.has(index) ? { promptCacheBreakpoint: true as const } : {}),
+          }))
         : [block({ [field]: [] })]),
       block(tail),
     ]
@@ -43,11 +57,16 @@ export function expandContextMessages(messages: readonly ChatMessage[]): ChatMes
   if (expanded) {
     const system = result.findIndex((message) => message.role === 'system')
     if (system < 0)
-      result.unshift({ role: 'system', content: contextLayoutInstruction.trimStart() })
+      result.unshift({
+        role: 'system',
+        content: contextLayoutInstruction.trimStart(),
+        ...(cacheHistory ? { promptCacheBreakpoint: true as const } : {}),
+      })
     else
       result[system] = {
         ...result[system]!,
         content: result[system]!.content + contextLayoutInstruction,
+        ...(cacheHistory ? { promptCacheBreakpoint: true as const } : {}),
       }
   }
   return result

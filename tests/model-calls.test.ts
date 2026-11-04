@@ -215,3 +215,23 @@ test('stream timing migration preserves older rows as unknown and stores only me
     store.close()
   }
 })
+
+test('call-log API exposes bounded timing diagnostics only after authentication', async () => {
+  const store = new Store(':memory:')
+  try {
+    const app = createApp(store, { token: 'synthetic' })
+    const denied = await app.request('/api/model-calls')
+    assert.equal(denied.headers.get('Server-Timing'), null)
+    const response = await app.request('/api/model-calls', {
+      headers: { Authorization: 'Bearer synthetic' },
+    })
+    assert.equal(response.status, 200)
+    assert.match(
+      response.headers.get('Server-Timing') ?? '',
+      /^recovery;dur=\d+\.\d{2}, handler;dur=\d+\.\d{2}, total;dur=\d+\.\d{2}$/,
+    )
+    assert.equal(response.headers.get('Cache-Control'), 'no-store')
+  } finally {
+    store.close()
+  }
+})

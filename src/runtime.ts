@@ -1,4 +1,5 @@
 import { progressDeadline } from './models/stream-progress.ts'
+import { supportsOpenAIPromptBreakpoints } from './models/prompt-cache.ts'
 import { PromptCacheBoundaries } from './runtime/prompt-cache-boundaries.ts'
 import { PromptContextWindows, promptWindowAuthority } from './runtime/prompt-context-window.ts'
 import { mergeRecentHistory } from './runtime/chat-history.ts'
@@ -1750,6 +1751,7 @@ export class Runtime {
     manualContext: string,
     imageContext: unknown[] = [],
     projection = new ContextProjection(scene.id),
+    contextCacheBoundaries?: number[],
   ) {
     const response = await router.complete(
       'planner',
@@ -1790,6 +1792,7 @@ export class Runtime {
             ['topics', 'localState', 'globalState', 'now'],
           ),
           ...(settings.promptContextWindowEnabled ? { contextLayout: 'messages' as const } : {}),
+          ...(contextCacheBoundaries ? { contextCacheBoundaries } : {}),
         },
       ],
       [
@@ -1935,8 +1938,9 @@ export class Runtime {
                   )
                 }
               }
+              const participationKey = JSON.stringify([mode, scene.id, topicId, 'participation'])
               const recent = this.promptWindows.select(
-                JSON.stringify([mode, scene.id, topicId, 'participation']),
+                participationKey,
                 state.messages.filter(
                   (m) =>
                     m.status === 'available' &&
@@ -2068,6 +2072,30 @@ export class Runtime {
                       },
                     )
                   : error
+              // Participation is also a Planner request, including turns that stay silent.
+              // Keep its reusable boundaries separate from the later reply-planning scope.
+              const decisionCacheEnabled =
+                windowOptions.enabled &&
+                modelConfig.routes
+                  .find((route) => route.role === 'planner')
+                  ?.orderedModelIds.some((id) => {
+                    const model = modelConfig.models.find((candidate) => candidate.id === id)
+                    const provider = modelConfig.providers.find(
+                      (candidate) => candidate.id === model?.providerId,
+                    )
+                    return !!model && !!provider && supportsOpenAIPromptBreakpoints(provider, model)
+                  })
+              const decisionCacheTicket = decisionCacheEnabled
+                ? this.promptCacheBoundaries.prepare(
+                    participationKey,
+                    recent.map((message) => ({
+                      id: message.id,
+                      value: projection.project(message),
+                    })),
+                    [windowAuthority, manualContext],
+                  )
+                : undefined
+              if (!decisionCacheTicket) this.promptCacheBoundaries.delete(participationKey)
               const decisionSignal = stageSignal('planner')
               const deciding = startFlow(this.store, 'decision', {
                 counts: { recentMessages: recent.length },
@@ -2088,6 +2116,7 @@ export class Runtime {
                       manualContext,
                       imageContext,
                       projection,
+                      decisionCacheTicket?.contextCacheBoundaries,
                     ),
                     decisionSignal,
                   ),
@@ -2113,6 +2142,10 @@ export class Runtime {
                 )
                 throw error
               }
+              // Silent decisions have no later planning gate, but still need a live
+              // eligibility check before promoting reusable boundary identities.
+              if (decision.action !== 'reply' && decisionCacheTicket && this.eligible(context))
+                decisionCacheTicket.commit()
               if (decision.action === 'wait')
                 waitUntil = Date.now() + (decision.waitForMs ?? this.store.settings.maxWaitMs)
               if (decision.action !== 'reply' || !this.eligible(context)) {
@@ -2122,6 +2155,7 @@ export class Runtime {
                   : `decision_${decision.action}`
                 return
               }
+              decisionCacheTicket?.commit()
               if (decision.targetMessageIds.some((id) => !recent.some((m) => m.id === id)))
                 throw new Error('planner_unknown_target')
               if (

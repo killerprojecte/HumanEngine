@@ -1,5 +1,7 @@
 import type { Store } from '../../store.ts'
 import type { RuntimeMessage } from '../../runtime.ts'
+import type { MemorySource } from '../domain/contracts.ts'
+import { domainSourceCurrent } from '../read/domain-source-events.ts'
 import { currentSourceSnapshot } from '../../runtime/source-events.ts'
 import {
   parseExternalCostRecoveryEvent,
@@ -174,7 +176,9 @@ export class RecoveryAuthority {
       throw error
     }
   }
-  entries(): Array<{ sequence: number; revocation: Revocation }> {
+  // Head-only checks still read and validate every row, but need not retain parsed events.
+  // This flag changes allocation only: no validity, permission or head result is cached.
+  entries(collect = true): Array<{ sequence: number; revocation: Revocation }> {
     const identities = readRecoveryStatement(this.db, 'identities') as {
       id: string
       format: number
@@ -218,7 +222,7 @@ export class RecoveryAuthority {
         this.#rowHashProofs.add(key)
         this.#rowHashProofBytes += bytes
       }
-      result.push({ sequence, revocation })
+      if (collect) result.push({ sequence, revocation })
       previous = row.hash
     }
     return result
@@ -240,7 +244,7 @@ export class RecoveryAuthority {
         throw new Error('recovery_read_scope_changed')
       return { ...scope.head }
     }
-    this.entries()
+    this.entries(false)
     const id = readRecoveryStatement(this.db, 'identity') as { id: string }
     const last = readRecoveryStatement(this.db, 'latest') as
       { sequence: number; hash: string } | undefined
@@ -487,18 +491,33 @@ export function validateUnrecalledDependencies(
   return validateFixedReads(store, { kind: 'dependencies', sceneId, ids })
 }
 
+/** Current-use results only, with no callback or reusable authority token. Materialize
+ * caller-owned data before entering the fixed read scope; no getters/iterators run inside it.
+ */
+export function currentDomainSources(store: Store, sources: readonly MemorySource[]): boolean[] {
+  const materialized = structuredClone(Array.from(sources))
+  if (!materialized.length) return []
+  return validateFixedReads(store, { kind: 'domain-sources', sources: materialized })
+}
+
+type FixedSourceReads =
+  | { kind: 'sources'; messages: readonly RuntimeMessage[] }
+  | { kind: 'dependencies'; sceneId: string; ids: readonly string[] }
+type DomainSourceReads = { kind: 'domain-sources'; sources: readonly MemorySource[] }
+function validateFixedReads(store: Store, input: FixedSourceReads): boolean
+function validateFixedReads(store: Store, input: DomainSourceReads): boolean[]
 function validateFixedReads(
   store: Store,
-  input:
-    | { kind: 'sources'; messages: readonly RuntimeMessage[] }
-    | { kind: 'dependencies'; sceneId: string; ids: readonly string[] },
-): boolean {
+  input: FixedSourceReads | DomainSourceReads,
+): boolean | boolean[] {
   const db = store.db
   const authority = bindings.get(db)
   const read = () =>
     input.kind === 'sources'
       ? input.messages.every((message) => currentSourceSnapshot(store, message))
-      : input.ids.every((id) => !store.recalled(input.sceneId, id))
+      : input.kind === 'dependencies'
+        ? input.ids.every((id) => !store.recalled(input.sceneId, id))
+        : input.sources.map((source) => domainSourceCurrent(store, source))
   // Preserve nested callers and nonstandard configurations without reducing any checks.
   if (
     !authority ||
@@ -510,7 +529,7 @@ function validateFixedReads(
     authority.db.pragma('query_only', { simple: true }) !== 0
   )
     return read()
-  let result: boolean
+  let result: boolean | boolean[]
   try {
     db.pragma('query_only = ON')
     authority.db.pragma('query_only = ON')

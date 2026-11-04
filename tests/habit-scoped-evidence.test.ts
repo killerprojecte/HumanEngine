@@ -166,10 +166,10 @@ test('engine scopes private identities but retains first-original cross-scope du
     f.insert(second, 'second-sql-id')
     f.insert(f.make('foreign-only', 'b', { evidenceVersion: undefined, sources: null as never }))
     const identityCalls: string[] = [],
-      identity = engine.habits.validationIdentity.bind(engine.habits)
-    engine.habits.validationIdentity = (ctx, id) => {
-      identityCalls.push(id)
-      return identity(ctx, id)
+      identity = engine.habits.validationIdentities.bind(engine.habits)
+    engine.habits.validationIdentities = (ctx, ids) => {
+      identityCalls.push(...ids)
+      return identity(ctx, ids)
     }
     const ctx: TurnContext = {
       scene: f.store.scene('a')!,

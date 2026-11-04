@@ -48,3 +48,15 @@ Compatible gateways that ignore `stream: true` and return complete JSON are acce
 The log keeps its existing end-to-end TPS definition. Do not use TTFT to infer decoding speed or subtract it from total duration to invent a generation-only rate.
 
 For visual acceptance without upstream requests, run the UI on port 3140 with a fresh `HUMANENGINE_DB`, then run `python3 scripts/streaming-ui-preview.py` and open port 3141. Every management API request is fixture-only; unknown routes fail closed. The preview includes text/reasoning/tool streams, synchronous/custom/historical rows and a failed stream with unknown TTFT. Model edits in this preview stay in process memory.
+
+## Diagnosing slow loading
+
+The call page fetches at most 50 rows, using an ID cursor rather than loading the complete history. An authenticated API response includes `Server-Timing` durations in milliseconds: `recovery` covers the middleware's two full recovery checks, `handler` includes the route and its own store-level recovery check, and `total` covers their combined server work. These timings exclude network transit, browser rendering and engine startup. They contain no credentials, prompts or call metadata. Inspect the request timing alongside this header before attributing latency to the table query.
+
+Recovery checks intentionally read and validate the full authority chain on every check. Head-only checks validate the same rows, hashes, continuity and event schemas but discard the parsed event result array, reducing temporary allocation without caching authorization decisions or hiding changes from other connections. A large authority ledger can still dominate an otherwise small call-log query; these checks must not be disabled to improve page latency.
+
+## Interpreting zero cache counters
+
+Planner includes both participation decisions (`participation.decide`, including silent/wait turns) and reply planning. Their reusable history boundaries are maintained independently. When the bounded context window and a supported model's explicit-cache setting are enabled, both paths mark their current stable history end and preserve a previous successful end while its current authorized prefix still matches. Time, current decisions and other volatile state are rebuilt in the unmarked tail. Withdrawn, changed or inaccessible sources are never retained just for caching.
+
+Markers are request hints, not proof of a cache hit. Auto mode does not assume that a third-party OpenAI-compatible gateway supports explicit markers; only enable the OpenAI option after confirming its capability. OpenAI's minimum applies to the cacheable prefix, not merely total input tokens. Missing usage fields remain unknown; explicit provider zeroes remain zero. A local synthetic transport test proves serialization and accounting, not production cache availability. Diagnose a zero using the configured protocol/cache mode and the provider's returned usage counters, without collecting prompts, outputs or credentials. See the [OpenAI prompt-caching guide](https://developers.openai.com/api/docs/guides/prompt-caching).

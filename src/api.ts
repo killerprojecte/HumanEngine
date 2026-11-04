@@ -58,10 +58,19 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
       b = Buffer.from(token)
     if (a.length !== b.length || !timingSafeEqual(a, b))
       return c.json({ error: 'Authentication required' }, 401)
+    const started = performance.now()
     store.assertRecoveryReady()
+    const handlerStarted = performance.now()
     await next()
+    const handlerFinished = performance.now()
     // Pending external revocations can appear while an asynchronous route reads bytes.
     store.assertRecoveryReady()
+    const finished = performance.now()
+    // Authenticated diagnostics only: durations, never payloads or configuration values.
+    c.header(
+      'Server-Timing',
+      `recovery;dur=${(handlerStarted - started + finished - handlerFinished).toFixed(2)}, handler;dur=${(handlerFinished - handlerStarted).toFixed(2)}, total;dur=${(finished - started).toFixed(2)}`,
+    )
     c.header('Cache-Control', 'no-store')
     c.header('X-Content-Type-Options', 'nosniff')
   })

@@ -454,6 +454,8 @@ export class Engine {
     const engine = this
     this.runtime.addExtension({
       get tools() {
+        // One synchronous definition build; re-read live settings on the next access.
+        const settings = engine.store.settings
         return [
           definition(
             'habits.feedback',
@@ -518,16 +520,16 @@ export class Engine {
           definition(
             'learning.propose',
             'Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned.' +
-              relationExtractionInstructions(engine.store.settings.memoryGraphEnabled) +
-              commitmentExtractionInstructions(engine.store.settings.memoryCommitmentsEnabled) +
-              knowledgeExtractionInstructions(engine.store.settings.memoryKnowledgeEnabled),
+              relationExtractionInstructions(settings.memoryGraphEnabled) +
+              commitmentExtractionInstructions(settings.memoryCommitmentsEnabled) +
+              knowledgeExtractionInstructions(settings.memoryKnowledgeEnabled),
             buildLearningCandidateSchema(
-              engine.store.settings.memoryGraphEnabled,
-              engine.store.settings.memoryCommitmentsEnabled,
-              engine.store.settings.memoryKnowledgeEnabled,
+              settings.memoryGraphEnabled,
+              settings.memoryCommitmentsEnabled,
+              settings.memoryKnowledgeEnabled,
             ),
           ),
-          ...(engine.store.settings.memoryExperienceEnabled
+          ...(settings.memoryExperienceEnabled
             ? [
                 {
                   ...definition(
@@ -547,8 +549,7 @@ export class Engine {
                 },
               ]
             : []),
-          ...(engine.store.settings.memorySemanticEnabled &&
-          engine.store.settings.memorySemanticAnswerEnabled
+          ...(settings.memorySemanticEnabled && settings.memorySemanticAnswerEnabled
             ? [
                 definition(
                   'memory.summaries',
@@ -557,7 +558,7 @@ export class Engine {
                 ),
               ]
             : []),
-          ...(engine.store.settings.memoryWorkingSetEnabled
+          ...(settings.memoryWorkingSetEnabled
             ? [
                 definition(
                   'memory.workingSet',
@@ -571,7 +572,7 @@ export class Engine {
                 ),
               ]
             : []),
-          ...(engine.store.settings.memoryEpisodesEnabled
+          ...(settings.memoryEpisodesEnabled
             ? [
                 definition(
                   'memory.episodes',
@@ -580,8 +581,7 @@ export class Engine {
                 ),
               ]
             : []),
-          ...(engine.store.settings.memoryCommitmentsEnabled &&
-          engine.store.settings.memoryCommitmentsAnswerEnabled
+          ...(settings.memoryCommitmentsEnabled && settings.memoryCommitmentsAnswerEnabled
             ? [
                 definition(
                   'memory.commitments',
@@ -595,9 +595,9 @@ export class Engine {
                 ),
               ]
             : []),
-          ...(engine.store.settings.memoryHistoricalReadEnabled &&
-          engine.store.settings.memoryCommitmentsEnabled &&
-          engine.store.settings.memoryCommitmentsAnswerEnabled
+          ...(settings.memoryHistoricalReadEnabled &&
+          settings.memoryCommitmentsEnabled &&
+          settings.memoryCommitmentsAnswerEnabled
             ? [
                 definition(
                   'memory.commitmentTimeline',
@@ -625,7 +625,7 @@ export class Engine {
                 ),
               ]
             : []),
-          ...(engine.store.settings.memoryHistoricalReadEnabled
+          ...(settings.memoryHistoricalReadEnabled
             ? [
                 definition(
                   'memory.history',
@@ -641,8 +641,7 @@ export class Engine {
                 ),
               ]
             : []),
-          ...(engine.store.settings.memoryGraphEnabled &&
-          engine.store.settings.memoryGraphAnswerEnabled
+          ...(settings.memoryGraphEnabled && settings.memoryGraphAnswerEnabled
             ? [
                 definition(
                   'memory.relations',
@@ -1815,10 +1814,9 @@ export class Engine {
       if (!firstOriginal.has(record.id)) firstOriginal.set(record.id, record)
     // Capture identity before exposing hints. Expiry during these synchronous reads
     // must revoke the turn, never bless a stale hint with a later evidence set.
-    const identities = new Map(
-      originals
-        .filter((record) => habitInScope(ctx, record))
-        .map((record) => [record.id, this.habits.validationIdentity(ctx, record.id)]),
+    const identities = this.habits.validationIdentities(
+      ctx,
+      originals.filter((record) => habitInScope(ctx, record)).map((record) => record.id),
     )
     const hints = this.habits.list(ctx)
     this.modelRead.assert(readTicket)
@@ -1828,11 +1826,15 @@ export class Engine {
       if (!original) continue
       for (const source of original.sources)
         if (source.sceneId === context.scene.id) context.dependencies.add(source.messageId)
-      const identity = identities.get(hint.id)
-      context.validations.push(
-        () => identity !== undefined && this.habits.validationIdentity(ctx, hint.id) === identity,
-      )
     }
+    const validatedIds = hints.filter((hint) => firstOriginal.has(hint.id)).map((hint) => hint.id)
+    if (validatedIds.length)
+      context.validations.push(() => {
+        const current = this.habits.validationIdentities(ctx, validatedIds)
+        return validatedIds.every(
+          (id) => identities.get(id) !== undefined && current.get(id) === identities.get(id),
+        )
+      })
     return hints
   }
   private proposeHabit(

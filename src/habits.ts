@@ -1,5 +1,10 @@
 import { domainSourceCurrent } from './memory/read/domain-source-events.ts'
-import { assertDomainReady, revoke, isRecoveryMaintenance } from './memory/recovery/ledger.ts'
+import {
+  assertDomainReady,
+  revoke,
+  isRecoveryMaintenance,
+  currentDomainSources,
+} from './memory/recovery/ledger.ts'
 import { createHash, randomUUID } from 'node:crypto'
 import type { Store } from './store.ts'
 import type { MemorySource, SourceEvidence } from './memory.ts'
@@ -110,35 +115,78 @@ export class HabitService {
     })
   }
   list(ctx: HabitContext): HabitRecord[] {
-    return (
-      this.adminList()
-        // Parse/recalculate all raw rows first. Foreign evidence is not authority for
-        // this scoped view and must not block it; relevant/shared evidence still fails closed.
-        .filter((record) => habitInScope(ctx, record))
-        .map((record) => this.currentEvidence(record))
-        .filter((record) => record.status === 'active' && habitInScope(ctx, record))
-        .map((record) => this.sanitize(record))
+    const records = this.adminList().filter((record) => habitInScope(ctx, record))
+    const effective = this.currentEvidenceMany(records)
+    // A clock callback may revoke another record's source during recalculation.
+    // Fail closed for that record rather than exposing the earlier batch decision.
+    const current = currentDomainSources(
+      this.store,
+      effective.flatMap((record) => record.sources),
     )
+    let index = 0
+    return effective
+      .filter((record) => {
+        const valid = current.slice(index, index + record.sources.length).every(Boolean)
+        index += record.sources.length
+        return valid
+      })
+      .filter((record) => record.status === 'active' && habitInScope(ctx, record))
+      .map((record) => this.sanitize(record))
   }
   // Time-derived magnitudes are not revisions. Keep raw administrative changes,
   // effective evidence expiry/recall, scope and policy in the trusted identity.
   validationIdentity(ctx: HabitContext, id: string): string | undefined {
-    const raw = this.get(id)
-    if (!raw) return
-    const effective = this.currentEvidence(raw)
-    if (
-      effective.status !== 'active' ||
-      !(
-        (effective.kind === 'botExpression' && !effective.sceneId) ||
-        (!ctx.simulation && effective.sceneId === ctx.sceneId)
-      ) ||
-      effective.sources.some((source) => this.store.recalled(source.sceneId, source.messageId))
+    return this.validationIdentities(ctx, [id]).get(id)
+  }
+  validationIdentities(ctx: HabitContext, ids: readonly string[]): Map<string, string | undefined> {
+    // Materialize caller input before any trusted read; no caller callback runs in a snapshot.
+    const requested = [...new Set(ids)]
+    assertDomainReady(this.store.db)
+    const get = this.store.db.prepare('SELECT value FROM habits WHERE id=?')
+    const rawValues = requested.map((id) => (get.get(id) as { value: string } | undefined)?.value)
+    const raws = rawValues.map((value) =>
+      value === undefined ? undefined : (JSON.parse(value) as HabitRecord),
     )
-      return
-    const { weight: _weight, confidence: _confidence, ...stable } = effective
-    return createHash('sha256')
-      .update(JSON.stringify({ raw, effective: stable, policy: this.policy }))
-      .digest('hex')
+    const present = raws.filter((raw): raw is HabitRecord => !!raw)
+    const effective = this.currentEvidenceMany(present)
+    // Recheck after recalculation (including the injected clock), never retain source authority
+    // across calls. This also fails closed if a source was edited during recalculation.
+    const current = currentDomainSources(
+      this.store,
+      effective.flatMap((record) => record.sources),
+    )
+    // A clock callback can also modify another habit, not only its sources. Recheck
+    // exact SQL-keyed raw bytes after all callbacks; prefetched content grants no authority.
+    assertDomainReady(this.store.db)
+    const unchanged = requested.map(
+      (id, index) => (get.get(id) as { value: string } | undefined)?.value === rawValues[index],
+    )
+    const result = new Map<string, string | undefined>()
+    let recordIndex = 0,
+      sourceIndex = 0
+    for (let i = 0; i < requested.length; i++) {
+      const raw = raws[i]
+      const id = requested[i]!
+      if (!raw) {
+        result.set(id, undefined)
+        continue
+      }
+      const record = effective[recordIndex++]!
+      const valid = current.slice(sourceIndex, sourceIndex + record.sources.length).every(Boolean)
+      sourceIndex += record.sources.length
+      if (!unchanged[i] || record.status !== 'active' || !habitInScope(ctx, record) || !valid) {
+        result.set(id, undefined)
+        continue
+      }
+      const { weight: _weight, confidence: _confidence, ...stable } = record
+      result.set(
+        id,
+        createHash('sha256')
+          .update(JSON.stringify({ raw, effective: stable, policy: this.policy }))
+          .digest('hex'),
+      )
+    }
+    return result
   }
   propose(ctx: HabitContext, input: HabitInput): HabitResult {
     return this.store.db.transaction((): HabitResult => {
@@ -472,12 +520,17 @@ export class HabitService {
     record.sources = record.sources.slice(0, this.policy.maxSources)
     this.recalculate(record)
   }
-  private currentEvidence(record: HabitRecord): HabitRecord {
-    const effective = structuredClone(record)
-    effective.sources = effective.sources.filter((source) =>
-      domainSourceCurrent(this.store, source),
+  private currentEvidenceMany(records: readonly HabitRecord[]): HabitRecord[] {
+    const effective = structuredClone([...records])
+    const current = currentDomainSources(
+      this.store,
+      effective.flatMap((record) => record.sources),
     )
-    this.recalculate(effective)
+    let index = 0
+    for (const record of effective) {
+      record.sources = record.sources.filter(() => current[index++] === true)
+      this.recalculate(record)
+    }
     return effective
   }
   private recalculate(record: HabitRecord) {

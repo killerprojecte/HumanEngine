@@ -80,6 +80,11 @@ test('hint source projection keeps first duplicate JSON ID without repeated arra
     assert.deepEqual([...context.dependencies], ['first-source'])
     assert.equal(originalReads, 2)
     assert.equal(
+      context.validations.length,
+      2,
+      'one live model-policy guard plus one fresh habit batch',
+    )
+    assert.equal(
       context.validations.every((validate) => validate()),
       true,
     )

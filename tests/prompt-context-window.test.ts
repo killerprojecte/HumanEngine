@@ -97,3 +97,42 @@ test('prompt authority checks the live gate once and rereads settings, rules, mo
     db.close()
   }
 })
+
+test('required targets enlarge a cold or rolled suffix without resetting membership on target changes', () => {
+  const windows = new PromptContextWindows()
+  const ids = (messages: Array<{ id: string }>) => messages.map((message) => message.id)
+  assert.deepEqual(ids(windows.select('planner', rows(4), options, 1, ['1', '3'])), ['1', '2', '3'])
+  // A different target must not alter the options signature and silently reset to retain=2.
+  assert.deepEqual(ids(windows.select('planner', rows(5), options, 1, ['4'])), ['1', '2', '3', '4'])
+  // Rollover would normally retain only 4,5. Preserve required 3 as a full suffix.
+  assert.deepEqual(ids(windows.select('planner', rows(6), options, 1, ['3'])), ['3', '4', '5'])
+})
+
+test('missing or over-budget targets fail closed instead of being silently dropped', () => {
+  const windows = new PromptContextWindows()
+  for (const [messages, required] of [
+    [[], ['missing']],
+    [rows(4), ['missing']],
+    [rows(6), ['0']], // Outside the bounded max+1 candidate suffix.
+    [rows(6), ['1']], // Present in max+1, but its complete suffix exceeds max.
+  ] as const)
+    assert.throws(
+      () => windows.select('planner', messages, options, 1, required),
+      /target_budget_exhausted/,
+    )
+  const messages = rows(4)
+  const maxBytes = Buffer.byteLength(JSON.stringify(messages.slice(-2)))
+  assert.deepEqual(
+    windows.select('planner', messages, { ...options, maxBytes }, 1, ['2']),
+    messages.slice(-2),
+  )
+  assert.throws(
+    () => windows.select('planner', messages, { ...options, maxBytes: maxBytes - 1 }, 1, ['2']),
+    /message_budget_exhausted/,
+  )
+  assert.deepEqual(windows.select('planner', messages, options, 1), messages.slice(-2))
+  assert.deepEqual(
+    windows.select('planner', rows(30), { ...options, enabled: false }, 1, ['missing']),
+    rows(30).slice(-24),
+  )
+})

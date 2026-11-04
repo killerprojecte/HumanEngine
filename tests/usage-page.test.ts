@@ -247,3 +247,91 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
     close()
   }
 })
+
+test('Planner cache metrics stay role-scoped and token-weighted while costs and token charts include every role', () => {
+  const { state, close } = page(async () => reply(1))
+  const base = reply(1).data[0]!
+  const plannerA = {
+    ...base,
+    role: 'planner',
+    modelId: 'shared-model',
+    providerId: 'provider-a',
+    apiModelName: 'api-model',
+    day: '2026-11-04T08:00:00Z',
+    inputTokens: 100,
+    cacheReadInputTokens: 90,
+    estimatedUsd: 1,
+  }
+  const plannerB = {
+    ...plannerA,
+    providerId: 'provider-b',
+    inputTokens: 900,
+    cacheReadInputTokens: 90,
+    estimatedUsd: 2,
+  }
+  const replyer = {
+    ...plannerA,
+    role: 'replyer',
+    inputTokens: 10000,
+    cacheReadInputTokens: 0,
+    estimatedUsd: 3,
+  }
+  const vision = {
+    ...replyer,
+    role: 'vision',
+    day: '2026-11-04T09:00:00Z',
+    inputTokens: 20000,
+    estimatedUsd: 4,
+  }
+  const setRows = (rows: (typeof plannerA)[]) => {
+    state.usage.value = rows
+    state.timeline.value = rows
+  }
+  try {
+    setRows([plannerA, plannerB, replyer, vision])
+    assert.equal(state.usageTotals.value.usd, 10)
+    assert.equal(state.usageTotals.value.input, 31000)
+    assert.equal(state.usageTotals.value.calls, 4)
+    assert.equal(state.plannerTotals.value.input, 1000)
+    assert.equal(state.plannerTotals.value.read, 180)
+    assert.equal(state.plannerTotals.value.calls, 2)
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value), '18.0%')
+    assert.equal(state.plannerGroups.value.length, 2)
+    assert.deepEqual(
+      state.plannerGroups.value.map((group: any) => [
+        group.providerId,
+        state.plannerCacheRate(group),
+      ]),
+      [
+        ['provider-a', '90.0%'],
+        ['provider-b', '10.0%'],
+      ],
+    )
+    const [first, second] = state.timelineRows.value
+    assert.equal(first.input, 11000)
+    assert.equal(state.plannerCacheRate(first.planner), '18.0%')
+    assert.match(state.timelineTooltip(first), /usagePlannerCacheRate: 18\.0%/)
+    assert.equal(second.input, 20000)
+    assert.equal(state.plannerCacheRate(second.planner), 'usagePlannerNoCalls')
+    assert.match(state.timelineTooltip(second), /usagePlannerCacheRate: usagePlannerNoCalls/)
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value, true), 'usagePlannerIncomplete')
+
+    setRows([plannerA, { ...plannerB, cacheReadKnownCalls: 0, cacheReadInputTokens: 0 }, replyer])
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usageCounterUnknown')
+    assert.equal(state.plannerCacheRate(state.timelineRows.value[0].planner), 'usageCounterUnknown')
+    setRows([{ ...plannerA, unknownUsageCalls: 1 }])
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usageCounterUnknown')
+    setRows([replyer, vision])
+    assert.equal(state.usageTotals.value.usd, 7)
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usagePlannerNoCalls')
+    assert.deepEqual(state.plannerGroups.value, [])
+    setRows([{ ...plannerA, cacheReadInputTokens: 0 }])
+    assert.equal(
+      state.plannerCacheRate(state.plannerTotals.value),
+      '0.0%',
+      'explicit known zero remains distinct from missing data',
+    )
+  } finally {
+    close()
+  }
+})

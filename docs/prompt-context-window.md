@@ -136,12 +136,13 @@ References (reviewed 2026-11-04):
 - https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create
 - https://developers.openai.com/api/reference/resources/responses/methods/create
 
-Local tests and real-provider requests for this change are deferred at the user's
-request. Publication includes regenerated API contracts and non-test checks; those
-checks do not establish runtime correctness or real-provider cache improvement.
+The initial publication included regenerated API contracts and non-test checks.
+Follow-up validation adds native mock-wire, mandatory-target, successful-boundary,
+concurrency, and independent-alias regression coverage. Real-provider requests and
+measured cache improvement remain separate from local correctness checks.
 Repository CI runs automatically after publication.
 
-Deferred validation must cover both native wire formats, no new fields for unsupported
+Correctness validation covers both native wire formats, no new fields for unsupported
 or disabled targets/custom adapters, retained previous endpoints when new history is
 appended, window rollover, explicit topic narrowing, edits/recalls/expiry, concurrent
 completion tickets, mandatory decision targets at count/byte boundaries, native

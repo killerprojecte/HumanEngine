@@ -8,6 +8,7 @@ import type { ChatMessage, Completion, Router } from '../src/models.ts'
 import type { Message, SceneRef, SendResult, SendSegment } from '../src/onebot.ts'
 import { installAdapter, type AdapterContext } from '../src/plugins/adapters.ts'
 import { fixtureReplyPlan } from './helpers/reply-plan.ts'
+import { fixtureContext } from './helpers/context.ts'
 
 // Deterministic synthetic completions establish routing/lifecycle contracts, not semantic quality,
 // natural-language topic recognition, scene-wide fairness, or measured production call savings.
@@ -909,7 +910,6 @@ for (const mode of ['get-active', 'around-deferred', 'by-user-active', 'around-r
         },
       })
       let aRef = '',
-        bRef = '',
         userRef = '',
         toolName = '',
         returned: RuntimeMessage[] = []
@@ -919,26 +919,31 @@ for (const mode of ['get-active', 'around-deferred', 'by-user-active', 'around-r
         )
         if (!current) return decision('wait', { waitForMs: 1000 })
         aRef = current.id
-        bRef = data.topics[1]!.messageIds[0]!
         userRef = current.senderId
         return decision('reply', { targetMessageIds: [aRef] })
       })
       h.plan((messages, index) => {
         if (index === 1) {
+          // Planning owns a separate alias space. Read only references actually
+          // supplied to this request, never another model stage's private aliases.
+          const current = fixtureContext(messages).evidence.find(
+            (entry: { value: RuntimeMessage }) =>
+              textOf(entry.value).includes('HISTORY_ADMITTED_A_BODY'),
+          ).value as RuntimeMessage
+          aRef = current.id
+          userRef = current.senderId
           toolName =
             mode === 'get-active'
-              ? 'messages.get'
+              ? 'messages.around'
               : mode === 'by-user-active'
                 ? 'messages.byUser'
                 : 'messages.around'
           return completion([
             call(
               toolName,
-              toolName === 'messages.get'
-                ? { ids: [bRef] }
-                : toolName === 'messages.byUser'
-                  ? { userId: userRef, limit: 30 }
-                  : { messageId: aRef, limit: 30 },
+              toolName === 'messages.byUser'
+                ? { userId: userRef, limit: 30 }
+                : { messageId: aRef, limit: 30 },
             ),
           ])
         }
@@ -951,6 +956,12 @@ for (const mode of ['get-active', 'around-deferred', 'by-user-active', 'around-r
           foreign,
           'real history read must return the foreign-source body before testing the final admission guard',
         )
+        if (mode === 'get-active' && index === 2) {
+          // Discover B through an authorized read, then exercise messages.get with
+          // its delivered Planner reference before checking retargeting denial.
+          toolName = 'messages.get'
+          return completion([call(toolName, { ids: [foreign.id] })])
+        }
         const allowed = mode === 'around-readonly'
         const value = fixtureReplyPlan(messages, {
           targetMessageIds: [allowed ? aRef : foreign.id],
@@ -978,7 +989,7 @@ for (const mode of ['get-active', 'around-deferred', 'by-user-active', 'around-r
         returned.some((message) => textOf(message).includes(canary)),
         'assertions in the completion stub must not be swallowed as an unrelated runtime error',
       )
-      assert.equal(h.calls.plan, 2)
+      assert.equal(h.calls.plan, mode === 'get-active' ? 3 : 2)
       assert.ok(
         h.store.logs.some(
           (row) => row.stage === 'tool' && row.toolName === toolName && row.status === 'completed',
@@ -1009,6 +1020,30 @@ for (const mode of ['get-active', 'around-deferred', 'by-user-active', 'around-r
       await h.close()
     }
   })
+
+test('Planner cannot borrow a foreign message alias seen only by participation', async (t) => {
+  const h = fixture(t, true)
+  try {
+    h.ingest('alias-a', '[topic:alias-a] ALIAS_A_BODY')
+    h.ingest('alias-b', '[topic:alias-b] ALIAS_B_BODY')
+    let foreignRef = ''
+    h.decide((data) => {
+      const current = data.messages.find((message) => textOf(message).includes('ALIAS_A_BODY'))
+      if (!current) return decision('wait', { waitForMs: 1000 })
+      foreignRef = data.topics[1]!.messageIds[0]!
+      return decision('reply', { targetMessageIds: [current.id] })
+    })
+    h.plan(() => completion([call('messages.get', { ids: [foreignRef] })]))
+    await advance(t, 100)
+    assert.ok(foreignRef)
+    assert.equal(h.calls.plan, 1)
+    assert.equal(h.calls.reply, 0)
+    assert.equal(h.sends.length, 0)
+    assert.ok(h.store.logs.some((row) => row.errorCode === 'context_reference_unknown'))
+  } finally {
+    await h.close()
+  }
+})
 
 for (const freshWake of [false, true])
   test(`sent-first then stale validation false ${freshWake ? 'uses only the real pending wake' : 'does not mint a wake for unscheduled input'} and never replays the confirmed segment`, async (t) => {

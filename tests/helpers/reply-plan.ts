@@ -6,13 +6,15 @@ export function fixtureReplyPlan(
   messages: ChatMessage[],
   patch: Partial<ReplyPlan> = {},
 ): ReplyPlan | undefined {
-  const user = messages.find((message) => message.role === 'user')
-  if (!user) return
-  let data: { planContract?: { targetMessageIds: string[]; contextMessageIds: string[] } }
-  try {
-    data = JSON.parse(user.content)
-  } catch {
-    return
+  const data: { planContract?: { targetMessageIds: string[]; contextMessageIds: string[] } } = {}
+  for (const message of messages) {
+    if (message.role === 'assistant' || message.role === 'tool') break
+    if (message.role !== 'user') continue
+    try {
+      Object.assign(data, JSON.parse(message.content))
+    } catch {
+      return
+    }
   }
   if (!data.planContract) return
   return {

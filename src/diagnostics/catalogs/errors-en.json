@@ -586,5 +586,13 @@
   "model_response_refused": {
     "summary": "Model refused the request",
     "advice": "Review the request and provider policy; a refusal is not an empty learning decision."
+  },
+  "prompt_context_message_budget_exhausted": {
+    "summary": "The newest complete message exceeds the prompt window byte limit",
+    "advice": "Increase the prompt context byte limit or shorten the input. The message was not truncated or sent without its complete content."
+  },
+  "prompt_context_target_budget_exhausted": {
+    "summary": "A selected reply target does not fit the prompt context window",
+    "advice": "Increase the prompt context byte limit or narrow the requested context. The turn stopped rather than answering without its target evidence."
   }
 }

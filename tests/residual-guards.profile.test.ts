@@ -214,7 +214,15 @@ for (const chainLength of [100, 1000])
         for (let index = 0; index < 23; index++) fixture.ingest(`history-${index}`)
         await fixture.runtime.proactive(scene.id)
         assert.equal(fixture.sends(), 1)
-        assert.equal(fullScans, 8, 'fixed source and dependency batches must remain bounded')
+        const promptScans = Object.entries(byStack)
+          .filter(([stack]) => stack.includes('promptWindowAuthority'))
+          .reduce((sum, [, count]) => sum + count, 0)
+        assert.equal(promptScans, 1, 'one fresh prompt-configuration gate, not one per setting')
+        assert.equal(
+          fullScans - promptScans,
+          8,
+          'existing source and dependency batches must remain bounded',
+        )
         await pulsed
         process.stdout.write(
           `SYNTHETIC_SEND_VALIDATION fullScans=${fullScans} totalScans=${totalScans} byStack=${JSON.stringify(byStack)} totalByStack=${JSON.stringify(totalByStack)} chain=${chainLength} headReads=${headReads} spanMs=${validationMs.toFixed(1)} timer1msFiredAfter=${timerDelayMs.toFixed(1)}ms\n`,

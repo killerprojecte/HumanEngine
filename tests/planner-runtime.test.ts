@@ -272,6 +272,20 @@ test('new correction during planning requires exact-send revalidation and reject
 test('two send calls with different operation IDs in one dialogue completion emit only once', async () => {
   let dialogueCalls = 0
   const fixture = setup(async (role, messages, tools) => {
+    const payload = JSON.parse(messages.find((message) => message.role === 'user')!.content)
+    const keys = Object.keys(payload)
+    assert.equal(typeof payload.now, 'string')
+    assert.ok(Number.isFinite(Date.parse(payload.now)))
+    if (tools.some((tool) => tool.name === 'participation.decide')) {
+      assert.ok(keys.indexOf('messages') < keys.indexOf('now'))
+      assert.ok(keys.indexOf('messages') < keys.indexOf('topics'))
+    } else if (role === 'planner') {
+      assert.ok(keys.indexOf('evidence') < keys.indexOf('decision'))
+      assert.ok(keys.indexOf('evidence') < keys.indexOf('now'))
+    } else {
+      assert.equal(keys.at(-1), 'now')
+      assert.ok(payload.messages.some((message: RuntimeMessage) => message.id === 'source'))
+    }
     if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
     if (role === 'planner') return plan(messages)
     dialogueCalls++
@@ -731,3 +745,60 @@ test(
     }
   },
 )
+
+test('live participation window grows across turns then batch rolls, with fresh time and no recalled body', async () => {
+  const seen: Array<{ messages: RuntimeMessage[]; now: string }> = []
+  const fixture = setup(async (_role, messages, tools) => {
+    assert.ok(tools.some((tool) => tool.name === 'participation.decide'))
+    seen.push(JSON.parse(messages.find((message) => message.role === 'user')!.content))
+    return decision('silent')
+  })
+  try {
+    for (let i = 1; i < 30; i++) fixture.ingest(`m${i}`)
+    await fixture.runtime.proactive(scene.id)
+    for (let i = 30; i < 40; i++) fixture.ingest(`m${i}`)
+    await fixture.runtime.proactive(scene.id)
+    for (let i = 40; i < 55; i++) fixture.ingest(`m${i}`)
+    await fixture.runtime.proactive(scene.id)
+    assert.equal(seen[0]!.messages.length, 24)
+    assert.equal(seen[1]!.messages.length, 34)
+    assert.deepEqual(seen[1]!.messages.slice(0, 24), seen[0]!.messages)
+    assert.equal(seen[2]!.messages.length, 24)
+    fixture.runtime.recall(scene.id, 'm54')
+    await fixture.runtime.proactive(scene.id)
+    assert.ok(seen.at(-1)!.messages.every((message) => message.id !== 'm54'))
+    assert.ok(seen.every((payload) => Number.isFinite(Date.parse(payload.now))))
+  } finally {
+    fixture.close()
+  }
+})
+
+test('changed prompt policy during pending participation invalidates the old window turn', async () => {
+  const started = deferred(),
+    release = deferred()
+  let laterCalls = 0
+  const fixture = setup(async (_role, _messages, tools) => {
+    if (tools.some((tool) => tool.name === 'participation.decide')) {
+      started.resolve()
+      await release.promise
+      return decision()
+    }
+    laterCalls++
+    return result([])
+  })
+  try {
+    const pending = fixture.runtime.proactive(scene.id)
+    await started.promise
+    fixture.store.set('settings', {
+      ...fixture.store.settings,
+      persona: 'Changed policy immediately applies.',
+    })
+    release.resolve()
+    await pending
+    assert.equal(laterCalls, 0)
+    assert.equal(fixture.sends(), 0)
+  } finally {
+    release.resolve()
+    fixture.close()
+  }
+})

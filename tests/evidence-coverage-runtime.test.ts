@@ -1,3 +1,4 @@
+import { fixtureContext } from './helpers/context.ts'
 import assert from 'node:assert/strict'
 import test, { type TestContext } from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -218,7 +219,7 @@ async function run(t: TestContext, mode: 'complete' | 'empty' | 'omitted') {
       assert.equal(String(url), 'https://coverage-fixture.invalid/v1/chat/completions')
       const body = JSON.parse(String(init?.body)) as NativeRequest
       const names = body.tools.map((tool) => tool.function.name)
-      const input = JSON.parse(body.messages.find((message) => message.role === 'user')!.content)
+      const input = fixtureContext(body.messages)
       if (names.includes('participation__decide'))
         return response([
           call('participation.decide', {

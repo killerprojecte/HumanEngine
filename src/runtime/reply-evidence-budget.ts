@@ -1,3 +1,4 @@
+import { expandContextMessages } from '../models/prompt-context.ts'
 import {
   stateEvidenceTools,
   workspaceStateTools,
@@ -41,6 +42,8 @@ export function packReplyEvidence(input: {
   brief: ReplyBrief
   envelope: Record<string, unknown>
   serialize(payload: Record<string, unknown>): string
+  /** Opt-in transport layout; its complete message wrappers are included in the byte budget. */
+  contextLayout?: 'messages'
   budget: EvidenceBudget
   mandatoryEvidenceIds?: readonly string[]
   upstreamOmissions?: readonly {
@@ -206,10 +209,19 @@ export function packReplyEvidence(input: {
       units: receipts.reduce((sum, ref) => sum + sizes.get(ref)!, 0),
       value: receipts,
     }))
+    const logicalByWire = new Map<string, string>()
     const serializer = (values: readonly JsonValue[]) => {
       const payload = project(new Set(values.flatMap((value) => value as string[]))).payload
       freeze(payload)
-      return input.serialize(payload)
+      const logical = input.serialize(payload)
+      if (!input.contextLayout) return logical
+      const wire = JSON.stringify(
+        expandContextMessages([
+          { role: 'user', content: logical, contextLayout: input.contextLayout },
+        ]).filter((message) => message.role === 'user'),
+      )
+      logicalByWire.set(wire, logical)
+      return wire
     }
     let selected = selectEvidenceGroups<string[]>({
       candidates,
@@ -256,7 +268,10 @@ export function packReplyEvidence(input: {
     return {
       status: 'selected',
       brief: projected.packed,
-      serialized: selected.serialized,
+      // Preserve the exact projection used by the winning measured candidate.
+      serialized: input.contextLayout
+        ? logicalByWire.get(selected.serialized!)
+        : selected.serialized,
       usage: selected.usage,
       omitted: diagnostics,
     }

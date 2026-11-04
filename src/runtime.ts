@@ -1,3 +1,4 @@
+import { PromptContextWindows, promptWindowAuthority } from './runtime/prompt-context-window.ts'
 import { mergeRecentHistory } from './runtime/chat-history.ts'
 import { TopicRoutingHistory } from './runtime/topic-history.ts'
 import {
@@ -461,6 +462,7 @@ class GroundingError extends Error {
 }
 export class Runtime {
   private readonly imageBytes = new ImageByteCache()
+  private readonly promptWindows = new PromptContextWindows()
   get imageByteCacheStats() {
     return { ...this.imageBytes.stats }
   }
@@ -1374,6 +1376,7 @@ export class Runtime {
     }
   }
   dispose() {
+    this.promptWindows.clear()
     this.imageBytes.clear()
     this.typingDelay?.dispose()
     this.typingDelay = undefined
@@ -1755,28 +1758,32 @@ export class Runtime {
         },
         {
           role: 'user',
-          content: projection.stringify({
-            sceneKind: scene.kind,
-            botUserId: 'bot',
-            now: new Date().toISOString(),
-            timezone: settings.timezone,
-            proactive,
-            participationInclination: this.inclination(settings),
-            topics: [...(this.states.get(scene.id)?.topics.values() ?? [])].map((t) => ({
-              id: t.id,
-              messageIds: t.messageIds.slice(-24),
-              attention: this.attention(t),
-              ageMs: Date.now() - t.lastAt,
-            })),
-            localState: this.sceneState(scene.id),
-            globalState: {
-              secondsSinceBotSpoke: this.lastReplyAt
-                ? Math.round((Date.now() - this.lastReplyAt) / 1000)
-                : null,
+          content: projection.stringify(
+            {
+              sceneKind: scene.kind,
+              botUserId: 'bot',
+              now: new Date().toISOString(),
+              timezone: settings.timezone,
+              proactive,
+              participationInclination: this.inclination(settings),
+              topics: [...(this.states.get(scene.id)?.topics.values() ?? [])].map((t) => ({
+                id: t.id,
+                messageIds: t.messageIds.slice(-24),
+                attention: this.attention(t),
+                ageMs: Date.now() - t.lastAt,
+              })),
+              localState: this.sceneState(scene.id),
+              globalState: {
+                secondsSinceBotSpoke: this.lastReplyAt
+                  ? Math.round((Date.now() - this.lastReplyAt) / 1000)
+                  : null,
+              },
+              messages,
+              imageContext,
             },
-            messages,
-            imageContext,
-          }),
+            ['topics', 'localState', 'globalState', 'now'],
+          ),
+          ...(settings.promptContextWindowEnabled ? { contextLayout: 'messages' as const } : {}),
         },
       ],
       [
@@ -1894,14 +1901,45 @@ export class Runtime {
                       .map(([id]) => id),
                   ])
                 : undefined
-              const recent = state.messages
-                .filter(
+              const windowOptions = {
+                enabled: settings.promptContextWindowEnabled && settings.cacheEnabled,
+                maxMessages: settings.promptContextWindowMaxMessages,
+                retainMessages: settings.promptContextWindowRetainMessages,
+                maxBytes: settings.promptContextWindowMaxBytes,
+              }
+              const readWindowAuthority = () =>
+                promptWindowAuthority(
+                  this.store,
+                  scene.id,
+                  this.extensions.map((extension) => extension.tools),
+                )
+              const windowAuthority = settings.promptContextWindowEnabled
+                ? readWindowAuthority()
+                : undefined
+              if (settings.promptContextWindowEnabled) {
+                context.validations.push(() => readWindowAuthority() === windowAuthority)
+                if (mode === 'real') {
+                  // The preceding live snapshot proves this configuration is unchanged.
+                  // Do not repeat a recovery-ledger scan just to read it a second time.
+                  const lifetime = settings.cacheEnabled ? settings.cacheHours * 3600000 : 60000
+                  context.validations.push(() =>
+                    (context.sourceSnapshots ?? []).every(
+                      (message) => Date.parse(message.receivedAt) >= Date.now() - lifetime,
+                    ),
+                  )
+                }
+              }
+              const recent = this.promptWindows.select(
+                JSON.stringify([mode, scene.id, topicId, 'participation']),
+                state.messages.filter(
                   (m) =>
                     m.status === 'available' &&
                     !this.isRecalled(scene.id, m.id) &&
                     (!admittedIds || admittedIds.has(m.id)),
-                )
-                .slice(-24)
+                ),
+                windowOptions,
+                windowAuthority,
+              )
               context.sourceSnapshots = structuredClone(recent)
               context.validations.push(() =>
                 validateSourceSnapshots(this.store, context.sourceSnapshots!),
@@ -1932,6 +1970,16 @@ export class Runtime {
                 throw error
               }
               const projection = new ContextProjection(scene.id)
+              // Reserve only current authorized history evidence before volatile topic IDs
+              // consume the same reference namespace. Append-only windows then retain
+              // the same evidence aliases even when participation discovers new topics.
+              if (settings.promptContextWindowEnabled)
+                projection.project(
+                  recent.map((message) => ({
+                    evidenceId: `message:${message.id}`,
+                    value: message,
+                  })),
+                )
               projection.project(recent)
               const imageContext: unknown[] = []
               // Quoted sources outrank the current topic, then recent context fills the budget.
@@ -2158,6 +2206,21 @@ export class Runtime {
                   for (const message of replyerRecent) dependencies.add(message.id)
                 }
               }
+              replyerRecent = this.promptWindows.select(
+                JSON.stringify([mode, scene.id, topicId, 'planner']),
+                replyerRecent,
+                { ...windowOptions, retainMessages: windowOptions.maxMessages },
+                windowAuthority,
+              )
+              if (
+                decision.targetMessageIds.some(
+                  (id) => !replyerRecent.some((message) => message.id === id),
+                )
+              )
+                throw new Error('prompt_context_target_budget_exhausted')
+              dependencies.clear()
+              for (const id of extensionDependencies) dependencies.add(id)
+              for (const message of replyerRecent) dependencies.add(message.id)
               // The Planner only receives this selected topic. Keep its immutable source
               // snapshots aligned with the narrowed dependency set, not unrelated decisions.
               context.sourceSnapshots = structuredClone(replyerRecent)
@@ -2223,21 +2286,27 @@ export class Runtime {
                       },
                       {
                         role: 'user',
-                        content: projection.stringify({
-                          decision,
-                          now: new Date().toISOString(),
-                          timezone: settings!.timezone,
-                          sceneKind: scene.kind,
-                          ...(plannerContext.length ? { policyContext: plannerContext } : {}),
-                          evidence: initialEvidence,
-                          imageContext,
-                          actionTools,
-                          deliveryTools,
-                          planContract: {
-                            targetMessageIds: decision.targetMessageIds,
-                            contextMessageIds: replyerRecent.map((m) => m.id),
+                        content: projection.stringify(
+                          {
+                            decision,
+                            now: new Date().toISOString(),
+                            timezone: settings!.timezone,
+                            sceneKind: scene.kind,
+                            ...(plannerContext.length ? { policyContext: plannerContext } : {}),
+                            evidence: initialEvidence,
+                            imageContext,
+                            actionTools,
+                            deliveryTools,
+                            planContract: {
+                              targetMessageIds: decision.targetMessageIds,
+                              contextMessageIds: replyerRecent.map((m) => m.id),
+                            },
                           },
-                        }),
+                          ['decision', 'policyContext', 'planContract', 'now'],
+                        ),
+                        ...(settings!.promptContextWindowEnabled
+                          ? { contextLayout: 'evidence' as const }
+                          : {}),
                       },
                     ],
                     readTools,
@@ -2531,6 +2600,7 @@ export class Runtime {
               )
               const packedEvidence = packReplyEvidence({
                 brief,
+                contextLayout: settings.promptContextWindowEnabled ? 'messages' : undefined,
                 upstreamOmissions: planned.evidence.flatMap((receipt) =>
                   receipt.coverage?.status === 'limited' &&
                   [
@@ -2562,7 +2632,8 @@ export class Runtime {
                   sceneKind: scene.kind,
                   messages: selectedMessages,
                 },
-                serialize: (payload) => projection.stringify(payload),
+                // Keep the exact current clock, but not ahead of all reusable evidence.
+                serialize: (payload) => projection.stringify(payload, ['now']),
                 budget: { mode: 'bytes', limit: settings.replyEvidenceMaxBytes },
               })
               if (packedEvidence.status !== 'selected' || packedEvidence.serialized === undefined)
@@ -2615,6 +2686,9 @@ export class Runtime {
                   role: 'user',
                   // Send the exact short-reference string that was measured; never reserialize it.
                   content: packedEvidence.serialized,
+                  ...(settings.promptContextWindowEnabled
+                    ? { contextLayout: 'messages' as const }
+                    : {}),
                 },
               ]
               const dialogueSignal = stageSignal('replyer')

@@ -119,6 +119,12 @@ async function save() {
     error.value = t('stWindowInvalid')
     return
   }
+  if (
+    settings.value.promptContextWindowRetainMessages > settings.value.promptContextWindowMaxMessages
+  ) {
+    error.value = t('stPromptContextWindowInvalid')
+    return
+  }
   try {
     new Intl.DateTimeFormat('en', { timeZone: settings.value.timezone })
   } catch {
@@ -687,6 +693,66 @@ const timingFields = [
             /></UFormField>
           </div>
         </details>
+        <section class="settings-section">
+          <div class="settings-heading">
+            <h2>{{ t('stPromptContextWindowTitle') }}</h2>
+          </div>
+          <div class="settings-body">
+            <USwitch
+              id="settings-prompt-context-window-enabled"
+              v-model="settings.promptContextWindowEnabled"
+              :label="t('stPromptContextWindowEnabled')"
+            />
+            <p class="text-sm text-muted leading-6">{{ t('stPromptContextWindowHelp') }}</p>
+            <div class="grid sm:grid-cols-3 gap-5">
+              <UFormField
+                :label="t('stPromptContextWindowMessages')"
+                :help="t('stPromptContextWindowMessagesHelp')"
+              >
+                <UInput
+                  v-model.number="settings.promptContextWindowMaxMessages"
+                  type="number"
+                  required
+                  min="24"
+                  max="200"
+                  step="1"
+                  :disabled="!settings.promptContextWindowEnabled || locked"
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField
+                :label="t('stPromptContextWindowRetain')"
+                :help="t('stPromptContextWindowRetainHelp')"
+              >
+                <UInput
+                  v-model.number="settings.promptContextWindowRetainMessages"
+                  type="number"
+                  required
+                  min="1"
+                  :max="Math.min(100, settings.promptContextWindowMaxMessages)"
+                  step="1"
+                  :disabled="!settings.promptContextWindowEnabled || locked"
+                  class="w-full"
+                />
+              </UFormField>
+              <UFormField
+                :label="t('stPromptContextWindowBytes')"
+                :help="t('stPromptContextWindowBytesHelp')"
+              >
+                <UInput
+                  v-model.number="settings.promptContextWindowMaxBytes"
+                  type="number"
+                  required
+                  min="8192"
+                  max="1048576"
+                  step="1"
+                  :disabled="!settings.promptContextWindowEnabled || locked"
+                  class="w-full"
+                />
+              </UFormField>
+            </div>
+          </div>
+        </section>
         <section class="settings-section">
           <div class="settings-heading">
             <h2>{{ t('stTemporary') }}</h2>

@@ -5881,6 +5881,14 @@ export interface components {
             timezone: string;
             persona: string;
             cacheEnabled: boolean;
+            /** @default true */
+            promptContextWindowEnabled: boolean;
+            /** @default 48 */
+            promptContextWindowMaxMessages: number;
+            /** @default 24 */
+            promptContextWindowRetainMessages: number;
+            /** @default 131072 */
+            promptContextWindowMaxBytes: number;
             /** @default false */
             replySuggestionsEnabled: boolean;
             /** @default 65536 */

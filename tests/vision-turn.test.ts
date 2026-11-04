@@ -1,3 +1,4 @@
+import { fixtureContext } from './helpers/context.ts'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
@@ -44,21 +45,13 @@ for (const [visionEnabled, desiredAction] of [
           body.tools.some(
             (item: { function: { name: string } }) => item.function.name === 'reply__plan',
           )
-        const input = planning
-          ? JSON.parse(
-              body.messages.find((message: { role: string }) => message.role === 'user').content,
-            )
-          : undefined
+        const input = planning ? fixtureContext(body.messages) : undefined
         const visualEvidence = input?.evidence.find(
           (item: { value?: { trust?: string } }) =>
             item.value?.trust === 'untrusted_image_descriptions',
         )
         const participationInput =
-          body.model === 'planner' && !planning
-            ? JSON.parse(
-                body.messages.find((message: { role: string }) => message.role === 'user').content,
-              )
-            : undefined
+          body.model === 'planner' && !planning ? fixtureContext(body.messages) : undefined
         const observation = participationInput?.imageContext?.find(
           (item: { trust?: string }) => item.trust === 'untrusted_image_descriptions',
         )?.images?.[0]
@@ -69,8 +62,8 @@ for (const [visionEnabled, desiredAction] of [
           ? [
               tool('reply.plan', {
                 action: 'reply',
-                targetMessageIds: input.planContract.targetMessageIds,
-                contextMessageIds: input.planContract.contextMessageIds,
+                targetMessageIds: input!.planContract.targetMessageIds,
+                contextMessageIds: input!.planContract.contextMessageIds,
                 strategy: 'Describe the provided image, or explain that it is unavailable.',
                 constraints: ['Use only the attributed vision result.'],
                 facts: [
@@ -241,8 +234,8 @@ for (const [visionEnabled, desiredAction] of [
           request.tools?.some((tool) => tool.function.name === 'participation__decide'),
         )
         assert.ok(participation)
-        const participationContext = JSON.parse(
-          participation.messages.find((message) => message.role === 'user')!.content as string,
+        const participationContext = fixtureContext(
+          participation.messages as Array<{ role: string; content: string }>,
         )
         assert.equal(participationContext.imageContext[0].framePolicy, 'first_frame_only')
         const initialImage = participationContext.imageContext[0].images[0]
@@ -271,8 +264,8 @@ for (const [visionEnabled, desiredAction] of [
         const thinker = requests.find((request) => request.model === 'thinker')
         assert.ok(thinker, 'current thinker must run')
         const thinkerText = JSON.stringify(thinker.messages)
-        const thinkerContext = JSON.parse(
-          thinker.messages.find((message) => message.role === 'user')!.content as string,
+        const thinkerContext = fixtureContext(
+          thinker.messages as Array<{ role: string; content: string }>,
         )
         const planner = requests.find(
           (request) =>
@@ -280,8 +273,8 @@ for (const [visionEnabled, desiredAction] of [
             request.tools?.some((tool) => tool.function.name === 'reply__plan'),
         )
         assert.ok(planner, 'research planner must run before dialogue')
-        const plannerContext = JSON.parse(
-          planner.messages.find((message) => message.role === 'user')!.content as string,
+        const plannerContext = fixtureContext(
+          planner.messages as Array<{ role: string; content: string }>,
         )
         const plannedEvidence = plannerContext.evidence.find(
           (item: { value?: { trust?: string } }) =>

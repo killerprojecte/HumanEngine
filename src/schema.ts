@@ -144,6 +144,10 @@ export const SettingsSchema = z
     }, 'Invalid timezone'),
     persona: z.string().min(1).max(20000),
     cacheEnabled: z.boolean(),
+    promptContextWindowEnabled: z.boolean().default(true),
+    promptContextWindowMaxMessages: z.number().int().min(24).max(200).default(48),
+    promptContextWindowRetainMessages: z.number().int().min(1).max(100).default(24),
+    promptContextWindowMaxBytes: z.number().int().min(8192).max(1048576).default(131072),
     replySuggestionsEnabled: z.boolean().default(false),
     replyEvidenceMaxBytes: z.number().int().min(4096).max(1048576).default(65536),
     plannerEvidenceMaxBytes: z.number().int().min(8192).max(2097152).default(131072),
@@ -204,6 +208,15 @@ export const SettingsSchema = z
   })
   .strict()
   .superRefine(refineBudgetSettings)
+  .superRefine((settings, ctx) => {
+    if (settings.promptContextWindowRetainMessages > settings.promptContextWindowMaxMessages) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['promptContextWindowRetainMessages'],
+        message: 'Retained context messages must not exceed the context window message limit',
+      })
+    }
+  })
   .openapi('Settings')
 export const SceneSchema = z
   .object({

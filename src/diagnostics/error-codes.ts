@@ -45,6 +45,8 @@ export const diagnosticCodes = new Set([
   'planner_evidence_too_large',
   'planner_evidence_budget_exhausted',
   'reply_evidence_budget_exhausted',
+  'prompt_context_message_budget_exhausted',
+  'prompt_context_target_budget_exhausted',
   'planner_failed',
   'planner_forbidden_action',
   'planner_forbidden_tool',

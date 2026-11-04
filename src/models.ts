@@ -1,3 +1,4 @@
+import { expandContextMessages } from './models/prompt-context.ts'
 import {
   prepareImageRequest,
   hasNativeInlineImages,
@@ -97,6 +98,8 @@ export interface ToolCall {
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
+  /** Internal layout hint, consumed before protocol serialization. */
+  contextLayout?: 'messages' | 'evidence'
   images?: string[]
   toolCalls?: ToolCall[]
   toolCallId?: string
@@ -553,6 +556,7 @@ export class Router {
     tools: ToolDefinition[] = [],
     signal?: AbortSignal,
   ): Promise<Completion> {
+    messages = expandContextMessages(messages)
     if (signal?.aborted) throw abortError()
     const route = this.config.routes.find((item) => item.role === role)
     if (!route) throw new ModelError('route_not_configured')

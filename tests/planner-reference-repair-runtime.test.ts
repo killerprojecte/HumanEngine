@@ -1,3 +1,4 @@
+import { fixtureContext } from './helpers/context.ts'
 import assert from 'node:assert/strict'
 import test, { type TestContext } from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -233,7 +234,7 @@ function fixture(
       requests.push(structuredClone(body))
       const tools = body.tools.map((tool) => tool.function.name)
       if (tools.includes('participation__decide')) {
-        const input = JSON.parse(body.messages.find((m) => m.role === 'user')!.content)
+        const input = fixtureContext(body.messages)
         return response([
           call('participation.decide', {
             action: 'reply',
@@ -320,7 +321,7 @@ function fixture(
       assert.deepEqual(tools, ['messages__send'])
       replyerCalls++
       if (replyerCalls > 1) return response()
-      const user = JSON.parse(body.messages.find((m) => m.role === 'user')!.content)
+      const user = fixtureContext(body.messages)
       assert.ok(
         user.evidence.some(
           (item: { toolName?: string; memories?: Array<{ content: string }> }) =>

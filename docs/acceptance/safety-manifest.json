@@ -234,7 +234,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "full memory and AND sources retain tail qualification and full envelope is exactly counted",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -572,7 +572,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "optional oversized group drops dependent fact and draft, not fixed web facts or images/results/constraints",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -910,7 +910,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "cross-memory and memory+web fact closures are indivisible",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1248,7 +1248,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "memory-not-selected or empty receipts drop dependent fact and flag missing selection",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1586,7 +1586,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "record count cannot hide behind one receipt or one linked group",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -1898,7 +1898,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "missing mandatory and throwing or nondeterministic serializer fail closed without body echoes",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -2197,7 +2197,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "omission removes freeworded strategy/goals/draft canaries while retaining safety constraints",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },
@@ -2483,7 +2483,7 @@
       "scope": "reply_envelope",
       "authorityChange": "omit_complete_dependency_group",
       "expectedOutcome": "upstream limited receipt remains disclosed with no selected memories or facts",
-      "fixtureHash": "333900125089fe348fb3047454b12caf11d8f1cc3a18d1c8ec59a3b9e8fb08af",
+      "fixtureHash": "b5edca4baae29c11a2925ec238b32371956ce850e7091481d934713a4a2c9e16",
       "evidenceClass": "synthetic_mechanism",
       "semanticGold": "not_claimed"
     },

@@ -1,3 +1,4 @@
+import { fixtureContext } from './helpers/context.ts'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
 import { Router } from '../src/models.ts'
@@ -212,9 +213,7 @@ test('planner invokes enabled web read through real routed requests; dialogue on
     const body = JSON.parse(Buffer.concat(chunks).toString())
     outbound.push(body)
     const names = body.tools.map((entry: { function: { name: string } }) => entry.function.name)
-    const user = JSON.parse(
-      body.messages.find((message: { role: string }) => message.role === 'user').content,
-    )
+    const user = fixtureContext(body.messages)
     let calls: unknown[]
     if (names.includes('participation__decide')) {
       calls = [
@@ -371,9 +370,7 @@ test('planner invokes enabled web read through real routed requests; dialogue on
           request.tools.length === 1 && request.tools[0]?.function.name === 'messages__send',
       ),
     )
-    const composed = JSON.parse(
-      dialogue[0]!.messages.find((message) => message.role === 'user')!.content,
-    )
+    const composed = fixtureContext(dialogue[0]!.messages)
     assert.equal(composed.plan.facts[0].evidenceIds[0], receipt.id)
     assert.equal(composed.evidence[0].id, receipt.id)
     assert.equal(composed.evidence[0].toolName, receipt.toolName)

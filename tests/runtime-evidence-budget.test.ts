@@ -1,3 +1,5 @@
+import { fixtureContext } from './helpers/context.ts'
+import { expandContextMessages } from '../src/models/prompt-context.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createServer, type ServerResponse } from 'node:http'
@@ -305,8 +307,8 @@ async function fixture(
         (body) => body.tools.length === 1 && body.tools[0]!.function.name === 'messages__send',
       )
       assert.ok(request, 'a Replyer request must actually reach the loopback provider')
-      const content = request.messages.find((message) => message.role === 'user')!.content
-      return { content, data: JSON.parse(content) }
+      const content = JSON.stringify(request.messages.filter((message) => message.role === 'user'))
+      return { content, data: fixtureContext(request.messages) }
     },
     async close() {
       await engine.dispose()
@@ -328,10 +330,8 @@ function ordinaryPlan(h: Awaited<ReturnType<typeof fixture>>, select = true) {
       }
     const [memory, web] = receipts(body)
     assert.ok(Array.isArray(memory!.value) && memory!.value.length)
-    const source = JSON.parse(
-      body.messages.find((message) => message.role === 'user')!.content,
-    ).evidence.find((receipt: { value?: { parts?: unknown } }) =>
-      Array.isArray(receipt.value?.parts),
+    const source = fixtureContext(body.messages).evidence.find(
+      (receipt: { value?: { parts?: unknown } }) => Array.isArray(receipt.value?.parts),
     )
     return {
       calls: [
@@ -381,9 +381,11 @@ test(
       assert.equal(receipt.memories[0].validUntil, '2099-01-01T00:00:00Z')
       assert.equal(data.memoryEvidenceCoverage.status, 'complete')
       assert.equal(data.plan.replySuggestion, draft)
-      const captured = h.captures
-        .find((capture) => capture.role === 'replyer')!
-        .messages.find((message) => message.role === 'user')!.content
+      const captured = JSON.stringify(
+        expandContextMessages(
+          h.captures.find((capture) => capture.role === 'replyer')!.messages,
+        ).filter((message) => message.role === 'user'),
+      )
       assert.equal(content, captured, 'native transport must receive the exact projected string')
       const measured = h.store.logs.find(
         (log) => log.stage === 'memory.handoff' && log.status === 'completed',
@@ -498,14 +500,15 @@ test(
       assert.equal(canonical.length, 3)
       assert.equal(plannerRequests.length, 3)
       for (const [index, request] of canonical.entries()) {
-        const bytes = Buffer.byteLength(JSON.stringify(request.messages), 'utf8')
+        const expanded = expandContextMessages(request.messages)
+        const bytes = Buffer.byteLength(JSON.stringify(expanded), 'utf8')
         assert.ok(
           bytes <= 32768,
           `request ${index} must include system/user/assistant/tool envelopes within its cap`,
         )
         assert.deepEqual(
           plannerRequests[index]!.messages.map((message) => message.content),
-          request.messages.map((message) => message.content),
+          expanded.map((message) => message.content),
         )
         if (index > 0) {
           assert.ok(
@@ -525,8 +528,8 @@ test(
         }
       }
       assert.ok(
-        Buffer.byteLength(JSON.stringify(canonical[2]!.messages)) >
-          Buffer.byteLength(JSON.stringify(canonical[1]!.messages)),
+        Buffer.byteLength(JSON.stringify(expandContextMessages(canonical[2]!.messages))) >
+          Buffer.byteLength(JSON.stringify(expandContextMessages(canonical[1]!.messages))),
       )
     } finally {
       await h.close()

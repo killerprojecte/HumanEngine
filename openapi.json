@@ -597,6 +597,28 @@
           "cacheEnabled": {
             "type": "boolean"
           },
+          "promptContextWindowEnabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "promptContextWindowMaxMessages": {
+            "type": "integer",
+            "minimum": 24,
+            "maximum": 200,
+            "default": 48
+          },
+          "promptContextWindowRetainMessages": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 24
+          },
+          "promptContextWindowMaxBytes": {
+            "type": "integer",
+            "minimum": 8192,
+            "maximum": 1048576,
+            "default": 131072
+          },
           "replySuggestionsEnabled": {
             "type": "boolean",
             "default": false

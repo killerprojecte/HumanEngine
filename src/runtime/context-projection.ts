@@ -193,7 +193,26 @@ export class ContextProjection {
   restoreArguments<T>(value: T): T {
     return this.walk(value, true) as T
   }
-  stringify(value: unknown): string {
-    return JSON.stringify(this.project(value))
+  /** Move volatile top-level context behind reusable evidence without changing
+   * values or reference allocation order. Projection must happen before reordering:
+   * per-turn short references remain bound to the original trusted traversal.
+   */
+  stringify(value: unknown, trailingFields: readonly string[] = []): string {
+    const projected = this.project(value)
+    if (
+      !trailingFields.length ||
+      !projected ||
+      typeof projected !== 'object' ||
+      Array.isArray(projected)
+    )
+      return JSON.stringify(projected)
+    const entries = Object.entries(projected)
+    const trailing = new Set(trailingFields)
+    return JSON.stringify(
+      Object.fromEntries([
+        ...entries.filter(([key]) => !trailing.has(key)),
+        ...entries.filter(([key]) => trailing.has(key)),
+      ]),
+    )
   }
 }

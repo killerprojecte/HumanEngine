@@ -209,3 +209,38 @@ test('upstream omission wins duplicate receipt attribution and malformed counts 
       'invalid',
     )
 })
+
+test('volatile prompt suffix is selected and measured in the exact delivered representation', async () => {
+  const { ContextProjection } = await import('../src/runtime/context-projection.ts')
+  const projection = new ContextProjection('synthetic')
+  const baseline = run(fixture())
+  const result = run(fixture(), 100000, {
+    serialize: (payload: Record<string, unknown>) => projection.stringify(payload, ['now']),
+  })
+  assert.equal(result.status, 'selected')
+  assert.equal(result.usage?.count, bytes(result.serialized!))
+  assert.equal(Object.keys(JSON.parse(result.serialized!)).at(-1), 'now')
+  assert.deepEqual(JSON.parse(result.serialized!), JSON.parse(baseline.serialized!))
+  assert.deepEqual(result.omitted, baseline.omitted)
+  assert.deepEqual(result.brief, baseline.brief)
+})
+
+test('segmented Replyer context measures complete wire blocks without changing authorized evidence', async () => {
+  const { expandContextMessages } = await import('../src/models/prompt-context.ts')
+  const baseline = run(fixture())
+  const result = run(fixture(), 100000, { contextLayout: 'messages' })
+  assert.equal(result.status, 'selected')
+  assert.deepEqual(JSON.parse(result.serialized!), JSON.parse(baseline.serialized!))
+  assert.deepEqual(result.brief, baseline.brief)
+  const wire = expandContextMessages([
+    { role: 'user', content: result.serialized!, contextLayout: 'messages' },
+  ]).filter((message) => message.role === 'user')
+  assert.equal(result.usage?.count, bytes(JSON.stringify(wire)))
+  assert.ok(result.usage!.count > bytes(result.serialized!))
+  const tight = run(fixture(), result.usage!.count - 1, { contextLayout: 'messages' })
+  assert.ok(tight.status !== 'selected' || tight.usage!.count <= result.usage!.count - 1)
+  const updated = fixture()
+  updated.plan.strategy = 'Only this new plan is authoritative.'
+  const next = run(updated, 100000, { contextLayout: 'messages' })
+  assert.equal(JSON.parse(next.serialized!).plan.strategy, updated.plan.strategy)
+})

@@ -586,5 +586,13 @@
   "model_response_refused": {
     "summary": "模型拒绝了请求",
     "advice": "检查请求及供应商策略；拒绝响应不代表无需学习。"
+  },
+  "prompt_context_message_budget_exhausted": {
+    "summary": "最新完整消息超出提示词窗口字节上限",
+    "advice": "请提高提示词上下文字节上限或缩短输入。消息未被截断，也未在内容不完整时发送给模型。"
+  },
+  "prompt_context_target_budget_exhausted": {
+    "summary": "选定的回复目标无法放入提示词窗口",
+    "advice": "请提高提示词上下文字节上限或缩小请求上下文。本回合已停止，不会缺少目标证据仍作答。"
   }
 }

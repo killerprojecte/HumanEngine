@@ -1,3 +1,4 @@
+import { fixtureContext } from '../../tests/helpers/context.ts'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
@@ -74,7 +75,7 @@ function eventFrom(message: Json) {
   return longitudinalEvents.find((event) => textOf(message).startsWith(`[fixture:${event.id}]`))
 }
 function data(messages: ChatMessage[]) {
-  return JSON.parse(messages.find((m) => m.role === 'user')!.content) as Json
+  return fixtureContext(messages) as Json
 }
 function receipts(messages: ChatMessage[]): Json[] {
   return messages.filter((m) => m.role === 'tool').map((m) => JSON.parse(m.content))
@@ -271,7 +272,7 @@ export function longitudinalHarness(variant: LongitudinalVariant) {
   }
   function capture(messages: ChatMessage[]) {
     const input = data(messages),
-      wire = messages.find((m) => m.role === 'user')!.content
+      wire = JSON.stringify(messages.filter((m) => m.role === 'user'))
     const observations: SelectedEvidence[] = (input.evidence ?? []).map((item: Json) => {
       const views = (item.states ?? []).flatMap((state: Json) =>
         state.stateKind === 'commitment'

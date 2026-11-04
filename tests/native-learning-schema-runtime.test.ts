@@ -1,3 +1,4 @@
+import { fixtureContext } from './helpers/context.ts'
 import assert from 'node:assert/strict'
 import test, { type TestContext } from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -128,7 +129,7 @@ function fixture(t: TestContext, protocol: Protocol, invalid = false) {
         )
       const names = tools.map((tool) => tool.name)
       const prompts = messages(body)
-      const input = JSON.parse(prompts.find((message) => message.role === 'user')!.content)
+      const input = fixtureContext(prompts)
       if (names.includes('learning__propose')) {
         assert.deepEqual(names, ['learning__propose', 'habits__propose'])
         learningTools.push(structuredClone(tools))

@@ -1,3 +1,4 @@
+import { fixtureContext } from './helpers/context.ts'
 import { fixtureReplyPlan } from './helpers/reply-plan.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
@@ -286,9 +287,7 @@ test(
             })
           }
           if (context.model?.id === 'thinker') {
-            const plan = JSON.parse(
-              messages.find((message) => message.role === 'user')!.content,
-            ).plan
+            const plan = fixtureContext(messages).plan
             return output('messages.send', {
               operationId: 'original-media',
               segments: plan.assets.map((asset: { assetId: string }) => ({

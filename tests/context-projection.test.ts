@@ -342,3 +342,53 @@ test('background extraction wire stays compact and restores source/person proven
     await h.close()
   }
 })
+
+test('prompt suffix layout preserves exact values, reference allocation, and live clocks', () => {
+  const payload = {
+    decision: { targetMessageIds: ['long-first-reference-that-needs-shortening'] },
+    now: '2026-11-04T01:00:00.123Z',
+    timezone: 'UTC',
+    evidence: [{ id: 'long-evidence-reference-that-needs-shortening', value: body.repeat(50) }],
+    messages: [message],
+  }
+  const before = JSON.stringify(payload)
+  const original = new ContextProjection(scene)
+  const optimized = new ContextProjection(scene)
+  const baseline = original.stringify(payload)
+  const serialized = optimized.stringify(payload, ['decision', 'now'])
+  assert.deepEqual(JSON.parse(serialized), JSON.parse(baseline))
+  assert.equal(Buffer.byteLength(serialized), Buffer.byteLength(baseline))
+  assert.equal(JSON.stringify(payload), before)
+  const refs = JSON.parse(serialized)
+  assert.deepEqual(
+    optimized.restoreArguments(refs),
+    original.restoreArguments(JSON.parse(baseline)),
+  )
+  assert.deepEqual(Object.keys(refs), ['timezone', 'evidence', 'messages', 'decision', 'now'])
+  const later = { ...payload, now: '2026-11-04T01:00:01.456Z' }
+  const next = new ContextProjection(scene).stringify(later, ['decision', 'now'])
+  const shared = (a: string, b: string) => {
+    let length = 0
+    while (length < Math.min(a.length, b.length) && a[length] === b[length]) length++
+    return length
+  }
+  assert.ok(
+    shared(serialized, next) >
+      shared(baseline, new ContextProjection(scene).stringify(later)) + 1000,
+  )
+  assert.equal(JSON.parse(next).now, later.now)
+  assert.throws(() => optimized.stringify({ sceneId: 'another-scene' }, ['sceneId']), /cross_scene/)
+  assert.throws(() => optimized.restoreArguments({ messageId: 'forged-reference' }), /unknown/)
+})
+
+test('prompt suffix layout is opt-in, top-level only, and does not fabricate missing fields', () => {
+  const refs = new ContextProjection(scene)
+  const value = { now: null, nested: { now: 'keep nested order', other: true }, absent: undefined }
+  assert.equal(refs.stringify(value), JSON.stringify(refs.project(value)))
+  assert.equal(
+    refs.stringify(value, ['now', 'missing', 'now']),
+    '{"nested":{"now":"keep nested order","other":true},"now":null}',
+  )
+  assert.equal(refs.stringify([value], ['now']), refs.stringify([value]))
+  assert.equal(refs.stringify(null, ['now']), 'null')
+})

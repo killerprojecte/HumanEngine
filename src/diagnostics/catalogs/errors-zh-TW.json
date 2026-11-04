@@ -586,5 +586,13 @@
   "model_response_refused": {
     "summary": "模型拒絕了請求",
     "advice": "檢查請求及供應商政策；拒絕回應不代表無需學習。"
+  },
+  "prompt_context_message_budget_exhausted": {
+    "summary": "最新完整訊息超出提示詞視窗位元組上限",
+    "advice": "請提高提示詞上下文位元組上限或縮短輸入。訊息未被截斷，也未在內容不完整時傳送給模型。"
+  },
+  "prompt_context_target_budget_exhausted": {
+    "summary": "選定的回覆目標無法放入提示詞視窗",
+    "advice": "請提高提示詞上下文位元組上限或縮小請求上下文。本回合已停止，不會缺少目標證據仍作答。"
   }
 }

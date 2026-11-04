@@ -1,3 +1,4 @@
+import { expandContextMessages } from '../models/prompt-context.ts'
 import { retrievalCoverage } from './evidence-scope.ts'
 import { workspaceStateTools } from './workspace-state-evidence.ts'
 import type { ChatMessage } from '../models.ts'
@@ -10,14 +11,14 @@ export interface EvidenceCoverage {
   omittedRecords: number
   reason?: 'planner_evidence_budget'
 }
-/** Counts serialized ChatMessage[] bytes, not tokens or provider tool-schema overhead. */
+/** Counts expanded serialized ChatMessage[] bytes, not tokens or provider tool-schema overhead. */
 export class PlannerEvidenceBudget {
   constructor(readonly maxBytes = 131072) {
     if (!Number.isSafeInteger(maxBytes) || maxBytes < 1)
       throw new Error('planner_invalid_evidence_budget')
   }
   measure(messages: readonly ChatMessage[]): number {
-    return Buffer.byteLength(JSON.stringify(messages), 'utf8')
+    return Buffer.byteLength(JSON.stringify(expandContextMessages(messages)), 'utf8')
   }
   assertWithin(messages: readonly ChatMessage[]): void {
     if (this.measure(messages) > this.maxBytes) throw new Error('planner_evidence_budget_exhausted')

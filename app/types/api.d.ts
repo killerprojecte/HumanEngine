@@ -649,7 +649,13 @@ export interface paths {
                                 cacheReadInputTokens: number | null;
                                 cacheWriteInputTokens: number | null;
                                 durationMs: number;
-                                firstTokenMs: null;
+                                firstTokenMs: number | null;
+                                /** @enum {string|null} */
+                                firstTokenKind: "text" | "reasoning" | "tool" | null;
+                                /** @enum {string} */
+                                transportMode: "stream" | "non_stream" | "custom" | "unknown";
+                                /** @enum {string|null} */
+                                failureReason: "cancelled" | "first_content_timeout" | "request_timeout" | "stream_idle_timeout" | "stream_interrupted" | "request_failed" | null;
                                 tokensPerSecond: number | null;
                             }[];
                             nextCursor: number | null;
@@ -5915,6 +5921,7 @@ export interface components {
             embeddingDimensions?: number;
             /** @enum {string} */
             promptCacheMode?: "auto" | "off" | "openai";
+            streaming?: boolean;
             inputUsdPerMillion?: number;
             outputUsdPerMillion?: number;
             cacheReadUsdPerMillion?: number;

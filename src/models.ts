@@ -1,3 +1,7 @@
+import { nativeStreamDispatcher } from './models/stream-dispatcher.ts'
+import { AsyncLocalStorage } from 'node:async_hooks'
+import { progressDeadline, signalStreamProgress } from './models/stream-progress.ts'
+import { readStreamingResponse, StreamResponseError } from './models/stream-response.ts'
 import type { ModelCallObservation } from './model-calls.ts'
 import { expandContextMessages } from './models/prompt-context.ts'
 import { supportsOpenAIPromptBreakpoints } from './models/prompt-cache.ts'
@@ -82,6 +86,7 @@ export interface ModelInstance {
   embeddingDimensions?: number
   /** Explicit capability override for gateways; auto is conservative for official endpoints. */
   promptCacheMode?: 'auto' | 'off' | 'openai'
+  streaming?: boolean
 }
 export interface RoleRoute {
   role: ModelRole
@@ -473,7 +478,13 @@ class NativeImageRetry extends ModelError {
   }
 }
 
+type TransmissionObservation = {
+  transportMode: 'stream' | 'non_stream' | 'custom'
+  firstTokenMs: number | null
+  firstTokenKind: 'text' | 'reasoning' | 'tool' | null
+}
 export class Router {
+  private readonly transmission = new AsyncLocalStorage<TransmissionObservation>()
   private readonly state = new WeakMap<ChatMessage, { modelId: string; output: unknown[] }>()
   private readonly continuations = new WeakMap<
     ChatMessage,
@@ -665,7 +676,10 @@ export class Router {
                       input: this.responsesInput(messages, modelId, cacheBreakpoints),
                       ...cacheOptions,
                       store: false,
-                      stream: false,
+                      stream: model.streaming !== false,
+                      ...(!responses && model.streaming !== false
+                        ? { stream_options: { include_usage: true } }
+                        : {}),
                       include: ['reasoning.encrypted_content'],
                       ...(tools.length
                         ? {
@@ -685,7 +699,10 @@ export class Router {
                         this.chatInput(message, cacheBreakpoints),
                       ),
                       ...cacheOptions,
-                      stream: false,
+                      stream: model.streaming !== false,
+                      ...(!responses && model.streaming !== false
+                        ? { stream_options: { include_usage: true } }
+                        : {}),
                       ...(tools.length
                         ? {
                             tools: tools.map((tool) => ({
@@ -791,6 +808,7 @@ export class Router {
         if (
           error instanceof ModelError &&
           (error.code === 'protocol_disabled' ||
+            error.code.startsWith('provider_stream_') ||
             isBudgetFailureCode(error.code) ||
             isReadAdmissionCode(error.code))
         )
@@ -1152,12 +1170,55 @@ export class Router {
           async () => {
             const at = new Date().toISOString(),
               started = performance.now()
+            const model = this.config.models.find((item) => item.id === details.modelId)
+            const transmission: TransmissionObservation = {
+              transportMode: !isBuiltinProtocol(provider.protocol)
+                ? 'custom'
+                : details.role !== 'embedding' &&
+                    details.role !== 'models' &&
+                    model?.streaming !== false
+                  ? 'stream'
+                  : 'non_stream',
+              firstTokenMs: null,
+              firstTokenKind: null,
+            }
             let value: T | undefined
             let completed = false
+            let failureReason: ModelCallObservation['failureReason'] = null
             try {
-              value = await task()
+              value = await this.transmission.run(transmission, task)
               completed = true
               return value
+            } catch (error) {
+              // Once content has arrived, validation errors must not replay the paid request
+              // through retries or a fallback model either.
+              if (
+                transmission.transportMode === 'stream' &&
+                transmission.firstTokenMs !== null &&
+                !signal?.aborted &&
+                !(error instanceof ModelError && error.code.startsWith('provider_stream_'))
+              )
+                error = new ModelError('provider_stream_interrupted', undefined, false, {
+                  cause: error,
+                })
+              const code = error instanceof ModelError ? error.code : ''
+              const stageTimeout =
+                signal?.aborted &&
+                signal.reason instanceof Error &&
+                signal.reason.message === 'model_stage_timeout'
+              failureReason =
+                code === 'provider_stream_idle_timeout'
+                  ? 'stream_idle_timeout'
+                  : code === 'provider_timeout' || code === 'model_stage_timeout' || stageTimeout
+                    ? transmission.transportMode === 'stream'
+                      ? 'first_content_timeout'
+                      : 'request_timeout'
+                    : signal?.aborted
+                      ? 'cancelled'
+                      : code.startsWith('provider_stream_')
+                        ? 'stream_interrupted'
+                        : 'request_failed'
+              throw error
             } finally {
               if (details.modelId && details.role !== 'models') {
                 // The adapter contract returns complete responses, not streamed first-content timing.
@@ -1172,6 +1233,8 @@ export class Router {
                     at,
                     attempt,
                     durationMs: Math.max(0, performance.now() - started),
+                    ...transmission,
+                    failureReason,
                     usage,
                     pricing: { apiModelName: details.apiModel ?? 'unknown' },
                   })
@@ -1798,8 +1861,16 @@ export class Router {
     if ((provider.credentialEnv || provider.credentialConfigured) && !credential)
       throw new ModelError('credential_not_configured')
     if (credential) credentialUsed?.(credential)
-    const timeoutSignal = AbortSignal.timeout(Math.max(1, Math.min(timeoutMs, 600_000)))
-    const signal = parentSignal ? AbortSignal.any([parentSignal, timeoutSignal]) : timeoutSignal
+    const deadline = progressDeadline(
+      parentSignal,
+      Math.max(1, Math.min(timeoutMs, 600_000)),
+      () => new Error('provider_timeout'),
+    )
+    const signal = deadline.signal
+    const streaming = body !== undefined && object(body).stream === true
+    const transmission = this.transmission.getStore()
+    let firstContent = false
+    let preserveDeadline = false
     let attempt: ReturnType<NativeBudgetGate['prepare']> | undefined
     try {
       if (signal.aborted) throw abortError()
@@ -1853,10 +1924,13 @@ export class Router {
       attempt?.start()
       if (measurement && budgetDescriptor)
         recordRequestMeasurement(provider.id, budgetDescriptor.modelId, measurement)
+      const dispatcher = streaming ? await nativeStreamDispatcher() : undefined
+      const requestStarted = performance.now()
       const response = await fetch(`${base.href.replace(/\/$/, '')}/${path}`, {
+        ...(dispatcher ? { dispatcher } : {}),
         method: body === undefined ? 'GET' : 'POST',
         headers: {
-          Accept: 'application/json',
+          Accept: streaming ? 'text/event-stream, application/json' : 'application/json',
           ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
           ...(credential ? { Authorization: `Bearer ${credential}` } : {}),
         },
@@ -1874,6 +1948,7 @@ export class Router {
           attempt?.fail()
           attempt = undefined
           const maxRequestBytes = Math.floor(Buffer.byteLength(serializedBody) / 2)
+          preserveDeadline = true
           throw new NativeImageRetry(
             { ...provider, imageUploadLimits: { ...provider.imageUploadLimits, maxRequestBytes } },
             body,
@@ -1887,6 +1962,28 @@ export class Router {
           { retryAfterMs: parseRetryAfter(response.headers.get('retry-after')) },
         )
       }
+      if (streaming && response.headers.get('content-type')?.includes('text/event-stream')) {
+        if (transmission) transmission.transportMode = 'stream'
+        const result = await readStreamingResponse(
+          response,
+          provider.protocol === 'openai-responses' ? 'openai-responses' : 'openai-chat',
+          (kind) => {
+            if (!firstContent) {
+              firstContent = true
+              if (transmission) {
+                transmission.firstTokenMs = Math.max(0, performance.now() - requestStarted)
+                transmission.firstTokenKind = kind
+              }
+            }
+            signalStreamProgress(deadline.signal)
+          },
+        )
+        attempt?.settle(usageOf(result.usage))
+        if (signal.aborted) throw abortError()
+        return result
+      }
+      // Some compatible gateways ignore stream:true and return complete JSON; do not replay.
+      if (streaming && transmission) transmission.transportMode = 'non_stream'
       if (!response.headers.get('content-type')?.includes('application/json')) {
         await response.body?.cancel()
         throw new ModelError('invalid_provider_content_type')
@@ -1927,15 +2024,24 @@ export class Router {
       )
         throw new ModelError(safeBudgetFailureCode(error), undefined, false, { cause: error })
       if (parentSignal?.aborted) throw abortError(error)
-      if (timeoutSignal.aborted)
+      if (deadline.signal.aborted)
         throw preserveErrorContext(
           new ModelError('provider_timeout', undefined, false, { cause: error }),
           { timeoutMs },
+        )
+      if (error instanceof StreamResponseError || firstContent)
+        throw new ModelError(
+          firstContent ? 'provider_stream_interrupted' : 'provider_stream_invalid',
+          undefined,
+          false,
+          { cause: error },
         )
       if (error instanceof ModelError) throw error
       throw new ModelError('provider_request_failed', undefined, isTransientNetworkFailure(error), {
         cause: error,
       })
+    } finally {
+      if (!preserveDeadline) deadline.dispose()
     }
   }
 }

@@ -305,6 +305,12 @@ const probeResults = ref<Record<string, ProbeResponse>>({})
 const operationBusy = computed(() => busy.value || discoveryBusy.value || probeBusy.value)
 const selectedProvider = computed(() => providerDraft.value)
 const selectedModel = computed(() => modelDraft.value)
+const nativeStreaming = computed(() =>
+  ['openai-chat', 'openai-responses'].includes(
+    config.value.providers.find((provider) => provider.id === selectedModel.value?.providerId)
+      ?.protocol ?? '',
+  ),
+)
 const selectedRoute = computed(() => routeDraft.value)
 const inUseCount = computed(
   () => config.value.models.filter((m) => m.providerId === providerDraft.value?.id).length,
@@ -1737,6 +1743,14 @@ watch(section, () => {
               <UFormField :label="t('apiModel')" :help="t('mcApiNameHelp')" required
                 ><UInput v-model="selectedModel.apiModelName" class="w-full" required
               /></UFormField>
+              <UFormField :label="t('mcStreaming')" :help="t('mcStreamingHelp')">
+                <USwitch
+                  :model-value="nativeStreaming && selectedModel.streaming !== false"
+                  :disabled="!nativeStreaming"
+                  :label="t('mcStreamingEnabled')"
+                  @update:model-value="selectedModel.streaming = $event"
+                />
+              </UFormField>
               <UFormField :label="t('mcPromptCacheMode')" :help="t('mcPromptCacheHelp')"
                 ><USelect
                   :model-value="selectedModel.promptCacheMode ?? 'auto'"

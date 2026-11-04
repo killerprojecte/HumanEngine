@@ -461,6 +461,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
           c.req.valid('json').capability,
           engine.protocols,
           () => engine.budget.gate(),
+          c.req.raw.signal,
         ),
         200,
       ),

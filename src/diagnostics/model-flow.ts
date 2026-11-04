@@ -37,6 +37,9 @@ const safeCodes = new Set([
   'incomplete_model_response',
   'incomplete_tool_call',
   'unsupported_response_item',
+  'provider_stream_interrupted',
+  'provider_stream_invalid',
+  'provider_stream_idle_timeout',
   'invalid_tool_arguments',
   'unknown_tool_call',
 ])

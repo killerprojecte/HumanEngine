@@ -127,6 +127,7 @@ onBeforeUnmount(() => pager.dispose())
                   'Model',
                   'Role',
                   'Status',
+                  'Transport',
                   'Attempt',
                   'Input',
                   'CacheRead',
@@ -134,6 +135,7 @@ onBeforeUnmount(() => pager.dispose())
                   'Output',
                   'Duration',
                   'FirstToken',
+                  'FirstTokenKind',
                   'Throughput',
                 ]"
                 :key="key"
@@ -163,6 +165,16 @@ onBeforeUnmount(() => pager.dispose())
                   variant="subtle"
                   >{{ t('mcallsStatus_' + call.status) }}</UBadge
                 >
+                <span v-if="call.failureReason" class="mt-1 block text-xs text-muted">{{
+                  t('mcallsFailure_' + call.failureReason)
+                }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <UBadge color="neutral" variant="subtle">{{
+                  call.transportMode
+                    ? t('mcallsTransport_' + call.transportMode)
+                    : t('mcallsUnknown')
+                }}</UBadge>
               </td>
               <td class="px-4 py-3 tabular-nums">{{ number(call.attempt) }}</td>
               <td
@@ -178,7 +190,20 @@ onBeforeUnmount(() => pager.dispose())
                 {{ number(call[key]) }}
               </td>
               <td class="px-4 py-3 tabular-nums">{{ number(call.durationMs, 1) }} ms</td>
-              <td class="px-4 py-3 text-muted">{{ t('mcallsUnavailable') }}</td>
+              <td class="px-4 py-3 tabular-nums">
+                {{
+                  call.firstTokenMs == null
+                    ? t('mcallsUnknown')
+                    : number(call.firstTokenMs, 1) + ' ms'
+                }}
+              </td>
+              <td class="px-4 py-3">
+                {{
+                  call.firstTokenKind
+                    ? t('mcallsFirstTokenKind_' + call.firstTokenKind)
+                    : t('mcallsUnknown')
+                }}
+              </td>
               <td class="px-4 py-3 tabular-nums">{{ number(call.tokensPerSecond, 2) }}</td>
             </tr>
           </tbody>

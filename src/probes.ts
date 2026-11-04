@@ -1,3 +1,4 @@
+import { progressDeadline } from './models/stream-progress.ts'
 import { BudgetAdmissionError, type NativeBudgetGate } from './budget/native-attempt.ts'
 import { readRestoredModelHold } from './memory/recovery/model-hold.ts'
 import type { ModelProtocolRegistry } from './model-protocols.ts'
@@ -23,6 +24,7 @@ export async function probe(
   capability: ProbeCapability,
   registry?: ModelProtocolRegistry,
   budget?: NativeBudgetGate | (() => NativeBudgetGate | undefined),
+  parentSignal?: AbortSignal,
 ): Promise<ProbeResult> {
   const started = Date.now()
   const result = (ok: boolean, detail: string): ProbeResult => ({
@@ -70,7 +72,12 @@ export async function probe(
     undefined,
     (entry) => store.recordModelCall(entry),
   )
-  const signal = AbortSignal.timeout(providerOperationBudget(provider))
+  const deadline = progressDeadline(
+    parentSignal,
+    providerOperationBudget(provider),
+    () => new Error('probe_timeout'),
+  )
+  const signal = deadline.signal
   try {
     if (capability === 'embedding') {
       const response = await router.embeddings(model.id, ['HumanEngine capability probe.'], signal)
@@ -142,5 +149,7 @@ export async function probe(
       return result(false, 'embedding_validation_failed')
     // Router codes are fixed diagnostics; never relay provider text, credentials, or URLs.
     return result(false, error instanceof ModelError ? error.code : 'probe_failed')
+  } finally {
+    deadline.dispose()
   }
 }

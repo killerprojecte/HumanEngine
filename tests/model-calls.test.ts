@@ -182,3 +182,36 @@ test('router records each retry separately with no duplicate accounting or sensi
     await new Promise<void>((resolve) => server.close(() => resolve()))
   }
 })
+
+test('stream timing migration preserves older rows as unknown and stores only measured metadata', async () => {
+  const { initializeModelCalls } = await import('../src/model-calls.ts')
+  const store = new Store(':memory:')
+  try {
+    store.recordModelCall(observation())
+    for (const column of ['transport_mode', 'first_token_ms', 'first_token_kind', 'failure_reason'])
+      store.db.exec(`ALTER TABLE model_calls DROP COLUMN ${column}`)
+    initializeModelCalls(store.db)
+    const older = store.modelCalls({ limit: 1 }).items[0]!
+    assert.equal(older.transportMode, 'unknown')
+    assert.equal(older.firstTokenMs, null)
+    assert.equal(older.failureReason, null)
+    store.recordModelCall(
+      observation({
+        transportMode: 'stream',
+        firstTokenMs: 0,
+        firstTokenKind: 'tool',
+        failureReason: 'stream_interrupted',
+        event: 'model.failed',
+        usage: undefined,
+      }),
+    )
+    const latest = store.modelCalls({ limit: 1 }).items[0]!
+    assert.equal(latest.transportMode, 'stream')
+    assert.equal(latest.firstTokenMs, 0)
+    assert.equal(latest.firstTokenKind, 'tool')
+    assert.equal(latest.failureReason, 'stream_interrupted')
+    assert.equal(latest.outputTokens, null)
+  } finally {
+    store.close()
+  }
+})

@@ -360,6 +360,9 @@
               "openai"
             ]
           },
+          "streaming": {
+            "type": "boolean"
+          },
           "inputUsdPerMillion": {
             "type": "number",
             "minimum": 0
@@ -9376,7 +9379,47 @@
                             "minimum": 0
                           },
                           "firstTokenMs": {
-                            "type": "null"
+                            "type": [
+                              "number",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "firstTokenKind": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "text",
+                              "reasoning",
+                              "tool",
+                              null
+                            ]
+                          },
+                          "transportMode": {
+                            "type": "string",
+                            "enum": [
+                              "stream",
+                              "non_stream",
+                              "custom",
+                              "unknown"
+                            ]
+                          },
+                          "failureReason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "cancelled",
+                              "first_content_timeout",
+                              "request_timeout",
+                              "stream_idle_timeout",
+                              "stream_interrupted",
+                              "request_failed",
+                              null
+                            ]
                           },
                           "tokensPerSecond": {
                             "type": [
@@ -9401,6 +9444,9 @@
                           "cacheWriteInputTokens",
                           "durationMs",
                           "firstTokenMs",
+                          "firstTokenKind",
+                          "transportMode",
+                          "failureReason",
                           "tokensPerSecond"
                         ]
                       }

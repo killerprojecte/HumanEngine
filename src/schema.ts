@@ -79,6 +79,7 @@ export const ModelSchema = z
     embeddingBatchSize: z.number().int().min(1).max(64).default(4),
     embeddingDimensions: z.number().int().min(1).max(16384).optional(),
     promptCacheMode: z.enum(['auto', 'off', 'openai']).optional(),
+    streaming: z.boolean().optional(),
     inputUsdPerMillion: z.number().min(0).optional(),
     outputUsdPerMillion: z.number().min(0).optional(),
     cacheReadUsdPerMillion: z.number().min(0).optional(),

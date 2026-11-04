@@ -1,3 +1,4 @@
+import { progressDeadline } from './models/stream-progress.ts'
 import { PromptCacheBoundaries } from './runtime/prompt-cache-boundaries.ts'
 import { PromptContextWindows, promptWindowAuthority } from './runtime/prompt-context-window.ts'
 import { mergeRecentHistory } from './runtime/chat-history.ts'
@@ -2044,12 +2045,11 @@ export class Runtime {
               const extensionDependencies = new Set(dependencies)
               for (const m of recent) dependencies.add(m.id)
               const stageSignal = (role: 'planner' | 'replyer') =>
-                AbortSignal.any([
+                progressDeadline(
                   controller.signal,
-                  AbortSignal.timeout(
-                    modelConfig.routes.find((route) => route.role === role)?.timeoutMs ?? 180000,
-                  ),
-                ])
+                  modelConfig.routes.find((route) => route.role === role)?.timeoutMs ?? 180000,
+                  () => new Error('model_stage_timeout'),
+                ).signal
               const stageFailure = (
                 error: unknown,
                 signal: AbortSignal,

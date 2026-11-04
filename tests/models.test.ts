@@ -73,6 +73,7 @@ function config(baseUrl: string, protocol: Provider['protocol']): RouterConfig {
         displayName: 'A',
         providerId: 'p',
         apiModelName: 'same-model',
+        streaming: false,
         capabilities: ['text', 'tools', 'vision', 'embedding'],
       },
     ],

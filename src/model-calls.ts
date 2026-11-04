@@ -8,6 +8,17 @@ import { validTokenCount } from './model-cost.ts'
 export interface ModelCallObservation extends ModelLog {
   at: string
   attempt: number
+  transportMode?: 'stream' | 'non_stream' | 'custom' | 'unknown'
+  firstTokenMs?: number | null
+  firstTokenKind?: 'text' | 'reasoning' | 'tool' | null
+  failureReason?:
+    | 'cancelled'
+    | 'first_content_timeout'
+    | 'request_timeout'
+    | 'stream_idle_timeout'
+    | 'stream_interrupted'
+    | 'request_failed'
+    | null
 }
 const count = z.number().int().nonnegative().nullable()
 export const ModelCallSchema = z.object({
@@ -24,7 +35,19 @@ export const ModelCallSchema = z.object({
   cacheReadInputTokens: count,
   cacheWriteInputTokens: count,
   durationMs: z.number().nonnegative(),
-  firstTokenMs: z.null(),
+  firstTokenMs: z.number().nonnegative().nullable(),
+  firstTokenKind: z.enum(['text', 'reasoning', 'tool']).nullable(),
+  transportMode: z.enum(['stream', 'non_stream', 'custom', 'unknown']),
+  failureReason: z
+    .enum([
+      'cancelled',
+      'first_content_timeout',
+      'request_timeout',
+      'stream_idle_timeout',
+      'stream_interrupted',
+      'request_failed',
+    ])
+    .nullable(),
   tokensPerSecond: z.number().nonnegative().nullable(),
 })
 export const ModelCallsQuerySchema = z.object({
@@ -53,6 +76,19 @@ export function initializeModelCalls(db: Database.Database) {
   ); CREATE INDEX IF NOT EXISTS model_calls_at ON model_calls(at);
   CREATE INDEX IF NOT EXISTS model_calls_role_id ON model_calls(role,id);
   CREATE INDEX IF NOT EXISTS model_calls_model_id ON model_calls(model_id,id);`)
+  const columns = new Set(
+    (db.pragma('table_info(model_calls)') as Array<{ name: string }>).map((row) => row.name),
+  )
+  db.transaction(() => {
+    if (!columns.has('transport_mode'))
+      db.exec("ALTER TABLE model_calls ADD COLUMN transport_mode TEXT NOT NULL DEFAULT 'unknown'")
+    if (!columns.has('first_token_ms'))
+      db.exec('ALTER TABLE model_calls ADD COLUMN first_token_ms REAL')
+    if (!columns.has('failure_reason'))
+      db.exec('ALTER TABLE model_calls ADD COLUMN failure_reason TEXT')
+    if (!columns.has('first_token_kind'))
+      db.exec('ALTER TABLE model_calls ADD COLUMN first_token_kind TEXT')
+  })()
 }
 export function recordModelCall(db: Database.Database, entry: ModelCallObservation) {
   if (entry.role === 'models') return
@@ -63,8 +99,8 @@ export function recordModelCall(db: Database.Database, entry: ModelCallObservati
   db.transaction(() => {
     db.prepare(
       `INSERT INTO model_calls(at,model_id,provider_id,api_model,role,status,attempt,
-      input_tokens,output_tokens,cache_read_tokens,cache_write_tokens,duration_ms)
-      VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`,
+      input_tokens,output_tokens,cache_read_tokens,cache_write_tokens,duration_ms,transport_mode,first_token_ms,first_token_kind,failure_reason)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     ).run(
       entry.at,
       entry.modelId,
@@ -78,6 +114,15 @@ export function recordModelCall(db: Database.Database, entry: ModelCallObservati
       token(usage?.cacheReadInputTokens),
       token(usage?.cacheWriteInputTokens),
       duration,
+      entry.transportMode ?? 'unknown',
+      entry.transportMode === 'stream' &&
+        typeof entry.firstTokenMs === 'number' &&
+        Number.isFinite(entry.firstTokenMs) &&
+        entry.firstTokenMs >= 0
+        ? entry.firstTokenMs
+        : null,
+      entry.transportMode === 'stream' ? (entry.firstTokenKind ?? null) : null,
+      entry.failureReason ?? null,
     )
     db.prepare('DELETE FROM model_calls WHERE at < ?').run(
       new Date(Date.now() - RETENTION_DAYS * 86400000).toISOString(),
@@ -111,14 +156,14 @@ export function modelCalls(db: Database.Database, query: ModelCallsQuery) {
       `SELECT id,at,model_id AS modelId,provider_id AS providerId,
     api_model AS apiModelName,role,status,attempt,input_tokens AS inputTokens,
     output_tokens AS outputTokens,cache_read_tokens AS cacheReadInputTokens,
-    cache_write_tokens AS cacheWriteInputTokens,duration_ms AS durationMs
+    cache_write_tokens AS cacheWriteInputTokens,duration_ms AS durationMs,transport_mode AS transportMode,
+    first_token_ms AS firstTokenMs,first_token_kind AS firstTokenKind,failure_reason AS failureReason
     FROM model_calls WHERE ${clauses.join(' AND ')} ORDER BY id DESC LIMIT @limit`,
     )
-    .all(params) as Array<Omit<z.infer<typeof ModelCallSchema>, 'firstTokenMs' | 'tokensPerSecond'>>
+    .all(params) as Array<Omit<z.infer<typeof ModelCallSchema>, 'tokensPerSecond'>>
   const hasMore = rows.length > query.limit
   const items = rows.slice(0, query.limit).map((row) => ({
     ...row,
-    firstTokenMs: null,
     tokensPerSecond:
       row.status === 'completed' && row.outputTokens !== null && row.durationMs > 0
         ? (row.outputTokens * 1000) / row.durationMs

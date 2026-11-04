@@ -29,6 +29,8 @@ export interface KnowledgeExposurePort {
 interface Prepared {
   exposure: StateExposure<KnowledgeStateEvidence, undefined>
   values: readonly KnowledgeStateEvidence[]
+  delivered: boolean
+  bindPrior: () => void
 }
 const freeze = <T>(value: T): T => {
   if (value && typeof value === 'object') {
@@ -42,6 +44,9 @@ const same = (a: KnowledgeRef, b: KnowledgeRef) =>
 /** Whole query authority is granted only by actual delivery, never by a model-supplied entity ref. */
 export class KnowledgeExposure {
   private readonly prepared = new WeakMap<ModelMemoryContext, Prepared[]>()
+  private readonly tail = new WeakMap<ModelMemoryContext, () => boolean>()
+  private readonly delivering = new WeakSet<ModelMemoryContext>()
+  private readonly reentered = new WeakSet<ModelMemoryContext>()
   constructor(private readonly port: KnowledgeExposurePort) {}
   query(ctx: ModelMemoryContext, input: KnowledgeQuery): readonly KnowledgeStateEvidence[] {
     if (ctx.mode !== 'real' || ctx.signal.aborted || !this.port.allowed(ctx))
@@ -100,7 +105,7 @@ export class KnowledgeExposure {
     return this.prepareWhole(
       ctx,
       query.depth,
-      () => valid() && (!prior || prior()),
+      prior,
       (c) =>
         this.port.discover!(
           {
@@ -112,6 +117,7 @@ export class KnowledgeExposure {
           anchor,
           query,
         ),
+      valid,
     )
   }
   private prepareWhole(
@@ -119,6 +125,7 @@ export class KnowledgeExposure {
     depth: KnowledgeQuery['depth'],
     prior: (() => boolean) | undefined,
     load: (ctx: ModelMemoryContext) => KnowledgeQueryResult,
+    anchorValid?: () => boolean,
   ): readonly KnowledgeStateEvidence[] {
     const snapshot = (c: ModelMemoryContext): KnowledgeStateEvidence => {
       const page = load(c)
@@ -152,9 +159,19 @@ export class KnowledgeExposure {
       valid: (c, values) =>
         this.port.allowed(c) &&
         this.port.policyIdentity?.(c) === policyIdentity &&
-        (!prior || prior()) &&
+        (!anchorValid || anchorValid()) &&
         values.length === 1 &&
-        isDeepStrictEqual(snapshot(c), values[0]),
+        isDeepStrictEqual(snapshot(c), values[0]) &&
+        (!anchorValid || anchorValid()) &&
+        (!prior || prior()) &&
+        this.port.allowed(c) &&
+        this.port.policyIdentity?.(c) === policyIdentity &&
+        (!anchorValid || anchorValid()) &&
+        (!prior || isDeepStrictEqual(snapshot(c), values[0])) &&
+        this.port.allowed(c) &&
+        this.port.policyIdentity?.(c) === policyIdentity &&
+        (!anchorValid || anchorValid()) &&
+        !this.reentered.has(ctx),
       sourceIds: (values) => [
         ...new Set(
           values.flatMap((v) => [
@@ -177,13 +194,40 @@ export class KnowledgeExposure {
     })
     const values = exposure.query(ctx, undefined)
     if (values.length)
-      this.prepared.set(ctx, [...(this.prepared.get(ctx) ?? []), { exposure, values }])
+      this.prepared.set(ctx, [
+        ...(this.prepared.get(ctx) ?? []),
+        {
+          exposure,
+          values,
+          delivered: false,
+          bindPrior: () => {
+            prior = this.captureGuard(ctx)
+          },
+        },
+      ])
     return values
   }
   deliver(ctx: ModelMemoryContext, values: readonly unknown[]): readonly KnowledgeStateEvidence[] {
     if (!values.length) return Object.freeze([])
     const entry = this.prepared.get(ctx)?.find((p) => p.values[0] === values[0])
-    return entry?.exposure.deliver(ctx, values) ?? Object.freeze([])
+    if (!entry) return Object.freeze([])
+    if (this.delivering.has(ctx)) {
+      this.reentered.add(ctx)
+      ctx.validations.push(() => false)
+      return Object.freeze([])
+    }
+    this.delivering.add(ctx)
+    try {
+      if (!entry.delivered) entry.bindPrior()
+      const result = entry.exposure.deliver(ctx, values)
+      if (result.length && !entry.delivered) {
+        entry.delivered = true
+        this.tail.set(ctx, entry.exposure.captureGuard(ctx)!)
+      }
+      return result
+    } finally {
+      this.delivering.delete(ctx)
+    }
   }
   readDelivered(ctx: ModelMemoryContext): readonly KnowledgeStateEvidence[] {
     const entries = this.prepared.get(ctx) ?? []
@@ -227,10 +271,8 @@ export class KnowledgeExposure {
     return freeze([...refs.values()])
   }
   captureGuard(ctx: ModelMemoryContext): (() => boolean) | undefined {
-    const guards = (this.prepared.get(ctx) ?? []).flatMap((p) => {
-      const guard = p.exposure.captureGuard(ctx)
-      return guard ? [guard] : []
-    })
-    return guards.length ? () => guards.every((g) => g()) : undefined
+    // Each successful delivery binds the previous immutable tail exactly once.
+    // All original receipts are freshly checked, without repeated DAG fan-out.
+    return this.tail.get(ctx)
   }
 }

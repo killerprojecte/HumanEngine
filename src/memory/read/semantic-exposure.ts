@@ -168,13 +168,20 @@ export function semanticModelPage(
 export class SemanticExposure {
   private readonly prepared = new WeakMap<
     ModelMemoryContext,
-    StateExposure<SemanticStateEvidence, undefined>[]
+    {
+      exposure: StateExposure<SemanticStateEvidence, undefined>
+      delivered: boolean
+      bindPrior: () => void
+    }[]
   >()
+  private readonly tail = new WeakMap<ModelMemoryContext, () => boolean>()
+  private readonly delivering = new WeakSet<ModelMemoryContext>()
+  private readonly reentered = new WeakSet<ModelMemoryContext>()
   constructor(private readonly port: SemanticExposurePort) {}
   query(ctx: ModelMemoryContext): readonly SemanticStateEvidence[] {
     if (ctx.mode !== 'real' || ctx.signal.aborted || !this.port.allowed(ctx))
       return Object.freeze([])
-    const prior = this.captureGuard(ctx)
+    let prior = this.captureGuard(ctx)
     if (prior && !prior()) return Object.freeze([])
     const raw = structuredClone(this.port.query(ctx)),
       policy = this.port.policyIdentity(ctx),
@@ -202,10 +209,16 @@ export class SemanticExposure {
           return (
             this.port.allowed(c) &&
             this.port.policyIdentity(c) === policy &&
-            (!prior || prior()) &&
             values.length === 1 &&
             isDeepStrictEqual(this.port.query(c), raw) &&
-            isDeepStrictEqual(values[0], first)
+            isDeepStrictEqual(values[0], first) &&
+            (!prior || prior()) &&
+            this.port.allowed(c) &&
+            this.port.policyIdentity(c) === policy &&
+            (!prior || isDeepStrictEqual(this.port.query(c), raw)) &&
+            this.port.allowed(c) &&
+            this.port.policyIdentity(c) === policy &&
+            !this.reentered.has(ctx)
           )
         } catch {
           return false
@@ -231,23 +244,55 @@ export class SemanticExposure {
       onDelivered: (c, values) => this.port.onDelivered?.(c, values),
     })
     const values = exposure.query(ctx, undefined)
-    if (values.length) this.prepared.set(ctx, [...(this.prepared.get(ctx) ?? []), exposure])
+    if (values.length)
+      this.prepared.set(ctx, [
+        ...(this.prepared.get(ctx) ?? []),
+        {
+          exposure,
+          delivered: false,
+          bindPrior: () => {
+            prior = this.captureGuard(ctx)
+          },
+        },
+      ])
     return values
   }
   deliver(ctx: ModelMemoryContext, values: readonly unknown[]): readonly SemanticStateEvidence[] {
-    for (const e of this.prepared.get(ctx) ?? []) {
-      const result = e.deliver(ctx, values)
-      if (result.length) return result
+    if (this.delivering.has(ctx)) {
+      this.reentered.add(ctx)
+      ctx.validations.push(() => false)
+      return Object.freeze([])
     }
-    return Object.freeze([])
+    this.delivering.add(ctx)
+    try {
+      for (const entry of this.prepared.get(ctx) ?? []) {
+        // Bind only at first actual delivery. Prepared-but-undelivered siblings
+        // never replace authority, and out-of-order delivery retains every leaf.
+        if (!entry.delivered) entry.bindPrior()
+        const result = entry.exposure.deliver(ctx, values)
+        if (!result.length) continue
+        if (!entry.delivered) {
+          entry.delivered = true
+          this.tail.set(ctx, entry.exposure.captureGuard(ctx)!)
+        }
+        return result
+      }
+      return Object.freeze([])
+    } finally {
+      this.delivering.delete(ctx)
+    }
   }
+
   readDelivered(ctx: ModelMemoryContext): readonly SemanticStateEvidence[] {
-    const guards = (this.prepared.get(ctx) ?? []).flatMap((e) => e.captureGuard(ctx) ?? [])
+    const guards = (this.prepared.get(ctx) ?? []).flatMap((e) => e.exposure.captureGuard(ctx) ?? [])
     if (guards.some((g) => !g())) return Object.freeze([])
-    return Object.freeze((this.prepared.get(ctx) ?? []).flatMap((e) => e.readDelivered(ctx)))
+    return Object.freeze(
+      (this.prepared.get(ctx) ?? []).flatMap((e) => e.exposure.readDelivered(ctx)),
+    )
   }
   captureGuard(ctx: ModelMemoryContext): (() => boolean) | undefined {
-    const guards = (this.prepared.get(ctx) ?? []).flatMap((e) => e.captureGuard(ctx) ?? [])
-    return guards.length ? () => guards.every((g) => g()) : undefined
+    // The immutable delivered chain includes all earlier exact receipts. No
+    // successful qualification is cached across calls or asynchronous work.
+    return this.tail.get(ctx)
   }
 }

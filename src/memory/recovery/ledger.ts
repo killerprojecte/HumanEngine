@@ -1,3 +1,4 @@
+import type { Message } from '../../onebot.ts'
 import type { Store } from '../../store.ts'
 import type { RuntimeMessage } from '../../runtime.ts'
 import type { MemorySource } from '../domain/contracts.ts'
@@ -521,16 +522,49 @@ export function currentDomainSources(store: Store, sources: readonly MemorySourc
   return validateFixedReads(store, { kind: 'domain-sources', sources: materialized })
 }
 
+/** Browser display projection only. Inputs are copied before acquiring the fixed read
+ * snapshots; no caller callback or authorization result escapes this synchronous call. */
+export function projectDisplayMessages(
+  store: Store,
+  sceneId: string,
+  messages: readonly Message[],
+  locallyRecalled: Iterable<string>,
+): Message[]
+export function projectDisplayMessages(
+  store: Store,
+  sceneId: string,
+  messages: readonly RuntimeMessage[],
+  locallyRecalled: Iterable<string>,
+): RuntimeMessage[]
+export function projectDisplayMessages(
+  store: Store,
+  sceneId: string,
+  messages: readonly RuntimeMessage[],
+  locallyRecalled: Iterable<string>,
+): RuntimeMessage[] {
+  const materialized = structuredClone(Array.from(messages))
+  const recalled = new Set(Array.from(locallyRecalled))
+  if (!materialized.length) return []
+  return validateFixedReads(store, { kind: 'display', sceneId, messages: materialized, recalled })
+}
+
+type DisplayReads = {
+  kind: 'display'
+  sceneId: string
+  messages: RuntimeMessage[]
+  recalled: Set<string>
+}
 type FixedSourceReads =
   | { kind: 'sources'; messages: readonly RuntimeMessage[] }
   | { kind: 'dependencies'; sceneId: string; ids: readonly string[] }
 type DomainSourceReads = { kind: 'domain-sources'; sources: readonly MemorySource[] }
+function validateFixedReads(store: Store, input: DisplayReads): RuntimeMessage[]
 function validateFixedReads(store: Store, input: FixedSourceReads): boolean
 function validateFixedReads(store: Store, input: DomainSourceReads): boolean[]
 function validateFixedReads(
   store: Store,
-  input: FixedSourceReads | DomainSourceReads,
-): boolean | boolean[] {
+  input: FixedSourceReads | DomainSourceReads | DisplayReads,
+): boolean | boolean[] | RuntimeMessage[] {
   const db = store.db
   const authority = bindings.get(db)
   const read = () =>
@@ -538,7 +572,15 @@ function validateFixedReads(
       ? input.messages.every((message) => currentSourceSnapshot(store, message))
       : input.kind === 'dependencies'
         ? input.ids.every((id) => !store.recalled(input.sceneId, id))
-        : input.sources.map((source) => domainSourceCurrent(store, source))
+        : input.kind === 'domain-sources'
+          ? input.sources.map((source) => domainSourceCurrent(store, source))
+          : input.messages.map((message) =>
+              input.recalled.has(message.id) || store.recalled(input.sceneId, message.id)
+                ? { ...message, parts: [], status: 'recalled' as const }
+                : message.origin === 'simulation'
+                  ? message
+                  : store.presentMessage(message as Message),
+            )
   // Preserve nested callers and nonstandard configurations without reducing any checks.
   if (
     !authority ||
@@ -550,7 +592,7 @@ function validateFixedReads(
     authority.db.pragma('query_only', { simple: true }) !== 0
   )
     return read()
-  let result: boolean | boolean[]
+  let result: boolean | boolean[] | RuntimeMessage[]
   try {
     db.pragma('query_only = ON')
     authority.db.pragma('query_only = ON')

@@ -5,6 +5,7 @@ import { PromptContextWindows, promptWindowAuthority } from './runtime/prompt-co
 import { mergeRecentHistory } from './runtime/chat-history.ts'
 import { TopicRoutingHistory } from './runtime/topic-history.ts'
 import {
+  projectDisplayMessages,
   validateSourceSnapshots,
   validateUnrecalledDependencies,
 } from './memory/recovery/ledger.ts'
@@ -728,16 +729,9 @@ export class Runtime {
   preview(id: string) {
     const state = this.states.get(id)
     if (state && this.scenes.get(id)?.kind !== 'simulation') this.trim(state)
-    return structuredClone(
-      (state?.messages ?? []).map((m) =>
-        this.isRecalled(id, m.id)
-          ? { ...m, parts: [], status: 'recalled' as const }
-          : m.origin === 'simulation'
-            ? m
-            : this.store.presentMessage(m as Message),
-      ),
-    )
+    return projectDisplayMessages(this.store, id, state?.messages ?? [], state?.recalled ?? [])
   }
+
   async previewHistory(
     id: string,
     source: 'local' | 'remote' = 'remote',
@@ -751,14 +745,13 @@ export class Runtime {
       if (state) this.trim(state)
       return {
         // Bound before identity projection/cloning, not after serializing the entire cache.
-        items: structuredClone(
+        items: projectDisplayMessages(
+          this.store,
+          id,
           (state?.messages ?? [])
             .slice(-30)
-            .map((message) =>
-              this.isRecalled(id, message.id)
-                ? { ...message, origin: 'history' as const, parts: [], status: 'recalled' as const }
-                : this.store.presentMessage({ ...message, origin: 'history' as const }),
-            ),
+            .map((message) => ({ ...message, origin: 'history' as const })),
+          state?.recalled ?? [],
         ),
         coverage: 'partial',
         reason: 'local_history_window',

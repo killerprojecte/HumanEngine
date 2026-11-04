@@ -111,3 +111,35 @@ test('close and reopen uses a new connection, never handles or rows from the old
     rmSync(root, { recursive: true, force: true })
   }
 })
+
+test('fixed scope invariant handles read current query-only, changes and schema values', () => {
+  const db = new Database(':memory:')
+  const read = (key: 'queryOnly' | 'totalChanges' | 'schemaVersion') =>
+    readRecoveryStatement(db, key)
+  try {
+    assert.deepEqual(read('queryOnly'), { query_only: 0 })
+    assert.deepEqual(read('totalChanges'), { n: 0 })
+    const initial = read('schemaVersion') as { schema_version: number }
+    db.exec('CREATE TABLE probe(value TEXT)')
+    assert.deepEqual(read('schemaVersion'), { schema_version: initial.schema_version + 1 })
+    db.prepare('INSERT INTO probe VALUES(?)').run('one')
+    assert.deepEqual(read('totalChanges'), { n: 1 })
+    db.pragma('query_only = ON')
+    assert.deepEqual(read('queryOnly'), { query_only: 1 })
+    assert.throws(() => db.exec("INSERT INTO probe VALUES('denied')"), /readonly/)
+    db.pragma('query_only = OFF')
+    assert.deepEqual(read('queryOnly'), { query_only: 0 })
+    assert.throws(
+      () =>
+        db.transaction(() => {
+          db.exec("INSERT INTO probe VALUES('rolled back')")
+          assert.deepEqual(read('totalChanges'), { n: 2 })
+          throw Error('rollback')
+        })(),
+      /rollback/,
+    )
+    assert.deepEqual(read('totalChanges'), { n: 2 })
+  } finally {
+    db.close()
+  }
+})

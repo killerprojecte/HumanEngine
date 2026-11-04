@@ -117,16 +117,48 @@ export function parseCqMessage(value: string): Obj[] {
       .replaceAll('&amp;', '&')
   const result: Obj[] = []
   let cursor = 0
-  for (const match of value.matchAll(/\[CQ:([a-zA-Z0-9_]+)((?:,[^\]]*)?)\]/g)) {
-    if (match.index > cursor)
-      result.push({ type: 'text', data: { text: unescape(value.slice(cursor, match.index)) } })
-    const data: Obj = {}
-    for (const pair of match[2]!.split(',').slice(1)) {
-      const equal = pair.indexOf('=')
-      if (equal > 0) data[pair.slice(0, equal)] = unescape(pair.slice(equal + 1))
+  let windowStart = 0
+  while (windowStart < value.length) {
+    const end = value.indexOf(']', windowStart)
+    if (end < 0) break
+    // A CQ code ends at the first literal closing bracket. Search each disjoint
+    // window only once, including malformed prefixes; never rescan an open tail.
+    const window = value.slice(windowStart, end)
+    let start = window.indexOf('[CQ:')
+    while (start >= 0) {
+      const typeStart = start + 4
+      let typeEnd = typeStart
+      while (typeEnd < window.length) {
+        const code = window.charCodeAt(typeEnd)
+        if (
+          (code >= 65 && code <= 90) ||
+          (code >= 97 && code <= 122) ||
+          (code >= 48 && code <= 57) ||
+          code === 95
+        )
+          typeEnd++
+        else break
+      }
+      if (typeEnd > typeStart && (typeEnd === window.length || window[typeEnd] === ',')) {
+        const absoluteStart = windowStart + start
+        if (absoluteStart > cursor)
+          result.push({
+            type: 'text',
+            data: { text: unescape(value.slice(cursor, absoluteStart)) },
+          })
+        const data: Obj = {}
+        for (const pair of window.slice(typeEnd).split(',').slice(1)) {
+          const equal = pair.indexOf('=')
+          if (equal > 0) data[pair.slice(0, equal)] = unescape(pair.slice(equal + 1))
+        }
+        result.push({ type: window.slice(typeStart, typeEnd), data })
+        cursor = end + 1
+        break
+      }
+      // A name contains no '[', so no candidate was skipped while reading it.
+      start = window.indexOf('[CQ:', typeEnd)
     }
-    result.push({ type: match[1], data })
-    cursor = match.index + match[0].length
+    windowStart = end + 1
   }
   if (cursor < value.length)
     result.push({ type: 'text', data: { text: unescape(value.slice(cursor)) } })

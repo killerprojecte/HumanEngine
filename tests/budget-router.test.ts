@@ -852,3 +852,52 @@ test('foreground query embeddings use reserved foreground slot; other context la
     f.db.close()
   }
 })
+
+test('native calls check admission at both request boundaries without the custom-protocol precheck', async () => {
+  const service = await server((body, res) =>
+    json(
+      res,
+      body.input
+        ? { data: [{ index: 0, embedding: [1, 0] }], usage: { prompt_tokens: 1, total_tokens: 1 } }
+        : chat,
+    ),
+  )
+  try {
+    let checks = 0
+    let denyAt = Infinity
+    const admission = () => {
+      checks++
+      if (checks === denyAt) throw new Error('memory_read_revoked')
+      return undefined
+    }
+    const router = new Router(
+      config(service.url),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      admission,
+    )
+    await router.complete('replyer', messages)
+    assert.equal(checks, 2)
+    checks = 0
+    await router.embeddings('m', ['synthetic'])
+    assert.equal(checks, 2)
+    for (const invoke of [
+      () => router.complete('replyer', messages),
+      () => router.embeddings('m', ['synthetic']),
+    ]) {
+      for (const boundary of [1, 2]) {
+        checks = 0
+        denyAt = boundary
+        const sent = service.bodies.length
+        await assert.rejects(invoke(), /memory_read_revoked/)
+        assert.equal(checks, boundary)
+        assert.equal(service.bodies.length, sent, 'revocation at either boundary prevents HTTP')
+      }
+    }
+  } finally {
+    await service.close()
+  }
+})

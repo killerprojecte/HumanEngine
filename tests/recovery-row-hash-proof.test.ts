@@ -213,3 +213,67 @@ test('byte cap stops admission before entry cap for larger valid rows', () => {
     f.close()
   }
 })
+
+test('same-sequence valid replacement and rollback require each exact proof again', () => {
+  const f = fixture()
+  const a = f.authority
+  const alternate = JSON.stringify({ kind: 'fingerprint', value: 'b'.repeat(64) })
+  const originalHash = hash(`fixture|1|${'0'.repeat(64)}|${payload}`)
+  const alternateHash = hash(`fixture|1|${'0'.repeat(64)}|${alternate}`)
+  try {
+    a.head()
+    a.db.exec('BEGIN')
+    a.db
+      .prepare('UPDATE revocations SET payload=?,hash=? WHERE sequence=1')
+      .run(alternate, alternateHash)
+    assert.equal(
+      hashes(() => a.head()),
+      1,
+    )
+    assert.equal(
+      hashes(() => a.head()),
+      0,
+    )
+    a.db.exec('ROLLBACK')
+    assert.equal(
+      hashes(() => assert.equal(a.head().hash, originalHash)),
+      1,
+    )
+    assert.equal(
+      hashes(() => a.head()),
+      0,
+    )
+    a.db.prepare('UPDATE revocations SET payload=? WHERE sequence=1').run(alternate)
+    assert.throws(() => a.head(), /recovery_chain_invalid/)
+  } finally {
+    if (a.db.inTransaction) a.db.exec('ROLLBACK')
+    f.close()
+  }
+})
+
+test('repeated same-sequence replacements conservatively exhaust the byte admission budget', () => {
+  const f = fixture()
+  const a = f.authority
+  try {
+    a.head()
+    for (let i = 0; i < 320; i++) {
+      const body =
+        JSON.stringify({ kind: 'source', sceneId: 's', messageId: `m-${i}` }) + ' '.repeat(15000)
+      const digest = hash(`fixture|1|${'0'.repeat(64)}|${body}`)
+      a.db.prepare('UPDATE revocations SET payload=?,hash=? WHERE sequence=1').run(body, digest)
+      a.head()
+    }
+    assert.equal(
+      hashes(() => a.head()),
+      1,
+      'an unadmitted replacement must still be hashed',
+    )
+    assert.equal(
+      hashes(() => a.head()),
+      1,
+      'a full budget never silently admits another proof',
+    )
+  } finally {
+    f.close()
+  }
+})

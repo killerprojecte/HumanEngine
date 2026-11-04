@@ -78,7 +78,11 @@ interface SourceReadScope {
 }
 const sourceReadScopes = new WeakMap<RecoveryAuthority, SourceReadScope>()
 const changes = (db: Database.Database) =>
-  (db.prepare('SELECT total_changes() AS n').get() as { n: number }).n
+  (readRecoveryStatement(db, 'totalChanges') as { n: number }).n
+const queryOnly = (db: Database.Database) =>
+  (readRecoveryStatement(db, 'queryOnly') as { query_only: number }).query_only
+const schemaVersion = (db: Database.Database) =>
+  (readRecoveryStatement(db, 'schemaVersion') as { schema_version: number }).schema_version
 
 function inside(child: string, parent: string) {
   const r = relative(parent, child)
@@ -148,7 +152,10 @@ export class RecoveryAuthority {
   readonly db: Database.Database
   readonly path: string
   // Pure SHA proofs only. Rows, identity, continuity and event schemas are read/checked afresh.
-  #rowHashProofs = new Set<string>()
+  #rowHashProofs = new Map<
+    number,
+    { identity: string; previousHash: string; payload: string; hash: string }
+  >()
   #rowHashProofBytes = 0
   constructor(path: string, createInstance?: string) {
     this.path = resolve(path)
@@ -203,11 +210,20 @@ export class RecoveryAuthority {
         fields.every((field) => typeof field === 'string') &&
         Number.isSafeInteger(row.sequence) &&
         fields.reduce((size, field) => size + field.length, 0) <= 16000
-      const key = cacheable
-        ? JSON.stringify([identity, row.sequence, row.previous_hash, row.payload, row.hash])
-        : undefined
+      const proof = cacheable ? this.#rowHashProofs.get(row.sequence) : undefined
+      const hit =
+        proof !== undefined &&
+        proof.identity === identity &&
+        proof.previousHash === row.previous_hash &&
+        proof.payload === row.payload &&
+        proof.hash === row.hash
+      // Exact primitive equality proves only the same SHA input/output, never authority.
+      // Cold keys retain the previous conservative byte accounting; warm reads allocate no key.
+      const key =
+        !hit && cacheable
+          ? JSON.stringify([identity, row.sequence, row.previous_hash, row.payload, row.hash])
+          : undefined
       const bytes = key === undefined ? 0 : 2 * key.length + 256
-      const hit = key !== undefined && this.#rowHashProofs.has(key)
       if (!hit && row.hash !== hash(`${identity}|${sequence}|${previous}|${row.payload}`))
         throw new Error('recovery_chain_invalid')
       // Never retain parsed objects or successful authority/permission decisions.
@@ -219,7 +235,12 @@ export class RecoveryAuthority {
         this.#rowHashProofs.size < 4096 &&
         this.#rowHashProofBytes + bytes <= 8 * 1024 * 1024
       ) {
-        this.#rowHashProofs.add(key)
+        this.#rowHashProofs.set(row.sequence, {
+          identity,
+          previousHash: row.previous_hash,
+          payload: row.payload,
+          hash: row.hash,
+        })
         this.#rowHashProofBytes += bytes
       }
       if (collect) result.push({ sequence, revocation })
@@ -233,12 +254,12 @@ export class RecoveryAuthority {
       if (
         !this.db.inTransaction ||
         !scope.main.inTransaction ||
-        this.db.pragma('query_only', { simple: true }) !== 1 ||
-        scope.main.pragma('query_only', { simple: true }) !== 1 ||
+        queryOnly(this.db) !== 1 ||
+        queryOnly(scope.main) !== 1 ||
         changes(this.db) !== scope.authorityChanges ||
         changes(scope.main) !== scope.mainChanges ||
-        this.db.pragma('schema_version', { simple: true }) !== scope.authoritySchema ||
-        scope.main.pragma('schema_version', { simple: true }) !== scope.mainSchema ||
+        schemaVersion(this.db) !== scope.authoritySchema ||
+        schemaVersion(scope.main) !== scope.mainSchema ||
         bindings.get(scope.main) !== this
       )
         throw new Error('recovery_read_scope_changed')
@@ -544,8 +565,8 @@ function validateFixedReads(
           head: Object.freeze({ ...head }),
           authorityChanges: changes(authority.db),
           mainChanges: changes(db),
-          authoritySchema: authority.db.pragma('schema_version', { simple: true }),
-          mainSchema: db.pragma('schema_version', { simple: true }),
+          authoritySchema: schemaVersion(authority.db),
+          mainSchema: schemaVersion(db),
         })
         try {
           const valid = read()

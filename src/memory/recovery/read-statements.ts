@@ -1,6 +1,9 @@
 import type Database from 'better-sqlite3'
 
 const queries = {
+  totalChanges: { sql: 'SELECT total_changes() AS n', all: false },
+  queryOnly: { sql: 'PRAGMA query_only', all: false },
+  schemaVersion: { sql: 'PRAGMA schema_version', all: false },
   gateExists: {
     sql: "SELECT 1 FROM sqlite_master WHERE type='table' AND name='recovery_gate'",
     all: false,
@@ -20,7 +23,7 @@ const statements = new WeakMap<
   Partial<Record<RecoveryRead, Database.Statement>>
 >()
 
-/** Six fixed compiled handles only: never caches rows, head, validity or permission.
+/** Fixed compiled handles only: never caches rows, head, validity or permission.
  * Each call executes against the connection's current transaction/snapshot. Handles
  * never escape, accept no bound arguments and cannot be changed to raw/pluck/iterate.
  * SQLite revalidates/recompiles on schema change; errors invalidate handles and fail closed.

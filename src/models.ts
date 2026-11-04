@@ -648,7 +648,7 @@ export class Router {
               { role, modelId, apiModel: model.apiModelName },
               signal,
               async () => {
-                if (this.currentBudget() && !isBuiltinProtocol(provider.protocol))
+                if (!isBuiltinProtocol(provider.protocol) && this.currentBudget())
                   throw new ModelError('budget_protocol_unsupported')
                 if (!isBuiltinProtocol(provider.protocol))
                   return await this.completeProtocol(
@@ -968,7 +968,7 @@ export class Router {
             { role: 'embedding', modelId, apiModel: model.apiModelName },
             signal,
             async () => {
-              if (this.currentBudget() && !isBuiltinProtocol(provider.protocol))
+              if (!isBuiltinProtocol(provider.protocol) && this.currentBudget())
                 throw new ModelError('budget_protocol_unsupported')
               if (!isBuiltinProtocol(provider.protocol))
                 return await this.embeddingsProtocol(provider, model, inputs, timeout, signal)

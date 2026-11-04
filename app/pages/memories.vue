@@ -61,23 +61,35 @@ const peopleBusy = ref(false),
 let peopleEpoch = 0
 // Facets cover the complete same-scene administration domain, not just this page
 // or the current-use people projection (which omits future/inactive records).
-const scopedPeople = computed(() =>
-  administrationPersonIds.value.map((personId) => ({
+const scopedPeople = computed(() => {
+  const peopleById = new Map<string, (typeof people.value)[number]>()
+  for (const person of people.value) {
+    const id = person.personId
+    // Match find's first row, including an absent or empty first display name.
+    if (!peopleById.has(id)) peopleById.set(id, person)
+  }
+  return administrationPersonIds.value.map((personId) => ({
     personId,
-    displayName: people.value.find((person) => person.personId === personId)?.displayName,
-  })),
-)
-const personOptions = computed(() => [
-  { label: t('mxAllPeople'), value: '' },
-  ...scopedPeople.value.map((person, index) => ({
-    label: person.displayName
-      ? scopedPeople.value.filter((other) => other.displayName === person.displayName).length > 1
-        ? `${person.displayName} · ${index + 1}`
-        : person.displayName
-      : t('mpUnnamed', { number: index + 1 }),
-    value: person.personId,
-  })),
-])
+    displayName: peopleById.get(personId)?.displayName,
+  }))
+})
+const personOptions = computed(() => {
+  const nameCounts = new Map<string, number>()
+  for (const person of scopedPeople.value)
+    if (person.displayName)
+      nameCounts.set(person.displayName, (nameCounts.get(person.displayName) ?? 0) + 1)
+  return [
+    { label: t('mxAllPeople'), value: '' },
+    ...scopedPeople.value.map((person, index) => ({
+      label: person.displayName
+        ? nameCounts.get(person.displayName)! > 1
+          ? `${person.displayName} · ${index + 1}`
+          : person.displayName
+        : t('mpUnnamed', { number: index + 1 }),
+      value: person.personId,
+    })),
+  ]
+})
 function personName(memory: Memory) {
   if (memory.scope.kind !== 'scene' || !memory.scope.personId) return ''
   const { sceneId, personId } = memory.scope

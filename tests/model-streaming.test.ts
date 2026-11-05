@@ -1,10 +1,11 @@
+import { sanitizeError } from '../src/diagnostics/errors.ts'
 import { nativeStreamDispatcher } from '../src/models/stream-dispatcher.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer, type ServerResponse } from 'node:http'
 import { once } from 'node:events'
 import { setTimeout as delay } from 'node:timers/promises'
-import { Router, type RouterConfig } from '../src/models.ts'
+import { ModelError, Router, type RouterConfig } from '../src/models.ts'
 import { modelScheduler } from '../src/scheduler.ts'
 import type { ModelCallObservation } from '../src/model-calls.ts'
 import { progressDeadline } from '../src/models/stream-progress.ts'
@@ -289,3 +290,41 @@ test('Responses streaming preserves tool IDs and opaque continuation across a to
     await f.close()
   }
 })
+
+for (const protocol of ['openai-chat', 'openai-responses'] as const)
+  test(`${protocol} Router preserves safe upstream stream diagnostics without retry or fallback`, async () => {
+    const secret = 'PRIVATE_UPSTREAM_ERROR_BODY_AND_KEY'
+    const f = await fixture((res) => {
+      res.end(
+        frame(
+          protocol === 'openai-chat'
+            ? { error: { message: secret } }
+            : { type: 'response.failed', response: { error: { message: secret } } },
+        ),
+      )
+    })
+    f.config.providers[0]!.protocol = protocol
+    f.config.providers[0]!.retryCount = 2
+    f.config.providers[0]!.timeoutMs = 2000
+    f.config.routes[0]!.timeoutMs = 2000
+    f.config.models.push({ ...f.config.models[0]!, id: 'fallback' })
+    f.config.routes[0]!.orderedModelIds.push('fallback')
+    try {
+      await assert.rejects(
+        f.router().complete('planner', [{ role: 'user', content: 'synthetic' }]),
+        (error) => {
+          assert.ok(error instanceof ModelError)
+          const diagnostic = sanitizeError(error)
+          assert.equal(JSON.stringify(diagnostic).includes('provider_stream_upstream_error'), true)
+          assert.equal(JSON.stringify(diagnostic).includes(secret), false)
+          assert.equal(error.retryable, false)
+          return true
+        },
+      )
+      assert.equal(f.requests.length, 1)
+      assert.equal(f.calls[0]!.firstTokenMs, null)
+      assert.equal(modelScheduler.status.running, 0)
+    } finally {
+      await f.close()
+    }
+  })

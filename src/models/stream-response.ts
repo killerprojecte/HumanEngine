@@ -7,9 +7,27 @@
 type Json = Record<string, unknown>
 export type StreamProgressKind = 'text' | 'reasoning' | 'tool'
 type Progress = (kind: StreamProgressKind) => void
-export class StreamResponseError extends Error {}
-function fail(code = 'invalid_provider_stream'): never {
-  throw new StreamResponseError(code)
+type StreamFailureCode =
+  | 'invalid_provider_stream'
+  | 'incomplete_model_response'
+  | 'provider_response_too_large'
+  | 'provider_stream_error'
+  | 'provider_stream_invalid_json'
+  | 'provider_stream_protocol_mismatch'
+  | 'provider_stream_event_mismatch'
+  | 'provider_stream_upstream_error'
+  | 'provider_stream_transport_error'
+  | 'provider_stream_invalid_utf8'
+export class StreamResponseError extends Error {
+  constructor(
+    message: StreamFailureCode,
+    readonly code: StreamFailureCode = message,
+  ) {
+    super(message)
+  }
+}
+function fail(message: StreamFailureCode = 'invalid_provider_stream', code = message): never {
+  throw new StreamResponseError(message, code)
 }
 const obj = (value: unknown): Json =>
   value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Json) : fail()
@@ -51,7 +69,13 @@ class ChatStream {
   tools = new Map<number, Map<number, Json>>()
   constructor(private progress: Progress) {}
   event(data: Json) {
-    if (data.error) fail('provider_stream_error')
+    if (data.error) fail('provider_stream_error', 'provider_stream_upstream_error')
+    if (
+      !Array.isArray(data.choices) &&
+      typeof data.type === 'string' &&
+      data.type.startsWith('response.')
+    )
+      fail('invalid_provider_stream', 'provider_stream_protocol_mismatch')
     for (const key of ['id', 'model', 'created', 'system_fingerprint', 'service_tier']) {
       if (data[key] !== undefined) {
         if (key === 'id' && this.result.id !== undefined && this.result.id !== data.id) fail()
@@ -166,9 +190,11 @@ class ResponsesStream {
   responseId: unknown
   constructor(private progress: Progress) {}
   event(data: Json): Json | undefined {
+    if (data.type === undefined && Array.isArray(data.choices))
+      fail('invalid_provider_stream', 'provider_stream_protocol_mismatch')
     const type = str(data.type)
     if (['error', 'response.failed', 'response.incomplete'].includes(type))
-      fail('provider_stream_error')
+      fail('provider_stream_error', 'provider_stream_upstream_error')
     if (
       type === 'response.created' ||
       type === 'response.in_progress' ||
@@ -261,6 +287,13 @@ export async function readStreamingResponse(
     return fail()
   }
   const decoder = new TextDecoder('utf-8', { fatal: true })
+  const decode = (bytes?: Uint8Array, stream = false) => {
+    try {
+      return decoder.decode(bytes, { stream })
+    } catch {
+      return fail('provider_stream_error', 'provider_stream_invalid_utf8')
+    }
+  }
   const chat = new ChatStream(onMeaningful),
     responses = new ResponsesStream(onMeaningful)
   let bytes = 0,
@@ -278,21 +311,23 @@ export async function readStreamingResponse(
     data = []
     const event = eventName
     eventName = ''
-    if (event === 'error') fail('provider_stream_error')
+    if (event === 'error') fail('provider_stream_error', 'provider_stream_upstream_error')
     if (payload === '[DONE]') {
       if (protocol !== 'openai-chat') fail('incomplete_model_response')
       result = chat.finish()
       return
     }
-    let parsed: Json
+    let raw: unknown
     try {
-      parsed = obj(JSON.parse(payload))
+      raw = JSON.parse(payload)
     } catch {
-      fail()
+      fail('invalid_provider_stream', 'provider_stream_invalid_json')
     }
+    const parsed = obj(raw)
     if (protocol === 'openai-chat') chat.event(parsed!)
     else {
-      if (event && event !== parsed!.type) fail()
+      if (event && event !== parsed!.type)
+        fail('invalid_provider_stream', 'provider_stream_event_mismatch')
       result = responses.event(parsed!)
     }
   }
@@ -315,12 +350,12 @@ export async function readStreamingResponse(
     while (!result) {
       const chunk = await reader.read()
       if (chunk.done) {
-        decoder.decode()
+        decode()
         fail('incomplete_model_response')
       }
       bytes += chunk.value.byteLength
       if (bytes > 8 * 1024 * 1024) fail('provider_response_too_large')
-      const text = decoder.decode(chunk.value, { stream: true })
+      const text = decode(chunk.value, true)
       for (const character of text) {
         if (skipLF && character === '\n') {
           skipLF = false
@@ -338,7 +373,7 @@ export async function readStreamingResponse(
   } catch (error) {
     if (error instanceof StreamResponseError) throw error
     // Transport/decoder/callback exceptions can contain provider secrets.
-    return fail('provider_stream_error')
+    return fail('provider_stream_error', 'provider_stream_transport_error')
   } finally {
     try {
       await reader.cancel()

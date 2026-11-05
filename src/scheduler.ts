@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 
 interface Job<T> {
   priority: number
+  overdueLearningAt?: number
   enqueuedAt: number
   sequence: number
   signal?: AbortSignal
@@ -15,6 +16,11 @@ export interface WorkSchedulerOptions {
   backgroundAgingMs?: number
   now?: () => number
 }
+export interface WorkSchedulingOptions {
+  /** Only an explicit learning batch may opt in, at or after this deadline. */
+  overdueLearningAt?: number
+}
+const overdueLearningForegroundStartLimit = 4
 export class WorkScheduler {
   private queue: Job<unknown>[] = []
   private running = 0
@@ -22,6 +28,7 @@ export class WorkScheduler {
   private sequence = 0
   private callsPerMinute = 0
   private starts: number[] = []
+  private foregroundStartsWhileLearningWaits = 0
   private rateTimer?: ReturnType<typeof setTimeout>
   private readonly reserveForeground: number
   private readonly backgroundAgingMs?: number
@@ -55,13 +62,19 @@ export class WorkScheduler {
   get status() {
     return { running: this.running, queued: this.queue.length, concurrency: this.concurrency }
   }
-  run<T>(priority: number, signal: AbortSignal | undefined, task: () => Promise<T>): Promise<T> {
+  run<T>(
+    priority: number,
+    signal: AbortSignal | undefined,
+    task: () => Promise<T>,
+    options: WorkSchedulingOptions = {},
+  ): Promise<T> {
     if (signal?.aborted) return Promise.reject(new Error('request_cancelled'))
     if (this.queue.length >= this.maxQueued) return Promise.reject(new Error('work_queue_full'))
     const inSubmissionContext = AsyncLocalStorage.snapshot()
     return new Promise<T>((resolve, reject) => {
       const job: Job<T> = {
         priority,
+        overdueLearningAt: priority > 0 ? options.overdueLearningAt : undefined,
         enqueuedAt: this.now(),
         sequence: this.sequence++,
         signal,
@@ -94,6 +107,10 @@ export class WorkScheduler {
     this.rateTimer = undefined
     const now = this.now()
     this.starts = this.starts.filter((started) => started > now - 60_000)
+    if (
+      !this.queue.some((job) => job.overdueLearningAt !== undefined && now >= job.overdueLearningAt)
+    )
+      this.foregroundStartsWhileLearningWaits = 0
     while (this.running < this.concurrency && this.queue.length) {
       this.queue.sort(
         (a, b) => this.effectivePriority(a) - this.effectivePriority(b) || a.sequence - b.sequence,
@@ -101,9 +118,25 @@ export class WorkScheduler {
       // With one slot there is no simultaneous reservation or preemption guarantee.
       const nonForegroundLimit =
         this.concurrency === 1 ? 1 : Math.max(1, this.concurrency - this.reserveForeground)
-      const index = this.queue.findIndex(
-        (job) => job.priority <= 0 || this.runningNonForeground < nonForegroundLimit,
-      )
+      let overdueIndex = -1
+      for (let i = 0; i < this.queue.length; i++) {
+        const job = this.queue[i]!
+        if (
+          job.overdueLearningAt !== undefined &&
+          this.now() >= job.overdueLearningAt &&
+          (overdueIndex < 0 || job.sequence < this.queue[overdueIndex]!.sequence)
+        )
+          overdueIndex = i
+      }
+      const learningTurn =
+        overdueIndex >= 0 &&
+        this.foregroundStartsWhileLearningWaits >= overdueLearningForegroundStartLimit &&
+        this.runningNonForeground < nonForegroundLimit
+      const index = learningTurn
+        ? overdueIndex
+        : this.queue.findIndex(
+            (job) => job.priority <= 0 || this.runningNonForeground < nonForegroundLimit,
+          )
       if (index < 0) return
       if (this.callsPerMinute && this.starts.length >= this.callsPerMinute) {
         this.rateTimer = setTimeout(
@@ -120,6 +153,16 @@ export class WorkScheduler {
         continue
       }
       const nonForeground = job.priority > 0
+      if (
+        (job.overdueLearningAt !== undefined && this.now() >= job.overdueLearningAt) ||
+        overdueIndex < 0
+      )
+        this.foregroundStartsWhileLearningWaits = 0
+      else if (!nonForeground)
+        this.foregroundStartsWhileLearningWaits = Math.min(
+          overdueLearningForegroundStartLimit,
+          this.foregroundStartsWhileLearningWaits + 1,
+        )
       this.running++
       if (this.callsPerMinute) this.starts.push(this.now())
       if (nonForeground) this.runningNonForeground++
@@ -138,6 +181,15 @@ export class WorkScheduler {
 }
 
 const modelPriority = new AsyncLocalStorage<1 | 2>()
+const overdueLearning = new AsyncLocalStorage<number>()
+/** Allow fairness after this learning batch's deadline without changing its model priority. */
+export function withOverdueLearning<T>(task: () => T, notBefore = 0): T {
+  if (!Number.isFinite(notBefore) || notBefore < 0) throw new Error('invalid_learning_deadline')
+  return overdueLearning.run(Math.max(notBefore, overdueLearning.getStore() ?? notBefore), task)
+}
+export function getOverdueLearningAt(): number | undefined {
+  return overdueLearning.getStore()
+}
 /** A background scope can lower scheduling urgency, never elevate it to foreground. */
 export function withModelPriority<T>(priority: 1 | 2, task: () => T): T {
   if (priority !== 1 && priority !== 2) throw new Error('invalid_model_priority')

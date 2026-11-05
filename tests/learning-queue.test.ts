@@ -380,3 +380,48 @@ test('Extraction never receives remembered private content; reconciliation canno
     )
   })
 })
+
+test('cancelled source revisions keep per-scene capacity occupied until the request settles', async () => {
+  await fixture(async (engine, store, queue) => {
+    store.set('settings', {
+      ...store.settings,
+      learningQueueMaxMessages: 60,
+      learningQueueMaxTotalMessages: 120,
+    })
+    let started!: () => void, release!: () => void
+    const entered = new Promise<void>((resolve) => {
+      started = resolve
+    })
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    engine.router().complete = async () => {
+      started()
+      await pending
+      return { toolCalls: [] } as unknown as Completion
+    }
+    queue.enqueueLearning(message('revised-capacity-source'))
+    for (let index = 1; index < 60; index++) queue.enqueueLearning(message(`active-${index}`))
+    const running = queue.learn('scene')
+    await entered
+    try {
+      engine.learning.recall('scene', 'revised-capacity-source')
+      queue.enqueueLearning({
+        ...message('revised-capacity-source'),
+        parts: [{ type: 'text', text: 'New revision' }],
+      })
+      assert.equal(engine.learningStatus().active, 60)
+      assert.equal(engine.learningStatus().queued, 0)
+      assert.equal(engine.learningStatus().accepted, 60)
+      assert.equal(engine.learningStatus().overflow, 1)
+    } finally {
+      release()
+      await running
+    }
+    assert.equal(engine.learningStatus().active, 0)
+    assert.equal(engine.learningStatus().queued, 59)
+    queue.enqueueLearning(message('fresh-after-settlement'))
+    assert.equal(engine.learningStatus().accepted, 61)
+    assert.equal(engine.learningStatus().queued, 60)
+  })
+})

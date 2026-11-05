@@ -197,7 +197,7 @@ test('automatic quiet, maximum-wait and minimum-interval windows batch a flood r
   }
 })
 
-test('active foreground runtime work postpones scheduled learning without starting a background model request', async (t) => {
+test('foreground runtime work postpones learning before its maximum wait', async (t) => {
   clock(t)
   const h = fixture(':memory:', true)
   let release!: () => void,
@@ -221,7 +221,7 @@ test('active foreground runtime work postpones scheduled learning without starti
     await advance(t, 10)
     assert.equal(decisionStarted, true)
     assert.equal(h.engine.runtime.activeTasks, 1)
-    await advance(t, 1090)
+    await advance(t, 90)
     assert.equal(extracts, 0)
     assert.equal(h.engine.learningStatus().queued, 1)
     release()
@@ -890,3 +890,253 @@ for (const cancellation of ['off', 'recall'] as const)
       await h.close()
     }
   })
+
+test('overdue learning progresses across busy scenes with only one overdue batch at a time', async (t) => {
+  clock(t)
+  const h = fixture()
+  const other = { ...scene, id: 'busy-other-scene', platformSceneId: 'busy-other-group' }
+  const second = { ...scene, id: 'second-learning-scene', platformSceneId: 'second-learning-group' }
+  h.store.saveScene({
+    ...other,
+    name: 'Busy scene',
+    participationEnabled: true,
+    learningEnabled: false,
+    proactiveEnabled: false,
+  })
+  h.store.saveScene({
+    ...second,
+    name: 'Second scene',
+    participationEnabled: false,
+    learningEnabled: true,
+    proactiveEnabled: false,
+  })
+  let releaseForeground!: () => void, releaseLearning!: () => void
+  const foreground = new Promise<void>((resolve) => {
+    releaseForeground = resolve
+  })
+  const learning = new Promise<void>((resolve) => {
+    releaseLearning = resolve
+  })
+  const batches: string[][] = []
+  h.install(async (role, prompts, tools) => {
+    if (tools?.some((tool) => tool.name === 'participation.decide')) {
+      await foreground
+      return decision()
+    }
+    assert.equal(role, 'learning')
+    batches.push(extracted(prompts).map((source) => source.id))
+    if (batches.length === 1) await learning
+    return completion()
+  })
+  try {
+    h.engine.runtime.ingest({ ...message('other-source'), sceneId: other.id }, other)
+    await advance(t, 10)
+    assert.equal(h.engine.runtime.activeTasks, 1)
+    h.ingest('first-overdue')
+    h.engine.runtime.ingest({ ...message('second-overdue'), sceneId: second.id }, second)
+    await advance(t, 1000)
+    assert.deepEqual(batches, [['first-overdue']])
+    assert.equal(h.engine.learningStatus().active, 1)
+    await advance(t, 60000)
+    assert.equal(batches.length, 1, 'the second overdue batch cannot start concurrently')
+    releaseLearning()
+    await advance(t, 0)
+    await advance(t, 1000)
+    assert.deepEqual(batches, [['first-overdue'], ['second-overdue']])
+    assert.equal(
+      h.engine.runtime.activeTasks,
+      1,
+      'foreground need not finish for learning to progress',
+    )
+    assert.equal(h.engine.learningStatus().completed, 2)
+    assert.equal(h.sends(), 0)
+  } finally {
+    releaseLearning()
+    releaseForeground()
+    await advance(t, 0)
+    await h.close()
+  }
+})
+
+for (const change of ['off', 'recall', 'edit'] as const)
+  test(`overdue learning retains cancellation and source freshness after ${change}`, async (t) => {
+    clock(t)
+    const h = fixture()
+    h.store.set('settings', { ...h.store.settings, sourceEventRevisionsEnabled: true })
+    const other = {
+      ...scene,
+      id: 'busy-cancellation-scene',
+      platformSceneId: 'busy-cancellation-group',
+    }
+    h.store.saveScene({
+      ...other,
+      name: 'Busy scene',
+      participationEnabled: true,
+      learningEnabled: false,
+      proactiveEnabled: false,
+    })
+    let releaseForeground!: () => void,
+      releaseLearning!: () => void,
+      calls = 0
+    let learningSignal: AbortSignal | undefined
+    const foreground = new Promise<void>((resolve) => {
+      releaseForeground = resolve
+    })
+    const learning = new Promise<void>((resolve) => {
+      releaseLearning = resolve
+    })
+    h.install(async (_role, prompts, tools, signal) => {
+      if (tools?.some((tool) => tool.name === 'participation.decide')) {
+        await foreground
+        return decision()
+      }
+      calls++
+      if (calls !== 1) return completion()
+      learningSignal = signal
+      const candidate = proposal(extracted(prompts)[0]!)
+      await learning
+      return candidate
+    })
+    try {
+      h.engine.runtime.ingest({ ...message('busy-source'), sceneId: other.id }, other)
+      await advance(t, 10)
+      const source = message('overdue-cancel-source')
+      h.engine.runtime.ingest(source, scene)
+      await advance(t, 1000)
+      assert.equal(calls, 1)
+      if (change === 'off') {
+        const disabled = { ...h.store.scene(scene.id)!, learningEnabled: false }
+        h.store.saveScene(disabled)
+        h.engine.sceneChanged(disabled)
+      } else if (change === 'recall') h.engine.runtime.recall(scene.id, source.id)
+      else
+        assert.equal(
+          h.engine.runtime.edit(
+            { ...source, parts: [{ type: 'text', text: 'Fresh revised source.' }] },
+            scene,
+            {
+              editId: 'overdue-source-edit',
+              order: {
+                kind: 'observed_cas',
+                expectedBase: h.store.sourceEvents.registered(scene.id, source.id)!.ref,
+              },
+            },
+          ).status,
+          'edited',
+        )
+      assert.equal(learningSignal?.aborted, true)
+      releaseLearning()
+      await advance(t, 0)
+      await advance(t, 1000)
+      assert.equal(calls, change === 'edit' ? 2 : 1)
+      assert.equal(h.engine.memory.adminList().length, 0)
+      assert.equal(h.engine.learningStatus().queued, 0)
+      assert.equal(h.engine.learningStatus().active, 0)
+    } finally {
+      releaseLearning()
+      releaseForeground()
+      await advance(t, 0)
+      await h.close()
+    }
+  })
+
+for (const configuration of ['missing-route', 'missing-tools'] as const)
+  test(`background learning reports ${configuration} as a failed batch before provider access`, async (t) => {
+    clock(t)
+    const h = fixture()
+    if (configuration === 'missing-tools')
+      h.store.set('models', {
+        providers: [
+          {
+            id: 'offline-provider',
+            name: 'Offline fixture',
+            protocol: 'openai-chat',
+            baseUrl: 'https://example.invalid',
+            credentialEnv: '',
+            timeoutMs: 1000,
+            retryCount: 0,
+          },
+        ],
+        models: [
+          {
+            id: 'text-only',
+            displayName: 'Text only',
+            providerId: 'offline-provider',
+            apiModelName: 'fixture',
+            capabilities: ['text'],
+          },
+        ],
+        routes: [{ role: 'learning', orderedModelIds: ['text-only'], timeoutMs: 1000 }],
+      })
+    let requests = 0
+    t.mock.method(globalThis, 'fetch', async () => {
+      requests++
+      throw new Error('Unexpected provider access')
+    })
+    try {
+      h.ingest('misconfigured-learning')
+      await advance(t, 100)
+      assert.equal(requests, 0)
+      assert.equal(h.engine.learningStatus().failed, 1)
+      assert.equal(h.engine.learningStatus().paused, 1)
+      assert.equal(h.engine.learningStatus().failures[0]!.canRetry, true)
+      assert.ok(h.store.logs.some((entry) => entry.code === 'learning_failed'))
+      if (configuration === 'missing-tools')
+        assert.ok(h.store.logs.some((entry) => entry.reason === 'model_capability_mismatch'))
+      assert.equal(h.engine.memory.adminList().length, 0)
+      await advance(t, 60000)
+      assert.equal(
+        h.engine.learningStatus().failed,
+        1,
+        'configuration failures do not loop automatically',
+      )
+    } finally {
+      await h.close()
+    }
+  })
+
+test('continuous arrivals cannot postpone an already scheduled overdue learning wake indefinitely', async (t) => {
+  clock(t)
+  const h = fixture()
+  const other = { ...scene, id: 'flood-busy-scene', platformSceneId: 'flood-busy-group' }
+  h.store.saveScene({
+    ...other,
+    name: 'Busy scene',
+    participationEnabled: true,
+    learningEnabled: false,
+    proactiveEnabled: false,
+  })
+  let release!: () => void,
+    calls = 0
+  const foreground = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  h.install(async (_role, _prompts, tools) => {
+    if (tools?.some((tool) => tool.name === 'participation.decide')) {
+      await foreground
+      return decision()
+    }
+    calls++
+    return completion()
+  })
+  try {
+    h.engine.runtime.ingest({ ...message('busy-flood-source'), sceneId: other.id }, other)
+    await advance(t, 10)
+    for (let index = 0; index < 20; index++) {
+      h.ingest(`continuous-${index}`)
+      await advance(t, 100)
+    }
+    assert.ok(calls > 0, 'a 300ms maximum wait must not reset forever under 100ms arrivals')
+    assert.ok(calls <= 4, 'the hard minimum interval still limits extraction calls')
+    assert.equal(h.engine.runtime.activeTasks, 1)
+    release()
+    await advance(t, 0)
+    await advance(t, 1000)
+    assert.equal(h.engine.learningStatus().completed, 20)
+    assert.equal(h.engine.learningStatus().queued, 0)
+  } finally {
+    release()
+    await advance(t, 0)
+    await h.close()
+  }
+})

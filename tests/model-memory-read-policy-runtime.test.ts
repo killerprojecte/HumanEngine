@@ -1179,3 +1179,112 @@ for (const operation of ['index', 'rebuild'] as const)
       await h.close()
     }
   })
+
+for (const enabled of [false, true])
+  test(`Planner advertises contextual learning only when scene learning is enabled: ${enabled}`, async (t) => {
+    clock(t)
+    const h = fixture()
+    let planned = false
+    try {
+      h.flip({ learningEnabled: enabled })
+      h.install(async (_role, messages, tools = []) => {
+        if (tools.some((tool) => tool.name === 'participation.decide'))
+          return completion([
+            call('participation.decide', { action: 'reply', reasonCode: 'synthetic' }),
+          ])
+        planned = true
+        const envelope = initial(messages)
+        assert.equal(
+          envelope.actionTools.some((tool: ToolDefinition) => tool.name === 'learning.propose'),
+          enabled,
+        )
+        assert.equal(
+          tools.some((tool) => tool.name === 'learning.propose'),
+          false,
+        )
+        const prompt = messages.find((message) => message.role === 'system')!.content
+        assert.match(prompt, /even without feedback/)
+        assert.match(prompt, /do not propose learning on every turn/)
+        return plan(messages, {
+          action: 'noReply',
+          actions: enabled
+            ? [
+                {
+                  toolName: 'learning.propose',
+                  arguments: {
+                    kind: 'claim',
+                    content: 'The user prefers concise technical explanations.',
+                    sourceMessageIds: envelope.planContract.contextMessageIds,
+                    subject: {
+                      kind: 'self',
+                      sourceMessageId: envelope.planContract.contextMessageIds[0],
+                    },
+                    epistemicKind: 'explicit',
+                  },
+                },
+              ]
+            : [],
+        })
+      })
+      await h.ask(t, 'I prefer concise technical explanations.')
+      assert.equal(planned, true)
+      await advance(t, 100)
+      await h.engine.contextualLearning.queue.whenIdle()
+      assert.equal(h.engine.contextualLearning.queue.stats().accepted, enabled ? 1 : 0)
+      assert.equal(
+        h.engine.memory
+          .adminList()
+          .some((record) => record.content === 'The user prefers concise technical explanations.'),
+        enabled,
+      )
+      assert.equal(h.sends(), 0)
+      assert.equal(
+        h.requests.some((request) => request.role === 'replyer'),
+        false,
+      )
+    } finally {
+      await h.close()
+    }
+  })
+
+for (const action of ['silent', 'wait'] as const)
+  test(`${action} participation preserves background learning admission without forcing a planning call`, async (t) => {
+    clock(t)
+    const h = fixture()
+    try {
+      h.install(async (_role, _messages, tools = []) => {
+        assert.ok(tools.some((tool) => tool.name === 'participation.decide'))
+        return completion([call('participation.decide', { action, reasonCode: 'synthetic' })])
+      })
+      await h.ask(t, 'I prefer concise technical explanations.')
+      assert.equal(h.engine.learningStatus().accepted, 1)
+      assert.equal(h.engine.learningStatus().queued, 1)
+      assert.equal(h.engine.contextualLearning.queue.stats().accepted, 0)
+      assert.equal(h.requests.length, 1)
+      assert.equal(h.sends(), 0)
+    } finally {
+      await h.close()
+    }
+  })
+
+test('disabled contextual learning still rejects direct execution despite a valid current source', async () => {
+  const h = fixture()
+  try {
+    h.flip({ learningEnabled: false })
+    h.ingest('disabled-source', 'I prefer concise explanations.')
+    const result = await h.extension.execute(
+      'learning.propose',
+      {
+        kind: 'claim',
+        content: 'The user prefers concise explanations.',
+        sourceMessageIds: ['disabled-source'],
+      },
+      h.turn(),
+    )
+    assert.deepEqual(result, { status: 'rejected', reason: 'learning_disabled' })
+    assert.equal(h.engine.contextualLearning.queue.stats().accepted, 0)
+    assert.equal(h.engine.memory.adminList().length, 0)
+  } finally {
+    await h.close()
+  }
+})

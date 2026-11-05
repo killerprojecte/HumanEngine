@@ -467,6 +467,115 @@ test('in-flight background model result for v1 cannot commit after an explicit s
   }
 })
 
+test('an edit during background extraction queues the latest revision and retries only unaffected sources', async (t) => {
+  clock(t)
+  const h = fixture({ learning: true })
+  let release = () => {}
+  const pending = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const offered: string[][] = []
+  h.install(async (_role, prompts) => {
+    const sources = sourcesIn(prompts)
+    offered.push(
+      sources.map((source) =>
+        source.parts
+          .filter((part) => part.type === 'text')
+          .map((part) => part.text)
+          .join(' '),
+      ),
+    )
+    if (offered.length === 1) {
+      await pending
+      return completion()
+    }
+    return proposal([sources.at(-1)!.id], 'LATEST_REVISION_LEARNED')
+  })
+  try {
+    const first = h.message('edited-learning', 'OLD_REVISION')
+    h.receive(first)
+    h.receive(h.message('unaffected-learning', 'UNAFFECTED_SOURCE'))
+    await advance(t, 100)
+    assert.equal(offered.length, 1)
+    for (const [index, body] of ['INTERMEDIATE_REVISION', 'LATEST_REVISION'].entries()) {
+      assert.equal(
+        h.context.edit({ ...first, parts: [{ type: 'text', text: body }] }, h.scene, {
+          editId: `learning-edit-${index}`,
+          order: { kind: 'observed_cas', expectedBase: h.current(first.id).ref },
+        }).status,
+        'edited',
+      )
+    }
+    release()
+    await advance(t, 100)
+    await advance(t, 100)
+    assert.equal(offered.length, 2)
+    assert.deepEqual(offered[1], ['UNAFFECTED_SOURCE', 'LATEST_REVISION'])
+    assert.equal(h.engine.learningStatus().completed, 2)
+    assert.equal(h.engine.learningStatus().queued, 0)
+    assert.equal(h.engine.learningStatus().active, 0)
+    assert.deepEqual(
+      h.engine.memory.adminList().map((record) => record.content),
+      ['LATEST_REVISION_LEARNED'],
+    )
+    const source = h.engine.memory
+      .adminList()[0]!
+      .sources.find((source) => source.messageId === first.id)
+    assert.ok(source)
+  } finally {
+    release()
+    await h.close()
+  }
+})
+
+for (const cancellation of ['disable-enable', 'cancel-scene'] as const)
+  test(`cancelled learning survivors do not revive after an edit then ${cancellation}`, async (t) => {
+    clock(t)
+    const h = fixture({ learning: true })
+    let release = () => {},
+      calls = 0
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    h.install(async () => {
+      calls++
+      await pending
+      return completion()
+    })
+    try {
+      const first = h.message('cancelled-edit')
+      h.receive(first)
+      h.receive(h.message('cancelled-survivor'))
+      await advance(t, 100)
+      h.context.edit(
+        { ...first, parts: [{ type: 'text', text: 'LATEST_CANCELLED_REVISION' }] },
+        h.scene,
+        {
+          editId: 'edit-before-cancel',
+          order: { kind: 'observed_cas', expectedBase: h.current(first.id).ref },
+        },
+      )
+      if (cancellation === 'disable-enable') {
+        h.change({ learningEnabled: false })
+        h.change({ learningEnabled: true })
+      } else
+        (h.engine as unknown as { cancelLearning(sceneId: string): void }).cancelLearning(
+          h.scene.id,
+        )
+      release()
+      await advance(t, 1000)
+      await advance(t, 1000)
+      assert.equal(calls, 1)
+      assert.equal(h.engine.learningStatus().queued, 0)
+      assert.equal(h.engine.learningStatus().active, 0)
+      assert.equal(h.engine.learningStatus().completed, 0)
+      assert.equal(h.engine.memory.adminList().length, 0)
+    } finally {
+      release()
+      await h.close()
+    }
+  })
+
 function extension(h: ReturnType<typeof fixture>) {
   const item = (h.engine.runtime as unknown as { extensions: RuntimeExtension[] }).extensions.find(
     (item) => item.tools.some((tool) => tool.name === 'learning.propose'),

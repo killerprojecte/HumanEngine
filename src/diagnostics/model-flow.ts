@@ -1,5 +1,5 @@
 import { preserveErrorContext, bindAbortErrorContext } from './error-context.ts'
-import { modelScheduler, effectiveModelPriority } from '../scheduler.ts'
+import { modelScheduler, effectiveModelPriority, getOverdueLearningAt } from '../scheduler.ts'
 import type { Completion, Usage } from '../models.ts'
 import { startFlow, currentFlowWriter, type FlowWriter, type FlowDetails } from './flow.ts'
 
@@ -176,15 +176,19 @@ export async function scheduleModel<T>(
   span.bindSignal(signal)
   let entered = false
   try {
-    return await modelScheduler.run(effectiveModelPriority(priority), signal, () =>
-      span.run(() => {
-        entered = true
-        span.finish('completed', {
-          reason: 'model_slot_available',
-          nextStep: 'call_model_provider',
-        })
-        return task()
-      }),
+    return await modelScheduler.run(
+      effectiveModelPriority(priority),
+      signal,
+      () =>
+        span.run(() => {
+          entered = true
+          span.finish('completed', {
+            reason: 'model_slot_available',
+            nextStep: 'call_model_provider',
+          })
+          return task()
+        }),
+      { overdueLearningAt: getOverdueLearningAt() },
     )
   } catch (error) {
     if (!entered)

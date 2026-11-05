@@ -1,5 +1,5 @@
 import { withBudgetContext } from '../../budget/native-attempt.ts'
-import { withModelPriority } from '../../scheduler.ts'
+import { withModelPriority, withOverdueLearning } from '../../scheduler.ts'
 import { LearningAdmission, type LearningBatch } from './admission.ts'
 import { randomUUID } from 'node:crypto'
 import type { Store } from '../../store.ts'
@@ -15,6 +15,7 @@ export class LearningCoordinator {
   private readonly learningInputTraces = new Map<string, string>()
   private readonly learningBatches = new Map<string, RuntimeMessage[]>()
   private readonly learningTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  private readonly learningTimerDue = new Map<string, number>()
   private readonly learningTasks = new Map<string, AbortController>()
   private readonly learningRetries = new Map<
     string,
@@ -28,6 +29,7 @@ export class LearningCoordinator {
     }
   >()
   private readonly learningActiveMessages = new Map<string, RuntimeMessage[]>()
+  private readonly learningSurvivors = new Map<string, RuntimeMessage[]>()
   private readonly learningFailures = new Map<
     string,
     {
@@ -48,6 +50,7 @@ export class LearningCoordinator {
     overflow: 0,
     retried: 0,
   }
+  private overdueLearningScene?: string
   private disposed = false
   private readonly admission: LearningAdmission
   constructor(
@@ -81,7 +84,9 @@ export class LearningCoordinator {
     this.learningBatches.clear()
     this.learningRetries.clear()
     this.learningFailures.clear()
+    this.learningSurvivors.clear()
     for (const timer of this.learningTimers.values()) clearTimeout(timer)
+    this.learningTimerDue.clear()
     for (const controller of this.learningTasks.values()) controller.abort()
   }
   recall(sceneId: string, messageId: string) {
@@ -96,10 +101,21 @@ export class LearningCoordinator {
         failure.messages = failure.messages.filter((message) => message.id !== messageId)
     const retry = this.learningRetries.get(sceneId)
     if (retry) retry.messages = retry.messages.filter((message) => message.id !== messageId)
+    // An edit cancels this source without a recall tombstone. Stop treating the old
+    // revision as in-flight admission, so its replacement can enter the pending queue.
+    const active = this.learningSurvivors.get(sceneId)
+    if (active)
+      this.learningSurvivors.set(
+        sceneId,
+        active.filter((message) => message.id !== messageId),
+      )
     this.learningTasks.get(sceneId)?.abort('source_recalled')
   }
   cancelLearning(sceneId: string) {
     this.admission.cancelScene(sceneId)
+    // AbortSignal keeps its first reason. A prior source cancellation must not
+    // revive survivors after a later scene-wide cancellation or OFF/ON transition.
+    this.learningSurvivors.delete(sceneId)
     this.learningBatches.delete(sceneId)
     for (const key of this.learningInputTraces.keys())
       if (key.startsWith(`${sceneId}|`)) this.learningInputTraces.delete(key)
@@ -108,6 +124,7 @@ export class LearningCoordinator {
       if (failure.sceneId === sceneId) this.learningFailures.delete(id)
     clearTimeout(this.learningTimers.get(sceneId))
     this.learningTimers.delete(sceneId)
+    this.learningTimerDue.delete(sceneId)
     this.learningTasks.get(sceneId)?.abort('learning_disabled')
   }
   learningStatus() {
@@ -185,10 +202,11 @@ export class LearningCoordinator {
       return
     }
     const batch = this.learningBatches.get(sceneId) ?? []
+    const survivors = this.learningSurvivors.get(sceneId) ?? []
     const existing = [
       ...batch,
       ...(this.learningRetries.get(sceneId)?.messages ?? []),
-      ...(this.learningActiveMessages.get(sceneId) ?? []),
+      ...survivors,
       ...[...this.learningFailures.values()]
         .filter((failure) => failure.sceneId === sceneId)
         .flatMap((failure) => failure.messages),
@@ -198,15 +216,18 @@ export class LearningCoordinator {
       return
     }
     const status = this.learningStatus()
+    // Cancelled revisions still occupy resources until their provider settles.
+    const sceneDepth =
+      existing.length - survivors.length + (this.learningActiveMessages.get(sceneId)?.length ?? 0)
     if (
-      existing.length >= this.store.settings.learningQueueMaxMessages ||
+      sceneDepth >= this.store.settings.learningQueueMaxMessages ||
       status.queued + status.retrying + status.active + status.paused >=
         this.store.settings.learningQueueMaxTotalMessages
     ) {
       this.learningCounts.overflow++
       admission.finish('skipped', {
         reason: 'learning_queue_full',
-        counts: { queueDepth: existing.length },
+        counts: { queueDepth: sceneDepth },
         nextStep: 'inspect_learning_queue',
       })
       this.store.log('warn', 'learning', 'learning_queue_overflow', { sceneId })
@@ -231,6 +252,29 @@ export class LearningCoordinator {
     // This synchronous path just admitted this source; repair is for exceptional rescheduling.
     this.scheduleLearning(sceneId, false)
   }
+  private oldestOverdueScene(maximumWait: number): string | undefined {
+    const now = Date.now()
+    let oldest: { sceneId: string; at: number } | undefined
+    for (const sceneId of new Set([
+      ...this.learningBatches.keys(),
+      ...this.learningRetries.keys(),
+    ])) {
+      if (this.learningTasks.has(sceneId)) continue
+      const retry = this.learningRetries.get(sceneId)
+      const status = this.admission.inspect(sceneId)
+      const at = retry
+        ? retry.due + maximumWait
+        : status.state === 'ready'
+          ? status.firstAdmittedAt + maximumWait
+          : Infinity
+      if (
+        at <= now &&
+        (!oldest || at < oldest.at || (at === oldest.at && sceneId < oldest.sceneId))
+      )
+        oldest = { sceneId, at }
+    }
+    return oldest?.sceneId
+  }
   private scheduleLearning(sceneId: string, repairAdmission = true) {
     if (
       this.disposed ||
@@ -238,8 +282,6 @@ export class LearningCoordinator {
       this.learningTasks.has(sceneId)
     )
       return
-    clearTimeout(this.learningTimers.get(sceneId))
-    this.learningTimers.delete(sceneId)
     const retry = this.learningRetries.get(sceneId)
     // Payloads are the existing bounded, authorized pending queue. Repair metadata
     // only; never restore sources from completed/failed/unknown batches.
@@ -247,7 +289,7 @@ export class LearningCoordinator {
       if (message.status === 'available' && !this.store.recalled(sceneId, message.id))
         this.admission.admit(sceneId, message.id)
     }
-    const status = this.admission.inspect(sceneId, { foregroundBusy: this.ports.foregroundBusy() })
+    const status = this.admission.inspect(sceneId)
     if (!retry && ['idle', 'disabled', 'active'].includes(status.state)) return
     const delay = retry
       ? Math.max(0, retry.due - Date.now())
@@ -256,27 +298,58 @@ export class LearningCoordinator {
         : 'dueAt' in status
           ? Math.max(0, status.dueAt - Date.now())
           : 1000
-    const timer = setTimeout(
-      () => {
-        this.learningTimers.delete(sceneId)
-        if (this.ports.foregroundBusy()) {
-          this.scheduleLearning(sceneId)
-          return
-        }
-        if (this.learningRetries.has(sceneId)) {
-          void withModelPriority(1, () => this.learn(sceneId))
-          return
-        }
-        const ticket = this.admission.take(sceneId, 60)
-        if (ticket) void withModelPriority(1, () => this.learn(sceneId, ticket))
-        else this.scheduleLearning(sceneId)
-      },
-      Math.max(this.ports.foregroundBusy() ? 1000 : 0, delay),
+    const timerDelay = Math.max(this.ports.foregroundBusy() ? 1000 : 0, delay)
+    const dueAt = Date.now() + timerDelay
+    // A stream of new arrivals must not keep postponing the busy-work retry.
+    // An early wake still rechecks current admission windows before taking a batch.
+    if (
+      this.learningTimers.has(sceneId) &&
+      (this.learningTimerDue.get(sceneId) ?? Infinity) <= dueAt
     )
+      return
+    clearTimeout(this.learningTimers.get(sceneId))
+    const timer = setTimeout(() => {
+      this.learningTimers.delete(sceneId)
+      this.learningTimerDue.delete(sceneId)
+      const currentRetry = this.learningRetries.get(sceneId)
+      const current = this.admission.inspect(sceneId)
+      const settings = this.store.settings
+      const maximumWait = Math.max(settings.learningBatchMs, settings.learningMaxWaitMs)
+      const overdueAt = currentRetry
+        ? currentRetry.due + maximumWait
+        : 'firstAdmittedAt' in current
+          ? current.firstAdmittedAt + maximumWait
+          : Infinity
+      const foregroundBusy = this.ports.foregroundBusy()
+      const overdue = foregroundBusy && Date.now() >= overdueAt
+      if (
+        foregroundBusy &&
+        (!overdue ||
+          this.overdueLearningScene !== undefined ||
+          this.oldestOverdueScene(maximumWait) !== sceneId)
+      ) {
+        this.scheduleLearning(sceneId, false)
+        return
+      }
+      if (currentRetry) {
+        void withModelPriority(1, () => this.learn(sceneId, undefined, overdue, overdueAt))
+        return
+      }
+      const ticket = this.admission.take(sceneId, 60)
+      if (ticket) void withModelPriority(1, () => this.learn(sceneId, ticket, overdue, overdueAt))
+      else this.scheduleLearning(sceneId, false)
+    }, timerDelay)
     timer.unref()
     this.learningTimers.set(sceneId, timer)
+    this.learningTimerDue.set(sceneId, dueAt)
   }
-  private async learn(sceneId: string, ticket?: LearningBatch) {
+  private async learn(
+    sceneId: string,
+    ticket?: LearningBatch,
+    overdue = false,
+    fairAfter = Date.now() +
+      Math.max(this.store.settings.learningBatchMs, this.store.settings.learningMaxWaitMs),
+  ) {
     if (this.disposed || !this.store.scene(sceneId)?.learningEnabled) {
       this.cancelLearning(sceneId)
       return
@@ -317,6 +390,8 @@ export class LearningCoordinator {
     const controller = new AbortController()
     this.learningTasks.set(sceneId, controller)
     this.learningActiveMessages.set(sceneId, messages)
+    this.learningSurvivors.set(sceneId, messages)
+    if (overdue) this.overdueLearningScene = sceneId
     const batchId = retry?.batchId ?? randomUUID()
     const linkedTraceIds = retry?.linkedTraceIds ?? [
       ...new Set(
@@ -331,197 +406,206 @@ export class LearningCoordinator {
         .map((message) => this.learningInputTraces.get(`${sceneId}|${message.id}`))
         .find(Boolean)
     for (const message of messages) this.learningInputTraces.delete(`${sceneId}|${message.id}`)
-    await withBudgetContext({ turnId: batchId, lane: 'realtime' }, () =>
-      withFlowContext(
-        {
-          traceId: batchId,
-          batchId,
-          sceneId,
-          parentTraceId,
-          linkedTraceIds,
-          turnId: undefined,
-          spanId: undefined,
-        },
-        async () => {
-          const batchSpan = startFlow(this.store, 'learning.batch', {
-            counts: { inputCount: messages.length, attempt },
-          })
-          batchSpan.bindSignal(controller.signal)
-          await batchSpan.run(async () => {
-            let terminal = false
-            const progress: CommitProgress = {
-              applying: false,
-              writePending: false,
-              totals: { candidateCount: 0, savedCount: 0, rejectedCount: 0, ignoredCount: 0 },
-            }
-            const { totals } = progress
-            try {
-              const completed = await runLearningBatch({
-                sceneId,
-                messages,
-                signal: controller.signal,
-                store: this.store,
-                ports: this.ports,
-                isDisposed: () => this.disposed,
-                progress,
-              })
-              if (!completed) return
-              if (controller.signal.aborted) return
-              this.learningCounts.completed += messages.length
-              batchSpan.finish('completed', {
-                counts: totals,
-                reason: totals.candidateCount ? 'batch_processed' : 'no_learning_candidates',
-                nextStep: 'next_learning_batch',
-              })
-              terminal = true
-            } catch (error) {
-              if (
-                !controller.signal.aborted &&
-                !progress.applying &&
-                error instanceof ModelError &&
-                error.retryable &&
-                !providerAttemptsHandled(error) &&
-                attempt < this.store.settings.learningRetryAttempts
-              ) {
-                const delay = Math.min(
-                  30000,
-                  this.store.settings.learningRetryBaseMs * 2 ** (attempt - 1),
-                )
-                this.learningRetries.set(sceneId, {
-                  messages,
-                  attempt: attempt + 1,
-                  due: Date.now() + delay,
-                  batchId,
-                  parentTraceId,
-                  linkedTraceIds,
-                })
-                batchSpan.finish(
-                  'failed',
-                  {
-                    reason: modelFailureReason(error),
-                    counts: { ...totals, retryDelayMs: delay },
-                    nextStep: 'retry_scheduled',
-                  },
-                  error,
-                )
-                terminal = true
-                this.learningCounts.retried++
-                this.store.log('warn', 'learning', 'learning_retry_scheduled', {
+    const run = () =>
+      withBudgetContext({ turnId: batchId, lane: 'realtime' }, () =>
+        withFlowContext(
+          {
+            traceId: batchId,
+            batchId,
+            sceneId,
+            parentTraceId,
+            linkedTraceIds,
+            turnId: undefined,
+            spanId: undefined,
+          },
+          async () => {
+            const batchSpan = startFlow(this.store, 'learning.batch', {
+              counts: { inputCount: messages.length, attempt },
+            })
+            batchSpan.bindSignal(controller.signal)
+            await batchSpan.run(async () => {
+              let terminal = false
+              const progress: CommitProgress = {
+                applying: false,
+                writePending: false,
+                totals: { candidateCount: 0, savedCount: 0, rejectedCount: 0, ignoredCount: 0 },
+              }
+              const { totals } = progress
+              try {
+                const completed = await runLearningBatch({
                   sceneId,
-                  durationMs: delay,
+                  messages,
+                  signal: controller.signal,
+                  store: this.store,
+                  ports: this.ports,
+                  isDisposed: () => this.disposed,
+                  progress,
                 })
-              } else {
-                if (!controller.signal.aborted) {
-                  this.learningCounts.failed += messages.length
-                  const id = randomUUID()
-                  this.learningFailures.set(id, {
-                    id,
-                    sceneId,
-                    attempt,
-                    messageCount: messages.length,
-                    partial: progress.applying,
-                    canRetry: !progress.applying,
-                    createdAt: new Date().toISOString(),
-                    messages: progress.applying ? [] : messages,
-                  })
-                  // Metadata itself is bounded even for failures after partial writes.
-                  while (
-                    this.learningFailures.size > this.store.settings.learningQueueMaxTotalMessages
-                  ) {
-                    const oldest = this.learningFailures.keys().next().value!
-                    const expired = this.learningFailures.get(oldest)!
-                    this.learningFailures.delete(oldest)
-                    this.store.log('warn', 'learning', 'learning_failure_evicted', {
-                      sceneId: expired.sceneId,
-                    })
-                  }
-                }
-                const partialWrite =
-                  totals.savedCount > 0 ||
-                  progress.writePending ||
-                  (!controller.signal.aborted && progress.applying)
-                batchSpan.finish(
-                  partialWrite ? 'partial' : controller.signal.aborted ? 'cancelled' : 'failed',
-                  {
-                    reason: partialWrite
-                      ? 'partial_commit_no_replay'
-                      : controller.signal.aborted
-                        ? 'request_cancelled'
-                        : modelFailureReason(error),
-                    counts: {
-                      ...totals,
-                      unconfirmedCandidateCount: progress.writePending ? 1 : 0,
-                    },
-                    nextStep: partialWrite
-                      ? 'inspect_partial_learning'
-                      : controller.signal.aborted
-                        ? 'stop'
-                        : 'manual_retry',
-                  },
-                  error,
-                )
+                if (!completed) return
+                if (controller.signal.aborted) return
+                this.learningCounts.completed += messages.length
+                batchSpan.finish('completed', {
+                  counts: totals,
+                  reason: totals.candidateCount ? 'batch_processed' : 'no_learning_candidates',
+                  nextStep: 'next_learning_batch',
+                })
                 terminal = true
-                this.store.log(
-                  controller.signal.aborted ? 'info' : 'error',
-                  'learning',
-                  controller.signal.aborted
-                    ? 'learning_cancelled'
-                    : !progress.applying && error instanceof ModelError && error.retryable
-                      ? 'learning_retry_exhausted'
-                      : 'learning_failed',
-                  {
+              } catch (error) {
+                if (
+                  !controller.signal.aborted &&
+                  !progress.applying &&
+                  error instanceof ModelError &&
+                  error.retryable &&
+                  !providerAttemptsHandled(error) &&
+                  attempt < this.store.settings.learningRetryAttempts
+                ) {
+                  const delay = Math.min(
+                    30000,
+                    this.store.settings.learningRetryBaseMs * 2 ** (attempt - 1),
+                  )
+                  this.learningRetries.set(sceneId, {
+                    messages,
+                    attempt: attempt + 1,
+                    due: Date.now() + delay,
+                    batchId,
+                    parentTraceId,
+                    linkedTraceIds,
+                  })
+                  batchSpan.finish(
+                    'failed',
+                    {
+                      reason: modelFailureReason(error),
+                      counts: { ...totals, retryDelayMs: delay },
+                      nextStep: 'retry_scheduled',
+                    },
+                    error,
+                  )
+                  terminal = true
+                  this.learningCounts.retried++
+                  this.store.log('warn', 'learning', 'learning_retry_scheduled', {
                     sceneId,
-                    ...currentFlowContext(),
-                    ...sanitizeError(error, {
-                      operation: 'learning.batch',
-                      stage: 'learning.batch',
-                      role: 'learning',
-                    }),
-                  },
-                )
-              }
-            } finally {
-              if (!terminal)
-                batchSpan.finish(
-                  totals.savedCount > 0 || progress.writePending ? 'partial' : 'cancelled',
-                  {
-                    reason:
-                      totals.savedCount > 0 || progress.writePending
+                    durationMs: delay,
+                  })
+                } else {
+                  if (!controller.signal.aborted) {
+                    this.learningCounts.failed += messages.length
+                    const id = randomUUID()
+                    this.learningFailures.set(id, {
+                      id,
+                      sceneId,
+                      attempt,
+                      messageCount: messages.length,
+                      partial: progress.applying,
+                      canRetry: !progress.applying,
+                      createdAt: new Date().toISOString(),
+                      messages: progress.applying ? [] : messages,
+                    })
+                    // Metadata itself is bounded even for failures after partial writes.
+                    while (
+                      this.learningFailures.size > this.store.settings.learningQueueMaxTotalMessages
+                    ) {
+                      const oldest = this.learningFailures.keys().next().value!
+                      const expired = this.learningFailures.get(oldest)!
+                      this.learningFailures.delete(oldest)
+                      this.store.log('warn', 'learning', 'learning_failure_evicted', {
+                        sceneId: expired.sceneId,
+                      })
+                    }
+                  }
+                  const partialWrite =
+                    totals.savedCount > 0 ||
+                    progress.writePending ||
+                    (!controller.signal.aborted && progress.applying)
+                  batchSpan.finish(
+                    partialWrite ? 'partial' : controller.signal.aborted ? 'cancelled' : 'failed',
+                    {
+                      reason: partialWrite
                         ? 'partial_commit_no_replay'
-                        : 'request_cancelled',
-                    counts: { ...totals, unconfirmedCandidateCount: progress.writePending ? 1 : 0 },
-                    nextStep:
-                      totals.savedCount > 0 || progress.writePending
+                        : controller.signal.aborted
+                          ? 'request_cancelled'
+                          : modelFailureReason(error),
+                      counts: {
+                        ...totals,
+                        unconfirmedCandidateCount: progress.writePending ? 1 : 0,
+                      },
+                      nextStep: partialWrite
                         ? 'inspect_partial_learning'
-                        : 'stop',
-                  },
-                )
-              // Only a pre-commit recall can safely reuse the unaffected input. Never replay
-              // completed candidates or a response with uncertain partial storage side effects.
-              if (
-                controller.signal.reason === 'source_recalled' &&
-                !progress.applying &&
-                !this.disposed &&
-                this.store.scene(sceneId)?.learningEnabled
-              ) {
-                const survivors = messages.filter(
-                  (message) => !this.store.recalled(sceneId, message.id),
-                )
-                for (const message of survivors) this.admission.admit(sceneId, message.id)
-                this.learningBatches.set(sceneId, [
-                  ...survivors,
-                  ...(this.learningBatches.get(sceneId) ?? []),
-                ])
+                        : controller.signal.aborted
+                          ? 'stop'
+                          : 'manual_retry',
+                    },
+                    error,
+                  )
+                  terminal = true
+                  this.store.log(
+                    controller.signal.aborted ? 'info' : 'error',
+                    'learning',
+                    controller.signal.aborted
+                      ? 'learning_cancelled'
+                      : !progress.applying && error instanceof ModelError && error.retryable
+                        ? 'learning_retry_exhausted'
+                        : 'learning_failed',
+                    {
+                      sceneId,
+                      ...currentFlowContext(),
+                      ...sanitizeError(error, {
+                        operation: 'learning.batch',
+                        stage: 'learning.batch',
+                        role: 'learning',
+                      }),
+                    },
+                  )
+                }
+              } finally {
+                if (!terminal)
+                  batchSpan.finish(
+                    totals.savedCount > 0 || progress.writePending ? 'partial' : 'cancelled',
+                    {
+                      reason:
+                        totals.savedCount > 0 || progress.writePending
+                          ? 'partial_commit_no_replay'
+                          : 'request_cancelled',
+                      counts: {
+                        ...totals,
+                        unconfirmedCandidateCount: progress.writePending ? 1 : 0,
+                      },
+                      nextStep:
+                        totals.savedCount > 0 || progress.writePending
+                          ? 'inspect_partial_learning'
+                          : 'stop',
+                    },
+                  )
+                // Only a pre-commit recall can safely reuse the unaffected input. Never replay
+                // completed candidates or a response with uncertain partial storage side effects.
+                if (
+                  controller.signal.reason === 'source_recalled' &&
+                  !progress.applying &&
+                  !this.disposed &&
+                  this.store.scene(sceneId)?.learningEnabled
+                ) {
+                  // recall() removes edited/recalled revisions from this live set. The
+                  // original batch still belongs to the cancelled runner and must not replay.
+                  const survivors = (this.learningSurvivors.get(sceneId) ?? []).filter(
+                    (message) => !this.store.recalled(sceneId, message.id),
+                  )
+                  for (const message of survivors) this.admission.admit(sceneId, message.id)
+                  this.learningBatches.set(sceneId, [
+                    ...survivors,
+                    ...(this.learningBatches.get(sceneId) ?? []),
+                  ])
+                }
+                if (ticket) this.admission.finish(sceneId, ticket.token)
+                this.learningActiveMessages.delete(sceneId)
+                this.learningSurvivors.delete(sceneId)
+                this.learningTasks.delete(sceneId)
+                if (this.overdueLearningScene === sceneId) this.overdueLearningScene = undefined
+                this.scheduleLearning(sceneId)
               }
-              if (ticket) this.admission.finish(sceneId, ticket.token)
-              this.learningActiveMessages.delete(sceneId)
-              this.learningTasks.delete(sceneId)
-              this.scheduleLearning(sceneId)
-            }
-          })
-        },
-        this.store,
-      ),
-    )
+            })
+          },
+          this.store,
+        ),
+      )
+    await withOverdueLearning(run, fairAfter)
   }
 }

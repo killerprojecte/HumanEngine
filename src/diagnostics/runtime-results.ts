@@ -52,12 +52,18 @@ export function toolOutcome(output: unknown): {
   if (status === 'cancelled')
     return { status: 'cancelled', details: { counts, reason: 'context_cancelled' } }
   if (
+    status === 'rejected' ||
     status === 'unavailable' ||
     status === 'failed' ||
     own(output, 'error') !== undefined ||
     own(output, 'ok') === false
   )
     return { status: 'failed', details: { counts, reason: 'tool_rejected' } }
+  if (status === 'queued' || status === 'duplicate')
+    return {
+      status: 'completed',
+      details: { counts, reason: 'tool_returned', receiptState: status },
+    }
   return {
     status: 'completed',
     details: { counts, reason: status === 'no_results' ? 'query_no_results' : 'tool_returned' },

@@ -49,19 +49,34 @@ const rangeOptions = computed(() =>
     label: t(`usageRange_${value}`),
   })),
 )
-type CacheSummary = { input: number; read: number; calls: number; known: number; readKnown: number }
+type CacheSummary = {
+  input: number
+  read: number
+  calls: number
+  reported: number
+  readKnown: number
+  rateInput: number
+  rateRead: number
+  rateKnown: number
+}
 const emptyCacheSummary = (): CacheSummary => ({
   input: 0,
   read: 0,
   calls: 0,
-  known: 0,
+  reported: 0,
   readKnown: 0,
+  rateInput: 0,
+  rateRead: 0,
+  rateKnown: 0,
 })
 const addCacheUsage = (total: CacheSummary, row: components['schemas']['Usage']) => {
-  total.input += row.inputTokens
+  total.input += row.reportedInputTokens
   total.read += row.cacheReadInputTokens
   total.calls += row.calls
-  total.known += row.unknownUsageCalls
+  total.reported += row.reportedUsageCalls
+  total.rateInput += row.cacheRateInputTokens
+  total.rateRead += row.cacheRateReadTokens
+  total.rateKnown += row.cacheRateKnownCalls
   total.readKnown += row.cacheReadKnownCalls
   return total
 }
@@ -97,7 +112,7 @@ const timelineRows = computed(() => {
       read: number
       write: number
       calls: number
-      known: number
+      reported: number
       readKnown: number
       writeKnown: number
       planner: CacheSummary
@@ -111,17 +126,17 @@ const timelineRows = computed(() => {
       read: 0,
       write: 0,
       calls: 0,
-      known: 0,
+      reported: 0,
       readKnown: 0,
       writeKnown: 0,
       planner: emptyCacheSummary(),
     }
-    point.input += row.inputTokens
-    point.output += row.outputTokens
+    point.input += row.reportedInputTokens
+    point.output += row.reportedOutputTokens
     point.read += row.cacheReadInputTokens
     point.write += row.cacheWriteInputTokens
     point.calls += row.calls
-    point.known += row.unknownUsageCalls
+    point.reported += row.reportedUsageCalls
     point.readKnown += row.cacheReadKnownCalls
     point.writeKnown += row.cacheWriteKnownCalls
     if (row.role === 'planner') addCacheUsage(point.planner, row)
@@ -133,10 +148,10 @@ const usageTotals = computed(() =>
   usage.value.reduce(
     (total, row) => ({
       calls: total.calls + row.calls,
-      input: total.input + row.inputTokens,
-      output: total.output + row.outputTokens,
+      input: total.input + row.reportedInputTokens,
+      output: total.output + row.reportedOutputTokens,
       read: total.read + row.cacheReadInputTokens,
-      known: total.known + row.unknownUsageCalls,
+      reported: total.reported + row.reportedUsageCalls,
       readKnown: total.readKnown + row.cacheReadKnownCalls,
       usd: total.usd + row.estimatedUsd,
       priced: total.priced + row.pricedCalls,
@@ -147,7 +162,7 @@ const usageTotals = computed(() =>
       input: 0,
       output: 0,
       read: 0,
-      known: 0,
+      reported: 0,
       readKnown: 0,
       usd: 0,
       priced: 0,
@@ -179,39 +194,29 @@ const stackColors = {
   output: 'bg-violet-500',
 }
 const stackKeys = usageKeys
-const timelineTooltip = (point: (typeof timelineRows.value)[number]) => {
-  const input = point.known ? t('usageCounterUnknown') : String(point.input)
-  const output = point.known ? t('usageCounterUnknown') : String(point.output)
-  const counter = (value: number, known: number) =>
-    !known
-      ? t('usageCounterUnknown')
-      : known < point.calls
-        ? t('usagePartialCounter', { value, known, total: point.calls })
+const counter = (value: number, known: number, total: number, compact = false) =>
+  !known
+    ? t('usageCounterUnknown')
+    : known < total
+      ? t('usagePartialCounter', { value: compact ? compactNumber(value) : value, known, total })
+      : compact
+        ? compactNumber(value)
         : String(value)
-  return `${localBucket(point.at)} · ${t('usagePlannerCacheRate')}: ${plannerCacheRate(point.planner, plannerTimelineIncomplete.value)} · ${plannerCoverage(point.planner)} · ${t('usageInput')}: ${input} · ${t('usageOutput')}: ${output} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown)}`
-}
-const cacheRate = (point: {
-  input: number
-  read: number
-  calls: number
-  known: number
-  readKnown: number
-}) =>
-  point.known === 0 && point.readKnown === point.calls && point.input > 0
-    ? `${((point.read / point.input) * 100).toFixed(1)}%`
+const timelineTooltip = (point: (typeof timelineRows.value)[number]) =>
+  `${localBucket(point.at)} · ${t('usagePlannerCacheRate')}: ${plannerCacheRate(point.planner, plannerTimelineIncomplete.value)} · ${plannerCoverage(point.planner)} · ${t('usageInput')}: ${counter(point.input, point.reported, point.calls)} · ${t('usageOutput')}: ${counter(point.output, point.reported, point.calls)} · ${t('usageCacheRead')}: ${counter(point.read, point.readKnown, point.calls)} · ${t('usageCacheWrite')}: ${counter(point.write, point.writeKnown, point.calls)}`
+const cacheRate = (point: CacheSummary) =>
+  point.rateKnown > 0 && point.rateInput > 0
+    ? `${((point.rateRead / point.rateInput) * 100).toFixed(1)}%`
     : t('usageCounterUnknown')
-// A partial historic interval must not be presented as a complete Planner rate.
-const plannerCacheRate = (point: CacheSummary, incomplete = false) =>
-  incomplete
-    ? t('usagePlannerIncomplete')
-    : point.calls === 0
-      ? t('usagePlannerNoCalls')
-      : cacheRate(point)
+const plannerCacheRate = (point: CacheSummary, incomplete = false) => {
+  if (!point.calls) return t('usagePlannerNoCalls')
+  const rate = cacheRate(point)
+  return point.rateKnown > 0 && point.rateInput > 0 && (incomplete || point.rateKnown < point.calls)
+    ? t('usageReportedRate', { rate })
+    : rate
+}
 const plannerCoverage = (point: CacheSummary) =>
-  t('usagePlannerCoverage', {
-    known: compactNumber(point.readKnown),
-    total: compactNumber(point.calls),
-  })
+  t('usagePlannerCoverage', { known: point.rateKnown, total: point.calls })
 const promptCacheOptions = computed(() =>
   ['auto', 'off', 'openai'].map((value) => ({ value, label: t(`mcPromptCache_${value}`) })),
 )
@@ -1126,7 +1131,7 @@ watch(section, () => {
           <div v-if="!usageBusy && !usageError" class="grid grid-cols-2 xl:grid-cols-4 gap-4">
             <div class="usage-stat">
               <div class="usage-stat-label">
-                <UIcon name="i-lucide-wallet" />{{ t('usageCost') }}
+                <UIcon name="i-lucide-wallet" />{{ t('usageKnownCost') }}
               </div>
               <strong class="usage-stat-value">{{
                 usageTotals.priced || usageTotals.partial
@@ -1144,26 +1149,41 @@ watch(section, () => {
             </div>
             <div class="usage-stat">
               <div class="usage-stat-label">
-                <UIcon name="i-lucide-layers" />{{ t('usageTotalTokens') }}
+                <UIcon name="i-lucide-layers" />{{ t('usageReportedTokens') }}
               </div>
               <strong
                 class="usage-stat-value"
                 :title="
-                  usageTotals.known
+                  !usageTotals.reported
                     ? t('usageCounterUnknown')
-                    : String(usageTotals.input + usageTotals.output)
+                    : counter(
+                        usageTotals.input + usageTotals.output,
+                        usageTotals.reported,
+                        usageTotals.calls,
+                      )
                 "
                 >{{
-                  usageTotals.known
+                  !usageTotals.reported
                     ? t('usageCounterUnknown')
                     : compactNumber(usageTotals.input + usageTotals.output)
                 }}</strong
               >
               <p class="usage-stat-note">
+                {{
+                  t('usageReportedCoverage', {
+                    known: usageTotals.reported,
+                    total: usageTotals.calls,
+                  })
+                }}
+              </p>
+              <p
+                class="usage-stat-note"
+                :title="`${t('usageInput')}: ${counter(usageTotals.input, usageTotals.reported, usageTotals.calls)}; ${t('usageOutput')}: ${counter(usageTotals.output, usageTotals.reported, usageTotals.calls)}`"
+              >
                 {{ t('usageInput') }}
-                {{ usageTotals.known ? '—' : compactNumber(usageTotals.input) }} ·
+                {{ !usageTotals.reported ? '—' : compactNumber(usageTotals.input) }} ·
                 {{ t('usageOutput') }}
-                {{ usageTotals.known ? '—' : compactNumber(usageTotals.output) }}
+                {{ !usageTotals.reported ? '—' : compactNumber(usageTotals.output) }}
               </p>
             </div>
             <div class="usage-stat">
@@ -1175,6 +1195,9 @@ watch(section, () => {
               }}</strong>
               <p class="usage-stat-note">{{ t('usagePlannerWeightedRate') }}</p>
               <p class="usage-stat-note">{{ plannerCoverage(plannerTotals) }}</p>
+              <p v-if="plannerUsageIncomplete" class="usage-stat-note text-warning">
+                {{ t('usagePlannerIncomplete') }}
+              </p>
             </div>
             <div class="usage-stat">
               <div class="usage-stat-label">
@@ -1211,11 +1234,11 @@ watch(section, () => {
                       {{ providerName(group.providerId) }} · {{ modelName(group.modelId) }}
                       <p class="text-xs text-muted">{{ group.apiModelName }}</p>
                     </td>
-                    <td :title="group.known ? t('usageCounterUnknown') : String(group.input)">
-                      {{ group.known ? t('usageCounterUnknown') : compactNumber(group.input) }}
+                    <td :title="counter(group.input, group.reported, group.calls)">
+                      {{ counter(group.input, group.reported, group.calls, true) }}
                     </td>
-                    <td :title="group.readKnown ? String(group.read) : t('usageCounterUnknown')">
-                      {{ group.readKnown ? compactNumber(group.read) : t('usageCounterUnknown') }}
+                    <td :title="counter(group.read, group.readKnown, group.calls)">
+                      {{ counter(group.read, group.readKnown, group.calls, true) }}
                     </td>
                     <td>{{ plannerCacheRate(group, plannerUsageIncomplete) }}</td>
                     <td>{{ plannerCoverage(group) }}</td>
@@ -1312,6 +1335,7 @@ watch(section, () => {
                           :points="segment.map((p) => `${p.x},${p.y}`).join(' ')"
                           fill="none"
                           stroke-width="2.5"
+                          :stroke-dasharray="segment.some((p) => p.partial) ? '5 4' : undefined"
                           vector-effect="non-scaling-stroke"
                         />
                         <circle
@@ -1320,7 +1344,9 @@ watch(section, () => {
                           :cx="point.x"
                           :cy="point.y"
                           r="2.5"
-                          stroke="none"
+                          :fill="point.partial ? 'var(--ui-bg)' : lineColors[series.key]"
+                          :stroke="lineColors[series.key]"
+                          :data-partial="point.partial"
                         />
                       </g>
                     </g>
@@ -1342,10 +1368,16 @@ watch(section, () => {
                           ><div
                             v-for="segment in usageBars(point)"
                             :key="segment.key"
-                            :class="stackColors[segment.key]"
+                            :class="
+                              segment.partial ? 'border-2 border-dashed' : stackColors[segment.key]
+                            "
                             class="absolute bottom-0 w-full opacity-90"
                             :data-segment="segment.key"
-                            :style="{ height: `${(segment.value / timelineMax) * 100}%` }"
+                            :data-partial="segment.partial"
+                            :style="{
+                              height: `${(segment.value / timelineMax) * 100}%`,
+                              borderColor: lineColors[segment.key],
+                            }"
                         /></template>
                         <span
                           v-if="!usageBars(point).length"
@@ -1391,11 +1423,11 @@ watch(section, () => {
                 <tbody>
                   <tr v-for="point in timelineRows" :key="point.at">
                     <td>{{ localBucket(point.at) }}</td>
-                    <td :title="point.known ? t('usageCounterUnknown') : String(point.input)">
-                      {{ point.known ? t('usageCounterUnknown') : compactNumber(point.input) }}
+                    <td :title="counter(point.input, point.reported, point.calls)">
+                      {{ counter(point.input, point.reported, point.calls, true) }}
                     </td>
-                    <td :title="point.known ? t('usageCounterUnknown') : String(point.output)">
-                      {{ point.known ? t('usageCounterUnknown') : compactNumber(point.output) }}
+                    <td :title="counter(point.output, point.reported, point.calls)">
+                      {{ counter(point.output, point.reported, point.calls, true) }}
                     </td>
                     <td :title="timelineTooltip(point)" :aria-label="timelineTooltip(point)">
                       {{ point.readKnown ? compactNumber(point.read) : t('usageCounterUnknown') }}
@@ -1426,7 +1458,7 @@ watch(section, () => {
                 <th>{{ t('usageTokens') }}</th>
                 <th>{{ t('usageCache') }}</th>
                 <th>{{ t('usageDuration') }}</th>
-                <th>{{ t('usageCost') }}</th>
+                <th>{{ t('usageKnownCost') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -1453,12 +1485,18 @@ watch(section, () => {
                 <td :title="String(row.calls)">{{ compactNumber(row.calls) }}</td>
                 <td
                   class="whitespace-nowrap"
-                  :title="`${row.inputTokens} / ${row.outputTokens}`"
-                  :aria-label="`${t('usageInput')}: ${row.inputTokens}; ${t('usageOutput')}: ${row.outputTokens}`"
+                  :title="`${counter(row.reportedInputTokens, row.reportedUsageCalls, row.calls)} / ${counter(row.reportedOutputTokens, row.reportedUsageCalls, row.calls)}`"
+                  :aria-label="`${t('usageInput')}: ${counter(row.reportedInputTokens, row.reportedUsageCalls, row.calls)}; ${t('usageOutput')}: ${counter(row.reportedOutputTokens, row.reportedUsageCalls, row.calls)}`"
                 >
-                  {{ compactNumber(row.inputTokens) }} / {{ compactNumber(row.outputTokens) }}
-                  <p v-if="row.unknownUsageCalls" class="text-xs text-warning">
-                    {{ t('usageUnknownCalls', { count: row.unknownUsageCalls, total: row.calls }) }}
+                  {{ counter(row.reportedInputTokens, row.reportedUsageCalls, row.calls, true) }} /
+                  {{ counter(row.reportedOutputTokens, row.reportedUsageCalls, row.calls, true) }}
+                  <p v-if="row.reportedUsageCalls < row.calls" class="text-xs text-warning">
+                    {{
+                      t('usageReportedCoverage', {
+                        known: row.reportedUsageCalls,
+                        total: row.calls,
+                      })
+                    }}
                   </p>
                 </td>
                 <td class="min-w-64">

@@ -6304,6 +6304,12 @@ export interface components {
             apiModelName: string;
             role: string;
             calls: number;
+            reportedInputTokens: number;
+            reportedOutputTokens: number;
+            reportedUsageCalls: number;
+            cacheRateInputTokens: number;
+            cacheRateReadTokens: number;
+            cacheRateKnownCalls: number;
             inputTokens: number;
             outputTokens: number;
             durationMs: number;

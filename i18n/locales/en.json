@@ -1656,7 +1656,7 @@
   "usageIncompleteRange": "Some older records have only UTC daily totals. They cannot be reconstructed into these hourly/local-day buckets or partial boundary days. Shown data is a known subset, not complete usage.",
   "usageTime": "Time",
   "usageTimeline": "Token usage over time",
-  "usageTimelineHelp": "Each series shows its own value, not a cumulative total. Cache read/write are input subsets. Unknown or incomplete series are omitted, not zero. Hover or focus for exact values. Only buckets with recorded calls are shown.",
+  "usageTimelineHelp": "Each series shows its own value, not a cumulative total. Cache read/write are input subsets. Dashed lines and hollow marks show reported subtotals with partial coverage. Unavailable series are omitted, not zero. Hover or focus for exact values and coverage. Only buckets with recorded calls are shown.",
   "usageChartLegend": "Blue: input · Purple: output · Green: cache read · Amber: cache write. Bars show reported amounts only; see unknown/partial coverage below.",
   "usageInput": "Input tokens",
   "usageOutput": "Output tokens",
@@ -1684,8 +1684,8 @@
   "usageLineMode": "Line",
   "usageBarMode": "Bar",
   "usagePlannerCacheRate": "Planner cache hit rate",
-  "usagePlannerWeightedRate": "Planner cache-read tokens / Planner input tokens",
-  "usagePlannerCoverage": "Cache-read counters: {known} / {total} Planner calls",
+  "usagePlannerWeightedRate": "Paired Planner cache-read / input tokens (reported calls only)",
+  "usagePlannerCoverage": "Paired input + cache-read counters: {known} / {total} Planner calls",
   "usagePlannerCoverageLabel": "Reported counter coverage",
   "usagePlannerIncomplete": "Historical coverage incomplete",
   "usagePlannerNoCalls": "No Planner calls",
@@ -1746,5 +1746,9 @@
   "mcallsFailure_request_timeout": "Request timed out",
   "mcallsFailure_stream_idle_timeout": "Stream idle timeout",
   "mcallsFailure_stream_interrupted": "Stream interrupted",
-  "mcallsFailure_request_failed": "Request failed"
+  "mcallsFailure_request_failed": "Request failed",
+  "usageKnownCost": "Known cost subtotal (USD)",
+  "usageReportedTokens": "Reported token subtotal",
+  "usageReportedCoverage": "Reported usage: {known} / {total} calls",
+  "usageReportedRate": "{rate} (reported subset)"
 }

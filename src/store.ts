@@ -60,7 +60,16 @@ import {
   type Log,
 } from './schema.ts'
 
+const reportedUsageColumns = {
+  reported_input_tokens: 'reportedInputTokens',
+  reported_output_tokens: 'reportedOutputTokens',
+  reported_usage_calls: 'reportedUsageCalls',
+  cache_rate_input_tokens: 'cacheRateInputTokens',
+  cache_rate_read_tokens: 'cacheRateReadTokens',
+  cache_rate_known_calls: 'cacheRateKnownCalls',
+} as const
 const usageColumns = {
+  ...reportedUsageColumns,
   ordinary_input_tokens: 'ordinaryInputTokens',
   cache_read_input_tokens: 'cacheReadInputTokens',
   cache_write_input_tokens: 'cacheWriteInputTokens',
@@ -190,6 +199,18 @@ export class Store {
         this.db.exec('UPDATE model_usage SET cache_write_known_calls=cache_known_calls')
       if (legacy)
         this.db.exec('UPDATE model_usage SET legacy_calls=calls,legacy_estimated_usd=estimated_usd')
+      if (!columns.has('reported_usage_calls')) {
+        const valid =
+          'calls > 0 AND legacy_calls = 0 AND unknown_usage_calls = 0 AND input_tokens >= 0 AND output_tokens >= 0 AND (priced_calls + partial_priced_calls = calls OR cache_read_known_calls = calls OR cache_write_known_calls = calls OR cache_known_calls = calls)'
+        const paired = `${valid} AND cache_read_known_calls = calls AND cache_read_input_tokens >= 0 AND cache_read_input_tokens <= input_tokens`
+        this.db.exec(`UPDATE model_usage SET
+          reported_input_tokens = CASE WHEN ${valid} THEN input_tokens ELSE 0 END,
+          reported_output_tokens = CASE WHEN ${valid} THEN output_tokens ELSE 0 END,
+          reported_usage_calls = CASE WHEN ${valid} THEN calls ELSE 0 END,
+          cache_rate_input_tokens = CASE WHEN ${paired} THEN input_tokens ELSE 0 END,
+          cache_rate_read_tokens = CASE WHEN ${paired} THEN cache_read_input_tokens ELSE 0 END,
+          cache_rate_known_calls = CASE WHEN ${paired} THEN calls ELSE 0 END`)
+      }
     })()
     this.db.transaction(() => {
       // Snapshot only once: historical daily totals have no recoverable call timestamps.
@@ -201,6 +222,41 @@ export class Store {
           CREATE UNIQUE INDEX model_usage_history_key ON model_usage_history(day,model_id,provider_id,api_model,role);
           CREATE TABLE model_usage_events AS SELECT *, '' AS at FROM model_usage WHERE 0;
           CREATE INDEX model_usage_events_at ON model_usage_events(at);`)
+      }
+    })()
+    this.db.transaction(() => {
+      // Old mixed daily aggregates cannot identify the inputs belonging to reported cache reads.
+      // Recover only complete cohorts; per-call events recover their individually known usage.
+      let added = false
+      for (const table of ['model_usage', 'model_usage_history', 'model_usage_events']) {
+        const columns = new Set(
+          (this.db.pragma(`table_info(${table})`) as Array<{ name: string }>).map((c) => c.name),
+        )
+        // model_usage columns were added above; its zero defaults are rebuilt from the ledger below.
+        const migrate = table === 'model_usage' ? false : !columns.has('reported_usage_calls')
+        if (!migrate) continue
+        added = true
+        for (const column of Object.keys(reportedUsageColumns))
+          this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} INTEGER NOT NULL DEFAULT 0`)
+        const valid =
+          'calls > 0 AND legacy_calls = 0 AND unknown_usage_calls = 0 AND input_tokens >= 0 AND output_tokens >= 0 AND (priced_calls + partial_priced_calls = calls OR cache_read_known_calls = calls OR cache_write_known_calls = calls OR cache_known_calls = calls)'
+        const paired = `${valid} AND cache_read_known_calls = calls AND cache_read_input_tokens >= 0 AND cache_read_input_tokens <= input_tokens`
+        this.db.exec(`UPDATE ${table} SET
+          reported_input_tokens = CASE WHEN ${valid} THEN input_tokens ELSE 0 END,
+          reported_output_tokens = CASE WHEN ${valid} THEN output_tokens ELSE 0 END,
+          reported_usage_calls = CASE WHEN ${valid} THEN calls ELSE 0 END,
+          cache_rate_input_tokens = CASE WHEN ${paired} THEN input_tokens ELSE 0 END,
+          cache_rate_read_tokens = CASE WHEN ${paired} THEN cache_read_input_tokens ELSE 0 END,
+          cache_rate_known_calls = CASE WHEN ${paired} THEN calls ELSE 0 END`)
+      }
+      if (added) {
+        const cols = Object.keys(reportedUsageColumns)
+        this.db
+          .exec(`UPDATE model_usage AS target SET ${cols.map((c) => `${c} = source.${c}`).join(',')}
+          FROM (SELECT ${usageKeys.join(',')},${cols.map((c) => `SUM(${c}) AS ${c}`).join(',')}
+            FROM (SELECT ${usageAllColumns.join(',')} FROM model_usage_history UNION ALL SELECT ${usageAllColumns.join(',')} FROM model_usage_events)
+            GROUP BY ${usageKeys.join(',')}) AS source
+          WHERE ${usageKeys.map((k) => `target.${k} = source.${k}`).join(' AND ')}`)
       }
     })()
     initializeModelCalls(this.db)
@@ -683,6 +739,13 @@ export class Store {
     const prices = snapshot ?? model ?? {}
     const cost = entry.event === 'model.completed' ? calculateModelCost(usage, prices) : undefined
     const breakdown: UsageBreakdown = {
+      reportedInputTokens: valid ? usage.inputTokens : 0,
+      reportedOutputTokens: valid ? usage.outputTokens : 0,
+      reportedUsageCalls: valid ? 1 : 0,
+      cacheRateInputTokens:
+        valid && usage.cacheReadInputTokens !== undefined ? usage.inputTokens : 0,
+      cacheRateReadTokens: valid ? (usage.cacheReadInputTokens ?? 0) : 0,
+      cacheRateKnownCalls: valid && usage.cacheReadInputTokens !== undefined ? 1 : 0,
       ordinaryInputTokens: partition?.ordinaryInputTokens ?? 0,
       cacheReadInputTokens: valid ? (usage.cacheReadInputTokens ?? 0) : 0,
       cacheWriteInputTokens: valid ? (usage.cacheWriteInputTokens ?? 0) : 0,

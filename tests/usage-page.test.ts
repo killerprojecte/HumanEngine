@@ -41,7 +41,13 @@ function page(get: (...args: any[]) => Promise<any>) {
     noop,
     noop,
     noop,
-    () => ({ t: (key: string) => key, locale: ref('en') }),
+    () => ({
+      t: (key: string, args?: Record<string, unknown>) =>
+        key === 'usagePartialCounter'
+          ? `${key}[${args?.value};${args?.known}/${args?.total}]`
+          : key,
+      locale: ref('en'),
+    }),
     () => ({ client: { GET: get } }),
   )
   const scope = effectScope()
@@ -58,6 +64,12 @@ function reply(calls: number, incomplete = false) {
         calls,
         inputTokens: calls * 100,
         outputTokens: 20,
+        reportedInputTokens: calls * 100,
+        reportedOutputTokens: 20,
+        reportedUsageCalls: calls,
+        cacheRateInputTokens: calls * 100,
+        cacheRateReadTokens: calls * 50,
+        cacheRateKnownCalls: calls,
         cacheReadInputTokens: calls * 50,
         cacheWriteInputTokens: 0,
         unknownUsageCalls: 0,
@@ -121,15 +133,15 @@ test('custom ranges validate before fetching and propagate incomplete/unknown ac
     assert.equal(state.usageIncomplete.value, true)
     assert.equal(state.timelineIncomplete.value, true)
     assert.equal(
-      state.cacheRate({ input: 200, read: 100, calls: 2, known: 0, readKnown: 2 }),
+      state.cacheRate({ rateInput: 200, rateRead: 100, calls: 2, rateKnown: 2 }),
       '50.0%',
     )
     assert.equal(
-      state.cacheRate({ input: 200, read: 100, calls: 2, known: 0, readKnown: 1 }),
+      state.cacheRate({ rateInput: 200, rateRead: 100, calls: 2, rateKnown: 0 }),
       'usageCounterUnknown',
     )
     assert.equal(
-      state.cacheRate({ input: 0, read: 0, calls: 0, known: 0, readKnown: 0 }),
+      state.cacheRate({ rateInput: 0, rateRead: 0, calls: 0, rateKnown: 0 }),
       'usageCounterUnknown',
     )
   } finally {
@@ -176,6 +188,9 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
       inputTokens: 999,
       outputTokens: 999,
       unknownUsageCalls: 2,
+      reportedUsageCalls: 0,
+      reportedInputTokens: 0,
+      reportedOutputTokens: 0,
       cacheReadKnownCalls: 0,
       cacheWriteKnownCalls: 0,
       cacheReadInputTokens: 0,
@@ -197,18 +212,28 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
     )
     assert.equal((html.match(/data-unknown="true"/g) ?? []).length, 1)
     state.timeline.value = [
-      { ...unknown, unknownUsageCalls: 0, cacheReadKnownCalls: 1, cacheReadInputTokens: 50 },
+      {
+        ...unknown,
+        reportedUsageCalls: 1,
+        reportedInputTokens: 100,
+        reportedOutputTokens: 20,
+        cacheReadKnownCalls: 1,
+        cacheReadInputTokens: 50,
+      },
     ]
     html = await render()
     assert.match(html, /data-segment="input"/)
-    assert.doesNotMatch(html, /data-segment="read"/)
+    assert.match(html, /data-segment="read" data-partial="true"/)
     assert.doesNotMatch(html, /data-segment="write"/)
-    assert.match(html, /title="[^"]*usageCacheRead: usagePartialCounter/)
+    assert.match(html, /title="[^"]*usageCacheRead: usagePartialCounter\[50;1\/2\]/)
+    assert.match(html, /aria-label="[^"]*usageInput: usagePartialCounter\[100;1\/2\]/)
     state.timeline.value = [
       {
         ...reply(2).data[0],
         inputTokens: 10000,
+        reportedInputTokens: 10000,
         outputTokens: 2000,
+        reportedOutputTokens: 2000,
         cacheReadInputTokens: 6000,
         cacheWriteInputTokens: 1000,
       },
@@ -216,7 +241,7 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
     html = await render()
     assert.equal(state.timelineMax.value, 10000)
     assert.equal((html.match(/data-segment=/g) ?? []).length, 4)
-    assert.match(html, /data-segment="input" style="height:100%;"/)
+    assert.match(html, /data-segment="input" data-partial="false" style="height:100%;/)
     assert.match(html, /role="img"[^>]*aria-label="[^"]*usageInput: 10000/)
     assert.match(html, /title="10000">10K/)
     state.chartMode.value = 'line'
@@ -234,7 +259,9 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
       {
         ...reply(2).data[0],
         inputTokens: 10000,
+        reportedInputTokens: 10000,
         outputTokens: 2000,
+        reportedOutputTokens: 2000,
         cacheReadInputTokens: 6000,
         cacheWriteInputTokens: 1000,
       },
@@ -259,6 +286,9 @@ test('Planner cache metrics stay role-scoped and token-weighted while costs and 
     apiModelName: 'api-model',
     day: '2026-11-04T08:00:00Z',
     inputTokens: 100,
+    reportedInputTokens: 100,
+    cacheRateInputTokens: 100,
+    cacheRateReadTokens: 90,
     cacheReadInputTokens: 90,
     estimatedUsd: 1,
   }
@@ -266,6 +296,8 @@ test('Planner cache metrics stay role-scoped and token-weighted while costs and 
     ...plannerA,
     providerId: 'provider-b',
     inputTokens: 900,
+    reportedInputTokens: 900,
+    cacheRateInputTokens: 900,
     cacheReadInputTokens: 90,
     estimatedUsd: 2,
   }
@@ -273,6 +305,7 @@ test('Planner cache metrics stay role-scoped and token-weighted while costs and 
     ...plannerA,
     role: 'replyer',
     inputTokens: 10000,
+    reportedInputTokens: 10000,
     cacheReadInputTokens: 0,
     estimatedUsd: 3,
   }
@@ -281,6 +314,7 @@ test('Planner cache metrics stay role-scoped and token-weighted while costs and 
     role: 'vision',
     day: '2026-11-04T09:00:00Z',
     inputTokens: 20000,
+    reportedInputTokens: 20000,
     estimatedUsd: 4,
   }
   const setRows = (rows: (typeof plannerA)[]) => {
@@ -314,18 +348,39 @@ test('Planner cache metrics stay role-scoped and token-weighted while costs and 
     assert.equal(second.input, 20000)
     assert.equal(state.plannerCacheRate(second.planner), 'usagePlannerNoCalls')
     assert.match(state.timelineTooltip(second), /usagePlannerCacheRate: usagePlannerNoCalls/)
-    assert.equal(state.plannerCacheRate(state.plannerTotals.value, true), 'usagePlannerIncomplete')
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value, true), 'usageReportedRate')
 
-    setRows([plannerA, { ...plannerB, cacheReadKnownCalls: 0, cacheReadInputTokens: 0 }, replyer])
-    assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usageCounterUnknown')
-    assert.equal(state.plannerCacheRate(state.timelineRows.value[0].planner), 'usageCounterUnknown')
-    setRows([{ ...plannerA, unknownUsageCalls: 1 }])
+    setRows([
+      plannerA,
+      {
+        ...plannerB,
+        cacheReadKnownCalls: 0,
+        cacheReadInputTokens: 0,
+        cacheRateKnownCalls: 0,
+        cacheRateInputTokens: 0,
+        cacheRateReadTokens: 0,
+      },
+      replyer,
+    ])
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usageReportedRate')
+    assert.equal(state.plannerCacheRate(state.timelineRows.value[0].planner), 'usageReportedRate')
+    assert.equal(state.plannerTotals.value.rateInput, 100)
+    assert.equal(state.plannerTotals.value.rateRead, 90)
+    setRows([
+      {
+        ...plannerA,
+        unknownUsageCalls: 1,
+        cacheRateKnownCalls: 0,
+        cacheRateInputTokens: 0,
+        cacheRateReadTokens: 0,
+      },
+    ])
     assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usageCounterUnknown')
     setRows([replyer, vision])
     assert.equal(state.usageTotals.value.usd, 7)
     assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usagePlannerNoCalls')
     assert.deepEqual(state.plannerGroups.value, [])
-    setRows([{ ...plannerA, cacheReadInputTokens: 0 }])
+    setRows([{ ...plannerA, cacheReadInputTokens: 0, cacheRateReadTokens: 0 }])
     assert.equal(
       state.plannerCacheRate(state.plannerTotals.value),
       '0.0%',
@@ -352,6 +407,55 @@ test('Planner coverage headers do not inherit unrelated historical gaps and char
     assert.equal(state.plannerTimelineIncomplete.value, false)
     assert.equal(queries[1].timeZone, Intl.DateTimeFormat().resolvedOptions().timeZone)
     assert.equal(queries[0].timeZone, undefined, 'summary preserves original historical-day totals')
+  } finally {
+    close()
+  }
+})
+
+test('mixed usage retains reported all-role subtotals and paired Planner denominators', () => {
+  const { state, close } = page(async () => reply(1))
+  try {
+    const mixed = {
+      ...reply(4).data[0],
+      role: 'planner',
+      inputTokens: 9999,
+      outputTokens: 8888,
+      unknownUsageCalls: 2,
+      reportedInputTokens: 800,
+      reportedOutputTokens: 60,
+      reportedUsageCalls: 2,
+      cacheReadInputTokens: 700,
+      cacheReadKnownCalls: 3,
+      cacheRateInputTokens: 500,
+      cacheRateReadTokens: 200,
+      cacheRateKnownCalls: 1,
+    }
+    state.usage.value = [mixed]
+    state.timeline.value = [mixed]
+    assert.equal(state.usageTotals.value.input, 800)
+    assert.equal(state.usageTotals.value.output, 60)
+    assert.equal(state.usageTotals.value.reported, 2)
+    assert.equal(state.timelineRows.value[0].input, 800)
+    assert.equal(state.cacheRate(state.plannerTotals.value), '40.0%')
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usageReportedRate')
+    assert.equal(state.plannerTotals.value.rateKnown, 1)
+    assert.equal(state.timelineMax.value, 800)
+    const input = state.chartLines.value.find((line: any) => line.key === 'input')
+    assert.equal(input.segments[0][0].partial, true)
+    state.usage.value = [
+      {
+        ...mixed,
+        reportedUsageCalls: 0,
+        reportedInputTokens: 0,
+        reportedOutputTokens: 0,
+        cacheRateKnownCalls: 0,
+        cacheRateInputTokens: 0,
+        cacheRateReadTokens: 0,
+      },
+    ]
+    assert.equal(state.plannerCacheRate(state.plannerTotals.value), 'usageCounterUnknown')
+    assert.equal(state.counter(0, 0, 4), 'usageCounterUnknown')
+    assert.equal(state.counter(0, 4, 4), '0')
   } finally {
     close()
   }

@@ -91,16 +91,26 @@ export class SourceEventStore {
   }
   private readonly revisions: number
   private readonly edits: number
-  private readonly headsPerScene: number
-  private readonly headsTotal: number
+  private readonly headsPerScene: number | undefined
+  private readonly headsTotal: number | undefined
   constructor(
     private readonly db: DB,
     private readonly options: SourceEventStoreOptions = {},
   ) {
     this.revisions = this.bound(options.maxRevisions ?? 32, 1, 256)
     this.edits = this.bound(options.maxEditKeys ?? 128, 1, 1024)
-    this.headsPerScene = this.bound(options.maxHeadsPerScene ?? 5000, 1, 1000000)
-    this.headsTotal = this.bound(options.maxHeadsTotal ?? 20000, 1, 1000000)
+    // Persistent source authority is not an evictable runtime queue. A lifetime
+    // message quota would eventually disable all new learning in a busy scene.
+    // Keep optional explicit admission limits for constrained embedding callers;
+    // the normal application retains authority until its privacy lifecycle removes it.
+    this.headsPerScene =
+      options.maxHeadsPerScene === undefined
+        ? undefined
+        : this.bound(options.maxHeadsPerScene, 1, 1000000)
+    this.headsTotal =
+      options.maxHeadsTotal === undefined
+        ? undefined
+        : this.bound(options.maxHeadsTotal, 1, 1000000)
   }
   private bound(n: number, min: number, max: number) {
     if (!Number.isSafeInteger(n) || n < min || n > max) throw new Error('invalid_event_limit')
@@ -218,13 +228,18 @@ CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_
       const old = this.head(change.identity)
       if (old?.deleted) return result('recalled')
       if (!old && change.kind === 'ingress') {
-        const total = this.db.prepare('SELECT count(*) n FROM source_event_heads').get() as {
-          n: number
+        if (this.headsTotal !== undefined) {
+          const total = this.db.prepare('SELECT count(*) n FROM source_event_heads').get() as {
+            n: number
+          }
+          if (total.n >= this.headsTotal) return result('capacity')
         }
-        const scene = this.db
-          .prepare('SELECT count(*) n FROM source_event_heads WHERE scene_id=?')
-          .get(change.identity.sceneId) as { n: number }
-        if (total.n >= this.headsTotal || scene.n >= this.headsPerScene) return result('capacity')
+        if (this.headsPerScene !== undefined) {
+          const scene = this.db
+            .prepare('SELECT count(*) n FROM source_event_heads WHERE scene_id=?')
+            .get(change.identity.sceneId) as { n: number }
+          if (scene.n >= this.headsPerScene) return result('capacity')
+        }
       }
       if (change.kind === 'ingress' && old)
         return result(

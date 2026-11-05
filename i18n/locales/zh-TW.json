@@ -1656,7 +1656,7 @@
   "usageIncompleteRange": "部分舊紀錄只有 UTC 按日彙總，無法還原目前小時、本地日或跨日邊界的明細。目前僅顯示可確定的部分，不代表完整用量。",
   "usageTime": "時間",
   "usageTimeline": "Token 使用時間分佈",
-  "usageTimelineHelp": "每條線 / 每種顏色表示該項自身數值，非累計總和。快取讀取 / 寫入屬於輸入的一部分。未知或覆蓋不完整的項留空，不按零繪製；懸停或聚焦查看精確值。僅顯示有記錄的時間節點。",
+  "usageTimelineHelp": "各序列獨立顯示，不累加；快取讀取與寫入屬於輸入的子集。虛線與空心標記表示涵蓋不完整的已回報小計，完全未知的資料留空而非零。懸停或聚焦查看精確數值與涵蓋率。僅顯示有呼叫記錄的時段。",
   "usageChartLegend": "藍色：輸入 · 紫色：輸出 · 綠色：快取讀取 · 黃色：快取寫入。柱形僅顯示已報告量，未知/部分覆蓋見下表。",
   "usageInput": "輸入 Token",
   "usageOutput": "輸出 Token",
@@ -1684,8 +1684,8 @@
   "usageLineMode": "折線圖",
   "usageBarMode": "柱狀圖",
   "usagePlannerCacheRate": "Planner 快取命中率",
-  "usagePlannerWeightedRate": "Planner 快取讀取 / Planner 輸入 Token",
-  "usagePlannerCoverage": "已回報讀取計數：{known} / {total} 次 Planner 呼叫",
+  "usagePlannerWeightedRate": "同時已知的 Planner 快取讀取 / 輸入 Token",
+  "usagePlannerCoverage": "輸入與快取讀取同時已知：{known} / {total} 次 Planner 呼叫",
   "usagePlannerCoverageLabel": "計數覆蓋情況",
   "usagePlannerIncomplete": "歷史覆蓋不完整",
   "usagePlannerNoCalls": "暫無 Planner 呼叫",
@@ -1746,5 +1746,9 @@
   "mcallsFailure_request_timeout": "請求逾時",
   "mcallsFailure_stream_idle_timeout": "串流閒置逾時",
   "mcallsFailure_stream_interrupted": "串流傳輸中斷",
-  "mcallsFailure_request_failed": "請求失敗"
+  "mcallsFailure_request_failed": "請求失敗",
+  "usageKnownCost": "已知費用小計（美元）",
+  "usageReportedTokens": "已回報 Token 小計",
+  "usageReportedCoverage": "已回報用量：{known} / {total} 次呼叫",
+  "usageReportedRate": "{rate}（已回報部分）"
 }

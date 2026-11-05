@@ -1718,6 +1718,24 @@
           "calls": {
             "type": "number"
           },
+          "reportedInputTokens": {
+            "type": "number"
+          },
+          "reportedOutputTokens": {
+            "type": "number"
+          },
+          "reportedUsageCalls": {
+            "type": "number"
+          },
+          "cacheRateInputTokens": {
+            "type": "number"
+          },
+          "cacheRateReadTokens": {
+            "type": "number"
+          },
+          "cacheRateKnownCalls": {
+            "type": "number"
+          },
           "inputTokens": {
             "type": "number"
           },
@@ -1795,6 +1813,12 @@
           "apiModelName",
           "role",
           "calls",
+          "reportedInputTokens",
+          "reportedOutputTokens",
+          "reportedUsageCalls",
+          "cacheRateInputTokens",
+          "cacheRateReadTokens",
+          "cacheRateKnownCalls",
           "inputTokens",
           "outputTokens",
           "durationMs",

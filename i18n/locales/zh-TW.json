@@ -1059,7 +1059,7 @@
   "mhEpistemic_hypothesis": "待驗證假設",
   "mhEpistemicUnknown": "證據類型未標註",
   "stLearningMaxWait": "即時學習最大合併等待（毫秒）",
-  "stLearningMaxWaitHelp": "連續訊息達此窗口後可提交一批；仍須等待前台回覆及最小呼叫間隔，不是週期性模型呼叫。",
+  "stLearningMaxWaitHelp": "連續訊息達此窗口後可提交一批，仍遵守最小呼叫間隔。前台忙碌時逐批安排逾期學習，不搶占進行中的請求；並發、限速和預算仍生效，並非完成期限或週期性呼叫。",
   "stLearningMinInterval": "學習批次最小間隔（毫秒）",
   "stLearningMinIntervalHelp": "限制同一場景的新學習批次頻率。沒有新來源不呼叫模型；關閉學習清空待處理訊息。",
   "stMemoryProjection": "實驗性記憶衍生索引",

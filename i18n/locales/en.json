@@ -1059,7 +1059,7 @@
   "mhEpistemic_hypothesis": "Hypothesis",
   "mhEpistemicUnknown": "Evidence type unspecified",
   "stLearningMaxWait": "Maximum learning coalescing wait (ms)",
-  "stLearningMaxWaitHelp": "Continuous input may release a batch after this window, still respecting foreground work and the minimum interval. This is not a periodic model call.",
+  "stLearningMaxWaitHelp": "Continuous input may release a batch after this window, subject to the minimum interval. While foreground work is busy, overdue learning gets bounded turns without preemption. Concurrency, rate and budget limits still apply; this is neither a completion deadline nor a periodic call.",
   "stLearningMinInterval": "Minimum learning batch interval (ms)",
   "stLearningMinIntervalHelp": "Limit new batches per scene. No fresh sources means no model calls; disabling learning clears pending input.",
   "stMemoryProjection": "Experimental memory projections",

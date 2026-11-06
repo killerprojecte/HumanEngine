@@ -46,6 +46,8 @@ import {
 import { createParentTraversal } from './memory/read/bound-parents.ts'
 import { domainSourceCurrent } from './memory/read/domain-source-events.ts'
 import { memorySearchTerms } from './memory/read/lexical.ts'
+import { assertionScopeFilter } from './memory/read/scope.ts'
+import { searchMemorySnapshot } from './memory/recovery/ledger.ts'
 import { recordCommitmentMutation } from './memory/recovery/commitments.ts'
 import { RelationCandidates } from './memory/relations/candidates.ts'
 import {
@@ -893,62 +895,16 @@ export class MemoryService {
     const vector = options ? this.vector(options.spaceId, options.vector) : undefined
     const scope = this.scopeFilter(ctx, personId)
     if (!scope) return []
-    const applicability = new Map<string, boolean>()
-    // Scope only: do not prefilter time eligibility in an earlier statement.
-    // A record becoming eligible before the final SQL still needs applicability.
-    const candidates = this.store.db
-      .prepare(`SELECT * FROM memories WHERE ${scope.sql} ORDER BY rowid DESC`)
-      .all(...scope.params) as Row[]
-    const unsupported = candidates
-      .map(read)
-      .filter(
-        (record) =>
-          !this.authority.currentApplicable(record, new Set(), applicability) ||
-          (ctx.simulation && !this.authority.supported(record)),
-      )
-      .map((record) => record.id)
-    const lexical = terms.length ? 'humanengine_lexical(scoped.content, ?)' : '0.0'
-    const semantic = options
-      ? 'CASE WHEN v.embedding IS NULL THEN 0.0 ELSE max(0.0, 1.0 - vec_distance_cosine(v.embedding, ?)) END'
-      : '0.0'
-    const join = options
-      ? 'LEFT JOIN memory_vectors v ON v.memory_id=scoped.id AND v.space_id=?'
-      : ''
-    const limit = Math.max(1, Math.min(options?.limit ?? 20, 100))
-    const rows = this.store.db
-      .prepare(
-        `
-      WITH scoped AS MATERIALIZED (
-        SELECT rowid AS ordinal, * FROM memories
-        WHERE ${scope.sql} AND id NOT IN (SELECT value FROM json_each(?)) AND json_extract(value,'$.internalUse') IS NULL AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(value,'$.status') IN ('active','disputed')
-          AND (json_extract(value,'$.validFrom') IS NULL OR julianday(json_extract(value,'$.validFrom')) <= julianday('now')) AND (json_extract(value,'$.validUntil') IS NULL OR julianday(json_extract(value,'$.validUntil')) > julianday('now'))
-      ), relevant AS MATERIALIZED (
-        SELECT scoped.value, scoped.ordinal, max(${lexical}, ${semantic}) AS relevance
-        FROM scoped ${join}
-      ), ranked AS (
-        SELECT value, ordinal, relevance,
-          relevance * 0.8 + json_extract(value,'$.confidence') * 0.1 +
-          CASE json_extract(value,'$.importance') WHEN 'low' THEN 0.02 WHEN 'medium' THEN 0.06 ELSE 0.1 END AS score
-        FROM relevant
-      )
-      SELECT value, score FROM ranked WHERE ? = 0 OR relevance > 0
-      ORDER BY score DESC, json_extract(value,'$.learnedAt') DESC, ordinal DESC LIMIT ?
-    `,
-      )
-      .all(
-        ...scope.params,
-        JSON.stringify(unsupported),
-        ...(terms.length ? [JSON.stringify(terms)] : []),
-        ...(options ? [vector!, options.spaceId] : []),
-        query.trim() ? 1 : 0,
-        Math.trunc(limit),
-      ) as { value: string; score: number }[]
-    return rows
-      .filter((row) => this.authority.supported(JSON.parse(row.value) as MemoryRecord))
-      .map((row) => ({
-        ...this.authority.sanitize(JSON.parse(row.value) as MemoryRecord),
-        score: row.score,
-      }))
+    return searchMemorySnapshot(this.store, {
+      sceneId: ctx.sceneId,
+      simulation: ctx.simulation,
+      personId,
+      query,
+      terms,
+      ...(options
+        ? { options: { spaceId: options.spaceId, vector: vector!, limit: options.limit } }
+        : {}),
+    })
   }
 
   promotePublic(ctx: MemoryContext, id: string): ProposalResult {
@@ -1111,11 +1067,7 @@ export class MemoryService {
     personId?: string,
   ): { sql: string; params: string[] } | undefined {
     this.store.assertRecoveryReady()
-    if (ctx.simulation)
-      return personId ? undefined : { sql: "scope_key='shared:public'", params: [] }
-    if (personId)
-      return { sql: 'scope_key=? AND person_id=?', params: [`scene:${ctx.sceneId}`, personId] }
-    return { sql: "(scope_key=? OR scope_key='shared:public')", params: [`scene:${ctx.sceneId}`] }
+    return assertionScopeFilter(ctx, personId)
   }
   private scopedRows(ctx: MemoryContext, personId?: string, ids?: readonly string[]): Row[] {
     const scope = this.scopeFilter(ctx, personId)

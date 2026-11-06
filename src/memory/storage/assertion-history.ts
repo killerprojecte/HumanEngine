@@ -71,12 +71,68 @@ const validTime = (value: string | null) =>
     Number.isFinite(Date.parse(value)) &&
     new Date(value).toISOString() === value)
 
+/** Non-migrating history reads. Creating a reader never changes storage. */
+export class AssertionHistoryReader {
+  constructor(protected readonly db: HistoryDatabase) {}
+
+  state(id: string): AssertionHistoryState {
+    const row = this.db
+      .prepare(
+        'SELECT version,deletion_epoch,deleted FROM memory_assertion_state WHERE assertion_id=?',
+      )
+      .get(id) as { version: number; deletion_epoch: number; deleted: number } | undefined
+    return row
+      ? { version: row.version, deletionEpoch: row.deletion_epoch, deleted: !!row.deleted }
+      : { version: 0, deletionEpoch: 0, deleted: false }
+  }
+
+  /** Scope-filtered storage read only. This is not a replacement for facade authorization. */
+  /** Storage lookup only: callers still authorize current scope/epoch and revision proof. */
+  revision(id: string, version: number, authorizedScopeKey: string): AssertionRevision | undefined {
+    if (!Number.isSafeInteger(version) || version < 1 || this.state(id).deleted) return undefined
+    const row = this.db
+      .prepare(
+        `SELECT value FROM memory_assertion_revisions
+       WHERE assertion_id=? AND version=? AND scope_key=? AND value IS NOT NULL`,
+      )
+      .get(id, version, authorizedScopeKey) as { value: string } | undefined
+    return row ? this.decodeRevision(id, version, authorizedScopeKey, row.value) : undefined
+  }
+
+  protected decodeRevision(
+    id: string,
+    version: number,
+    authorizedScopeKey: string,
+    json: string,
+  ): AssertionRevision | undefined {
+    try {
+      const value = JSON.parse(json) as AssertionRevision
+      if (
+        !value ||
+        value.assertionId !== id ||
+        value.version !== version ||
+        !value.record ||
+        value.record.id !== id ||
+        !value.record.scope ||
+        (value.record.scope.kind !== 'scene' &&
+          value.record.scope.kind !== 'sharedPublicKnowledge') ||
+        scopeKey(value.record) !== authorizedScopeKey
+      )
+        return undefined
+      return value
+    } catch {
+      return undefined
+    }
+  }
+}
+
 /** Transaction-local history companion, not an authorization or truth service.
  * The facade validates scope, current sources and AND/OR proofs before committing.
  * Read callers must revalidate every revision before exposing it to a user/model.
  */
-export class AssertionHistory {
-  constructor(private readonly db: HistoryDatabase) {
+export class AssertionHistory extends AssertionHistoryReader {
+  constructor(db: HistoryDatabase) {
+    super(db)
     db.transaction(() => {
       const needsParentMigration = !db
         .prepare(
@@ -122,17 +178,6 @@ export class AssertionHistory {
         WHERE revision.value IS NOT NULL AND parent.type='text';
       `)
     })()
-  }
-
-  state(id: string): AssertionHistoryState {
-    const row = this.db
-      .prepare(
-        'SELECT version,deletion_epoch,deleted FROM memory_assertion_state WHERE assertion_id=?',
-      )
-      .get(id) as { version: number; deletion_epoch: number; deleted: number } | undefined
-    return row
-      ? { version: row.version, deletionEpoch: row.deletion_epoch, deleted: !!row.deleted }
-      : { version: 0, deletionEpoch: 0, deleted: false }
   }
 
   append(input: AppendAssertionRevision): AssertionRevision {
@@ -244,45 +289,6 @@ export class AssertionHistory {
       legacyImport: true,
     })
     return this.state(record.id)
-  }
-
-  /** Scope-filtered storage read only. This is not a replacement for facade authorization. */
-  /** Storage lookup only: callers still authorize current scope/epoch and revision proof. */
-  revision(id: string, version: number, authorizedScopeKey: string): AssertionRevision | undefined {
-    if (!Number.isSafeInteger(version) || version < 1 || this.state(id).deleted) return undefined
-    const row = this.db
-      .prepare(
-        `SELECT value FROM memory_assertion_revisions
-       WHERE assertion_id=? AND version=? AND scope_key=? AND value IS NOT NULL`,
-      )
-      .get(id, version, authorizedScopeKey) as { value: string } | undefined
-    return row ? this.decodeRevision(id, version, authorizedScopeKey, row.value) : undefined
-  }
-
-  private decodeRevision(
-    id: string,
-    version: number,
-    authorizedScopeKey: string,
-    json: string,
-  ): AssertionRevision | undefined {
-    try {
-      const value = JSON.parse(json) as AssertionRevision
-      if (
-        !value ||
-        value.assertionId !== id ||
-        value.version !== version ||
-        !value.record ||
-        value.record.id !== id ||
-        !value.record.scope ||
-        (value.record.scope.kind !== 'scene' &&
-          value.record.scope.kind !== 'sharedPublicKnowledge') ||
-        scopeKey(value.record) !== authorizedScopeKey
-      )
-        return undefined
-      return value
-    } catch {
-      return undefined
-    }
   }
 
   /** Optional limit returns the latest N retained revisions, in ascending order. */

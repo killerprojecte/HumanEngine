@@ -1,7 +1,8 @@
 import type { Message } from '../../onebot.ts'
 import type { Store } from '../../store.ts'
 import type { RuntimeMessage } from '../../runtime.ts'
-import type { MemorySource } from '../domain/contracts.ts'
+import type { MemoryRecord, MemorySource } from '../domain/contracts.ts'
+import { readMemorySearch, type MemorySearchRead } from '../read/search.ts'
 import { domainSourceCurrent } from '../read/domain-source-events.ts'
 import { currentSourceSnapshot } from '../../runtime/source-events.ts'
 import { normalizeBotMessage } from '../../runtime/chat-history.ts'
@@ -579,6 +580,16 @@ export function projectRemoteHistoryMessages(
   }) as Message[]
 }
 
+/** Fixed search proof/ranking read only. Copy inputs before acquiring either
+ * snapshot, and never accept caller functions or reusable authority objects. */
+export function searchMemorySnapshot(store: Store, input: MemorySearchRead): MemoryRecord[] {
+  const search = structuredClone(input)
+  // structuredClone retains SharedArrayBuffer backing; own the vector bytes too.
+  if (search.options) search.options.vector = Uint8Array.from(search.options.vector)
+  return validateFixedReads(store, { kind: 'memory-search', search })
+}
+
+type SearchReads = { kind: 'memory-search'; search: MemorySearchRead }
 type DisplayReads = {
   sceneId: string
   messages: RuntimeMessage[]
@@ -591,38 +602,41 @@ type DomainSourceReads = { kind: 'domain-sources'; sources: readonly MemorySourc
 function validateFixedReads(store: Store, input: DisplayReads): RuntimeMessage[]
 function validateFixedReads(store: Store, input: FixedSourceReads): boolean
 function validateFixedReads(store: Store, input: DomainSourceReads): boolean[]
+function validateFixedReads(store: Store, input: SearchReads): MemoryRecord[]
 function validateFixedReads(
   store: Store,
-  input: FixedSourceReads | DomainSourceReads | DisplayReads,
-): boolean | boolean[] | RuntimeMessage[] {
+  input: FixedSourceReads | DomainSourceReads | DisplayReads | SearchReads,
+): boolean | boolean[] | RuntimeMessage[] | MemoryRecord[] {
   const db = store.db
   const authority = bindings.get(db)
   const read = () =>
-    input.kind === 'sources'
-      ? input.messages.every((message) => currentSourceSnapshot(store, message))
-      : input.kind === 'dependencies'
-        ? input.ids.every((id) => !store.recalled(input.sceneId, id))
-        : input.kind === 'domain-sources'
-          ? input.sources.map((source) => domainSourceCurrent(store, source))
-          : input.kind === 'remote-history-display'
-            ? input.messages
-                .filter(
-                  (message) =>
-                    message.sceneId === input.sceneId &&
-                    !input.recalled.has(message.id) &&
-                    !store.recalled(input.sceneId, message.id),
+    input.kind === 'memory-search'
+      ? readMemorySearch(store, input.search)
+      : input.kind === 'sources'
+        ? input.messages.every((message) => currentSourceSnapshot(store, message))
+        : input.kind === 'dependencies'
+          ? input.ids.every((id) => !store.recalled(input.sceneId, id))
+          : input.kind === 'domain-sources'
+            ? input.sources.map((source) => domainSourceCurrent(store, source))
+            : input.kind === 'remote-history-display'
+              ? input.messages
+                  .filter(
+                    (message) =>
+                      message.sceneId === input.sceneId &&
+                      !input.recalled.has(message.id) &&
+                      !store.recalled(input.sceneId, message.id),
+                  )
+                  .slice(-30)
+                  .map((message) =>
+                    store.presentMessage(normalizeBotMessage(message as Message, input.botUserId)),
+                  )
+              : input.messages.map((message) =>
+                  input.recalled.has(message.id) || store.recalled(input.sceneId, message.id)
+                    ? { ...message, parts: [], status: 'recalled' as const }
+                    : message.origin === 'simulation'
+                      ? message
+                      : store.presentMessage(message as Message),
                 )
-                .slice(-30)
-                .map((message) =>
-                  store.presentMessage(normalizeBotMessage(message as Message, input.botUserId)),
-                )
-            : input.messages.map((message) =>
-                input.recalled.has(message.id) || store.recalled(input.sceneId, message.id)
-                  ? { ...message, parts: [], status: 'recalled' as const }
-                  : message.origin === 'simulation'
-                    ? message
-                    : store.presentMessage(message as Message),
-              )
   // Preserve nested callers and nonstandard configurations without reducing any checks.
   if (
     !authority ||
@@ -634,7 +648,7 @@ function validateFixedReads(
     authority.db.pragma('query_only', { simple: true }) !== 0
   )
     return read()
-  let result: boolean | boolean[] | RuntimeMessage[]
+  let result: boolean | boolean[] | RuntimeMessage[] | MemoryRecord[]
   try {
     db.pragma('query_only = ON')
     authority.db.pragma('query_only = ON')

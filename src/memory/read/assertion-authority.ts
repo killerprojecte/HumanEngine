@@ -5,7 +5,7 @@ import { canonicalProofKey, type SupportProof as Support } from '../domain/proof
 import { scopeKey, uniqueSources } from '../domain/record-values.ts'
 import type { RelationAssertionReference, RelationContext } from '../domain/relations.ts'
 import type { AssertionRepository } from '../storage/assertion-repository.ts'
-import type { MemoryRevisionCoordinator } from '../write/revision-coordinator.ts'
+import type { AssertionHistoryReader } from '../storage/assertion-history.ts'
 import { earliestObservation } from '../write/subject-attribution.ts'
 import { isCurrentlyApplicable } from './applicability.ts'
 import { createParentTraversal, inspectBoundParents } from './bound-parents.ts'
@@ -19,7 +19,7 @@ export class AssertionAuthority {
       'assertRecoveryReady' | 'recalled' | 'sourceEvents' | 'scene'
     >,
     private readonly repository: AssertionRepository,
-    private readonly revisions: MemoryRevisionCoordinator,
+    private readonly revisions: { history: Pick<AssertionHistoryReader, 'state' | 'revision'> },
   ) {}
   historicalAssertion(ctx: Pick<MemoryContext, 'sceneId' | 'simulation'>, ref: CommitmentRef) {
     this.store.assertRecoveryReady()

@@ -2,10 +2,11 @@ import { progressDeadline } from './models/stream-progress.ts'
 import { supportsOpenAIPromptBreakpoints } from './models/prompt-cache.ts'
 import { PromptCacheBoundaries } from './runtime/prompt-cache-boundaries.ts'
 import { PromptContextWindows, promptWindowAuthority } from './runtime/prompt-context-window.ts'
-import { mergeRecentHistory } from './runtime/chat-history.ts'
+import { mergeRecentHistory, normalizeBotMessage } from './runtime/chat-history.ts'
 import { TopicRoutingHistory } from './runtime/topic-history.ts'
 import {
   projectDisplayMessages,
+  projectRemoteHistoryMessages,
   validateSourceSnapshots,
   validateUnrecalledDependencies,
 } from './memory/recovery/ledger.ts'
@@ -731,6 +732,28 @@ export class Runtime {
     if (state && this.scenes.get(id)?.kind !== 'simulation') this.trim(state)
     return projectDisplayMessages(this.store, id, state?.messages ?? [], state?.recalled ?? [])
   }
+  /** Fresh bounded display context. Bound before cloning and identity projection. */
+  previewTail(id: string, limit: number) {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 500)
+      throw new Error('invalid_preview_limit')
+    const state = this.states.get(id)
+    if (state && this.scenes.get(id)?.kind !== 'simulation') this.trim(state)
+    return projectDisplayMessages(
+      this.store,
+      id,
+      (state?.messages ?? []).slice(-limit),
+      state?.recalled ?? [],
+    )
+  }
+
+  /** Exact retained-row display lookup; keep the same trimming and fresh projection boundary. */
+  previewMessage(id: string, messageId: string): RuntimeMessage | undefined {
+    const state = this.states.get(id)
+    if (state && this.scenes.get(id)?.kind !== 'simulation') this.trim(state)
+    const message = state?.messages.find((row) => row.id === messageId)
+    if (!message || message.sceneId !== id) return undefined
+    return projectDisplayMessages(this.store, id, [message], state?.recalled ?? [])[0]
+  }
 
   async previewHistory(
     id: string,
@@ -770,10 +793,13 @@ export class Runtime {
     signal?.throwIfAborted()
     const result = await adapter.history(scene as SceneRef, { limit: 30 }, signal)
     signal?.throwIfAborted()
-    const remote = (result.coverage === 'unavailable' ? [] : result.items)
-      .filter((m) => m.sceneId === id && !this.isRecalled(id, m.id))
-      .slice(-30)
-      .map((m) => this.store.presentMessage(this.normalizeBot(m, scene.adapterId)))
+    const remote = projectRemoteHistoryMessages(
+      this.store,
+      id,
+      result.coverage === 'unavailable' ? [] : result.items,
+      this.states.get(id)?.recalled ?? [],
+      this.botUserIds.get(scene.adapterId),
+    )
     // Re-read after the platform wait: never merge an old browser snapshot that can
     // predate a live edit, arrival, recall or local retention expiry.
     return {
@@ -790,15 +816,7 @@ export class Runtime {
     if (!scene.participationEnabled) this.cancel(scene.id)
   }
   private normalizeBot<T extends RuntimeMessage>(message: T, adapterId: string): T {
-    const bot = this.botUserIds.get(adapterId)
-    if (!bot) return message
-    return {
-      ...message,
-      senderId: message.senderId === bot ? 'bot' : message.senderId,
-      parts: message.parts.map((part) =>
-        part.type === 'mention' && part.userId === bot ? { ...part, userId: 'bot' } : part,
-      ),
-    }
+    return normalizeBotMessage(message, this.botUserIds.get(adapterId))
   }
   ingest(message: RuntimeMessage, scene: RuntimeScene, schedule = true) {
     return withFlowContext(

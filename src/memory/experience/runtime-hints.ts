@@ -69,7 +69,7 @@ export class ExperienceRuntime {
   private readonly exposed = new WeakMap<TurnContext, ExperienceReference[]>()
   constructor(
     private readonly service: ExperienceService,
-    private readonly messages: (sceneId: string) => RuntimeMessage[],
+    private readonly message: (sceneId: string, messageId: string) => RuntimeMessage | undefined,
   ) {}
   /** Pause invalidates prior trial use, not the retained instruction or fresh resumed turns. */
   learningPaused(sceneId: string) {
@@ -79,7 +79,7 @@ export class ExperienceRuntime {
     // Explicit feedback requires an actual reply target; ordinary ingress must not scan history.
     if (!message.replyToId) return
     const ctx = { sceneId: message.sceneId, simulation: message.origin === 'simulation' }
-    const target = this.messages(message.sceneId).find((row) => row.id === message.replyToId)
+    const target = this.message(message.sceneId, message.replyToId)
     if (!target) return
     const uses = this.service.targetUses(ctx, target.id)
     const selected = uses.filter((use) => use.kind === 'exposed')

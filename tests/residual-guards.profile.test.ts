@@ -220,7 +220,7 @@ for (const chainLength of [100, 1000])
         assert.equal(promptScans, 1, 'one fresh prompt-configuration gate, not one per setting')
         assert.equal(
           fullScans - promptScans,
-          8,
+          6,
           'existing source and dependency batches must remain bounded',
         )
         await pulsed

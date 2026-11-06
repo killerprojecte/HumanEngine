@@ -64,7 +64,7 @@ test('domain-source batch preserves source qualification and bounds full-chain s
       return original.call(this, collect)
     }
     assert.deepEqual(currentDomainSources(f.store, f.sources), expected)
-    assert.equal(scans, 3)
+    assert.equal(scans, 2)
     RecoveryAuthority.prototype.entries = original
     f.store.recall('s', '2')
     assert.equal(currentDomainSources(f.store, f.sources)[2], false)

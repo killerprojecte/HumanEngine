@@ -8,6 +8,7 @@ import { Runtime, type RuntimeMessage } from '../src/runtime.ts'
 import {
   metadata,
   projectDisplayMessages,
+  projectRemoteHistoryMessages,
   RecoveryAuthority,
   revoke,
 } from '../src/memory/recovery/ledger.ts'
@@ -73,7 +74,7 @@ test('real runtime preview and local history bound chain scans without model cal
       return original.call(this, collect)
     }
     assert.equal(runtime.preview(f.scene.id).length, 30)
-    assert.equal(scans, 4)
+    assert.equal(scans, 3)
     scans = 0
     const history = await runtime.previewHistory(f.scene.id, 'local')
     assert.equal(history.items.length, 30)
@@ -81,7 +82,7 @@ test('real runtime preview and local history bound chain scans without model cal
       history.items.every((m) => m.origin === 'history'),
       true,
     )
-    assert.equal(scans, 4)
+    assert.equal(scans, 3)
   } finally {
     RecoveryAuthority.prototype.entries = original
     runtime.dispose()
@@ -111,6 +112,158 @@ test('display reads use fresh identity and recall data, preserve simulation and 
       undefined,
     )
     assert.equal(projectDisplayMessages(f.store, f.scene.id, [sim], ['m2'])[0]!.status, 'recalled')
+  } finally {
+    f.close()
+  }
+})
+
+test('remote runtime history bounds full chain scans independently of the 30 returned rows', async () => {
+  const f = fixture(),
+    runtime = new Runtime(f.store, () => {
+      throw new Error('model forbidden')
+    }),
+    original = RecoveryAuthority.prototype.entries
+  try {
+    for (const message of f.messages)
+      runtime.ingest(message as Parameters<Runtime['ingest']>[0], f.scene, false)
+    runtime.addAdapter('fixture', {
+      send: async () => ({ status: 'sent' }),
+      getMessage: async () => ({ items: [], coverage: 'unavailable' }),
+      history: async (_scene, input) => {
+        assert.equal(input.limit, 30)
+        return {
+          items: f.messages.map((message) => ({ ...message, origin: 'history' as const })),
+          coverage: 'complete',
+        }
+      },
+      dispose() {},
+    })
+    let scans = 0
+    RecoveryAuthority.prototype.entries = function (collect) {
+      scans++
+      return original.call(this, collect)
+    }
+    const result = await runtime.previewHistory(f.scene.id)
+    assert.equal(result.items.length, 30)
+    assert.equal(result.coverage, 'partial')
+    assert.equal(scans, 5, 'two remote checks and three fresh local checks, not per-row scans')
+  } finally {
+    RecoveryAuthority.prototype.entries = original
+    runtime.dispose()
+    f.close()
+  }
+})
+
+test('remote history filters recalls before limiting and normalizes bots before fresh identity reads', async () => {
+  const f = fixture(),
+    runtime = new Runtime(f.store, () => {
+      throw new Error('model forbidden')
+    })
+  let release!: () => void
+  const remote = Array.from({ length: 35 }, (_, i) => ({
+    ...f.messages[0]!,
+    id: 'remote-' + i,
+    origin: 'history' as const,
+    sentAt: new Date(Date.now() + i * 1000).toISOString(),
+  }))
+  remote[33] = {
+    ...remote[33]!,
+    senderId: 'platform-bot',
+    parts: [{ type: 'mention', userId: 'platform-bot' }],
+  }
+  remote.push({ ...remote[0]!, id: 'foreign', sceneId: 'other' })
+  runtime.addAdapter(
+    'fixture',
+    {
+      send: async () => ({ status: 'sent' }),
+      getMessage: async () => ({ items: [], coverage: 'unavailable' }),
+      history: async () => {
+        await new Promise<void>((resolve) => {
+          release = resolve
+        })
+        return { items: remote, coverage: 'complete' }
+      },
+      dispose() {},
+    },
+    'platform-bot',
+  )
+  try {
+    f.store.set(`identity:${f.scene.id}:user`, { senderDisplayName: 'Before wait' })
+    const pending = runtime.previewHistory(f.scene.id)
+    f.store.set(`identity:${f.scene.id}:user`, { senderDisplayName: 'After wait' })
+    f.store.set(`identity:${f.scene.id}:bot`, { senderDisplayName: 'Normalized bot' })
+    f.store.set(`identity:${f.scene.id}:platform-bot`, { senderDisplayName: 'Wrong identity' })
+    f.store.recall(f.scene.id, 'remote-34')
+    release()
+    const result = await pending
+    assert.deepEqual(
+      result.items.map((message) => message.id),
+      Array.from({ length: 30 }, (_, i) => 'remote-' + (i + 4)),
+    )
+    assert.equal(result.items[0]!.senderDisplayName, 'After wait')
+    assert.equal(result.items[29]!.senderId, 'bot')
+    assert.equal(result.items[29]!.senderDisplayName, 'Normalized bot')
+    assert.deepEqual(result.items[29]!.parts, [{ type: 'mention', userId: 'bot' }])
+    assert.deepEqual(remote[33]!.parts, [{ type: 'mention', userId: 'platform-bot' }])
+    result.items[0]!.parts.length = 0
+    assert.equal(remote[4]!.parts.length, 1)
+  } finally {
+    release?.()
+    runtime.dispose()
+    f.close()
+  }
+})
+
+test('remote history rechecks authority after the adapter wait and after each projection', async () => {
+  const f = fixture(),
+    runtime = new Runtime(f.store, () => {
+      throw new Error('model forbidden')
+    })
+  let release!: () => void
+  runtime.addAdapter('fixture', {
+    send: async () => ({ status: 'sent' }),
+    getMessage: async () => ({ items: [], coverage: 'unavailable' }),
+    history: async () => {
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      return {
+        items: f.messages.map((message) => ({ ...message, origin: 'history' as const })),
+        coverage: 'partial',
+      }
+    },
+    dispose() {},
+  })
+  try {
+    const first = runtime.previewHistory(f.scene.id)
+    release()
+    assert.equal((await first).items.length, 30)
+    const pending = runtime.previewHistory(f.scene.id)
+    f.authority.db.prepare('UPDATE revocations SET hash=? WHERE sequence=1').run('0'.repeat(64))
+    release()
+    await assert.rejects(pending, /recovery_chain_invalid/)
+    assert.equal(f.store.db.inTransaction, false)
+    assert.equal(f.store.db.pragma('query_only', { simple: true }), 0)
+  } finally {
+    release?.()
+    runtime.dispose()
+    f.close()
+  }
+})
+
+test('remote projection respects local tombstones and fresh nested transaction reads', () => {
+  const f = fixture()
+  try {
+    const messages = f.messages.map((message) => ({ ...message, origin: 'history' as const }))
+    assert.equal(projectRemoteHistoryMessages(f.store, f.scene.id, messages, ['m0']).length, 29)
+    f.store.db.transaction(() => {
+      assert.equal(projectRemoteHistoryMessages(f.store, f.scene.id, messages, []).length, 30)
+      f.store.db
+        .prepare('INSERT INTO recall_tombstones VALUES(?,?,?)')
+        .run(f.scene.id, 'm1', new Date().toISOString())
+      assert.equal(projectRemoteHistoryMessages(f.store, f.scene.id, messages, []).length, 29)
+      assert.equal(f.store.db.inTransaction, true)
+    })()
   } finally {
     f.close()
   }

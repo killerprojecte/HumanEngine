@@ -44,7 +44,7 @@ test('habit batch preserves identities and freshly observes raw changes, recalls
   }
   try {
     const first = habits.validationIdentities(ctx, ids)
-    assert.ok(scans <= 8, `fixed number of full-chain scans, got ${scans}`)
+    assert.ok(scans <= 6, `fixed number of full-chain scans, got ${scans}`)
     for (const raw of records) {
       const { weight: _weight, confidence: _confidence, ...stable } = raw
       const expected = createHash('sha256')

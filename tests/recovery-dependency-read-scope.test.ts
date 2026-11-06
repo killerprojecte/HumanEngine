@@ -72,7 +72,7 @@ test('fixed snapshot batch verifies full chain bounded times and restores writab
       ),
       true,
     )
-    assert.equal(scans, 3)
+    assert.equal(scans, 2)
     assert.equal(f.store.db.inTransaction, false)
     assert.equal(f.store.db.pragma('query_only', { simple: true }), 0)
     f.store.saveScene({ ...f.store.scene('s')!, name: 'updated' })
@@ -471,7 +471,7 @@ test('cached result owner uses fixed batches without memoizing extension guards'
       owner.validations.every((valid) => valid()),
       true,
     )
-    assert.equal(scans, 6)
+    assert.equal(scans, 4)
     assert.equal(extensionCalls, 1)
     await Promise.resolve()
     recall = true

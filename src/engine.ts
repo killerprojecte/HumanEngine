@@ -383,34 +383,32 @@ export class Engine {
       },
       learningEnabled: (sceneId) => store.scene(sceneId)?.learningEnabled === true,
       sceneAvailable: (sceneId) => ['group', 'private'].includes(store.scene(sceneId)?.kind ?? ''),
-      admissionSourceAvailable: (sceneId, messageId, senderId) =>
-        this.runtime
-          .preview(sceneId)
-          .some(
-            (message) =>
-              message.id === messageId &&
-              message.senderId === senderId &&
-              message.senderId !== 'bot' &&
-              message.origin === 'live' &&
-              message.status === 'available' &&
-              !store.recalled(sceneId, messageId),
-          ),
-      targetAvailable: (sceneId, messageId) =>
-        this.runtime
-          .preview(sceneId)
-          .some(
-            (message) =>
-              message.id === messageId &&
-              message.senderId === 'bot' &&
-              message.origin === 'live' &&
-              message.status === 'available' &&
-              !store.recalled(sceneId, messageId),
-          ),
+      admissionSourceAvailable: (sceneId, messageId, senderId) => {
+        const message = this.runtime.previewMessage(sceneId, messageId)
+        return (
+          !!message &&
+          message.senderId === senderId &&
+          message.senderId !== 'bot' &&
+          message.origin === 'live' &&
+          message.status === 'available' &&
+          !store.recalled(sceneId, messageId)
+        )
+      },
+      targetAvailable: (sceneId, messageId) => {
+        const message = this.runtime.previewMessage(sceneId, messageId)
+        return (
+          !!message &&
+          message.senderId === 'bot' &&
+          message.origin === 'live' &&
+          message.status === 'available' &&
+          !store.recalled(sceneId, messageId)
+        )
+      },
       sourceRevoked: (sceneId, messageId) => store.recalled(sceneId, messageId),
       validate: validateExperiencePolicy,
     })
-    this.experienceRuntime = new ExperienceRuntime(this.experience, (sceneId) =>
-      this.runtime.preview(sceneId),
+    this.experienceRuntime = new ExperienceRuntime(this.experience, (sceneId, messageId) =>
+      this.runtime.previewMessage(sceneId, messageId),
     )
 
     this.runtime.on('message.sent', (event) => {
@@ -1481,19 +1479,20 @@ export class Engine {
     )
       return known
     if (!isStickerSource(message, assetId) && !known) return undefined
-    const valid = () =>
-      this.modelRead.valid(readTicket) &&
-      currentSourceSnapshot(this.store, message) &&
-      !signal.aborted &&
-      !this.store.recalled(message.sceneId, message.id) &&
-      this.runtime
-        .preview(message.sceneId)
-        .some(
-          (item) =>
-            item.id === message.id &&
-            item.status === 'available' &&
-            item.parts.some((part) => part.type === 'media' && part.assetId === assetId),
-        )
+    const valid = () => {
+      if (
+        !this.modelRead.valid(readTicket) ||
+        !currentSourceSnapshot(this.store, message) ||
+        signal.aborted ||
+        this.store.recalled(message.sceneId, message.id)
+      )
+        return false
+      const item = this.runtime.previewMessage(message.sceneId, message.id)
+      return (
+        item?.status === 'available' &&
+        item.parts.some((part) => part.type === 'media' && part.assetId === assetId)
+      )
+    }
     if (!valid()) throw new Error('image_source_unavailable')
     const vision = this.store.models.routes.some(
       (route) => route.role === 'vision' && route.orderedModelIds.length,
@@ -1515,17 +1514,14 @@ export class Engine {
                 .filter((hint) => hint.kind === 'botExpression'),
             },
             sourceContextKnown: true,
-            sourceContext: this.runtime
-              .preview(message.sceneId)
-              .slice(-8)
-              .map((item) => ({
-                isBot: item.senderId === 'bot',
-                text: item.parts
-                  .filter((part) => part.type === 'text')
-                  .map((part) => part.text)
-                  .join(' ')
-                  .slice(0, 2000),
-              })),
+            sourceContext: this.runtime.previewTail(message.sceneId, 8).map((item) => ({
+              isBot: item.senderId === 'bot',
+              text: item.parts
+                .filter((part) => part.type === 'text')
+                .map((part) => part.text)
+                .join(' ')
+                .slice(0, 2000),
+            })),
           },
         },
       )
@@ -1614,20 +1610,14 @@ export class Engine {
                 throw failure
               }
             }
+            if (controller.signal.aborted || this.store.recalled(message.sceneId, message.id))
+              throw new Error('image_source_unavailable')
+            const current = this.runtime.previewMessage(message.sceneId, message.id)
             if (
-              controller.signal.aborted ||
-              this.store.recalled(message.sceneId, message.id) ||
-              !this.runtime
-                .preview(message.sceneId)
-                .some(
-                  (current) =>
-                    current.id === message.id &&
-                    current.status === 'available' &&
-                    current.parts.some(
-                      (candidate) =>
-                        candidate.type === 'media' && candidate.assetId === part.assetId,
-                    ),
-                )
+              current?.status !== 'available' ||
+              !current.parts.some(
+                (candidate) => candidate.type === 'media' && candidate.assetId === part.assetId,
+              )
             )
               throw new Error('image_source_unavailable')
             await this.observeImageMeme(bytes, message, part.assetId, controller.signal)

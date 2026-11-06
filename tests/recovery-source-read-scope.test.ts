@@ -63,7 +63,7 @@ test('fixed snapshot batch verifies full chain bounded times and restores writab
   }
   try {
     assert.equal(validateSourceSnapshots(f.store, f.messages), true)
-    assert.equal(scans, 3)
+    assert.equal(scans, 2)
     assert.equal(f.store.db.inTransaction, false)
     assert.equal(f.store.db.pragma('query_only', { simple: true }), 0)
     f.store.saveScene({ ...f.store.scene('s')!, name: 'updated' })

@@ -114,7 +114,9 @@ function harness(action: ExperienceHint['action'], hintPatch: Partial<Experience
     targetUses: () => uses.filter((use) => use.targetMessageId === target.id),
     recordFeedback: (_ctx: unknown, value: TrustedFeedback) => feedback.push(value),
   } as unknown as ExperienceService
-  const runtime = new ExperienceRuntime(service, () => [target])
+  const runtime = new ExperienceRuntime(service, (sceneId, id) =>
+    target.sceneId === sceneId && target.id === id ? target : undefined,
+  )
   const context = {
     scene: { id: 'scene' },
     mode: 'real',
@@ -189,7 +191,7 @@ test('self lookup selection requires unquoted first-person question and no ambig
         return []
       },
     } as unknown as ExperienceService,
-    () => [],
+    () => undefined,
   )
   const context = {
     scene: { id: 'scene' },

@@ -856,19 +856,27 @@ for (const action of ['exact_person_before_semantic', 'verify_plan_qualifiers'] 
 test('plain receive-only ingress never previews history for explicit experience feedback', async () => {
   const h = fixture()
   h.learning(false)
-  let previews = 0
+  let previews = 0,
+    targets = 0
   const preview = h.engine.runtime.preview.bind(h.engine.runtime)
+  const previewMessage = h.engine.runtime.previewMessage.bind(h.engine.runtime)
   h.engine.runtime.preview = (...args) => {
     previews++
     return preview(...args)
   }
+  h.engine.runtime.previewMessage = (...args) => {
+    targets++
+    return previewMessage(...args)
+  }
   try {
     for (let i = 0; i < 20; i++) h.ingest(source(`plain-${i}`))
     assert.equal(previews, 0)
+    assert.equal(targets, 0)
     assert.equal(h.stats().transportCalls, 0)
     assert.equal(h.stats().extractionCalls, 0)
     h.feedback('explicit-missing-target', 'missing')
-    assert.equal(previews, 1, 'actual replies preserve fresh target lookup')
+    assert.equal(previews, 0, 'actual replies do not project unrelated history')
+    assert.equal(targets, 1, 'actual replies preserve fresh exact-target lookup')
   } finally {
     await h.close()
   }

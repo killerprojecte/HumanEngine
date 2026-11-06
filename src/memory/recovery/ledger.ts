@@ -4,6 +4,7 @@ import type { RuntimeMessage } from '../../runtime.ts'
 import type { MemorySource } from '../domain/contracts.ts'
 import { domainSourceCurrent } from '../read/domain-source-events.ts'
 import { currentSourceSnapshot } from '../../runtime/source-events.ts'
+import { normalizeBotMessage } from '../../runtime/chat-history.ts'
 import {
   parseExternalCostRecoveryEvent,
   type ExternalCostRecoveryEvent,
@@ -480,6 +481,12 @@ export function maintenanceGate(
 }
 
 export function assertRecoveryReady(db: Database.Database) {
+  checkedRecoveryHead(db)
+}
+
+// Internal current-use result only. Never export a reusable permission or retain
+// this head after its fixed synchronous read snapshots have ended.
+function checkedRecoveryHead(db: Database.Database): Head | undefined {
   const authority = bindings.get(db)
   if (!authority) {
     if (db.name !== ':memory:') throw new Error('recovery_authority_not_bound')
@@ -488,8 +495,10 @@ export function assertRecoveryReady(db: Database.Database) {
   const gate = metadata(db)
   if (gate && gate.minimumReader > RECOVERY_READER_CAPABILITY)
     throw new Error('recovery_format_unsupported')
-  if (!gate || gate.state !== 'ready' || !sameHead(gate.head, authority.head()))
-    throw new Error('recovery_authority_head_changed')
+  if (!gate || gate.state !== 'ready') throw new Error('recovery_authority_head_changed')
+  const head = authority.head()
+  if (!sameHead(gate.head, head)) throw new Error('recovery_authority_head_changed')
+  return head
 }
 
 /** Fixed synchronous source-read loop only; no caller callback or reusable validity token escapes. */
@@ -548,12 +557,33 @@ export function projectDisplayMessages(
   return validateFixedReads(store, { kind: 'display', sceneId, messages: materialized, recalled })
 }
 
+/** Remote browser history only. Keep recall filtering before the 30-row bound and
+ * bot normalization before identity projection, within one fixed synchronous read.
+ */
+export function projectRemoteHistoryMessages(
+  store: Store,
+  sceneId: string,
+  messages: readonly Message[],
+  locallyRecalled: Iterable<string>,
+  botUserId?: string,
+): Message[] {
+  const materialized = structuredClone(Array.from(messages))
+  const recalled = new Set(Array.from(locallyRecalled))
+  if (!materialized.length) return []
+  return validateFixedReads(store, {
+    kind: 'remote-history-display',
+    sceneId,
+    messages: materialized,
+    recalled,
+    botUserId,
+  }) as Message[]
+}
+
 type DisplayReads = {
-  kind: 'display'
   sceneId: string
   messages: RuntimeMessage[]
   recalled: Set<string>
-}
+} & ({ kind: 'display' } | { kind: 'remote-history-display'; botUserId?: string })
 type FixedSourceReads =
   | { kind: 'sources'; messages: readonly RuntimeMessage[] }
   | { kind: 'dependencies'; sceneId: string; ids: readonly string[] }
@@ -574,13 +604,25 @@ function validateFixedReads(
         ? input.ids.every((id) => !store.recalled(input.sceneId, id))
         : input.kind === 'domain-sources'
           ? input.sources.map((source) => domainSourceCurrent(store, source))
-          : input.messages.map((message) =>
-              input.recalled.has(message.id) || store.recalled(input.sceneId, message.id)
-                ? { ...message, parts: [], status: 'recalled' as const }
-                : message.origin === 'simulation'
-                  ? message
-                  : store.presentMessage(message as Message),
-            )
+          : input.kind === 'remote-history-display'
+            ? input.messages
+                .filter(
+                  (message) =>
+                    message.sceneId === input.sceneId &&
+                    !input.recalled.has(message.id) &&
+                    !store.recalled(input.sceneId, message.id),
+                )
+                .slice(-30)
+                .map((message) =>
+                  store.presentMessage(normalizeBotMessage(message as Message, input.botUserId)),
+                )
+            : input.messages.map((message) =>
+                input.recalled.has(message.id) || store.recalled(input.sceneId, message.id)
+                  ? { ...message, parts: [], status: 'recalled' as const }
+                  : message.origin === 'simulation'
+                    ? message
+                    : store.presentMessage(message as Message),
+              )
   // Preserve nested callers and nonstandard configurations without reducing any checks.
   if (
     !authority ||
@@ -600,8 +642,9 @@ function validateFixedReads(
       // Pin the main snapshot first, matching normal main -> authority lock order.
       metadata(db)
       return authority.db.transaction(() => {
-        assertRecoveryReady(db) // Full chain verification pins the authority read lock.
-        const head = authority.head()
+        // Full verification pins the authority read lock. Reuse only this local
+        // result: a second scan here would read the identical locked snapshot.
+        const head = checkedRecoveryHead(db)!
         sourceReadScopes.set(authority, {
           main: db,
           head: Object.freeze({ ...head }),

@@ -20,31 +20,47 @@ const queries = {
 export type RecoveryRead = keyof typeof queries
 const statements = new WeakMap<
   Database.Database,
-  Partial<Record<RecoveryRead, Database.Statement>>
+  Partial<Record<Exclude<RecoveryRead, 'queryOnly'>, Database.Statement>>
 >()
+const queryOnlyStatements = new WeakMap<Database.Database, Database.Statement>()
 
 /** Fixed compiled handles only: never caches rows, head, validity or permission.
  * Each call executes against the connection's current transaction/snapshot. Handles
- * never escape, accept no bound arguments and cannot be changed to raw/pluck/iterate.
+ * never escape or accept bound arguments. Only the dedicated query-only handle uses
+ * fixed scalar mode, avoiding row-factory regeneration when SQLite reparses this PRAGMA.
+ * No caller can change a cached handle's result mode.
  * SQLite revalidates/recompiles on schema change; errors invalidate handles and fail closed.
  */
 export function readRecoveryStatement(db: Database.Database, key: RecoveryRead): unknown {
   if (!db.open) {
     statements.delete(db)
+    queryOnlyStatements.delete(db)
     throw new Error('recovery_connection_closed')
   }
   if (!Object.hasOwn(queries, key)) throw new Error('recovery_read_unknown')
-  let cached = statements.get(db)
-  if (!cached) {
-    cached = {}
-    statements.set(db, cached)
-  }
   try {
+    if (key === 'queryOnly') {
+      let statement = queryOnlyStatements.get(db)
+      if (!statement) {
+        statement = db.prepare(queries.queryOnly.sql).pluck()
+        queryOnlyStatements.set(db, statement)
+      }
+      // Execute the literal PRAGMA every time; only its compiled handle is reused.
+      const value: unknown = statement.get()
+      if (value !== 0 && value !== 1) throw new Error('recovery_query_only_invalid')
+      return { query_only: value }
+    }
+    let cached = statements.get(db)
+    if (!cached) {
+      cached = {}
+      statements.set(db, cached)
+    }
     const query = queries[key]
     const statement = cached[key] ?? (cached[key] = db.prepare(query.sql))
     return query.all ? statement.all() : statement.get()
   } catch (error) {
     statements.delete(db)
+    queryOnlyStatements.delete(db)
     throw error
   }
 }

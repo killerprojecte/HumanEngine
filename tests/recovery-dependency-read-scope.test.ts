@@ -1,3 +1,4 @@
+import { recoveryHashProbe } from './helpers/recovery-hashes.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createHash } from 'node:crypto'
@@ -57,12 +58,8 @@ function fixture() {
 }
 test('fixed snapshot batch verifies full chain bounded times and restores writable connections', () => {
   const f = fixture()
-  const original = RecoveryAuthority.prototype.entries
-  let scans = 0
-  RecoveryAuthority.prototype.entries = function () {
-    scans++
-    return original.call(this)
-  }
+  const original = recoveryHashProbe()
+  original.start()
   try {
     assert.equal(
       validateUnrecalledDependencies(
@@ -72,13 +69,13 @@ test('fixed snapshot batch verifies full chain bounded times and restores writab
       ),
       true,
     )
-    assert.equal(scans, 2)
+    assert.equal(original.count, 0)
     assert.equal(f.store.db.inTransaction, false)
     assert.equal(f.store.db.pragma('query_only', { simple: true }), 0)
     f.store.saveScene({ ...f.store.scene('s')!, name: 'updated' })
     assert.equal(f.store.scene('s')!.name, 'updated')
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     f.close()
   }
 })
@@ -183,7 +180,7 @@ test('same-connection writes and durable revoke are denied inside source reads; 
     f.close()
   }
 })
-test('existing main transaction falls back to original checks without changing transaction ownership', () => {
+test('existing main transaction nests a fixed read scope without changing transaction ownership', () => {
   const f = fixture()
   try {
     f.store.db.transaction(() => {
@@ -307,19 +304,15 @@ test('preexisting authority writer contention fails within configured busy timeo
 
 test('empty batch performs no authority reads and rejects nonprimitive dependency input', () => {
   const f = fixture()
-  const original = RecoveryAuthority.prototype.entries
-  let scans = 0
-  RecoveryAuthority.prototype.entries = function () {
-    scans++
-    return original.call(this)
-  }
+  const original = recoveryHashProbe()
+  original.start()
   try {
     assert.equal(validateUnrecalledDependencies(f.store, 's', []), true)
-    assert.equal(scans, 0)
+    assert.equal(original.count, 0)
     assert.equal(validateUnrecalledDependencies(f.store, 's', [{} as string]), false)
-    assert.equal(scans, 0)
+    assert.equal(original.count, 0)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     f.close()
   }
 })
@@ -460,18 +453,14 @@ test('cached result owner uses fixed batches without memoizing extension guards'
   const owner = (manager as any).resultOwner(context, 'fixture') as {
     validations: Array<() => boolean>
   }
-  const original = RecoveryAuthority.prototype.entries
-  let scans = 0
-  RecoveryAuthority.prototype.entries = function () {
-    scans++
-    return original.call(this)
-  }
+  const original = recoveryHashProbe()
+  original.start()
   try {
     assert.equal(
       owner.validations.every((valid) => valid()),
       true,
     )
-    assert.equal(scans, 4)
+    assert.equal(original.count, 0)
     assert.equal(extensionCalls, 1)
     await Promise.resolve()
     recall = true
@@ -481,7 +470,7 @@ test('cached result owner uses fixed batches without memoizing extension guards'
     )
     assert.equal(extensionCalls, 2)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     await manager.dispose()
     runtime.dispose()
     f.close()

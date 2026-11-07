@@ -69,3 +69,14 @@ closed/new connections, null/duplicate/malformed JSON, reentrant SQLite behavior
 and a real independently advanced recovery authority during a warm scope.
 Existing proof lifecycle, history lifecycle, bounded traversal and recovery
 statement tests cover the unchanged surrounding privacy behavior.
+
+## Search integration
+
+The fixed `readMemorySearch()` operation now opens the same existing repository
+statement scope around candidate applicability, ranking, final support checks and
+sanitization. `refreshSupport()` still finishes first, in its own independent
+scope. This removes repeated record/proof preparation from the complete lexical
+and embedding search paths, including a search nested in a main write transaction.
+It does not memoize results, skip source checks, alter ranking or introduce a new
+search limit. `tests/memory-search-read-statements.test.ts` exercises the complete
+search and verifies that later recall and proof changes are immediately visible.

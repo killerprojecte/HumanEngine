@@ -2875,15 +2875,18 @@ export class Runtime {
                       const hasExternalEffects =
                         !!outcome.details.counts?.sentSegments ||
                         !!outcome.details.counts?.unknownSegments
+                      // One fresh check for this synchronous outcome description.
+                      // No await, callback or mutation separates these fields.
+                      const contextEligible = this.eligible(context)
                       executing.finish(
-                        !this.eligible(context)
+                        !contextEligible
                           ? hasExternalEffects
                             ? 'partial'
                             : 'cancelled'
                           : outcome.status,
                         {
                           ...outcome.details,
-                          reason: !this.eligible(context)
+                          reason: !contextEligible
                             ? 'context_cancelled'
                             : !declared
                               ? 'unknown_tool'
@@ -2891,7 +2894,7 @@ export class Runtime {
                                   outcome.details.reason === 'segments_delivered'
                                 ? 'simulated_delivery'
                                 : outcome.details.reason,
-                          nextStep: this.eligible(context) ? 'replyer' : 'none',
+                          nextStep: contextEligible ? 'replyer' : 'none',
                         },
                       )
                     } catch (error) {

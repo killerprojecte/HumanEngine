@@ -90,6 +90,38 @@ const queryOnly = (db: Database.Database) =>
 const schemaVersion = (db: Database.Database) =>
   (readRecoveryStatement(db, 'schemaVersion') as { schema_version: number }).schema_version
 
+interface AuthorityStamp {
+  dataVersion: number
+  totalChanges: number
+  schemaVersion: number
+}
+const authorityStamp = (db: Database.Database): AuthorityStamp => ({
+  // Literal PRAGMAs cannot be impersonated by TEMP or virtual tables named pragma_*.
+  dataVersion: (readRecoveryStatement(db, 'dataVersion') as { data_version: number }).data_version,
+  totalChanges: changes(db),
+  schemaVersion: schemaVersion(db),
+})
+
+const sameAuthorityStamp = (a: AuthorityStamp, b: AuthorityStamp) =>
+  a.dataVersion === b.dataVersion &&
+  a.totalChanges === b.totalChanges &&
+  a.schemaVersion === b.schemaVersion
+
+function assertSourceReadScope(authority: RecoveryAuthority, scope: SourceReadScope) {
+  if (
+    !authority.db.inTransaction ||
+    !scope.main.inTransaction ||
+    queryOnly(authority.db) !== 1 ||
+    queryOnly(scope.main) !== 1 ||
+    changes(authority.db) !== scope.authorityChanges ||
+    changes(scope.main) !== scope.mainChanges ||
+    schemaVersion(authority.db) !== scope.authoritySchema ||
+    schemaVersion(scope.main) !== scope.mainSchema ||
+    bindings.get(scope.main) !== authority
+  )
+    throw new Error('recovery_read_scope_changed')
+}
+
 function inside(child: string, parent: string) {
   const r = relative(parent, child)
   return r === '' || (!r.startsWith('..') && !r.startsWith('/'))
@@ -157,12 +189,9 @@ function event(value: unknown): Revocation {
 export class RecoveryAuthority {
   readonly db: Database.Database
   readonly path: string
-  // Pure SHA proofs only. Rows, identity, continuity and event schemas are read/checked afresh.
-  #rowHashProofs = new Map<
-    number,
-    { identity: string; previousHash: string; payload: string; hash: string }
-  >()
-  #rowHashProofBytes = 0
+  // Integrity of the last committed SQLite snapshot, not a permission to use main data.
+  // SQLite change stamps invalidate this state; they are not cryptographic proofs.
+  #validated?: { head: Head; stamp: AuthorityStamp }
   constructor(path: string, createInstance?: string) {
     this.path = resolve(path)
     if (createInstance) mkdirSync(this.path, { recursive: true, mode: 0o700 })
@@ -178,150 +207,189 @@ export class RecoveryAuthority {
       this.db.pragma('synchronous = FULL')
       if (createInstance) {
         this.db.exec(
-          'CREATE TABLE IF NOT EXISTS identity (id TEXT PRIMARY KEY, format INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS revocations (sequence INTEGER PRIMARY KEY, previous_hash TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL)',
+          'CREATE TABLE IF NOT EXISTS main.identity (id TEXT PRIMARY KEY, format INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS main.revocations (sequence INTEGER PRIMARY KEY, previous_hash TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL)',
         )
-        if (!this.db.prepare('SELECT 1 FROM identity').get())
-          this.db.prepare('INSERT INTO identity VALUES(?,?)').run(createInstance, RECOVERY_FORMAT)
+        if (!this.db.prepare('SELECT 1 FROM main.identity').get())
+          this.db
+            .prepare('INSERT INTO main.identity VALUES(?,?)')
+            .run(createInstance, RECOVERY_FORMAT)
       }
-      this.entries()
+      // Additive local migration: preserve the event format and exact deduplication.
+      // The index is built once for existing installations; no history lives in a JS cache.
+      this.db.exec('CREATE INDEX IF NOT EXISTS main.revocations_payload ON revocations(payload)')
+      this.entries(false)
     } catch (error) {
       this.db.close()
       throw error
     }
   }
-  // Head-only checks still read and validate every row, but need not retain parsed events.
-  // This flag changes allocation only: no validity, permission or head result is cached.
+  /** Explicit full audit, including startup/recovery. Always rehash and parse every row. */
   entries(collect = true): Array<{ sequence: number; revocation: Revocation }> {
+    this.#validated = undefined
+    const ownTransaction = !this.db.inTransaction
+    try {
+      const audit = () => this.#scan(collect)
+      const result = ownTransaction ? this.db.transaction(audit)() : audit()
+      // Never publish verification of a caller-owned transaction that can still roll back.
+      if (ownTransaction) this.#validated = result.validated
+      return result.entries
+    } catch (error) {
+      this.#validated = undefined
+      throw error
+    }
+  }
+  #scan(collect: boolean) {
+    // Integrity reuse requires the format's ordinary tables, not views/virtual
+    // tables or conflict policies that can hide changes from SQLite counters.
+    const definitions = this.db
+      .prepare(
+        "SELECT name, type, sql FROM main.sqlite_master WHERE name IN ('identity','revocations')",
+      )
+      .all() as Array<{ name: string; type: string; sql: string }>
+    const expected: Record<string, string> = {
+      identity: 'CREATE TABLE identity (id TEXT PRIMARY KEY, format INTEGER NOT NULL)',
+      revocations:
+        'CREATE TABLE revocations (sequence INTEGER PRIMARY KEY, previous_hash TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL)',
+    }
+    const normalized = (sql: string) => sql.replace(/\s/g, '').toLowerCase()
+    if (
+      definitions.length !== 2 ||
+      definitions.some(
+        (row) =>
+          row.type !== 'table' ||
+          !expected[row.name] ||
+          normalized(row.sql) !== normalized(expected[row.name]!),
+      )
+    )
+      throw new Error('recovery_schema_unsupported')
+
     const identities = readRecoveryStatement(this.db, 'identities') as {
       id: string
       format: number
     }[]
     if (identities.length !== 1 || identities[0]!.format !== RECOVERY_FORMAT)
       throw new Error('recovery_format_unsupported')
+    const instanceId = identities[0]!.id
     let previous = zero,
       sequence = 0
-    const result = []
-    for (const row of readRecoveryStatement(this.db, 'chain') as Array<{
+    const entries: Array<{ sequence: number; revocation: Revocation }> = []
+    for (const row of readRecoveryStatement(this.db, 'chain') as Iterable<{
       sequence: number
       previous_hash: string
       payload: string
       hash: string
     }>) {
-      if (row.sequence !== ++sequence || row.previous_hash !== previous)
-        throw new Error('recovery_chain_invalid')
-      const identity = identities[0]!.id
-      // Restrict keys to exact primitive types; oversized rows still receive full validation.
-      const fields = [identity, row.previous_hash, row.payload, row.hash]
-      const cacheable =
-        fields.every((field) => typeof field === 'string') &&
-        Number.isSafeInteger(row.sequence) &&
-        fields.reduce((size, field) => size + field.length, 0) <= 16000
-      const proof = cacheable ? this.#rowHashProofs.get(row.sequence) : undefined
-      const hit =
-        proof !== undefined &&
-        proof.identity === identity &&
-        proof.previousHash === row.previous_hash &&
-        proof.payload === row.payload &&
-        proof.hash === row.hash
-      // Exact primitive equality proves only the same SHA input/output, never authority.
-      // Cold keys retain the previous conservative byte accounting; warm reads allocate no key.
-      const key =
-        !hit && cacheable
-          ? JSON.stringify([identity, row.sequence, row.previous_hash, row.payload, row.hash])
-          : undefined
-      const bytes = key === undefined ? 0 : 2 * key.length + 256
-      if (!hit && row.hash !== hash(`${identity}|${sequence}|${previous}|${row.payload}`))
-        throw new Error('recovery_chain_invalid')
-      // Never retain parsed objects or successful authority/permission decisions.
-      const revocation = event(JSON.parse(row.payload))
       if (
-        !hit &&
-        key !== undefined &&
-        bytes <= 64 * 1024 &&
-        this.#rowHashProofs.size < 4096 &&
-        this.#rowHashProofBytes + bytes <= 8 * 1024 * 1024
-      ) {
-        this.#rowHashProofs.set(row.sequence, {
-          identity,
-          previousHash: row.previous_hash,
-          payload: row.payload,
-          hash: row.hash,
-        })
-        this.#rowHashProofBytes += bytes
-      }
-      if (collect) result.push({ sequence, revocation })
+        row.sequence !== ++sequence ||
+        row.previous_hash !== previous ||
+        row.hash !== hash(`${instanceId}|${sequence}|${previous}|${row.payload}`)
+      )
+        throw new Error('recovery_chain_invalid')
+      const revocation = event(JSON.parse(row.payload))
+      if (collect) entries.push({ sequence, revocation })
       previous = row.hash
     }
-    return result
+    // Captured under the same read lock as the verified rows, never after COMMIT.
+    return {
+      entries,
+      validated: {
+        head: { instanceId, sequence, hash: previous },
+        stamp: authorityStamp(this.db),
+      },
+    }
+  }
+  #current() {
+    // Reading identity first pins SQLite's snapshot before reading its change stamps.
+    // Do not stamp a just-committed external write as if it were already verified.
+    readRecoveryStatement(this.db, 'identity')
+    const stamp = authorityStamp(this.db)
+    if (this.#validated && sameAuthorityStamp(stamp, this.#validated.stamp)) return this.#validated
+    return this.#scan(false).validated
   }
   head(): Head {
     const scope = sourceReadScopes.get(this)
-    if (scope) {
-      if (
-        !this.db.inTransaction ||
-        !scope.main.inTransaction ||
-        queryOnly(this.db) !== 1 ||
-        queryOnly(scope.main) !== 1 ||
-        changes(this.db) !== scope.authorityChanges ||
-        changes(scope.main) !== scope.mainChanges ||
-        schemaVersion(this.db) !== scope.authoritySchema ||
-        schemaVersion(scope.main) !== scope.mainSchema ||
-        bindings.get(scope.main) !== this
-      )
-        throw new Error('recovery_read_scope_changed')
-      return { ...scope.head }
+    if (scope) return { ...scope.head }
+    const ownTransaction = !this.db.inTransaction
+    try {
+      const current = ownTransaction
+        ? this.db.transaction(() => this.#current())()
+        : this.#current()
+      if (ownTransaction) this.#validated = current
+      return { ...current.head }
+    } catch (error) {
+      this.#validated = undefined
+      throw error
     }
-    this.entries(false)
-    const id = readRecoveryStatement(this.db, 'identity') as { id: string }
-    const last = readRecoveryStatement(this.db, 'latest') as
-      { sequence: number; hash: string } | undefined
-    return { instanceId: id.id, sequence: last?.sequence ?? 0, hash: last?.hash ?? zero }
   }
   prefix(sequence: number): Head {
     const head = this.head()
     if (!Number.isSafeInteger(sequence) || sequence < 0 || sequence > head.sequence)
       throw new Error('recovery_prefix_invalid')
     if (!sequence) return { instanceId: head.instanceId, sequence: 0, hash: zero }
-    const row = this.db.prepare('SELECT hash FROM revocations WHERE sequence=?').get(sequence) as {
+    const row = this.db
+      .prepare('SELECT hash FROM main.revocations WHERE sequence=?')
+      .get(sequence) as {
       hash: string
     }
     return { instanceId: head.instanceId, sequence, hash: row.hash }
   }
   append(input: Revocation, expectedHead: Head, forceAppend = false): Head {
     if (sourceReadScopes.has(this)) throw new Error('recovery_read_scope_write_denied')
-    const payload = JSON.stringify(event(input))
-    return this.db
-      .transaction(() => {
-        const previous = this.head()
-        if (!sameHead(previous, expectedHead)) throw new Error('recovery_authority_head_changed')
-        // Intent itself is the durable revocation authority, even if the local write rolls back.
-        if (
-          forceAppend ||
-          input.kind === 'configuration_flags' ||
-          input.kind === 'scene_flags' ||
-          input.kind === 'meme_state' ||
-          input.kind === 'experience_state' ||
-          !this.db.prepare('SELECT 1 FROM revocations WHERE payload=?').get(payload)
-        ) {
-          const n = previous.sequence + 1
-          this.db
-            .prepare('INSERT INTO revocations VALUES(?,?,?,?)')
-            .run(
-              n,
-              previous.hash,
-              payload,
-              hash(`${previous.instanceId}|${n}|${previous.hash}|${payload}`),
+    const parsed = event(input)
+    const payload = JSON.stringify(parsed)
+    const ownTransaction = !this.db.inTransaction
+    try {
+      const committed = this.db
+        .transaction(() => {
+          const previous = this.#current()
+          if (!sameHead(previous.head, expectedHead))
+            throw new Error('recovery_authority_head_changed')
+          // Intent itself is durable authority even when the later main write rolls back.
+          if (
+            forceAppend ||
+            parsed.kind === 'configuration_flags' ||
+            parsed.kind === 'scene_flags' ||
+            parsed.kind === 'meme_state' ||
+            parsed.kind === 'experience_state' ||
+            !this.db.prepare('SELECT 1 FROM main.revocations WHERE payload=?').get(payload)
+          ) {
+            const sequence = previous.head.sequence + 1
+            const digest = hash(
+              `${previous.head.instanceId}|${sequence}|${previous.head.hash}|${payload}`,
             )
-        }
-        return this.head()
-      })
-      .immediate()
+            const inserted = this.db
+              .prepare('INSERT INTO main.revocations VALUES(?,?,?,?)')
+              .run(sequence, previous.head.hash, payload, digest)
+            const head = { ...previous.head, sequence, hash: digest }
+            const stamp = authorityStamp(this.db)
+            // Supported SQL can install triggers. Only our exact single-row write
+            // may extend verified history without another full audit.
+            if (
+              inserted.changes !== 1 ||
+              stamp.totalChanges !== previous.stamp.totalChanges + 1 ||
+              stamp.schemaVersion !== previous.stamp.schemaVersion ||
+              stamp.dataVersion !== previous.stamp.dataVersion
+            ) {
+              const audited = this.#scan(false).validated
+              if (!sameHead(audited.head, head)) throw new Error('recovery_authority_head_changed')
+              return audited
+            }
+            return { head, stamp }
+          }
+          return previous
+        })
+        .immediate()
+      if (ownTransaction) this.#validated = committed
+      return { ...committed.head }
+    } catch (error) {
+      this.#validated = undefined
+      throw error
+    }
   }
   close() {
     if (sourceReadScopes.has(this)) throw new Error('recovery_read_scope_write_denied')
     this.db.close()
-    this.#rowHashProofs.clear()
-    this.#rowHashProofBytes = 0
+    this.#validated = undefined
   }
 }
 export function sameHead(a: Head, b: Head) {
@@ -359,10 +427,10 @@ export function metadata(
 }
 export function saveGate(db: Database.Database, value: NonNullable<ReturnType<typeof metadata>>) {
   db.exec(
-    'CREATE TABLE IF NOT EXISTS recovery_gate (id INTEGER PRIMARY KEY CHECK(id=1), value TEXT NOT NULL)',
+    'CREATE TABLE IF NOT EXISTS main.recovery_gate (id INTEGER PRIMARY KEY CHECK(id=1), value TEXT NOT NULL)',
   )
   db.prepare(
-    'INSERT INTO recovery_gate VALUES(1,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value',
+    'INSERT INTO main.recovery_gate VALUES(1,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value',
   ).run(JSON.stringify(value))
 }
 export function enroll(
@@ -384,7 +452,7 @@ export function enroll(
         // BEGIN IMMEDIATE alone does not reject a readonly SQLite connection. Perform
         // the first reversible main-DB write before creating any external authority.
         db.exec(
-          'CREATE TABLE recovery_gate (id INTEGER PRIMARY KEY CHECK(id=1), value TEXT NOT NULL)',
+          'CREATE TABLE main.recovery_gate (id INTEGER PRIMARY KEY CHECK(id=1), value TEXT NOT NULL)',
         )
         mkdirSync(path, { recursive: true, mode: 0o700 })
         try {
@@ -420,7 +488,7 @@ export function openGate(db: Database.Database, database: string): RecoveryAutho
     if (
       db
         .prepare(
-          "SELECT 1 FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' LIMIT 1",
+          "SELECT 1 FROM main.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' LIMIT 1",
         )
         .get()
     )
@@ -443,6 +511,11 @@ export function openGate(db: Database.Database, database: string): RecoveryAutho
 export function bindRecovery(db: Database.Database, authority: RecoveryAuthority) {
   bindings.set(db, authority)
 }
+function assertDurableAuthorityTransaction(authority: RecoveryAuthority) {
+  if (sourceReadScopes.has(authority)) throw new Error('recovery_read_scope_write_denied')
+  // Main data must not acknowledge an intent still inside somebody else's transaction.
+  if (authority.db.inTransaction) throw new Error('recovery_authority_transaction_active')
+}
 export function revoke(db: Database.Database, value: Revocation) {
   const authority = bindings.get(db)
   if (!authority) {
@@ -458,6 +531,7 @@ export function revoke(db: Database.Database, value: Revocation) {
     }
     return
   }
+  assertDurableAuthorityTransaction(authority)
   if (!db.inTransaction) throw new Error('recovery_transaction_required')
   if (!sameHead(gate.head, authority.head())) throw new Error('recovery_authority_head_changed')
   const head = authority.append(value, gate.head)
@@ -496,6 +570,8 @@ function checkedRecoveryHead(db: Database.Database): Head | undefined {
     if (db.name !== ':memory:') throw new Error('recovery_authority_not_bound')
     return
   }
+  const scope = sourceReadScopes.get(authority)
+  if (scope?.main === db) return scope.head
   const gate = metadata(db)
   if (gate && gate.minimumReader > RECOVERY_READER_CAPABILITY)
     throw new Error('recovery_format_unsupported')
@@ -667,13 +743,12 @@ function validateFixedReads(
                           ? message
                           : store.presentMessage(message as Message),
                     )
-  const mayNestMain = input.kind === 'commitment-privacy' || input.kind === 'memory-list'
-  // Only fixed read implementations may nest within the main write transaction.
-  // Every other nested caller and nonstandard configuration keeps its original checks.
+  // All implementations here are fixed synchronous reads. A caller-owned main
+  // write transaction may nest a read savepoint; its writes resume only afterward.
+  if (authority && sourceReadScopes.get(authority)?.main === db) return read()
   if (
     !authority ||
-    (mayNestMain && maintenanceConnections.has(db)) ||
-    (db.inTransaction && !mayNestMain) ||
+    maintenanceConnections.has(db) ||
     authority.db.inTransaction ||
     db.pragma('journal_mode', { simple: true }) !== 'wal' ||
     authority.db.pragma('journal_mode', { simple: true }) !== 'delete' ||
@@ -689,8 +764,8 @@ function validateFixedReads(
       // Pin the main snapshot first, matching normal main -> authority lock order.
       metadata(db)
       return authority.db.transaction(() => {
-        // Full verification pins the authority read lock. Reuse only this local
-        // result: a second scan here would read the identical locked snapshot.
+        // Validate the current committed authority snapshot once. No user callback
+        // or asynchronous work runs under this synchronous read unit.
         const head = checkedRecoveryHead(db)!
         sourceReadScopes.set(authority, {
           main: db,
@@ -702,7 +777,7 @@ function validateFixedReads(
         })
         try {
           const valid = read()
-          authority.head() // Recheck invariants even after the final source read.
+          assertSourceReadScope(authority, sourceReadScopes.get(authority)!)
           return valid
         } finally {
           sourceReadScopes.delete(authority)
@@ -719,7 +794,7 @@ function validateFixedReads(
       db.pragma('query_only = OFF')
     }
   }
-  // A fresh full check after releasing the authority lock: no scope survives this call.
+  // A fresh gate/change check after releasing the authority lock; no read scope escapes.
   // An enclosing main transaction retains its own snapshot and will recheck before writes.
   assertRecoveryReady(db)
   return result
@@ -740,6 +815,7 @@ export function beginDurableRevocation(
   const authority = bindings.get(db),
     gate = metadata(db)
   if (!authority || !gate) throw new Error('recovery_authority_not_bound')
+  assertDurableAuthorityTransaction(authority)
   assertRecoveryReady(db)
   const after = authority.append(value, gate.head, true)
   const ticket = Object.freeze({
@@ -768,6 +844,7 @@ export function commitDurableRevocation<T>(
           !sameHead(authority.head(), ticket.after)
         )
           throw new Error('recovery_authority_head_changed')
+        assertDurableAuthorityTransaction(authority)
       } else if (db.name !== ':memory:' && !maintenanceConnections.has(db))
         throw new Error('recovery_ticket_required')
       if (ticket) saveGate(db, { ...metadata(db)!, head: ticket.after })

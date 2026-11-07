@@ -1,19 +1,20 @@
 import type Database from 'better-sqlite3'
 
 const queries = {
+  dataVersion: { sql: 'PRAGMA main.data_version', all: false },
   totalChanges: { sql: 'SELECT total_changes() AS n', all: false },
   queryOnly: { sql: 'PRAGMA query_only', all: false },
-  schemaVersion: { sql: 'PRAGMA schema_version', all: false },
+  schemaVersion: { sql: 'PRAGMA main.schema_version', all: false },
   gateExists: {
-    sql: "SELECT 1 FROM sqlite_master WHERE type='table' AND name='recovery_gate'",
+    sql: "SELECT 1 FROM main.sqlite_master WHERE type='table' AND name='recovery_gate'",
     all: false,
   },
-  gateValue: { sql: 'SELECT value FROM recovery_gate WHERE id=1', all: false },
-  identities: { sql: 'SELECT id,format FROM identity', all: true },
-  chain: { sql: 'SELECT * FROM revocations ORDER BY sequence', all: true },
-  identity: { sql: 'SELECT id FROM identity', all: false },
+  gateValue: { sql: 'SELECT value FROM main.recovery_gate WHERE id=1', all: false },
+  identities: { sql: 'SELECT id,format FROM main.identity', all: true },
+  chain: { sql: 'SELECT * FROM main.revocations ORDER BY sequence', all: true },
+  identity: { sql: 'SELECT id FROM main.identity', all: false },
   latest: {
-    sql: 'SELECT sequence,hash FROM revocations ORDER BY sequence DESC LIMIT 1',
+    sql: 'SELECT sequence,hash FROM main.revocations ORDER BY sequence DESC LIMIT 1',
     all: false,
   },
 } as const
@@ -24,7 +25,7 @@ const statements = new WeakMap<
 >()
 const queryOnlyStatements = new WeakMap<Database.Database, Database.Statement>()
 
-/** Fixed compiled handles only: never caches rows, head, validity or permission.
+/** Fixed compiled handles only: this helper never caches rows or validation state.
  * Each call executes against the connection's current transaction/snapshot. Handles
  * never escape or accept bound arguments. Only the dedicated query-only handle uses
  * fixed scalar mode, avoiding row-factory regeneration when SQLite reparses this PRAGMA.
@@ -57,7 +58,8 @@ export function readRecoveryStatement(db: Database.Database, key: RecoveryRead):
     }
     const query = queries[key]
     const statement = cached[key] ?? (cached[key] = db.prepare(query.sql))
-    return query.all ? statement.all() : statement.get()
+    // Full audits stream history; only explicit callers collect parsed events.
+    return key === 'chain' ? statement.iterate() : query.all ? statement.all() : statement.get()
   } catch (error) {
     statements.delete(db)
     queryOnlyStatements.delete(db)

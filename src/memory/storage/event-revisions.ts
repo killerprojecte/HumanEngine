@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import type Database from 'better-sqlite3'
 import { z } from 'zod'
+import { FixedReadStatements } from '../../storage/fixed-read-statements.ts'
 import {
   SourceEventIdentitySchema,
   SourceEventRefSchema,
@@ -18,6 +19,30 @@ import {
 } from '../domain/events.ts'
 
 type DB = Pick<Database.Database, 'exec' | 'prepare' | 'transaction' | 'inTransaction'>
+
+const sourceIdentifier = z.string().min(1).max(512)
+const sourceReads = {
+  tables: {
+    sql: "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('source_event_heads','source_event_revisions','source_event_edit_keys','source_event_tombstones')",
+    all: true,
+  },
+  registered: {
+    sql: 'SELECT value FROM source_event_heads WHERE scene_id=? AND message_id=?',
+    all: true,
+  },
+  head: {
+    sql: 'SELECT identity_key,event_id,scene_id,message_id,value FROM source_event_heads WHERE identity_key=?',
+    all: false,
+  },
+  tombstone: {
+    sql: 'SELECT 1 FROM source_event_tombstones WHERE scene_id=? AND message_id=?',
+    all: false,
+  },
+  revision: {
+    sql: 'SELECT value FROM source_event_revisions WHERE event_id=? AND revision=?',
+    all: false,
+  },
+} as const
 
 /** Writable startup migration only. Reads must not initialize or modify source-event
  * storage, including when a validation is inside a read-only recovery scope. */
@@ -89,6 +114,7 @@ export class SourceEventStore {
         throw new Error('source_event_async_subscriber')
     }
   }
+  private readonly reads: FixedReadStatements<typeof sourceReads>
   private readonly revisions: number
   private readonly edits: number
   private readonly headsPerScene: number | undefined
@@ -97,6 +123,7 @@ export class SourceEventStore {
     private readonly db: DB,
     private readonly options: SourceEventStoreOptions = {},
   ) {
+    this.reads = new FixedReadStatements(db, sourceReads)
     this.revisions = this.bound(options.maxRevisions ?? 32, 1, 256)
     this.edits = this.bound(options.maxEditKeys ?? 128, 1, 1024)
     // Persistent source authority is not an evictable runtime queue. A lifetime
@@ -118,11 +145,7 @@ export class SourceEventStore {
   }
   private exists(): boolean {
     this.options.assertReady?.()
-    const names = this.db
-      .prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('source_event_heads','source_event_revisions','source_event_edit_keys','source_event_tombstones')",
-      )
-      .all() as { name: string }[]
+    const names = this.reads.read('tables') as { name: string }[]
     if (names.length !== 0 && names.length !== 4) throw new Error('source_event_corrupt')
     return names.length === 4
   }
@@ -132,12 +155,10 @@ export class SourceEventStore {
     return this.head(identity)?.metadata
   }
   registered(sceneId: string, messageId: string): SourceEventMetadata | undefined {
-    z.string().min(1).max(512).parse(sceneId)
-    z.string().min(1).max(512).parse(messageId)
+    sourceIdentifier.parse(sceneId)
+    sourceIdentifier.parse(messageId)
     if (!this.exists()) return undefined
-    const rows = this.db
-      .prepare('SELECT value FROM source_event_heads WHERE scene_id=? AND message_id=?')
-      .all(sceneId, messageId) as { value: string }[]
+    const rows = this.reads.read('registered', sceneId, messageId) as { value: string }[]
     if (rows.length > 1) throw new Error('source_event_corrupt')
     if (!rows.length) return undefined
     const value = SourceEventHeadSchema.parse(this.json(rows[0]!.value))
@@ -161,11 +182,7 @@ CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_
     return this.db.inTransaction ? fn() : this.db.transaction(fn).immediate()
   }
   private head(identity: SourceEventIdentity): Head | undefined {
-    const row = this.db
-      .prepare(
-        'SELECT identity_key,event_id,scene_id,message_id,value FROM source_event_heads WHERE identity_key=?',
-      )
-      .get(sourceIdentityKey(identity)) as
+    const row = this.reads.read('head', sourceIdentityKey(identity)) as
       | {
           identity_key: string
           event_id: string
@@ -194,9 +211,7 @@ CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_
     }
   }
   private revoked(identity: SourceEventIdentity) {
-    return !!this.db
-      .prepare('SELECT 1 FROM source_event_tombstones WHERE scene_id=? AND message_id=?')
-      .get(identity.sceneId, identity.messageId)
+    return !!this.reads.read('tombstone', identity.sceneId, identity.messageId)
   }
   private hook(mutation: SourceEventMutation) {
     const result: unknown = this.options.beforeWrite?.(structuredClone(mutation))
@@ -366,9 +381,8 @@ CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_
     if (head.metadata.ref.eventId !== ref.eventId) return no('scope_mismatch')
     if (head.deleted || head.metadata.ref.deletionEpoch !== ref.deletionEpoch) return no('recalled')
     if (!historical && head.metadata.ref.revision !== ref.revision) return no('revision_changed')
-    const row = this.db
-      .prepare('SELECT value FROM source_event_revisions WHERE event_id=? AND revision=?')
-      .get(ref.eventId, ref.revision) as { value: string } | undefined
+    const row = this.reads.read('revision', ref.eventId, ref.revision) as
+      { value: string } | undefined
     if (!row) return no('missing')
     const parsed = SourceEventMetadataSchema.safeParse(this.json(row.value))
     if (
@@ -413,8 +427,8 @@ CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_
   // Recall tombstones are monotonic privacy authority, not evictable cache entries.
   // Head capacity does not cap or weaken this separate safety-retention obligation.
   revokeAll(sceneId: string, messageId: string): void {
-    z.string().min(1).max(512).parse(sceneId)
-    z.string().min(1).max(512).parse(messageId)
+    sourceIdentifier.parse(sceneId)
+    sourceIdentifier.parse(messageId)
     this.transaction(() => {
       this.initialize()
       const rows = this.db

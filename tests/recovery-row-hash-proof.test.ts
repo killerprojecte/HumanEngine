@@ -46,7 +46,7 @@ function hashes(action: () => unknown) {
   }
 }
 
-test('proof reuse skips SHA only; every call rereads rows and produces independent parsed events', () => {
+test('committed authority reuse skips chain work; explicit audits return independent parsed events', () => {
   const f = fixture()
   try {
     assert.equal(
@@ -139,7 +139,7 @@ test('rollback and reopening cannot retain a mutable or connection-wide permissi
   }
 })
 
-test('same-token raw-file corruption still fails cryptographic validation after page cache release', () => {
+test('unsupported raw-file corruption is found by explicit full audit and reopening, not change stamps', () => {
   const f = fixture()
   const a = f.authority
   const token = () => [
@@ -158,63 +158,41 @@ test('same-token raw-file corruption still fails cryptographic validation after 
     writeFileSync(file, bytes)
     a.db.pragma('shrink_memory')
     assert.deepEqual(token(), before)
-    assert.throws(() => a.head(), /recovery_chain_invalid/)
+    assert.equal(a.head().sequence, 1, 'raw writes bypass the supported SQLite mutation contract')
+    assert.throws(() => a.entries(false), /recovery_chain_invalid/)
+    a.close()
+    assert.throws(() => new RecoveryAuthority(f.path), /recovery_chain_invalid/)
   } finally {
     f.close()
   }
 })
 
-test('entry cap retains only a bounded prefix; uncached tail is always hashed', () => {
-  const f = fixture(4097)
-  try {
-    assert.equal(
-      hashes(() => f.authority.head()),
-      4097,
-    )
-    assert.equal(
-      hashes(() => f.authority.head()),
-      1,
-    )
-  } finally {
-    f.close()
-  }
-})
+for (const [count, padding] of [
+  [4097, 0],
+  [1, 70000],
+  [300, 15000],
+])
+  test(`all valid history is verified without a row or byte cap: ${count}/${padding}`, () => {
+    const f = fixture(count, payload + ' '.repeat(padding))
+    try {
+      assert.equal(
+        hashes(() => f.authority.head()),
+        count,
+      )
+      assert.equal(
+        hashes(() => f.authority.head()),
+        0,
+      )
+      assert.equal(
+        hashes(() => f.authority.entries(false)),
+        count,
+      )
+    } finally {
+      f.close()
+    }
+  })
 
-test('oversized valid payloads bypass admission without truncating their exact bytes', () => {
-  const f = fixture(1, payload + ' '.repeat(70000))
-  try {
-    assert.equal(
-      hashes(() => f.authority.head()),
-      1,
-    )
-    assert.equal(
-      hashes(() => f.authority.head()),
-      1,
-    )
-  } finally {
-    f.close()
-  }
-})
-
-test('byte cap stops admission before entry cap for larger valid rows', () => {
-  const f = fixture(300, payload + ' '.repeat(15000))
-  try {
-    assert.equal(
-      hashes(() => f.authority.head()),
-      300,
-    )
-    const misses = hashes(() => f.authority.head())
-    assert(misses > 0 && misses < 300)
-    assert.equal(
-      hashes(() => f.authority.head()),
-      misses,
-    )
-  } finally {
-    f.close()
-  }
-})
-
-test('same-sequence valid replacement and rollback require each exact proof again', () => {
+test('caller-owned authority transactions never publish transient verification', () => {
   const f = fixture()
   const a = f.authority
   const alternate = JSON.stringify({ kind: 'fingerprint', value: 'b'.repeat(64) })
@@ -232,7 +210,7 @@ test('same-sequence valid replacement and rollback require each exact proof agai
     )
     assert.equal(
       hashes(() => a.head()),
-      0,
+      1,
     )
     a.db.exec('ROLLBACK')
     assert.equal(
@@ -247,33 +225,6 @@ test('same-sequence valid replacement and rollback require each exact proof agai
     assert.throws(() => a.head(), /recovery_chain_invalid/)
   } finally {
     if (a.db.inTransaction) a.db.exec('ROLLBACK')
-    f.close()
-  }
-})
-
-test('repeated same-sequence replacements conservatively exhaust the byte admission budget', () => {
-  const f = fixture()
-  const a = f.authority
-  try {
-    a.head()
-    for (let i = 0; i < 320; i++) {
-      const body =
-        JSON.stringify({ kind: 'source', sceneId: 's', messageId: `m-${i}` }) + ' '.repeat(15000)
-      const digest = hash(`fixture|1|${'0'.repeat(64)}|${body}`)
-      a.db.prepare('UPDATE revocations SET payload=?,hash=? WHERE sequence=1').run(body, digest)
-      a.head()
-    }
-    assert.equal(
-      hashes(() => a.head()),
-      1,
-      'an unadmitted replacement must still be hashed',
-    )
-    assert.equal(
-      hashes(() => a.head()),
-      1,
-      'a full budget never silently admits another proof',
-    )
-  } finally {
     f.close()
   }
 })

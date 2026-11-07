@@ -37,29 +37,32 @@ export function readMemorySearch(store: Store, input: MemorySearchRead): MemoryR
   const authority = new AssertionAuthority(store, repository, {
     history: new AssertionHistoryReader(store.db),
   })
-  const applicability = new Map<string, boolean>()
-  // Scope only: do not prefilter time eligibility in an earlier statement.
-  // A record becoming eligible before the final SQL still needs applicability.
-  const candidates = store.db
-    .prepare(`SELECT * FROM memories WHERE ${scope.sql} ORDER BY rowid DESC`)
-    .all(...scope.params) as Row[]
-  const unsupported = candidates
-    .map(read)
-    .filter(
-      (record) =>
-        !authority.currentApplicable(record, new Set(), applicability) ||
-        (input.simulation && !authority.supported(record)),
-    )
-    .map((record) => record.id)
-  const lexical = terms.length ? 'humanengine_lexical(scoped.content, ?)' : '0.0'
-  const semantic = options
-    ? 'CASE WHEN v.embedding IS NULL THEN 0.0 ELSE max(0.0, 1.0 - vec_distance_cosine(v.embedding, ?)) END'
-    : '0.0'
-  const join = options ? 'LEFT JOIN memory_vectors v ON v.memory_id=scoped.id AND v.space_id=?' : ''
-  const limit = Math.max(1, Math.min(options?.limit ?? 20, 100))
-  const rows = store.db
-    .prepare(
-      `
+  return repository.withSupportReadStatements(() => {
+    const applicability = new Map<string, boolean>()
+    // Scope only: do not prefilter time eligibility in an earlier statement.
+    // A record becoming eligible before the final SQL still needs applicability.
+    const candidates = store.db
+      .prepare(`SELECT * FROM memories WHERE ${scope.sql} ORDER BY rowid DESC`)
+      .all(...scope.params) as Row[]
+    const unsupported = candidates
+      .map(read)
+      .filter(
+        (record) =>
+          !authority.currentApplicable(record, new Set(), applicability) ||
+          (input.simulation && !authority.supported(record)),
+      )
+      .map((record) => record.id)
+    const lexical = terms.length ? 'humanengine_lexical(scoped.content, ?)' : '0.0'
+    const semantic = options
+      ? 'CASE WHEN v.embedding IS NULL THEN 0.0 ELSE max(0.0, 1.0 - vec_distance_cosine(v.embedding, ?)) END'
+      : '0.0'
+    const join = options
+      ? 'LEFT JOIN memory_vectors v ON v.memory_id=scoped.id AND v.space_id=?'
+      : ''
+    const limit = Math.max(1, Math.min(options?.limit ?? 20, 100))
+    const rows = store.db
+      .prepare(
+        `
       WITH scoped AS MATERIALIZED (
         SELECT rowid AS ordinal, * FROM memories
         WHERE ${scope.sql} AND id NOT IN (SELECT value FROM json_each(?)) AND json_extract(value,'$.internalUse') IS NULL AND COALESCE(json_extract(value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(value,'$.status') IN ('active','disputed')
@@ -76,19 +79,20 @@ export function readMemorySearch(store: Store, input: MemorySearchRead): MemoryR
       SELECT value, score FROM ranked WHERE ? = 0 OR relevance > 0
       ORDER BY score DESC, json_extract(value,'$.learnedAt') DESC, ordinal DESC LIMIT ?
     `,
-    )
-    .all(
-      ...scope.params,
-      JSON.stringify(unsupported),
-      ...(terms.length ? [JSON.stringify(terms)] : []),
-      ...(options ? [vector!, options.spaceId] : []),
-      query.trim() ? 1 : 0,
-      Math.trunc(limit),
-    ) as { value: string; score: number }[]
-  return rows
-    .filter((row) => authority.supported(JSON.parse(row.value) as MemoryRecord))
-    .map((row) => ({
-      ...authority.sanitize(JSON.parse(row.value) as MemoryRecord),
-      score: row.score,
-    }))
+      )
+      .all(
+        ...scope.params,
+        JSON.stringify(unsupported),
+        ...(terms.length ? [JSON.stringify(terms)] : []),
+        ...(options ? [vector!, options.spaceId] : []),
+        query.trim() ? 1 : 0,
+        Math.trunc(limit),
+      ) as { value: string; score: number }[]
+    return rows
+      .filter((row) => authority.supported(JSON.parse(row.value) as MemoryRecord))
+      .map((row) => ({
+        ...authority.sanitize(JSON.parse(row.value) as MemoryRecord),
+        score: row.score,
+      }))
+  })
 }

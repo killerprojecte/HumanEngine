@@ -1,5 +1,7 @@
 # Fixed memory-search proof snapshots
 
+> Historical measurements below describe the previous per-operation full-scan implementation. The current [recovery validation model](recovery-row-hash-proofs.md) reuses committed snapshot integrity, validates changed SQLite snapshots, and supports fixed reads inside existing main transactions. Historical scan counts are not the current contract.
+
 The search read now uses one fixed synchronous dual-database read operation. It does not expose a generic callback scope, reusable recovery head, or cached permission result.
 
 ## Read and write boundary

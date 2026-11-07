@@ -1,3 +1,4 @@
+import { recoveryHashProbe } from './helpers/recovery-hashes.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { Store } from '../src/store.ts'
@@ -118,9 +119,11 @@ for (const chainLength of [100, 1000])
       const hash = (text: string) => createHash('sha256').update(text).digest('hex')
       const root = mkdtempSync(join(tmpdir(), 'send-validation-recovery-'))
       const store = new Store(join(root, 'live', 'fixture.sqlite'))
-      const originalEntries = RecoveryAuthority.prototype.entries
+      const statementPrototype = Object.getPrototypeOf(store.db.prepare('SELECT 1'))
+      const originalIterate = statementPrototype.iterate
       const originalHead = RecoveryAuthority.prototype.head
       const originalLog = store.log.bind(store)
+      const historyHashes = recoveryHashProbe()
       let validationActive = false,
         headReads = 0,
         fullScans = 0,
@@ -136,8 +139,11 @@ for (const chainLength of [100, 1000])
       const pulsed = new Promise<void>((done) => {
         pulse = done
       })
-      RecoveryAuthority.prototype.entries = function () {
-        if (measuring) {
+      statementPrototype.iterate = function (...args: unknown[]) {
+        const chainRead = /^SELECT \* FROM (?:main\.)?revocations ORDER BY sequence$/.test(
+          this.source,
+        )
+        if (chainRead && measuring) {
           totalScans++
           const stack = new Error()
             .stack!.split('\n')
@@ -146,7 +152,7 @@ for (const chainLength of [100, 1000])
             .join(' > ')
           totalByStack[stack] = (totalByStack[stack] ?? 0) + 1
         }
-        if (validationActive) {
+        if (chainRead && validationActive) {
           fullScans++
           const stack = new Error()
             .stack!.split('\n')
@@ -155,7 +161,7 @@ for (const chainLength of [100, 1000])
             .join(' > ')
           byStack[stack] = (byStack[stack] ?? 0) + 1
         }
-        return originalEntries.call(this)
+        return originalIterate.apply(this, args)
       }
       RecoveryAuthority.prototype.head = function () {
         if (validationActive) headReads++
@@ -194,10 +200,12 @@ for (const chainLength of [100, 1000])
               measuring = false
               pulse()
             }, 1)
+            historyHashes.start()
             validationActive = true
             measuring = true
           } else if (row.status !== 'cancel_requested') {
             validationActive = false
+            historyHashes.stop()
             validationMs = performance.now() - validationAt
           }
         }
@@ -214,21 +222,19 @@ for (const chainLength of [100, 1000])
         for (let index = 0; index < 23; index++) fixture.ingest(`history-${index}`)
         await fixture.runtime.proactive(scene.id)
         assert.equal(fixture.sends(), 1)
-        const promptScans = Object.entries(byStack)
-          .filter(([stack]) => stack.includes('promptWindowAuthority'))
-          .reduce((sum, [, count]) => sum + count, 0)
-        assert.equal(promptScans, 1, 'one fresh prompt-configuration gate, not one per setting')
         assert.equal(
-          fullScans - promptScans,
-          6,
-          'existing source and dependency batches must remain bounded',
+          fullScans,
+          1,
+          'the external SQLite seed is fully verified once; later live gates reuse its committed integrity',
         )
+        assert.equal(historyHashes.count, chainLength, 'the one audit hashes every historical row')
         await pulsed
         process.stdout.write(
           `SYNTHETIC_SEND_VALIDATION fullScans=${fullScans} totalScans=${totalScans} byStack=${JSON.stringify(byStack)} totalByStack=${JSON.stringify(totalByStack)} chain=${chainLength} headReads=${headReads} spanMs=${validationMs.toFixed(1)} timer1msFiredAfter=${timerDelayMs.toFixed(1)}ms\n`,
         )
       } finally {
-        RecoveryAuthority.prototype.entries = originalEntries
+        historyHashes.stop()
+        statementPrototype.iterate = originalIterate
         RecoveryAuthority.prototype.head = originalHead
         fixture.close()
         rmSync(root, { recursive: true, force: true })

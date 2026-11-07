@@ -1,5 +1,7 @@
 # Recall capture read-path repair
 
+> Historical measurements below describe the previous per-operation full-scan implementation. The current [recovery validation model](recovery-row-hash-proofs.md) reuses committed snapshot integrity, validates changed SQLite snapshots, and supports fixed reads inside existing main transactions. Historical scan counts are not the current contract.
+
 ## Evidence and scope
 
 The supplied 52.785-second CPU sample contains a synchronous recall that begins

@@ -1,3 +1,4 @@
+import { recoveryHashProbe } from './helpers/recovery-hashes.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -64,20 +65,16 @@ function restored(f: ReturnType<typeof fixture>, nested: boolean) {
   assert.equal(f.bound.db.pragma('query_only', { simple: true }), 0)
 }
 for (const nested of [false, true])
-  test(`capture preserves exact refs with two scans, nested=${nested}`, () => {
+  test(`capture preserves exact refs without rescanning, nested=${nested}`, () => {
     const f = fixture(16),
-      original = RecoveryAuthority.prototype.entries
+      original = recoveryHashProbe()
     try {
       const baseline = readCommitmentPrivacy(f.store)
       assert.equal(baseline.size, 16)
-      let scans = 0
-      RecoveryAuthority.prototype.entries = function (collect) {
-        scans++
-        return original.call(this, collect)
-      }
+      original.start()
       const run = () => {
         assert.deepEqual(captureCommitmentPrivacySnapshot(f.store), baseline)
-        assert.equal(scans, 2)
+        assert.equal(original.count, 0)
         restored(f, nested)
         f.store.db.prepare('INSERT INTO config VALUES(?,?)').run('after-capture', 'true')
       }
@@ -86,7 +83,7 @@ for (const nested of [false, true])
       restored(f, false)
       assert.equal(f.store.get('after-capture', false), true)
     } finally {
-      RecoveryAuthority.prototype.entries = original
+      original.stop()
       f.close()
     }
   })
@@ -174,12 +171,12 @@ test('failed pre-recall capture restores writes so the durable root revocation i
 })
 test('post-unlock validation fails before captured refs escape', () => {
   const f = fixture(),
-    original = RecoveryAuthority.prototype.entries
+    original = RecoveryAuthority.prototype.head
   let scans = 0
-  RecoveryAuthority.prototype.entries = function (collect) {
+  RecoveryAuthority.prototype.head = function () {
     if (++scans === 2)
       f.authority.db.prepare('UPDATE revocations SET hash=? WHERE sequence=1').run('0'.repeat(64))
-    return original.call(this, collect)
+    return original.call(this)
   }
   try {
     assert.throws(
@@ -188,7 +185,7 @@ test('post-unlock validation fails before captured refs escape', () => {
     )
     restored(f, false)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    RecoveryAuthority.prototype.head = original
     f.close()
   }
 })
@@ -220,34 +217,30 @@ test('capture invariant failure rolls back its savepoint while preserving caller
 })
 
 for (const nested of [false, true])
-  test(`list qualification preserves exact ordered results with two scans, nested=${nested}`, () => {
+  test(`list qualification preserves exact ordered results without rescanning, nested=${nested}`, () => {
     const f = fixture(16),
-      original = RecoveryAuthority.prototype.entries
+      original = recoveryHashProbe()
     const input = { sceneId: 's', simulation: false }
     try {
       const baseline = readMemoryList(f.store, input)
       assert.equal(baseline.length, 16)
-      let scans = 0
-      RecoveryAuthority.prototype.entries = function (collect) {
-        scans++
-        return original.call(this, collect)
-      }
+      original.start()
       const run = () => {
         assert.deepEqual(listMemorySnapshot(f.store, input), baseline)
-        assert.equal(scans, 2)
+        assert.equal(original.count, 0)
         restored(f, nested)
         const ids = [f.records[1]!.id, f.records[0]!.id, f.records[1]!.id, 'missing']
         assert.deepEqual(
           listMemorySnapshot(f.store, { ...input, ids }),
           baseline.filter((r) => ids.includes(r.id)),
         )
-        assert.equal(scans, 4)
+        assert.equal(original.count, 0)
         restored(f, nested)
       }
       if (nested) f.store.db.transaction(run)()
       else run()
     } finally {
-      RecoveryAuthority.prototype.entries = original
+      original.stop()
       f.close()
     }
   })

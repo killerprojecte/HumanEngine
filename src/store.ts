@@ -42,6 +42,7 @@ import type { Message, SceneRef } from './onebot.ts'
 import { currentFlowContext } from './diagnostics/flow.ts'
 import { readableLog, stdoutLog } from './diagnostics/format.ts'
 import Database from 'better-sqlite3'
+import { FixedReadStatements } from './storage/fixed-read-statements.ts'
 import { SecretStore, type SecretMutation } from './secrets/store.ts'
 import type { Provider } from './models.ts'
 import * as sqliteVec from 'sqlite-vec'
@@ -104,8 +105,17 @@ export type UsageRange = { start: string; end: string; bucket?: 'hour' | 'day'; 
 
 type UsageBreakdown = Record<(typeof usageColumns)[keyof typeof usageColumns], number>
 
+const sourceReads = {
+  scene: { sql: 'SELECT value FROM scenes WHERE id=?', all: false },
+  recalled: {
+    sql: 'SELECT 1 FROM recall_tombstones WHERE scene_id=? AND message_id=?',
+    all: false,
+  },
+} as const
+
 export class Store {
   readonly db: Database.Database
+  private readonly sourceReads: FixedReadStatements<typeof sourceReads>
   readonly secrets: SecretStore
   private sourceEventStore?: SourceEventStore
   get sourceEvents() {
@@ -152,6 +162,7 @@ export class Store {
     if (path !== ':memory:')
       this.logDirectory = process.env.HUMANENGINE_LOG_DIR || join(dirname(path), 'logs')
     this.db = new Database(path)
+    this.sourceReads = new FixedReadStatements(this.db, sourceReads)
     this.db.function('usage_bucket', { deterministic: true }, (at, zone, bucket) =>
       usageBucket(String(at), String(zone), bucket === 'hour' ? 'hour' : 'day'),
     )
@@ -436,8 +447,7 @@ export class Store {
   }
   scene(id: string): Scene | undefined {
     this.assertRecoveryReady()
-    const row = this.db.prepare('SELECT value FROM scenes WHERE id=?').get(id) as
-      { value: string } | undefined
+    const row = this.sourceReads.read('scene', id) as { value: string } | undefined
     return row ? JSON.parse(row.value) : undefined
   }
   saveScene(scene: Scene) {
@@ -547,9 +557,7 @@ export class Store {
   }
   recalled(sceneId: string, messageId: string): boolean {
     this.assertRecoveryReady()
-    return !!this.db
-      .prepare('SELECT 1 FROM recall_tombstones WHERE scene_id=? AND message_id=?')
-      .get(sceneId, messageId)
+    return !!this.sourceReads.read('recalled', sceneId, messageId)
   }
   recall(sceneId: string, messageId: string) {
     this.db

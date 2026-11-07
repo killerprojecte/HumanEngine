@@ -1,3 +1,4 @@
+import { recoveryHashProbe } from './helpers/recovery-hashes.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createHash } from 'node:crypto'
@@ -53,23 +54,19 @@ function fixture() {
     },
   }
 }
-test('fixed snapshot batch verifies full chain bounded times and restores writable connections', () => {
+test('fixed snapshot batch reuses committed integrity and restores writable connections', () => {
   const f = fixture()
-  const original = RecoveryAuthority.prototype.entries
-  let scans = 0
-  RecoveryAuthority.prototype.entries = function () {
-    scans++
-    return original.call(this)
-  }
+  const original = recoveryHashProbe()
+  original.start()
   try {
     assert.equal(validateSourceSnapshots(f.store, f.messages), true)
-    assert.equal(scans, 2)
+    assert.equal(original.count, 0)
     assert.equal(f.store.db.inTransaction, false)
     assert.equal(f.store.db.pragma('query_only', { simple: true }), 0)
     f.store.saveScene({ ...f.store.scene('s')!, name: 'updated' })
     assert.equal(f.store.scene('s')!.name, 'updated')
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     f.close()
   }
 })
@@ -137,7 +134,7 @@ test('same-connection writes and durable revoke are denied inside source reads; 
     f.close()
   }
 })
-test('existing main transaction falls back to original checks without changing transaction ownership', () => {
+test('existing main transaction nests a fixed read scope without changing transaction ownership', () => {
   const f = fixture()
   try {
     f.store.db.transaction(() => {

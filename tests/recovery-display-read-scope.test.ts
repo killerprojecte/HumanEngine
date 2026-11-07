@@ -1,3 +1,4 @@
+import { recoveryHashProbe } from './helpers/recovery-hashes.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -64,27 +65,23 @@ test('real runtime preview and local history bound chain scans without model cal
     runtime = new Runtime(f.store, () => {
       throw new Error('model forbidden')
     }),
-    original = RecoveryAuthority.prototype.entries
+    original = recoveryHashProbe()
   try {
     for (const message of f.messages)
       runtime.ingest(message as Parameters<Runtime['ingest']>[0], f.scene, false)
-    let scans = 0
-    RecoveryAuthority.prototype.entries = function (collect) {
-      scans++
-      return original.call(this, collect)
-    }
+    original.start()
     assert.equal(runtime.preview(f.scene.id).length, 30)
-    assert.equal(scans, 3)
-    scans = 0
+    assert.equal(original.count, 0)
+    original.start()
     const history = await runtime.previewHistory(f.scene.id, 'local')
     assert.equal(history.items.length, 30)
     assert.equal(
       history.items.every((m) => m.origin === 'history'),
       true,
     )
-    assert.equal(scans, 3)
+    assert.equal(original.count, 0)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     runtime.dispose()
     f.close()
   }
@@ -122,7 +119,7 @@ test('remote runtime history bounds full chain scans independently of the 30 ret
     runtime = new Runtime(f.store, () => {
       throw new Error('model forbidden')
     }),
-    original = RecoveryAuthority.prototype.entries
+    original = recoveryHashProbe()
   try {
     for (const message of f.messages)
       runtime.ingest(message as Parameters<Runtime['ingest']>[0], f.scene, false)
@@ -138,17 +135,13 @@ test('remote runtime history bounds full chain scans independently of the 30 ret
       },
       dispose() {},
     })
-    let scans = 0
-    RecoveryAuthority.prototype.entries = function (collect) {
-      scans++
-      return original.call(this, collect)
-    }
+    original.start()
     const result = await runtime.previewHistory(f.scene.id)
     assert.equal(result.items.length, 30)
     assert.equal(result.coverage, 'partial')
-    assert.equal(scans, 5, 'two remote checks and three fresh local checks, not per-row scans')
+    assert.equal(original.count, 0)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     runtime.dispose()
     f.close()
   }
@@ -314,7 +307,7 @@ test('display snapshots deny writes, detect subsequent tampering and restore sta
   }
 })
 
-test('display inputs materialize before snapshots and nested fallback sees fresh tombstones', () => {
+test('display inputs materialize before snapshots and nested reads see fresh tombstones', () => {
   const f = fixture()
   try {
     const message = { ...f.messages[0]! }

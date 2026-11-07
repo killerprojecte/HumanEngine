@@ -1,3 +1,4 @@
+import { recoveryHashProbe } from './helpers/recovery-hashes.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -63,25 +64,21 @@ function clean(f: ReturnType<typeof fixture>) {
 
 test('fixed search bounds full authority scans independently of source count without schema writes', () => {
   const f = fixture(),
-    original = RecoveryAuthority.prototype.entries
+    original = recoveryHashProbe()
   try {
-    let scans = 0
     const schema = f.store.db.pragma('schema_version', { simple: true })
     const changes = f.store.db.prepare('SELECT total_changes() AS n').get()
-    RecoveryAuthority.prototype.entries = function (collect) {
-      scans++
-      return original.call(this, collect)
-    }
+    original.start()
     const first = f.search()
     assert.equal(first.length, f.records.length)
-    assert.equal(scans, 2)
+    assert.equal(original.count, 0)
     assert.deepEqual(f.search(), first)
-    assert.equal(scans, 4)
+    assert.equal(original.count, 0)
     assert.equal(f.store.db.pragma('schema_version', { simple: true }), schema)
     assert.deepEqual(f.store.db.prepare('SELECT total_changes() AS n').get(), changes)
     clean(f)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     f.close()
   }
 })
@@ -125,19 +122,19 @@ test('search snapshots reject local writes and lock external authority tampering
 
 test('search post-unlock verification detects tampering before releasing results', () => {
   const f = fixture(1),
-    original = RecoveryAuthority.prototype.entries
+    original = RecoveryAuthority.prototype.head
   let scans = 0
-  RecoveryAuthority.prototype.entries = function (collect) {
+  RecoveryAuthority.prototype.head = function () {
     if (++scans === 2)
       f.authority.db.prepare('UPDATE revocations SET hash=? WHERE sequence=1').run('0'.repeat(64))
-    return original.call(this, collect)
+    return original.call(this)
   }
   try {
     assert.throws(f.search, /recovery_chain_invalid/)
     assert.equal(scans, 2)
     clean(f)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    RecoveryAuthority.prototype.head = original
     f.close()
   }
 })
@@ -185,7 +182,7 @@ test('search reads updates and recall freshly across calls and awaits', async ()
   }
 })
 
-test('nested transaction and non-WAL search fallback preserve caller ownership and live reads', () => {
+test('nested transaction and non-WAL search preserve caller ownership and live reads', () => {
   const f = fixture(2)
   try {
     f.store.db.transaction(() => {
@@ -318,9 +315,9 @@ function bound(f: ReturnType<typeof fixture>, record: MemoryRecord) {
   return reference
 }
 
-test('durable search validates bound AND/OR proofs, expiry, version and epoch drift with two full scans', async () => {
+test('durable search validates bound AND/OR proofs, expiry, version and epoch drift with no repeated full scans', async () => {
   const f = fixture(0),
-    original = RecoveryAuthority.prototype.entries,
+    original = recoveryHashProbe(),
     now = Date.now
   try {
     const p = learned(f, 'Bound premise P', 'p')
@@ -333,17 +330,13 @@ test('durable search validates bound AND/OR proofs, expiry, version and epoch dr
     learned(f, alternative.content, 'independent', refs.slice(2))
     const grandchild = learned(f, 'Transitive bound child', 'grandchild', [bound(f, required)])
     const search = () => {
-      let scans = 0
-      RecoveryAuthority.prototype.entries = function (collect) {
-        scans++
-        return original.call(this, collect)
-      }
+      original.start()
       try {
         const result = f.search()
-        assert.equal(scans, 2)
+        assert.equal(original.count, 0)
         return new Set(result.map((record) => record.id))
       } finally {
-        RecoveryAuthority.prototype.entries = original
+        original.stop()
       }
     }
     const initial = search()
@@ -377,21 +370,21 @@ test('durable search validates bound AND/OR proofs, expiry, version and epoch dr
     clean(f)
   } finally {
     Date.now = now
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     f.close()
   }
 })
 
 test('public search commits support invalidation before acquiring its query-only snapshots', () => {
   const f = fixture(0),
-    original = RecoveryAuthority.prototype.entries
+    original = RecoveryAuthority.prototype.head
   try {
     const parent = learned(f, 'Refresh parent', 'parent')
     const child = learned(f, 'Refresh dependent', 'child', [bound(f, parent)])
     f.store.recall('s', 'parent')
     assert.equal(f.memory.adminList().find((record) => record.id === child.id)?.status, 'active')
     let observedSnapshot = false
-    RecoveryAuthority.prototype.entries = function (collect) {
+    RecoveryAuthority.prototype.head = function () {
       if (f.store.db.pragma('query_only', { simple: true }) === 1) {
         observedSnapshot = true
         const row = f.store.db.prepare('SELECT value FROM memories WHERE id=?').get(child.id) as {
@@ -403,21 +396,21 @@ test('public search commits support invalidation before acquiring its query-only
           'refresh must commit before read snapshot',
         )
       }
-      return original.call(this, collect)
+      return original.call(this)
     }
     assert.deepEqual(f.memory.search({ sceneId: 's', simulation: false }, ''), [])
     assert.ok(observedSnapshot)
     assert.ok(f.memory.revisionState(child.id).deletionEpoch > 0)
     clean(f)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    RecoveryAuthority.prototype.head = original
     f.close()
   }
 })
 
 test('search owns shared vector bytes before acquiring snapshots', () => {
   const f = fixture(2),
-    original = RecoveryAuthority.prototype.entries
+    original = RecoveryAuthority.prototype.head
   try {
     const spaceId = f.memory.registerSpace({
       providerId: 'fixture',
@@ -432,9 +425,9 @@ test('search owns shared vector bytes before acquiring snapshots', () => {
     f.memory.index(f.records[1]!.id, spaceId, [0, 1])
     const shared = new Float32Array(new SharedArrayBuffer(8))
     shared.set([1, 0])
-    RecoveryAuthority.prototype.entries = function (collect) {
+    RecoveryAuthority.prototype.head = function () {
       shared.set([0, 1])
-      return original.call(this, collect)
+      return original.call(this)
     }
     const result = searchMemorySnapshot(f.store, {
       ...f.input,
@@ -447,7 +440,7 @@ test('search owns shared vector bytes before acquiring snapshots', () => {
     )
     clean(f)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    RecoveryAuthority.prototype.head = original
     f.close()
   }
 })

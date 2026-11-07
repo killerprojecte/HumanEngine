@@ -1,3 +1,4 @@
+import { recoveryHashProbe } from './helpers/recovery-hashes.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -55,17 +56,13 @@ function fixture() {
 
 test('domain-source batch preserves source qualification and bounds full-chain scans', () => {
   const f = fixture(),
-    original = RecoveryAuthority.prototype.entries
+    original = recoveryHashProbe()
   try {
     const expected = f.sources.map((source) => domainSourceCurrent(f.store, source))
-    let scans = 0
-    RecoveryAuthority.prototype.entries = function (collect) {
-      scans++
-      return original.call(this, collect)
-    }
+    original.start()
     assert.deepEqual(currentDomainSources(f.store, f.sources), expected)
-    assert.equal(scans, 2)
-    RecoveryAuthority.prototype.entries = original
+    assert.equal(original.count, 0)
+    original.stop()
     f.store.recall('s', '2')
     assert.equal(currentDomainSources(f.store, f.sources)[2], false)
     const registered = f.store.sourceEvents.registered('s', '0')!
@@ -78,7 +75,7 @@ test('domain-source batch preserves source qualification and bounds full-chain s
     )
     assert.equal(f.store.db.pragma('query_only', { simple: true }), 0)
   } finally {
-    RecoveryAuthority.prototype.entries = original
+    original.stop()
     f.close()
   }
 })
@@ -120,7 +117,7 @@ test('domain-source read scope denies same-connection and external authority wri
   }
 })
 
-test('domain-source exceptions restore writes and nested transactions retain live fallback checks', () => {
+test('domain-source exceptions restore writes and nested transactions retain live checks', () => {
   const f = fixture(),
     recalled = f.store.recalled.bind(f.store)
   try {

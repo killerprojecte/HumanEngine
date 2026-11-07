@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { RecoveryAuthority } from '../src/memory/recovery/ledger.ts'
 
-test('head-only verification discards event results but validates fresh full-chain contents', () => {
+test('head-only integrity validation rechecks changed historical contents', () => {
   const directory = mkdtempSync(join(tmpdir(), 'he-head-allocation-'))
   const authority = new RecoveryAuthority(directory, randomUUID())
   try {

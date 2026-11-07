@@ -369,3 +369,33 @@ Read authority does not perform derived commitment, knowledge or semantic
 privacy writes, and does not complete runtime recall. Those services still need
 one bound root transaction, real capability composition and end-to-end recovery
 validation. Production REST and startup remain unchanged.
+
+## Native proof invalidation
+
+The proof lifecycle now binds the actual assertion repository, history and
+revision coordinator to the existing transaction. It snapshots current reverse
+links once per synchronous purge operation and captures live historical links
+before deleting each node's history. Iterative depth-first traversal preserves
+history-first and current-record insertion order, including links in inactive
+records or already-invalidated proofs. An independent OR alternative can keep a
+record supported while its unsafe historical bodies are still removed and its
+current safe revision is rebuilt.
+
+Support refresh finishes all provenance analysis before issuing new durable
+privacy intents. Positive results are shared only inside that analysis call;
+each root gets the source's fresh budget and path. A failed analysis is an error,
+not unsupported=false. Real history purges, record invalidation, vector deletion
+and revision flushes use the same child-bound capability. Required derived owner
+callbacks receive that capability explicitly, with no ambient session switch or
+a second authority connection.
+
+DependsOn and membership preserve short-circuit behavior for a malformed tail
+that is never visited. Actually traversing a nonstring parent remains an explicit
+typed boundary error; raw malformed SQLite-bind behavior is not claimed. This
+does not add a new graph depth or admission cap.
+
+Projection, relation, working-set, commitment, knowledge and semantic effects
+remain required owner ports, with no production no-op defaults. Recording test
+ports establish their ordering but do not implement those domains. Consequently
+this slice is not complete assertion recall/delete, full engine recall or a new
+production startup path.

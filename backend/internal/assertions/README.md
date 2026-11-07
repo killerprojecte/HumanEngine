@@ -61,7 +61,12 @@ lossless JSON and source-defined object/array ordering. The coordinator's date
 parser is an explicit source timezone dependency; UTC is the standalone default,
 not automatic deployment timezone discovery.
 
-Remaining work includes provenance invalidation, projection/commitment/knowledge/semantic privacy stores,
+`assertionlifecycle` now composes proof invalidation with these real writes.
+`WithWriteSession` is its trusted owner bridge: it validates this exact active
+binding before invoking a callback outside the session mutex. It does not create
+another transaction or permit a suspended ancestor to borrow a child's scope.
+
+Remaining work includes projection/commitment/knowledge/semantic privacy stores,
 complete model-facing authority, offline reconstruction, and same-session runtime
 recall composition. The current runtime read-only recall extension capability
 cannot perform these missing writes. No API or production startup is enabled by

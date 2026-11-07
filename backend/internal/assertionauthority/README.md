@@ -34,6 +34,10 @@ The optional clock supplies the current instant, defaulting to the real clock.
 
 - `Supported`: privacy provenance, including superseded retained parents.
   Version/time drift alone is not a privacy deletion instruction.
+- `AnalyzeSupported`: fixed synchronous batch for lifecycle planning. Only
+  positive provenance results are shared within the call, with a fresh source
+  budget and empty path per root. It returns no partial result on failure and
+  exposes no cache or interleaving callback. A later call rereads current SQL.
 - `CurrentApplicable`: active/disputed status, validity interval, exact current
   source-event identity/revision and parent version. This never purges history.
 - `HistoricalAssertion`: matching current scene/subject authorization and epoch,

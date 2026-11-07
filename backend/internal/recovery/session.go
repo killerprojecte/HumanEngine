@@ -17,8 +17,9 @@ import (
 // Authority through Write/Publish: use this session for nested store operations.
 type WriteSession struct {
 	*writeSessionState
-	active bool
-	rows   map[*SessionRows]struct{}
+	active     bool
+	rows       map[*SessionRows]struct{}
+	statements map[*SessionStatement]struct{}
 }
 
 // All nested capabilities share the root lock, context and fatal native state.
@@ -124,6 +125,9 @@ func (s *WriteSession) finishLocked() error {
 	e := s.check()
 	for r := range s.rows {
 		_ = r.close()
+	}
+	for statement := range s.statements {
+		e = errors.Join(e, statement.close())
 	}
 	e = errors.Join(e, s.check())
 	s.active = false

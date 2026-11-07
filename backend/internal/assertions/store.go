@@ -36,8 +36,11 @@ type Store struct {
 	options      Options
 }
 type Reader struct {
-	query func(string, ...any) (Rows, error)
-	ready func() error
+	query        func(string, ...any) (Rows, error)
+	ready        func() error
+	check        func() error
+	prepare      func(string) (preparedRead, error)
+	supportReads *supportReadScope
 }
 
 func New(main *sql.DB, authority *recovery.Authority, options Options) (*Store, error) {
@@ -107,7 +110,16 @@ func (s *Store) Initialize(ctx context.Context) error {
 	})
 }
 func (s *Store) reader() *Reader {
-	return &Reader{ready: s.ready, query: func(q string, args ...any) (Rows, error) {
+	return &Reader{ready: s.ready, check: s.requireTransaction, prepare: func(q string) (preparedRead, error) {
+		if e := s.requireTransaction(); e != nil {
+			return nil, e
+		}
+		statement, e := s.session.PrepareQuery(q)
+		if e != nil {
+			return nil, e
+		}
+		return &sessionPreparedRead{statement}, nil
+	}, query: func(q string, args ...any) (Rows, error) {
 		if e := s.requireTransaction(); e != nil {
 			return nil, e
 		}
@@ -125,18 +137,33 @@ func (s *Store) Read(ctx context.Context, fn func(*Reader) error) error {
 		var active atomic.Bool
 		active.Store(true)
 		defer active.Store(false)
-		alive := func() error {
+		check := func() error {
 			if !active.Load() {
 				return sql.ErrTxDone
+			}
+			return ctx.Err()
+		}
+		alive := func() error {
+			if e := check(); e != nil {
+				return e
 			}
 			if s.options.AssertReady != nil {
 				return s.options.AssertReady()
 			}
 			return nil
 		}
-		r := &Reader{ready: alive, query: func(q string, args ...any) (Rows, error) {
-			if !active.Load() {
-				return nil, sql.ErrTxDone
+		r := &Reader{ready: alive, check: check, prepare: func(q string) (preparedRead, error) {
+			if e := check(); e != nil {
+				return nil, e
+			}
+			statement, e := conn.PrepareContext(ctx, q)
+			if e != nil {
+				return nil, e
+			}
+			return &publicationPreparedRead{statement: statement, ctx: ctx, check: check}, nil
+		}, query: func(q string, args ...any) (Rows, error) {
+			if e := check(); e != nil {
+				return nil, e
 			}
 			return conn.QueryContext(ctx, q, bind(args)...)
 		}}

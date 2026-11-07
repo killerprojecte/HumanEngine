@@ -329,8 +329,43 @@ code-point digests. Assertion tests include 69 history transitions, 31 repositor
 and coordinator transitions, raw JSON roots, and four actual dual-database fault
 windows. Full row snapshots are compared by SHA-256, not truncated or sampled.
 
-The storage boundary is not the complete memory service. Provenance authorization,
-derived commitment/knowledge/semantic privacy, scoped prepared support-read reuse,
-offline reconstruction, and same-session runtime recall remain separate work.
+The storage boundary is not the complete memory service. Derived
+commitment/knowledge/semantic privacy, offline reconstruction, and same-session
+runtime recall remain separate work. Native read authority and support-read reuse
+are described below.
 Production REST writes, provider/plugin/adapter startup and the existing deployment
 entrypoint remain unchanged.
+
+## Scoped support reads and assertion authority
+
+Synchronous support refreshes lazily reuse the source repository's two prepared
+SQL operations. They retain neither decoded rows nor permission answers. Every
+read sees current transaction contents and produces a fresh JSON value; Get
+keeps its source readiness check. Nested scopes own independent statements and
+restore the outer scope. SQL errors evict handles without closing an executing
+reentrant read prematurely. Owned session statements remain subject to the same
+authorizer, savepoint suspension, cancellation and native rollback checks as
+ordinary session queries. Handles expire with the callback that owns them.
+This is not a concurrent shared cache or a claim of native SQLite UDF reentry
+parity.
+
+The assertion authority uses the existing Reader connection for records, history,
+source events, scenes and recall evidence. It never acquires a second authority
+reservation or silently substitutes an independently opened store. Privacy
+provenance stays separate from current time/version applicability. Historical
+references retain exact deletion epochs and retained revision scope; current
+references additionally require current versions and source-event eligibility.
+Positive-only traversal memoization preserves independent OR alternatives after
+cycles or unavailable paths. Existing source traversal budgets are preserved,
+not new admission limits.
+
+Observation selection uses the deployment's explicit date parser and native
+locale comparator. Required policy providers do not start Node or fall back to
+Go lexical comparison. Constructor scope checks do not introduce an eager
+business-readiness scan. Simulated, scene/person and shared-public exposure
+boundaries remain distinct.
+
+Read authority does not perform derived commitment, knowledge or semantic
+privacy writes, and does not complete runtime recall. Those services still need
+one bound root transaction, real capability composition and end-to-end recovery
+validation. Production REST and startup remain unchanged.

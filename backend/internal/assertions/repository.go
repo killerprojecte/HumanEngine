@@ -30,7 +30,7 @@ func (r *Reader) Get(id string) (value any, found bool, err error) {
 		return
 	}
 	var raw string
-	found, err = r.one("SELECT value FROM memories WHERE id=?", []any{id}, &raw)
+	found, err = r.supportOne(supportRecordSQL, id, &raw)
 	if err != nil || !found {
 		return
 	}
@@ -39,7 +39,7 @@ func (r *Reader) Get(id string) (value any, found bool, err error) {
 }
 func (r *Reader) Supports(id string) (any, error) {
 	var raw string
-	found, e := r.one("SELECT value FROM memory_supports WHERE memory_id=?", []any{id}, &raw)
+	found, e := r.supportOne(supportProofSQL, id, &raw)
 	if e != nil {
 		return nil, e
 	}

@@ -35,14 +35,33 @@ preserved; this package adds no admission or resource cap. History purge erases
 bodies and reverse evidence indexes while retaining monotonic version/epoch
 state. Terminal erase prohibits reuse of that assertion ID.
 
+`Reader.WithSupportReadStatements` supplies an expiring reader for one
+synchronous refresh. Get and Supports lazily reuse their two compiled statements
+on the same bound connection. Each call still queries fresh rows and decodes new
+JSON values, retaining raw root values and source Get-only readiness checks.
+Nested refreshes own separate statements and leave the outer handles intact.
+SQL errors evict both handles, but JSON parse/readiness failures do not. Reentrant
+execution takes a new ordinary prepare path. Active handles evicted by reentry
+are finalized only when their execution finishes. Scopes close their statements
+on normal, error or panic exit without closing the publication connection.
+No row, proof, privacy decision or source-authority result is cached here.
+
+The actual-source oracle is generated with
+`node --import tsx backend/tests/generate-support-read-fixtures.mjs`; `--check`
+checks both the output and the recorded source digest. It compares real prepare
+attempt counts, readiness calls, fresh values, nested rollback and SQL/schema
+failures, rather than wall-clock timings. Native integration tests also exercise
+bound write/publication scopes, ancestor suspension, external authority advances,
+native rollback and expired capabilities. The instrumentation-based reentry case
+runs before SQLite stepping; it does not claim Go SQLite UDF reentry parity.
+
 Fingerprint text uses the pinned native `jsstring` implementation, including
 Unicode 17 case data, final sigma and lone UTF-16 surrogates. Hash material uses
 lossless JSON and source-defined object/array ordering. The coordinator's date
 parser is an explicit source timezone dependency; UTC is the standalone default,
 not automatic deployment timezone discovery.
 
-Remaining work includes the source's scoped prepared support-read optimization,
-provenance invalidation, projection/commitment/knowledge/semantic privacy stores,
+Remaining work includes provenance invalidation, projection/commitment/knowledge/semantic privacy stores,
 complete model-facing authority, offline reconstruction, and same-session runtime
 recall composition. The current runtime read-only recall extension capability
 cannot perform these missing writes. No API or production startup is enabled by

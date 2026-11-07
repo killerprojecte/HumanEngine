@@ -1,0 +1,1576 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/memory/storage/assertion-repository.ts": "fe51160c09c4bc3eb9d308bc1cb167551d6b251dd764042adad1b8caa4dfc54b"
+  },
+  "traces": [
+    {
+      "name": "fresh reads and independent nested scopes",
+      "operations": [
+        [
+          "get",
+          "a"
+        ],
+        [
+          "get",
+          "a"
+        ],
+        [
+          "supports",
+          "a"
+        ],
+        [
+          "scope",
+          [
+            [
+              "mutateRecord"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "mutateProof"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "record",
+              "{\"id\":\"a\",\"content\":\"second\"}"
+            ],
+            [
+              "proof",
+              "[{\"parents\":[\"second\"],\"sources\":[]}]"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "scope",
+              [
+                [
+                  "get",
+                  "a"
+                ],
+                [
+                  "supports",
+                  "a"
+                ],
+                [
+                  "get",
+                  "a"
+                ]
+              ]
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ]
+          ]
+        ],
+        [
+          "get",
+          "a"
+        ],
+        [
+          "scope",
+          [
+            [
+              "get",
+              "a"
+            ],
+            [
+              "get",
+              "missing"
+            ],
+            [
+              "supports",
+              "missing"
+            ]
+          ]
+        ]
+      ],
+      "steps": [
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 0
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 1
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"mutateRecord\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 1
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 1
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"mutateProof\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"record\",\"{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"second\\\"}\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"proof\",\"[{\\\"parents\\\":[\\\"second\\\"],\\\"sources\\\":[]}]\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"second\"}}",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"second\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"second\"}}",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 2
+          },
+          "checks": 6
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"second\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 3
+          },
+          "checks": 6
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"second\"}}",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 3
+          },
+          "checks": 7
+        },
+        {
+          "op": "[\"scope\",[[\"get\",\"a\"],[\"supports\",\"a\"],[\"get\",\"a\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 3
+          },
+          "checks": 7
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"second\"}}",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 3
+          },
+          "checks": 8
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"second\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 3
+          },
+          "checks": 8
+        },
+        {
+          "op": "[\"scope\",[[\"mutateRecord\"],[\"get\",\"a\"],[\"mutateProof\"],[\"supports\",\"a\"],[\"record\",\"{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"second\\\"}\"],[\"proof\",\"[{\\\"parents\\\":[\\\"second\\\"],\\\"sources\\\":[]}]\"],[\"get\",\"a\"],[\"supports\",\"a\"],[\"scope\",[[\"get\",\"a\"],[\"supports\",\"a\"],[\"get\",\"a\"]]],[\"get\",\"a\"],[\"supports\",\"a\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 3
+          },
+          "checks": 8
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"second\"}}",
+          "error": "",
+          "counts": {
+            "record": 5,
+            "supports": 3
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"second\"}}",
+          "error": "",
+          "counts": {
+            "record": 6,
+            "supports": 3
+          },
+          "checks": 10
+        },
+        {
+          "op": "[\"get\",\"missing\"]",
+          "result": "{\"found\":false}",
+          "error": "",
+          "counts": {
+            "record": 6,
+            "supports": 3
+          },
+          "checks": 11
+        },
+        {
+          "op": "[\"supports\",\"missing\"]",
+          "result": "[]",
+          "error": "",
+          "counts": {
+            "record": 6,
+            "supports": 4
+          },
+          "checks": 11
+        },
+        {
+          "op": "[\"scope\",[[\"get\",\"a\"],[\"get\",\"missing\"],[\"supports\",\"missing\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 6,
+            "supports": 4
+          },
+          "checks": 11
+        }
+      ]
+    },
+    {
+      "name": "caught rollback and exceptional cleanup",
+      "operations": [
+        [
+          "scope",
+          [
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "rollback",
+              [
+                [
+                  "record",
+                  "{\"id\":\"a\",\"content\":\"rolled back\"}"
+                ],
+                [
+                  "proof",
+                  "[\"rolled back\"]"
+                ],
+                [
+                  "get",
+                  "a"
+                ],
+                [
+                  "supports",
+                  "a"
+                ]
+              ]
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "panic",
+              [
+                [
+                  "get",
+                  "a"
+                ],
+                [
+                  "supports",
+                  "a"
+                ]
+              ]
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ]
+          ]
+        ],
+        [
+          "scope",
+          [
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ]
+          ]
+        ]
+      ],
+      "steps": [
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"record\",\"{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"rolled back\\\"}\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"proof\",\"[\\\"rolled back\\\"]\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"rolled back\"}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 1
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[\"rolled back\"]",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"rollback\",[[\"record\",\"{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"rolled back\\\"}\"],[\"proof\",\"[\\\"rolled back\\\"]\"],[\"get\",\"a\"],[\"supports\",\"a\"]]]",
+          "result": "null",
+          "error": "synthetic-rollback",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 3
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"panic\",[[\"get\",\"a\"],[\"supports\",\"a\"]]]",
+          "result": "null",
+          "error": "synthetic-exit",
+          "counts": {
+            "record": 3,
+            "supports": 3
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 3
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 3
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"scope\",[[\"get\",\"a\"],[\"supports\",\"a\"],[\"rollback\",[[\"record\",\"{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"rolled back\\\"}\"],[\"proof\",\"[\\\"rolled back\\\"]\"],[\"get\",\"a\"],[\"supports\",\"a\"]]],[\"get\",\"a\"],[\"supports\",\"a\"],[\"panic\",[[\"get\",\"a\"],[\"supports\",\"a\"]]],[\"get\",\"a\"],[\"supports\",\"a\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 3
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 3
+          },
+          "checks": 6
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 4
+          },
+          "checks": 6
+        },
+        {
+          "op": "[\"scope\",[[\"get\",\"a\"],[\"supports\",\"a\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 4,
+            "supports": 4
+          },
+          "checks": 6
+        }
+      ]
+    },
+    {
+      "name": "lazy preparation SQL eviction and schema changes",
+      "operations": [
+        [
+          "sql",
+          "DROP TABLE memories"
+        ],
+        [
+          "scope",
+          []
+        ],
+        [
+          "scope",
+          [
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "sql",
+              "CREATE TABLE memories(id TEXT PRIMARY KEY,value TEXT)"
+            ],
+            [
+              "sql",
+              "INSERT INTO memories VALUES('a','{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}')"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "sql",
+              "ALTER TABLE memories ADD COLUMN extra TEXT"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "sql",
+              "DROP TABLE memories"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "sql",
+              "CREATE TABLE memories(id TEXT PRIMARY KEY,extra TEXT,value TEXT)"
+            ],
+            [
+              "sql",
+              "INSERT INTO memories VALUES('a','new','{\"content\":\"new schema\"}')"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ]
+          ]
+        ]
+      ],
+      "steps": [
+        {
+          "op": "[\"sql\",\"DROP TABLE memories\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 0,
+            "supports": 0
+          },
+          "checks": 0
+        },
+        {
+          "op": "[\"scope\",[]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 0,
+            "supports": 0
+          },
+          "checks": 0
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 0,
+            "supports": 1
+          },
+          "checks": 0
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "null",
+          "error": "missing-table",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"sql\",\"CREATE TABLE memories(id TEXT PRIMARY KEY,value TEXT)\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"sql\",\"INSERT INTO memories VALUES('a','{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"first\\\",\\\"nested\\\":{\\\"value\\\":\\\"fresh\\\"}}')\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 1
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"sql\",\"ALTER TABLE memories ADD COLUMN extra TEXT\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"sql\",\"DROP TABLE memories\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "null",
+          "error": "missing-table",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"sql\",\"CREATE TABLE memories(id TEXT PRIMARY KEY,extra TEXT,value TEXT)\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"sql\",\"INSERT INTO memories VALUES('a','new','{\\\"content\\\":\\\"new schema\\\"}')\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 2
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"content\":\"new schema\"}}",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 3
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"scope\",[[\"supports\",\"a\"],[\"get\",\"a\"],[\"sql\",\"CREATE TABLE memories(id TEXT PRIMARY KEY,value TEXT)\"],[\"sql\",\"INSERT INTO memories VALUES('a','{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"first\\\",\\\"nested\\\":{\\\"value\\\":\\\"fresh\\\"}}')\"],[\"get\",\"a\"],[\"supports\",\"a\"],[\"sql\",\"ALTER TABLE memories ADD COLUMN extra TEXT\"],[\"get\",\"a\"],[\"sql\",\"DROP TABLE memories\"],[\"get\",\"a\"],[\"sql\",\"CREATE TABLE memories(id TEXT PRIMARY KEY,extra TEXT,value TEXT)\"],[\"sql\",\"INSERT INTO memories VALUES('a','new','{\\\"content\\\":\\\"new schema\\\"}')\"],[\"get\",\"a\"],[\"supports\",\"a\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 3
+          },
+          "checks": 5
+        }
+      ]
+    },
+    {
+      "name": "readiness and raw JSON roots never cached",
+      "operations": [
+        [
+          "scope",
+          [
+            [
+              "record",
+              "null"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "false"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "0"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "\"\""
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "[1,\"raw\"]"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "\"string\""
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "{\"content\":\"first\",\"content\":\"last\"}"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "{broken"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "record",
+              "{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "proof",
+              "null"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "proof",
+              "false"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "proof",
+              "0"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "proof",
+              "\"\""
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "proof",
+              "{\"raw\":true}"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "proof",
+              "[1]"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "proof",
+              "{broken"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "proof",
+              "[{\"parents\":[\"first\"],\"sources\":[]}]"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "block",
+              true
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "block",
+              false
+            ],
+            [
+              "get",
+              "a"
+            ]
+          ]
+        ]
+      ],
+      "steps": [
+        {
+          "op": "[\"record\",\"null\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 0,
+            "supports": 0
+          },
+          "checks": 0
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":null}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"record\",\"false\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 1
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":false}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"record\",\"0\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":0}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"record\",\"\\\"\\\"\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":\"\"}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"record\",\"[1,\\\"raw\\\"]\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":[1,\"raw\"]}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"record\",\"\\\"string\\\"\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":\"string\"}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 6
+        },
+        {
+          "op": "[\"record\",\"{\\\"content\\\":\\\"first\\\",\\\"content\\\":\\\"last\\\"}\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 6
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"content\":\"last\"}}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 7
+        },
+        {
+          "op": "[\"record\",\"{broken\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 7
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "null",
+          "error": "invalid-json",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 8
+        },
+        {
+          "op": "[\"record\",\"{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"first\\\",\\\"nested\\\":{\\\"value\\\":\\\"fresh\\\"}}\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 8
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"null\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 0
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"false\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "false",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"0\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "0",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"\\\"\\\"\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "\"\"",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"{\\\"raw\\\":true}\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "{\"raw\":true}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"[1]\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[1]",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"{broken\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "null",
+          "error": "invalid-json",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"proof\",\"[{\\\"parents\\\":[\\\"first\\\"],\\\"sources\\\":[]}]\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"block\",true]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 9
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "null",
+          "error": "synthetic-recovery-block",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 10
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 10
+        },
+        {
+          "op": "[\"block\",false]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 10
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 11
+        },
+        {
+          "op": "[\"scope\",[[\"record\",\"null\"],[\"get\",\"a\"],[\"record\",\"false\"],[\"get\",\"a\"],[\"record\",\"0\"],[\"get\",\"a\"],[\"record\",\"\\\"\\\"\"],[\"get\",\"a\"],[\"record\",\"[1,\\\"raw\\\"]\"],[\"get\",\"a\"],[\"record\",\"\\\"string\\\"\"],[\"get\",\"a\"],[\"record\",\"{\\\"content\\\":\\\"first\\\",\\\"content\\\":\\\"last\\\"}\"],[\"get\",\"a\"],[\"record\",\"{broken\"],[\"get\",\"a\"],[\"record\",\"{\\\"id\\\":\\\"a\\\",\\\"content\\\":\\\"first\\\",\\\"nested\\\":{\\\"value\\\":\\\"fresh\\\"}}\"],[\"get\",\"a\"],[\"proof\",\"null\"],[\"supports\",\"a\"],[\"proof\",\"false\"],[\"supports\",\"a\"],[\"proof\",\"0\"],[\"supports\",\"a\"],[\"proof\",\"\\\"\\\"\"],[\"supports\",\"a\"],[\"proof\",\"{\\\"raw\\\":true}\"],[\"supports\",\"a\"],[\"proof\",\"[1]\"],[\"supports\",\"a\"],[\"proof\",\"{broken\"],[\"supports\",\"a\"],[\"proof\",\"[{\\\"parents\\\":[\\\"first\\\"],\\\"sources\\\":[]}]\"],[\"supports\",\"a\"],[\"block\",true],[\"get\",\"a\"],[\"supports\",\"a\"],[\"block\",false],[\"get\",\"a\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 1,
+            "supports": 1
+          },
+          "checks": 11
+        }
+      ]
+    },
+    {
+      "name": "reentry uses ordinary preparation and retires failed handles after execution",
+      "operations": [
+        [
+          "scope",
+          [
+            [
+              "reenter",
+              "read"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "reentered"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "supports",
+              "a"
+            ],
+            [
+              "reenter",
+              "failure"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "get",
+              "a"
+            ],
+            [
+              "sql",
+              "CREATE TABLE memory_supports(memory_id TEXT PRIMARY KEY,value TEXT)"
+            ],
+            [
+              "supports",
+              "a"
+            ]
+          ]
+        ]
+      ],
+      "steps": [
+        {
+          "op": "[\"reenter\",\"read\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 0,
+            "supports": 0
+          },
+          "checks": 0
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 0
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"reentered\"]",
+          "result": "{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 0
+          },
+          "checks": 2
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 0
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[{\"parents\":[\"first\"],\"sources\":[]}]",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 1
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"reenter\",\"failure\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 1
+          },
+          "checks": 3
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 2,
+            "supports": 1
+          },
+          "checks": 4
+        },
+        {
+          "op": "[\"get\",\"a\"]",
+          "result": "{\"found\":true,\"value\":{\"id\":\"a\",\"content\":\"first\",\"nested\":{\"value\":\"fresh\"}}}",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 1
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"sql\",\"CREATE TABLE memory_supports(memory_id TEXT PRIMARY KEY,value TEXT)\"]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 1
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"supports\",\"a\"]",
+          "result": "[]",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 5
+        },
+        {
+          "op": "[\"scope\",[[\"reenter\",\"read\"],[\"get\",\"a\"],[\"reentered\"],[\"get\",\"a\"],[\"supports\",\"a\"],[\"reenter\",\"failure\"],[\"get\",\"a\"],[\"get\",\"a\"],[\"sql\",\"CREATE TABLE memory_supports(memory_id TEXT PRIMARY KEY,value TEXT)\"],[\"supports\",\"a\"]]]",
+          "result": "null",
+          "error": "",
+          "counts": {
+            "record": 3,
+            "supports": 2
+          },
+          "checks": 5
+        }
+      ]
+    }
+  ]
+}

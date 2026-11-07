@@ -5,10 +5,11 @@ import "database/sql"
 // SessionRows expires with its session. Row-local errors do not poison unrelated
 // statements, but native rollback is checked before every subsequent SQL step.
 type SessionRows struct {
-	owner  *WriteSession
-	rows   *sql.Rows
-	err    error
-	closed bool
+	owner     *WriteSession
+	rows      *sql.Rows
+	err       error
+	closed    bool
+	statement *SessionStatement
 }
 
 func (r *SessionRows) Next() bool {
@@ -17,7 +18,7 @@ func (r *SessionRows) Next() bool {
 	if r.closed {
 		return false
 	}
-	if e := r.owner.check(); e != nil {
+	if e := r.check(); e != nil {
 		r.err = e
 		_ = r.close()
 		return false
@@ -34,7 +35,7 @@ func (r *SessionRows) Next() bool {
 func (r *SessionRows) Scan(dest ...any) error {
 	r.owner.mu.Lock()
 	defer r.owner.mu.Unlock()
-	if e := r.owner.check(); e != nil {
+	if e := r.check(); e != nil {
 		return e
 	}
 	return r.rows.Scan(dest...)
@@ -42,7 +43,7 @@ func (r *SessionRows) Scan(dest ...any) error {
 func (r *SessionRows) Columns() ([]string, error) {
 	r.owner.mu.Lock()
 	defer r.owner.mu.Unlock()
-	if e := r.owner.check(); e != nil {
+	if e := r.check(); e != nil {
 		return nil, e
 	}
 	return r.rows.Columns()
@@ -62,9 +63,19 @@ func (r *SessionRows) close() error {
 	}
 	r.closed = true
 	delete(r.owner.rows, r)
+	if r.statement != nil {
+		delete(r.statement.rows, r)
+	}
 	e := r.rows.Close()
 	if r.err == nil {
 		r.err = e
 	}
 	return e
+}
+
+func (r *SessionRows) check() error {
+	if r.statement != nil && r.statement.closed {
+		return sql.ErrTxDone
+	}
+	return r.owner.check()
 }

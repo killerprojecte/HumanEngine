@@ -24,7 +24,8 @@ existing TypeScript production startup has not been replaced.
 | `httpapi`                            | Real authenticated GET/HEAD settings/models/scenes publication                                                                                    | Other routes, write composition and production startup                                                      |
 | `externalcost`                       | Canonical receipt storage and guarded maintenance-backed per-receipt offline replay                                                               | Global reconciliation orchestration and runtime accounting                                                  |
 | `topicroute`                         | Reassignment, ordered scene metadata and admission/cue policy with exact native ICU comparator                                                    | Production provider composition and durable runtime effects                                                 |
-| `assertions`                         | Native current records/proofs, versioned history, nested revision coordination and live eligibility intents                                       | Provenance authorization, prepared support-read scopes, derived privacy, runtime recall and API composition |
+| `assertions`                         | Native records/proofs, versioned history, revision coordination, eligibility intents and scoped prepared support reads                                       | Derived privacy, runtime recall, offline reconstruction and API composition |
+| `assertionauthority` | Native provenance, current/history parent bindings, source-event qualification and same-scope readers | Derived privacy lifecycle, learning, complete MemoryService and runtime composition |
 | `jsstring`                           | Exact Node 24.22.1 / Unicode 17 fingerprint whitespace and lowercase semantics, including lone surrogates                                         | Other JavaScript string APIs not used by this boundary                                                      |
 | `sourceevents`                       | Native SQLite revisions and real runtime enrollment, captured-source/display/prompt reads, ingress identity writes and scoped recall transactions | Derived privacy domains, offline witness recovery and production composition                                |
 | `ingressrouting` / `profileidentity` | Missing-scene discovery and exact OneBot profile persistence before admission                                                                     | Live adapter startup and transport composition                                                              |
@@ -82,6 +83,7 @@ The tests prove specific work/ownership properties, not universal performance:
   receive the shared-coordinator optimization automatically. The composed candidate
   service has actual TCP tests showing settings/scene commits without rescanning,
   ACK-gap publication rejection, cancellation and shutdown ownership.
+- Support refresh scopes reuse only two compiled SQL statements, never rows or authority answers. Reads remain fresh and readiness checks retain source order. Scopes are synchronous; native SQLite UDF reentry parity is not claimed.
 - Assertion coordinator flush reads the latest valid retained revision by descending
   index traversal instead of decoding all historical bodies. Malformed trailing
   rows are skipped with the same result as the source full-history projection.

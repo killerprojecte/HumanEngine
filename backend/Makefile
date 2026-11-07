@@ -14,6 +14,8 @@ build:
 	go build -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-assertion-authority-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-support-read-fixtures.mjs --check
 	cd .. && node backend/tests/generate-jsstring-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-assertion-history-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-assertion-coordinator-fixtures.mjs --check

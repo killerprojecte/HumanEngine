@@ -65,3 +65,19 @@ outer failure rolls back all new schema. Existing IDs, proof payloads and other
 record fields are retained. Neither schema method replays history or sources.
 These are explicit live writer capabilities, not autocommit initializers or
 reader constructors, and do not claim complete memory-service parity.
+
+## Scoped prepared queries
+
+`WriteSession.PrepareQuery` returns an opaque `SessionStatement`, never a raw
+`sql.Stmt` or connection. Preparation and each Query run under the same session
+mutex, context, native transaction checks and caller-SQL authorizer as ordinary
+Query. It does not acquire authority or change authorizer privileges. As with
+Query, DML with RETURNING remains allowed when the ordinary authorizer allows it.
+The handle is not an authorization cache or a read-only SQL sandbox.
+
+Statements and their rows belong to the creating session. Ancestor statements
+are suspended inside a child savepoint and resume after caught child rollback.
+Close finalizes only that statement and its open rows; owner exit closes all
+remaining rows and statements even after panic or cancellation. Native rollback
+revokes the root and all prepared capabilities, including when the error is
+caught. No escaped handle can run SQL after its owner's callback ends.

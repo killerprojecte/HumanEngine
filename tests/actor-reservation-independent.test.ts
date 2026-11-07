@@ -4,7 +4,8 @@ import { mkdtempSync, rmSync, chmodSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { Worker } from 'node:worker_threads'
-import { spawn, type ChildProcess } from 'node:child_process'
+import { spawn, spawnSync, type ChildProcess } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { IncomingMessage, ServerResponse } from 'node:http'
 import { Socket } from 'node:net'
 import Database from 'better-sqlite3'
@@ -55,25 +56,21 @@ async function childCall(child: ChildProcess, message: string) {
   return result
 }
 
-test('native readonly fallback fails the reservation proof before any lease can exist', async () => {
-  await fixture(async (store, file) => {
-    const closed: boolean[] = []
-    const original = Database.prototype.close
-    Database.prototype.close = function () {
-      closed.push(this.readonly)
-      return original.call(this)
-    }
-    chmodSync(file, 0o444)
-    try {
-      assert.throws(() => new ConfigReadConnection(store.db.name), { code: 'SQLITE_READONLY' })
-      assert.equal(closed.length, 3, 'failed native proof closes reservation and both readers')
-      assert.equal(closed.filter(Boolean).length, 2)
-      assert.equal(closed.filter((readonly) => !readonly).length, 1)
-    } finally {
-      Database.prototype.close = original
-      chmodSync(file, 0o600)
-    }
-  })
+test('native readonly fallback fails the reservation proof before any lease can exist', () => {
+  const root = process.getuid?.() === 0
+  const result = spawnSync(
+    process.execPath,
+    [fileURLToPath(new URL('./fixtures/readonly-reservation-proof.mjs', import.meta.url))],
+    {
+      encoding: 'utf8',
+      // Use an unprivileged identity only in root-run build/test environments.
+      // The subprocess owns its own temporary fixture; production files are untouched.
+      ...(root ? { uid: 65534, gid: 65534 } : {}),
+    },
+  )
+  assert.ifError(result.error)
+  assert.equal(result.status, 0, result.stdout + result.stderr)
+  assert.match(result.stdout, /"nativeReadonlyProof":true/)
 })
 
 test('constructor proof rejects a view, virtual table or replaced identity schema before its no-row DML', async () => {

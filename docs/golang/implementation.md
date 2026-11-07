@@ -399,3 +399,33 @@ remain required owner ports, with no production no-op defaults. Recording test
 ports establish their ordering but do not implement those domains. Consequently
 this slice is not complete assertion recall/delete, full engine recall or a new
 production startup path.
+
+## Retained commitment privacy
+
+The commitment candidate owns the real base storage and temporal tables. Base
+initialization is an explicit owned transaction; timeline tables are created only
+by replacement. A caught replacement error retains the same earlier statement
+prefix as the TypeScript implementation. Ordinary reads issue the source queries
+without an added per-record schema census or a cached authorization answer.
+
+Privacy pruning preserves surviving original OR evidence and inherited AND
+groups. Requalification requires the captured exact reference transition, an
+unchanged backing fingerprint, and original deep-equal proof alternatives. It
+cannot resurrect terms using a newly discovered proof or an arbitrary latest
+version. Retained historical declarations are redacted rather than recomputed.
+A live privacy mutation records the typed durable intent before local writes;
+temporal changes require reader 10 even when deletion uses a version-1 event.
+
+Refresh checkpoints the real assertion revision transaction and borrows its
+active child for all commitment writes and authority reads. Required AfterWrite
+owners receive the same bound store. The inner reference-enumeration helper is
+not the source's stronger query-only prepared capture. Those root capture and
+working-set owners remain composition work, as do interactive commitment
+admission, global offline reconciliation and production startup. A durable intent
+or its ACK is not evidence that the complete robot operation finished.
+
+The actual-source oracle uses TypeScript admission only to construct synthetic
+preimages. Native privacy operations then run against real SQLite main and
+authority databases and compare table contents, history, hashes, intent order and
+reader metadata. Recording assertion/workspace ports isolate this domain; they
+are not a production fallback to the TypeScript backend.

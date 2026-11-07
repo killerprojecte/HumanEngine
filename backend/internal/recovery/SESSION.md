@@ -12,7 +12,7 @@ extra final authority-head check: an external append can leave a committed main
 transaction behind authority, which subsequent publication rejects immediately.
 This is the measured TypeScript behavior, not automatic reconciliation.
 
-Only fixed source or assertion schema/index initialization can temporarily perform DDL.
+Only fixed domain schema/index initialization can temporarily perform DDL.
 Caller SQL cannot change schema, transactions, recovery gate, or attached files.
 Callbacks run without the authority/session mutex and may synchronously invoke
 other operations on the same bound store. No network work belongs here.
@@ -81,3 +81,27 @@ Close finalizes only that statement and its open rows; owner exit closes all
 remaining rows and statements even after panic or cancellation. Native rollback
 revokes the root and all prepared capabilities, including when the error is
 caught. No escaped handle can run SQL after its owner's callback ends.
+
+## Projection FTS5 support
+
+Projection schema methods execute only the fixed outbox, real FTS5 virtual table
+and person-state schema. No arbitrary callback receives schema privileges, and
+construction never backfills or drains jobs. Backend SQLite requires the
+`sqlite_fts5` build profile.
+
+FTS5 internally prepares `PRAGMA main.data_version` during INSERT, MATCH and
+other shadow-table work. Both write and read-only preparation authorizers permit
+only this exact main read-only pragma with an empty argument. Other pragmas,
+nonempty arguments and temp/attached database access remain denied. The driver
+maps a missing argument and an empty-string argument to the same Go string;
+SQLite marks data_version intrinsically read-only, so either form only reads
+and cannot modify a cookie or configuration. This counter is not an authority
+cache or business-readiness proof. Savepoint-control mode uses the same exact
+read-only exception for native segment flushes. During its fixed owned control
+statements, with the shared root mutex held and no caller callback,
+SQLite may flush pending FTS segments or merge them. That existing mode permits
+only SELECT plus READ/INSERT/DELETE on main.memory_fts_data and main.memory_fts_idx
+and read-only config key/value access for those native callbacks. UPDATE,
+config writes, content/docsize tables, functions, schema,
+other pragmas, attached/temp databases, gate writes, and caller transaction control remain
+excluded. The ordinary caller authorizer is restored before any callback runs.

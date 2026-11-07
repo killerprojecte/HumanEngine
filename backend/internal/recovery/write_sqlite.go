@@ -110,7 +110,10 @@ func protectMain(conn *sql.Conn, enabled, writable bool) error {
 			native.RegisterAuthorizer(nil)
 			return nil
 		}
-		native.RegisterAuthorizer(func(op int, table, _ string, database string) int {
+		native.RegisterAuthorizer(func(op int, table, argument string, database string) int {
+			if mainDataVersionRead(op, table, argument, database) {
+				return sqlite3.SQLITE_OK
+			}
 			switch op {
 			case sqlite3.SQLITE_SELECT, sqlite3.SQLITE_FUNCTION, sqliteRecursive:
 				return sqlite3.SQLITE_OK
@@ -123,7 +126,7 @@ func protectMain(conn *sql.Conn, enabled, writable bool) error {
 					return sqlite3.SQLITE_OK
 				}
 			}
-			// No caller COMMIT/ROLLBACK, SAVEPOINT, ATTACH, PRAGMA, schema mutation,
+			// No caller COMMIT/ROLLBACK, SAVEPOINT, ATTACH, other PRAGMA, schema mutation,
 			// or gate forgery. This also applies to statements executed by triggers.
 			return sqlite3.SQLITE_DENY
 		})

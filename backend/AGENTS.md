@@ -11,3 +11,5 @@ This branch implements the user-requested Go backend migration; it supersedes th
 - Run gofmt, Go race tests/vet, actual WASM execution, source-free bundle tests, Node/Go differential tests and affected frontend checks. Keep generated REST types generated from source schemas.
 - Use only synthetic fixtures. Never commit live databases, keys, chat content or credentials. If a publication step is blocked, leave it blocked rather than bypassing it.
 - Progress commits belong only on feat/refactor-golang. An implementation checkpoint is not a declaration of full parity or production readiness.
+
+- Backend SQLite builds require the `sqlite_fts5` profile. Use Makefile targets or explicitly pass that tag; bundle and native ICU builds combine it with their own tags. An untagged backend must reject database startup clearly rather than silently omit projections. WASI plugin builds remain separate.

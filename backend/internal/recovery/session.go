@@ -136,7 +136,7 @@ func (s *WriteSession) finishLocked() error {
 
 // mode 0 is caller DML, 1 permits the fixed coordinator gate write. Mode 2
 // executes only fixed schema statements, never caller SQL or user callbacks.
-// Mode 3 permits only the owned savepoint control statements.
+// Mode 3 permits owned savepoint control and SQLite's fixed FTS segment IO.
 func (s *WriteSession) protect(mode int) error {
 	if mode == 2 {
 		return protectMutation(s.conn, false)
@@ -146,12 +146,15 @@ func (s *WriteSession) protect(mode int) error {
 		if !ok {
 			return errors.New("recovery_sqlite_driver_required")
 		}
-		native.RegisterAuthorizer(func(op int, table, _ string, database string) int {
+		native.RegisterAuthorizer(func(op int, table, argument string, database string) int {
 			if mode == 3 {
-				if op == sqlite3.SQLITE_SAVEPOINT {
+				if op == sqlite3.SQLITE_SAVEPOINT || projectionSavepointIO(op, table, argument, database) {
 					return sqlite3.SQLITE_OK
 				}
 				return sqlite3.SQLITE_DENY
+			}
+			if mainDataVersionRead(op, table, argument, database) {
+				return sqlite3.SQLITE_OK
 			}
 			switch op {
 			case sqlite3.SQLITE_SELECT, sqlite3.SQLITE_FUNCTION, sqliteRecursive:

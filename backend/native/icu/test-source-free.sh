@@ -11,7 +11,7 @@ root=$(CDPATH='' cd -- "$(dirname "$0")/../.." && pwd)
 . "$icu/env.sh"
 cd "$root"
 for package in topiccollation jsdate nodeicu intltime; do
-  go test -c -tags humanengine_icu -o "$out/$package.test" "./internal/$package"
+  go test -c -tags sqlite_fts5,humanengine_icu -o "$out/$package.test" "./internal/$package"
 done
 mkdir "$out/testdata" "$out/licenses"
 cp internal/topiccollation/testdata/node.json "$out/testdata/node.json"

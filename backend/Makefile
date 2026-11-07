@@ -1,4 +1,4 @@
-.PHONY: test build differential wasm bundle test-bundle native-icu-fetch native-icu-builder-test native-icu-build native-icu-test native-icu-source-free
+.PHONY: test build differential wasm bundle test-bundle test-sqlite-profile test-projection-source-free native-icu-fetch native-icu-builder-test native-icu-build native-icu-test native-icu-source-free
 
 # Native ICU is opt-in: default build/startup and the TypeScript image are unchanged.
 ICU_WORK_DIR ?= $(CURDIR)/.native-build/icu
@@ -7,13 +7,14 @@ ICU_PROOF_ROOT ?= $(ICU_WORK_DIR)/source-free
 PYTHON ?= python3
 
 test:
-	go test -race ./...
-	go vet ./...
+	go test -race -tags sqlite_fts5 ./...
+	go vet -tags sqlite_fts5 ./...
 
 build:
-	go build -o bin/humanengine ./cmd/humanengine
+	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-projection-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-relation-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-commitment-offline-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-commitment-privacy-fixtures.mjs --check
@@ -69,11 +70,11 @@ wasm:
 	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o internal/plugins/builtins/snowluma.wasm ./plugins/snowluma-wasm
 
 bundle: wasm
-	go build -trimpath -tags bundled_wasm -o bin/humanengine ./cmd/humanengine
+	go build -trimpath -tags sqlite_fts5,bundled_wasm -o bin/humanengine ./cmd/humanengine
 	cd .. && node backend/tests/bundled-source-free.mjs backend/bin/humanengine
 
 test-bundle: wasm
-	go test -tags bundled_wasm ./internal/plugins -run TestDistributedArtifactsLoadWithoutSources
+	go test -tags sqlite_fts5,bundled_wasm ./internal/plugins -run TestDistributedArtifactsLoadWithoutSources
 
 # Fetch and verify only when the configured archive is absent. The builder also
 # verifies an existing archive; a mismatched artifact never silently updates.
@@ -91,11 +92,19 @@ native-icu-build: native-icu-builder-test $(ICU_ARCHIVE)
 	$(PYTHON) native/icu/build.py --archive "$(ICU_ARCHIVE)" --work-dir "$(ICU_WORK_DIR)"
 
 native-icu-test: native-icu-build
-	. "$(ICU_WORK_DIR)/env.sh" && go test -race -tags humanengine_icu ./...
-	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags humanengine_icu ./...
+	. "$(ICU_WORK_DIR)/env.sh" && go test -race -tags sqlite_fts5,humanengine_icu ./...
+	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags sqlite_fts5,humanengine_icu ./...
 
 native-icu-source-free: native-icu-build
 	mkdir -p "$(ICU_PROOF_ROOT)"
 	@out=$$(mktemp -d "$(ICU_PROOF_ROOT)/run.XXXXXXXX") && \
 	  native/icu/test-source-free.sh "$(ICU_WORK_DIR)" "$$out" && \
 	  echo "Native source-free proof: $$out"
+
+# The backend must not start with SQLite projections silently unavailable.
+test-sqlite-profile:
+	cd .. && node backend/tests/sqlite-profile.mjs
+
+# Real guarded SQLite FTS operations without Node, compiler or source directory.
+test-projection-source-free:
+	./tests/projection-source-free.sh

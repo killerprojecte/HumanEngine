@@ -2,6 +2,14 @@
 
 Status: implementation in progress on `feat/refactor-golang`. Not a production replacement yet.
 
+Backend SQLite builds now require the `sqlite_fts5` build profile. Makefile targets
+apply it consistently to tests, preview, bundles and native ICU combinations.
+For direct Go commands, include `-tags sqlite_fts5` (combine with `humanengine_icu`
+or `bundled_wasm` when needed). Untagged code can compile, but database startup and
+projection construction explicitly return `sqlite_fts5_required` before opening
+an installation. This is not a runtime feature toggle or a plain-table fallback.
+No-database builtin inspection and standalone WASI plugin builds stay separate.
+
 The current module and integration boundaries are tracked in [coverage.md](coverage.md). The checkpoint sections below record earlier implementation stages; they are not claims that every remaining production dependency has been completed.
 
 The baseline is GitHub master `24fe8a773d87f2f09996e259fca46524c2c02928`. The frozen OpenAPI and source hashes in `backend/compatibility` define the migration oracle. User-requested Go migration supersedes the contributor guide's TypeScript-runtime requirement on this branch. Nuxt remains the management UI.
@@ -498,3 +506,40 @@ closure, current-snapshot revalidation and a detached learning guard. REST
 projection still needs actual MemoryService content filtering and identity display
 provenance. This domain checkpoint does not wire the full robot runtime or complete
 those remaining APIs.
+
+## Deterministic lexical and person projections
+
+The projection owner implements the metadata outbox, real SQLite FTS5 lexical
+index and person projection state. Constructors create the same schemas while
+the feature is disabled, without enumerating assertions, backfilling or draining
+at startup. The feature flag gates enqueue and explicit drain; removal is always
+active and preserves lexical, person, then pending-job invalidation order.
+
+Revision adapters borrow the current assertion owner's exact write scope. Each
+completion rechecks its lease and assertion snapshot before and after the trusted
+synchronous database callback. Its child owns all SQL and current evidence reads.
+The eligibility adapter uses repository Get, non-internal use and Supported, not
+CurrentApplicable: future-valid records can be indexed, but an index is never
+read authorization. Failed nested publication rolls back main changes; native
+transaction loss revokes the root rather than allowing accidental autocommit.
+
+The backend's SQLite profile is now explicit: native service tests and builds use
+`sqlite_fts5`, combined with bundle or ICU tags where appropriate. Untagged service
+startup rejects database opening rather than silently replacing FTS with ordinary
+tables. WASI plugin builds remain independent. This changes only the experimental
+Go branch; the existing TypeScript container and production data are untouched.
+
+Source policies remain visible rather than becoming new protective caps: claims
+invalidate stale pending/leased rows before expiry processing, retries retain the
+existing three-attempt backoff, and pruning preserves current-snapshot terminal
+idempotency and all in-flight work. The source's obsolete terminal retention is
+not a total-table cap. Stale scans and historical authority validation still have
+history-dependent costs; this slice does not establish large-history HTTP latency.
+
+Synthetic source traces compare actual TypeScript returns, errors, clock/token and
+eligibility callback order, and persisted rows. Those callback fixtures do not
+stand in for the entire MemoryService. Separate native composition covers actual
+assertion eligibility and revision scope binding. Working-set, semantic and
+knowledge owners, full runtime composition, model delivery identity and remaining
+REST write paths are still unfinished; this checkpoint is not full migration or
+production-readiness acceptance.

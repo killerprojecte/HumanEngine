@@ -20,7 +20,7 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
-      - run: make -C backend test differential test-bundle bundle
+      - run: make -C backend test differential test-bundle bundle test-sqlite-profile test-projection-source-free
       - name: Build and verify exact native ICU provider
         env:
           ICU_WORK_DIR: ${{ runner.temp }}/humanengine-native-icu

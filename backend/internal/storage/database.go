@@ -11,6 +11,9 @@ import (
 )
 
 func OpenExisting(path string, writable bool) (*sql.DB, error) {
+	if err := RequireFTS5(); err != nil {
+		return nil, err
+	}
 	absolute, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err

@@ -50,9 +50,9 @@ Source and dependency hashes are retained with the fixture.
 
 From `backend`:
 
-    go test ./internal/recovery ./internal/externalcost
-    go test -race ./internal/recovery ./internal/externalcost -run 'TestRemainingTyped|TestExternalCostIntent|TestStorageReceiptRecovery'
-    go vet ./internal/recovery ./internal/externalcost
+    go test -tags sqlite_fts5 ./internal/recovery ./internal/externalcost
+    go test -race -tags sqlite_fts5 ./internal/recovery ./internal/externalcost -run 'TestRemainingTyped|TestExternalCostIntent|TestStorageReceiptRecovery'
+    go vet -tags sqlite_fts5 ./internal/recovery ./internal/externalcost
 
 Tests exercise real authority SQLite appends and reserved main-database
 `PrepareWrite` transactions. The test-only corpus decoder creates typed intents

@@ -49,8 +49,8 @@ python3 backend/native/icu/build.py \
   --work-dir /absolute/path/icu-build
 . /absolute/path/icu-build/env.sh
 cd backend
-go test -race -tags humanengine_icu ./internal/topiccollation ./internal/topicroute
-go vet -tags humanengine_icu ./internal/topiccollation ./internal/topicroute
+go test -race -tags sqlite_fts5,humanengine_icu ./internal/topiccollation ./internal/topicroute
+go vet -tags sqlite_fts5,humanengine_icu ./internal/topiccollation ./internal/topicroute
 ```
 
 `--prepare-only` verifies and safely extracts without compiling. The builder

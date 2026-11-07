@@ -68,7 +68,9 @@ func (s *WriteSession) WithSavepoint(fn func(*WriteSession) error) (err error) {
 }
 
 // Call only with the shared root mutex held and a fixed statement from above.
-// The authorizer allows only savepoint control during this synchronous step.
+// The authorizer permits savepoint control and the fixed FTS segment-table
+// operations that SQLite itself may invoke while flushing xSavepoint/xRelease.
+// No caller SQL or callback runs until the ordinary authorizer is restored.
 func (s *WriteSession) savepointControl(ctx context.Context, statement string) (err error) {
 	if err = s.protect(3); err != nil {
 		return err

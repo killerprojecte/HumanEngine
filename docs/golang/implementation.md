@@ -539,7 +539,37 @@ history-dependent costs; this slice does not establish large-history HTTP latenc
 Synthetic source traces compare actual TypeScript returns, errors, clock/token and
 eligibility callback order, and persisted rows. Those callback fixtures do not
 stand in for the entire MemoryService. Separate native composition covers actual
-assertion eligibility and revision scope binding. Working-set, semantic and
-knowledge owners, full runtime composition, model delivery identity and remaining
+assertion eligibility and revision scope binding. Higher-level workspace, semantic and
+knowledge composition, full runtime composition, model delivery identity and remaining
 REST write paths are still unfinished; this checkpoint is not full migration or
 production-readiness acceptance.
+
+## Working-set metadata and quarantined recovery
+
+The working-set package implements source metadata schemas, selection receipts,
+pin policies, generation/lease projection jobs, mutation hooks and notification
+maintenance. View and pin-policy reads borrow a verified publication snapshot
+without reserving the main database writer. Writes borrow the active child
+transaction; durable pin intent cannot be replaced by a callback. Disabled paths,
+receipt identity, strict expiry boundaries and all-scene terminal cleanup retain
+source ordering and existing product policy limits.
+
+Maintenance serializes drains even when a Go timer expires while another callback
+is running. It coalesces that already-due notification instead of starting another
+drain or introducing periodic polling. Disposal revokes the old lifecycle's
+continuation; synchronous notification callbacks retain their source ordering.
+
+The offline owner is admitted only on a quarantined staging database. It audits
+the optional four-table schema and stored values, clears soft metadata, and
+replays independently retained pin policies with deletion and material checks.
+It neither appends new authority intents nor ACKs or marks a database ready.
+Source-like InScope methods require an active maintenance child; explicitly named
+root convenience methods own Maintenance.Apply. Expired scopes never become new
+transactions. Actual older-file SQLite backup fixtures exercise this domain;
+they do not stand in for complete restore/reconciliation acceptance.
+
+MemoryWorkspace, WorkspaceAuthority and model-selection identity composition are
+still separate unfinished work. In particular, source workingSet/episodes reads
+also enqueue and drain metadata. A read-only low-level View does not establish
+that those higher-level HTTP workflows avoid writer contention. Historical
+schema/ledger audits and offline event parsing still have history-dependent costs.

@@ -112,3 +112,18 @@ The tests prove specific work/ownership properties, not universal performance:
 Passing a policy oracle, loopback test or source-free WASM test establishes only
 that boundary. It does not establish full bot parity, a successful production
 migration, or the absence of remaining performance problems.
+
+### Working-set domain boundary
+
+The implemented working-set metadata owner covers source canonical schemas,
+receipt deduplication, pin intent, generation/lease jobs, mutation invalidation and
+notification maintenance. Its source oracle has 27 live scenarios, 86 schema cases
+and 8 storage layouts. A separate 23-scenario actual older-backup oracle covers the
+quarantined offline reset/pin-replay domain. These synthetic fixtures are not
+production capture/authorization ports and do not establish full restore parity.
+
+The higher-level MemoryWorkspace/WorkspaceAuthority, final model-context identity
+and runtime/HTTP composition remain unfinished. Existing policy limits are
+preserved, with no new protective caps. Read-only metadata publication avoids the
+main writer reservation but retains authority verification; this is not a claim
+that all HTTP paths are contention-free.

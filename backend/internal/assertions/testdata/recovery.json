@@ -1,0 +1,72 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/memory/storage/assertion-history.ts": "063e842d326e7e32a4c95b4bb6f0ce9adf749cef5491cc3014903b0ca3c1c00f",
+    "src/memory/storage/assertion-repository.ts": "fe51160c09c4bc3eb9d308bc1cb167551d6b251dd764042adad1b8caa4dfc54b",
+    "src/memory/write/revision-coordinator.ts": "751d74fc03dece31760ccbe371d175879a571f4fa7eebf1a9dacb538cabf3f35",
+    "src/memory/recovery/eligibility.ts": "0b17da2ac783e9a37a330843caa097973a965178f5639550c2e7a34af273b641",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192"
+  },
+  "cases": [
+    {
+      "stage": "after-intent",
+      "error": "synthetic_after_intent",
+      "readyError": "recovery_authority_head_changed",
+      "gateSequence": 0,
+      "minimumReader": 1,
+      "authoritySequence": 1,
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\"},\"content\":\"Synthetic authority fixture\",\"kind\":\"claim\",\"sources\":[],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\",\"lineageStatus\":\"verified\"}",
+      "state": {
+        "version": 1,
+        "deletion_epoch": 0,
+        "deleted": 0
+      },
+      "events": "[{\"kind\":\"assertion_eligibility\",\"schemaVersion\":1,\"mode\":\"transition\",\"changes\":[{\"id\":\"assertion\",\"incarnationHash\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"state\":{\"status\":\"invalidated\",\"lineageStatus\":\"verified\"},\"materialHash\":null}]}]"
+    },
+    {
+      "stage": "after-commit",
+      "error": "synthetic_after_commit",
+      "readyError": null,
+      "gateSequence": 1,
+      "minimumReader": 11,
+      "authoritySequence": 1,
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\"},\"content\":\"Synthetic authority fixture\",\"kind\":\"claim\",\"sources\":[],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"invalidated\",\"locked\":false,\"origin\":\"manual\",\"lineageStatus\":\"verified\"}",
+      "state": {
+        "version": 2,
+        "deletion_epoch": 0,
+        "deleted": 0
+      },
+      "events": "[{\"kind\":\"assertion_eligibility\",\"schemaVersion\":1,\"mode\":\"transition\",\"changes\":[{\"id\":\"assertion\",\"incarnationHash\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"state\":{\"status\":\"invalidated\",\"lineageStatus\":\"verified\"},\"materialHash\":null}]}]"
+    },
+    {
+      "stage": "incarnation",
+      "error": "recovery_eligibility_incarnation_mismatch",
+      "readyError": null,
+      "gateSequence": 0,
+      "minimumReader": 1,
+      "authoritySequence": 0,
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\"},\"content\":\"Synthetic authority fixture\",\"kind\":\"claim\",\"sources\":[],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\",\"lineageStatus\":\"verified\"}",
+      "state": {
+        "version": 1,
+        "deletion_epoch": 0,
+        "deleted": 0
+      },
+      "events": "[]"
+    },
+    {
+      "stage": "nested-caught",
+      "error": null,
+      "readyError": null,
+      "gateSequence": 0,
+      "minimumReader": 1,
+      "authoritySequence": 0,
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\"},\"content\":\"accepted outer\",\"kind\":\"claim\",\"sources\":[],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\",\"lineageStatus\":\"verified\"}",
+      "state": {
+        "version": 2,
+        "deletion_epoch": 0,
+        "deleted": 0
+      },
+      "events": "[]"
+    }
+  ]
+}

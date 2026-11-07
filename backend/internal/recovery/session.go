@@ -16,14 +16,21 @@ import (
 // Do not use it concurrently with its owner callback's return, or reenter the
 // Authority through Write/Publish: use this session for nested store operations.
 type WriteSession struct {
+	*writeSessionState
+	active bool
+	rows   map[*SessionRows]struct{}
+}
+
+// All nested capabilities share the root lock, context and fatal native state.
+// Only the innermost callback may use its capability until it returns.
+type writeSessionState struct {
 	mu        sync.Mutex
 	authority *Authority
 	main      *sql.DB
 	conn      *sql.Conn
 	ctx       context.Context
-	active    bool
 	fatal     error
-	rows      map[*SessionRows]struct{}
+	current   *WriteSession
 }
 
 func (a *Authority) WithWriteSession(ctx context.Context, main *sql.DB, fn func(*WriteSession) error) error {
@@ -48,7 +55,8 @@ func (a *Authority) withWriteSession(ctx context.Context, main *sql.DB, fn func(
 	if _, err = conn.ExecContext(ctx, "UPDATE main.recovery_gate SET id=id WHERE 0"); err != nil {
 		return err
 	}
-	s := &WriteSession{authority: a, main: main, conn: conn, ctx: ctx, active: true}
+	s := &WriteSession{writeSessionState: &writeSessionState{authority: a, main: main, conn: conn, ctx: ctx}, active: true}
+	s.current = s
 	if err = s.protect(0); err != nil {
 		return err
 	}
@@ -64,6 +72,9 @@ func (s *WriteSession) check() error {
 	}
 	if s.fatal != nil {
 		return s.fatal
+	}
+	if s.current != s {
+		return errors.New("recovery_session_scope_inactive")
 	}
 	if err := s.ctx.Err(); err != nil {
 		s.fatal = err
@@ -107,17 +118,21 @@ func (s *WriteSession) Query(query string, args ...any) (*SessionRows, error) {
 func (s *WriteSession) finish() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	return errors.Join(s.finishLocked(), protectMutation(s.conn, false))
+}
+func (s *WriteSession) finishLocked() error {
 	e := s.check()
 	for r := range s.rows {
 		_ = r.close()
 	}
 	e = errors.Join(e, s.check())
 	s.active = false
-	return errors.Join(e, protectMutation(s.conn, false))
+	return e
 }
 
 // mode 0 is caller DML, 1 permits the fixed coordinator gate write. Mode 2
 // executes only fixed schema statements, never caller SQL or user callbacks.
+// Mode 3 permits only the owned savepoint control statements.
 func (s *WriteSession) protect(mode int) error {
 	if mode == 2 {
 		return protectMutation(s.conn, false)
@@ -128,6 +143,12 @@ func (s *WriteSession) protect(mode int) error {
 			return errors.New("recovery_sqlite_driver_required")
 		}
 		native.RegisterAuthorizer(func(op int, table, _ string, database string) int {
+			if mode == 3 {
+				if op == sqlite3.SQLITE_SAVEPOINT {
+					return sqlite3.SQLITE_OK
+				}
+				return sqlite3.SQLITE_DENY
+			}
 			switch op {
 			case sqlite3.SQLITE_SELECT, sqlite3.SQLITE_FUNCTION, sqliteRecursive:
 				return sqlite3.SQLITE_OK

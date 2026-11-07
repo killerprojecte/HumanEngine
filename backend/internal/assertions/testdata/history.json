@@ -1,0 +1,823 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/memory/storage/assertion-history.ts": "063e842d326e7e32a4c95b4bb6f0ce9adf749cef5491cc3014903b0ca3c1c00f"
+  },
+  "traces": [
+    {
+      "name": "append-idempotency-and-scope",
+      "steps": [
+        {
+          "op": "[\"state\",\"assertion\"]",
+          "result": "{\"version\":0,\"deletionEpoch\":0,\"deleted\":false}",
+          "rowsHash": "2925f2b77a0f5747c9d8540eb1410eb04ebf297247f506a879071999c47b9ccd",
+          "rowCounts": {
+            "memory_assertion_state": 0,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"noTransaction\",\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "assertion_transaction_required",
+          "rowsHash": "2925f2b77a0f5747c9d8540eb1410eb04ebf297247f506a879071999c47b9ccd",
+          "rowCounts": {
+            "memory_assertion_state": 0,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"mutateReturned\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":99,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"changed\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "assertion_idempotency_conflict",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"new\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "assertion_version_conflict",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"rollback\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":1,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"rollback\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "synthetic_rollback",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"second\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":1,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"second\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":2,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"second\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"foreign\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":2,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"foreign\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "assertion_scope_conflict",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"revision\",\"assertion\",1,\"scene:scene\"]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"revision\",\"assertion\",1,\"scene:foreign\"]",
+          "result": "null",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"revisions\",\"assertion\",\"scene:scene\"]",
+          "result": "[{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":2,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"second\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}]",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"revisions\",\"assertion\",\"scene:scene\",1]",
+          "result": "[{\"assertionId\":\"assertion\",\"version\":2,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"second\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}]",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"retainedCount\",\"assertion\",\"scene:scene\"]",
+          "result": "2",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"latest\",\"assertion\",\"scene:scene\"]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":2,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"second\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"dependents\",\"parent\"]",
+          "result": "[\"assertion\"]",
+          "rowsHash": "9128f96aca0781af943ff595be744785eeed14c5f839c6814631c5784468c181",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 4,
+            "memory_assertion_revision_parents": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "detached-normalized-return",
+      "steps": [
+        {
+          "op": "[\"appendDetached\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"aliases\":false,\"inputNested\":\"original\",\"returnedContent\":\"Synthetic preference\",\"nanIsNull\":true,\"minusZero\":false}",
+          "rowsHash": "a44fd21ef0bb82e9f2facfc5118a83226b6577177b415770c8867ad952e7a2e4",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "validation-order",
+      "steps": [
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":-1,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0.5,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":9007199254740992,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":-1,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-02-30T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":\"2026-01-03T00:00:00.000Z\",\"validTo\":\"2026-01-02T00:00:00.000Z\",\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"revisions\",\"assertion\",\"scene:scene\",0]",
+          "result": "null",
+          "error": "assertion_history_limit_invalid",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"revisions\",\"assertion\",\"scene:scene\",10001]",
+          "result": "null",
+          "error": "assertion_history_limit_invalid",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":1,\"limit\":21}]",
+          "result": "null",
+          "error": "assertion_history_query_invalid",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":1,\"limit\":1,\"validAt\":\"invalid\"}]",
+          "result": "null",
+          "error": "assertion_history_query_invalid",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "privacy-epochs-and-terminal",
+      "steps": [
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "03137a02d6cbb10a2edff671e31fe5e887da527970b6f1398e76742fbb08c9f6",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"redactSource\",\"scene\",\"message\"]",
+          "result": "[\"assertion\"]",
+          "rowsHash": "3c208a65b533a812c804bab72de96c04411b231bf7908126b4aefee74c52268d",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"state\",\"assertion\"]",
+          "result": "{\"version\":1,\"deletionEpoch\":1,\"deleted\":false}",
+          "rowsHash": "3c208a65b533a812c804bab72de96c04411b231bf7908126b4aefee74c52268d",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "assertion_deleted_or_stale_epoch",
+          "rowsHash": "3c208a65b533a812c804bab72de96c04411b231bf7908126b4aefee74c52268d",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"replacement\",\"kind\":\"claim\",\"sources\":[],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[],\"expectedVersion\":1,\"expectedDeletionEpoch\":1,\"idempotencyKey\":\"replacement\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":2,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"replacement\",\"kind\":\"claim\",\"sources\":[],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "7f8d56ffd2c0be70525bcdd9475322096fb6c0284b43f96fc2b7cc46369d6de2",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"redactSource\",\"scene\",\"message\"]",
+          "result": "[]",
+          "rowsHash": "7f8d56ffd2c0be70525bcdd9475322096fb6c0284b43f96fc2b7cc46369d6de2",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"purge\",\"assertion\"]",
+          "result": "{\"version\":2,\"deletionEpoch\":2,\"deleted\":false}",
+          "rowsHash": "f52a2f2000d2f359464c14fb722fbfd3f1918e44f337e2a5f5861860a1c3b8fa",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"purge\",\"assertion\"]",
+          "result": "{\"version\":2,\"deletionEpoch\":3,\"deleted\":false}",
+          "rowsHash": "eee5361e4266486f2782dffe47abf2f81b6690e451c0544e59fb3d7dada4c2d1",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"state\",\"assertion\"]",
+          "result": "{\"version\":2,\"deletionEpoch\":3,\"deleted\":false}",
+          "rowsHash": "eee5361e4266486f2782dffe47abf2f81b6690e451c0544e59fb3d7dada4c2d1",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"erase\",\"assertion\"]",
+          "result": "{\"version\":2,\"deletionEpoch\":4,\"deleted\":true}",
+          "rowsHash": "6609b4510f11149e467e6e09293f4ccc351ed52f304df80c6088c4cbceee63a4",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"erase\",\"assertion\"]",
+          "result": "{\"version\":2,\"deletionEpoch\":4,\"deleted\":true}",
+          "rowsHash": "6609b4510f11149e467e6e09293f4ccc351ed52f304df80c6088c4cbceee63a4",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"purge\",\"assertion\"]",
+          "result": "{\"version\":2,\"deletionEpoch\":4,\"deleted\":true}",
+          "rowsHash": "6609b4510f11149e467e6e09293f4ccc351ed52f304df80c6088c4cbceee63a4",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":2,\"expectedDeletionEpoch\":4,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "assertion_deleted_or_stale_epoch",
+          "rowsHash": "6609b4510f11149e467e6e09293f4ccc351ed52f304df80c6088c4cbceee63a4",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":2,\"limit\":1}]",
+          "result": "{\"revisions\":[],\"hasMore\":false,\"unknownRecordedTime\":false,\"retentionIncomplete\":true}",
+          "rowsHash": "6609b4510f11149e467e6e09293f4ccc351ed52f304df80c6088c4cbceee63a4",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"dependents\",\"parent\"]",
+          "result": "[]",
+          "rowsHash": "6609b4510f11149e467e6e09293f4ccc351ed52f304df80c6088c4cbceee63a4",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 0,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "legacy-and-expanded-dates",
+      "steps": [
+        {
+          "op": "[\"importLegacy\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"unknown\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\",\"validFrom\":\"bad\"},[]]",
+          "result": "{\"version\":1,\"deletionEpoch\":0,\"deleted\":false}",
+          "rowsHash": "baa6dd7645e40e9217d464e993269222acbe16a636fbaff746bf5de854d29b40",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 1,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"importLegacy\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"ignored\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},[]]",
+          "result": "{\"version\":1,\"deletionEpoch\":0,\"deleted\":false}",
+          "rowsHash": "baa6dd7645e40e9217d464e993269222acbe16a636fbaff746bf5de854d29b40",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 1,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"revisions\",\"assertion\",\"scene:scene\"]",
+          "result": "[{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"unknown\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\",\"validFrom\":\"bad\"},\"supports\":[],\"recordedAt\":null,\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":true}}]",
+          "rowsHash": "baa6dd7645e40e9217d464e993269222acbe16a636fbaff746bf5de854d29b40",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 1,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":1,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"expanded\",\"recordedAt\":\"+010000-01-01T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":2,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"+010000-01-01T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "d6a49db53239ff3a7e781215a875b35188a2bdfdf2d617a5b2e9c674862a6c9e",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 2,
+            "memory_assertion_revision_sources": 3,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":2,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"negative\",\"recordedAt\":\"-000001-01-01T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":3,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"-000001-01-01T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "7abaf90b65da50f397ead254b7480f836d1edb28f3feb049bac3902b4a7fe90a",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 3,
+            "memory_assertion_revision_sources": 5,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":3,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"minus-zero\",\"recordedAt\":\"-000000-01-01T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"eventKind\":\"learned_assertion\"}]",
+          "result": "null",
+          "error": "invalid_assertion_revision",
+          "rowsHash": "7abaf90b65da50f397ead254b7480f836d1edb28f3feb049bac3902b4a7fe90a",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 3,
+            "memory_assertion_revision_sources": 5,
+            "memory_assertion_revision_parents": 2
+          }
+        },
+        {
+          "op": "[\"revisions\",\"assertion\",\"scene:scene\"]",
+          "result": "[{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"unknown\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\",\"validFrom\":\"bad\"},\"supports\":[],\"recordedAt\":null,\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":true}},{\"assertionId\":\"assertion\",\"version\":2,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"+010000-01-01T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":3,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"-000001-01-01T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}]",
+          "rowsHash": "7abaf90b65da50f397ead254b7480f836d1edb28f3feb049bac3902b4a7fe90a",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 3,
+            "memory_assertion_revision_sources": 5,
+            "memory_assertion_revision_parents": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "query-predicates-before-limit",
+      "steps": [
+        {
+          "op": "[\"bulk\",205]",
+          "result": "null",
+          "rowsHash": "faa2fff0a54e81e0c48f67d2e00248e0fa0920f03150181c904ccd8e0f83085c",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"latest\",\"assertion\",\"scene:scene\"]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":205,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 204\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "faa2fff0a54e81e0c48f67d2e00248e0fa0920f03150181c904ccd8e0f83085c",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":205,\"limit\":2,\"asOfRecorded\":\"2026-01-02T00:00:00.000Z\"}]",
+          "result": "{\"revisions\":[{\"assertionId\":\"assertion\",\"version\":4,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 3\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":5,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 4\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}],\"hasMore\":true,\"unknownRecordedTime\":false,\"retentionIncomplete\":false}",
+          "rowsHash": "faa2fff0a54e81e0c48f67d2e00248e0fa0920f03150181c904ccd8e0f83085c",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":205,\"limit\":20}]",
+          "result": "{\"revisions\":[{\"assertionId\":\"assertion\",\"version\":186,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 185\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":187,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 186\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":188,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 187\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":189,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 188\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":190,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 189\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":191,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 190\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":192,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 191\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":193,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 192\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":194,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 193\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":195,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 194\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":196,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 195\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":197,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 196\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":198,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 197\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":199,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 198\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":200,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 199\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":201,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 200\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":202,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 201\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":203,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 202\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":204,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 203\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}},{\"assertionId\":\"assertion\",\"version\":205,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 204\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}],\"hasMore\":true,\"unknownRecordedTime\":false,\"retentionIncomplete\":false}",
+          "rowsHash": "faa2fff0a54e81e0c48f67d2e00248e0fa0920f03150181c904ccd8e0f83085c",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"raw\",\"UPDATE memory_assertion_revisions SET value='{invalid' WHERE version=205; UPDATE memory_assertion_revisions SET recorded_at=NULL WHERE version=204;\"]",
+          "result": "null",
+          "rowsHash": "1dc03fb2fc6961fefb5690f848cec4fbb0ad9fa966948776d2ea3713a12db2ad",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":205,\"limit\":2}]",
+          "result": "{\"revisions\":[{\"assertionId\":\"assertion\",\"version\":203,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 202\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}],\"hasMore\":true,\"unknownRecordedTime\":true,\"retentionIncomplete\":true}",
+          "rowsHash": "1dc03fb2fc6961fefb5690f848cec4fbb0ad9fa966948776d2ea3713a12db2ad",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"raw\",\"UPDATE memory_assertion_revisions SET value=json_set(value,'$.assertionId','wrong') WHERE version=203;\"]",
+          "result": "null",
+          "rowsHash": "01d57bc7272f2b0dfe274b8906df987b3f5fb9bcee729c1fe9d3d0041e4063db",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":203,\"limit\":1}]",
+          "result": "{\"revisions\":[],\"hasMore\":true,\"unknownRecordedTime\":false,\"retentionIncomplete\":true}",
+          "rowsHash": "01d57bc7272f2b0dfe274b8906df987b3f5fb9bcee729c1fe9d3d0041e4063db",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        },
+        {
+          "op": "[\"latest\",\"assertion\",\"scene:scene\"]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":204,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic 203\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-03T00:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "01d57bc7272f2b0dfe274b8906df987b3f5fb9bcee729c1fe9d3d0041e4063db",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 205,
+            "memory_assertion_revision_sources": 410,
+            "memory_assertion_revision_parents": 205
+          }
+        }
+      ]
+    },
+    {
+      "name": "validity-and-retention",
+      "steps": [
+        {
+          "op": "[\"append\",{\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"expectedVersion\":0,\"expectedDeletionEpoch\":0,\"idempotencyKey\":\"first\",\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":\"2026-01-03T00:00:00.000Z\",\"validTo\":\"2026-01-04T00:00:00.000Z\",\"eventKind\":\"learned_assertion\"}]",
+          "result": "{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":\"2026-01-03T00:00:00.000Z\",\"validTo\":\"2026-01-04T00:00:00.000Z\",\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}",
+          "rowsHash": "6dffedba462436bad309a8cd0c15a180ad3b16d963a3deae5e6e1ca81066be47",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":1,\"limit\":1,\"validAt\":\"2026-01-03T00:00:00.000Z\"}]",
+          "result": "{\"revisions\":[{\"assertionId\":\"assertion\",\"version\":1,\"record\":{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},\"supports\":[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"parent\"]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"independent\",\"senderId\":\"person\"}],\"parents\":[]}],\"recordedAt\":\"2026-01-02T00:00:00.000Z\",\"validFrom\":\"2026-01-03T00:00:00.000Z\",\"validTo\":\"2026-01-04T00:00:00.000Z\",\"event\":{\"kind\":\"learned_assertion\",\"actorId\":null,\"legacyImport\":false}}],\"hasMore\":false,\"unknownRecordedTime\":false,\"retentionIncomplete\":false}",
+          "rowsHash": "6dffedba462436bad309a8cd0c15a180ad3b16d963a3deae5e6e1ca81066be47",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":1,\"limit\":1,\"validAt\":\"2026-01-04T00:00:00.000Z\"}]",
+          "result": "{\"revisions\":[],\"hasMore\":false,\"unknownRecordedTime\":false,\"retentionIncomplete\":false}",
+          "rowsHash": "6dffedba462436bad309a8cd0c15a180ad3b16d963a3deae5e6e1ca81066be47",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"raw\",\"UPDATE memory_assertion_revisions SET recorded_at='2026-01-03T00:00:00.000Z'\"]",
+          "result": "null",
+          "rowsHash": "6537f570b2719cb900a27c38173448be08c6177a113a0601b2e022461cc4adb2",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":1,\"limit\":1}]",
+          "result": "{\"revisions\":[],\"hasMore\":false,\"unknownRecordedTime\":false,\"retentionIncomplete\":true}",
+          "rowsHash": "6537f570b2719cb900a27c38173448be08c6177a113a0601b2e022461cc4adb2",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 2,
+            "memory_assertion_revision_parents": 1
+          }
+        },
+        {
+          "op": "[\"purge\",\"assertion\"]",
+          "result": "{\"version\":1,\"deletionEpoch\":1,\"deleted\":false}",
+          "rowsHash": "375b4b9347dc2ce9066d144f616ec26cc2858c73cbcb265f95cfc01f351a7380",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        },
+        {
+          "op": "[\"queryRetained\",\"assertion\",\"scene:scene\",{\"throughVersion\":1,\"limit\":1}]",
+          "result": "{\"revisions\":[],\"hasMore\":false,\"unknownRecordedTime\":false,\"retentionIncomplete\":true}",
+          "rowsHash": "375b4b9347dc2ce9066d144f616ec26cc2858c73cbcb265f95cfc01f351a7380",
+          "rowCounts": {
+            "memory_assertion_state": 1,
+            "memory_assertion_revisions": 1,
+            "memory_assertion_revision_sources": 0,
+            "memory_assertion_revision_parents": 0
+          }
+        }
+      ]
+    }
+  ]
+}

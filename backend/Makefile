@@ -14,6 +14,10 @@ build:
 	go build -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && node backend/tests/generate-jsstring-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-assertion-history-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-assertion-coordinator-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-assertion-recovery-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-ingress-routing-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-runtime-source-authority-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-runtime-authority-fault-fixtures.mjs --check

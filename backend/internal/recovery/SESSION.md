@@ -12,7 +12,7 @@ extra final authority-head check: an external append can leave a committed main
 transaction behind authority, which subsequent publication rejects immediately.
 This is the measured TypeScript behavior, not automatic reconciliation.
 
-Only fixed source schema/index initialization can temporarily perform DDL.
+Only fixed source or assertion schema/index initialization can temporarily perform DDL.
 Caller SQL cannot change schema, transactions, recovery gate, or attached files.
 Callbacks run without the authority/session mutex and may synchronously invoke
 other operations on the same bound store. No network work belongs here.
@@ -35,3 +35,33 @@ alone checks binding/transaction/expected head, not ready state or reader policy
 Closing a scoped row handle during teardown does not replay an ordinary caught
 row error as a transaction-wide failure. Native transaction loss is still checked
 again after row cleanup. Only currently open row handles are retained.
+
+## Owned nested transactions
+
+`WriteSession.WithSavepoint` supplies a new scoped child on the same connection.
+The parent is suspended during the child callback and resumes afterward. Bind
+nested stores to the supplied child; never keep using an ancestor capability.
+Children may create further savepoints. Child sessions and rows expire when
+their callback exits, including panic or failure. Ordinary caught nested errors
+roll back only that savepoint's main SQL. Native transaction loss, cancellation
+and failed savepoint cleanup invalidate the shared root capability. No caller
+SQL or callback runs while savepoint control is enabled in the authorizer.
+
+Main gate ACKs and reader upgrades roll back with the savepoint. Authority
+intents do not. The resulting durable head gap is preserved: subsequent readiness
+checks and intents fail, and publication rejects committed-behind main data.
+The wrapper does not invent a final authority-head check or reconcile a gap.
+
+`EnsureAssertionHistorySchema` runs fixed DDL and the missing-parent-table
+backfill in one owned savepoint. An existing parent table prevents backfill on
+reopen, even if retained JSON has since become malformed. Failed backfill rolls
+back newly created tables and indexes, including when its caller catches it.
+
+`EnsureMemoryStorageSchema` follows the source initializer's two boundaries:
+fixed current/vector base DDL first, then a savepoint for supports creation and
+the learned-record absent/null-lineage migration to `unverified`. A caught
+migration failure retains base DDL within the enclosing transaction; an uncaught
+outer failure rolls back all new schema. Existing IDs, proof payloads and other
+record fields are retained. Neither schema method replays history or sources.
+These are explicit live writer capabilities, not autocommit initializers or
+reader constructors, and do not claim complete memory-service parity.

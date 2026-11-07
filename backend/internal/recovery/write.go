@@ -543,7 +543,13 @@ func writableMain(ctx context.Context, conn *sql.Conn, authority string) error {
 	if mode != "wal" {
 		return errors.New("recovery_write_journal_unsupported")
 	}
-	_, err = conn.ExecContext(ctx, "PRAGMA synchronous=FULL")
+	if _, err = conn.ExecContext(ctx, "PRAGMA synchronous=FULL"); err != nil {
+		return err
+	}
+	// The TypeScript Store enables foreign keys on every connection. Apply the
+	// same connection setting before BEGIN, including borrowed pools whose DSN
+	// did not set it. SQLite ignores a foreign_keys change inside a transaction.
+	_, err = conn.ExecContext(ctx, "PRAGMA foreign_keys=ON")
 	return err
 }
 

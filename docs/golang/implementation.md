@@ -296,3 +296,41 @@ perform no database wait while holding the scene message-state mutex.
 These internal services do not yet enable production HTTP writes or live
 provider/plugin/transport startup. Derived memory privacy stores and the other
 remaining domains listed in coverage.md are still unfinished.
+
+## Native assertion storage and nested transactions
+
+The candidate now implements current assertion/proof persistence, versioned
+history, lazy legacy import, temporal history queries, privacy body purges and
+terminal deletion. Raw repository reads preserve any stored JSON root, including
+null; typed consumer adapters are explicit and preserve the source's falsy-row
+repair path. History return values undergo the same JSON round trip as the source,
+so caller mutations cannot change inputs and nonfinite values normalize equally.
+
+Revision coordination retains final record/proof pairs and batches explicit
+eligibility transitions across checkpoints. Required retention and history-proof
+providers receive the current bound Store. They cannot silently become raw-proof
+or no-op production substitutes. Nested work uses owned SQLite savepoints with
+expired child capabilities; caught errors restore both SQL and bookkeeping.
+Durable authority intents survive main rollback, and an ACK gap remains a recovery
+obligation. An after-commit callback error does not imply SQL rolled back.
+
+Controlled writes enable the original Store's foreign-key behavior on each borrowed
+connection before BEGIN. Orphan rejection and source/support/vector cascades are
+covered by source-generated tests. The assertion coordinator no longer decodes
+its complete retained history on every write: it reads the first valid revision
+in descending order, preserving the source result even with malformed trailing
+rows. Explicit history listing and provenance graph work retain their inherent
+costs; this is not full performance acceptance.
+
+Fingerprint text runs natively with pinned Node 24.22.1 / Unicode 17 mappings,
+including contextual final sigma, dotted-I expansion, whitespace distinctions and
+lone UTF-16 surrogates. Tests include 3,142 actual JavaScript cases and exhaustive
+code-point digests. Assertion tests include 69 history transitions, 31 repository
+and coordinator transitions, raw JSON roots, and four actual dual-database fault
+windows. Full row snapshots are compared by SHA-256, not truncated or sampled.
+
+The storage boundary is not the complete memory service. Provenance authorization,
+derived commitment/knowledge/semantic privacy, scoped prepared support-read reuse,
+offline reconstruction, and same-session runtime recall remain separate work.
+Production REST writes, provider/plugin/adapter startup and the existing deployment
+entrypoint remain unchanged.

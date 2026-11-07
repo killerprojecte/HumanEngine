@@ -1,0 +1,25 @@
+{
+  "node": "v24.22.1",
+  "icu": "78.3",
+  "unicode": "17.0",
+  "nodeSourceArchive": "https://nodejs.org/dist/v24.22.1/node-v24.22.1.tar.xz",
+  "nodeSourceArchiveSHA256": "4f5379796280cdaeb0c2f358fd04b6a16cc4fb7dfa83b5a8c91a9d963b435231",
+  "auditedSources": [
+    {
+      "path": "deps/icu-small/source/common/ucase.cpp",
+      "sha256": "a94ccf6f96d2f3eb7bd3008529a38d0d032abaab0fd4f5ef038d7460742f3045",
+      "audit": "ucase_toFullLower: the root locale permits U+0130 -> U+0069 U+0307 and contextual Final_Sigma. All other conditional lowercase branches require Lithuanian or Turkish/Azeri. Other full mappings are context-free. isFollowedByCasedLetter skips Case_Ignorable before testing Cased."
+    },
+    {
+      "path": "deps/v8/src/objects/intl-objects.cc",
+      "sha256": "19cfb07c3a3cf509a225b1fb5b87050f50957fbc1f8fa5e631b6d159b3225d55",
+      "audit": "Intl::ConvertToLower uses the root locale (empty locale argument) for non-Latin1 strings; LocaleConvertCase invokes ICU u_strToLower. The Latin1 fast path has context-free one-to-one mappings."
+    }
+  ],
+  "generation": "Exhaustive String.fromCodePoint(point).toLowerCase(), /\\p{Cased}/u, /\\p{Case_Ignorable}/u and /\\s/u on pinned Node for all 0x110000 code points. trim equivalence is checked at every point. No host Unicode tables or locale-tailored casing.",
+  "lowercaseMappings": 1488,
+  "casedRanges": 158,
+  "caseIgnorableRanges": 464,
+  "whitespaceRanges": 10,
+  "tablesSHA256": "ba3533437ae31a96306b118013c833498a340f80f821dbb7ed07e97f02dbe9e6"
+}

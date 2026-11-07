@@ -1,0 +1,350 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/memory/storage/assertion-history.ts": "063e842d326e7e32a4c95b4bb6f0ce9adf749cef5491cc3014903b0ca3c1c00f",
+    "src/memory/storage/assertion-repository.ts": "fe51160c09c4bc3eb9d308bc1cb167551d6b251dd764042adad1b8caa4dfc54b",
+    "src/memory/storage/migrations.ts": "a7ce51a0cc3a6eed3637bdb4d443507b7f48ade7c37411583e752906b33e06fb",
+    "src/memory/write/revision-coordinator.ts": "751d74fc03dece31760ccbe371d175879a571f4fa7eebf1a9dacb538cabf3f35",
+    "src/memory/domain/proofs.ts": "7750cf6113c5d61713ab408c43744ee5c74d0a5fadb9eb85902264773f160708",
+    "src/memory/domain/record-values.ts": "d2022164f6fa4d36f4a8993b87f784c6f959a69c48270ec1da4786a3ee375dfc",
+    "src/memory/recovery/eligibility-contract.ts": "f27f53c8e2f8f913d0e5cf2eb61aed300b40c2451a0e6e0b000ea6e024c7c1ef",
+    "src/memory/recovery/eligibility.ts": "0b17da2ac783e9a37a330843caa097973a965178f5639550c2e7a34af273b641"
+  },
+  "traces": [
+    {
+      "name": "write-checkpoint-final-eligibility",
+      "retain": true,
+      "steps": [
+        {
+          "op": "[\"outside\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "error": "memory_write_requires_transaction",
+          "events": "[]",
+          "rowsHash": "e5e7153f1b3b3b0cd3166bdf35d3c8fa82b4d68f01485d4fed809518c726edc5"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"supports\",\"assertion\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]]]]",
+          "result": "null",
+          "events": "[[\"committed\",\"assertion\",1,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "08d4cdb8f7ecf0908490d8d83d2ed3ad30de5469c08637c1f7f19b7537f80610"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"supports\",\"assertion\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "08d4cdb8f7ecf0908490d8d83d2ed3ad30de5469c08637c1f7f19b7537f80610"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"invalidated\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"checkpoint\"],[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",2,0],[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",3,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "b7b13bf2b3a7cb3e6e87f6fe46ab8e742ce624f05d7e340833b6af51d5c75d11"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"quarantined\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",4,0],[\"eligibility\",[{\"before\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"after\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"state\":{\"status\":\"active\",\"lineageStatus\":\"quarantined\"},\"material\":null}]],[\"afterCommit\"]]",
+          "rowsHash": "36d94a1c201c99c9729a227936c84b391486e7008c02b29e0c142251f7a34732"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",5,0],[\"eligibility\",[{\"before\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"after\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"state\":{\"status\":\"active\",\"lineageStatus\":\"verified\"},\"material\":\"2eec1b053059cf6e20cbea850bed113dc5f5a5d012c72b0e351f2d241dce8d9b\"}]],[\"afterCommit\"]]",
+          "rowsHash": "a408f61f7317d9c840a58133eb4d6268e4148bc7cbd06ee1fe7ea67140031af3"
+        },
+        {
+          "op": "[\"transaction\",[[\"writeThenMutate\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"invalidated\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",6,0],[\"eligibility\",[{\"before\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"after\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"state\":{\"status\":\"invalidated\",\"lineageStatus\":\"verified\"},\"material\":null}]],[\"afterCommit\"]]",
+          "rowsHash": "1edecca8ad218824fda5234bdb08884c1d60a12bddbff7ab971b8deb1e04e0fd"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-02-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "error": "recovery_eligibility_incarnation_mismatch",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",7,0],[\"eligibility\",[{\"before\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"after\":\"885090b8e2f75c8398333c577d4cd787b0b9ba18a690b9d45bac051cb13447b3\",\"state\":{\"status\":\"active\",\"lineageStatus\":\"verified\"},\"material\":\"777d4f35b7f48050659060639d7d333175d4922cbee814dd56668fcc04bc13f7\"}]]]",
+          "rowsHash": "1edecca8ad218824fda5234bdb08884c1d60a12bddbff7ab971b8deb1e04e0fd"
+        }
+      ]
+    },
+    {
+      "name": "nested-rollback-and-proof-dedup",
+      "retain": true,
+      "steps": [
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"supports\",\"assertion\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]],[\"nested\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"ROLLBACK_CANARY\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"checkpoint\"],[\"throw\",\"nested_rollback\"]],true],[\"supports\",\"assertion\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[],\"sourceObservations\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\",\"note\":\"first\"}]},{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[],\"sourceObservations\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\",\"note\":\"second\"},{\"sceneId\":\"scene\",\"messageId\":\"new\",\"senderId\":\"person\",\"note\":\"new\"}]}]]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",1,0],[\"caught\",\"nested_rollback\"],[\"committed\",\"assertion\",1,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "7d6960f0a62f79f822b353384517ed4bb444221c9f5574922343daed5976a211"
+        },
+        {
+          "op": "[\"transaction\",[[\"nested\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"accepted child\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]],false]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",2,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "dd93a7b59ed7796e5916929af7f35f873525c6e331b93fd9b5a30898181a2bde"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"OUTER_ROLLBACK_CANARY\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"throw\",\"outer_rollback\"]]]",
+          "result": "null",
+          "error": "outer_rollback",
+          "events": "[[\"removeProjection\",\"assertion\"]]",
+          "rowsHash": "dd93a7b59ed7796e5916929af7f35f873525c6e331b93fd9b5a30898181a2bde"
+        },
+        {
+          "op": "[\"transaction\",[[\"touch\",\"assertion\"],[\"checkpoint\"]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "dd93a7b59ed7796e5916929af7f35f873525c6e331b93fd9b5a30898181a2bde"
+        }
+      ]
+    },
+    {
+      "name": "legacy-preimage-import",
+      "retain": true,
+      "steps": [
+        {
+          "op": "[\"seed\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"unverified\"},[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]]",
+          "result": "null",
+          "events": "[]",
+          "rowsHash": "9987541e708d9eeed2407ffdeb36709166830d0688fee852d9cf65b64e05d87d"
+        },
+        {
+          "op": "[\"transaction\",[[\"supports\",\"assertion\",[]],[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"updated\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",2,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "b58f2376bf3791a0e56241b98c20044024cc9221c9f439b6c84d7f8049e135ae"
+        },
+        {
+          "op": "[\"transaction\",[[\"fault\",\"committed\"],[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"FAILED_COMMIT\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "error": "synthetic_committed",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",3,0]]",
+          "rowsHash": "b58f2376bf3791a0e56241b98c20044024cc9221c9f439b6c84d7f8049e135ae"
+        },
+        {
+          "op": "[\"transaction\",[[\"fault\",\"afterCommit\"],[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"COMMITTED_BEFORE_CALLBACK_ERROR\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "error": "synthetic_afterCommit",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",3,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "bddd2e8a71bccac51e36dd1920fc01b6b4257937bd90914a5a64e2da484ec2d6"
+        }
+      ]
+    },
+    {
+      "name": "retention-disabled",
+      "retain": false,
+      "steps": [
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"supports\",\"assertion\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "4b26f6a1f9d8df08e02755572eca6480d5d15ef6927df2b2988009f7e2684376"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"invalidated\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"eligibility\",[{\"before\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"after\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"state\":{\"status\":\"invalidated\",\"lineageStatus\":\"verified\"},\"material\":null}]],[\"afterCommit\"]]",
+          "rowsHash": "6ee48065f5a79ef8bc9cd91aa77cd9272d14fc83acce7aed07e997d0206a81fb"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"eligibility\",[{\"before\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"after\":\"92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3\",\"state\":{\"status\":\"active\",\"lineageStatus\":\"verified\"},\"material\":\"2eec1b053059cf6e20cbea850bed113dc5f5a5d012c72b0e351f2d241dce8d9b\"}]],[\"afterCommit\"]]",
+          "rowsHash": "4b26f6a1f9d8df08e02755572eca6480d5d15ef6927df2b2988009f7e2684376"
+        }
+      ]
+    },
+    {
+      "name": "foreign-key-and-cascades",
+      "retain": true,
+      "steps": [
+        {
+          "op": "[\"transaction\",[[\"supports\",\"missing\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]]]]",
+          "result": "null",
+          "error": "FOREIGN KEY constraint failed",
+          "events": "[]",
+          "rowsHash": "e5e7153f1b3b3b0cd3166bdf35d3c8fa82b4d68f01485d4fed809518c726edc5"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"supports\",\"assertion\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]]]]",
+          "result": "null",
+          "events": "[[\"committed\",\"assertion\",1,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "08d4cdb8f7ecf0908490d8d83d2ed3ad30de5469c08637c1f7f19b7537f80610"
+        },
+        {
+          "op": "[\"transaction\",[[\"raw\",\"INSERT INTO vector_spaces VALUES('space','{}'); INSERT INTO memory_vectors VALUES('assertion','space',x'0102'); DELETE FROM memories WHERE id='assertion';\"]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "ed16ccd896ab16f9e5a474523d515cf9d4b0ec5f7b638be927f68618f31f39d0"
+        }
+      ]
+    },
+    {
+      "name": "falsy-preimage-repair",
+      "retain": true,
+      "steps": [
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}],[\"supports\",\"assertion\",[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[]}]]]]",
+          "result": "null",
+          "events": "[[\"committed\",\"assertion\",1,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "08d4cdb8f7ecf0908490d8d83d2ed3ad30de5469c08637c1f7f19b7537f80610"
+        },
+        {
+          "op": "[\"transaction\",[[\"raw\",\"UPDATE memories SET value='null' WHERE id='assertion'\"]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "20456dc346304d900d919bbfc74162b1261ba8f93c3307157306a6f8e89c9299"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"repaired null\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",2,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "322205a81e09f4914970d8cc0480a9c12e4b9e2eeff4944e073bb5ce70bdb7cc"
+        },
+        {
+          "op": "[\"transaction\",[[\"raw\",\"UPDATE memories SET value='false' WHERE id='assertion'\"]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "0149dce527bb371d93452d9efef2890d0e374bd758d5e422a6efd64629a4b7c6"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"repaired false\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",3,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "cc69bbdbab1ce2feefb99a820c60966b30442aea0a8f54d784ffecc7a5b7858e"
+        },
+        {
+          "op": "[\"transaction\",[[\"raw\",\"UPDATE memories SET value='0' WHERE id='assertion'\"]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "a9a0c7934b284a3aac09ad39f79affe8675f898d6dd61943cabce2f80199b6ea"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"repaired 0\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",4,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "b08a2f5b34a579ee0cb1bb151499c6b14b789ab2468781ec9dfc62986505acba"
+        },
+        {
+          "op": "[\"transaction\",[[\"raw\",\"UPDATE memories SET value='\\\"\\\"' WHERE id='assertion'\"]]]",
+          "result": "null",
+          "events": "[[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "fce65d260886f7255a0557f39c5f7080bbae184c1493f356d9563660c716b3c4"
+        },
+        {
+          "op": "[\"transaction\",[[\"write\",{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"repaired \\\"\\\"\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}]]]",
+          "result": "null",
+          "events": "[[\"removeProjection\",\"assertion\"],[\"committed\",\"assertion\",5,0],[\"eligibility\",[]],[\"afterCommit\"]]",
+          "rowsHash": "8e5d93210e5c7b9dbbaa7a53e533ea95dd32c3d6d60035616b809ed38855d694"
+        }
+      ]
+    }
+  ],
+  "hashVectors": [
+    {
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+      "proofs": "[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"𐀀\",\"\"],\"parentReferences\":[{\"id\":\"\",\"version\":2,\"deletionEpoch\":0},{\"id\":\"𐀀\",\"version\":1,\"deletionEpoch\":1}],\"sourceObservations\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\",\"arbitrary\":0}],\"subjectWitness\":{\"kind\":\"direct\",\"personId\":\"person\"},\"extra\":{\"z\":1,\"a\":2}}]",
+      "fingerprint": "8039c7a9fb537a339c5e1d73469616d28df833ff7fcf7fe62d1256819051ff74",
+      "historical": "history:8039c7a9fb537a339c5e1d73469616d28df833ff7fcf7fe62d1256819051ff74:assertion",
+      "incarnation": "92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3",
+      "material": "14ec49d392787ca088177814f25be47376180fdc5c31f49610431876875913b2",
+      "proofKeys": [
+        "[[[\"scene\",\"message\",\"person\"]],[\"𐀀\",\"\"],[[\"𐀀\",1,1],[\"\",2,0]],null,[\"direct\",\"person\",null,null]]"
+      ]
+    },
+    {
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"  ΟΣ ΟΣΑ İ  ﻿  \",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+      "proofs": "[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"𐀀\",\"\"],\"parentReferences\":[{\"id\":\"\",\"version\":2,\"deletionEpoch\":0},{\"id\":\"𐀀\",\"version\":1,\"deletionEpoch\":1}],\"sourceObservations\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\",\"arbitrary\":1}],\"subjectWitness\":{\"kind\":\"direct\",\"personId\":\"person\"},\"extra\":{\"z\":1,\"a\":2}}]",
+      "fingerprint": "ea49258646e306d7ad7dd8add137a03cd60e3e2af0f3dc88916ea7227c15e72e",
+      "historical": "history:ea49258646e306d7ad7dd8add137a03cd60e3e2af0f3dc88916ea7227c15e72e:assertion",
+      "incarnation": "92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3",
+      "material": "b1b79f858ccf365d706b51b6fdc5930dd31671bf3eff7d0c9bed1967de99d7da",
+      "proofKeys": [
+        "[[[\"scene\",\"message\",\"person\"]],[\"𐀀\",\"\"],[[\"𐀀\",1,1],[\"\",2,0]],null,[\"direct\",\"person\",null,null]]"
+      ]
+    },
+    {
+      "record": "{\"id\":\"assertion\\ud800\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"A\\ud800B\\udfff\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\",\"extra\":{\"2\":4,\"10\":3,\"\":1,\"𐀀\":2}}",
+      "proofs": "[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"𐀀\",\"\"],\"parentReferences\":[{\"id\":\"\",\"version\":2,\"deletionEpoch\":0},{\"id\":\"𐀀\",\"version\":1,\"deletionEpoch\":1}],\"sourceObservations\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\",\"arbitrary\":2}],\"subjectWitness\":{\"kind\":\"direct\",\"personId\":\"person\"},\"extra\":{\"z\":1,\"a\":2}}]",
+      "fingerprint": "457cca81cb755f98eecbb7bd6b983afdcfbb0e123362f32ddd7d9cec90ca8270",
+      "historical": "history:457cca81cb755f98eecbb7bd6b983afdcfbb0e123362f32ddd7d9cec90ca8270:assertion\ud800",
+      "incarnation": "388b4cb076330aca3a2c14e31228ed564978c3dfa0f52c6d2261dab86a633d85",
+      "material": "1de36972233ef7fb6e3f075500b2b435614581a2373f3df6687437d53ed31177",
+      "proofKeys": [
+        "[[[\"scene\",\"message\",\"person\"]],[\"𐀀\",\"\"],[[\"𐀀\",1,1],[\"\",2,0]],null,[\"direct\",\"person\",null,null]]"
+      ]
+    },
+    {
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Shared\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+      "proofs": "[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"𐀀\",\"\"],\"parentReferences\":[{\"id\":\"\",\"version\":2,\"deletionEpoch\":0},{\"id\":\"𐀀\",\"version\":1,\"deletionEpoch\":1}],\"sourceObservations\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\",\"arbitrary\":3}],\"subjectWitness\":{\"kind\":\"direct\",\"personId\":\"person\"},\"extra\":{\"z\":1,\"a\":2}}]",
+      "fingerprint": "0e5b9ebf3aa80d57b635719e7692564be193c68154509136eb9c85614075a68b",
+      "historical": "history:0e5b9ebf3aa80d57b635719e7692564be193c68154509136eb9c85614075a68b:assertion",
+      "incarnation": "92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3",
+      "material": "bdfdba0ae310dde0ad2f3dd54676bc263f938e3627e2387e3b42cce4d2f66fd0",
+      "proofKeys": [
+        "[[[\"scene\",\"message\",\"person\"]],[\"𐀀\",\"\"],[[\"𐀀\",1,1],[\"\",2,0]],null,[\"direct\",\"person\",null,null]]"
+      ]
+    },
+    {
+      "record": "{\"id\":\"assertion\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"scene\",\"personId\":\"person\"},\"content\":\"Synthetic preference\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"importance\":\"medium\",\"confidence\":0.6,\"learnedAt\":\"2026-01-02T00:00:00.000Z\",\"status\":\"invalidated\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"quarantined\",\"arbitrary\":[null,true,0,100000000000000000000]}",
+      "proofs": "[{\"sources\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\"}],\"parents\":[\"𐀀\",\"\"],\"parentReferences\":[{\"id\":\"\",\"version\":2,\"deletionEpoch\":0},{\"id\":\"𐀀\",\"version\":1,\"deletionEpoch\":1}],\"sourceObservations\":[{\"sceneId\":\"scene\",\"messageId\":\"message\",\"senderId\":\"person\",\"arbitrary\":4}],\"subjectWitness\":{\"kind\":\"direct\",\"personId\":\"person\"},\"extra\":{\"z\":1,\"a\":2}}]",
+      "fingerprint": "8039c7a9fb537a339c5e1d73469616d28df833ff7fcf7fe62d1256819051ff74",
+      "historical": "history:8039c7a9fb537a339c5e1d73469616d28df833ff7fcf7fe62d1256819051ff74:assertion",
+      "incarnation": "92d39cabd8c10ef7e05b1e632764702eaf41b4efc6fdb7766eb94c25dba065b3",
+      "material": "bb83e51bc9cd056f647ddc86c0132d30ef71d9a4f56842dc55527ea5c93cb4e2",
+      "proofKeys": [
+        "[[[\"scene\",\"message\",\"person\"]],[\"𐀀\",\"\"],[[\"𐀀\",1,1],[\"\",2,0]],null,[\"direct\",\"person\",null,null]]"
+      ]
+    }
+  ],
+  "rawReadCases": [
+    {
+      "input": "null",
+      "get": "null",
+      "all": "[null]",
+      "supports": "null"
+    },
+    {
+      "input": "false",
+      "get": "false",
+      "all": "[false]",
+      "supports": "false"
+    },
+    {
+      "input": "0",
+      "get": "0",
+      "all": "[0]",
+      "supports": "0"
+    },
+    {
+      "input": "\"\"",
+      "get": "\"\"",
+      "all": "[\"\"]",
+      "supports": "\"\""
+    },
+    {
+      "input": "42",
+      "get": "42",
+      "all": "[42]",
+      "supports": "42"
+    },
+    {
+      "input": "\"truthy\"",
+      "get": "\"truthy\"",
+      "all": "[\"truthy\"]",
+      "supports": "\"truthy\""
+    },
+    {
+      "input": "[]",
+      "get": "[]",
+      "all": "[[]]",
+      "supports": "[]"
+    },
+    {
+      "input": "{}",
+      "get": "{}",
+      "all": "[{}]",
+      "supports": "{}"
+    }
+  ]
+}

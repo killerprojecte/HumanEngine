@@ -1,0 +1,141 @@
+{
+  "node": "v24.22.1",
+  "sqlite": "3.53.4",
+  "cases": [
+    {
+      "input": "",
+      "units": [],
+      "utf8": "",
+      "rowHex": "",
+      "lookupValue": "0",
+      "rowCount": 1
+    },
+    {
+      "input": "plain",
+      "units": [
+        112,
+        108,
+        97,
+        105,
+        110
+      ],
+      "utf8": "706c61696e",
+      "rowHex": "706C61696E",
+      "lookupValue": "1",
+      "rowCount": 2
+    },
+    {
+      "input": "a\u0000b",
+      "units": [
+        97,
+        0,
+        98
+      ],
+      "utf8": "610062",
+      "rowHex": "610062",
+      "lookupValue": "2",
+      "rowCount": 3
+    },
+    {
+      "input": "\ud800",
+      "units": [
+        55296
+      ],
+      "utf8": "efbfbd",
+      "rowHex": "EFBFBD",
+      "lookupValue": "3",
+      "rowCount": 4
+    },
+    {
+      "input": "\udfff",
+      "units": [
+        57343
+      ],
+      "utf8": "efbfbd",
+      "rowHex": "EFBFBD",
+      "lookupValue": "4",
+      "rowCount": 4
+    },
+    {
+      "input": "�",
+      "units": [
+        65533
+      ],
+      "utf8": "efbfbd",
+      "rowHex": "EFBFBD",
+      "lookupValue": "5",
+      "rowCount": 4
+    },
+    {
+      "input": "𐏿",
+      "units": [
+        55296,
+        57343
+      ],
+      "utf8": "f0908fbf",
+      "rowHex": "F0908FBF",
+      "lookupValue": "6",
+      "rowCount": 5
+    },
+    {
+      "input": "\udfff\ud800",
+      "units": [
+        57343,
+        55296
+      ],
+      "utf8": "efbfbdefbfbd",
+      "rowHex": "EFBFBDEFBFBD",
+      "lookupValue": "7",
+      "rowCount": 6
+    },
+    {
+      "input": "x\ud800y",
+      "units": [
+        120,
+        55296,
+        121
+      ],
+      "utf8": "78efbfbd79",
+      "rowHex": "78EFBFBD79",
+      "lookupValue": "8",
+      "rowCount": 7
+    },
+    {
+      "input": "\ud800𐏿",
+      "units": [
+        55296,
+        55296,
+        57343
+      ],
+      "utf8": "efbfbdf0908fbf",
+      "rowHex": "EFBFBDF0908FBF",
+      "lookupValue": "9",
+      "rowCount": 8
+    },
+    {
+      "input": "中文",
+      "units": [
+        20013,
+        25991
+      ],
+      "utf8": "e4b8ade69687",
+      "rowHex": "E4B8ADE69687",
+      "lookupValue": "10",
+      "rowCount": 9
+    },
+    {
+      "input": "<>&  ",
+      "units": [
+        60,
+        62,
+        38,
+        8232,
+        8233
+      ],
+      "utf8": "3c3e26e280a8e280a9",
+      "rowHex": "3C3E26E280A8E280A9",
+      "lookupValue": "11",
+      "rowCount": 10
+    }
+  ]
+}

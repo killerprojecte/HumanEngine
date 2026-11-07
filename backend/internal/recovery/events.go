@@ -1,10 +1,9 @@
 package recovery
 
 import (
-	"encoding/json"
 	"errors"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"regexp"
-	"unicode/utf16"
 )
 
 var hashPattern = regexp.MustCompile(`^[a-f0-9]{64}$`)
@@ -13,7 +12,11 @@ var uuid4Pattern = regexp.MustCompile(`(?i)^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}
 
 func validString(v any) bool {
 	s, ok := v.(string)
-	return ok && len(s) > 0 && len(utf16.Encode([]rune(s))) <= 2000
+	if !ok || s == "" {
+		return false
+	}
+	length, err := jsjson.UTF16Len(s)
+	return err == nil && length <= 2000
 }
 func hashString(v any) bool { s, ok := v.(string); return ok && hashPattern.MatchString(s) }
 func integer(v any) bool {
@@ -24,8 +27,9 @@ func integer(v any) bool {
 // ValidateEvent is extended alongside each migrated domain. Unsupported domains
 // fail explicitly; a hash-valid unknown payload never grants data access.
 func ValidateEvent(payload string) error {
-	var e map[string]any
-	if json.Unmarshal([]byte(payload), &e) != nil {
+	decoded, err := jsjson.Parse(payload)
+	e, ok := validationValue(decoded).(map[string]any)
+	if err != nil || !ok {
 		return errors.New("recovery_unknown_revocation")
 	}
 	valid := false
@@ -100,4 +104,25 @@ func validEligibility(e map[string]any) bool {
 		}
 	}
 	return true
+}
+
+// The validator does not need insertion order, but string keys and values must
+// retain canonical WTF-8 identity. Never round-trip through encoding/json here.
+func validationValue(value any) any {
+	switch v := value.(type) {
+	case *jsjson.Object:
+		result := make(map[string]any, v.Len())
+		for _, member := range v.Members() {
+			result[member.Key] = validationValue(member.Value)
+		}
+		return result
+	case []any:
+		result := make([]any, len(v))
+		for i, item := range v {
+			result[i] = validationValue(item)
+		}
+		return result
+	default:
+		return value
+	}
 }

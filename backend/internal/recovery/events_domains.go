@@ -1,10 +1,14 @@
 package recovery
 
-import "unicode/utf8"
+import "github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 
 func codePointID(value any, maximum int) bool {
 	text, ok := value.(string)
-	return ok && text != "" && utf8.RuneCountInString(text) <= maximum
+	if !ok || text == "" {
+		return false
+	}
+	length, err := jsjson.CodePointCount(text)
+	return err == nil && length <= maximum
 }
 func oneOf(value any, options ...string) bool {
 	text, ok := value.(string)

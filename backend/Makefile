@@ -8,6 +8,15 @@ build:
 	go build -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && node --import tsx backend/tests/generate-settings-write-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-lossless-events-fixtures.mjs --check
+	cd .. && node backend/tests/generate-sqlite-string-fixtures.mjs --check
+	cd .. && node --import tsx backend/internal/recovery/testdata/generate-write-events-node.mjs --check
+	cd .. && node backend/tests/generate-jsjson-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-scene-write-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-dispatch-fixtures.mjs --check
+	cd .. && node backend/tests/generate-v1-compat.mjs --check
+	cd .. && node --import tsx backend/tests/generate-scheduler-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-turnwait-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/config-differential.mjs backend/bin/humanengine
 

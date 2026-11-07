@@ -1,0 +1,447 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "src/memory/recovery/domain-contracts.ts": "83f8b7a24a2d4365b8442cecb61236bbda9472ac11cd0b00f7afbb75e3f9f9fb",
+    "src/memory/recovery/configuration-contract.ts": "eb62278c9b7eda4b17e4812a0f6d3495501c27e39428b343395d94fb755117ce",
+    "src/memory/recovery/source-event-contract.ts": "081a052d269a39337768ed5315d2bea33f3b073a6abb2ed34686acc8670f0819",
+    "src/memory/recovery/eligibility-contract.ts": "f27f53c8e2f8f913d0e5cf2eb61aed300b40c2451a0e6e0b000ea6e024c7c1ef"
+  },
+  "rows": [
+    {
+      "input": {
+        "kind": "source",
+        "sceneId": "<>&  ",
+        "messageId": "\\u2028"
+      },
+      "payload": "{\"kind\":\"source\",\"sceneId\":\"<>&  \",\"messageId\":\"\\\\u2028\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 0,
+        "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "729883f3151c896f4b09294bb15ac4872d64db95016ed81d0fef16fd20b25cfa"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "729883f3151c896f4b09294bb15ac4872d64db95016ed81d0fef16fd20b25cfa"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 2,
+        "hash": "20c716abe352ef778339ae9f098f07db0f5ff757c82501293e0adfae997fe493"
+      }
+    },
+    {
+      "input": {
+        "kind": "fingerprint",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "payload": "{\"kind\":\"fingerprint\",\"value\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 2,
+        "hash": "20c716abe352ef778339ae9f098f07db0f5ff757c82501293e0adfae997fe493"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 3,
+        "hash": "c145852e5dbd480324d179b5281c7e5bd69599ff13377960dc4968b5601e4751"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 3,
+        "hash": "c145852e5dbd480324d179b5281c7e5bd69599ff13377960dc4968b5601e4751"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 4,
+        "hash": "4b6cd2f84e53eb573b507b4d31bc50bd74dbb32c0df99a2f50e4ea3137bea9b6"
+      }
+    },
+    {
+      "input": {
+        "kind": "assertion",
+        "id": "id",
+        "throughVersion": 9007199254740991,
+        "terminal": true
+      },
+      "payload": "{\"kind\":\"assertion\",\"id\":\"id\",\"throughVersion\":9007199254740991,\"terminal\":true}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 4,
+        "hash": "4b6cd2f84e53eb573b507b4d31bc50bd74dbb32c0df99a2f50e4ea3137bea9b6"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 5,
+        "hash": "ed43c82644bc18aba212fc987725619deeb5e82bf90aa103d9b08007a069ce99"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 5,
+        "hash": "ed43c82644bc18aba212fc987725619deeb5e82bf90aa103d9b08007a069ce99"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 6,
+        "hash": "4662b8c60175d87d43fc6881c2df0b5871aa7f27aab405f2b8a54fb7cb3bd900"
+      }
+    },
+    {
+      "input": {
+        "kind": "security_state",
+        "revision": "12345678-1234-4123-8123-123456789012"
+      },
+      "payload": "{\"kind\":\"security_state\",\"revision\":\"12345678-1234-4123-8123-123456789012\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 6,
+        "hash": "4662b8c60175d87d43fc6881c2df0b5871aa7f27aab405f2b8a54fb7cb3bd900"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 7,
+        "hash": "167f36f9441361874098547c181e4d37ebaa2cfa32df7971ffb77b87dd565a20"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 7,
+        "hash": "167f36f9441361874098547c181e4d37ebaa2cfa32df7971ffb77b87dd565a20"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 8,
+        "hash": "fec4f127d92d1a73bbb32bbb49a9a8a3ea64881aac960ef463465252252226b9"
+      }
+    },
+    {
+      "input": {
+        "kind": "source_edit_head",
+        "schemaVersion": 1,
+        "sceneId": "s",
+        "messageId": "m",
+        "eventId": "e",
+        "revision": 1,
+        "deletionEpoch": 0,
+        "identityHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "headHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "payload": "{\"kind\":\"source_edit_head\",\"schemaVersion\":1,\"sceneId\":\"s\",\"messageId\":\"m\",\"eventId\":\"e\",\"revision\":1,\"deletionEpoch\":0,\"identityHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"headHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 8,
+        "hash": "fec4f127d92d1a73bbb32bbb49a9a8a3ea64881aac960ef463465252252226b9"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 9,
+        "hash": "0b23454db8e6953184ee146582b0a3f54df1bd6a20a4a2d36e51cbbad549f263"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 9,
+        "hash": "0b23454db8e6953184ee146582b0a3f54df1bd6a20a4a2d36e51cbbad549f263"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 10,
+        "hash": "7d3140e303bdfb4ae756403445799646f87676ee40a843b04b0574137a842f6d"
+      }
+    },
+    {
+      "input": {
+        "kind": "assertion_eligibility",
+        "schemaVersion": 1,
+        "operationId": "12345678-1234-4123-8123-123456789012",
+        "mode": "transition",
+        "changes": [
+          {
+            "id": "a",
+            "incarnationHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "state": {
+              "status": "invalidated",
+              "lineageStatus": null
+            },
+            "materialHash": null
+          }
+        ]
+      },
+      "payload": "{\"kind\":\"assertion_eligibility\",\"schemaVersion\":1,\"operationId\":\"12345678-1234-4123-8123-123456789012\",\"mode\":\"transition\",\"changes\":[{\"id\":\"a\",\"incarnationHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"state\":{\"status\":\"invalidated\",\"lineageStatus\":null},\"materialHash\":null}]}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 10,
+        "hash": "7d3140e303bdfb4ae756403445799646f87676ee40a843b04b0574137a842f6d"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 11,
+        "hash": "db07f640aee01f90a42623da387c1a34c52a4a86a8ad225daceaf623ac3e2dd7"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 12,
+        "hash": "31a55f41aab796a0d35e80de91d9b23856a5567822a9185825682004fbc11a99"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 13,
+        "hash": "38bd0c05d198a440ddae2b53b44dcf1eaac356c26ebd113d8dd54e2168eecaf7"
+      }
+    },
+    {
+      "input": {
+        "kind": "configuration_flags",
+        "schemaVersion": 8,
+        "flags": {
+          "memoryExperienceFeedbackEnabled": false,
+          "memorySemanticEnabled": false,
+          "memorySemanticAutoAdmissionEnabled": false,
+          "memorySemanticAnswerEnabled": false,
+          "memoryKnowledgeEnabled": false,
+          "memoryKnowledgeAutoAdmissionEnabled": false,
+          "memoryKnowledgeAnswerEnabled": false,
+          "topicAdmissionEnabled": false,
+          "memoryWorkingSetEnabled": false,
+          "memoryEpisodesEnabled": false,
+          "memoryCommitmentsEnabled": false,
+          "memoryCommitmentsAnswerEnabled": false,
+          "memoryHistoricalReadEnabled": false,
+          "sourceEventRevisionsEnabled": false,
+          "cacheEnabled": false,
+          "debugModelIO": false,
+          "memoryProjectionEnabled": false,
+          "memoryGraphEnabled": false,
+          "memoryGraphAutoAdmissionEnabled": false,
+          "memoryGraphAnswerEnabled": false,
+          "memoryGraphShadowEnabled": false,
+          "memoryExperienceEnabled": false,
+          "memoryExperienceAutoActivateEnabled": false,
+          "memoryExperienceHintsEnabled": false
+        }
+      },
+      "payload": "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":false,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 13,
+        "hash": "38bd0c05d198a440ddae2b53b44dcf1eaac356c26ebd113d8dd54e2168eecaf7"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 14,
+        "hash": "f9d9707413cc5ce073ab1261a8ffafdb488faa28cff4fd71bdaad154c9584874"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 15,
+        "hash": "9540ea00c1d0c3c6bf06f782d330bc053dd79e4dc46d2112365cd3d729cebbf0"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 16,
+        "hash": "2c66b65dbc39fc45e3faed5e0e300e4345e0c89e235322ea7491827e761493d9"
+      }
+    },
+    {
+      "input": {
+        "kind": "scene_flags",
+        "schemaVersion": 2,
+        "sceneId": "s",
+        "identityHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "flags": {
+          "participationEnabled": false,
+          "learningEnabled": false,
+          "proactiveEnabled": false,
+          "memoryReadEnabled": false,
+          "personalizationEnabled": false
+        }
+      },
+      "payload": "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"s\",\"identityHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"flags\":{\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"memoryReadEnabled\":false,\"personalizationEnabled\":false}}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 16,
+        "hash": "2c66b65dbc39fc45e3faed5e0e300e4345e0c89e235322ea7491827e761493d9"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 17,
+        "hash": "a6865067406a302bb8902649fa068366b37a6d9c65b733a814e8c7acba2c058a"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 18,
+        "hash": "be6904448a52101236dc58b21cf500087078837bc4c790d7b48d8c8998af5db4"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 19,
+        "hash": "4324edf2786eead53784f11bb50d02139831eef75e3500e2d8234399e7e438e8"
+      }
+    },
+    {
+      "input": {
+        "kind": "habit_delete",
+        "schemaVersion": 1,
+        "id": "h",
+        "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "payload": "{\"schemaVersion\":1,\"kind\":\"habit_delete\",\"id\":\"h\",\"fingerprint\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 19,
+        "hash": "4324edf2786eead53784f11bb50d02139831eef75e3500e2d8234399e7e438e8"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 20,
+        "hash": "3abddcd114eb6e3fdb154043833e182b9a2fd5fabc1038e1bbfc10241cfb71a7"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 20,
+        "hash": "3abddcd114eb6e3fdb154043833e182b9a2fd5fabc1038e1bbfc10241cfb71a7"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 21,
+        "hash": "c18a0dd3349c6ce8b53b695007a3631fea2f45ec8c4ca41ae73932a153fa087f"
+      }
+    },
+    {
+      "input": {
+        "kind": "meme_delete",
+        "schemaVersion": 1,
+        "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "qualificationHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "format": "png"
+      },
+      "payload": "{\"schemaVersion\":1,\"kind\":\"meme_delete\",\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"contentHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"qualificationHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 21,
+        "hash": "c18a0dd3349c6ce8b53b695007a3631fea2f45ec8c4ca41ae73932a153fa087f"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 22,
+        "hash": "60a8db1843317937d6a224cbd7df60c5aebec405cd94095f54d770fb2131adbd"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 22,
+        "hash": "60a8db1843317937d6a224cbd7df60c5aebec405cd94095f54d770fb2131adbd"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 23,
+        "hash": "fb4b0ee268b3c3000a40a6038c18b54e58735fb8ec524dcb7d7a157469ed2d60"
+      }
+    },
+    {
+      "input": {
+        "kind": "meme_state",
+        "schemaVersion": 1,
+        "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "qualificationHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "state": {
+          "available": true,
+          "disabled": false,
+          "knownOnly": false,
+          "shared": true,
+          "privacyReviewed": true
+        }
+      },
+      "payload": "{\"schemaVersion\":1,\"kind\":\"meme_state\",\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"contentHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"qualificationHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"state\":{\"available\":true,\"disabled\":false,\"knownOnly\":false,\"shared\":true,\"privacyReviewed\":true}}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 23,
+        "hash": "fb4b0ee268b3c3000a40a6038c18b54e58735fb8ec524dcb7d7a157469ed2d60"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 24,
+        "hash": "02b03e70e48e34bd4f584a4c3bb86adc7f498826948d220d1fe24cc64a22f1c1"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 25,
+        "hash": "4641d7c40ce99d1f1d7adec470091962aad49593dc9ef25eae2300a100eb5fe8"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 26,
+        "hash": "cac1c01257350822ed78d685bc175a8bffc308768f1047e0f918018f5e962b55"
+      }
+    },
+    {
+      "input": {
+        "kind": "experience_delete",
+        "schemaVersion": 1,
+        "sceneId": "s",
+        "id": "e"
+      },
+      "payload": "{\"schemaVersion\":1,\"kind\":\"experience_delete\",\"sceneId\":\"s\",\"id\":\"e\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 26,
+        "hash": "cac1c01257350822ed78d685bc175a8bffc308768f1047e0f918018f5e962b55"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 27,
+        "hash": "60c93adca02c709543625d4c5b453f6641d5f54b2ff9ced96debce9eb211b2a5"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 27,
+        "hash": "60c93adca02c709543625d4c5b453f6641d5f54b2ff9ced96debce9eb211b2a5"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 28,
+        "hash": "3c14982820234f32fbd5076f782048630e38837b251e503e1e96f287607e119e"
+      }
+    },
+    {
+      "input": {
+        "kind": "experience_state",
+        "schemaVersion": 1,
+        "sceneId": "s",
+        "id": "e",
+        "qualificationHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "version": 1,
+        "status": "active",
+        "validationId": "v",
+        "activationBasis": "administrator_review",
+        "reason": "experimental_mechanical_hint"
+      },
+      "payload": "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"e\",\"qualificationHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"version\":1,\"status\":\"active\",\"validationId\":\"v\",\"activationBasis\":\"administrator_review\",\"reason\":\"experimental_mechanical_hint\"}",
+      "before": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 28,
+        "hash": "3c14982820234f32fbd5076f782048630e38837b251e503e1e96f287607e119e"
+      },
+      "after": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 29,
+        "hash": "ab6d5a26f93d5adcba23ccd88cc4234037d1a51e903e529321168b0ab5dcac53"
+      },
+      "repeated": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 30,
+        "hash": "21c69ee23d9c8c52ef9d148d25a1a8a8aceb17b81beaa8c78d97c411f7efd9bf"
+      },
+      "forced": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 31,
+        "hash": "42b6cd3e58c60e1d3b7c287b0e1f0f4288067e52121a65b8525e4f7c98d67cb1"
+      }
+    }
+  ]
+}

@@ -16,13 +16,19 @@ import (
 //go:embed v1-host.mjs
 var nodeHostSource string
 
+//go:embed v1-config.mjs
+var nodeConfigSource string
+
 //go:embed v1-worker.mjs
 var nodeWorkerSource string
 
 type nodeReply struct {
 	ID     string          `json:"id"`
 	Result json.RawMessage `json:"result"`
+	Failed bool            `json:"failed"`
 	Error  string          `json:"error"`
+	Event  string          `json:"event"`
+	Plugin string          `json:"plugin"`
 }
 type nodeProcess struct {
 	cmd        *exec.Cmd
@@ -38,23 +44,29 @@ type nodeProcess struct {
 	err        error
 }
 type nodeLease struct {
-	key       string
-	process   *nodeProcess
-	closing   bool
-	ready     bool
-	handles   map[string]string
-	turnStops map[string]func() bool
-	done      chan struct{}
-	err       error
+	key               string
+	process           *nodeProcess
+	closing           bool
+	ready             bool
+	dead              bool
+	generation        uint64
+	registrationOrder uint64
+	protocols         []ModelProtocolMetadata
+	handles           map[string]string
+	modelCompletions  map[string]bool
+	turnStops         map[string]func() bool
+	done              chan struct{}
+	err               error
 }
 type V1Host struct {
-	lifecycle   sync.Mutex
-	process     *nodeProcess
-	enabled     map[string]*nodeLease
-	sequence    uint64
-	node        string
-	diagnostics io.Writer
-	closed      bool
+	lifecycle        sync.Mutex
+	process          *nodeProcess
+	enabled          map[string]*nodeLease
+	sequence         uint64
+	registrySequence uint64
+	node             string
+	diagnostics      io.Writer
+	closed           bool
 }
 
 func NewV1Host(node string, diagnostics io.Writer) *V1Host {
@@ -73,7 +85,7 @@ func (h *V1Host) PID() int {
 		return h.process.cmd.Process.Pid
 	}
 }
-func startNode(ctx context.Context, node string, diagnostics io.Writer) (*nodeProcess, error) {
+func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorkerExit func(*nodeProcess, string)) (*nodeProcess, error) {
 	cmd := exec.Command(node, "--input-type=module", "--eval", nodeHostSource)
 	cmd.Stderr = diagnostics
 	input, err := cmd.StdinPipe()
@@ -99,6 +111,10 @@ func startNode(ctx context.Context, node string, diagnostics io.Writer) (*nodePr
 			if json.Unmarshal(line, &reply) != nil {
 				continue
 			}
+			if reply.Event == "worker_exit" {
+				onWorkerExit(p, reply.Plugin)
+				continue
+			}
 			p.mu.Lock()
 			channel := p.pending[reply.ID]
 			delete(p.pending, reply.ID)
@@ -122,7 +138,7 @@ func startNode(ctx context.Context, node string, diagnostics io.Writer) (*nodePr
 		p.write.Unlock()
 	}()
 	go p.writeLoop()
-	if _, err = p.call(ctx, map[string]any{"op": "initialize", "source": nodeWorkerSource}); err != nil {
+	if _, err = p.call(ctx, map[string]any{"op": "initialize", "source": nodeConfigSource + "\n" + nodeWorkerSource}); err != nil {
 		input.Close()
 		<-p.done
 		return nil, err
@@ -156,7 +172,7 @@ func (p *nodeProcess) writeLoop() {
 					p.mu.Lock()
 					for _, reply := range p.pending {
 						select {
-						case reply <- nodeReply{Error: "v1_host_pipe_failed"}:
+						case reply <- nodeReply{Failed: true, Error: "v1_host_pipe_failed"}:
 						default:
 						}
 					}
@@ -219,7 +235,7 @@ func (c *pendingNodeCall) wait(ctx context.Context) (json.RawMessage, error) {
 		// The control process may exit immediately after its close acknowledgement.
 		select {
 		case reply := <-c.reply:
-			if reply.Error != "" {
+			if reply.Failed {
 				return nil, fmt.Errorf("V1 plugin: %s", reply.Error)
 			}
 			return reply.Result, nil
@@ -227,7 +243,7 @@ func (c *pendingNodeCall) wait(ctx context.Context) (json.RawMessage, error) {
 			return nil, errors.New("v1_host_exited")
 		}
 	case reply := <-c.reply:
-		if reply.Error != "" {
+		if reply.Failed {
 			return nil, fmt.Errorf("V1 plugin: %s", reply.Error)
 		}
 		return reply.Result, nil
@@ -253,6 +269,12 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	// Encode caller-owned configuration before lifecycle admission. MarshalJSON may
+	// re-enter the host or be slow; neither may fence unrelated unload.
+	encodedConfig, err := json.Marshal(config)
+	if err != nil {
+		return nil, err
+	}
 	h.lifecycle.Lock()
 	if err := ctx.Err(); err != nil {
 		h.lifecycle.Unlock()
@@ -262,7 +284,7 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 		h.lifecycle.Unlock()
 		return nil, errors.New("v1_host_closed")
 	}
-	if previous := h.enabled[id]; previous != nil && previous.closing {
+	if previous := h.enabled[id]; previous != nil && (previous.closing || previous.dead) {
 		h.lifecycle.Unlock()
 		select {
 		case <-ctx.Done():
@@ -275,19 +297,18 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 		h.lifecycle.Unlock()
 		return nil, errors.New("plugin_already_loaded")
 	}
-	var err error
 	if h.process == nil {
-		h.process, err = startNode(ctx, h.node, h.diagnostics)
+		h.process, err = startNode(ctx, h.node, h.diagnostics, h.workerExited)
 		if err != nil {
 			h.lifecycle.Unlock()
 			return nil, err
 		}
 	}
 	h.sequence++
-	lease := &nodeLease{key: fmt.Sprintf("%s:%d", id, h.sequence), process: h.process, done: make(chan struct{}), handles: map[string]string{}, turnStops: map[string]func() bool{}}
+	lease := &nodeLease{key: fmt.Sprintf("%s:%d", id, h.sequence), process: h.process, generation: h.sequence, done: make(chan struct{}), handles: map[string]string{}, modelCompletions: map[string]bool{}, turnStops: map[string]func() bool{}}
 	h.enabled[id] = lease
 	// Queue lifecycle admission before making the lease visible to Disable.
-	pending, err := lease.process.begin(map[string]any{"op": "enable", "plugin": lease.key, "pluginId": id, "path": path, "config": config})
+	pending, err := lease.process.begin(map[string]any{"op": "enable", "plugin": lease.key, "pluginId": id, "path": path, "config": json.RawMessage(encodedConfig)})
 	h.lifecycle.Unlock()
 	var result json.RawMessage
 	if err == nil {
@@ -298,17 +319,26 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 		return nil, err
 	}
 	var loaded struct {
-		Registrations []struct{ Handle, Kind string }
+		Registrations []struct {
+			Handle, Kind, Name, Label string
+			Handles                   map[string]string
+		}
 	}
 	if err = json.Unmarshal(result, &loaded); err != nil {
 		_ = h.disableLease(ctx, id, lease)
 		return nil, err
 	}
 	h.lifecycle.Lock()
-	current := !h.closed && h.enabled[id] == lease && !lease.closing
+	current := !h.closed && h.enabled[id] == lease && !lease.closing && protocolProcessLive(lease)
 	if current {
+		h.registrySequence++
+		lease.registrationOrder = h.registrySequence
 		for _, registration := range loaded.Registrations {
 			lease.handles[registration.Handle] = registration.Kind
+			if registration.Kind == "modelProtocol" {
+				lease.modelCompletions[registration.Handles["complete"]] = true
+				lease.protocols = append(lease.protocols, ModelProtocolMetadata{ID: id + ":" + registration.Name, Label: registration.Label, Generation: lease.generation, handles: registration.Handles})
+			}
 		}
 		lease.ready = true
 	}
@@ -319,7 +349,23 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 	return result, nil
 }
 func (h *V1Host) Call(ctx context.Context, id, handle string, args []any) (json.RawMessage, error) {
+	return h.callLease(ctx, id, nil, handle, args)
+}
+func (h *V1Host) callLease(ctx context.Context, id string, expected *nodeLease, handle string, args []any) (json.RawMessage, error) {
 	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	h.lifecycle.Lock()
+	leaseForHandle := h.enabled[id]
+	isCompletion := leaseForHandle != nil && leaseForHandle.modelCompletions[handle]
+	h.lifecycle.Unlock()
+	if isCompletion {
+		return nil, errTypedModelCompletionRequired
+	}
+	// Snapshot potentially large caller payloads before acquiring the lifecycle lock.
+	// Custom marshalers must not execute while admission/unload is fenced.
+	encodedArgs, err := json.Marshal(args)
+	if err != nil {
 		return nil, err
 	}
 	h.lifecycle.Lock()
@@ -328,16 +374,20 @@ func (h *V1Host) Call(ctx context.Context, id, handle string, args []any) (json.
 		return nil, err
 	}
 	lease := h.enabled[id]
-	if h.closed || lease == nil || lease.closing || !lease.ready {
+	if h.closed || lease == nil || lease.closing || !lease.ready || !protocolProcessLive(lease) || expected != nil && lease != expected {
 		h.lifecycle.Unlock()
 		return nil, ErrNotLoaded
 	}
-	pending, err := lease.process.begin(map[string]any{"op": "invoke", "plugin": lease.key, "handle": handle, "args": args, "retainTurnSignal": lease.handles[handle] == "sendHook" && ctx.Done() != nil})
+	if lease.modelCompletions[handle] {
+		h.lifecycle.Unlock()
+		return nil, errTypedModelCompletionRequired
+	}
+	pending, err := lease.process.begin(map[string]any{"op": "invoke", "plugin": lease.key, "handle": handle, "args": json.RawMessage(encodedArgs), "retainTurnSignal": (lease.handles[handle] == "sendHook" || lease.handles[handle] == "modelMethod") && ctx.Done() != nil})
 	if err != nil {
 		h.lifecycle.Unlock()
 		return nil, err
 	}
-	if lease.handles[handle] == "sendHook" && ctx.Done() != nil {
+	if (lease.handles[handle] == "sendHook" || lease.handles[handle] == "modelMethod") && ctx.Done() != nil {
 		// A hook's context lasts for the turn, not merely its callback. Preserve its
 		// cancellation link until the turn ends or the plugin is unloaded.
 		lease.turnStops[pending.id] = context.AfterFunc(ctx, func() {
@@ -355,7 +405,7 @@ func (h *V1Host) Call(ctx context.Context, id, handle string, args []any) (json.
 		result = nil
 	}
 	h.lifecycle.Lock()
-	current := !h.closed && h.enabled[id] == lease && !lease.closing
+	current := !h.closed && h.enabled[id] == lease && !lease.closing && protocolProcessLive(lease)
 	h.lifecycle.Unlock()
 	if !current {
 		return nil, ErrNotLoaded
@@ -448,4 +498,32 @@ func (h *V1Host) Close(ctx context.Context) error {
 		err = errors.Join(err, h.disableLease(ctx, id, lease))
 	}
 	return err
+}
+
+// Worker exit is an ordered control event: hide this exact isolate before the
+// reader delivers subsequent call replies. Teardown runs separately so it cannot
+// block that same reader waiting for control acknowledgements.
+func (h *V1Host) workerExited(process *nodeProcess, key string) {
+	h.lifecycle.Lock()
+	var owner string
+	var dead *nodeLease
+	for id, lease := range h.enabled {
+		if lease.process == process && lease.key == key {
+			lease.dead = true
+			lease.ready = false
+			lease.protocols = nil
+			for _, stop := range lease.turnStops {
+				stop()
+			}
+			lease.turnStops = map[string]func() bool{}
+			if !lease.closing {
+				owner, dead = id, lease
+			}
+			break
+		}
+	}
+	h.lifecycle.Unlock()
+	if dead != nil {
+		go func() { _ = h.disableLease(context.Background(), owner, dead) }()
+	}
 }

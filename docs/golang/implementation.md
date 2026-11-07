@@ -58,7 +58,7 @@ Plugin teardown retains a generation until it has actually exited. V1 control me
 
 The first aggregate pass for this checkpoint passed Go race/vet, HTTP differential, bundled WASM/source-free execution and REST/frontend checks. Independent review then identified additional URL normalization, timezone acceptance, UUID edge and scene revision/coercion cases. The final corrected tree passed Go race/vet, real HTTP differential, four-module bundled/source-free execution and REST contract checks again. Coverage includes 34 URL cases, 14 model cases, 7 scene revision cases, 1,291 timezone cases and 563 recovery-event cases. Frontend/runtime typechecking passed in the preceding aggregate run; frontend files did not change afterward. The timezone acceptance census uses Node 24.22.1 / ICU 78.3 / tzdata 2026e as oracle; porting scheduling calculations is separate.
 
-Remaining byte-level compatibility work includes lone UTF-16 surrogates accepted in some JavaScript strings: Go's standard JSON decoder replaces them. The preview is not a migration writer and must not be used to rewrite such data. A lossless JSON-string representation and fixtures are required before declaring migration parity.
+Remaining byte-level compatibility work includes lone UTF-16 surrogates accepted in some JavaScript strings: Go's standard JSON decoder replaces them. The preview is not a migration writer and must not be used to rewrite such data. The later candidate write modules now have a lossless JSON representation and fixtures, but the remaining HTTP/plugin callers still require boundary-by-boundary migration before full parity.
 
 ## Bot admission and V1 call contexts
 
@@ -67,3 +67,60 @@ The topic-local turn admission coordinator now executes in Go with source-pinned
 V1 calls now propagate cancellation to the individual callback rather than cancelling other calls or the entire plugin. Cancelled RPC bookkeeping retires even if plugin code ignores its signal. Tool completion expires its effect lease, while send hooks retain turn/plugin signal lifetime. Callbacks keep their original receiver, reconstructed dependency Sets and frozen scene/event data. Admission rechecks cancellation under its lock, and plugin metadata cannot replace internal registration handles or kinds. Full typed cache/send/adapter/model bridges and production manager composition remain unfinished.
 
 Focused repeated race tests and independent review passed. The final tree passed whole-backend race tests/vet, real HTTP differential, embedded-module tests, source-free bundle execution, pinned trace regeneration checks and REST contract checks. The initial bundle link exhausted temporary filesystem space; rerunning the bundle and remaining checks with a different temporary directory passed without source changes.
+
+## Model protocol and configuration bridge
+
+V1 model protocol registrations now expose the legacy IDs, labels and operation metadata, keep the original method receiver, and receive a caller/plugin cancellation signal. Each request pins its registration generation so disable/re-enable cannot redirect an old request to a replacement plugin. Disabled or exited hosts do not appear in the live registry. Arbitrary plugin error text is retained only as an internal cause, not returned as a public model error or treated as retry authorization. Caller arguments are encoded before acquiring the lifecycle lock, including user-provided marshalers.
+
+The exact existing plugin configuration validator is transpiled from the pinned TypeScript source into the distributed worker. Startup validates the plugin-normalized configuration but passes the original stored configuration to setup, preserving existing behavior rather than applying preparation/migration hooks at startup. The generator checks both source identity and Node version.
+
+These are compatibility-host operations, not a complete model service. Provider routing, result validation, retry-safe SDK error identity, configuration persistence, typed cache/send/adapter bridges and live bot composition remain separate work. The new global scheduler likewise has real execution and differential tests, but has not yet replaced production model scheduling.
+
+## Durable scene writes and model work
+
+The candidate now includes the actual global model scheduler, single-segment
+send/receipt state machine and coordinated SQLite write protocol. Differential
+fixtures exercise the frozen TypeScript implementations. The write coordinator
+reserves the main WAL writer before authority, prevents bounded connection-pool
+cycles, commits durable intent before main mutation/ACK, and never retries an
+uncertain commit. Preparation reads previous state under the same writer
+reservation. A transaction failure permanently retires its capability, including
+errors raised during row iteration, so ignored rollback errors cannot escape into
+autocommit. Independent adversarial review reproduced this issue before its fix
+and verified the corrected interleavings.
+
+Scene persistence is now a real candidate service using that coordinator, with
+26 Store.saveScene policy cases and five sequential SQL key-identity cases. The
+lossless JSON codec preserves JavaScript code units, property order and Number
+formatting. Recovery event validation and typed encoding use it, including exact
+payload/hash tests for distinct lone-surrogate identities. SQL key binding is a
+separate verified conversion, not a rewrite of identity/hash material.
+
+These write services are not exposed by the production HTTP preview. Enrollment,
+full recovery reconciliation, the remaining domain events, complete bot runtime
+composition and plugin integrations remain unfinished. A failed durable intent
+may leave an ACK gap requiring reconciliation; this is not a runnable production
+replacement yet.
+
+Settings persistence now uses the same reserved-transaction preparation. The
+actual Store.set oracle has 165 supported parity cases and one explicitly
+unsupported bootstrap case. It covers policy revision changes, ordered flag
+intents, budget security projection, random security revision rotation and
+intent-before-validation failure ordering. A missing security-state table still
+requires the separate bootstrap path; the candidate reports that limitation
+before writing intent. These services remain internal until the full startup,
+reconciliation and HTTP composition is ready.
+
+The V1 model completion bridge now keeps opaque continuation values in their
+originating isolate. Typed private references are bound to host, registration,
+protocol and model; public JSON cannot mint them. Visible result validation occurs
+before claim, and cancellation before publication releases pending state. Actual
+Map, Date, cyclic, function, Symbol and BigInt identities can survive reuse without
+serialization. Individual worker crashes retire only their own registration;
+the last worker exits the shared Node process. Independent review additionally
+checks cancellation after claim ACK and late exits from replaced workers.
+
+The assistant-message owner must explicitly release shared continuation ownership
+only when its last branch/user discards it. There is no automatic finalizer or
+production model-router wiring yet. The SDK’s explicit retry-error identity still
+requires a separate compatibility implementation.

@@ -22,7 +22,7 @@ func TestV1LazySharedHostAndActualUnload(t *testing.T) {
 	root := t.TempDir()
 	write := func(id string) string {
 		path := filepath.Join(root, id+".mjs")
-		source := `export default {manifest:{id:"` + id + `",name:"Fixture",version:"1",configSchema:{},capabilities:[]},setup(ctx){ctx.registerAdminAction('echo', async input=>({echo:input}));ctx.onDispose(()=>{});}}`
+		source := `export default {manifest:{id:"` + id + `",name:"Fixture",version:"1",configSchema:{type:"object",additionalProperties:true},capabilities:[]},setup(ctx){ctx.registerAdminAction('echo', async input=>({echo:input}));ctx.onDispose(()=>{});}}`
 		if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 			t.Fatal(err)
 		}
@@ -82,7 +82,7 @@ func TestV1DisableInterruptsSetupAndUnloadsIsolate(t *testing.T) {
 	readyPath := path + ".ready"
 	encodedLog, _ := json.Marshal(logPath)
 	encodedReady, _ := json.Marshal(readyPath)
-	source := `import {appendFileSync,writeFileSync} from 'node:fs'; export default {manifest:{id:'waiting'},async setup(ctx){ctx.onDispose(()=>appendFileSync(` + string(encodedLog) + `,'once\n'));writeFileSync(` + string(encodedReady) + `,'ready');await new Promise(resolve=>ctx.signal.addEventListener('abort',resolve,{once:true}));}}`
+	source := `import {appendFileSync,writeFileSync} from 'node:fs'; export default {manifest:{id:'waiting',configSchema:{type:'object',additionalProperties:true},capabilities:[]},async setup(ctx){ctx.onDispose(()=>appendFileSync(` + string(encodedLog) + `,'once\n'));writeFileSync(` + string(encodedReady) + `,'ready');await new Promise(resolve=>ctx.signal.addEventListener('abort',resolve,{once:true}));}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +120,7 @@ func TestV1StoredConfigurationAndDisposeExactlyOnce(t *testing.T) {
 	root := t.TempDir()
 	path := filepath.Join(root, "config.mjs")
 	logPath, _ := json.Marshal(filepath.Join(root, "cleanup.txt"))
-	source := `import {appendFileSync} from 'node:fs'; export default {manifest:{id:'config'},prepareConfiguration(){throw Error('prepare is a write operation, not startup')},validateConfiguration(config){return {...config, normalized:true}},setup(ctx){if(ctx.config.normalized)throw Error('startup replaced stored configuration');ctx.onDispose(()=>appendFileSync(` + string(logPath) + `,'once\n'));ctx.registerAdminAction('config',async()=>ctx.config)}}`
+	source := `import {appendFileSync} from 'node:fs'; export default {manifest:{id:'config',configSchema:{type:'object',additionalProperties:true},capabilities:[]},prepareConfiguration(){throw Error('prepare is a write operation, not startup')},validateConfiguration(config){return {...config, normalized:true}},setup(ctx){if(ctx.config.normalized)throw Error('startup replaced stored configuration');ctx.onDispose(()=>appendFileSync(` + string(logPath) + `,'once\n'));ctx.registerAdminAction('config',async()=>ctx.config)}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +143,7 @@ func TestV1CancellationTerminatesStuckIsolateWithoutStoppingOtherPlugin(t *testi
 	root := t.TempDir()
 	for _, id := range []string{"keeper", "stuck"} {
 		path := filepath.Join(root, id+".mjs")
-		source := `export default {manifest:{id:'` + id + `'},setup(ctx){ctx.registerAdminAction('echo',async()=>true);`
+		source := `export default {manifest:{id:'` + id + `',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(ctx){ctx.registerAdminAction('echo',async()=>true);`
 		if id == "stuck" {
 			source += `ctx.onDispose(()=>new Promise(()=>{}));`
 		}
@@ -175,7 +175,7 @@ func TestV1ExitedWorkerDoesNotHangDisable(t *testing.T) {
 	host := NewV1Host("node", io.Discard)
 	defer host.Close(context.Background())
 	path := filepath.Join(t.TempDir(), "exit.mjs")
-	source := `export default {manifest:{id:'exit'},setup(ctx){ctx.registerAdminAction('exit',async()=>process.exit(0))}}`
+	source := `export default {manifest:{id:'exit',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(ctx){ctx.registerAdminAction('exit',async()=>process.exit(0))}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +202,7 @@ func TestV1CancelledBusyStartupTerminatesIsolate(t *testing.T) {
 	defer host.Close(context.Background())
 	root := t.TempDir()
 	path := filepath.Join(root, "busy.mjs")
-	source := `export default {manifest:{id:'busy'},setup(){while(true){}}}`
+	source := `export default {manifest:{id:'busy',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(){while(true){}}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -227,7 +227,7 @@ func TestV1TeardownBarrierAndReenable(t *testing.T) {
 	release := filepath.Join(root, "release")
 	encodedStarted, _ := json.Marshal(started)
 	encodedRelease, _ := json.Marshal(release)
-	source := `import {writeFileSync,existsSync} from 'node:fs';export default {manifest:{id:'barrier'},setup(ctx){ctx.onDispose(async()=>{writeFileSync(` + string(encodedStarted) + `,'started');while(!existsSync(` + string(encodedRelease) + `))await new Promise(resolve=>setTimeout(resolve,1))})}}`
+	source := `import {writeFileSync,existsSync} from 'node:fs';export default {manifest:{id:'barrier',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(ctx){ctx.onDispose(async()=>{writeFileSync(` + string(encodedStarted) + `,'started');while(!existsSync(` + string(encodedRelease) + `))await new Promise(resolve=>setTimeout(resolve,1))})}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -286,7 +286,7 @@ func TestV1PerCallCancellationAndTurnContext(t *testing.T) {
 	aborted := filepath.Join(root, "aborted")
 	encodedStarted, _ := json.Marshal(started)
 	encodedAborted, _ := json.Marshal(aborted)
-	source := `import {writeFileSync} from 'node:fs';export default {manifest:{id:'turn'},setup(ctx){ctx.registerTool({name:'turn.wait',execute:async(input,context)=>{if(!(context.dependencies instanceof Set)||!context.dependencies.has('source')||!Object.isFrozen(context.scene)||context.validations.length!==0)throw Error('invalid_context');if(input.fast)return 'fast';writeFileSync(` + string(encodedStarted) + `,'started');await new Promise(resolve=>context.signal.addEventListener('abort',resolve,{once:true}));writeFileSync(` + string(encodedAborted) + `,'aborted');return 'must not publish'}});ctx.registerAdminAction('echo',async()=>true)}}`
+	source := `import {writeFileSync} from 'node:fs';export default {manifest:{id:'turn',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(ctx){ctx.registerTool({name:'turn.wait',execute:async(input,context)=>{if(!(context.dependencies instanceof Set)||!context.dependencies.has('source')||!Object.isFrozen(context.scene)||context.validations.length!==0)throw Error('invalid_context');if(input.fast)return 'fast';writeFileSync(` + string(encodedStarted) + `,'started');await new Promise(resolve=>context.signal.addEventListener('abort',resolve,{once:true}));writeFileSync(` + string(encodedAborted) + `,'aborted');return 'must not publish'}});ctx.registerAdminAction('echo',async()=>true)}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -343,7 +343,7 @@ func TestV1CallbackReceiversAndSignalLifetimes(t *testing.T) {
 	host := NewV1Host("node", io.Discard)
 	defer host.Close(ctx)
 	path := filepath.Join(t.TempDir(), "receivers.mjs")
-	source := `let toolSignal,hookSignal;export default{manifest:{id:'receivers'},setup(ctx){ctx.registerTool({name:'receivers.tool',execute:async function(_,context){if(this.name!=='receivers.tool')throw Error('tool receiver');toolSignal=context.signal;return true}});ctx.beforeSend({priority:17,kind:'action',handle:'untrusted-overwrite',handler:async function(segments,context){if(this.priority!==17)throw Error('hook receiver');hookSignal=context.signal;return {action:'continue',segments}}});ctx.registerAdminAction('status',async function(){if(this!==undefined)throw Error('action receiver');return{tool:toolSignal?.aborted,hook:hookSignal?.aborted}})}}`
+	source := `let toolSignal,hookSignal;export default{manifest:{id:'receivers',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(ctx){ctx.registerTool({name:'receivers.tool',execute:async function(_,context){if(this.name!=='receivers.tool')throw Error('tool receiver');toolSignal=context.signal;return true}});ctx.beforeSend({priority:17,kind:'action',handle:'untrusted-overwrite',handler:async function(segments,context){if(this.priority!==17)throw Error('hook receiver');hookSignal=context.signal;return {action:'continue',segments}}});ctx.registerAdminAction('status',async function(){if(this!==undefined)throw Error('action receiver');return{tool:toolSignal?.aborted,hook:hookSignal?.aborted}})}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -402,7 +402,7 @@ func TestV1CancelledUncooperativeCallRetiresRPC(t *testing.T) {
 	path := filepath.Join(root, "ignore.mjs")
 	started := filepath.Join(root, "started")
 	encoded, _ := json.Marshal(started)
-	source := `import{writeFileSync}from'node:fs';export default{manifest:{id:'ignore'},setup(ctx){ctx.registerTool({name:'ignore.wait',execute:async()=>{writeFileSync(` + string(encoded) + `,'ready');return new Promise(()=>{})}})}}`
+	source := `import{writeFileSync}from'node:fs';export default{manifest:{id:'ignore',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(ctx){ctx.registerTool({name:'ignore.wait',execute:async()=>{writeFileSync(` + string(encoded) + `,'ready');return new Promise(()=>{})}})}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -459,7 +459,7 @@ func TestV1CancellationWhileWaitingForAdmission(t *testing.T) {
 	host := NewV1Host("node", io.Discard)
 	defer host.Close(ctx)
 	path := filepath.Join(t.TempDir(), "admission.mjs")
-	source := `let count=0;export default{manifest:{id:'admission'},setup(ctx){ctx.registerAdminAction('increment',async()=>++count);ctx.registerAdminAction('status',async()=>count)}}`
+	source := `let count=0;export default{manifest:{id:'admission',configSchema:{type:'object',additionalProperties:true},capabilities:[]},setup(ctx){ctx.registerAdminAction('increment',async()=>++count);ctx.registerAdminAction('status',async()=>count)}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}

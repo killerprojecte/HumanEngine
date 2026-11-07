@@ -1,0 +1,857 @@
+{
+  "cases": [
+    {
+      "name": "create",
+      "previous": null,
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "events": []
+    },
+    {
+      "name": "ignore_supplied_revision",
+      "previous": null,
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadRevision": 99
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "events": []
+    },
+    {
+      "name": "unchanged",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "events": []
+    },
+    {
+      "name": "presentation_only",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "New name",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "avatarUrl": "https://example.com/avatar"
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"New name\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"avatarUrl\":\"https://example.com/avatar\"}",
+      "events": []
+    },
+    {
+      "name": "toggle_participationEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": false,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":false,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":false,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "explicit_false_participationEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": false,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "toggle_learningEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": false,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":false,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "explicit_false_learningEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": false,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "toggle_proactiveEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": true
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":true}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":true,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "explicit_false_proactiveEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": true
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":true}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":true,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "toggle_memoryReadEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":false,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "explicit_false_memoryReadEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadEnabled": true
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "toggle_personalizationEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "personalizationEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"personalizationEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":false}}"
+      ]
+    },
+    {
+      "name": "explicit_false_personalizationEnabled",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "personalizationEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "personalizationEnabled": true
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"personalizationEnabled\":true,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"c2e3d3a4f5857e7f6b39b1bb11269e1d099dbeb9eb420f406531865a5e629ab4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "identity_adapterId",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "changed",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"changed\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"f216df2776c7affe3aac9b1b1799f9c49cbffa1ce0b201712602834f3e40cecb\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "identity_accountId",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "changed",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"changed\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"31f8a9080be894bc427a6d508a20e8b0509462d383ed8505a6d40fd95a182f41\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "identity_platformSceneId",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "changed",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"changed\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"ed270ca6293c7da488524823e72ce0e238612e3a2fc3ddba7baf5ea71eab86d3\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "identity_kind",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "private",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"private\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"5ae1a0637facd321d3bafb986d6755bb1accded778bf1829a820a45a4495b0b4\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "retain_omitted_controls",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadEnabled": false,
+        "personalizationEnabled": false,
+        "memoryReadRevision": 7
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":false,\"personalizationEnabled\":false,\"memoryReadRevision\":7}",
+      "events": []
+    },
+    {
+      "name": "stable_revision",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadRevision": 7
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadRevision": 100
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":7}",
+      "events": []
+    },
+    {
+      "name": "lone_surrogate_identity",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "\ud800",
+        "platformSceneId": "chat",
+        "name": "\udfff",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"\\ud800\",\"platformSceneId\":\"chat\",\"name\":\"\\udfff\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"f7055552fd49695431bff520d541d6c18a461ffa10db96a6bc1d12b995681e5b\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "escaped_identity",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "<>&  ",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"<>&  \",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":1}",
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"scene\",\"identityHash\":\"793cbd5ecd042811f555367588c8b260ff876b42993fbe66ec314b4c28ccf59a\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "name": "revision_-1",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadRevision": -1
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":-1}",
+      "events": [],
+      "error": "memory_read_policy_invalid"
+    },
+    {
+      "name": "revision_0.5",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadRevision": 0.5
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":0.5}",
+      "events": [],
+      "error": "memory_read_policy_invalid"
+    },
+    {
+      "name": "revision_9007199254740991",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadRevision": 9007199254740991
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":9007199254740991}",
+      "events": [],
+      "error": "memory_read_policy_invalid"
+    },
+    {
+      "name": "revision_9007199254740992",
+      "previous": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false,
+        "memoryReadRevision": 9007199254740992
+      },
+      "input": {
+        "id": "scene",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "output": "{\"id\":\"scene\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":9007199254740992}",
+      "events": [],
+      "error": "memory_read_policy_invalid"
+    }
+  ],
+  "keyCases": [
+    {
+      "input": {
+        "id": "\ud800",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "rows": [
+        {
+          "keyHex": "EFBFBD",
+          "value": "{\"id\":\"\\ud800\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}"
+        }
+      ],
+      "events": []
+    },
+    {
+      "input": {
+        "id": "\udfff",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "rows": [
+        {
+          "keyHex": "EFBFBD",
+          "value": "{\"id\":\"\\udfff\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":1}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"\\udfff\",\"identityHash\":\"589484e7c88efdd86a74db525e944041a554e827a1bc4efa4c91c666de9be68a\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "input": {
+        "id": "�",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "rows": [
+        {
+          "keyHex": "EFBFBD",
+          "value": "{\"id\":\"�\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":2}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"scene_flags\",\"schemaVersion\":2,\"sceneId\":\"�\",\"identityHash\":\"3bd51d61a89d45bb76496a70a7b6caad047a84b68346b36d1d43a39108d09b96\",\"flags\":{\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadEnabled\":true,\"personalizationEnabled\":true}}"
+      ]
+    },
+    {
+      "input": {
+        "id": "😀",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "rows": [
+        {
+          "keyHex": "EFBFBD",
+          "value": "{\"id\":\"�\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":2}"
+        },
+        {
+          "keyHex": "F09F9880",
+          "value": "{\"id\":\"😀\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}"
+        }
+      ],
+      "events": []
+    },
+    {
+      "input": {
+        "id": "a\u0000b",
+        "kind": "group",
+        "adapterId": "adapter",
+        "accountId": "bot",
+        "platformSceneId": "chat",
+        "name": "Fixture",
+        "participationEnabled": true,
+        "learningEnabled": true,
+        "proactiveEnabled": false
+      },
+      "rows": [
+        {
+          "keyHex": "610062",
+          "value": "{\"id\":\"a\\u0000b\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}"
+        },
+        {
+          "keyHex": "EFBFBD",
+          "value": "{\"id\":\"�\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false,\"memoryReadRevision\":2}"
+        },
+        {
+          "keyHex": "F09F9880",
+          "value": "{\"id\":\"😀\",\"kind\":\"group\",\"adapterId\":\"adapter\",\"accountId\":\"bot\",\"platformSceneId\":\"chat\",\"name\":\"Fixture\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}"
+        }
+      ],
+      "events": []
+    }
+  ]
+}

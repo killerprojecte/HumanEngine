@@ -3,6 +3,15 @@ import { createInterface } from 'node:readline'
 import { randomUUID } from 'node:crypto'
 const plugins = new Map()
 let workerSource = ''
+const failureMessage = (error) => {
+  try {
+    if (typeof error === 'string' && error) return error
+    if (typeof error?.message === 'string' && error.message) return error.message
+  } catch {
+    // Thrown values may themselves have throwing accessors.
+  }
+  return 'plugin_failure'
+}
 const send = (value) => process.stdout.write(JSON.stringify(value) + '\n')
 const request = (plugin, message) =>
   new Promise((resolve, reject) => {
@@ -13,7 +22,7 @@ const request = (plugin, message) =>
     const onMessage = (reply) => {
       if (reply.id !== message.id) return
       cleanup()
-      reply.error ? reject(Error(reply.error)) : resolve(reply.result)
+      reply.failed ? reject(Error(failureMessage(reply.error))) : resolve(reply.result)
     }
     const onExit = () => {
       cleanup()
@@ -88,13 +97,15 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
         const plugin = { worker, closing: false, exited: false, requests: new Map() }
         worker.once('exit', () => {
           plugin.exited = true
+          if (plugins.get(message.plugin) === plugin) plugins.delete(message.plugin)
+          send({ event: 'worker_exit', plugin: message.plugin })
         })
         plugins.set(message.plugin, plugin)
         try {
           const ready = await new Promise((resolve, reject) => {
             worker.on('message', (m) => {
               if (m.ready) resolve(m)
-              if (m.startupError) reject(Error(m.startupError))
+              if (m.startup && m.failed) reject(Error(failureMessage(m.error)))
             })
             worker.once('error', reject)
             worker.once('exit', () => reject(Error('plugin_worker_exited')))
@@ -116,6 +127,11 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
         if (plugin && !plugin.exited)
           plugin.worker.postMessage({ op: 'cancel_invoke', invocationId: message.invocationId })
         // Acknowledge control admission without waiting on user callback code.
+        send({ id: message.id, result: true })
+        return
+      }
+      if (message.op === 'release_continuation') {
+        if (plugin && !plugin.exited) plugin.worker.postMessage(message)
         send({ id: message.id, result: true })
         return
       }
@@ -164,7 +180,7 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
       if (!plugin || plugin.closing) throw Error('plugin_not_loaded')
       send({ id: message.id, result: await request(plugin, message) })
     } catch (error) {
-      send({ id: message.id, error: error.message })
+      send({ id: message.id, failed: true, error: failureMessage(error) })
     }
   })()
 }

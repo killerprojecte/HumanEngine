@@ -1,0 +1,3688 @@
+{
+  "sources": {
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/budget/settings.ts": "63998711c972aea0fb449d777b8a63c64bc48d9c8215117684e41194e2c6261d",
+    "src/memory/recovery/configuration-contract.ts": "eb62278c9b7eda4b17e4812a0f6d3495501c27e39428b343395d94fb755117ce",
+    "src/memory/recovery/security-state.ts": "ca341983f12f39f96f72f51544cc8d7c05d8c40e03b8fc8d2e2ef1d10c3016d8",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192"
+  },
+  "cases": [
+    {
+      "name": "create_empty",
+      "previous": null,
+      "input": {},
+      "rawInput": "{}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "null_value",
+      "previous": {},
+      "input": null,
+      "rawInput": "null",
+      "output": [
+        {
+          "key": "settings",
+          "value": "null"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "same_value",
+      "previous": {
+        "debugModelIO": true,
+        "unknown": "preserve"
+      },
+      "input": {
+        "debugModelIO": true,
+        "unknown": "preserve"
+      },
+      "rawInput": "{\"debugModelIO\":true,\"unknown\":\"preserve\"}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"debugModelIO\":true,\"unknown\":\"preserve\"}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "explicit_budget_defaults",
+      "previous": {},
+      "input": {
+        "budgetExperimentEnabled": false,
+        "budgetMode": "strict",
+        "budgetDailyUsd": 1,
+        "budgetMaxUnresolvedUsd": 0.25,
+        "budgetPerTurnUsd": 0.1,
+        "budgetPerTurnTokens": 32768,
+        "budgetPerTurnCalls": 8,
+        "budgetMaxOutputTokens": 2048,
+        "budgetRealtimeRatio": 0.2,
+        "budgetMaintenanceRatio": 0.1
+      },
+      "rawInput": "{\"budgetExperimentEnabled\":false,\"budgetMode\":\"strict\",\"budgetDailyUsd\":1,\"budgetMaxUnresolvedUsd\":0.25,\"budgetPerTurnUsd\":0.1,\"budgetPerTurnTokens\":32768,\"budgetPerTurnCalls\":8,\"budgetMaxOutputTokens\":2048,\"budgetRealtimeRatio\":0.2,\"budgetMaintenanceRatio\":0.1}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetExperimentEnabled\":false,\"budgetMode\":\"strict\",\"budgetDailyUsd\":1,\"budgetMaxUnresolvedUsd\":0.25,\"budgetPerTurnUsd\":0.1,\"budgetPerTurnTokens\":32768,\"budgetPerTurnCalls\":8,\"budgetMaxOutputTokens\":2048,\"budgetRealtimeRatio\":0.2,\"budgetMaintenanceRatio\":0.1}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_order_not_security_change",
+      "previous": {
+        "budgetExperimentEnabled": false,
+        "budgetMode": "strict",
+        "budgetDailyUsd": 1,
+        "budgetMaxUnresolvedUsd": 0.25,
+        "budgetPerTurnUsd": 0.1,
+        "budgetPerTurnTokens": 32768,
+        "budgetPerTurnCalls": 8,
+        "budgetMaxOutputTokens": 2048,
+        "budgetRealtimeRatio": 0.2,
+        "budgetMaintenanceRatio": 0.1
+      },
+      "input": {
+        "budgetMaintenanceRatio": 0.1,
+        "budgetRealtimeRatio": 0.2,
+        "budgetMaxOutputTokens": 2048,
+        "budgetPerTurnCalls": 8,
+        "budgetPerTurnTokens": 32768,
+        "budgetPerTurnUsd": 0.1,
+        "budgetMaxUnresolvedUsd": 0.25,
+        "budgetDailyUsd": 1,
+        "budgetMode": "strict",
+        "budgetExperimentEnabled": false
+      },
+      "rawInput": "{\"budgetMaintenanceRatio\":0.1,\"budgetRealtimeRatio\":0.2,\"budgetMaxOutputTokens\":2048,\"budgetPerTurnCalls\":8,\"budgetPerTurnTokens\":32768,\"budgetPerTurnUsd\":0.1,\"budgetMaxUnresolvedUsd\":0.25,\"budgetDailyUsd\":1,\"budgetMode\":\"strict\",\"budgetExperimentEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaintenanceRatio\":0.1,\"budgetRealtimeRatio\":0.2,\"budgetMaxOutputTokens\":2048,\"budgetPerTurnCalls\":8,\"budgetPerTurnTokens\":32768,\"budgetPerTurnUsd\":0.1,\"budgetMaxUnresolvedUsd\":0.25,\"budgetDailyUsd\":1,\"budgetMode\":\"strict\",\"budgetExperimentEnabled\":false}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "unprojected_change",
+      "previous": {},
+      "input": {
+        "apiKey": "synthetic-not-a-credential",
+        "unknown": "\ud800",
+        "\udfff": "<>&  "
+      },
+      "rawInput": "{\"apiKey\":\"synthetic-not-a-credential\",\"unknown\":\"\\ud800\",\"\\udfff\":\"<>&  \"}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"apiKey\":\"synthetic-not-a-credential\",\"unknown\":\"\\ud800\",\"\\udfff\":\"<>&  \"}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_order_preserved",
+      "previous": {},
+      "input": {
+        "1": 1,
+        "2": 2,
+        "b": 4,
+        "a": 3
+      },
+      "rawInput": "{\"1\":1,\"2\":2,\"b\":4,\"a\":3}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"1\":1,\"2\":2,\"b\":4,\"a\":3}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "unknown_nonfinite_serialization",
+      "previous": {},
+      "input": {
+        "x": null
+      },
+      "rawInput": "{\"x\":1e400}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"x\":null}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryExperienceFeedbackEnabled",
+      "previous": {
+        "memoryExperienceFeedbackEnabled": false
+      },
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceFeedbackEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":true,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryExperienceFeedbackEnabled",
+      "previous": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "input": {
+        "memoryExperienceFeedbackEnabled": false
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":false}",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceFeedbackEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memorySemanticEnabled",
+      "previous": {
+        "memorySemanticEnabled": false
+      },
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":true,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memorySemanticEnabled",
+      "previous": {
+        "memorySemanticEnabled": true
+      },
+      "input": {
+        "memorySemanticEnabled": false
+      },
+      "rawInput": "{\"memorySemanticEnabled\":false}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memorySemanticAutoAdmissionEnabled",
+      "previous": {
+        "memorySemanticAutoAdmissionEnabled": false
+      },
+      "input": {
+        "memorySemanticAutoAdmissionEnabled": true
+      },
+      "rawInput": "{\"memorySemanticAutoAdmissionEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticAutoAdmissionEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":true,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memorySemanticAutoAdmissionEnabled",
+      "previous": {
+        "memorySemanticAutoAdmissionEnabled": true
+      },
+      "input": {
+        "memorySemanticAutoAdmissionEnabled": false
+      },
+      "rawInput": "{\"memorySemanticAutoAdmissionEnabled\":false}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticAutoAdmissionEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memorySemanticAnswerEnabled",
+      "previous": {
+        "memorySemanticAnswerEnabled": false
+      },
+      "input": {
+        "memorySemanticAnswerEnabled": true
+      },
+      "rawInput": "{\"memorySemanticAnswerEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticAnswerEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":true,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memorySemanticAnswerEnabled",
+      "previous": {
+        "memorySemanticAnswerEnabled": true
+      },
+      "input": {
+        "memorySemanticAnswerEnabled": false
+      },
+      "rawInput": "{\"memorySemanticAnswerEnabled\":false}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticAnswerEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryKnowledgeEnabled",
+      "previous": {
+        "memoryKnowledgeEnabled": false
+      },
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryKnowledgeEnabled",
+      "previous": {
+        "memoryKnowledgeEnabled": true
+      },
+      "input": {
+        "memoryKnowledgeEnabled": false
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":false}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryKnowledgeAutoAdmissionEnabled",
+      "previous": {
+        "memoryKnowledgeAutoAdmissionEnabled": false
+      },
+      "input": {
+        "memoryKnowledgeAutoAdmissionEnabled": true
+      },
+      "rawInput": "{\"memoryKnowledgeAutoAdmissionEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeAutoAdmissionEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":true,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryKnowledgeAutoAdmissionEnabled",
+      "previous": {
+        "memoryKnowledgeAutoAdmissionEnabled": true
+      },
+      "input": {
+        "memoryKnowledgeAutoAdmissionEnabled": false
+      },
+      "rawInput": "{\"memoryKnowledgeAutoAdmissionEnabled\":false}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeAutoAdmissionEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryKnowledgeAnswerEnabled",
+      "previous": {
+        "memoryKnowledgeAnswerEnabled": false
+      },
+      "input": {
+        "memoryKnowledgeAnswerEnabled": true
+      },
+      "rawInput": "{\"memoryKnowledgeAnswerEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeAnswerEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":true,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryKnowledgeAnswerEnabled",
+      "previous": {
+        "memoryKnowledgeAnswerEnabled": true
+      },
+      "input": {
+        "memoryKnowledgeAnswerEnabled": false
+      },
+      "rawInput": "{\"memoryKnowledgeAnswerEnabled\":false}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeAnswerEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_topicAdmissionEnabled",
+      "previous": {
+        "topicAdmissionEnabled": false
+      },
+      "input": {
+        "topicAdmissionEnabled": true
+      },
+      "rawInput": "{\"topicAdmissionEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"topicAdmissionEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":true,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_topicAdmissionEnabled",
+      "previous": {
+        "topicAdmissionEnabled": true
+      },
+      "input": {
+        "topicAdmissionEnabled": false
+      },
+      "rawInput": "{\"topicAdmissionEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"topicAdmissionEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryWorkingSetEnabled",
+      "previous": {
+        "memoryWorkingSetEnabled": false
+      },
+      "input": {
+        "memoryWorkingSetEnabled": true
+      },
+      "rawInput": "{\"memoryWorkingSetEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryWorkingSetEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":true,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryWorkingSetEnabled",
+      "previous": {
+        "memoryWorkingSetEnabled": true
+      },
+      "input": {
+        "memoryWorkingSetEnabled": false
+      },
+      "rawInput": "{\"memoryWorkingSetEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryWorkingSetEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryEpisodesEnabled",
+      "previous": {
+        "memoryEpisodesEnabled": false
+      },
+      "input": {
+        "memoryEpisodesEnabled": true
+      },
+      "rawInput": "{\"memoryEpisodesEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryEpisodesEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":true,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryEpisodesEnabled",
+      "previous": {
+        "memoryEpisodesEnabled": true
+      },
+      "input": {
+        "memoryEpisodesEnabled": false
+      },
+      "rawInput": "{\"memoryEpisodesEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryEpisodesEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryCommitmentsEnabled",
+      "previous": {
+        "memoryCommitmentsEnabled": false
+      },
+      "input": {
+        "memoryCommitmentsEnabled": true
+      },
+      "rawInput": "{\"memoryCommitmentsEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryCommitmentsEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":true,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryCommitmentsEnabled",
+      "previous": {
+        "memoryCommitmentsEnabled": true
+      },
+      "input": {
+        "memoryCommitmentsEnabled": false
+      },
+      "rawInput": "{\"memoryCommitmentsEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryCommitmentsEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryCommitmentsAnswerEnabled",
+      "previous": {
+        "memoryCommitmentsAnswerEnabled": false
+      },
+      "input": {
+        "memoryCommitmentsAnswerEnabled": true
+      },
+      "rawInput": "{\"memoryCommitmentsAnswerEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryCommitmentsAnswerEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":true,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryCommitmentsAnswerEnabled",
+      "previous": {
+        "memoryCommitmentsAnswerEnabled": true
+      },
+      "input": {
+        "memoryCommitmentsAnswerEnabled": false
+      },
+      "rawInput": "{\"memoryCommitmentsAnswerEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryCommitmentsAnswerEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryHistoricalReadEnabled",
+      "previous": {
+        "memoryHistoricalReadEnabled": false
+      },
+      "input": {
+        "memoryHistoricalReadEnabled": true
+      },
+      "rawInput": "{\"memoryHistoricalReadEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryHistoricalReadEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":true,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryHistoricalReadEnabled",
+      "previous": {
+        "memoryHistoricalReadEnabled": true
+      },
+      "input": {
+        "memoryHistoricalReadEnabled": false
+      },
+      "rawInput": "{\"memoryHistoricalReadEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryHistoricalReadEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_sourceEventRevisionsEnabled",
+      "previous": {
+        "sourceEventRevisionsEnabled": false
+      },
+      "input": {
+        "sourceEventRevisionsEnabled": true
+      },
+      "rawInput": "{\"sourceEventRevisionsEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"sourceEventRevisionsEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":true,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_sourceEventRevisionsEnabled",
+      "previous": {
+        "sourceEventRevisionsEnabled": true
+      },
+      "input": {
+        "sourceEventRevisionsEnabled": false
+      },
+      "rawInput": "{\"sourceEventRevisionsEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"sourceEventRevisionsEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_cacheEnabled",
+      "previous": {
+        "cacheEnabled": false
+      },
+      "input": {
+        "cacheEnabled": true
+      },
+      "rawInput": "{\"cacheEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"cacheEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_cacheEnabled",
+      "previous": {
+        "cacheEnabled": true
+      },
+      "input": {
+        "cacheEnabled": false
+      },
+      "rawInput": "{\"cacheEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"cacheEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":false,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_debugModelIO",
+      "previous": {
+        "debugModelIO": false
+      },
+      "input": {
+        "debugModelIO": true
+      },
+      "rawInput": "{\"debugModelIO\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"debugModelIO\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":true,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_debugModelIO",
+      "previous": {
+        "debugModelIO": true
+      },
+      "input": {
+        "debugModelIO": false
+      },
+      "rawInput": "{\"debugModelIO\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"debugModelIO\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryProjectionEnabled",
+      "previous": {
+        "memoryProjectionEnabled": false
+      },
+      "input": {
+        "memoryProjectionEnabled": true
+      },
+      "rawInput": "{\"memoryProjectionEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryProjectionEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":true,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryProjectionEnabled",
+      "previous": {
+        "memoryProjectionEnabled": true
+      },
+      "input": {
+        "memoryProjectionEnabled": false
+      },
+      "rawInput": "{\"memoryProjectionEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryProjectionEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryGraphEnabled",
+      "previous": {
+        "memoryGraphEnabled": false
+      },
+      "input": {
+        "memoryGraphEnabled": true
+      },
+      "rawInput": "{\"memoryGraphEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":true,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryGraphEnabled",
+      "previous": {
+        "memoryGraphEnabled": true
+      },
+      "input": {
+        "memoryGraphEnabled": false
+      },
+      "rawInput": "{\"memoryGraphEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryGraphAutoAdmissionEnabled",
+      "previous": {
+        "memoryGraphAutoAdmissionEnabled": false
+      },
+      "input": {
+        "memoryGraphAutoAdmissionEnabled": true
+      },
+      "rawInput": "{\"memoryGraphAutoAdmissionEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphAutoAdmissionEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":true,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryGraphAutoAdmissionEnabled",
+      "previous": {
+        "memoryGraphAutoAdmissionEnabled": true
+      },
+      "input": {
+        "memoryGraphAutoAdmissionEnabled": false
+      },
+      "rawInput": "{\"memoryGraphAutoAdmissionEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphAutoAdmissionEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryGraphAnswerEnabled",
+      "previous": {
+        "memoryGraphAnswerEnabled": false
+      },
+      "input": {
+        "memoryGraphAnswerEnabled": true
+      },
+      "rawInput": "{\"memoryGraphAnswerEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphAnswerEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":true,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryGraphAnswerEnabled",
+      "previous": {
+        "memoryGraphAnswerEnabled": true
+      },
+      "input": {
+        "memoryGraphAnswerEnabled": false
+      },
+      "rawInput": "{\"memoryGraphAnswerEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphAnswerEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryGraphShadowEnabled",
+      "previous": {
+        "memoryGraphShadowEnabled": false
+      },
+      "input": {
+        "memoryGraphShadowEnabled": true
+      },
+      "rawInput": "{\"memoryGraphShadowEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphShadowEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":true,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryGraphShadowEnabled",
+      "previous": {
+        "memoryGraphShadowEnabled": true
+      },
+      "input": {
+        "memoryGraphShadowEnabled": false
+      },
+      "rawInput": "{\"memoryGraphShadowEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryGraphShadowEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryExperienceEnabled",
+      "previous": {
+        "memoryExperienceEnabled": false
+      },
+      "input": {
+        "memoryExperienceEnabled": true
+      },
+      "rawInput": "{\"memoryExperienceEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":true,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryExperienceEnabled",
+      "previous": {
+        "memoryExperienceEnabled": true
+      },
+      "input": {
+        "memoryExperienceEnabled": false
+      },
+      "rawInput": "{\"memoryExperienceEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryExperienceAutoActivateEnabled",
+      "previous": {
+        "memoryExperienceAutoActivateEnabled": false
+      },
+      "input": {
+        "memoryExperienceAutoActivateEnabled": true
+      },
+      "rawInput": "{\"memoryExperienceAutoActivateEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceAutoActivateEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":true,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryExperienceAutoActivateEnabled",
+      "previous": {
+        "memoryExperienceAutoActivateEnabled": true
+      },
+      "input": {
+        "memoryExperienceAutoActivateEnabled": false
+      },
+      "rawInput": "{\"memoryExperienceAutoActivateEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceAutoActivateEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "enable_memoryExperienceHintsEnabled",
+      "previous": {
+        "memoryExperienceHintsEnabled": false
+      },
+      "input": {
+        "memoryExperienceHintsEnabled": true
+      },
+      "rawInput": "{\"memoryExperienceHintsEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceHintsEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":true}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "disable_memoryExperienceHintsEnabled",
+      "previous": {
+        "memoryExperienceHintsEnabled": true
+      },
+      "input": {
+        "memoryExperienceHintsEnabled": false
+      },
+      "rawInput": "{\"memoryExperienceHintsEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceHintsEnabled\":false}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "all_policy_changes",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true,
+        "memoryKnowledgeEnabled": true,
+        "memorySemanticEnabled": true
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true,\"memoryKnowledgeEnabled\":true,\"memorySemanticEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "1"
+        },
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceFeedbackEnabled\":true,\"memoryKnowledgeEnabled\":true,\"memorySemanticEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":true,\"memorySemanticEnabled\":true,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_null",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "null"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "null"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_false",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "false"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "false"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_\"1\"",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "\"1\""
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "\"1\""
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_{}",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "{}"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "{}"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_-1",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "-1"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "-1"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_0.5",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "0.5"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "0.5"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_9007199254740991",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "9007199254740991"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "9007199254740991"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryExperienceFeedback_9007199254740992",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "9007199254740992"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "error": "experience_feedback_policy_invalid",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "9007199254740992"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "max_increment_memoryExperienceFeedback",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true
+      },
+      "revisions": {
+        "memory-experience-feedback-revision": "9007199254740990"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "9007199254740991"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceFeedbackEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":true,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "unchanged_invalid_revision_memoryExperienceFeedback",
+      "previous": {},
+      "input": {},
+      "revisions": {
+        "memory-experience-feedback-revision": "null"
+      },
+      "rawInput": "{}",
+      "output": [
+        {
+          "key": "memory-experience-feedback-revision",
+          "value": "null"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "null_false_memoryExperienceFeedback",
+      "previous": {
+        "memoryExperienceFeedbackEnabled": null
+      },
+      "input": {
+        "memoryExperienceFeedbackEnabled": false
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceFeedbackEnabled\":false}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "nonboolean_memoryExperienceFeedback",
+      "previous": {
+        "memoryExperienceFeedbackEnabled": false
+      },
+      "input": {
+        "memoryExperienceFeedbackEnabled": "true"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":\"true\"}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryExperienceFeedbackEnabled\":\"true\"}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_null",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "null"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "null"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_false",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "false"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "false"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_\"1\"",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "\"1\""
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "\"1\""
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_{}",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "{}"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "{}"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_-1",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "-1"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "-1"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_0.5",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "0.5"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "0.5"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_9007199254740991",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "9007199254740991"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "9007199254740991"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memoryKnowledge_9007199254740992",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "9007199254740992"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "9007199254740992"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "max_increment_memoryKnowledge",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "9007199254740990"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "9007199254740991"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "unchanged_invalid_revision_memoryKnowledge",
+      "previous": {},
+      "input": {},
+      "revisions": {
+        "memory-knowledge-policy-revision": "null"
+      },
+      "rawInput": "{}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "null"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "null_false_memoryKnowledge",
+      "previous": {
+        "memoryKnowledgeEnabled": null
+      },
+      "input": {
+        "memoryKnowledgeEnabled": false
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeEnabled\":false}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "nonboolean_memoryKnowledge",
+      "previous": {
+        "memoryKnowledgeEnabled": false
+      },
+      "input": {
+        "memoryKnowledgeEnabled": "true"
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":\"true\"}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeEnabled\":\"true\"}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_null",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "null"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "null"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_false",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "false"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "false"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_\"1\"",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "\"1\""
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "\"1\""
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_{}",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "{}"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "{}"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_-1",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "-1"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "-1"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_0.5",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "0.5"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "0.5"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_9007199254740991",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "9007199254740991"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "9007199254740991"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_memorySemantic_9007199254740992",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "9007199254740992"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "error": "semantic_policy_invalid",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "9007199254740992"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "max_increment_memorySemantic",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": true
+      },
+      "revisions": {
+        "memory-semantic-policy-revision": "9007199254740990"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":true}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "9007199254740991"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":true,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":false,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "unchanged_invalid_revision_memorySemantic",
+      "previous": {},
+      "input": {},
+      "revisions": {
+        "memory-semantic-policy-revision": "null"
+      },
+      "rawInput": "{}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "null"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "null_false_memorySemantic",
+      "previous": {
+        "memorySemanticEnabled": null
+      },
+      "input": {
+        "memorySemanticEnabled": false
+      },
+      "rawInput": "{\"memorySemanticEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticEnabled\":false}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "nonboolean_memorySemantic",
+      "previous": {
+        "memorySemanticEnabled": false
+      },
+      "input": {
+        "memorySemanticEnabled": "true"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":\"true\"}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticEnabled\":\"true\"}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "knowledge_order_matters",
+      "previous": {
+        "memoryKnowledgeEnabled": {
+          "a": 1,
+          "b": 2
+        }
+      },
+      "input": {
+        "memoryKnowledgeEnabled": {
+          "b": 2,
+          "a": 1
+        }
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":{\"b\":2,\"a\":1}}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memoryKnowledgeEnabled\":{\"b\":2,\"a\":1}}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "semantic_lone_surrogate",
+      "previous": {
+        "memorySemanticEnabled": "\ud800"
+      },
+      "input": {
+        "memorySemanticEnabled": "\ud801"
+      },
+      "rawInput": "{\"memorySemanticEnabled\":\"\\ud801\"}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticEnabled\":\"\\ud801\"}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "policy_second_revision_invalid_rolls_back_first",
+      "previous": {},
+      "input": {
+        "memoryExperienceFeedbackEnabled": true,
+        "memoryKnowledgeEnabled": true
+      },
+      "revisions": {
+        "memory-knowledge-policy-revision": "-1"
+      },
+      "rawInput": "{\"memoryExperienceFeedbackEnabled\":true,\"memoryKnowledgeEnabled\":true}",
+      "error": "knowledge_policy_invalid",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "-1"
+        },
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetExperimentEnabled",
+      "previous": {},
+      "input": {
+        "budgetExperimentEnabled": true
+      },
+      "rawInput": "{\"budgetExperimentEnabled\":true}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetExperimentEnabled\":true}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetMode",
+      "previous": {},
+      "input": {
+        "budgetMode": "best_effort"
+      },
+      "rawInput": "{\"budgetMode\":\"best_effort\"}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMode\":\"best_effort\"}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetDailyUsd",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": 2
+      },
+      "rawInput": "{\"budgetDailyUsd\":2}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetDailyUsd\":2}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetMaxUnresolvedUsd",
+      "previous": {},
+      "input": {
+        "budgetMaxUnresolvedUsd": 0.3
+      },
+      "rawInput": "{\"budgetMaxUnresolvedUsd\":0.3}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaxUnresolvedUsd\":0.3}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetPerTurnUsd",
+      "previous": {},
+      "input": {
+        "budgetPerTurnUsd": 0.15
+      },
+      "rawInput": "{\"budgetPerTurnUsd\":0.15}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnUsd\":0.15}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetPerTurnTokens",
+      "previous": {},
+      "input": {
+        "budgetPerTurnTokens": 1000
+      },
+      "rawInput": "{\"budgetPerTurnTokens\":1000}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnTokens\":1000}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetPerTurnCalls",
+      "previous": {},
+      "input": {
+        "budgetPerTurnCalls": 4
+      },
+      "rawInput": "{\"budgetPerTurnCalls\":4}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnCalls\":4}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetMaxOutputTokens",
+      "previous": {},
+      "input": {
+        "budgetMaxOutputTokens": 1000
+      },
+      "rawInput": "{\"budgetMaxOutputTokens\":1000}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaxOutputTokens\":1000}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetRealtimeRatio",
+      "previous": {},
+      "input": {
+        "budgetRealtimeRatio": 0.3
+      },
+      "rawInput": "{\"budgetRealtimeRatio\":0.3}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetRealtimeRatio\":0.3}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "security_budgetMaintenanceRatio",
+      "previous": {},
+      "input": {
+        "budgetMaintenanceRatio": 0.2
+      },
+      "rawInput": "{\"budgetMaintenanceRatio\":0.2}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaintenanceRatio\":0.2}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "combined_flags_security",
+      "previous": {},
+      "input": {
+        "cacheEnabled": false,
+        "memoryKnowledgeEnabled": true,
+        "budgetDailyUsd": 2
+      },
+      "rawInput": "{\"cacheEnabled\":false,\"memoryKnowledgeEnabled\":true,\"budgetDailyUsd\":2}",
+      "output": [
+        {
+          "key": "memory-knowledge-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"cacheEnabled\":false,\"memoryKnowledgeEnabled\":true,\"budgetDailyUsd\":2}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":false,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}",
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 2,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_107",
+      "previous": {},
+      "input": 1,
+      "rawInput": "1",
+      "error": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [],\n    \"message\": \"Invalid input: expected object, received number\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_108",
+      "previous": {},
+      "input": "settings",
+      "rawInput": "\"settings\"",
+      "error": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [],\n    \"message\": \"Invalid input: expected object, received string\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_109",
+      "previous": {},
+      "input": true,
+      "rawInput": "true",
+      "error": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [],\n    \"message\": \"Invalid input: expected object, received boolean\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_110",
+      "previous": {},
+      "input": [],
+      "rawInput": "[]",
+      "error": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [],\n    \"message\": \"Invalid input: expected object, received array\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_111",
+      "previous": {},
+      "input": [
+        1
+      ],
+      "rawInput": "[1]",
+      "error": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [],\n    \"message\": \"Invalid input: expected object, received array\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_112",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": null
+      },
+      "rawInput": "{\"budgetDailyUsd\":null}",
+      "error": "[\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Invalid input: expected number, received null\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_113",
+      "previous": {},
+      "input": {
+        "budgetMode": "x"
+      },
+      "rawInput": "{\"budgetMode\":\"x\"}",
+      "error": "[\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"strict\",\n      \"best_effort\"\n    ],\n    \"path\": [\n      \"budgetMode\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"strict\\\"|\\\"best_effort\\\"\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_114",
+      "previous": {},
+      "input": {
+        "budgetPerTurnCalls": 0.5
+      },
+      "rawInput": "{\"budgetPerTurnCalls\":0.5}",
+      "error": "[\n  {\n    \"expected\": \"int\",\n    \"format\": \"safeint\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"budgetPerTurnCalls\"\n    ],\n    \"message\": \"Invalid input: expected int, received number\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_115",
+      "previous": {},
+      "input": {
+        "budgetPerTurnTokens": 9007199254740992
+      },
+      "rawInput": "{\"budgetPerTurnTokens\":9007199254740992}",
+      "error": "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 9007199254740991,\n    \"note\": \"Integers must be within the safe integer range.\",\n    \"origin\": \"int\",\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnTokens\"\n    ],\n    \"message\": \"Too big: expected int to be <=9007199254740991\"\n  },\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 10000000,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnTokens\"\n    ],\n    \"message\": \"Too big: expected number to be <=10000000\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_116",
+      "previous": {},
+      "input": {
+        "budgetPerTurnTokens": -9007199254740992
+      },
+      "rawInput": "{\"budgetPerTurnTokens\":-9007199254740992}",
+      "error": "[\n  {\n    \"code\": \"too_small\",\n    \"minimum\": -9007199254740991,\n    \"note\": \"Integers must be within the safe integer range.\",\n    \"origin\": \"int\",\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnTokens\"\n    ],\n    \"message\": \"Too small: expected int to be >=-9007199254740991\"\n  },\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnTokens\"\n    ],\n    \"message\": \"Too small: expected number to be >=1\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_117",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": 0,
+        "budgetRealtimeRatio": 0.6,
+        "budgetMaintenanceRatio": 0.6
+      },
+      "rawInput": "{\"budgetDailyUsd\":0,\"budgetRealtimeRatio\":0.6,\"budgetMaintenanceRatio\":0.6}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0.000001,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Too small: expected number to be >=0.000001\"\n  },\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 0.5,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetRealtimeRatio\"\n    ],\n    \"message\": \"Too big: expected number to be <=0.5\"\n  },\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 0.5,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Too big: expected number to be <=0.5\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Reserve at least 50% of the daily budget for foreground requests\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Unresolved limit must not exceed daily limit\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Turn limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_118",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": "a",
+        "budgetPerTurnCalls": 0.5,
+        "budgetRealtimeRatio": 1
+      },
+      "rawInput": "{\"budgetDailyUsd\":\"a\",\"budgetPerTurnCalls\":0.5,\"budgetRealtimeRatio\":1}",
+      "error": "[\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Invalid input: expected number, received string\"\n  },\n  {\n    \"expected\": \"int\",\n    \"format\": \"safeint\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"budgetPerTurnCalls\"\n    ],\n    \"message\": \"Invalid input: expected int, received number\"\n  },\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 0.5,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetRealtimeRatio\"\n    ],\n    \"message\": \"Too big: expected number to be <=0.5\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_119",
+      "previous": {},
+      "input": {
+        "budgetExperimentEnabled": null
+      },
+      "rawInput": "{\"budgetExperimentEnabled\":null}",
+      "error": "[\n  {\n    \"expected\": \"boolean\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"budgetExperimentEnabled\"\n    ],\n    \"message\": \"Invalid input: expected boolean, received null\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_120",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": null
+      },
+      "rawInput": "{\"budgetDailyUsd\":1e400}",
+      "error": "[\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"received\": \"Infinity\",\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Invalid input: expected number, received Infinity\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetDailyUsd_0.000001",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": 0.000001
+      },
+      "rawInput": "{\"budgetDailyUsd\":0.000001}",
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Unresolved limit must not exceed daily limit\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Turn limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetDailyUsd_100000",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": 100000
+      },
+      "rawInput": "{\"budgetDailyUsd\":100000}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetDailyUsd\":100000}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetDailyUsd_-0.999999",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": -0.999999
+      },
+      "rawInput": "{\"budgetDailyUsd\":-0.999999}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0.000001,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Too small: expected number to be >=0.000001\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Unresolved limit must not exceed daily limit\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Turn limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetDailyUsd_100001",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": 100001
+      },
+      "rawInput": "{\"budgetDailyUsd\":100001}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 100000,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Too big: expected number to be <=100000\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxUnresolvedUsd_0.000001",
+      "previous": {},
+      "input": {
+        "budgetMaxUnresolvedUsd": 0.000001
+      },
+      "rawInput": "{\"budgetMaxUnresolvedUsd\":0.000001}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaxUnresolvedUsd\":0.000001}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxUnresolvedUsd_100000",
+      "previous": {},
+      "input": {
+        "budgetMaxUnresolvedUsd": 100000
+      },
+      "rawInput": "{\"budgetMaxUnresolvedUsd\":100000}",
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Unresolved limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxUnresolvedUsd_-0.999999",
+      "previous": {},
+      "input": {
+        "budgetMaxUnresolvedUsd": -0.999999
+      },
+      "rawInput": "{\"budgetMaxUnresolvedUsd\":-0.999999}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0.000001,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Too small: expected number to be >=0.000001\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxUnresolvedUsd_100001",
+      "previous": {},
+      "input": {
+        "budgetMaxUnresolvedUsd": 100001
+      },
+      "rawInput": "{\"budgetMaxUnresolvedUsd\":100001}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 100000,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Too big: expected number to be <=100000\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Unresolved limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnUsd_0.000001",
+      "previous": {},
+      "input": {
+        "budgetPerTurnUsd": 0.000001
+      },
+      "rawInput": "{\"budgetPerTurnUsd\":0.000001}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnUsd\":0.000001}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnUsd_100000",
+      "previous": {},
+      "input": {
+        "budgetPerTurnUsd": 100000
+      },
+      "rawInput": "{\"budgetPerTurnUsd\":100000}",
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Turn limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnUsd_-0.999999",
+      "previous": {},
+      "input": {
+        "budgetPerTurnUsd": -0.999999
+      },
+      "rawInput": "{\"budgetPerTurnUsd\":-0.999999}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0.000001,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Too small: expected number to be >=0.000001\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnUsd_100001",
+      "previous": {},
+      "input": {
+        "budgetPerTurnUsd": 100001
+      },
+      "rawInput": "{\"budgetPerTurnUsd\":100001}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 100000,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Too big: expected number to be <=100000\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Turn limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnTokens_1",
+      "previous": {},
+      "input": {
+        "budgetPerTurnTokens": 1
+      },
+      "rawInput": "{\"budgetPerTurnTokens\":1}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnTokens\":1}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnTokens_10000000",
+      "previous": {},
+      "input": {
+        "budgetPerTurnTokens": 10000000
+      },
+      "rawInput": "{\"budgetPerTurnTokens\":10000000}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnTokens\":10000000}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnTokens_0",
+      "previous": {},
+      "input": {
+        "budgetPerTurnTokens": 0
+      },
+      "rawInput": "{\"budgetPerTurnTokens\":0}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnTokens\"\n    ],\n    \"message\": \"Too small: expected number to be >=1\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnTokens_10000001",
+      "previous": {},
+      "input": {
+        "budgetPerTurnTokens": 10000001
+      },
+      "rawInput": "{\"budgetPerTurnTokens\":10000001}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 10000000,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnTokens\"\n    ],\n    \"message\": \"Too big: expected number to be <=10000000\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnCalls_1",
+      "previous": {},
+      "input": {
+        "budgetPerTurnCalls": 1
+      },
+      "rawInput": "{\"budgetPerTurnCalls\":1}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnCalls\":1}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnCalls_1000",
+      "previous": {},
+      "input": {
+        "budgetPerTurnCalls": 1000
+      },
+      "rawInput": "{\"budgetPerTurnCalls\":1000}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetPerTurnCalls\":1000}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnCalls_0",
+      "previous": {},
+      "input": {
+        "budgetPerTurnCalls": 0
+      },
+      "rawInput": "{\"budgetPerTurnCalls\":0}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnCalls\"\n    ],\n    \"message\": \"Too small: expected number to be >=1\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetPerTurnCalls_1001",
+      "previous": {},
+      "input": {
+        "budgetPerTurnCalls": 1001
+      },
+      "rawInput": "{\"budgetPerTurnCalls\":1001}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 1000,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetPerTurnCalls\"\n    ],\n    \"message\": \"Too big: expected number to be <=1000\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxOutputTokens_1",
+      "previous": {},
+      "input": {
+        "budgetMaxOutputTokens": 1
+      },
+      "rawInput": "{\"budgetMaxOutputTokens\":1}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaxOutputTokens\":1}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxOutputTokens_1000000",
+      "previous": {},
+      "input": {
+        "budgetMaxOutputTokens": 1000000
+      },
+      "rawInput": "{\"budgetMaxOutputTokens\":1000000}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaxOutputTokens\":1000000}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxOutputTokens_0",
+      "previous": {},
+      "input": {
+        "budgetMaxOutputTokens": 0
+      },
+      "rawInput": "{\"budgetMaxOutputTokens\":0}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetMaxOutputTokens\"\n    ],\n    \"message\": \"Too small: expected number to be >=1\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaxOutputTokens_1000001",
+      "previous": {},
+      "input": {
+        "budgetMaxOutputTokens": 1000001
+      },
+      "rawInput": "{\"budgetMaxOutputTokens\":1000001}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetMaxOutputTokens\"\n    ],\n    \"message\": \"Too big: expected number to be <=1000000\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetRealtimeRatio_0",
+      "previous": {},
+      "input": {
+        "budgetRealtimeRatio": 0
+      },
+      "rawInput": "{\"budgetRealtimeRatio\":0}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetRealtimeRatio\":0}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetRealtimeRatio_0.5",
+      "previous": {},
+      "input": {
+        "budgetRealtimeRatio": 0.5
+      },
+      "rawInput": "{\"budgetRealtimeRatio\":0.5}",
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Reserve at least 50% of the daily budget for foreground requests\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetRealtimeRatio_-1",
+      "previous": {},
+      "input": {
+        "budgetRealtimeRatio": -1
+      },
+      "rawInput": "{\"budgetRealtimeRatio\":-1}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetRealtimeRatio\"\n    ],\n    \"message\": \"Too small: expected number to be >=0\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetRealtimeRatio_1.5",
+      "previous": {},
+      "input": {
+        "budgetRealtimeRatio": 1.5
+      },
+      "rawInput": "{\"budgetRealtimeRatio\":1.5}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 0.5,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetRealtimeRatio\"\n    ],\n    \"message\": \"Too big: expected number to be <=0.5\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Reserve at least 50% of the daily budget for foreground requests\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaintenanceRatio_0",
+      "previous": {},
+      "input": {
+        "budgetMaintenanceRatio": 0
+      },
+      "rawInput": "{\"budgetMaintenanceRatio\":0}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMaintenanceRatio\":0}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaintenanceRatio_0.5",
+      "previous": {},
+      "input": {
+        "budgetMaintenanceRatio": 0.5
+      },
+      "rawInput": "{\"budgetMaintenanceRatio\":0.5}",
+      "error": "[\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Reserve at least 50% of the daily budget for foreground requests\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaintenanceRatio_-1",
+      "previous": {},
+      "input": {
+        "budgetMaintenanceRatio": -1
+      },
+      "rawInput": "{\"budgetMaintenanceRatio\":-1}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Too small: expected number to be >=0\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "budget_boundary_budgetMaintenanceRatio_1.5",
+      "previous": {},
+      "input": {
+        "budgetMaintenanceRatio": 1.5
+      },
+      "rawInput": "{\"budgetMaintenanceRatio\":1.5}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_big\",\n    \"maximum\": 0.5,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Too big: expected number to be <=0.5\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaintenanceRatio\"\n    ],\n    \"message\": \"Reserve at least 50% of the daily budget for foreground requests\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_1e400",
+      "previous": {},
+      "input": null,
+      "rawInput": "1e400",
+      "error": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [],\n    \"message\": \"Invalid input: expected object, received Infinity\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_-1e400",
+      "previous": {},
+      "input": null,
+      "rawInput": "-1e400",
+      "error": "[\n  {\n    \"expected\": \"object\",\n    \"code\": \"invalid_type\",\n    \"path\": [],\n    \"message\": \"Invalid input: expected object, received -Infinity\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_{\"budgetExperimentEnabled\":1e400}",
+      "previous": {},
+      "input": {
+        "budgetExperimentEnabled": null
+      },
+      "rawInput": "{\"budgetExperimentEnabled\":1e400}",
+      "error": "[\n  {\n    \"expected\": \"boolean\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"budgetExperimentEnabled\"\n    ],\n    \"message\": \"Invalid input: expected boolean, received Infinity\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_{\"budgetDailyUsd\":-1e400}",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": null
+      },
+      "rawInput": "{\"budgetDailyUsd\":-1e400}",
+      "error": "[\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"received\": \"-Infinity\",\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Invalid input: expected number, received -Infinity\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_{\"budgetPerTurnCalls\":1e400}",
+      "previous": {},
+      "input": {
+        "budgetPerTurnCalls": null
+      },
+      "rawInput": "{\"budgetPerTurnCalls\":1e400}",
+      "error": "[\n  {\n    \"expected\": \"number\",\n    \"code\": \"invalid_type\",\n    \"received\": \"Infinity\",\n    \"path\": [\n      \"budgetPerTurnCalls\"\n    ],\n    \"message\": \"Invalid input: expected number, received Infinity\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_{\"memorySemanticEnabled\":1e400}",
+      "previous": {},
+      "input": {
+        "memorySemanticEnabled": null
+      },
+      "rawInput": "{\"memorySemanticEnabled\":1e400}",
+      "output": [
+        {
+          "key": "memory-semantic-policy-revision",
+          "value": "1"
+        },
+        {
+          "key": "settings",
+          "value": "{\"memorySemanticEnabled\":null}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_{\"budgetMode\":[]}",
+      "previous": {},
+      "input": {
+        "budgetMode": []
+      },
+      "rawInput": "{\"budgetMode\":[]}",
+      "error": "[\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"strict\",\n      \"best_effort\"\n    ],\n    \"path\": [\n      \"budgetMode\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"strict\\\"|\\\"best_effort\\\"\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "raw_json_{\"budgetMode\":{}}",
+      "previous": {},
+      "input": {
+        "budgetMode": {}
+      },
+      "rawInput": "{\"budgetMode\":{}}",
+      "error": "[\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"strict\",\n      \"best_effort\"\n    ],\n    \"path\": [\n      \"budgetMode\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"strict\\\"|\\\"best_effort\\\"\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_budget_after_flag_intent",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true,
+        "budgetDailyUsd": 0
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true,\"budgetDailyUsd\":0}",
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0.000001,\n    \"inclusive\": true,\n    \"path\": [\n      \"budgetDailyUsd\"\n    ],\n    \"message\": \"Too small: expected number to be >=0.000001\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetMaxUnresolvedUsd\"\n    ],\n    \"message\": \"Unresolved limit must not exceed daily limit\"\n  },\n  {\n    \"code\": \"custom\",\n    \"path\": [\n      \"budgetPerTurnUsd\"\n    ],\n    \"message\": \"Turn limit must not exceed daily limit\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_previous_budget_after_flag_intent",
+      "previous": {
+        "budgetMode": "invalid"
+      },
+      "input": {
+        "memoryKnowledgeEnabled": true
+      },
+      "rawInput": "{\"memoryKnowledgeEnabled\":true}",
+      "error": "[\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"strict\",\n      \"best_effort\"\n    ],\n    \"path\": [\n      \"budgetMode\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"strict\\\"|\\\"best_effort\\\"\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMode\":\"invalid\"}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "invalid_previous_before_invalid_next",
+      "previous": {
+        "budgetMode": "invalid"
+      },
+      "input": {
+        "budgetDailyUsd": null
+      },
+      "rawInput": "{\"budgetDailyUsd\":null}",
+      "error": "[\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"strict\",\n      \"best_effort\"\n    ],\n    \"path\": [\n      \"budgetMode\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"strict\\\"|\\\"best_effort\\\"\"\n  }\n]",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetMode\":\"invalid\"}"
+        }
+      ],
+      "events": [],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "main_update_failure_after_both_intents",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true,
+        "budgetDailyUsd": 2
+      },
+      "failSettingsWrite": true,
+      "rawInput": "{\"memoryKnowledgeEnabled\":true,\"budgetDailyUsd\":2}",
+      "error": "fixture_settings_write_failed",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}",
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "12345678-1234-4123-8123-123456789012",
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "source_creates_absent_security_table",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": 2
+      },
+      "absentSecuritySchema": true,
+      "rawInput": "{\"budgetDailyUsd\":2}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetDailyUsd\":2}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": "<uuid-v4>",
+      "ackSequence": 1,
+      "minimumReader": 1
+    }
+  ]
+}

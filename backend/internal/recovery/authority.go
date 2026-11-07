@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"sync"
 	"unicode"
 )
 
@@ -55,11 +54,12 @@ func ReadGate(ctx context.Context, q Query) (Gate, error) {
 
 type stamp struct{ data, schema, changes int64 }
 type Authority struct {
-	mu     sync.Mutex
+	mu     authorityLock
 	pool   *sql.DB
 	conn   *sql.Conn
 	path   string
 	cached bool
+	writer bool
 	head   Head
 	stamp  stamp
 	scans  uint64
@@ -101,13 +101,22 @@ func (a *Authority) Scans() uint64 { a.mu.Lock(); defer a.mu.Unlock(); return a.
 // Publish reserves authority before main's WAL snapshot and retains it through
 // output enqueueing. It never calls a bot owner or waits for a main acknowledgement.
 func (a *Authority) Publish(ctx context.Context, main *sql.DB, read func(*sql.Conn) ([]byte, error), emit func([]byte) error) (err error) {
-	a.mu.Lock()
+	// A pool checkout is not a SQLite snapshot. Do it before authority so a
+	// bounded shared pool cannot form a main-connection/authority-mutex cycle.
+	conn, err := main.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	if err = a.mu.LockContext(ctx); err != nil {
+		return err
+	}
 	defer a.mu.Unlock()
-	if _, err = a.conn.ExecContext(ctx, "BEGIN IMMEDIATE"); err != nil {
+	if err = beginOwned(ctx, a.conn, "BEGIN IMMEDIATE"); err != nil {
 		return err
 	}
 	defer func() {
-		_, e := a.conn.ExecContext(context.Background(), "ROLLBACK")
+		e := rollbackOwned(a.conn)
 		if e != nil {
 			a.cached = false
 		}
@@ -122,18 +131,23 @@ func (a *Authority) Publish(ctx context.Context, main *sql.DB, read func(*sql.Co
 	if _, err = a.conn.ExecContext(ctx, "UPDATE main.identity SET id=id WHERE 0"); err != nil {
 		return err
 	}
-	conn, err := main.Conn(ctx)
-	if err != nil {
+	if err = beginOwned(ctx, conn, "BEGIN"); err != nil {
 		return err
 	}
-	defer conn.Close()
-	if _, err = conn.ExecContext(ctx, "BEGIN"); err != nil {
-		return err
-	}
-	defer func() { _, e := conn.ExecContext(context.Background(), "ROLLBACK"); err = errors.Join(err, e) }()
+	defer func() { err = errors.Join(err, rollbackOwned(conn)) }()
 	gate, err := ReadGate(ctx, conn)
 	if err != nil {
 		return err
+	}
+	var mainMode, authorityMode string
+	if err = conn.QueryRowContext(ctx, "PRAGMA main.journal_mode").Scan(&mainMode); err != nil {
+		return err
+	}
+	if err = a.conn.QueryRowContext(ctx, "PRAGMA main.journal_mode").Scan(&authorityMode); err != nil {
+		return err
+	}
+	if mainMode != "wal" || authorityMode != "delete" {
+		return errors.New("recovery_read_journal_unsupported")
 	}
 	if gate.Authority != a.path || gate.Head != head {
 		return errors.New("recovery_authority_head_changed")
@@ -149,11 +163,9 @@ func (a *Authority) current(ctx context.Context) (Head, error) {
 	if err := a.conn.QueryRowContext(ctx, "SELECT id FROM main.identity LIMIT 1").Scan(&identity); err != nil {
 		return Head{}, err
 	}
-	var s stamp
-	for query, dst := range map[string]*int64{"PRAGMA main.data_version": &s.data, "PRAGMA main.schema_version": &s.schema, "SELECT total_changes()": &s.changes} {
-		if err := a.conn.QueryRowContext(ctx, query).Scan(dst); err != nil {
-			return Head{}, err
-		}
+	s, err := a.readStamp(ctx)
+	if err != nil {
+		return Head{}, err
 	}
 	if a.cached && a.stamp == s {
 		return a.head, nil
@@ -167,6 +179,15 @@ func (a *Authority) current(ctx context.Context) (Head, error) {
 	a.stamp = s
 	a.cached = true
 	return head, nil
+}
+func (a *Authority) readStamp(ctx context.Context) (stamp, error) {
+	var s stamp
+	for query, dst := range map[string]*int64{"PRAGMA main.data_version": &s.data, "PRAGMA main.schema_version": &s.schema, "SELECT total_changes()": &s.changes} {
+		if err := a.conn.QueryRowContext(ctx, query).Scan(dst); err != nil {
+			return s, err
+		}
+	}
+	return s, nil
 }
 func (a *Authority) scan(ctx context.Context) (Head, error) {
 	a.scans++

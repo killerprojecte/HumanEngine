@@ -73,10 +73,12 @@ The oracle generators are `generate-runtime-source-authority-fixtures.mjs` and
 
 This is a source-authority vertical slice, not complete bot/backend migration:
 
-- The existing runtime still needs a separate ingress-routing port for missing
-  scene persistence and OneBot identity observation. TypeScript runs those effects
-  before duplicate/recall checks, including bot messages. They cannot be moved
-  into `Observe` without changing ordering. OneBot display projection is native.
+- `RouteIngress` now composes missing-scene persistence and OneBot identity
+  observation before duplicate/recall checks, including bot messages. Transport
+  registration survives routing failure without allocating a message-state owner.
+  Accepted edits re-enter this route after callbacks and validate the captured
+  source reference/body at the same point as TypeScript. This is internal runtime
+  composition; live transport and production startup remain separate work.
 - Memory assertion, commitment and semantic privacy preparation/redaction stores
   are not implemented by this bridge. Their typed domain stores must eventually
   join the same write session. A read facade is not a substitute for those writes.

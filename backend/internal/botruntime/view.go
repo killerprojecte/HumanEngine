@@ -58,6 +58,9 @@ func (r *Runtime) publishLocked(s *sceneState) {
 func (r *Runtime) Snapshot(id string) (Snapshot, error) {
 	s := r.state(id)
 	if s == nil {
+		if scene, ok := r.RegisteredScene(id); ok {
+			return Snapshot{Scene: scene, Messages: []*Object{}, Topics: []TopicView{}}, nil
+		}
 		return Snapshot{}, code("scene_missing")
 	}
 	v := s.view.Load()

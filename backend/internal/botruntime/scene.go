@@ -16,6 +16,35 @@ func (r *Runtime) state(id string) *sceneState {
 	}
 	return v.(*sceneState)
 }
+func (r *Runtime) sceneRegistration(scene Scene) *sceneRegistration {
+	registration := &sceneRegistration{}
+	registration.scene.Store(&scene)
+	r.lifecycleMu.Lock()
+	defer r.lifecycleMu.Unlock()
+	if r.closed.Load() {
+		return nil
+	}
+	value, _ := r.transports.LoadOrStore(scene.ID, registration)
+	return value.(*sceneRegistration)
+}
+
+// RegisteredScene returns transport metadata without allocating message state.
+func (r *Runtime) RegisteredScene(id string) (Scene, bool) {
+	value, ok := r.transports.Load(id)
+	if !ok {
+		return Scene{}, false
+	}
+	return *value.(*sceneRegistration).scene.Load(), true
+}
+
+func (r *Runtime) newSceneState(scene Scene) *sceneState {
+	s := &sceneState{byID: map[string]*messageRecord{}, byBody: map[*Object]*messageRecord{}, available: map[string]bool{}, earliest: math.Inf(1), historyEarliest: math.Inf(1), operationKeys: map[string]bool{}, sequence: r.sequence.Add(1), scene: scene, tasks: map[string]*turn{}, admissions: map[string]*turnwait.Coordinator{}, timers: map[string]*timerTicket{}, pending: map[string]bool{}, recalled: map[string]bool{}, lastAutomatic: map[string]float64{}, lastTouched: r.services.Clock.Now()}
+	s.mu.Lock()
+	r.publishLocked(s)
+	s.mu.Unlock()
+	return s
+}
+
 func (r *Runtime) RegisterScene(scene Scene) error {
 	if r.closed.Load() {
 		return code("runtime_closed")
@@ -30,11 +59,20 @@ func (r *Runtime) RegisterScene(scene Scene) error {
 	} else if !strings.HasPrefix(scene.ID, "sim:") {
 		return code("simulation_scope_required")
 	}
-	s := &sceneState{byID: map[string]*messageRecord{}, byBody: map[*Object]*messageRecord{}, available: map[string]bool{}, earliest: math.Inf(1), historyEarliest: math.Inf(1), operationKeys: map[string]bool{}, sequence: r.sequence.Add(1), scene: scene, tasks: map[string]*turn{}, admissions: map[string]*turnwait.Coordinator{}, timers: map[string]*timerTicket{}, pending: map[string]bool{}, recalled: map[string]bool{}, lastAutomatic: map[string]float64{}, lastTouched: r.services.Clock.Now()}
-	s.mu.Lock()
-	r.publishLocked(s)
-	s.mu.Unlock()
-	if old, loaded := r.scenes.LoadOrStore(scene.ID, s); loaded {
+	registration := r.sceneRegistration(scene)
+	if registration == nil {
+		return code("runtime_closed")
+	}
+	registration.scene.Store(&scene)
+	s := r.newSceneState(scene)
+	r.lifecycleMu.Lock()
+	if r.closed.Load() {
+		r.lifecycleMu.Unlock()
+		return code("runtime_closed")
+	}
+	old, loaded := r.scenes.LoadOrStore(scene.ID, s)
+	r.lifecycleMu.Unlock()
+	if loaded {
 		p := old.(*sceneState)
 		p.mu.Lock()
 		p.scene = scene

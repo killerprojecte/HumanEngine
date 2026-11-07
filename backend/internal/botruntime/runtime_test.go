@@ -37,7 +37,8 @@ func newTestAuthority() *testAuthority {
 func (a *testAuthority) SceneParticipationEnabled(s Scene) (bool, error) {
 	return s.ParticipationEnabled, nil
 }
-func (a *testAuthority) Ready() error { a.mu.Lock(); defer a.mu.Unlock(); return a.readyErr }
+func (a *testAuthority) Ready() error                                       { a.mu.Lock(); defer a.mu.Unlock(); return a.readyErr }
+func (a *testAuthority) RouteIngress(context.Context, Scene, *Object) error { return a.Ready() }
 func (a *testAuthority) Observe(_ context.Context, s Scene, m, edit *Object) (string, *Object, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()

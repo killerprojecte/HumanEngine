@@ -3,6 +3,7 @@ package botruntime
 import (
 	"context"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
+	"strings"
 )
 
 func (r *Runtime) normalize(m *Object, scene Scene) *Object {
@@ -23,28 +24,68 @@ func (r *Runtime) normalize(m *Object, scene Scene) *Object {
 	return out
 }
 func (r *Runtime) Ingest(ctx context.Context, sceneID string, message *Object, schedule bool) (string, error) {
-	s := r.state(sceneID)
-	if s == nil {
+	scene, ok := r.RegisteredScene(sceneID)
+	if !ok {
 		return "", code("scene_missing")
 	}
-	s.ingress.Lock()
-	defer s.ingress.Unlock()
-	scene := s.view.Load().scene
+	return r.IngestScene(ctx, scene, message, schedule)
+}
+
+// IngestScene is the transport ingress entry point. Scene metadata is registered
+// before routing persistence, without RegisterScene's lifecycle readiness/cancel.
+func (r *Runtime) IngestScene(ctx context.Context, scene Scene, message *Object, schedule bool) (string, error) {
 	m := r.normalize(message, scene)
-	if get(m, "sceneId") != sceneID || get(m, "origin") == "history" {
+	if get(m, "sceneId") != scene.ID || get(m, "origin") == "history" {
 		return "", nil
 	}
-	if s.closed.Load() {
-		return "", nil
+	if r.closed.Load() {
+		return "", code("runtime_closed")
 	}
-	if recalled, err := r.recalled(s, idOf(m)); err != nil || recalled {
+	if scene.Kind == "simulation" && !strings.HasPrefix(scene.ID, "sim:") {
+		return "", code("simulation_scope_required")
+	}
+	registration := r.sceneRegistration(scene)
+	if registration == nil {
+		return "", code("runtime_closed")
+	}
+	registration.mu.Lock()
+	defer registration.mu.Unlock()
+	s := r.state(scene.ID)
+	if s != nil {
+		s.ingress.Lock()
+		defer s.ingress.Unlock()
+		s.mu.Lock()
+		// Transport metadata does not replace persisted feature switches.
+		scene.ParticipationEnabled = s.scene.ParticipationEnabled
+		scene.LearningEnabled = s.scene.LearningEnabled
+		scene.ProactiveEnabled = s.scene.ProactiveEnabled
+		s.scene = scene
+		r.publishLocked(s)
+		s.mu.Unlock()
+	}
+	// Publish a distinct immutable value, never the local subsequently merged scene.
+	registeredScene := scene
+	registration.scene.Store(&registeredScene)
+	if scene.Kind != "simulation" {
+		if err := r.services.Authority.RouteIngress(ctx, scene, m); err != nil {
+			return "", err
+		}
+	}
+	if s == nil {
+		created := r.newSceneState(scene)
+		r.lifecycleMu.Lock()
+		if r.closed.Load() {
+			r.lifecycleMu.Unlock()
+			return "", code("runtime_closed")
+		}
+		value, _ := r.scenes.LoadOrStore(scene.ID, created)
+		r.lifecycleMu.Unlock()
+		s = value.(*sceneState)
+		s.ingress.Lock()
+		defer s.ingress.Unlock()
+	}
+	if blocked, err := r.ingressBlocked(s, m); blocked || err != nil {
 		return "", err
-	}
-	s.mu.Lock()
-	duplicate := s.byID[idOf(m)] != nil
-	s.mu.Unlock()
-	if duplicate {
-		return "", nil
 	}
 	if scene.Kind != "simulation" && get(m, "senderId") != "bot" {
 		status, trusted, e := r.services.Authority.Observe(ctx, scene, m, nil)
@@ -60,6 +101,29 @@ func (r *Runtime) Ingest(ctx context.Context, sceneID string, message *Object, s
 		m = cloneJSON(trusted).(*Object)
 	}
 	return r.accept(s, m, schedule, true)
+}
+func (r *Runtime) ingressBlocked(s *sceneState, m *Object) (bool, error) {
+	if s.closed.Load() {
+		return true, nil
+	}
+	s.mu.Lock()
+	duplicate := s.byID[idOf(m)] != nil
+	s.mu.Unlock()
+	// Match source short circuit and diagnostic reads: duplicates read recall
+	// once, recalled messages twice, and closed scenes do not read it at all.
+	recalled := false
+	if !duplicate {
+		var err error
+		recalled, err = r.recalled(s, idOf(m))
+		if err != nil {
+			return true, err
+		}
+	}
+	if duplicate || recalled {
+		_, err := r.recalled(s, idOf(m))
+		return true, err
+	}
+	return false, nil
 }
 func (r *Runtime) accept(s *sceneState, m *Object, schedule, received bool) (string, error) {
 	s.mu.Lock()
@@ -79,15 +143,40 @@ func (r *Runtime) accept(s *sceneState, m *Object, schedule, received bool) (str
 	if get(m, "senderId") == "bot" {
 		return "", nil
 	}
-	if received {
-		for _, e := range r.exts() {
-			if e.Received != nil {
-				_ = e.Received(cloneJSON(m).(*Object), scene)
-			}
+	if !r.config().TopicAdmissionEnabled {
+		s.mu.Lock()
+		t, err := r.topicLocked(s, m)
+		addressed := false
+		if err == nil && t != nil {
+			addressed = r.bookkeepTopicLocked(s, t, m)
 		}
+		r.publishLocked(s)
+		s.mu.Unlock()
+		if err != nil {
+			return "", err
+		}
+		if received {
+			r.notifyReceived(m, scene)
+		}
+		can, err := r.canSchedule(s.view.Load().scene, schedule)
+		s.mu.Lock()
+		id := ""
+		if err == nil && t != nil {
+			id, err = r.queueRoutedTopicLocked(s, t, m, addressed, can)
+		}
+		r.publishLocked(s)
+		s.mu.Unlock()
+		return id, err
+	}
+	if received {
+		r.notifyReceived(m, scene)
+	}
+	can, err := r.canSchedule(s.view.Load().scene, schedule)
+	if err != nil {
+		return "", err
 	}
 	s.mu.Lock()
-	id, err := r.routeLocked(s, m, schedule)
+	id, err := r.routeLocked(s, m, schedule, can)
 	r.publishLocked(s)
 	s.mu.Unlock()
 	if err == nil {
@@ -95,6 +184,17 @@ func (r *Runtime) accept(s *sceneState, m *Object, schedule, received bool) (str
 	}
 	return id, err
 }
+
+func (r *Runtime) notifyReceived(m *Object, scene Scene) {
+	for _, e := range r.exts() {
+		if e.Received != nil {
+			if err := e.Received(cloneJSON(m).(*Object), scene); err != nil {
+				r.trace(Event{Level: "error", Module: "extension", Code: "receive_failed", SceneID: scene.ID})
+			}
+		}
+	}
+}
+
 func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Object, schedule bool) (string, error) {
 	s := r.state(sceneID)
 	if s == nil {
@@ -109,13 +209,14 @@ func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Objec
 	}
 	s.ingress.Lock()
 	defer s.ingress.Unlock()
-	status, current, err := r.services.Authority.Observe(ctx, scene, r.normalize(message, scene), edit)
+	status, current, err := r.services.Authority.Observe(ctx, scene, cloneJSON(message).(*Object), edit)
 	if err != nil || status != "edited" {
 		return status, err
 	}
 	if current == nil {
 		return status, code("source_authority_missing_snapshot")
 	}
+	acceptedRef := get(current, "sourceEventRef")
 	id := idOf(current)
 	var previous *Object
 	var abort []*dispatch.Signal
@@ -155,6 +256,36 @@ func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Objec
 	}
 	if err := r.cancelInvalidDerived("source_edited", r.services.Authority); err != nil {
 		return status, err
+	}
+	// Accepted edits re-enter the same routing/admission boundary after edited
+	// callbacks; do not Observe again and accidentally advance their revision.
+	current = r.normalize(current, scene)
+	if get(current, "sceneId") != scene.ID || get(current, "origin") == "history" {
+		return status, nil
+	}
+	registration := r.sceneRegistration(scene)
+	if registration == nil {
+		return status, code("runtime_closed")
+	}
+	registeredScene := scene
+	registration.scene.Store(&registeredScene)
+	if err = r.services.Authority.RouteIngress(ctx, scene, current); err != nil {
+		return status, err
+	}
+	if blocked, e := r.ingressBlocked(s, current); blocked || e != nil {
+		return status, e
+	}
+	if get(current, "senderId") != "bot" {
+		// The accepted revision object is restored after callbacks, as ingestObserved
+		// restores acceptedEdit. Replacing the property does not replace that token.
+		_ = current.Set("sourceEventRef", acceptedRef)
+		valid, e := r.services.Authority.ValidateSources(scene, []*Object{current}, []string{idOf(current)})
+		if e != nil {
+			return status, e
+		}
+		if !valid {
+			return status, code("source_event_changed")
+		}
 	}
 	_, err = r.accept(s, cloneJSON(current).(*Object), schedule, true)
 	return status, err

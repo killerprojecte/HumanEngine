@@ -42,6 +42,7 @@ func (r *Runtime) EndSimulation(id string) {
 	r.Cancel(id)
 	s.closed.Store(true)
 	r.scenes.CompareAndDelete(id, s)
+	r.transports.Delete(id)
 	r.operationMu.Lock()
 	for key := range s.operationKeys {
 		r.deleteOperationLocked(key)
@@ -74,7 +75,10 @@ func (r *Runtime) RemoveAdapter(id string) {
 	}
 }
 func (r *Runtime) Close() {
-	if r.closed.Swap(true) {
+	r.lifecycleMu.Lock()
+	alreadyClosed := r.closed.Swap(true)
+	r.lifecycleMu.Unlock()
+	if alreadyClosed {
 		return
 	}
 	r.cleanupMu.Lock()
@@ -89,6 +93,7 @@ func (r *Runtime) Close() {
 		r.scenes.CompareAndDelete(k, s)
 		return true
 	})
+	r.transports.Range(func(k, v any) bool { r.transports.Delete(k); return true })
 	r.adapters.Range(func(k, v any) bool {
 		r.adapters.Delete(k)
 		if f := v.(*Adapter).Dispose; f != nil {

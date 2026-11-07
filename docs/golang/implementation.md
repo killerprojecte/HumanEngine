@@ -269,7 +269,30 @@ failures, snapshot isolation, raw prompt changes and single-failure receipt caus
 identity. These are functional and work-count checks, not a claim that all backend
 performance costs have been eliminated.
 
-Remaining work includes ingress discovery and identity writes at their original
-pre-duplicate/pre-recall position, memory privacy derivations joining recall,
+At this checkpoint, ingress discovery and identity writes were still pending
+(the next section records their implementation). Remaining work includes memory
+privacy derivations joining recall,
 provider/plugin/adapter composition, offline reconciliation and production API
 startup. This checkpoint does not make the preview a production replacement.
+
+## Native ingress and accepted-edit composition
+
+The candidate runtime now registers transport metadata, discovers missing scenes
+and persists OneBot identity before duplicate/recall checks. It preserves the
+source ordering differences between legacy and admission-enabled callbacks,
+including caught callback errors and persisted participation reads. Accepted edits
+observe the trusted raw revision before normalization and re-enter routing after
+edit callbacks. Replacing a callback's source-reference property does not replace
+the captured reference; mutating that reference or the accepted body is checked
+at the source-defined point.
+
+Actual TypeScript fixtures cover 32 ingress cases and nine edit variants; native
+tests compose the real runtime and dual SQLite authority. Lifecycle tests cover
+Close during blocked routing, immutable registration publication, and a real
+single-connection-pool cross-scene recall interleaving. The one-connection setup
+is a regression fixture, not a new production resource cap. Routing and callbacks
+perform no database wait while holding the scene message-state mutex.
+
+These internal services do not yet enable production HTTP writes or live
+provider/plugin/transport startup. Derived memory privacy stores and the other
+remaining domains listed in coverage.md are still unfinished.

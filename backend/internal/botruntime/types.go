@@ -88,6 +88,8 @@ type ReadAuthority interface {
 }
 type Authority interface {
 	ReadAuthority
+	// RouteIngress discovers the scene and observes identity before admission.
+	RouteIngress(context.Context, Scene, *Object) error
 	Observe(context.Context, Scene, *Object, *Object) (status string, trusted *Object, err error)
 	Recall(context.Context, Scene, string, func(ReadAuthority) (func() error, error), func() error) error
 }
@@ -180,8 +182,10 @@ type Runtime struct {
 	sequence                      atomic.Uint64
 	services                      Services
 	settings                      atomic.Pointer[Settings]
-	scenes                        sync.Map // string -> *sceneState, never held over external work
-	adapters                      sync.Map // string -> *Adapter, immutable registration identity
+	lifecycleMu                   sync.Mutex // only registration/owner publication and close transition
+	transports                    sync.Map   // string -> *sceneRegistration, metadata without runtime state
+	scenes                        sync.Map   // string -> *sceneState, never held over external work
+	adapters                      sync.Map   // string -> *Adapter, immutable registration identity
 	extensionMu                   sync.RWMutex
 	extensions                    []*Extension
 	hooks                         []Hook
@@ -202,6 +206,11 @@ type topic struct {
 	messageIDs        []string
 	lastAt, attention float64
 }
+type sceneRegistration struct {
+	mu    sync.Mutex
+	scene atomic.Pointer[Scene]
+}
+
 type sceneState struct {
 	simulationAdmission       sync.Mutex
 	byID                      map[string]*messageRecord

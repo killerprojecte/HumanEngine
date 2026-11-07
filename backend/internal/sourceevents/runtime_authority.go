@@ -6,6 +6,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
+	"github.com/killerprojecte/HumanEngine/backend/internal/ingressrouting"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
@@ -15,6 +16,7 @@ import (
 type RuntimeAuthority struct {
 	*runtimeReads
 	schemas *contract.Schemas
+	routing *ingressrouting.Router
 }
 
 func NewRuntimeAuthority(store *Store) (*RuntimeAuthority, error) {
@@ -25,10 +27,25 @@ func NewRuntimeAuthority(store *Store) (*RuntimeAuthority, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &RuntimeAuthority{runtimeReads: &runtimeReads{store: store}, schemas: schemas}, nil
+	repository, err := ingressrouting.NewSQLiteRepository(store.main, store.authority)
+	if err != nil {
+		return nil, err
+	}
+	routing, err := ingressrouting.New(repository)
+	if err != nil {
+		return nil, err
+	}
+	return &RuntimeAuthority{runtimeReads: &runtimeReads{store: store}, schemas: schemas, routing: routing}, nil
 }
 
-// Observe accepts an already adapter-normalized message. Ordinary ingress never
+// RouteIngress persists discovery/identity before duplicate and recall admission.
+// It is separate from source revision enrollment, including for bot messages.
+func (a *RuntimeAuthority) RouteIngress(ctx context.Context, scene botruntime.Scene, message *jsjson.Object) error {
+	return a.routing.Route(ctx, scene.SceneRef, message)
+}
+
+// Observe accepts normalized ordinary ingress, but trusted edits retain their
+// supplied identity/body until the later ingress normalization step. Ingress never
 // accepts a caller's ref, and an enrolled source remains versioned when disabled.
 func (a *RuntimeAuthority) Observe(ctx context.Context, scene botruntime.Scene, message, edit *jsjson.Object) (status string, trusted *jsjson.Object, err error) {
 	if message == nil {

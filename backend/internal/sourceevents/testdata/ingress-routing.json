@@ -1,0 +1,1880 @@
+{
+  "node": "v24.22.1",
+  "source": {
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/memory/storage/event-revisions.ts": "a2bbccdc7c510dec5e4364b7e834e91e899bd20cf5b514ebe6149985b76e2963",
+    "src/plugins/builtin/snowluma/profiles.ts": "fa7cf412cf64b67dc88d92c1b87fb097dc8f598ba70b6a999b4b5df04526e723"
+  },
+  "cases": [
+    {
+      "spec": {
+        "name": "missing-scene"
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "existing-scene",
+        "existing": true
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "legacy-topic-callback-order",
+        "existing": true,
+        "admission": false
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": [
+              {
+                "messageIds": [
+                  "source"
+                ],
+                "version": 1
+              }
+            ]
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "closed-still-refreshes-identity",
+        "existing": true,
+        "repeat": true,
+        "closed": true
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "identity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}"
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Updated user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity"
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Updated user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "simulation-skips-persistence",
+        "scene": {
+          "id": "sim:fixture",
+          "kind": "simulation"
+        },
+        "message": {
+          "origin": "simulation"
+        }
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"sim:fixture\",\"kind\":\"simulation\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"sim:fixture\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"simulation\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": null,
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "sim:fixture",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "simulation",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "duplicate-identity-refresh",
+        "existing": true,
+        "repeat": true
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "identity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}"
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Updated user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "recalled"
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Updated user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "recalled-identity-refresh",
+        "existing": true,
+        "recalled": true
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          "recalled"
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": []
+      }
+    },
+    {
+      "spec": {
+        "name": "bot-identity",
+        "existing": true,
+        "message": {
+          "senderId": "bot"
+        }
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"bot\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled"
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "bot",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "history-skips-routing",
+        "message": {
+          "origin": "history"
+        }
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"history\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [],
+        "persistedScene": null,
+        "persistedIdentity": null,
+        "registered": false,
+        "stateExists": false,
+        "messages": []
+      }
+    },
+    {
+      "spec": {
+        "name": "mismatch-skips-routing",
+        "message": {
+          "sceneId": "other"
+        }
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"other\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [],
+        "persistedScene": null,
+        "persistedIdentity": null,
+        "registered": false,
+        "stateExists": false,
+        "messages": []
+      }
+    },
+    {
+      "spec": {
+        "name": "non-onebot",
+        "scene": {
+          "id": "synthetic-other"
+        }
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"synthetic-other\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"synthetic-other\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"synthetic-other\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "synthetic-other",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "direct-scene",
+        "scene": {
+          "kind": "direct"
+        },
+        "canonical": true
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJkaXJlY3QiLCIxMjM0NSJd\",\"kind\":\"direct\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJkaXJlY3QiLCIxMjM0NSJd\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJkaXJlY3QiLCIxMjM0NSJd\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"direct\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=12345&s=100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJkaXJlY3QiLCIxMjM0NSJd",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "missing-display",
+        "scene": {},
+        "message": {}
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"12345\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "empty-display",
+        "scene": {
+          "displayName": ""
+        },
+        "message": {
+          "senderDisplayName": ""
+        }
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "whitespace-display",
+        "scene": {
+          "displayName": "  Synthetic group  "
+        },
+        "message": {
+          "senderDisplayName": "  Synthetic user  "
+        }
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"  Synthetic group  \"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"  Synthetic user  \",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "  Synthetic user  ",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "no-sender-platform",
+        "message": {}
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "empty-sender-platform",
+        "message": {
+          "senderPlatformId": ""
+        }
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "mismatched-account",
+        "existing": true,
+        "scene": {
+          "accountId": "other"
+        }
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"other\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "mismatched-platform",
+        "existing": true,
+        "scene": {
+          "platformSceneId": "99999"
+        }
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"99999\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-null-scene",
+        "rawScene": "null"
+      },
+      "before": {
+        "scene": "null",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-false-scene",
+        "rawScene": "false"
+      },
+      "before": {
+        "scene": "false",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-zero-scene",
+        "rawScene": "0"
+      },
+      "before": {
+        "scene": "0",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-empty-scene",
+        "rawScene": "\"\""
+      },
+      "before": {
+        "scene": "\"\"",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "saveScene",
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"kind\":\"group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-scalar-scene",
+        "rawScene": "\"synthetic\""
+      },
+      "before": {
+        "scene": "\"synthetic\"",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "\"synthetic\"",
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-null-identity",
+        "existing": true,
+        "rawIdentity": "null"
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": "null"
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-null-identity-fallback",
+        "existing": true,
+        "rawIdentity": "null",
+        "message": {}
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": "null"
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": "Cannot read properties of null (reading 'senderDisplayName')",
+        "timeline": [
+          "observeIdentity",
+          "saveScene"
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "null",
+        "registered": true,
+        "stateExists": false,
+        "messages": []
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-false-identity-fallback",
+        "existing": true,
+        "rawIdentity": "false",
+        "message": {}
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": "false"
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "raw-prior-name-fallback",
+        "existing": true,
+        "rawIdentity": "{\"senderDisplayName\":\"Prior user\",\"obsolete\":true}",
+        "message": {}
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": "{\"senderDisplayName\":\"Prior user\",\"obsolete\":true}"
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Prior user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "identity-unknown-fields",
+        "existing": true,
+        "rawIdentity": "{\"senderDisplayName\":\"Old\",\"obsolete\":true}"
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": "{\"senderDisplayName\":\"Old\",\"obsolete\":true}"
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": null,
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled",
+          {
+            "kind": "received",
+            "topics": []
+          }
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": [
+          {
+            "id": "source",
+            "sceneId": "ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0",
+            "senderId": "user",
+            "senderPlatformId": "23456",
+            "senderDisplayName": "Synthetic user",
+            "origin": "live",
+            "status": "available",
+            "sentAt": "2026-10-28T00:00:00.000Z",
+            "receivedAt": "2026-10-28T00:00:00.000Z",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Synthetic."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "spec": {
+        "name": "save-scene-failure",
+        "failure": "saveScene"
+      },
+      "before": {
+        "scene": null,
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": "synthetic_saveScene",
+        "timeline": [
+          "saveScene"
+        ],
+        "persistedScene": null,
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": false,
+        "messages": []
+      }
+    },
+    {
+      "spec": {
+        "name": "identity-failure",
+        "existing": true,
+        "failure": "observeIdentity"
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": "synthetic_observeIdentity",
+        "timeline": [
+          "observeIdentity"
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "persistedIdentity": null,
+        "registered": true,
+        "stateExists": false,
+        "messages": []
+      }
+    },
+    {
+      "spec": {
+        "name": "recall-read-failure",
+        "existing": true,
+        "failure": "recalled"
+      },
+      "before": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Prior group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+        "identity": null
+      },
+      "input": {
+        "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+        "message": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}"
+      },
+      "expected": {
+        "error": "synthetic_recalled",
+        "timeline": [
+          "observeIdentity",
+          "saveScene",
+          "recalled"
+        ],
+        "persistedScene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\",\"name\":\"Synthetic group\",\"participationEnabled\":false,\"learningEnabled\":false,\"proactiveEnabled\":false,\"avatarUrl\":\"https://p.qlogo.cn/gh/12345/12345/100\"}",
+        "persistedIdentity": "{\"senderDisplayName\":\"Synthetic user\",\"senderPlatformId\":\"23456\",\"senderAvatarUrl\":\"https://q1.qlogo.cn/g?b=qq&nk=23456&s=100\"}",
+        "registered": true,
+        "stateExists": true,
+        "messages": []
+      }
+    }
+  ],
+  "editCases": [
+    {
+      "mode": "unchanged",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": null,
+        "status": "edited",
+        "messages": "[{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}],\"sourceEventRef\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0}}]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"0d282cf8cf09489a569d34ba4e62780c06e8a40e88a1a109333cbccd9baf4bc8\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "body-mutation",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": "source_event_changed",
+        "status": null,
+        "messages": "[]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"0d282cf8cf09489a569d34ba4e62780c06e8a40e88a1a109333cbccd9baf4bc8\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "ref-replacement",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": null,
+        "status": "edited",
+        "messages": "[{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}],\"sourceEventRef\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0}}]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"0d282cf8cf09489a569d34ba4e62780c06e8a40e88a1a109333cbccd9baf4bc8\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "ref-mutation",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": "source_event_changed",
+        "status": null,
+        "messages": "[]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"0d282cf8cf09489a569d34ba4e62780c06e8a40e88a1a109333cbccd9baf4bc8\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "history",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": null,
+        "status": "edited",
+        "messages": "[]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"0d282cf8cf09489a569d34ba4e62780c06e8a40e88a1a109333cbccd9baf4bc8\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "scene-mismatch",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": null,
+        "status": "edited",
+        "messages": "[]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"0d282cf8cf09489a569d34ba4e62780c06e8a40e88a1a109333cbccd9baf4bc8\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "bot-mutation",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": null,
+        "status": "edited",
+        "messages": "[{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"bot\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Changed by callback.\"}],\"sourceEventRef\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0}}]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"0d282cf8cf09489a569d34ba4e62780c06e8a40e88a1a109333cbccd9baf4bc8\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "mention-normalization",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"mention\",\"userId\":\"bot-user\"}]}",
+      "expected": {
+        "error": "source_event_changed",
+        "status": null,
+        "messages": "[]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"557d09a2a8795898c118b0a462eb50e20774eb53ad2f79db7d066ff2905b8b51\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    },
+    {
+      "mode": "sender-normalization",
+      "scene": "{\"id\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"kind\":\"group\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"platformSceneId\":\"12345\",\"displayName\":\"Synthetic group\"}",
+      "initial": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}]}",
+      "current": "{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"bot-user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Edited.\"}]}",
+      "expected": {
+        "error": null,
+        "status": "conflict",
+        "messages": "[{\"id\":\"source\",\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"senderId\":\"user\",\"senderPlatformId\":\"23456\",\"senderDisplayName\":\"Synthetic user\",\"origin\":\"live\",\"status\":\"available\",\"sentAt\":\"2026-10-28T00:00:00.000Z\",\"receivedAt\":\"2026-10-28T00:00:00.000Z\",\"parts\":[{\"type\":\"text\",\"text\":\"Synthetic.\"}],\"sourceEventRef\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"sourceEventRegistrationLimited\":false}]",
+        "head": "{\"identity\":{\"sceneId\":\"ob:s:WyJvbmVib3QiLCJib3QiLCJncm91cCIsIjEyMzQ1Il0\",\"adapterId\":\"onebot\",\"accountId\":\"bot\",\"messageId\":\"source\",\"senderId\":\"user\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"3f096fca428c0b84cba37934b5c2deb4315450544016634a999d1cdba79bb0ce\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":\"2026-10-28T00:00:00.000Z\",\"bodyCoverage\":\"unavailable\"}"
+      }
+    }
+  ],
+  "profileNames": [
+    {
+      "input": "null",
+      "expected": null
+    },
+    {
+      "input": "false",
+      "expected": null
+    },
+    {
+      "input": "0",
+      "expected": null
+    },
+    {
+      "input": "{}",
+      "expected": null
+    },
+    {
+      "input": "[]",
+      "expected": null
+    },
+    {
+      "input": "\"\"",
+      "expected": null
+    },
+    {
+      "input": "\"Synthetic\"",
+      "expected": "\"Synthetic\""
+    },
+    {
+      "input": "\"  Synthetic  \"",
+      "expected": "\"Synthetic\""
+    },
+    {
+      "input": "\"\\u0000A‮B⁩\"",
+      "expected": "\"AB\""
+    },
+    {
+      "input": "\"﻿ A　\"",
+      "expected": "\"A\""
+    },
+    {
+      "input": "\"A\"",
+      "expected": "\"A\""
+    },
+    {
+      "input": "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx😀\"",
+      "expected": "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\ud83d\""
+    },
+    {
+      "input": "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"",
+      "expected": "\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
+    },
+    {
+      "input": "\"\\ud800\"",
+      "expected": "\"\\ud800\""
+    },
+    {
+      "input": "\"\\udfff\"",
+      "expected": "\"\\udfff\""
+    },
+    {
+      "input": "\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"",
+      "expected": "\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\""
+    }
+  ],
+  "avatars": [
+    {
+      "id": "",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "",
+      "group": true,
+      "expected": null
+    },
+    {
+      "id": "0",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "0",
+      "group": true,
+      "expected": null
+    },
+    {
+      "id": "01",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "01",
+      "group": true,
+      "expected": null
+    },
+    {
+      "id": "-1",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "-1",
+      "group": true,
+      "expected": null
+    },
+    {
+      "id": "1",
+      "group": false,
+      "expected": "https://q1.qlogo.cn/g?b=qq&nk=1&s=100"
+    },
+    {
+      "id": "1",
+      "group": true,
+      "expected": "https://p.qlogo.cn/gh/1/1/100"
+    },
+    {
+      "id": "12345",
+      "group": false,
+      "expected": "https://q1.qlogo.cn/g?b=qq&nk=12345&s=100"
+    },
+    {
+      "id": "12345",
+      "group": true,
+      "expected": "https://p.qlogo.cn/gh/12345/12345/100"
+    },
+    {
+      "id": "99999999999999999999",
+      "group": false,
+      "expected": "https://q1.qlogo.cn/g?b=qq&nk=99999999999999999999&s=100"
+    },
+    {
+      "id": "99999999999999999999",
+      "group": true,
+      "expected": "https://p.qlogo.cn/gh/99999999999999999999/99999999999999999999/100"
+    },
+    {
+      "id": "999999999999999999999",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "999999999999999999999",
+      "group": true,
+      "expected": null
+    },
+    {
+      "id": "1\n",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "1\n",
+      "group": true,
+      "expected": null
+    },
+    {
+      "id": "1.0",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "1.0",
+      "group": true,
+      "expected": null
+    },
+    {
+      "id": "１２",
+      "group": false,
+      "expected": null
+    },
+    {
+      "id": "１２",
+      "group": true,
+      "expected": null
+    }
+  ],
+  "rawAvatars": [
+    {
+      "input": "null",
+      "group": false,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "null",
+      "group": true,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "false",
+      "group": false,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "false",
+      "group": true,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "true",
+      "group": false,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "true",
+      "group": true,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "0",
+      "group": false,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "0",
+      "group": true,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "1",
+      "group": false,
+      "expected": "https://q1.qlogo.cn/g?b=qq&nk=1&s=100",
+      "error": null
+    },
+    {
+      "input": "1",
+      "group": true,
+      "expected": "https://p.qlogo.cn/gh/1/1/100",
+      "error": null
+    },
+    {
+      "input": "12345",
+      "group": false,
+      "expected": "https://q1.qlogo.cn/g?b=qq&nk=12345&s=100",
+      "error": null
+    },
+    {
+      "input": "12345",
+      "group": true,
+      "expected": "https://p.qlogo.cn/gh/12345/12345/100",
+      "error": null
+    },
+    {
+      "input": "[]",
+      "group": false,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "[]",
+      "group": true,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "[12345]",
+      "group": false,
+      "expected": "https://q1.qlogo.cn/g?b=qq&nk=12345&s=100",
+      "error": null
+    },
+    {
+      "input": "[12345]",
+      "group": true,
+      "expected": "https://p.qlogo.cn/gh/12345/12345/100",
+      "error": null
+    },
+    {
+      "input": "[1,2]",
+      "group": false,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "[1,2]",
+      "group": true,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "{}",
+      "group": false,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "{}",
+      "group": true,
+      "expected": null,
+      "error": null
+    },
+    {
+      "input": "{\"toString\":1}",
+      "group": false,
+      "expected": null,
+      "error": "Cannot convert object to primitive value"
+    },
+    {
+      "input": "{\"toString\":1}",
+      "group": true,
+      "expected": null,
+      "error": "Cannot convert object to primitive value"
+    }
+  ]
+}

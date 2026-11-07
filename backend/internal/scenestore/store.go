@@ -60,7 +60,7 @@ func (s *Store) Save(ctx context.Context, input *jsjson.Object) (recovery.Head, 
 				return recovery.WritePlan{}, parseErr
 			}
 			previous, ok = decoded.(*jsjson.Object)
-			if !ok {
+			if !ok && !absentSceneValue(decoded) {
 				rows.Close()
 				return recovery.WritePlan{}, errors.New("scene_stored_value_invalid")
 			}
@@ -86,4 +86,22 @@ func (s *Store) Save(ctx context.Context, input *jsjson.Object) (recovery.Head, 
 			return err
 		}}, nil
 	})
+}
+
+// The source uses a truthiness test before recreating a missing ingress scene.
+// Legacy JSON null/false/zero/empty-string rows have no prior policy authority.
+// Truthy non-object rows are not silently reclassified as absent.
+func absentSceneValue(value any) bool {
+	switch v := value.(type) {
+	case nil:
+		return true
+	case bool:
+		return !v
+	case float64:
+		return v == 0
+	case string:
+		return v == ""
+	default:
+		return false
+	}
 }

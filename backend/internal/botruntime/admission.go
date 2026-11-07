@@ -160,20 +160,36 @@ func (r *Runtime) topicLocked(s *sceneState, m *Object) (*topic, error) {
 	}
 	return chosen, nil
 }
-func (r *Runtime) routeLocked(s *sceneState, m *Object, schedule bool) (string, error) {
+func (r *Runtime) canSchedule(scene Scene, schedule bool) (bool, error) {
+	if !schedule {
+		return false, nil
+	}
+	return r.services.Authority.SceneParticipationEnabled(scene)
+}
+
+func (r *Runtime) routeLocked(s *sceneState, m *Object, schedule, can bool) (string, error) {
+	if s.closed.Load() {
+		return "", nil
+	}
 	t, err := r.topicLocked(s, m)
 	if err != nil {
 		return "", err
 	}
-	can := schedule && s.scene.ParticipationEnabled
-	cfg := r.config()
 	if t == nil {
 		if can {
 			s.routing.Defer(idOf(m), schedule)
+		} else if s.scene.Kind != "simulation" && !r.config().CacheEnabled {
+			r.clearBodiesLocked(s)
 		}
 		return "", nil
 	}
 	s.routing.Deferred.Delete(idOf(m))
+	addressed := r.bookkeepTopicLocked(s, t, m)
+	return r.queueRoutedTopicLocked(s, t, m, addressed, can)
+}
+
+func (r *Runtime) bookkeepTopicLocked(s *sceneState, t *topic, m *Object) bool {
+	cfg := r.config()
 	addressed := false
 	for _, p := range array(get(m, "parts")) {
 		if get(p, "type") == "mention" && get(p, "userId") == "bot" {
@@ -191,6 +207,15 @@ func (r *Runtime) routeLocked(s *sceneState, m *Object, schedule bool) (string, 
 		t.lastAt = r.services.Clock.Now()
 		t.messageIDs = append(t.messageIDs, idOf(m))
 	}
+	return addressed
+}
+
+func (r *Runtime) queueRoutedTopicLocked(s *sceneState, t *topic, m *Object, addressed, can bool) (string, error) {
+	if s.closed.Load() {
+		return "", nil
+	}
+	cfg := r.config()
+	var err error
 	if !can {
 		if s.scene.Kind != "simulation" && !cfg.CacheEnabled {
 			r.clearBodiesLocked(s)
@@ -277,11 +302,18 @@ func (r *Runtime) drainDeferred(s *sceneState) (err error) {
 		if err != nil {
 			return err
 		}
+		can := false
+		if valid {
+			can, err = r.canSchedule(s.view.Load().scene, p.Value.Schedule)
+			if err != nil {
+				return err
+			}
+		}
 		s.mu.Lock()
 		if !valid {
 			s.routing.ForgetMessage(p.Key)
 		} else {
-			_, _ = r.routeLocked(s, message, p.Value.Schedule)
+			_, _ = r.routeLocked(s, message, p.Value.Schedule, can)
 		}
 		r.publishLocked(s)
 		s.mu.Unlock()

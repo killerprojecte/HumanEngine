@@ -26,11 +26,33 @@ func (policy Parser) FiniteDateParse(value string) bool {
 	if err != nil {
 		return false
 	}
+	_, valid := policy.parseMillisUnits(units)
+	return valid
+}
+
+// ParseMillis returns the exact source Date.parse epoch milliseconds. Invalid
+// dates return valid=false, corresponding to JavaScript NaN, not an exception.
+// Errors describe an unconfigured parser or a noncanonical Go string, neither
+// of which can be a JavaScript Date.parse string input. A valid result always
+// fits both int64 and JavaScript's exact integer range.
+func (p *Parser) ParseMillis(value string) (milliseconds int64, valid bool, err error) {
+	if p == nil || p.localToUTC == nil {
+		return 0, false, fmt.Errorf("jsdate: unconfigured parser")
+	}
+	units, err := jsjson.UTF16(value)
+	if err != nil {
+		return 0, false, err
+	}
+	milliseconds, valid = p.parseMillisUnits(units)
+	return milliseconds, valid, nil
+}
+
+func (policy Parser) parseMillisUnits(units []uint16) (int64, bool) {
 	p := machine{scan: scanner{units: units}, month: -1, hourOffset: -1, tzSign: 0, tzHour: -1, tzMinute: -1}
 	p.scan.next = p.scan.read()
 	t := p.iso()
 	if t.kind == invalid {
-		return false
+		return 0, false
 	}
 	seen := len(p.day) > 0
 	for ; t.kind != end; t = p.scan.take() {
@@ -40,20 +62,20 @@ func (policy Parser) FiniteDateParse(value string) bool {
 			if p.scan.skip(':') {
 				if p.scan.skip(':') {
 					if len(p.clock) != 0 {
-						return false
+						return 0, false
 					}
 					p.addTime(n)
 					p.addTime(0)
 				} else {
 					if !p.addTime(n) {
-						return false
+						return 0, false
 					}
 					p.scan.skip('.')
 				}
 			} else if p.scan.skip('.') && p.expectTime(n) {
 				p.addTime(n)
 				if p.scan.next.kind != number {
-					return false
+					return 0, false
 				}
 				p.finalTime(milliseconds(p.scan.take()))
 			} else if p.tzHour != -1 && p.tzMinute == -1 && between(n, 0, 59) {
@@ -62,11 +84,11 @@ func (policy Parser) FiniteDateParse(value string) bool {
 				p.finalTime(n)
 				q := p.scan.next
 				if q.kind != end && q.kind != space && !q.z() && !q.sign() {
-					return false
+					return 0, false
 				}
 			} else {
 				if len(p.day) == 3 {
-					return false
+					return 0, false
 				}
 				p.day = append(p.day, n)
 				p.scan.skip('-')
@@ -82,7 +104,7 @@ func (policy Parser) FiniteDateParse(value string) bool {
 				p.zone(t.value)
 			default:
 				if seen || p.scan.next.kind == number {
-					return false
+					return 0, false
 				}
 			}
 		} else if t.sign() && ((p.tzHour == 0 && p.tzMinute == 0) || len(p.clock) > 0) {
@@ -103,14 +125,14 @@ func (policy Parser) FiniteDateParse(value string) bool {
 				p.tzHour = n / 100
 				p.tzMinute = n % 100
 			} else {
-				return false
+				return 0, false
 			}
 		} else if (t.sign() || t.symbol(')')) && seen {
-			return false
+			return 0, false
 		}
 	}
 	if len(p.day) == 0 {
-		return false
+		return 0, false
 	}
 	for len(p.day) < 3 {
 		p.day = append(p.day, 1)
@@ -138,7 +160,7 @@ func (policy Parser) FiniteDateParse(value string) bool {
 		}
 	}
 	if !between(m, 1, 12) || !between(d, 1, 31) {
-		return false
+		return 0, false
 	}
 	for len(p.clock) < 4 {
 		p.clock = append(p.clock, 0)
@@ -146,16 +168,16 @@ func (policy Parser) FiniteDateParse(value string) bool {
 	h, mi, s, ms := p.clock[0], p.clock[1], p.clock[2], p.clock[3]
 	if p.hourOffset != -1 {
 		if !between(h, 0, 12) {
-			return false
+			return 0, false
 		}
 		h = h%12 + p.hourOffset
 	}
 	if !(between(h, 0, 23) && between(mi, 0, 59) && between(s, 0, 59) && between(ms, 0, 999)) && !(h == 24 && mi == 0 && s == 0 && ms == 0) {
-		return false
+		return 0, false
 	}
 	// V8 MakeDay rejects years outside this intrinsic arithmetic range.
 	if y < -1000000 || y > 1000000 {
-		return false
+		return 0, false
 	}
 	date := time.Date(y, time.Month(m), d, h, mi, s, ms*1000000, time.UTC).UnixMilli()
 	if p.tzSign != 0 {
@@ -168,17 +190,20 @@ func (policy Parser) FiniteDateParse(value string) bool {
 		}
 		offset := uint32(th)*3600 + uint32(tm)*60
 		if offset > 2147483647 {
-			return false
+			return 0, false
 		}
 		date -= int64(p.tzSign) * int64(offset) * 1000
 	} else {
 		const beforeUTC = int64(8640000000000000 + 86400000*30)
 		if date < -beforeUTC || date > beforeUTC || policy.localToUTC == nil {
-			return false
+			return 0, false
 		}
 		date = policy.localToUTC(date)
 	}
-	return date >= -8640000000000000 && date <= 8640000000000000
+	if date < -8640000000000000 || date > 8640000000000000 {
+		return 0, false
+	}
+	return date, true
 }
 
 type machine struct {

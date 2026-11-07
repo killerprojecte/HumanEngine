@@ -171,3 +171,41 @@ failures and stale-completion behavior. Payloads are serialized once per candida
 rather than repeatedly serializing a shrinking array. The membership cache does
 not replace the source's live raw-row authority snapshot or install model cache
 hints in a production request.
+
+## Exact runtime clock projections
+
+`jsdate.Parser.ParseMillis` now exposes exact Date.parse milliseconds while keeping
+invalid-date results distinct from valid epoch zero and parser configuration
+failures. The same 82,515 actual Node comparisons verify numeric results as well
+as validity, including local-time DST and Date range edges.
+
+`intltime.Hour` ports the participation-window `Intl.DateTimeFormat` h23 hour.
+The shared `timezones` package owns the existing pinned alias census for both
+settings validation and formatting. UTC/numeric offsets require no ICU or Node;
+named zones use the same once-verified embedded ICU data as date parsing and
+collation. Its 14,378 actual Node results include aliases, historical offsets,
+DST boundaries and both Date range endpoints. Default/native race tests and vet
+passed, and the source-free proof now runs all four consumer test binaries.
+Automatic deployment locale/timezone discovery remains separate unfinished work.
+
+## Native conversation lifecycle
+
+`botruntime` now executes scene ingestion, topic ownership/admission, participation,
+planning/read/repair, sequential actions, Replyer grounding and guarded send receipt
+handling without calling the TypeScript runtime. Source-based fixtures compare 31
+complete model-request and ordered effect traces, six bot/user ingress scenarios,
+recall failure ordering and tool-schema boundaries. Concurrent tests exercise
+blocked models without blocking snapshots/ingress, edits and recalls, WAIT/scene
+generations, unknown delivery, simulation admission and extension removal.
+
+The scene publishes immutable body blocks and indexed message records. Received-at
+parsing happens once per body; unrelated turns' receipt ledgers are not rescanned
+for outcome checks. Snapshot projection and copying happen outside scene ownership.
+Expiration/capacity trimming and topic history counting still have documented scan
+costs; these tests do not claim universal constant-time operation.
+
+This is native orchestration, not full production composition. Real source-event
+transactions, provider/budget/accounting services, plugin capability bridges,
+flow-log/SSE persistence and startup/HTTP write wiring remain required. See the
+package README and coverage map. The preview executable and existing production
+startup remain unchanged.

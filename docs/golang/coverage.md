@@ -6,28 +6,29 @@ existing TypeScript production startup has not been replaced.
 
 ## Implemented candidate modules
 
-| Module               | Executable behavior                                                                                                                    | Still outside this module                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `contract`           | Frozen API schema defaults, refinements and lossless configuration string contracts                                                    | Full API routing and remaining JS string boundaries                                            |
-| `credentials`        | Canonical v1 AES-GCM, JS AAD/text decoding, key custody and transactional SecretStore                                                  | Security-table bootstrap, runtime wiring and documented noncanonical reader differences        |
-| `jsjson`             | Ordered plain JSON, binary64 formatting, canonical WTF-8, explicit Node UTF-8 text binding                                             | Arbitrary JS objects, Buffer decoding, transforms and caller-specific regex rules              |
-| `recovery`           | All 20 typed history intents, hash-chain verification, cached append and rollback-safe intent/main ACK                                 | Enrollment and full domain reconciliation                                                      |
-| `scenestore`         | Actual scene write policy, identity hashes, legacy control preservation and transactional revisions                                    | HTTP writes, startup and live bot notification                                                 |
-| `settingsstore`      | Actual settings revision/flag/security policy and failure ordering                                                                     | Lazy security-table bootstrap, HTTP writes and reconciliation                                  |
-| `scheduler`          | Global priority, rate, foreground reservation and learning fairness                                                                    | Production model/runtime ownership                                                             |
-| `turnwait`           | Topic admission, quiet/max-wait decisions, generation and wake ownership                                                               | Full topic/turn runtime and persistence                                                        |
-| `dispatch`           | Guarded single-segment send and authoritative/unknown receipt arbitration                                                              | Installed transport adapters, tool-send effects and live turn ownership                        |
-| `modelservice`       | Candidate routing, retry/fallback and progress-aware attempt budgets                                                                   | Real provider serialization, cost/recovery authorization, accounting and assistant composition |
-| `plugins` V1         | Lazy shared Node, unload, config validation, cancellation, model registration, opaque continuations and exact SDK retry-error identity | Complete tool/cache/send/adapter bridges, deployment SDK URL mapping and persistent manager    |
-| `plugins` V2         | Four embedded WASM reactors and their migrated policy operations                                                                       | Complete networking/cache/transport behavior and runtime capability wiring                     |
-| `observability`      | Structured and readable asynchronous sink delivery, backlog/error reporting                                                            | Full diagnostic catalogs, UI log query service and runtime correlation                         |
-| `httpapi`            | Real authenticated GET/HEAD settings/models/scenes publication                                                                         | Other routes, write composition and production startup                                         |
-| `externalcost`       | Canonical receipt storage and guarded maintenance-backed per-receipt offline replay                                                    | Global reconciliation orchestration and runtime accounting                                     |
-| `topicroute`         | Reassignment, ordered scene metadata and admission/cue policy with exact native ICU comparator                                         | Scene actor orchestration, native provider composition and runtime effects                     |
-| `replyplan`          | Actual plan schema/refinement, repair loop, complete Replyer brief and dependency-aware evidence packing                               | Real read tools, participation/Replyer execution, authority and turn composition               |
-| `jsdate` / `nodeicu` | Pinned V8 date-validity parsing and shared one-time ICU data initialization                                                            | Automatic source-compatible deployment locale/timezone resolution                              |
-| `toolresults`        | Complete private streaming cache, exact read views, owner/TTL/revocation and cancellation                                              | Production V1 tool context bridge, manager lifecycle and restart ownership                     |
-| `promptcache`        | Source context-window selection and successful prefix tickets, with linear payload serialization                                       | Live raw-row authority snapshot, model prompt hints and turn integration                       |
+| Module                            | Executable behavior                                                                                                                    | Still outside this module                                                                                            |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `contract`                        | Frozen API schema defaults, refinements and lossless configuration string contracts                                                    | Full API routing and remaining JS string boundaries                                                                  |
+| `credentials`                     | Canonical v1 AES-GCM, JS AAD/text decoding, key custody and transactional SecretStore                                                  | Security-table bootstrap, runtime wiring and documented noncanonical reader differences                              |
+| `jsjson`                          | Ordered plain JSON, binary64 formatting, canonical WTF-8, explicit Node UTF-8 text binding                                             | Arbitrary JS objects, Buffer decoding, transforms and caller-specific regex rules                                    |
+| `recovery`                        | All 20 typed history intents, hash-chain verification, cached append and rollback-safe intent/main ACK                                 | Enrollment and full domain reconciliation                                                                            |
+| `scenestore`                      | Actual scene write policy, identity hashes, legacy control preservation and transactional revisions                                    | HTTP writes, startup and live bot notification                                                                       |
+| `settingsstore`                   | Actual settings revision/flag/security policy and failure ordering                                                                     | Lazy security-table bootstrap, HTTP writes and reconciliation                                                        |
+| `scheduler`                       | Global priority, rate, foreground reservation and learning fairness                                                                    | Production model/runtime ownership                                                                                   |
+| `turnwait`                        | Topic admission, quiet/max-wait decisions, generation and wake ownership                                                               | Full topic/turn runtime and persistence                                                                              |
+| `dispatch`                        | Guarded single-segment send and authoritative/unknown receipt arbitration                                                              | Installed transport adapters, tool-send effects and live turn ownership                                              |
+| `modelservice`                    | Candidate routing, retry/fallback and progress-aware attempt budgets                                                                   | Real provider serialization, cost/recovery authorization, accounting and assistant composition                       |
+| `plugins` V1                      | Lazy shared Node, unload, config validation, cancellation, model registration, opaque continuations and exact SDK retry-error identity | Complete tool/cache/send/adapter bridges, deployment SDK URL mapping and persistent manager                          |
+| `plugins` V2                      | Four embedded WASM reactors and their migrated policy operations                                                                       | Complete networking/cache/transport behavior and runtime capability wiring                                           |
+| `observability`                   | Structured and readable asynchronous sink delivery, backlog/error reporting                                                            | Full diagnostic catalogs, UI log query service and runtime correlation                                               |
+| `httpapi`                         | Real authenticated GET/HEAD settings/models/scenes publication                                                                         | Other routes, write composition and production startup                                                               |
+| `externalcost`                    | Canonical receipt storage and guarded maintenance-backed per-receipt offline replay                                                    | Global reconciliation orchestration and runtime accounting                                                           |
+| `topicroute`                      | Reassignment, ordered scene metadata and admission/cue policy with exact native ICU comparator                                         | Production provider composition and durable runtime effects                                                          |
+| `botruntime`                      | Native scene ownership, participation, full planning/Replyer/send flow, simulation and concurrent cancellation                         | Durable source-event service, real providers/plugins, full diagnostic/event delivery and production HTTP composition |
+| `replyplan`                       | Actual plan schema/refinement, repair loop, complete Replyer brief and dependency-aware evidence packing                               | Real read tools and durable authority/provider composition                                                           |
+| `jsdate` / `intltime` / `nodeicu` | Exact V8 Date.parse milliseconds, Intl participation hours and shared one-time ICU data initialization                                 | Automatic source-compatible deployment locale/timezone resolution                                                    |
+| `toolresults`                     | Complete private streaming cache, exact read views, owner/TTL/revocation and cancellation                                              | Production V1 tool context bridge, manager lifecycle and restart ownership                                           |
+| `promptcache`                     | Source context-window selection and successful prefix tickets, with linear payload serialization                                       | Live raw-row authority service and provider prompt hints                                                             |
 
 The native comparator is separately built from the pinned Node 24.22.1 ICU source
 and data. Its tagged tests cover actual Node ordering across 15 locales; default
@@ -50,9 +51,11 @@ substitute for global recovery reconciliation.
    remain caller-owned. This is an internal candidate composition, not production
    startup or HTTP mutation routing. The convenience HTTP preview still opens its
    own independent read authority connection.
-3. Port the surrounding bot state machines and data domains: event ingestion,
-   topics, turns, Planner/Replyer, learning, memory eligibility/provenance, history,
-   outbound effects, stream accounting and cancellation propagation.
+3. Connect the implemented native scene/turn/Planner/Replyer state machines to
+   real data domains: source-event enrollment and revision transactions, learning,
+   memory eligibility/provenance, history, outbound adapters and stream accounting.
+   Required service interfaces and synthetic test implementations do not establish
+   those production dependencies.
 4. Install actual model/provider and plugin capability adapters. A continuation is
    assistant-owned shared state; a branch must not release it while another branch
    still uses the same assistant. Cost/recovery checks cannot be replaced by a
@@ -84,8 +87,8 @@ The tests prove specific work/ownership properties, not universal performance:
   one non-prefetching iterator pump per active write, not a goroutine per chunk.
   The source expiry sweep remains linear in retained entries; an uncooperative
   extension still owns its blocked iterator/cleanup operation after cancellation.
-- Non-UTC date-validity parsing currently opens/closes a native ICU calendar per
-  parse. Exact native behavior is tested, but calendar reuse remains performance
+- Non-UTC Date.parse and named-zone participation-hour formatting currently
+  open/close a native ICU calendar per operation. Exact native behavior is tested, but calendar reuse remains performance
   work. Locale and timezone discovery must not start Node when V1 is disabled.
 - Logging does not silently truncate/drop entries or add a queue cap. Sustained
   output slower than production can still grow the backlog. Its counters and sink

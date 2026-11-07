@@ -4,6 +4,7 @@ package nodeicu_test
 
 import (
 	"fmt"
+	"github.com/killerprojecte/HumanEngine/backend/internal/intltime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/nodeicu"
 	"github.com/killerprojecte/HumanEngine/backend/internal/topiccollation"
@@ -33,7 +34,7 @@ func TestConcurrentConsumersShareOneInitializer(t *testing.T) {
 		go func(i int) {
 			defer done.Done()
 			<-start
-			if i%2 == 0 {
+			if i%3 == 0 {
 				c, err := topiccollation.New("en-US")
 				if err == nil {
 					defer c.Close()
@@ -44,7 +45,7 @@ func TestConcurrentConsumersShareOneInitializer(t *testing.T) {
 					}
 				}
 				errors <- err
-			} else {
+			} else if i%3 == 1 {
 				p, err := jsdate.New("America/New_York")
 				if err == nil {
 					var finite bool
@@ -52,6 +53,12 @@ func TestConcurrentConsumersShareOneInitializer(t *testing.T) {
 					if err == nil && !finite {
 						err = fmt.Errorf("wrong date result")
 					}
+				}
+				errors <- err
+			} else {
+				hour, err := intltime.Hour(0, "America/New_York")
+				if err == nil && hour != 19 {
+					err = fmt.Errorf("wrong hour: %d", hour)
 				}
 				errors <- err
 			}

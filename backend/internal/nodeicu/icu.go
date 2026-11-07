@@ -1,5 +1,5 @@
 // Package nodeicu owns the single process-wide initialization of the pinned
-// Node ICU data shared by native collation and Date.parse timezone conversion.
+// Node ICU data shared by native collation, Date.parse timezone conversion and participation-hour formatting.
 package nodeicu
 
 import "errors"

@@ -1,0 +1,25 @@
+[
+  {
+    "name": "prepareFailed",
+    "expected": {
+      "calls": [
+        "prepare"
+      ],
+      "error": "prepare_failed",
+      "sourceStatus": "available",
+      "aborted": false
+    }
+  },
+  {
+    "name": "callbackFailed",
+    "expected": {
+      "calls": [
+        "prepare",
+        "callback"
+      ],
+      "error": "callback_failed",
+      "sourceStatus": "recalled",
+      "aborted": true
+    }
+  }
+]

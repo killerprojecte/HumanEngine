@@ -35,10 +35,7 @@ func loadHandoffOracle(t *testing.T) handoffOracle {
 }
 func TestHandoffSourceHashes(t *testing.T) {
 	for _, source := range loadHandoffOracle(t).Sources {
-		data, err := os.ReadFile(filepath.Join("../../../..", source.Path))
-		if os.IsNotExist(err) {
-			t.Skip("source-free package: generator --check verifies source hashes")
-		}
+		data, err := os.ReadFile(filepath.Join("../../..", source.Path))
 		if err != nil {
 			t.Fatal(err)
 		}

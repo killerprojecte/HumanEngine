@@ -1,5 +1,13 @@
 [
   {
+    "input": "act",
+    "valid": true
+  },
+  {
+    "input": "aet",
+    "valid": true
+  },
+  {
     "input": "africa/abidjan",
     "valid": true
   },
@@ -213,6 +221,10 @@
   },
   {
     "input": "africa/windhoek",
+    "valid": true
+  },
+  {
+    "input": "agt",
     "valid": true
   },
   {
@@ -944,6 +956,10 @@
     "valid": true
   },
   {
+    "input": "art",
+    "valid": true
+  },
+  {
     "input": "asia/aden",
     "valid": true
   },
@@ -1340,6 +1356,10 @@
     "valid": true
   },
   {
+    "input": "ast",
+    "valid": true
+  },
+  {
     "input": "atlantic/azores",
     "valid": true
   },
@@ -1440,11 +1460,11 @@
     "valid": true
   },
   {
-    "input": "australia/nsw",
+    "input": "australia/north",
     "valid": true
   },
   {
-    "input": "australia/north",
+    "input": "australia/nsw",
     "valid": true
   },
   {
@@ -1480,6 +1500,10 @@
     "valid": true
   },
   {
+    "input": "bet",
+    "valid": true
+  },
+  {
     "input": "brazil/acre",
     "valid": true
   },
@@ -1496,11 +1520,7 @@
     "valid": true
   },
   {
-    "input": "cet",
-    "valid": true
-  },
-  {
-    "input": "cst6cdt",
+    "input": "bst",
     "valid": true
   },
   {
@@ -1509,6 +1529,10 @@
   },
   {
     "input": "canada/central",
+    "valid": true
+  },
+  {
+    "input": "canada/east-saskatchewan",
     "valid": true
   },
   {
@@ -1536,6 +1560,14 @@
     "valid": true
   },
   {
+    "input": "cat",
+    "valid": true
+  },
+  {
+    "input": "cet",
+    "valid": true
+  },
+  {
     "input": "chile/continental",
     "valid": true
   },
@@ -1544,19 +1576,35 @@
     "valid": true
   },
   {
+    "input": "cnt",
+    "valid": true
+  },
+  {
+    "input": "cst",
+    "valid": true
+  },
+  {
+    "input": "cst6cdt",
+    "valid": true
+  },
+  {
+    "input": "ctt",
+    "valid": true
+  },
+  {
     "input": "cuba",
     "valid": true
   },
   {
+    "input": "eat",
+    "valid": true
+  },
+  {
+    "input": "ect",
+    "valid": true
+  },
+  {
     "input": "eet",
-    "valid": true
-  },
-  {
-    "input": "est",
-    "valid": true
-  },
-  {
-    "input": "est5edt",
     "valid": true
   },
   {
@@ -1568,7 +1616,11 @@
     "valid": true
   },
   {
-    "input": "etc/gmt",
+    "input": "est",
+    "valid": true
+  },
+  {
+    "input": "est5edt",
     "valid": true
   },
   {
@@ -1621,6 +1673,10 @@
   },
   {
     "input": "etc/gmt+9",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt",
     "valid": true
   },
   {
@@ -1696,11 +1752,11 @@
     "valid": true
   },
   {
-    "input": "etc/utc",
+    "input": "etc/universal",
     "valid": true
   },
   {
-    "input": "etc/universal",
+    "input": "etc/utc",
     "valid": true
   },
   {
@@ -1972,11 +2028,11 @@
     "valid": true
   },
   {
-    "input": "gmt",
+    "input": "gmt+0",
     "valid": true
   },
   {
-    "input": "gmt+0",
+    "input": "gmt",
     "valid": true
   },
   {
@@ -1992,15 +2048,19 @@
     "valid": true
   },
   {
-    "input": "hst",
-    "valid": true
-  },
-  {
     "input": "hongkong",
     "valid": true
   },
   {
+    "input": "hst",
+    "valid": true
+  },
+  {
     "input": "iceland",
+    "valid": true
+  },
+  {
+    "input": "iet",
     "valid": true
   },
   {
@@ -2056,11 +2116,19 @@
     "valid": true
   },
   {
+    "input": "ist",
+    "valid": true
+  },
+  {
     "input": "jamaica",
     "valid": true
   },
   {
     "input": "japan",
+    "valid": true
+  },
+  {
+    "input": "jst",
     "valid": true
   },
   {
@@ -2076,14 +2144,6 @@
     "valid": true
   },
   {
-    "input": "mst",
-    "valid": true
-  },
-  {
-    "input": "mst7mdt",
-    "valid": true
-  },
-  {
     "input": "mexico/bajanorte",
     "valid": true
   },
@@ -2096,11 +2156,15 @@
     "valid": true
   },
   {
-    "input": "nz",
+    "input": "mit",
     "valid": true
   },
   {
-    "input": "nz-chat",
+    "input": "mst",
+    "valid": true
+  },
+  {
+    "input": "mst7mdt",
     "valid": true
   },
   {
@@ -2108,11 +2172,19 @@
     "valid": true
   },
   {
-    "input": "prc",
+    "input": "net",
     "valid": true
   },
   {
-    "input": "pst8pdt",
+    "input": "nst",
+    "valid": true
+  },
+  {
+    "input": "nz",
+    "valid": true
+  },
+  {
+    "input": "nz-chat",
     "valid": true
   },
   {
@@ -2292,11 +2364,35 @@
     "valid": true
   },
   {
+    "input": "plt",
+    "valid": true
+  },
+  {
+    "input": "pnt",
+    "valid": true
+  },
+  {
     "input": "poland",
     "valid": true
   },
   {
     "input": "portugal",
+    "valid": true
+  },
+  {
+    "input": "prc",
+    "valid": true
+  },
+  {
+    "input": "prt",
+    "valid": true
+  },
+  {
+    "input": "pst",
+    "valid": true
+  },
+  {
+    "input": "pst8pdt",
     "valid": true
   },
   {
@@ -2309,178 +2405,6 @@
   },
   {
     "input": "singapore",
-    "valid": true
-  },
-  {
-    "input": "turkey",
-    "valid": true
-  },
-  {
-    "input": "uct",
-    "valid": true
-  },
-  {
-    "input": "us/alaska",
-    "valid": true
-  },
-  {
-    "input": "us/aleutian",
-    "valid": true
-  },
-  {
-    "input": "us/arizona",
-    "valid": true
-  },
-  {
-    "input": "us/central",
-    "valid": true
-  },
-  {
-    "input": "us/east-indiana",
-    "valid": true
-  },
-  {
-    "input": "us/eastern",
-    "valid": true
-  },
-  {
-    "input": "us/hawaii",
-    "valid": true
-  },
-  {
-    "input": "us/indiana-starke",
-    "valid": true
-  },
-  {
-    "input": "us/michigan",
-    "valid": true
-  },
-  {
-    "input": "us/mountain",
-    "valid": true
-  },
-  {
-    "input": "us/pacific",
-    "valid": true
-  },
-  {
-    "input": "us/samoa",
-    "valid": true
-  },
-  {
-    "input": "utc",
-    "valid": true
-  },
-  {
-    "input": "universal",
-    "valid": true
-  },
-  {
-    "input": "w-su",
-    "valid": true
-  },
-  {
-    "input": "wet",
-    "valid": true
-  },
-  {
-    "input": "zulu",
-    "valid": true
-  },
-  {
-    "input": "act",
-    "valid": true
-  },
-  {
-    "input": "aet",
-    "valid": true
-  },
-  {
-    "input": "agt",
-    "valid": true
-  },
-  {
-    "input": "art",
-    "valid": true
-  },
-  {
-    "input": "ast",
-    "valid": true
-  },
-  {
-    "input": "bet",
-    "valid": true
-  },
-  {
-    "input": "bst",
-    "valid": true
-  },
-  {
-    "input": "cat",
-    "valid": true
-  },
-  {
-    "input": "cnt",
-    "valid": true
-  },
-  {
-    "input": "cst",
-    "valid": true
-  },
-  {
-    "input": "ctt",
-    "valid": true
-  },
-  {
-    "input": "canada/east-saskatchewan",
-    "valid": true
-  },
-  {
-    "input": "eat",
-    "valid": true
-  },
-  {
-    "input": "ect",
-    "valid": true
-  },
-  {
-    "input": "iet",
-    "valid": true
-  },
-  {
-    "input": "ist",
-    "valid": true
-  },
-  {
-    "input": "jst",
-    "valid": true
-  },
-  {
-    "input": "mit",
-    "valid": true
-  },
-  {
-    "input": "net",
-    "valid": true
-  },
-  {
-    "input": "nst",
-    "valid": true
-  },
-  {
-    "input": "plt",
-    "valid": true
-  },
-  {
-    "input": "pnt",
-    "valid": true
-  },
-  {
-    "input": "prt",
-    "valid": true
-  },
-  {
-    "input": "pst",
     "valid": true
   },
   {
@@ -2540,11 +2464,95 @@
     "valid": true
   },
   {
+    "input": "turkey",
+    "valid": true
+  },
+  {
+    "input": "uct",
+    "valid": true
+  },
+  {
+    "input": "universal",
+    "valid": true
+  },
+  {
+    "input": "us/alaska",
+    "valid": true
+  },
+  {
+    "input": "us/aleutian",
+    "valid": true
+  },
+  {
+    "input": "us/arizona",
+    "valid": true
+  },
+  {
+    "input": "us/central",
+    "valid": true
+  },
+  {
+    "input": "us/east-indiana",
+    "valid": true
+  },
+  {
+    "input": "us/eastern",
+    "valid": true
+  },
+  {
+    "input": "us/hawaii",
+    "valid": true
+  },
+  {
+    "input": "us/indiana-starke",
+    "valid": true
+  },
+  {
+    "input": "us/michigan",
+    "valid": true
+  },
+  {
+    "input": "us/mountain",
+    "valid": true
+  },
+  {
+    "input": "us/pacific",
+    "valid": true
+  },
+  {
     "input": "us/pacific-new",
     "valid": true
   },
   {
+    "input": "us/samoa",
+    "valid": true
+  },
+  {
+    "input": "utc",
+    "valid": true
+  },
+  {
     "input": "vst",
+    "valid": true
+  },
+  {
+    "input": "w-su",
+    "valid": true
+  },
+  {
+    "input": "wet",
+    "valid": true
+  },
+  {
+    "input": "zulu",
+    "valid": true
+  },
+  {
+    "input": "ACT",
+    "valid": true
+  },
+  {
+    "input": "AET",
     "valid": true
   },
   {
@@ -2761,6 +2769,10 @@
   },
   {
     "input": "AFRICA/WINDHOEK",
+    "valid": true
+  },
+  {
+    "input": "AGT",
     "valid": true
   },
   {
@@ -3492,6 +3504,10 @@
     "valid": true
   },
   {
+    "input": "ART",
+    "valid": true
+  },
+  {
     "input": "ASIA/ADEN",
     "valid": true
   },
@@ -3888,6 +3904,10 @@
     "valid": true
   },
   {
+    "input": "AST",
+    "valid": true
+  },
+  {
     "input": "ATLANTIC/AZORES",
     "valid": true
   },
@@ -3988,11 +4008,11 @@
     "valid": true
   },
   {
-    "input": "AUSTRALIA/NSW",
+    "input": "AUSTRALIA/NORTH",
     "valid": true
   },
   {
-    "input": "AUSTRALIA/NORTH",
+    "input": "AUSTRALIA/NSW",
     "valid": true
   },
   {
@@ -4028,6 +4048,10 @@
     "valid": true
   },
   {
+    "input": "BET",
+    "valid": true
+  },
+  {
     "input": "BRAZIL/ACRE",
     "valid": true
   },
@@ -4044,11 +4068,7 @@
     "valid": true
   },
   {
-    "input": "CET",
-    "valid": true
-  },
-  {
-    "input": "CST6CDT",
+    "input": "BST",
     "valid": true
   },
   {
@@ -4057,6 +4077,10 @@
   },
   {
     "input": "CANADA/CENTRAL",
+    "valid": true
+  },
+  {
+    "input": "CANADA/EAST-SASKATCHEWAN",
     "valid": true
   },
   {
@@ -4084,6 +4108,14 @@
     "valid": true
   },
   {
+    "input": "CAT",
+    "valid": true
+  },
+  {
+    "input": "CET",
+    "valid": true
+  },
+  {
     "input": "CHILE/CONTINENTAL",
     "valid": true
   },
@@ -4092,19 +4124,35 @@
     "valid": true
   },
   {
+    "input": "CNT",
+    "valid": true
+  },
+  {
+    "input": "CST",
+    "valid": true
+  },
+  {
+    "input": "CST6CDT",
+    "valid": true
+  },
+  {
+    "input": "CTT",
+    "valid": true
+  },
+  {
     "input": "CUBA",
     "valid": true
   },
   {
+    "input": "EAT",
+    "valid": true
+  },
+  {
+    "input": "ECT",
+    "valid": true
+  },
+  {
     "input": "EET",
-    "valid": true
-  },
-  {
-    "input": "EST",
-    "valid": true
-  },
-  {
-    "input": "EST5EDT",
     "valid": true
   },
   {
@@ -4116,7 +4164,11 @@
     "valid": true
   },
   {
-    "input": "ETC/GMT",
+    "input": "EST",
+    "valid": true
+  },
+  {
+    "input": "EST5EDT",
     "valid": true
   },
   {
@@ -4169,6 +4221,10 @@
   },
   {
     "input": "ETC/GMT+9",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT",
     "valid": true
   },
   {
@@ -4244,11 +4300,11 @@
     "valid": true
   },
   {
-    "input": "ETC/UTC",
+    "input": "ETC/UNIVERSAL",
     "valid": true
   },
   {
-    "input": "ETC/UNIVERSAL",
+    "input": "ETC/UTC",
     "valid": true
   },
   {
@@ -4520,11 +4576,11 @@
     "valid": true
   },
   {
-    "input": "GMT",
+    "input": "GMT+0",
     "valid": true
   },
   {
-    "input": "GMT+0",
+    "input": "GMT",
     "valid": true
   },
   {
@@ -4540,15 +4596,19 @@
     "valid": true
   },
   {
-    "input": "HST",
-    "valid": true
-  },
-  {
     "input": "HONGKONG",
     "valid": true
   },
   {
+    "input": "HST",
+    "valid": true
+  },
+  {
     "input": "ICELAND",
+    "valid": true
+  },
+  {
+    "input": "IET",
     "valid": true
   },
   {
@@ -4604,11 +4664,19 @@
     "valid": true
   },
   {
+    "input": "IST",
+    "valid": true
+  },
+  {
     "input": "JAMAICA",
     "valid": true
   },
   {
     "input": "JAPAN",
+    "valid": true
+  },
+  {
+    "input": "JST",
     "valid": true
   },
   {
@@ -4624,14 +4692,6 @@
     "valid": true
   },
   {
-    "input": "MST",
-    "valid": true
-  },
-  {
-    "input": "MST7MDT",
-    "valid": true
-  },
-  {
     "input": "MEXICO/BAJANORTE",
     "valid": true
   },
@@ -4644,11 +4704,15 @@
     "valid": true
   },
   {
-    "input": "NZ",
+    "input": "MIT",
     "valid": true
   },
   {
-    "input": "NZ-CHAT",
+    "input": "MST",
+    "valid": true
+  },
+  {
+    "input": "MST7MDT",
     "valid": true
   },
   {
@@ -4656,11 +4720,19 @@
     "valid": true
   },
   {
-    "input": "PRC",
+    "input": "NET",
     "valid": true
   },
   {
-    "input": "PST8PDT",
+    "input": "NST",
+    "valid": true
+  },
+  {
+    "input": "NZ",
+    "valid": true
+  },
+  {
+    "input": "NZ-CHAT",
     "valid": true
   },
   {
@@ -4840,11 +4912,35 @@
     "valid": true
   },
   {
+    "input": "PLT",
+    "valid": true
+  },
+  {
+    "input": "PNT",
+    "valid": true
+  },
+  {
     "input": "POLAND",
     "valid": true
   },
   {
     "input": "PORTUGAL",
+    "valid": true
+  },
+  {
+    "input": "PRC",
+    "valid": true
+  },
+  {
+    "input": "PRT",
+    "valid": true
+  },
+  {
+    "input": "PST",
+    "valid": true
+  },
+  {
+    "input": "PST8PDT",
     "valid": true
   },
   {
@@ -4857,178 +4953,6 @@
   },
   {
     "input": "SINGAPORE",
-    "valid": true
-  },
-  {
-    "input": "TURKEY",
-    "valid": true
-  },
-  {
-    "input": "UCT",
-    "valid": true
-  },
-  {
-    "input": "US/ALASKA",
-    "valid": true
-  },
-  {
-    "input": "US/ALEUTIAN",
-    "valid": true
-  },
-  {
-    "input": "US/ARIZONA",
-    "valid": true
-  },
-  {
-    "input": "US/CENTRAL",
-    "valid": true
-  },
-  {
-    "input": "US/EAST-INDIANA",
-    "valid": true
-  },
-  {
-    "input": "US/EASTERN",
-    "valid": true
-  },
-  {
-    "input": "US/HAWAII",
-    "valid": true
-  },
-  {
-    "input": "US/INDIANA-STARKE",
-    "valid": true
-  },
-  {
-    "input": "US/MICHIGAN",
-    "valid": true
-  },
-  {
-    "input": "US/MOUNTAIN",
-    "valid": true
-  },
-  {
-    "input": "US/PACIFIC",
-    "valid": true
-  },
-  {
-    "input": "US/SAMOA",
-    "valid": true
-  },
-  {
-    "input": "UTC",
-    "valid": true
-  },
-  {
-    "input": "UNIVERSAL",
-    "valid": true
-  },
-  {
-    "input": "W-SU",
-    "valid": true
-  },
-  {
-    "input": "WET",
-    "valid": true
-  },
-  {
-    "input": "ZULU",
-    "valid": true
-  },
-  {
-    "input": "ACT",
-    "valid": true
-  },
-  {
-    "input": "AET",
-    "valid": true
-  },
-  {
-    "input": "AGT",
-    "valid": true
-  },
-  {
-    "input": "ART",
-    "valid": true
-  },
-  {
-    "input": "AST",
-    "valid": true
-  },
-  {
-    "input": "BET",
-    "valid": true
-  },
-  {
-    "input": "BST",
-    "valid": true
-  },
-  {
-    "input": "CAT",
-    "valid": true
-  },
-  {
-    "input": "CNT",
-    "valid": true
-  },
-  {
-    "input": "CST",
-    "valid": true
-  },
-  {
-    "input": "CTT",
-    "valid": true
-  },
-  {
-    "input": "CANADA/EAST-SASKATCHEWAN",
-    "valid": true
-  },
-  {
-    "input": "EAT",
-    "valid": true
-  },
-  {
-    "input": "ECT",
-    "valid": true
-  },
-  {
-    "input": "IET",
-    "valid": true
-  },
-  {
-    "input": "IST",
-    "valid": true
-  },
-  {
-    "input": "JST",
-    "valid": true
-  },
-  {
-    "input": "MIT",
-    "valid": true
-  },
-  {
-    "input": "NET",
-    "valid": true
-  },
-  {
-    "input": "NST",
-    "valid": true
-  },
-  {
-    "input": "PLT",
-    "valid": true
-  },
-  {
-    "input": "PNT",
-    "valid": true
-  },
-  {
-    "input": "PRT",
-    "valid": true
-  },
-  {
-    "input": "PST",
     "valid": true
   },
   {
@@ -5088,11 +5012,87 @@
     "valid": true
   },
   {
+    "input": "TURKEY",
+    "valid": true
+  },
+  {
+    "input": "UCT",
+    "valid": true
+  },
+  {
+    "input": "UNIVERSAL",
+    "valid": true
+  },
+  {
+    "input": "US/ALASKA",
+    "valid": true
+  },
+  {
+    "input": "US/ALEUTIAN",
+    "valid": true
+  },
+  {
+    "input": "US/ARIZONA",
+    "valid": true
+  },
+  {
+    "input": "US/CENTRAL",
+    "valid": true
+  },
+  {
+    "input": "US/EAST-INDIANA",
+    "valid": true
+  },
+  {
+    "input": "US/EASTERN",
+    "valid": true
+  },
+  {
+    "input": "US/HAWAII",
+    "valid": true
+  },
+  {
+    "input": "US/INDIANA-STARKE",
+    "valid": true
+  },
+  {
+    "input": "US/MICHIGAN",
+    "valid": true
+  },
+  {
+    "input": "US/MOUNTAIN",
+    "valid": true
+  },
+  {
+    "input": "US/PACIFIC",
+    "valid": true
+  },
+  {
     "input": "US/PACIFIC-NEW",
     "valid": true
   },
   {
+    "input": "US/SAMOA",
+    "valid": true
+  },
+  {
+    "input": "UTC",
+    "valid": true
+  },
+  {
     "input": "VST",
+    "valid": true
+  },
+  {
+    "input": "W-SU",
+    "valid": true
+  },
+  {
+    "input": "WET",
+    "valid": true
+  },
+  {
+    "input": "ZULU",
     "valid": true
   },
   {

@@ -1,0 +1,86 @@
+[
+  {
+    "kind": "decision",
+    "name": "default-undefined",
+    "rawAccepted": true,
+    "input": "{\"action\":\"reply\",\"reasonCode\":\"x\"}",
+    "expected": "{\"action\":\"reply\",\"reasonCode\":\"x\",\"targetMessageIds\":[]}"
+  },
+  {
+    "kind": "decision",
+    "name": "optional-undefined",
+    "rawAccepted": true,
+    "input": "{\"action\":\"reply\",\"reasonCode\":\"x\"}",
+    "expected": "{\"action\":\"reply\",\"reasonCode\":\"x\",\"targetMessageIds\":[]}"
+  },
+  {
+    "kind": "decision",
+    "name": "required-undefined",
+    "rawAccepted": false,
+    "input": "{\"reasonCode\":\"x\"}",
+    "expected": null
+  },
+  {
+    "kind": "decision",
+    "name": "unknown-undefined",
+    "rawAccepted": false,
+    "input": "{\"action\":\"reply\",\"reasonCode\":\"x\"}",
+    "expected": "{\"action\":\"reply\",\"reasonCode\":\"x\",\"targetMessageIds\":[]}"
+  },
+  {
+    "kind": "decision",
+    "name": "null-default",
+    "rawAccepted": false,
+    "input": "{\"action\":\"reply\",\"reasonCode\":\"x\",\"targetMessageIds\":null}",
+    "expected": null
+  },
+  {
+    "kind": "decision",
+    "name": "null-optional",
+    "rawAccepted": false,
+    "input": "{\"action\":\"reply\",\"reasonCode\":\"x\",\"waitForMs\":null}",
+    "expected": null
+  },
+  {
+    "kind": "send",
+    "name": "optional-undefined",
+    "rawAccepted": true,
+    "input": "{\"operationId\":\"x\",\"segments\":[{\"parts\":[{\"type\":\"text\",\"text\":\"x\"}]}]}",
+    "expected": "{\"operationId\":\"x\",\"segments\":[{\"parts\":[{\"type\":\"text\",\"text\":\"x\"}]}]}"
+  },
+  {
+    "kind": "send",
+    "name": "unknown-undefined",
+    "rawAccepted": false,
+    "input": "{\"operationId\":\"operation\",\"segments\":[{\"parts\":[{\"type\":\"text\",\"text\":\"x\"}]}]}",
+    "expected": "{\"operationId\":\"operation\",\"segments\":[{\"parts\":[{\"type\":\"text\",\"text\":\"x\"}]}]}"
+  },
+  {
+    "kind": "send",
+    "name": "unknown-part-undefined",
+    "rawAccepted": false,
+    "input": "{\"operationId\":\"operation\",\"segments\":[{\"parts\":[{\"type\":\"text\",\"text\":\"x\"}]}]}",
+    "expected": "{\"operationId\":\"operation\",\"segments\":[{\"parts\":[{\"type\":\"text\",\"text\":\"x\"}]}]}"
+  },
+  {
+    "kind": "send",
+    "name": "required-undefined",
+    "rawAccepted": false,
+    "input": "{\"operationId\":\"operation\",\"segments\":[{\"parts\":[{\"type\":\"text\"}]}]}",
+    "expected": null
+  },
+  {
+    "kind": "send",
+    "name": "null-optional",
+    "rawAccepted": false,
+    "input": "{\"operationId\":\"x\",\"segments\":[{\"replyToId\":null,\"parts\":[{\"type\":\"text\",\"text\":\"x\"}]}]}",
+    "expected": null
+  },
+  {
+    "kind": "send",
+    "name": "undefined-array",
+    "rawAccepted": false,
+    "input": "{\"operationId\":\"operation\",\"segments\":[{\"parts\":[null]}]}",
+    "expected": null
+  }
+]

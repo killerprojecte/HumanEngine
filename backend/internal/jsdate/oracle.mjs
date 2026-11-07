@@ -121,10 +121,16 @@ const zones = ['UTC', 'America/New_York', 'Asia/Shanghai', 'Pacific/Kiritimati',
 let cases = values.map((value) => ({
   units: Array.from({ length: value.length }, (_, i) => value.charCodeAt(i)),
   finite: [],
+  milliseconds: [],
 }))
 for (const zone of zones) {
   process.env.TZ = zone
-  values.forEach((value, i) => cases[i].finite.push(Number.isFinite(Date.parse(value))))
+  values.forEach((value, i) => {
+    const milliseconds = Date.parse(value)
+    const finite = Number.isFinite(milliseconds)
+    cases[i].finite.push(finite)
+    cases[i].milliseconds.push(finite ? milliseconds : null)
+  })
 }
 const target = new URL('./testdata/oracle.json', import.meta.url)
 const output =
@@ -132,4 +138,4 @@ const output =
 if (process.argv.includes('--check')) {
   if (readFileSync(target, 'utf8') !== output) throw Error('Date oracle differs')
 } else writeFileSync(target, output)
-console.log(`${cases.length * zones.length} Node date validity comparisons`)
+console.log(`${cases.length * zones.length} Node date validity and exact millisecond comparisons`)

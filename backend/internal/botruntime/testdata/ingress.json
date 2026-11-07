@@ -1,0 +1,92 @@
+[
+  {
+    "name": "bot-false",
+    "senderId": "bot",
+    "enabled": false,
+    "expected": {
+      "observeCalls": 0,
+      "extensionCalls": 0,
+      "senderId": "bot",
+      "keptCallerRef": true,
+      "events": [
+        "message.received"
+      ],
+      "topicCount": 0
+    }
+  },
+  {
+    "name": "bot-true",
+    "senderId": "bot",
+    "enabled": true,
+    "expected": {
+      "observeCalls": 0,
+      "extensionCalls": 0,
+      "senderId": "bot",
+      "keptCallerRef": true,
+      "events": [
+        "message.received"
+      ],
+      "topicCount": 0
+    }
+  },
+  {
+    "name": "platform-bot-false",
+    "senderId": "platform-bot",
+    "enabled": false,
+    "expected": {
+      "observeCalls": 0,
+      "extensionCalls": 0,
+      "senderId": "bot",
+      "keptCallerRef": true,
+      "events": [
+        "message.received"
+      ],
+      "topicCount": 0
+    }
+  },
+  {
+    "name": "platform-bot-true",
+    "senderId": "platform-bot",
+    "enabled": true,
+    "expected": {
+      "observeCalls": 0,
+      "extensionCalls": 0,
+      "senderId": "bot",
+      "keptCallerRef": true,
+      "events": [
+        "message.received"
+      ],
+      "topicCount": 0
+    }
+  },
+  {
+    "name": "user-false",
+    "senderId": "user",
+    "enabled": false,
+    "expected": {
+      "observeCalls": 0,
+      "extensionCalls": 1,
+      "senderId": "user",
+      "keptCallerRef": false,
+      "events": [
+        "message.received"
+      ],
+      "topicCount": 1
+    }
+  },
+  {
+    "name": "user-true",
+    "senderId": "user",
+    "enabled": true,
+    "expected": {
+      "observeCalls": 1,
+      "extensionCalls": 1,
+      "senderId": "user",
+      "keptCallerRef": false,
+      "events": [
+        "message.received"
+      ],
+      "topicCount": 1
+    }
+  }
+]

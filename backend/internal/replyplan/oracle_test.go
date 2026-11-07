@@ -97,10 +97,7 @@ func TestActualSourceOracle(t *testing.T) { f := loadOracle(t); runOracle(t, f, 
 func TestSourceHashes(t *testing.T) {
 	f := loadOracle(t)
 	for _, source := range f.Sources {
-		data, err := os.ReadFile(filepath.Join("../../../..", source.Path))
-		if os.IsNotExist(err) {
-			t.Skip("source-free package: source hashes checked by generator --check")
-		}
+		data, err := os.ReadFile(filepath.Join("../../..", source.Path))
 		if err != nil {
 			t.Fatal(err)
 		}

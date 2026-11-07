@@ -13,3 +13,6 @@ backups/
 
 # Local installation encryption key
 .secrets.key
+
+# Reproducible native dependency build outputs (never source-controlled).
+/backend/.native-build/

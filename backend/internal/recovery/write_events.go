@@ -3,6 +3,7 @@ package recovery
 import (
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -357,6 +358,12 @@ func eventJSONValue(v reflect.Value) (any, error) {
 		return v.Bool(), nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return float64(v.Int()), nil
+	case reflect.Float32, reflect.Float64:
+		value := v.Float()
+		if math.IsNaN(value) || math.IsInf(value, 0) {
+			return nil, errors.New("recovery_write_number_unsupported")
+		}
+		return value, nil
 	case reflect.Slice, reflect.Array:
 		if v.Kind() == reflect.Slice && v.IsNil() {
 			return nil, nil

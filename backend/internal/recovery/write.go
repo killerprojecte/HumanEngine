@@ -461,8 +461,8 @@ func (a *Authority) executeWrite(ctx context.Context, main *sql.DB, events []wri
 		return head, err
 	}
 	gate.Head = head
-	if minimumReader > gate.MinimumReader {
-		gate.MinimumReader = minimumReader
+	if int64(minimumReader) > gate.MinimumReader {
+		gate.MinimumReader = int64(minimumReader)
 	}
 	raw, err := json.Marshal(gate)
 	if err != nil {

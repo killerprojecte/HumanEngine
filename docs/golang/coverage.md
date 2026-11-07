@@ -11,7 +11,7 @@ existing TypeScript production startup has not been replaced.
 | `contract`      | Frozen API schema defaults, refinements and lossless configuration string contracts                        | Full API routing and remaining JS string boundaries                                            |
 | `credentials`   | Canonical v1 AES-GCM, JS AAD/text decoding, key custody and transactional SecretStore                      | Security-table bootstrap, runtime wiring and documented noncanonical reader differences        |
 | `jsjson`        | Ordered plain JSON, binary64 formatting, canonical WTF-8, explicit Node UTF-8 text binding                 | Arbitrary JS objects, Buffer decoding, transforms and caller-specific regex rules              |
-| `recovery`      | All 20 history kinds, hash-chain verification, controlled append caching and rollback-safe intent/main ACK | Enrollment, reconciliation and typed writing for seven remaining event kinds                   |
+| `recovery`      | All 20 typed history intents, hash-chain verification, cached append and rollback-safe intent/main ACK | Enrollment and full domain reconciliation                   |
 | `scenestore`    | Actual scene write policy, identity hashes, legacy control preservation and transactional revisions        | HTTP writes, startup and live bot notification                                                 |
 | `settingsstore` | Actual settings revision/flag/security policy and failure ordering                                         | Lazy security-table bootstrap, HTTP writes and reconciliation                                  |
 | `scheduler`     | Global priority, rate, foreground reservation and learning fairness                                        | Production model/runtime ownership                                                             |
@@ -22,7 +22,18 @@ existing TypeScript production startup has not been replaced.
 | `plugins` V2    | Four embedded WASM reactors and their migrated policy operations                                           | Complete networking/cache/transport behavior and runtime capability wiring                     |
 | `observability` | Structured and readable asynchronous sink delivery, backlog/error reporting                                | Full diagnostic catalogs, UI log query service and runtime correlation                         |
 | `httpapi`       | Real authenticated GET/HEAD settings/models/scenes publication                                             | Other routes, write composition and production startup                                         |
-| `externalcost`  | Canonical receipt storage and per-receipt offline domain replay                                            | Global maintenance admission, authority orchestration and runtime accounting                   |
+| `externalcost`  | Canonical receipt storage and guarded maintenance-backed per-receipt offline replay                                            | Global reconciliation orchestration and runtime accounting                                     |
+| `topicroute`    | Reassignment, ordered scene metadata and admission/cue policy with exact native ICU comparator          | Scene actor orchestration, native provider composition and runtime effects                      |
+
+The native comparator is separately built from the pinned Node 24.22.1 ICU source
+and data. Its tagged tests cover actual Node ordering across 15 locales; default
+builds explicitly report it unavailable rather than substituting an approximate
+ordering. Production packaging and locale selection remain composition work.
+
+Maintenance admission keeps a fixed verified authority prefix, reserves the main
+database before the authority database, and scopes guarded SQL handles to their
+transaction callback. It does not mark an installation ready, enroll one, or
+substitute for global recovery reconciliation.
 
 ## Composition that must still be completed
 

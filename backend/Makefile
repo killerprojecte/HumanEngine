@@ -1,4 +1,10 @@
-.PHONY: test build differential wasm bundle test-bundle
+.PHONY: test build differential wasm bundle test-bundle native-icu-fetch native-icu-builder-test native-icu-build native-icu-test native-icu-source-free
+
+# Native ICU is opt-in: default build/startup and the TypeScript image are unchanged.
+ICU_WORK_DIR ?= $(CURDIR)/.native-build/icu
+ICU_ARCHIVE ?= $(ICU_WORK_DIR)/node-v24.22.1.tar.xz
+ICU_PROOF_ROOT ?= $(ICU_WORK_DIR)/source-free
+PYTHON ?= python3
 
 test:
 	go test -race ./...
@@ -8,6 +14,10 @@ build:
 	go build -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && node backend/tests/generate-topic-collation-fixtures.mjs --check
+	cd .. && node backend/tests/generate-topic-admission-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-topic-routing-state-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-topic-reassignment-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-secret-store-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-model-policy-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-http-string-fixtures.mjs --check
@@ -17,6 +27,7 @@ differential: build
 	cd .. && node --import tsx backend/tests/generate-lossless-events-fixtures.mjs --check
 	cd .. && node backend/tests/generate-sqlite-string-fixtures.mjs --check
 	cd .. && node --import tsx backend/internal/recovery/testdata/generate-write-events-node.mjs --check
+	cd .. && node --import tsx backend/internal/recovery/testdata/generate-remaining-write-events-node.mjs --check
 	cd .. && node backend/tests/generate-jsjson-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-scene-write-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-dispatch-fixtures.mjs --check
@@ -38,3 +49,28 @@ bundle: wasm
 
 test-bundle: wasm
 	go test -tags bundled_wasm ./internal/plugins -run TestDistributedArtifactsLoadWithoutSources
+
+# Fetch and verify only when the configured archive is absent. The builder also
+# verifies an existing archive; a mismatched artifact never silently updates.
+$(ICU_ARCHIVE):
+	$(PYTHON) native/icu/fetch.py --archive "$(ICU_ARCHIVE)"
+
+native-icu-fetch:
+	$(PYTHON) native/icu/fetch.py --archive "$(ICU_ARCHIVE)"
+
+native-icu-builder-test:
+	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) -B native/icu/test_build.py -v
+	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) -B native/icu/test_fetch.py -v
+
+native-icu-build: native-icu-builder-test $(ICU_ARCHIVE)
+	$(PYTHON) native/icu/build.py --archive "$(ICU_ARCHIVE)" --work-dir "$(ICU_WORK_DIR)"
+
+native-icu-test: native-icu-build
+	. "$(ICU_WORK_DIR)/env.sh" && go test -race -tags humanengine_icu ./...
+	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags humanengine_icu ./...
+
+native-icu-source-free: native-icu-build
+	mkdir -p "$(ICU_PROOF_ROOT)"
+	@out=$$(mktemp -d "$(ICU_PROOF_ROOT)/run.XXXXXXXX") && \
+	  native/icu/test-source-free.sh "$(ICU_WORK_DIR)" "$$out" && \
+	  echo "Native source-free proof: $$out"

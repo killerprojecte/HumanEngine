@@ -21,8 +21,6 @@ var columns = []string{"id", "revision", "payload", "payload_hash", "correction_
 
 type SQL interface {
 	ExecContext(context.Context, string, ...any) (sql.Result, error)
-	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
-	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 type Storage struct{ DB SQL }
 type Receipt struct{ value *jsjson.Object }
@@ -117,7 +115,7 @@ func equal(a, b any) bool {
 	}
 }
 func (s Storage) AssertSupported(ctx context.Context) (bool, error) {
-	rows, err := s.DB.QueryContext(ctx, "SELECT name,type FROM sqlite_master WHERE name GLOB 'budget_external_cost_*' AND type IN ('table','view')")
+	rows, err := s.query(ctx, "SELECT name,type FROM sqlite_master WHERE name GLOB 'budget_external_cost_*' AND type IN ('table','view')")
 	if err != nil {
 		return false, err
 	}
@@ -143,7 +141,7 @@ func (s Storage) AssertSupported(ctx context.Context) (bool, error) {
 	if count != 1 || !valid {
 		return false, errors.New("external_cost_schema_unsupported")
 	}
-	rows, err = s.DB.QueryContext(ctx, "PRAGMA table_xinfo("+Table+")")
+	rows, err = s.query(ctx, "PRAGMA table_xinfo("+Table+")")
 	if err != nil {
 		return false, err
 	}
@@ -209,7 +207,7 @@ func (s Storage) find(ctx context.Context, where string, arg any) (*Receipt, err
 	if err != nil || !ok {
 		return nil, err
 	}
-	r, err := decode(s.DB.QueryRowContext(ctx, "SELECT * FROM "+Table+" WHERE "+where, arg))
+	r, err := decode(s.row(ctx, "SELECT * FROM "+Table+" WHERE "+where, arg))
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -229,7 +227,7 @@ func (s Storage) Current(ctx context.Context) ([]Receipt, error) {
 	if err != nil || !ok {
 		return []Receipt{}, err
 	}
-	rows, err := s.DB.QueryContext(ctx, `SELECT r.* FROM `+Table+` r JOIN (SELECT id,max(revision) revision FROM `+Table+` GROUP BY id) h ON r.id=h.id AND r.revision=h.revision LIMIT 10001`)
+	rows, err := s.query(ctx, `SELECT r.* FROM `+Table+` r JOIN (SELECT id,max(revision) revision FROM `+Table+` GROUP BY id) h ON r.id=h.id AND r.revision=h.revision LIMIT 10001`)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +246,7 @@ func (s Storage) Current(ctx context.Context) ([]Receipt, error) {
 	if len(material) > 10000 {
 		return nil, errors.New("external_cost_capacity")
 	}
-	var out []Receipt
+	out := []Receipt{}
 	for _, row := range material {
 		r, err := decode(row)
 		if err != nil {
@@ -270,7 +268,7 @@ func (s Storage) Put(ctx context.Context, input Receipt) error {
 	if err = s.Ensure(ctx); err != nil {
 		return err
 	}
-	old, err := decode(s.DB.QueryRowContext(ctx, "SELECT * FROM "+Table+" WHERE id=? AND revision=?", r.ID(), r.Revision()))
+	old, err := decode(s.row(ctx, "SELECT * FROM "+Table+" WHERE id=? AND revision=?", r.ID(), r.Revision()))
 	if err == nil {
 		if !equal(old.value, r.value) {
 			return errors.New("external_cost_conflict")

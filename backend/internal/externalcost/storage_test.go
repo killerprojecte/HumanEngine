@@ -310,3 +310,14 @@ func TestCorrectionLookupConflictAndRollback(t *testing.T) {
 	}
 	_ = db
 }
+
+// Source current() returns an array even when an existing table has no rows.
+func TestCurrentEmptyRetainsArrayShape(t *testing.T) {
+	s := Storage{database(t)}
+	must(t, s.Ensure(ctx))
+	got, err := s.Current(ctx)
+	must(t, err)
+	if got == nil || len(got) != 0 {
+		t.Fatalf("empty current = %#v", got)
+	}
+}

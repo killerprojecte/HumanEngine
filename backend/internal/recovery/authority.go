@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
@@ -29,7 +28,7 @@ type Head struct {
 type Gate struct {
 	Head          Head   `json:"head"`
 	Authority     string `json:"authority"`
-	MinimumReader int    `json:"minimumReader"`
+	MinimumReader int64  `json:"minimumReader"`
 	State         string `json:"state"`
 }
 type Query interface {
@@ -43,10 +42,11 @@ func ReadGate(ctx context.Context, q Query) (Gate, error) {
 	if err := q.QueryRowContext(ctx, "SELECT value FROM main.recovery_gate WHERE id=1").Scan(&raw); err != nil {
 		return g, err
 	}
-	if err := json.Unmarshal([]byte(raw), &g); err != nil {
+	g, _, err := decodeGate(raw)
+	if err != nil {
 		return g, err
 	}
-	if g.State != "ready" || g.MinimumReader < 1 || g.MinimumReader > ReaderCapability || !filepath.IsAbs(g.Authority) || filepath.Clean(g.Authority) != g.Authority || g.Head.Sequence < 0 || g.Head.Sequence > 9007199254740991 || !authorityInstancePattern.MatchString(g.Head.InstanceID) || !hashPattern.MatchString(g.Head.Hash) {
+	if g.State != "ready" || g.MinimumReader > ReaderCapability {
 		return g, errors.New("recovery_gate_invalid")
 	}
 	return g, nil

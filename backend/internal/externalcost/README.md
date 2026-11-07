@@ -21,17 +21,19 @@ receipts remain committed if a later receipt fails absent an outer transaction.
 The final comparison checks every current receipt against the exact replayed
 head, not merely IDs or revisions.
 
-No default maintenance adapter is supplied: the Go global offline maintenance
-orchestrator/admission capability is still a dependency. Ordinary recovery
+`NewOfflineMaintenance` now adapts a real `recovery.AdmitMaintenance` capability
+for caller-owned disk staging. Admission verifies quarantine, authority identity
+and prefix, and the adapter supplies guarded per-receipt transactions. The global
+offline reconciliation orchestrator remains a dependency. Ordinary recovery
 `Write`, diagnostic `Head`, production HTTP mutation, enrollment, ACK, and
 ready-state transitions are not used here. Other event domains are validated
 then ignored by this component, never certified as replayed. No restart replay.
 
 Tests execute actual Node/Zod/better-sqlite3 source and compare checked-in
-synthetic fixtures pinned to source hashes. Disk-backed Go tests supply a
-fixture-only already-admitted maintenance adapter to prove per-receipt commits,
-partial failure, reader upgrade, and unchanged quarantined global head. That
-adapter tests transaction boundaries, not production authority admission.
+synthetic fixtures pinned to source hashes. Disk-backed tests cover both a fixture-only transaction adapter and the real
+admitted recovery capability. They prove per-receipt commits, partial failure,
+reader upgrade, native rollback protection and unchanged quarantined global
+head. Domain success still does not certify other domains or global readiness.
 
 Run from backend: `go test -race ./internal/externalcost` and
 `go vet ./internal/externalcost`. Live differential tests need repository Node

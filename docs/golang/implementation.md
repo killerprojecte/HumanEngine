@@ -2,6 +2,8 @@
 
 Status: implementation in progress on `feat/refactor-golang`. Not a production replacement yet.
 
+The current module and integration boundaries are tracked in [coverage.md](coverage.md). The checkpoint sections below record earlier implementation stages; they are not claims that every remaining production dependency has been completed.
+
 The baseline is GitHub master `24fe8a773d87f2f09996e259fca46524c2c02928`. The frozen OpenAPI and source hashes in `backend/compatibility` define the migration oracle. User-requested Go migration supersedes the contributor guide's TypeScript-runtime requirement on this branch. Nuxt remains the management UI.
 
 ## Modules
@@ -124,3 +126,19 @@ The assistant-message owner must explicitly release shared continuation ownershi
 only when its last branch/user discards it. There is no automatic finalizer or
 production model-router wiring yet. The SDK’s explicit retry-error identity still
 requires a separate compatibility implementation.
+
+The next candidate slice adds all twenty typed authority writes and a real
+maintenance capability for offline external-cost replay. Maintenance retains a
+fixed verified prefix, acquires main before authority even inside deferred caller
+transactions, and prevents escaped/failed SQL handles from continuing outside
+their transaction. Gate parsing preserves JavaScript duplicate-key, number and
+UTF-16 semantics. This still does not perform installation enrollment or global
+reconciliation.
+
+Topic reassignment, ordered routing metadata, cue parsing and admission are now
+ported against the actual source. Locale-sensitive ordering has an explicit
+native ICU provider built from the pinned Node archive and exact embedded data;
+its tagged build and source-free provider tests are part of the feature workflow.
+It does not start Node, substitute host ICU, or silently approximate collation.
+The default preview build does not yet compose this provider into a live scene
+actor. Full Planner/Replyer and surrounding runtime integration remain underway.

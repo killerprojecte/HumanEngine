@@ -1,0 +1,30 @@
+{
+  "node": "v24.22.1",
+  "sourceArchive": "https://nodejs.org/dist/v24.22.1/node-v24.22.1.tar.xz",
+  "officialChecksums": "https://nodejs.org/dist/v24.22.1/SHASUMS256.txt",
+  "archiveSHA256": "4f5379796280cdaeb0c2f358fd04b6a16cc4fb7dfa83b5a8c91a9d963b435231",
+  "icuSourceManifestSHA256": "c4769fb719612e04c279cae928bb875d6b962d5f99f01f180bb79ee70761ac25",
+  "icuSourceFiles": 1065,
+  "compressedDataSHA256": "7886df66f292144209d4ed19086d7d59695798cd5d91a16b4a8445eff5422f30",
+  "dataSHA256": "f294f56707f4bbbc669d291ff537f632eb8d363a8ea60b70b091cdf273ea0499",
+  "dataBytes": 33107952,
+  "licenseSHA256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af",
+  "v8CollatorSource": "https://github.com/nodejs/node/blob/v24.22.1/deps/v8/src/objects/js-collator.cc",
+  "v8CollatorSHA256": "24fb8035073e8dab05107ce7f96bb191c26abf524babe5c983f26d687a5c2c77",
+  "v8IntlSource": "https://github.com/nodejs/node/blob/v24.22.1/deps/v8/src/objects/intl-objects.cc",
+  "v8IntlSHA256": "19cfb07c3a3cf509a225b1fb5b87050f50957fbc1f8fa5e631b6d159b3225d55",
+  "nodeBuildSource": "https://github.com/nodejs/node/blob/v24.22.1/tools/icu/icu-generic.gyp",
+  "nodeBuildSHA256": "bf53d62f7f8446c89d8268543108a0fc315c078bd4e764512a3ab972ff2e6563",
+  "oracleICU": "78.3",
+  "oracleCLDR": "48.0",
+  "oracleUnicode": "17.0",
+  "observedOracleBinary": {
+    "platform": "linux/amd64",
+    "sha256": "61ab14cd750fc24d5db53490ec5fc40f756e4b6e136b78cf7004265471d9bd1d",
+    "embeddedDataOffsetBytes": 70289072,
+    "embeddedDataOccurrences": 1,
+    "embeddedDataBytes": 33107952,
+    "embeddedDataSHA256": "f294f56707f4bbbc669d291ff537f632eb8d363a8ea60b70b091cdf273ea0499",
+    "scope": "Observed local Node v24.22.1 oracle executable only; not a universal binary fingerprint across platforms or builds."
+  }
+}

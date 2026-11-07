@@ -239,7 +239,7 @@ func TestActualStoreSettingsWriteOracle(t *testing.T) {
 				t.Fatalf("security got %s want %v", security, entry.Security)
 			}
 			gate, err := recovery.ReadGate(context.Background(), s.Main)
-			if err != nil || gate.Head.Sequence != entry.AckSequence || gate.MinimumReader != entry.MinimumReader {
+			if err != nil || gate.Head.Sequence != entry.AckSequence || gate.MinimumReader != int64(entry.MinimumReader) {
 				t.Fatal(gate, err)
 			}
 			head, err := s.Authority.Head(context.Background())

@@ -87,7 +87,7 @@ func assertMain(t *testing.T, f writerFixture, want string, sequence int64, read
 	if err != nil {
 		t.Fatal(err)
 	}
-	if value != want || gate.Head.Sequence != sequence || gate.MinimumReader != reader {
+	if value != want || gate.Head.Sequence != sequence || gate.MinimumReader != int64(reader) {
 		t.Fatalf("main=%q gate=%+v", value, gate)
 	}
 }

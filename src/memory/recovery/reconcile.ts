@@ -1,3 +1,4 @@
+import { createRecoveryEligibilityPort } from './eligibility.ts'
 import { replayExternalCosts } from './external-cost.ts'
 import { createRecoveryExperienceTrialsPort } from './experience-trials.ts'
 import { createRecoverySemanticPort } from './semantic.ts'
@@ -35,6 +36,7 @@ export async function reconcileRecovery(
   if (!sameHead(gate.head, authority.prefix(gate.head.sequence)))
     throw new Error('recovery_prefix_invalid')
   const entries = authority.entries()
+  const eligibility = createRecoveryEligibilityPort(store.db, entries, gate.head.sequence)
   assertSecurityState(
     store.db,
     entries.map((e) => e.revocation).findLast((e) => e.kind === 'security_state'),
@@ -87,6 +89,10 @@ export async function reconcileRecovery(
       revocation.kind === 'source_edit_head'
     )
       continue
+    if (revocation.kind === 'assertion_eligibility') {
+      eligibility.apply(sequence, revocation)
+      continue
+    }
     if (revocation.kind === 'commitment_head') {
       if (sequence > gate.head.sequence) commitments.replayMarker(revocation)
       continue
@@ -180,6 +186,7 @@ export async function reconcileRecovery(
         )
           throw new Error('recovery_purge_incomplete')
       }
+      eligibility.verify()
       trials.verify(entries.map((entry) => entry.revocation))
       semantic.verify(entries.map((entry) => entry.revocation))
       knowledge.verify(entries.map((entry) => entry.revocation))

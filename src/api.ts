@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto'
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
 import { timingSafeEqual } from 'node:crypto'
 import { Store } from './store.ts'
+import { captureResponseReadHead, metadata, sameHead, type Head } from './memory/recovery/ledger.ts'
 import {
   ModelConfigSchema,
   ModelConfigWriteSchema,
@@ -37,6 +38,29 @@ const errorResponses = {
   401: json(ErrorSchema, 'Authentication required'),
   503: json(ErrorSchema, 'Service unavailable'),
 }
+const responseReadCaptures = new WeakMap<Request, { response: Response; observedHead?: Head }>()
+
+/** Internal transport evidence only. No head read occurs after an asynchronous body read. */
+export async function fetchWithPublicationProof(
+  app: ReturnType<typeof createApp>,
+  request: Request,
+): Promise<{ response: Response; observedHead?: Head }> {
+  responseReadCaptures.delete(request)
+  const response = await app.fetch(request)
+  const capture = responseReadCaptures.get(request)
+  responseReadCaptures.delete(request)
+  const exact = capture?.response === response
+  // Hono implements HEAD by wrapping the corresponding GET result in a null-body Response.
+  const headClone =
+    capture &&
+    request.method === 'HEAD' &&
+    response.body === null &&
+    response.status === capture.response.status &&
+    response.statusText === capture.response.statusText &&
+    JSON.stringify([...response.headers]) === JSON.stringify([...capture.response.headers])
+  return { response, observedHead: exact || headClone ? capture?.observedHead : undefined }
+}
+
 export function createApp(store: Store, options: { token?: string; engine?: Engine } = {}) {
   const engine = options.engine ?? new Engine(store)
   const app = new OpenAPIHono({
@@ -61,10 +85,35 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
     const started = performance.now()
     store.assertRecoveryReady()
     const handlerStarted = performance.now()
+    // Bind the head before synchronous body construction, not after await next():
+    // a queued recall may run between a handler returning and this middleware resuming.
+    // This is only an observation; the final middleware and Node publisher both
+    // revalidate current authority. Unchanged verified history is reused; routes must
+    // revalidate their own async reads.
+    const materializations = new WeakMap<Response, { observedHead?: Head }>()
+    const bind = <T extends (...args: any[]) => Response>(build: T): T =>
+      ((...args: Parameters<T>) => {
+        const observedHead = metadata(store.db)?.head
+        const response = build(...args)
+        materializations.set(response, { observedHead })
+        return response
+      }) as T
+    c.json = bind(c.json)
+    c.text = bind(c.text)
+    c.body = bind(c.body)
+    c.newResponse = bind(c.newResponse)
     await next()
     const handlerFinished = performance.now()
     // Pending external revocations can appear while an asynchronous route reads bytes.
-    store.assertRecoveryReady()
+    const observedHead = captureResponseReadHead(store.db)
+    const materialized = materializations.get(c.res)
+    if (
+      !materialized ||
+      (observedHead
+        ? !materialized.observedHead || !sameHead(materialized.observedHead, observedHead)
+        : materialized.observedHead !== undefined)
+    )
+      throw new Error('response_materialization_stale_or_unbound')
     const finished = performance.now()
     // Authenticated diagnostics only: durations, never payloads or configuration values.
     c.header(
@@ -73,6 +122,7 @@ export function createApp(store: Store, options: { token?: string; engine?: Engi
     )
     c.header('Cache-Control', 'no-store')
     c.header('X-Content-Type-Options', 'nosniff')
+    responseReadCaptures.set(c.req.raw, { response: c.res, observedHead })
   })
   app.onError((error, c) => {
     const requestId = requestIdFor(c.req.raw)

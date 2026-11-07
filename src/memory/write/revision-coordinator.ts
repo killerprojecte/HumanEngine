@@ -9,6 +9,8 @@ export class MemoryRevisionCoordinator {
   readonly history: AssertionHistory
   private depth = 0
   private dirty = new Set<string>()
+  private eligibilityBefore = new Map<string, MemoryRecord | undefined>()
+  private eligibilityAfter = new Map<string, Pick<MemoryRecord, 'status' | 'lineageStatus'>>()
 
   constructor(
     private readonly db: Database.Database,
@@ -17,6 +19,9 @@ export class MemoryRevisionCoordinator {
     private readonly retain: (record: MemoryRecord) => boolean,
     private readonly committed?: (id: string, version: number, epoch: number) => void,
     private readonly afterCommit?: () => void,
+    private readonly beforeCommitEligibility?: (
+      changes: readonly { before: MemoryRecord; after: MemoryRecord }[],
+    ) => void,
   ) {
     this.history = new AssertionHistory(db)
   }
@@ -25,13 +30,20 @@ export class MemoryRevisionCoordinator {
     const transaction = this.db.transaction(() => {
       const outer = this.depth === 0
       const previous = new Set(this.dirty)
+      const previousEligibility = new Map(this.eligibilityBefore)
+      const previousEligibilityAfter = new Map(this.eligibilityAfter)
       this.depth++
       try {
         const result = operation()
-        if (outer) this.flush()
+        if (outer) {
+          this.flush()
+          this.flushEligibility()
+        }
         return result
       } catch (error) {
         this.dirty = previous
+        this.eligibilityBefore = previousEligibility
+        this.eligibilityAfter = previousEligibilityAfter
         throw error
       } finally {
         this.depth--
@@ -47,8 +59,10 @@ export class MemoryRevisionCoordinator {
 
   beforeWrite(id: string): void {
     if (!this.db.inTransaction) throw new Error('memory_write_requires_transaction')
-    if (this.dirty.has(id)) return
+    if (this.dirty.has(id) && this.eligibilityBefore.has(id)) return
     const previous = this.read(id)
+    if (!this.eligibilityBefore.has(id)) this.eligibilityBefore.set(id, previous)
+    if (this.dirty.has(id)) return
     if (
       previous &&
       this.retain(previous) &&
@@ -59,6 +73,16 @@ export class MemoryRevisionCoordinator {
     this.dirty.add(id)
   }
 
+  /** The repository has already serialized this row. Retain only immutable permission
+   * fields, not a caller-owned record or an authorization result across writes. */
+  afterWrite(record: MemoryRecord): void {
+    if (!this.db.inTransaction) throw new Error('memory_write_requires_transaction')
+    this.eligibilityAfter.set(record.id, {
+      status: record.status,
+      lineageStatus: record.lineageStatus,
+    })
+  }
+
   touch(id: string): void {
     if (!this.db.inTransaction) throw new Error('memory_write_requires_transaction')
     this.dirty.add(id)
@@ -67,6 +91,27 @@ export class MemoryRevisionCoordinator {
   checkpoint(): void {
     if (!this.db.inTransaction) throw new Error('memory_write_requires_transaction')
     this.flush()
+  }
+
+  private flushEligibility(): void {
+    const changes: { before: MemoryRecord; after: MemoryRecord }[] = []
+    for (const [id, before] of this.eligibilityBefore) {
+      // Admission is not a regrant. A backup need not contain assertions born later.
+      // Deletion already has its separate irreversible authority obligation.
+      const final = this.eligibilityAfter.get(id)
+      if (
+        !before ||
+        !final ||
+        ((before.status === 'invalidated') === (final.status === 'invalidated') &&
+          (before.lineageStatus === 'quarantined') === (final.lineageStatus === 'quarantined'))
+      )
+        continue
+      const after = this.read(id)
+      if (after) changes.push({ before, after })
+    }
+    this.beforeCommitEligibility?.(changes)
+    this.eligibilityBefore.clear()
+    this.eligibilityAfter.clear()
   }
 
   private flush(): void {

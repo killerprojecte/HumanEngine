@@ -529,7 +529,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       },
     }),
     async (c) =>
-      new Response(new Uint8Array(await engine.memes.thumbnail(c.req.valid('param').id)), {
+      c.newResponse(new Uint8Array(await engine.memes.thumbnail(c.req.valid('param').id)), {
         headers: { 'Content-Type': 'image/webp', 'Cache-Control': 'no-store' },
       }),
   )
@@ -580,7 +580,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       const current = engine.memes.adminGet(asset.id)
       if (!current || !isDeepStrictEqual(current, asset))
         return c.json({ error: 'Asset unavailable' }, 400)
-      return new Response(bytes, {
+      return c.newResponse(bytes, {
         headers: { 'Content-Type': `image/${asset.format}`, 'Cache-Control': 'no-store' },
       })
     },
@@ -744,7 +744,7 @@ export function installEngineRoutes(app: OpenAPIHono, engine: Engine) {
       const signal = AbortSignal.any([c.req.raw.signal, AbortSignal.timeout(20_000)])
       try {
         const { bytes, mime } = await chatMedia.read(id, messageId, Number(partIndex), signal)
-        return new Response(new Uint8Array(bytes), {
+        return c.newResponse(new Uint8Array(bytes), {
           headers: {
             'Content-Type': mime,
             'Content-Length': String(bytes.length),

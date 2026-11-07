@@ -128,10 +128,9 @@ test('actual privacy temporal marker replays its original recorded time without 
     assert.ok(['purge', 'requalify'].includes(marker.reason))
     const authority = new RecoveryAuthority(metadata(f.store.db)!.authority)
     try {
-      const events = authority
-        .entries()
-        .map((e) => e.revocation)
-        .filter((e) => e.kind === 'commitment_head')
+      const revocations = authority.entries().map((e) => e.revocation)
+      assert.ok(revocations.some((event) => event.kind === 'assertion_eligibility'))
+      const events = revocations.filter((e) => e.kind === 'commitment_head')
       const event = events.at(-1)!
       assert.equal(event.schemaVersion, 2)
       assert.equal(event.privacyMarker?.recordedAt, marker.recordedAt)
@@ -147,7 +146,8 @@ test('actual privacy temporal marker replays its original recorded time without 
       assert.deepEqual(memory.commitments.snapshot(plan.ref.id), live)
       const stored = store.db.prepare('SELECT value FROM memory_commitment_transitions').all()
       assert.equal(JSON.stringify(stored).includes('confirm-b'), false)
-      assert.equal(metadata(store.db)!.minimumReader, 10)
+      // Recall also journals an assertion eligibility withdrawal, requiring reader 11.
+      assert.equal(metadata(store.db)!.minimumReader, 11)
       memory.dispose()
     } finally {
       store.close()

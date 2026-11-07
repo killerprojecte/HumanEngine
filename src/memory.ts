@@ -1,3 +1,4 @@
+import { recordAssertionEligibilityChanges } from './memory/recovery/eligibility.ts'
 import { SemanticPrivacy } from './memory/lifecycle/semantic-privacy.ts'
 import { createSemanticService, semanticPolicyRevision } from './memory/semantic/facade.ts'
 import { semanticAssertion } from './memory/semantic/authority.ts'
@@ -167,6 +168,7 @@ export class MemoryService {
     this.identities = createIdentityFacade(store, this)
     this.repository = new AssertionRepository(store, {
       beforeWrite: (id) => this.revisions.beforeWrite(id),
+      afterWrite: (record) => this.revisions.afterWrite(record),
       removeProjection: (id) => {
         this.projections.remove(id)
         this.workspace?.onAssertionUnavailable(id)
@@ -286,6 +288,7 @@ export class MemoryService {
         }
       },
       () => this.flushProjections(),
+      (changes) => recordAssertionEligibilityChanges(store.db, changes),
     )
     this.authority = new AssertionAuthority(store, this.repository, this.revisions)
     this.lifecycle = new ProofInvalidation({

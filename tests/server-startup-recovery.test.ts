@@ -21,9 +21,10 @@ import { createSessionGateway } from '../src/auth/session.ts'
 import {
   getEngine,
   initializeEngine,
+  startEngineDisposal,
   handleEngineRequest,
   closeEngine,
-} from '../server/utils/engine.ts'
+} from '../src/server/owner-runtime.ts'
 
 const token = 'synthetic-upgrade-admin-token'
 async function fixture(run: (database: string, authority: string, root: string) => Promise<void>) {
@@ -279,5 +280,28 @@ test('server shutdown reports Store-level serialization loss even without a fail
     } finally {
       console.error = error
     }
+  })
+})
+
+test('disposal phase is cached and a failure still closes Store only in final shutdown', async () => {
+  await fixture(async () => {
+    const runtime = await getEngine()
+    const originalDispose = runtime.engine.dispose.bind(runtime.engine)
+    const failure = new Error('SYNTHETIC_DISPOSAL_FAILURE')
+    let calls = 0
+    runtime.engine.dispose = async () => {
+      calls++
+      await originalDispose()
+      throw failure
+    }
+    const disposal = startEngineDisposal()
+    assert.equal(startEngineDisposal(), disposal)
+    await assert.rejects(disposal, (error) => error === failure)
+    assert.equal(runtime.store.db.open, true)
+    const closing = closeEngine()
+    assert.equal(closeEngine(), closing)
+    await assert.rejects(closing, (error) => error === failure)
+    assert.equal(runtime.store.db.open, false)
+    assert.equal(calls, 1)
   })
 })

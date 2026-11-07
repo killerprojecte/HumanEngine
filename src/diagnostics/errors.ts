@@ -6,6 +6,10 @@ import { errorContext, safeErrorContext, type ErrorContext } from './error-conte
 import { knownDiagnosticCode, sqliteCodes, technicalMessage } from './error-codes.ts'
 
 const requestIds = new WeakMap<Request, string>()
+/** Internal transport binding only. Never populate this from a client header. */
+export function bindRequestId(request: Request, requestId: string): void {
+  requestIds.set(request, requestId)
+}
 export function requestIdFor(request: Request): string {
   let value = requestIds.get(request)
   if (!value) {

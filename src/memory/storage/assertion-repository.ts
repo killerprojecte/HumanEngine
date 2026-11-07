@@ -68,6 +68,7 @@ export class AssertionRepository {
     private readonly store: Pick<Store, 'db' | 'assertRecoveryReady'>,
     private readonly mutations: {
       beforeWrite(id: string): void
+      afterWrite?(record: MemoryRecord): void
       removeProjection(id: string): void
     },
   ) {}
@@ -144,6 +145,7 @@ export class AssertionRepository {
     const insert = this.store.db.prepare('INSERT OR IGNORE INTO memory_sources VALUES(?,?,?,?)')
     for (const source of memory.sources)
       insert.run(memory.id, source.sceneId, source.messageId, source.senderId)
+    this.mutations.afterWrite?.(memory)
   }
   all(): MemoryRecord[] {
     this.store.assertRecoveryReady()

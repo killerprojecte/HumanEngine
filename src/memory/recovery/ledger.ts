@@ -1,3 +1,7 @@
+import {
+  parseAssertionEligibilityEvent,
+  type AssertionEligibilityEvent,
+} from './eligibility-contract.ts'
 import { readMemoryList, type MemoryListRead } from '../read/list.ts'
 import { readCommitmentPrivacy } from '../read/commitment-privacy.ts'
 import type { CommitmentRef } from '../domain/commitments.ts'
@@ -49,8 +53,9 @@ import { dirname, resolve, relative, join, parse } from 'node:path'
 
 export const RECOVERY_FORMAT = 1
 // Reader capability is separate from the unchanged external chain format.
-export const RECOVERY_READER_CAPABILITY = 10
+export const RECOVERY_READER_CAPABILITY = 11
 export type Revocation =
+  | AssertionEligibilityEvent
   | ExternalCostRecoveryEvent
   | ExperienceTrialRecoveryEvent
   | SemanticRecoveryEvent
@@ -142,6 +147,7 @@ function event(value: unknown): Revocation {
   const e = value as Record<string, unknown>
   const valid = (v: unknown): v is string =>
     typeof v === 'string' && v.length > 0 && v.length <= 2000
+  if (e?.kind === 'assertion_eligibility') return parseAssertionEligibilityEvent(e)
   if (e?.kind === 'external_cost_receipt') return parseExternalCostRecoveryEvent(e)
   if (e?.kind === 'experience_trial') return parseExperienceTrialRecoveryEvent(e)
   if (e?.kind === 'semantic_mutation') return parseSemanticRecoveryEvent(value)
@@ -189,10 +195,11 @@ function event(value: unknown): Revocation {
 export class RecoveryAuthority {
   readonly db: Database.Database
   readonly path: string
-  // Integrity of the last committed SQLite snapshot, not a permission to use main data.
-  // SQLite change stamps invalidate this state; they are not cryptographic proofs.
+  // Integrity of the last committed SQLite snapshot, not permission to use main data.
   #validated?: { head: Head; stamp: AuthorityStamp }
-  constructor(path: string, createInstance?: string) {
+  constructor(path: string, createInstance?: string, readOnly = false) {
+    if (readOnly && createInstance !== undefined)
+      throw new Error('recovery_read_connection_invalid')
     this.path = resolve(path)
     if (createInstance) mkdirSync(this.path, { recursive: true, mode: 0o700 })
     if (!existsSync(this.path) || realpathSync(this.path) !== this.path)
@@ -200,11 +207,20 @@ export class RecoveryAuthority {
     const file = join(this.path, 'authority.sqlite')
     if (!createInstance && !existsSync(file)) throw new Error('recovery_authority_missing')
     if (existsSync(file) && !lstatSync(file).isFile()) throw new Error('recovery_authority_invalid')
-    this.db = new Database(file, { fileMustExist: !createInstance })
+    this.db = new Database(file, {
+      fileMustExist: !createInstance,
+      ...(readOnly ? { readonly: true } : {}),
+    })
     try {
-      chmodSync(file, 0o600)
-      this.db.pragma('journal_mode = DELETE')
-      this.db.pragma('synchronous = FULL')
+      if (readOnly) {
+        if (this.db.pragma('journal_mode', { simple: true }) !== 'delete')
+          throw new Error('recovery_read_journal_unsupported')
+        this.db.pragma('query_only = ON')
+      } else {
+        chmodSync(file, 0o600)
+        this.db.pragma('journal_mode = DELETE')
+        this.db.pragma('synchronous = FULL')
+      }
       if (createInstance) {
         this.db.exec(
           'CREATE TABLE IF NOT EXISTS main.identity (id TEXT PRIMARY KEY, format INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS main.revocations (sequence INTEGER PRIMARY KEY, previous_hash TEXT NOT NULL, payload TEXT NOT NULL, hash TEXT NOT NULL)',
@@ -216,7 +232,8 @@ export class RecoveryAuthority {
       }
       // Additive local migration: preserve the event format and exact deduplication.
       // The index is built once for existing installations; no history lives in a JS cache.
-      this.db.exec('CREATE INDEX IF NOT EXISTS main.revocations_payload ON revocations(payload)')
+      if (!readOnly)
+        this.db.exec('CREATE INDEX IF NOT EXISTS main.revocations_payload ON revocations(payload)')
       this.entries(false)
     } catch (error) {
       this.db.close()
@@ -230,8 +247,10 @@ export class RecoveryAuthority {
     try {
       const audit = () => this.#scan(collect)
       const result = ownTransaction ? this.db.transaction(audit)() : audit()
-      // Never publish verification of a caller-owned transaction that can still roll back.
-      if (ownTransaction) this.#validated = result.validated
+      // An actual readonly handle cannot verify uncommitted local main writes.
+      // Its caller may end the read with ROLLBACK without undoing the audited data.
+      // query_only alone is not enough: writable callers can later roll back writes.
+      if (ownTransaction || this.db.readonly) this.#validated = result.validated
       return result.entries
     } catch (error) {
       this.#validated = undefined
@@ -314,7 +333,7 @@ export class RecoveryAuthority {
       const current = ownTransaction
         ? this.db.transaction(() => this.#current())()
         : this.#current()
-      if (ownTransaction) this.#validated = current
+      if (ownTransaction || this.db.readonly) this.#validated = current
       return { ...current.head }
     } catch (error) {
       this.#validated = undefined
@@ -347,6 +366,7 @@ export class RecoveryAuthority {
           // Intent itself is durable authority even when the later main write rolls back.
           if (
             forceAppend ||
+            parsed.kind === 'assertion_eligibility' ||
             parsed.kind === 'configuration_flags' ||
             parsed.kind === 'scene_flags' ||
             parsed.kind === 'meme_state' ||
@@ -511,6 +531,48 @@ export function openGate(db: Database.Database, database: string): RecoveryAutho
 export function bindRecovery(db: Database.Database, authority: RecoveryAuthority) {
   bindings.set(db, authority)
 }
+
+/** Existing enrolled data only. No initialization, migration, chmod or journal-mode changes.
+ * The private readonly pair may pin authority before main: its fixed WAL read never
+ * upgrades either handle, calls the owner, or waits for a newer main acknowledgement. */
+export function openReadOnlyGate(db: Database.Database): RecoveryAuthority {
+  if (!db.readonly || db.name === ':memory:' || db.inTransaction)
+    throw new Error('recovery_read_connection_invalid')
+  if (db.pragma('journal_mode', { simple: true }) !== 'wal')
+    throw new Error('recovery_read_journal_unsupported')
+  const state = metadata(db)
+  if (!state) throw new Error('recovery_legacy_enrollment_required')
+  if (state.minimumReader > RECOVERY_READER_CAPABILITY || state.state !== 'ready')
+    throw new Error('recovery_quarantined_or_unsupported')
+  const authority = new RecoveryAuthority(authorityPath(db.name, state.authority), undefined, true)
+  try {
+    // The first gate only discovers the path. A normal writer may complete while
+    // opening/auditing authority, so compare freshly pinned overlapping snapshots.
+    authority.db.transaction(() => {
+      const head = authority.head()
+      if (authority.db.pragma('journal_mode', { simple: true }) !== 'delete')
+        throw new Error('recovery_read_journal_unsupported')
+      db.transaction(() => {
+        const current = metadata(db)
+        if (db.pragma('journal_mode', { simple: true }) !== 'wal')
+          throw new Error('recovery_read_journal_unsupported')
+        if (!current || current.authority !== authority.path)
+          throw new Error('recovery_authority_not_bound')
+        if (current.minimumReader > RECOVERY_READER_CAPABILITY || current.state !== 'ready')
+          throw new Error('recovery_quarantined_or_unsupported')
+        // Durable authority intent without its main ACK still fails closed. Do not
+        // wait or retry this mismatch while retaining the authority read lock.
+        if (!sameHead(current.head, head)) throw new Error('recovery_authority_head_changed')
+      })()
+    })()
+    bindings.set(db, authority)
+    return authority
+  } catch (error) {
+    authority.close()
+    throw error
+  }
+}
+
 function assertDurableAuthorityTransaction(authority: RecoveryAuthority) {
   if (sourceReadScopes.has(authority)) throw new Error('recovery_read_scope_write_denied')
   // Main data must not acknowledge an intent still inside somebody else's transaction.
@@ -560,6 +622,20 @@ export function maintenanceGate(
 
 export function assertRecoveryReady(db: Database.Database) {
   checkedRecoveryHead(db)
+}
+
+/** Observe the exact final HTTP-response snapshot, not an authorization token.
+ * Cross-isolate publication must revalidate current authority and match this identity. */
+export function captureResponseReadHead(db: Database.Database): Head | undefined {
+  const authority = bindings.get(db)
+  if (!authority) {
+    assertRecoveryReady(db)
+    return
+  }
+  return db.transaction(() => {
+    metadata(db) // Pin main first, preserving the common main -> authority lock order.
+    return authority.db.transaction(() => ({ ...checkedRecoveryHead(db)! }))()
+  })()
 }
 
 // Internal current-use result only. Never export a reusable permission or retain
@@ -879,6 +955,9 @@ function requireReaderCapability(db: Database.Database, minimumReader: number): 
   if (gate.minimumReader < minimumReader) saveGate(db, { ...gate, minimumReader })
 }
 
+export function requireEligibilityReader(db: Database.Database): void {
+  requireReaderCapability(db, 11)
+}
 export function requireOperationalReader(db: Database.Database): void {
   requireReaderCapability(db, 10)
 }

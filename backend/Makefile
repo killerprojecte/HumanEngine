@@ -14,6 +14,7 @@ build:
 	go build -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-relation-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-commitment-offline-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-commitment-privacy-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-proof-invalidation-fixtures.mjs --check

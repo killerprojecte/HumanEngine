@@ -165,6 +165,7 @@ func TestOrderedEditsNeverUpgradeOldSnapshot(t *testing.T) {
 }
 func TestWaitExpiresOnlyAsCheapRecheck(t *testing.T) {
 	var calls, rechecks atomic.Int64
+	cleaned := make(chan struct{}, 1)
 	r, _, clock := testRuntime(t, ModelFunc(func(_ context.Context, _ ModelRequest, done func(Completion, error)) {
 		calls.Add(1)
 		out := fixtureDecision("wait")
@@ -172,6 +173,9 @@ func TestWaitExpiresOnlyAsCheapRecheck(t *testing.T) {
 		done(out, nil)
 	}))
 	r.services.Trace = func(e Event) {
+		if e.Stage == "turn_cleanup" && e.Status == "completed" {
+			cleaned <- struct{}{}
+		}
 		if e.Stage == "turn_wait" {
 			rechecks.Add(1)
 		}
@@ -182,7 +186,16 @@ func TestWaitExpiresOnlyAsCheapRecheck(t *testing.T) {
 		t.Fatal(e)
 	}
 	clock.Advance(0)
-	awaitCondition(t, func() bool { return calls.Load() == 1 && r.state("scene").view.Load().active == 0 })
+	// Owner removal publishes active=0 before cleanup installs the wait timer.
+	// Wait for actual cleanup completion before advancing the synchronous fake clock.
+	select {
+	case <-cleaned:
+	case <-time.After(2 * time.Second):
+		t.Fatal("wait cleanup did not complete")
+	}
+	if calls.Load() != 1 || r.state("scene").view.Load().active != 0 {
+		t.Fatal("wait turn did not release ownership")
+	}
 	clock.Advance(49)
 	if rechecks.Load() != 0 {
 		t.Fatal("early wait expiry")
@@ -195,6 +208,7 @@ func TestWaitExpiresOnlyAsCheapRecheck(t *testing.T) {
 }
 func TestFreshGenerationInvalidatesRequestedWait(t *testing.T) {
 	var calls atomic.Int64
+	cleaned := make(chan struct{}, 2)
 	release := make(chan func(Completion, error), 1)
 	r, _, clock := testRuntime(t, ModelFunc(func(_ context.Context, _ ModelRequest, done func(Completion, error)) {
 		if calls.Add(1) == 1 {
@@ -203,6 +217,22 @@ func TestFreshGenerationInvalidatesRequestedWait(t *testing.T) {
 		}
 		done(fixtureDecision("silent"), nil)
 	}))
+	r.services.Trace = func(e Event) {
+		if e.Stage == "turn_cleanup" && e.Status == "completed" {
+			cleaned <- struct{}{}
+		}
+	}
+	awaitCleanup := func() {
+		t.Helper()
+		select {
+		case <-cleaned:
+		case <-time.After(2 * time.Second):
+			t.Fatal("generation cleanup did not complete")
+		}
+		if r.state("scene").view.Load().active != 0 {
+			t.Fatal("generation turn did not release ownership")
+		}
+	}
 	cfg := r.config()
 	cfg.DebounceMS = 100
 	cfg.MaxWaitMS = 400
@@ -215,13 +245,17 @@ func TestFreshGenerationInvalidatesRequestedWait(t *testing.T) {
 	out := fixtureDecision("wait")
 	_ = out.ToolCalls[0].Arguments.(*Object).Set("waitForMs", float64(60000))
 	settle(out, nil)
-	awaitCondition(t, func() bool { return r.state("scene").view.Load().active == 0 })
+	// active=0 alone precedes generation finalization and timer installation.
+	awaitCleanup()
 	clock.Advance(99)
 	if calls.Load() != 1 {
 		t.Fatal("fresh generation skipped quiet interval")
 	}
 	clock.Advance(1)
-	awaitCondition(t, func() bool { return calls.Load() == 2 && r.state("scene").view.Load().active == 0 })
+	awaitCleanup()
+	if calls.Load() != 2 {
+		t.Fatal("fresh generation did not run exactly once")
+	}
 	clock.Advance(60000)
 	if calls.Load() != 2 {
 		t.Fatal("stale WAIT minted model work")

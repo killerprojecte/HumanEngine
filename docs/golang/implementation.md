@@ -462,3 +462,39 @@ the existing capability. Offline parent handles keep their existing maintenance
 semantics; this is not a claim that arbitrary callback reentry matches the live
 writer contract. Full-database restore, remaining domain replay, model holds and
 the final ACK/ready transition still require the reconciler owner.
+
+## Relation storage and candidate lifecycle
+
+The relation domain owns its three real SQLite tables and implements admission,
+review, listing and assertion-backed removal. A relation query borrows the exact
+assertion reader for both SQL and current evidence; it does not open a second
+publication scope or independently authorize stale rows. Writes and revision or
+history purge hooks use the exact active WriteSession child. Relations do not
+invent a new journal event: the enclosing assertion owner supplies its durable
+intent. Other cross-domain effects still require their own owners.
+
+Source behavior is retained at observable boundaries: new-target duplicates
+consume an entity ID before key lookup, admission keys preserve backing JSON
+property order, proof projection intersects original and live material, and
+review stores original proofs while returning the current intersection. A review
+can persist and then return no projection if its second evidence read changes.
+That is not a rollback. Caught statement errors retain the source's committed
+statement prefixes, while loss of the native transaction prevents subsequent
+autocommit. Existing source 200/201-row coverage and 40-item read policies remain;
+these are not new protective caps. The source's installed Zod string checks use
+code-point widths, including supplementary characters.
+
+Actual-source differential traces record return values, errors, callback/clock/ID
+order and raw table JSON. Separate integration tests compose real assertion
+history, authority, coordinator and relation removal, including durable-intent
+survival with main rollback. Test callbacks representing unrelated owners are
+not production adapters. Persisted object fields are retained without a newly
+strict record schema; arbitrary malformed primitive rows and SQLite coercions are
+not claimed as a compatible typed API. Native injected clocks accept milliseconds
+as int64, not arbitrary JavaScript values.
+
+Model relation exposure still needs delivery-object identity, selected dependency
+closure, current-snapshot revalidation and a detached learning guard. REST
+projection still needs actual MemoryService content filtering and identity display
+provenance. This domain checkpoint does not wire the full robot runtime or complete
+those remaining APIs.

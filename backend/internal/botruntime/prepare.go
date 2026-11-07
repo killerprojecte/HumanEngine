@@ -8,7 +8,9 @@ import (
 
 func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 	c, s, cfg := t.context, t.state, t.settings
-	if !r.eligible(c) {
+	if valid, err := r.eligible(c); err != nil {
+		return err
+	} else if !valid {
 		t.result.Status = "cancelled"
 		t.result.Reason = "context_ineligible"
 		return nil
@@ -40,7 +42,10 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 	})
 	r.publishLocked(s)
 	s.mu.Unlock()
-	candidates = filterMessages(candidates, func(m *Object) bool { return !r.recalled(s, idOf(m)) })
+	candidates, readErr := r.unrecalled(s, candidates)
+	if readErr != nil {
+		return readErr
+	}
 	extensions := r.exts()
 	allTools := []*Object{contractTool("messages.send"), contractTool("messages.get"), contractTool("messages.around"), contractTool("messages.byUser")}
 	extensionTools := []*Object{}
@@ -59,13 +64,13 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 		if err != nil {
 			return err
 		}
-		c.AddValidation(func() bool {
-			current, e := r.promptAuthority(t, extensionTools)
+		c.AddScopedValidation(func(scope ReadAuthority) (bool, error) {
+			current, e := r.promptAuthorityUsing(t, scope)
 			if e != nil {
-				return false
+				return false, e
 			}
 			text, e := jsjson.Stringify(current)
-			return e == nil && text == authorityText
+			return text == authorityText, e
 		})
 		if c.Mode == "real" {
 			c.AddValidation(func() bool {
@@ -90,6 +95,12 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 		return err
 	}
 	c.setSources(recent)
+	c.AddScopedValidation(func(scope ReadAuthority) (bool, error) {
+		c.mu.Lock()
+		captured := append([]*Object{}, c.sources...)
+		c.mu.Unlock()
+		return scope.ValidateSources(c.Scene, captured, nil)
+	})
 	manual := []string{}
 	learned := []any{}
 	for _, e := range extensions {
@@ -171,7 +182,9 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 	}
 	if hasImages {
 		for _, e := range extensions {
-			if !r.eligible(c) {
+			if valid, err := r.eligible(c); err != nil {
+				return err
+			} else if !valid {
 				t.result.Status = "cancelled"
 				t.result.Reason = "context_cancelled"
 				return nil
@@ -187,7 +200,9 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 			}
 		}
 	}
-	if !r.eligible(c) {
+	if valid, err := r.eligible(c); err != nil {
+		return err
+	} else if !valid {
 		t.result.Status = "cancelled"
 		t.result.Reason = "context_cancelled"
 		return nil

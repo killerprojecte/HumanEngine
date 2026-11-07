@@ -53,8 +53,14 @@ func (r *Runtime) participateTurn(t *turn, f *turnFrame, issues *int) error {
 		return code("planner_missing_decision")
 	}
 	action := str(get(decision, "action"))
-	if action != "reply" && decisionTicket != nil && r.eligible(c) {
-		decisionTicket.Commit()
+	if action != "reply" && decisionTicket != nil {
+		valid, e := r.eligible(c)
+		if e != nil {
+			return e
+		}
+		if valid {
+			decisionTicket.Commit()
+		}
 	}
 	if action == "wait" {
 		wait := cfg.MaxWaitMS
@@ -64,7 +70,15 @@ func (r *Runtime) participateTurn(t *turn, f *turnFrame, issues *int) error {
 		until := r.services.Clock.Now() + wait
 		t.waitUntil = &until
 	}
-	if action != "reply" || !r.eligible(c) {
+	valid := false
+	if action == "reply" {
+		var e error
+		valid, e = r.eligible(c)
+		if e != nil {
+			return e
+		}
+	}
+	if action != "reply" || !valid {
 		t.result.Status = "skipped"
 		t.result.Reason = "decision_" + action
 		if c.root.Aborted() {
@@ -113,7 +127,10 @@ func (r *Runtime) participateTurn(t *turn, f *turnFrame, issues *int) error {
 		})
 		s.mu.Unlock()
 	}
-	replyerRecent = filterMessages(replyerRecent, func(m *Object) bool { return !r.recalled(s, idOf(m)) })
+	replyerRecent, err = r.unrecalled(s, replyerRecent)
+	if err != nil {
+		return err
+	}
 	replyerRecent, err = r.selectWindow(plannerKey, replyerRecent, window, authority, targets)
 	if err != nil {
 		return err

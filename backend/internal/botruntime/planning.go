@@ -93,14 +93,21 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 		template = "planSuggestions"
 	}
 	planningMessages := []*Object{obj("role", "system", "content", cfg.Persona+"\n"+manualContext+"\n"+prompt(template)), user}
-	planned, err := r.services.Policy.BuildReplyPlan(planningStage, replyplan.BuildInput{ValidationInput: replyplan.ValidationInput{TargetMessageIDs: targets, ContextMessageIDs: ids(replyerRecent), Evidence: evidence, ActionTools: actions, DeliveryTools: deliveries, ReplySuggestionsEnabled: cfg.ReplySuggestionsEnabled}, Messages: planningMessages, EvidenceMaxBytes: &cfg.PlannerEvidenceMaxBytes, Projection: projection, ReadTools: reads, Eligible: func() bool { return r.eligible(c) }, Complete: func(ctx context.Context, messages, tools []*Object, settle func(replyplan.Completion, error)) {
-		if !r.eligible(c) {
-			settle(replyplan.Completion{}, code("planner_context_ineligible"))
+	planned, err := r.services.Policy.BuildReplyPlan(planningStage, replyplan.BuildInput{ValidationInput: replyplan.ValidationInput{TargetMessageIDs: targets, ContextMessageIDs: ids(replyerRecent), Evidence: evidence, ActionTools: actions, DeliveryTools: deliveries, ReplySuggestionsEnabled: cfg.ReplySuggestionsEnabled}, Messages: planningMessages, EvidenceMaxBytes: &cfg.PlannerEvidenceMaxBytes, Projection: projection, ReadTools: reads, EligibleChecked: func() (bool, error) { return r.eligible(c) }, Complete: func(ctx context.Context, messages, tools []*Object, settle func(replyplan.Completion, error)) {
+		if valid, err := r.eligible(c); err != nil || !valid {
+			if err == nil {
+				err = code("planner_context_ineligible")
+			}
+			settle(replyplan.Completion{}, err)
 			return
 		}
 		r.services.Models.Start(ctx, ModelRequest{"planner", "plan", messages, tools, c, planningStage.progress}, func(out Completion, e error) {
-			if e == nil && r.eligible(c) {
-				plannerTicket.Commit()
+			if e == nil {
+				var valid bool
+				valid, e = r.eligible(c)
+				if e == nil && valid {
+					plannerTicket.Commit()
+				}
 			}
 			settle(out.Completion, e)
 		})
@@ -170,7 +177,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			return true
 		})
 	}
-	if !r.eligible(c) {
+	if valid, err := r.eligible(c); err != nil {
+		return err
+	} else if !valid {
 		t.result.Status = "skipped"
 		t.result.Reason = "context_cancelled"
 		return nil
@@ -185,7 +194,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 		if err := context.Cause(planningStage); err != nil {
 			return err
 		}
-		if !r.eligible(c) {
+		if valid, err := r.eligible(c); err != nil {
+			return err
+		} else if !valid {
 			return code("planner_context_ineligible")
 		}
 		signature, err := jsjson.Stringify(action)
@@ -207,7 +218,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 		grounding.ObserveTool(name, output)
 		actionReceipts = append(actionReceipts, obj("id", fmt.Sprintf("action:%d", len(actionReceipts)+1), "toolName", name, "value", output))
 	}
-	if !r.eligible(c) {
+	if valid, err := r.eligible(c); err != nil {
+		return err
+	} else if !valid {
 		return code("planner_context_ineligible")
 	}
 	if get(plan, "action") == "noReply" {
@@ -263,7 +276,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 	if status != "selected" || !hasText {
 		return code("reply_evidence_budget_exhausted")
 	}
-	if !r.eligible(c) {
+	if valid, err := r.eligible(c); err != nil {
+		return err
+	} else if !valid {
 		return code("planner_context_ineligible")
 	}
 	for _, e := range extensions {
@@ -274,7 +289,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			}
 		}
 	}
-	if !r.eligible(c) {
+	if valid, err := r.eligible(c); err != nil {
+		return err
+	} else if !valid {
 		return code("planner_context_ineligible")
 	}
 	f.grounding = grounding

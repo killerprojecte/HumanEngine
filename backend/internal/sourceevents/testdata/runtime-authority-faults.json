@@ -1,0 +1,608 @@
+{
+  "node": "v24.22.1",
+  "source": {
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/runtime/dispatch.ts": "f3f40c29491a6cc637327045537943d95784020a6fac4be13f1327ff6b92d9a2",
+    "src/runtime/reply-plan.ts": "a655db5358c28819ccc8f6b742313ba96efeb8fdfb7a8925ac2acabc3758e18a",
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "tests/helpers/reply-plan.ts": "6a84585d126d888b3270f3ada5c39cb3aada43ac9aa3283d135c4be6b4420dc4"
+  },
+  "cases": [
+    {
+      "name": "initial-read",
+      "expected": {
+        "effects": [],
+        "warnings": [],
+        "models": [],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "turn_failed",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    },
+    {
+      "name": "decision-read",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "turn_failed",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    },
+    {
+      "name": "plan-read",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          },
+          {
+            "kind": "model",
+            "stage": "plan"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision",
+          "plan"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "turn_failed",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    },
+    {
+      "name": "tool-read",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          },
+          {
+            "kind": "model",
+            "stage": "plan"
+          },
+          {
+            "kind": "tool",
+            "tool": "fixture.read",
+            "args": {}
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision",
+          "plan"
+        ],
+        "actions": [],
+        "reads": [
+          "fixture.read"
+        ],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "turn_failed",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    },
+    {
+      "name": "before-send",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          },
+          {
+            "kind": "model",
+            "stage": "plan"
+          },
+          {
+            "kind": "model",
+            "stage": "replyer"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision",
+          "plan",
+          "replyer"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "turn_tool_failures",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 1,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": [
+          {
+            "status": "unknown",
+            "detail": "delivery_unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "before-send-once",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          },
+          {
+            "kind": "model",
+            "stage": "plan"
+          },
+          {
+            "kind": "model",
+            "stage": "replyer"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision",
+          "plan",
+          "replyer"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "delivery_unknown",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 1,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": [
+          {
+            "status": "unknown",
+            "detail": "delivery_unknown"
+          }
+        ],
+        "outcomeCauseMessages": [
+          "synthetic_source_read_failed"
+        ],
+        "outcomeAggregate": "operation_outcomes_failed"
+      }
+    },
+    {
+      "name": "after-sent",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          },
+          {
+            "kind": "model",
+            "stage": "plan"
+          },
+          {
+            "kind": "model",
+            "stage": "replyer"
+          },
+          {
+            "kind": "send",
+            "segment": {
+              "parts": [
+                {
+                  "type": "text",
+                  "text": "A concise response."
+                }
+              ],
+              "replyToId": "source"
+            }
+          },
+          {
+            "kind": "receipt",
+            "receipt": {
+              "status": "sent",
+              "messageId": "sent-1"
+            }
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision",
+          "plan",
+          "replyer"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [
+          {
+            "parts": [
+              {
+                "type": "text",
+                "text": "A concise response."
+              }
+            ],
+            "replyToId": "source"
+          }
+        ],
+        "transportCalls": 1,
+        "botMessages": [
+          {
+            "parts": [
+              {
+                "type": "text",
+                "text": "A concise response."
+              }
+            ],
+            "replyToId": "source"
+          }
+        ],
+        "sourceStatus": "available",
+        "status": "partial",
+        "reason": "turn_tool_failures",
+        "counts": {
+          "sentSegments": 1,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": [
+          {
+            "status": "sent",
+            "messageId": "sent-1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "after-unknown",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          },
+          {
+            "kind": "model",
+            "stage": "plan"
+          },
+          {
+            "kind": "model",
+            "stage": "replyer"
+          },
+          {
+            "kind": "send",
+            "segment": {
+              "parts": [
+                {
+                  "type": "text",
+                  "text": "A concise response."
+                }
+              ],
+              "replyToId": "source"
+            }
+          },
+          {
+            "kind": "receipt",
+            "receipt": {
+              "status": "unknown",
+              "detail": "delivery_unknown"
+            }
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision",
+          "plan",
+          "replyer"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [
+          {
+            "parts": [
+              {
+                "type": "text",
+                "text": "A concise response."
+              }
+            ],
+            "replyToId": "source"
+          }
+        ],
+        "transportCalls": 1,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "turn_tool_failures",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 1,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": [
+          {
+            "status": "unknown",
+            "detail": "delivery_unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "readiness-after-decision",
+      "expected": {
+        "runError": "recovery_synthetic_blocked",
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "decision_reply",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    },
+    {
+      "name": "scene-disabled-after-decision",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "skipped",
+        "reason": "decision_reply",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    },
+    {
+      "name": "scene-deleted-after-decision",
+      "expected": {
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "skipped",
+        "reason": "decision_reply",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    },
+    {
+      "name": "scene-read-fault-after-decision",
+      "expected": {
+        "runError": "no such table: scenes",
+        "effects": [
+          {
+            "kind": "model",
+            "stage": "decision"
+          }
+        ],
+        "warnings": [],
+        "models": [
+          "decision"
+        ],
+        "actions": [],
+        "reads": [],
+        "sent": [],
+        "transportCalls": 0,
+        "botMessages": [],
+        "sourceStatus": "available",
+        "status": "failed",
+        "reason": "turn_failed",
+        "counts": {
+          "sentSegments": 0,
+          "failedSegments": 0,
+          "unknownSegments": 0,
+          "cancelledSegments": 0
+        },
+        "active": 0,
+        "registered": true,
+        "persistentConfigDelta": 0,
+        "receipts": []
+      }
+    }
+  ],
+  "cleanupCases": [
+    {
+      "code": "recovery_authority_head_changed",
+      "armed": true,
+      "runError": null,
+      "tasks": 0,
+      "pending": 0,
+      "timers": 0,
+      "wakeCurrent": false,
+      "retained": {
+        "active": false,
+        "pending": false,
+        "waiting": false
+      }
+    },
+    {
+      "code": "synthetic_cleanup_fault",
+      "armed": true,
+      "runError": "synthetic_cleanup_fault",
+      "tasks": 0,
+      "pending": 0,
+      "timers": 1,
+      "wakeCurrent": true,
+      "retained": {
+        "active": true,
+        "pending": false,
+        "waiting": false
+      }
+    }
+  ],
+  "validationCases": [
+    {
+      "mode": "add-recalled",
+      "eligible": false
+    },
+    {
+      "mode": "abort",
+      "eligible": false
+    },
+    {
+      "mode": "recall-local",
+      "eligible": false
+    },
+    {
+      "mode": "valid",
+      "eligible": true
+    }
+  ],
+  "recallValidation": {
+    "error": "synthetic_derived_validation",
+    "sawTombstone": true,
+    "tombstones": 0,
+    "ack": 0,
+    "authority": 1
+  }
+}

@@ -22,13 +22,20 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 	messages := []*Object{obj("role", "system", "content", cfg.Persona+"\n"+manualContext+"\n"+prompt("replyer")), user}
 	delivery := toolNamed(deliveries, str(get(plan, "deliveryTool")))
 	rejections, iterations := 0, 0
-	for step := 0; step < replyplan.DialogueMaxRounds && r.eligible(c); step++ {
+	for step := 0; step < replyplan.DialogueMaxRounds; step++ {
+		if valid, err := r.eligible(c); err != nil {
+			return err
+		} else if !valid {
+			break
+		}
 		iterations = step + 1
 		result, err := r.completion(t, dialogueStage, "replyer", "replyer", messages, []*Object{delivery})
 		if err != nil {
 			return r.stageError(t, dialogueStage, "replyer", err)
 		}
-		if !r.eligible(c) {
+		if valid, err := r.eligible(c); err != nil {
+			return err
+		} else if !valid {
 			break
 		}
 		messages = append(messages, result.Assistant)
@@ -40,7 +47,9 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 			break
 		}
 		for _, call := range result.ToolCalls {
-			if !r.eligible(c) {
+			if valid, err := r.eligible(c); err != nil {
+				return err
+			} else if !valid {
 				break
 			}
 			declared := call.Name == str(get(plan, "deliveryTool"))
@@ -61,6 +70,9 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 					}
 				}
 			}
+			if toolErr == nil {
+				_, toolErr = r.eligible(c)
+			}
 			if toolErr != nil {
 				*issues++
 				if len(t.toolIssues) < 16 {
@@ -78,7 +90,9 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 					output = obj("error", "Tool unavailable")
 				}
 			}
-			if !r.eligible(c) {
+			if valid, err := r.eligible(c); err != nil {
+				return err
+			} else if !valid {
 				break
 			}
 			grounding.ObserveTool(call.Name, output)
@@ -100,15 +114,35 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 			return r.stageError(t, dialogueStage, "replyer", err)
 		}
 	}
-	if iterations == replyplan.DialogueMaxRounds && r.eligible(c) && t.result.Reason == "processing_finished" {
-		t.result.Status = "partial"
-		t.result.Reason = "tool_iteration_limit"
+	if iterations == replyplan.DialogueMaxRounds {
+		valid, err := r.eligible(c)
+		if err != nil {
+			return err
+		}
+		if valid && t.result.Reason == "processing_finished" {
+			t.result.Status = "partial"
+			t.result.Reason = "tool_iteration_limit"
+		}
 	}
 	fallbackTarget := ""
-	if len(targets) == 1 && contains(ids(replyerRecent), targets[0]) && !r.recalled(s, targets[0]) {
-		fallbackTarget = targets[0]
+	if len(targets) == 1 && contains(ids(replyerRecent), targets[0]) {
+		recalled, err := r.recalled(s, targets[0])
+		if err != nil {
+			return err
+		}
+		if !recalled {
+			fallbackTarget = targets[0]
+		}
 	}
-	if rejections > 0 && !r.hasOutcome(t) && r.eligible(c) && (!grounding.HasFeedbackReceipts() || fallbackTarget != "") {
+	fallbackEligible := false
+	if rejections > 0 && !r.hasOutcome(t) {
+		var err error
+		fallbackEligible, err = r.eligible(c)
+		if err != nil {
+			return err
+		}
+	}
+	if fallbackEligible && (!grounding.HasFeedbackReceipts() || fallbackTarget != "") {
 		text := ""
 		for i := len(replyerRecent) - 1; i >= 0; i-- {
 			if get(replyerRecent[i], "senderId") != "bot" {

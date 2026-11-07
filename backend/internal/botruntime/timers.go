@@ -92,7 +92,9 @@ func (r *Runtime) wake(s *sceneState, id string, ticket *timerTicket) {
 		r.publishLocked(s)
 		s.mu.Unlock()
 		r.trace(Event{SceneID: s.scene.ID, Stage: "turn_wait", Status: "skipped", Reason: "turn_wait_recheck"})
-		r.drainDeferred(s)
+		if err := r.drainDeferred(s); err != nil {
+			r.trace(Event{Level: "error", Module: "runtime", SceneID: s.scene.ID, Stage: "routing", Status: "failed", Reason: "source_read_failed"})
+		}
 		return
 	}
 	s.lastAutomatic[kind] = r.services.Clock.Now()

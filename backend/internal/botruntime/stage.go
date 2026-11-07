@@ -68,42 +68,52 @@ func (s *stage) close() {
 	s.mu.Unlock()
 	s.stop()
 }
-func (r *Runtime) eligible(c *TurnContext) bool {
-	if c.root.Aborted() || c.Signal().Aborted() || r.closed.Load() {
-		return false
+func (r *Runtime) eligible(c *TurnContext) (bool, error) { return r.eligibleSignal(c, c.Signal()) }
+func (r *Runtime) eligibleSignal(c *TurnContext, signal *dispatch.Signal) (bool, error) {
+	// Only the source recovery readiness probe deliberately becomes false.
+	if r.services.Authority.Ready() != nil {
+		return false, nil
+	}
+	if c.root.Aborted() || signal.Aborted() || r.closed.Load() {
+		return false, nil
 	}
 	s := r.state(c.Scene.ID)
 	if s != c.owner.state || s.closed.Load() {
-		return false
+		return false, nil
 	}
 	v := s.view.Load()
-	if r.services.Authority.Ready() != nil || (c.Mode != "simulation" && !v.scene.ParticipationEnabled) {
-		return false
+	if c.Mode != "simulation" {
+		enabled, err := r.services.Authority.SceneParticipationEnabled(v.scene)
+		if err != nil || !enabled {
+			return false, err
+		}
 	}
 	c.mu.Lock()
-	sources := append([]*Object{}, c.sources...)
-	deps := []string{}
-	for id := range c.dependencies {
-		deps = append(deps, id)
-	}
-	checks := append([]func() bool{}, c.validations...)
+	checks := append([]func(ReadAuthority) (bool, error){}, c.validations...)
 	c.mu.Unlock()
 	for _, check := range checks {
-		if !check() {
-			return false
+		if valid, err := check(r.services.Authority); err != nil || !valid {
+			return valid, err
 		}
 	}
+	// Source dependencies are copied after validations, which may add dependencies
+	// or abort the turn. Re-read the local recall view for the same reason.
+	if c.root.Aborted() || signal.Aborted() {
+		return false, nil
+	}
+	c.mu.Lock()
+	deps := append([]string{}, c.dependencyOrder...)
+	c.mu.Unlock()
+	v = s.view.Load()
 	for _, id := range deps {
 		if v.recalled[id] {
-			return false
+			return false, nil
 		}
 	}
-	for _, m := range sources {
-		if v.recalled[idOf(m)] {
-			return false
-		}
+	if len(deps) == 0 {
+		return true, nil
 	}
-	return r.services.Authority.ValidateSources(v.scene, sources, deps)
+	return r.services.Authority.ValidateSources(v.scene, nil, deps)
 }
 func (r *Runtime) completion(t *turn, s *stage, role, stageName string, messages, tools []*Object) (Completion, error) {
 	r.trace(Event{SceneID: t.context.Scene.ID, TurnID: t.context.TurnID, Stage: stageName, Status: "started"})
@@ -128,9 +138,12 @@ func (r *Runtime) executeTool(t *turn, ctx context.Context, name string, args an
 	return nil, code("tool_unavailable")
 }
 func (r *Runtime) promptAuthority(t *turn, tools []*Object) (any, error) {
+	return r.promptAuthorityUsing(t, r.services.Authority)
+}
+func (r *Runtime) promptAuthorityUsing(t *turn, authority ReadAuthority) (any, error) {
 	current := []*Object{}
 	for _, e := range r.exts() {
 		current = append(current, e.Tools...)
 	}
-	return r.services.Authority.PromptAuthority(t.context.Scene, current)
+	return authority.PromptAuthority(t.context.Scene, current)
 }

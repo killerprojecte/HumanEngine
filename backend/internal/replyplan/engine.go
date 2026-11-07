@@ -29,9 +29,11 @@ type BuildInput struct {
 	Projection       *ContextProjection
 	ReadTools        []*Object
 	Eligible         func() bool
-	Complete         func(context.Context, []*Object, []*Object, func(Completion, error))
-	Deliver          func(name string, value any, args any) (any, error)
-	Execute          func(context.Context, string, any, func(any, error))
+	// EligibleChecked supersedes Eligible and preserves authority read errors.
+	EligibleChecked func() (bool, error)
+	Complete        func(context.Context, []*Object, []*Object, func(Completion, error))
+	Deliver         func(name string, value any, args any) (any, error)
+	Execute         func(context.Context, string, any, func(any, error))
 }
 type BuildResult struct {
 	Plan      *Object
@@ -115,7 +117,17 @@ func (p *Policy) BuildReplyPlan(ctx context.Context, input BuildInput) (BuildRes
 		if err := context.Cause(ctx); err != nil {
 			return err
 		}
-		if !input.Eligible() {
+		var eligible bool
+		if input.EligibleChecked != nil {
+			var err error
+			eligible, err = input.EligibleChecked()
+			if err != nil {
+				return err
+			}
+		} else {
+			eligible = input.Eligible()
+		}
+		if !eligible {
 			return errCode("planner_context_ineligible")
 		}
 		return nil

@@ -139,7 +139,11 @@ type Services struct {
 	Writer     FlowWriter
 	Eligible   func(*TurnContext) bool
 	IsRecalled func(sceneID, messageID string) bool
-	Adapter    func(id string) *Adapter
+	// Checked ports preserve errors from real authority reads. When present they
+	// replace, rather than supplement, the compatibility boolean callbacks.
+	EligibleChecked   func(*TurnContext) (bool, error)
+	IsRecalledChecked func(sceneID, messageID string) (bool, error)
+	Adapter           func(id string) *Adapter
 }
 
 func text(value string) *string { return &value }
@@ -174,8 +178,28 @@ func nextStep(receipt Receipt, index, total int) string {
 	}
 	return "replyer"
 }
-func recalled(services Services, context *TurnContext, segment Segment) bool {
-	return segment.ReplyToID != nil && *segment.ReplyToID != "" && services.IsRecalled(context.Scene.ID, *segment.ReplyToID)
+func (s Services) eligible(context *TurnContext) (bool, error) {
+	if s.EligibleChecked != nil {
+		return s.EligibleChecked(context)
+	}
+	return s.Eligible(context), nil
+}
+func recalled(s Services, context *TurnContext, segment Segment) (bool, error) {
+	if segment.ReplyToID == nil || *segment.ReplyToID == "" {
+		return false, nil
+	}
+	if s.IsRecalledChecked != nil {
+		return s.IsRecalledChecked(context.Scene.ID, *segment.ReplyToID)
+	}
+	return s.IsRecalled(context.Scene.ID, *segment.ReplyToID), nil
+}
+func admissible(s Services, context *TurnContext, segment Segment) (bool, error) {
+	eligible, err := s.eligible(context)
+	if err != nil || !eligible {
+		return false, err
+	}
+	revoked, err := recalled(s, context, segment)
+	return !revoked, err
 }
 
 // DispatchSegment sends at most once. A non-cancellation validation failure is
@@ -208,7 +232,9 @@ func DispatchSegment(services Services, context *TurnContext, segment Segment, o
 		}
 		dispatch.finish(status, FlowDetails{ReceiptState: state, Reason: reason, Counts: map[string]int{"segmentIndex": index + 1, "segmentCount": total}, NextStep: nextStep(receipt, index, total)}, cause)
 	}()
-	if !services.Eligible(context) || recalled(services, context, segment) {
+	if valid, err := admissible(services, context, segment); err != nil {
+		return Receipt{}, failureOf(err)
+	} else if !valid {
 		return invalidated(), nil
 	}
 	typing := startFlow(services.Writer, "typing_delay", dispatch, context.Signal, FlowDetails{NextStep: "send_validation"})
@@ -226,7 +252,9 @@ func DispatchSegment(services Services, context *TurnContext, segment Segment, o
 		}
 		typing.finish("skipped", FlowDetails{Reason: reason, NextStep: "send_validation"}, nil)
 	}
-	if !services.Eligible(context) || recalled(services, context, segment) || guard.CheckGrounding([]Segment{segment}) {
+	if valid, err := admissible(services, context, segment); err != nil {
+		return Receipt{}, failureOf(err)
+	} else if !valid || guard.CheckGrounding([]Segment{segment}) {
 		return invalidated(), nil
 	}
 	validation := startFlow(services.Writer, "send_validation", dispatch, context.Signal, FlowDetails{NextStep: "adapter_send"})
@@ -249,7 +277,12 @@ func DispatchSegment(services Services, context *TurnContext, segment Segment, o
 	} else {
 		validation.finish("cancelled", FlowDetails{Reason: "send_invalidated", NextStep: "none"}, nil)
 	}
-	if !valid || !services.Eligible(context) || recalled(services, context, segment) {
+	if !valid {
+		return invalidated(), nil
+	}
+	if allowed, err := admissible(services, context, segment); err != nil {
+		return Receipt{}, failureOf(err)
+	} else if !allowed {
 		return invalidated(), nil
 	}
 	if context.Mode == "simulation" {
@@ -306,7 +339,18 @@ func sendOnce(services Services, context *TurnContext, segment Segment, guard Gu
 	receipt, failure = AwaitSendStage(func() *Future[Receipt] {
 		invoked = true
 		return adapter.Send(context.Scene, segment, context.Signal, func() error {
-			if !services.Eligible(context) || services.Adapter(context.Scene.AdapterID) != adapter || recalled(services, context, segment) || (transmitGuard != nil && !transmitGuard()) || guard.CheckGrounding([]Segment{segment}) {
+			eligible, err := services.eligible(context)
+			if err != nil {
+				return err
+			}
+			if !eligible || services.Adapter(context.Scene.AdapterID) != adapter {
+				return errors.New("send_invalidated")
+			}
+			revoked, err := recalled(services, context, segment)
+			if err != nil {
+				return err
+			}
+			if revoked || (transmitGuard != nil && !transmitGuard()) || guard.CheckGrounding([]Segment{segment}) {
 				return errors.New("send_invalidated")
 			}
 			return nil

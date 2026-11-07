@@ -104,10 +104,24 @@ func (r *Runtime) lifetime(c Settings) float64 {
 	}
 	return 60000
 }
-func (r *Runtime) recalled(s *sceneState, id string) bool {
+func (r *Runtime) recalled(s *sceneState, id string) (bool, error) {
 	v := s.view.Load()
 	if v.recalled[id] {
-		return true
+		return true, nil
 	}
 	return r.services.Authority.IsRecalled(v.scene, id)
+}
+
+func (r *Runtime) unrecalled(s *sceneState, messages []*Object) ([]*Object, error) {
+	out := make([]*Object, 0, len(messages))
+	for _, m := range messages {
+		recalled, err := r.recalled(s, idOf(m))
+		if err != nil {
+			return nil, err
+		}
+		if !recalled {
+			out = append(out, m)
+		}
+	}
+	return out, nil
 }

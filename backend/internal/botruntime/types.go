@@ -78,14 +78,18 @@ func DefaultSettings() Settings {
 // Recall invokes prepare before its root tombstone, apply after it, within the
 // same durable authority transaction. Even prepare failure must record the root
 // recall intent and quarantine unacknowledged state, matching Store.recall.
-type Authority interface {
+type ReadAuthority interface {
 	Ready() error
-	Observe(context.Context, Scene, *Object, *Object) (status string, trusted *Object, err error)
-	Recall(context.Context, Scene, string, func() (func() error, error), func() error) error
-	ValidateSources(Scene, []*Object, []string) bool
-	IsRecalled(Scene, string) bool
+	SceneParticipationEnabled(Scene) (bool, error)
+	ValidateSources(Scene, []*Object, []string) (bool, error)
+	IsRecalled(Scene, string) (bool, error)
 	PromptAuthority(Scene, []*Object) (any, error)
 	ProjectDisplay(Scene, []*Object, []string) ([]*Object, error)
+}
+type Authority interface {
+	ReadAuthority
+	Observe(context.Context, Scene, *Object, *Object) (status string, trusted *Object, err error)
+	Recall(context.Context, Scene, string, func(ReadAuthority) (func() error, error), func() error) error
 }
 
 type Completion struct {
@@ -121,6 +125,9 @@ type Extension struct {
 	Edited             func(*Object, *Object, Scene) error
 	PrepareRecall      func(string, string) (func() error, error)
 	Recalled           func(string, string) error
+	// Scoped hooks receive fixed reads of the recall transaction, never SQL.
+	PrepareRecallScoped func(ReadAuthority, string, string) (func() error, error)
+	RecalledScoped      func(ReadAuthority, string, string) error
 }
 type Hook struct {
 	ID       string
@@ -160,6 +167,7 @@ type TurnResult struct {
 	Counts                 map[string]int
 	Receipts               []dispatch.Receipt
 	Err                    error
+	CleanupErr             error
 }
 type TurnHandle struct {
 	Done   <-chan struct{}
@@ -257,7 +265,8 @@ type TurnContext struct {
 	owner               *turn
 	mu                  sync.Mutex
 	dependencies        map[string]bool
-	validations         []func() bool
+	dependencyOrder     []string
+	validations         []func(ReadAuthority) (bool, error)
 	sources             []*Object
 	sourceTimes         []float64
 	ImagePriorityIDs    []string // turn-owned; extension callbacks must not mutate
@@ -270,10 +279,17 @@ func (c *TurnContext) Signal() *dispatch.Signal {
 	}
 	return c.root
 }
-func (c *TurnContext) AddDependency(id string) { c.mu.Lock(); c.dependencies[id] = true; c.mu.Unlock() }
+func (c *TurnContext) AddDependency(id string) {
+	c.mu.Lock()
+	if !c.dependencies[id] {
+		c.dependencies[id] = true
+		c.dependencyOrder = append(c.dependencyOrder, id)
+	}
+	c.mu.Unlock()
+}
 func (c *TurnContext) AddValidation(f func() bool) {
 	c.mu.Lock()
-	c.validations = append(c.validations, f)
+	c.validations = append(c.validations, func(ReadAuthority) (bool, error) { return f(), nil })
 	c.mu.Unlock()
 }
 func (c *TurnContext) Sources() []*Object {
@@ -288,7 +304,15 @@ func (c *TurnContext) Sources() []*Object {
 func (c *TurnContext) Send(ctx context.Context, input any) ([]dispatch.Receipt, error) {
 	return c.owner.runtime.send(c.owner, ctx, input)
 }
-func (c *TurnContext) Eligible() bool { return c.owner.runtime.eligible(c) }
+func (c *TurnContext) Eligible() (bool, error) { return c.owner.runtime.eligible(c) }
+
+// AddScopedValidation receives the current read scope, including an active recall transaction.
+// A retained authority must not be used after the validation returns.
+func (c *TurnContext) AddScopedValidation(f func(ReadAuthority) (bool, error)) {
+	c.mu.Lock()
+	c.validations = append(c.validations, f)
+	c.mu.Unlock()
+}
 func (c *TurnContext) setSources(m []*Object) {
 	c.mu.Lock()
 	c.sources = append([]*Object{}, m...)
@@ -305,22 +329,25 @@ func (c *TurnContext) setSources(m []*Object) {
 func (c *TurnContext) setDependencies(base []string, m []*Object) {
 	c.mu.Lock()
 	c.dependencies = map[string]bool{}
+	c.dependencyOrder = nil
+	add := func(id string) {
+		if !c.dependencies[id] {
+			c.dependencies[id] = true
+			c.dependencyOrder = append(c.dependencyOrder, id)
+		}
+	}
 	for _, id := range base {
-		c.dependencies[id] = true
+		add(id)
 	}
 	for _, x := range m {
-		c.dependencies[idOf(x)] = true
+		add(idOf(x))
 	}
 	c.mu.Unlock()
 }
 func (c *TurnContext) dependencyIDs() []string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	r := []string{}
-	for id := range c.dependencies {
-		r = append(r, id)
-	}
-	return r
+	return append([]string{}, c.dependencyOrder...)
 }
 func newID() string {
 	var b [16]byte

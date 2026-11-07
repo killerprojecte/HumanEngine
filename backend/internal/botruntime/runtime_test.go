@@ -34,6 +34,9 @@ type testAuthority struct {
 func newTestAuthority() *testAuthority {
 	return &testAuthority{records: map[string]*Object{}, recalled: map[string]bool{}, revision: map[string]int{}}
 }
+func (a *testAuthority) SceneParticipationEnabled(s Scene) (bool, error) {
+	return s.ParticipationEnabled, nil
+}
 func (a *testAuthority) Ready() error { a.mu.Lock(); defer a.mu.Unlock(); return a.readyErr }
 func (a *testAuthority) Observe(_ context.Context, s Scene, m, edit *Object) (string, *Object, error) {
 	a.mu.Lock()
@@ -65,8 +68,8 @@ func (a *testAuthority) Observe(_ context.Context, s Scene, m, edit *Object) (st
 	a.writes++
 	return status, copy, nil
 }
-func (a *testAuthority) Recall(_ context.Context, s Scene, id string, prepare func() (func() error, error), apply func() error) error {
-	callback, err := prepare()
+func (a *testAuthority) Recall(_ context.Context, s Scene, id string, prepare func(ReadAuthority) (func() error, error), apply func() error) error {
+	callback, err := prepare(a)
 	a.mu.Lock()
 	a.recalled[s.ID+"|"+id] = true
 	a.writes++
@@ -79,36 +82,36 @@ func (a *testAuthority) Recall(_ context.Context, s Scene, id string, prepare fu
 	}
 	return callback()
 }
-func (a *testAuthority) ValidateSources(s Scene, rows []*Object, deps []string) bool {
+func (a *testAuthority) ValidateSources(s Scene, rows []*Object, deps []string) (bool, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if a.readyErr != nil {
-		return false
+		return false, nil
 	}
 	for _, id := range deps {
 		if a.recalled[s.ID+"|"+id] {
-			return false
+			return false, nil
 		}
 	}
 	for _, m := range rows {
 		key := s.ID + "|" + idOf(m)
 		if a.recalled[key] {
-			return false
+			return false, nil
 		}
 		if old := a.records[key]; old != nil {
 			oldRef, _ := jsjson.Stringify(get(old, "sourceEventRef"))
 			ref, _ := jsjson.Stringify(get(m, "sourceEventRef"))
 			if oldRef != ref {
-				return false
+				return false, nil
 			}
 		}
 	}
-	return true
+	return true, nil
 }
-func (a *testAuthority) IsRecalled(s Scene, id string) bool {
+func (a *testAuthority) IsRecalled(s Scene, id string) (bool, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.recalled[s.ID+"|"+id]
+	return a.recalled[s.ID+"|"+id], nil
 }
 func (a *testAuthority) PromptAuthority(s Scene, tools []*Object) (any, error) {
 	a.mu.Lock()
@@ -121,7 +124,7 @@ func (a *testAuthority) ProjectDisplay(s Scene, rows []*Object, _ []string) ([]*
 		return nil, e
 	}
 	for _, m := range rows {
-		if a.IsRecalled(s, idOf(m)) {
+		if recalled, _ := a.IsRecalled(s, idOf(m)); recalled {
 			_ = m.Set("parts", []any{})
 			_ = m.Set("status", "recalled")
 		}

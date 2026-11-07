@@ -116,7 +116,7 @@ func TestQueriesIngressRecallAndLateModelAreIndependent(t *testing.T) {
 			if snapshot.Active != 0 || len(snapshot.Messages) != 2 || get(snapshot.Messages[0], "status") != "recalled" {
 				t.Fatalf("late model resurrected state: %+v", snapshot)
 			}
-			if !a.IsRecalled(snapshot.Scene, "source") {
+			if recalled, _ := a.IsRecalled(snapshot.Scene, "source"); !recalled {
 				t.Fatal("durable source tombstone missing")
 			}
 		})

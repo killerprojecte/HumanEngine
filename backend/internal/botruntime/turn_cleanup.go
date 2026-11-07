@@ -4,16 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/killerprojecte/HumanEngine/backend/internal/turnwait"
-	"strings"
 )
 
 func (r *Runtime) finish(t *turn, issues int) {
-	c, s := t.context, t.state
-	ready := true
+	c := t.context
 	{
 		if err := r.services.Authority.Ready(); err != nil {
-			ready = false
-			if strings.HasPrefix(err.Error(), "recovery_") {
+			if contains([]string{"recovery_authority_head_changed", "recovery_authority_not_bound", "recovery_gate_invalid", "recovery_chain_invalid", "recovery_format_unsupported"}, err.Error()) {
 				c.root.Abort(code("recovery_quarantined"))
 			} else {
 				t.result.Status = "failed"
@@ -66,25 +63,55 @@ func (r *Runtime) finish(t *turn, issues int) {
 		}
 		t.result.Reason = "turn_tool_failures"
 	}
+	if t.result.Err == nil {
+		t.result.Err = failureFromOutcomes(receipts)
+	}
 	if t.result.Err == nil && len(t.toolIssues) > 0 {
 		t.result.Err = fmt.Errorf("turn_tool_failures: %w", errors.Join(t.toolIssues...))
 	}
 	t.result.Counts = counts
 	t.result.Receipts = receipts
 	r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: "turn", Status: t.result.Status, Reason: t.result.Reason, Counts: counts})
+	if err := r.cleanupTurn(t); err != nil {
+		t.result.CleanupErr = err
+		if t.result.Err == nil {
+			t.result.Err = err
+		}
+		r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: "turn_cleanup", Status: "failed", Reason: "turn_cleanup_failed"})
+	} else {
+		r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: "turn_cleanup", Status: "completed", Reason: "turn_cleanup_finished"})
+	}
+	close(t.done)
+}
+
+func (r *Runtime) cleanupTurn(t *turn) error {
+	c, s := t.context, t.state
 	t.sendMu.Lock()
 	t.guard = nil
 	t.sendMu.Unlock()
+	s.mu.Lock()
+	s.routing.Turns.Delete(c.TurnID)
+	r.publishLocked(s)
+	s.mu.Unlock()
 	c.root.Abort(code("turn_finished"))
 	s.mu.Lock()
 	s.historyDirty = true
-	s.routing.Turns.Delete(c.TurnID)
 	if s.tasks[t.topic.id] == t {
 		delete(s.tasks, t.topic.id)
 	}
 	pending := s.pending[t.topic.id]
 	delete(s.pending, t.topic.id)
-	if !ready {
+	r.publishLocked(s)
+	s.mu.Unlock()
+	// Ready occurs after native owner removal, exactly like source cleanup. No
+	// callback/SQL runs under the state mutex. Unknown failures stop cleanup here.
+	ready := true
+	if err := r.services.Authority.Ready(); err != nil {
+		if !contains([]string{"recovery_authority_head_changed", "recovery_authority_not_bound", "recovery_gate_invalid", "recovery_chain_invalid", "recovery_format_unsupported"}, err.Error()) {
+			return err
+		}
+		ready = false
+		s.mu.Lock()
 		if a := s.admissions[t.topic.id]; a != nil {
 			a.Cancel()
 		}
@@ -92,34 +119,61 @@ func (r *Runtime) finish(t *turn, issues int) {
 			ticket.timer.Stop()
 			delete(s.timers, t.topic.id)
 		}
+		r.publishLocked(s)
+		s.mu.Unlock()
 	}
+	s.mu.Lock()
 	if t.wake != nil {
 		if a := s.admissions[t.topic.id]; a != nil {
 			a.Finish(t.wake, turnwait.Result{WaitUntil: t.waitUntil})
 		}
 	}
-	_, adapterPresent := r.adapters.Load(c.Scene.AdapterID)
-	live := ready && !s.closed.Load() && r.state(c.Scene.ID) == s && s.scene.ParticipationEnabled && adapterPresent && c.Mode == "real"
-	if live {
-		if (pending || t.wake != nil) && s.timers[t.topic.id] == nil {
-			r.scheduleLocked(s, t.topic.id)
+	r.publishLocked(s)
+	s.mu.Unlock()
+	if ready && (pending || t.wake != nil) && c.Mode == "real" && r.state(c.Scene.ID) == s && !s.closed.Load() {
+		enabled, err := r.services.Authority.SceneParticipationEnabled(c.Scene)
+		if err != nil {
+			return err
 		}
-		for _, q := range s.queue.Entries() {
-			r.scheduleLocked(s, q.Key)
+		_, adapterPresent := r.adapters.Load(c.Scene.AdapterID)
+		if enabled && adapterPresent {
+			s.mu.Lock()
+			if s.timers[t.topic.id] == nil && s.admissions[t.topic.id] != nil {
+				r.scheduleLocked(s, t.topic.id)
+			}
+			r.publishLocked(s)
+			s.mu.Unlock()
 		}
 	}
 	if ready && c.Mode == "real" && !s.closed.Load() && r.state(c.Scene.ID) == s {
+		enabled, err := r.services.Authority.SceneParticipationEnabled(c.Scene)
+		if err != nil {
+			return err
+		}
+		_, adapterPresent := r.adapters.Load(c.Scene.AdapterID)
+		if enabled && adapterPresent {
+			s.mu.Lock()
+			for _, q := range s.queue.Entries() {
+				r.scheduleLocked(s, q.Key)
+			}
+			r.publishLocked(s)
+			s.mu.Unlock()
+		}
+	}
+	if ready && c.Mode == "real" && t.settings.TopicAdmissionEnabled && r.state(c.Scene.ID) == s && !s.closed.Load() {
+		if err := r.drainDeferred(s); err != nil {
+			return err
+		}
+	}
+	if c.Mode == "real" && ready && r.state(c.Scene.ID) == s && !s.closed.Load() {
+		s.mu.Lock()
 		if !t.settings.CacheEnabled && len(s.timers) == 0 {
 			r.clearBodiesLocked(s)
 		} else {
 			r.trimLocked(s, false)
 		}
+		r.publishLocked(s)
+		s.mu.Unlock()
 	}
-	r.publishLocked(s)
-	s.mu.Unlock()
-	if live && r.config().TopicAdmissionEnabled {
-		r.drainDeferred(s)
-	}
-	r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: "turn_cleanup", Status: "completed", Reason: "turn_cleanup_finished"})
-	close(t.done)
+	return nil
 }

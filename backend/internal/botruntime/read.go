@@ -29,7 +29,9 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 		requested := stringsOf(get(v, "ids"))
 		for _, id := range requested {
 			c.AddDependency(id)
-			if r.recalled(s, id) {
+			if recalled, err := r.recalled(s, id); err != nil {
+				return nil, err
+			} else if recalled {
 				continue
 			}
 			var cached *Object
@@ -117,11 +119,19 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 	}
 	selected := []any{}
 	for _, m := range items {
-		if get(m, "sceneId") == c.Scene.ID && !r.recalled(s, idOf(m)) {
-			selected = append(selected, r.normalize(m, c.Scene))
+		if get(m, "sceneId") == c.Scene.ID {
+			recalled, err := r.recalled(s, idOf(m))
+			if err != nil {
+				return nil, err
+			}
+			if !recalled {
+				selected = append(selected, r.normalize(m, c.Scene))
+			}
 		}
 	}
-	if !r.eligible(c) {
+	if valid, err := r.eligible(c); err != nil {
+		return nil, err
+	} else if !valid {
 		return obj("items", []any{}, "coverage", "unavailable", "reason", "context_cancelled"), nil
 	}
 	_ = result.Set("items", selected)

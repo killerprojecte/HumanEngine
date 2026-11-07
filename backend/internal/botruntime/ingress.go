@@ -34,8 +34,11 @@ func (r *Runtime) Ingest(ctx context.Context, sceneID string, message *Object, s
 	if get(m, "sceneId") != sceneID || get(m, "origin") == "history" {
 		return "", nil
 	}
-	if s.closed.Load() || r.recalled(s, idOf(m)) {
+	if s.closed.Load() {
 		return "", nil
+	}
+	if recalled, err := r.recalled(s, idOf(m)); err != nil || recalled {
+		return "", err
 	}
 	s.mu.Lock()
 	duplicate := s.byID[idOf(m)] != nil
@@ -88,7 +91,7 @@ func (r *Runtime) accept(s *sceneState, m *Object, schedule, received bool) (str
 	r.publishLocked(s)
 	s.mu.Unlock()
 	if err == nil {
-		r.drainDeferred(s)
+		err = r.drainDeferred(s)
 	}
 	return id, err
 }
@@ -150,7 +153,9 @@ func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Objec
 			}
 		}
 	}
-	r.cancelInvalidDerived("source_edited")
+	if err := r.cancelInvalidDerived("source_edited", r.services.Authority); err != nil {
+		return status, err
+	}
 	_, err = r.accept(s, cloneJSON(current).(*Object), schedule, true)
 	return status, err
 }
@@ -162,11 +167,17 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 	s.ingress.Lock()
 	defer s.ingress.Unlock()
 	scene := s.view.Load().scene
-	prepare := func() (func() error, error) {
+	prepare := func(authority ReadAuthority) (func() error, error) {
 		callbacks := []func() error{}
 		for _, e := range r.exts() {
-			if e.PrepareRecall != nil {
-				f, err := e.PrepareRecall(sceneID, id)
+			if e.PrepareRecallScoped != nil || e.PrepareRecall != nil {
+				var f func() error
+				var err error
+				if e.PrepareRecallScoped != nil {
+					f, err = e.PrepareRecallScoped(authority, sceneID, id)
+				} else {
+					f, err = e.PrepareRecall(sceneID, id)
+				}
 				if err != nil {
 					return nil, err
 				}
@@ -175,9 +186,14 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 					continue
 				}
 			}
-			if e.Recalled != nil {
+			if e.RecalledScoped != nil || e.Recalled != nil {
 				extension := e
-				callbacks = append(callbacks, func() error { return extension.Recalled(sceneID, id) })
+				callbacks = append(callbacks, func() error {
+					if extension.RecalledScoped != nil {
+						return extension.RecalledScoped(authority, sceneID, id)
+					}
+					return extension.Recalled(sceneID, id)
+				})
 			}
 		}
 		return func() error {
@@ -186,7 +202,7 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 					return err
 				}
 			}
-			return nil
+			return r.cancelInvalidDerived("derived_source_recalled", authority)
 		}, nil
 	}
 	apply := func() error {
@@ -235,12 +251,12 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 	} else {
 		err = r.services.Authority.Recall(ctx, scene, id, prepare, apply)
 	}
-	if err == nil {
-		r.cancelInvalidDerived("derived_source_recalled")
+	if err == nil && scene.Kind == "simulation" {
+		err = r.cancelInvalidDerived("derived_source_recalled", r.services.Authority)
 	}
 	return err
 }
-func (r *Runtime) cancelInvalidDerived(reason string) {
+func (r *Runtime) cancelInvalidDerived(reason string, authority ReadAuthority) (err error) {
 	r.scenes.Range(func(_, v any) bool {
 		s := v.(*sceneState)
 		s.mu.Lock()
@@ -251,10 +267,15 @@ func (r *Runtime) cancelInvalidDerived(reason string) {
 		s.mu.Unlock()
 		for _, t := range turns {
 			t.context.mu.Lock()
-			checks := append([]func() bool{}, t.context.validations...)
+			checks := append([]func(ReadAuthority) (bool, error){}, t.context.validations...)
 			t.context.mu.Unlock()
 			for _, f := range checks {
-				if !f() {
+				valid, e := f(authority)
+				if e != nil {
+					err = e
+					return false
+				}
+				if !valid {
 					t.context.root.Abort(code(reason))
 					break
 				}
@@ -262,4 +283,5 @@ func (r *Runtime) cancelInvalidDerived(reason string) {
 		}
 		return true
 	})
+	return err
 }

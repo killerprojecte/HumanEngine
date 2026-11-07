@@ -232,7 +232,9 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 	hooks := append([]Hook{}, r.hooks...)
 	r.extensionMu.RUnlock()
 	for _, hook := range hooks {
-		if !r.eligible(c) {
+		if valid, err := r.eligible(c); err != nil {
+			return observed, err
+		} else if !valid {
 			appendReceipt(dispatch.Receipt{Status: dispatch.Cancelled})
 			return observed, nil
 		}
@@ -285,7 +287,9 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 	dc := &dispatch.TurnContext{Scene: c.Scene.SceneRef, Mode: c.Mode, TurnID: c.TurnID, Signal: signal}
 	services := dispatch.Services{Writer: dispatch.FlowWriterFunc(func(e dispatch.FlowEvent) {
 		r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: e.Stage, Status: e.Status, Reason: e.Reason, Counts: e.Counts})
-	}), Eligible: func(d *dispatch.TurnContext) bool { return !d.Signal.Aborted() && r.eligible(c) }, IsRecalled: func(_ string, id string) bool { return r.recalled(t.state, id) }, Adapter: func(id string) *dispatch.Adapter {
+	}), EligibleChecked: func(d *dispatch.TurnContext) (bool, error) {
+		return r.eligibleSignal(c, d.Signal)
+	}, IsRecalledChecked: func(_ string, id string) (bool, error) { return r.recalled(t.state, id) }, Adapter: func(id string) *dispatch.Adapter {
 		if a, ok := r.adapters.Load(id); ok {
 			return a.(*Adapter).Transport
 		}
@@ -299,7 +303,13 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 	}, Validate: func(request dispatch.ValidationRequest, _ *dispatch.Signal) *dispatch.Future[bool] {
 		if t.topic.version.Load() == g.version {
 			version := t.topic.version.Load()
-			valid := r.eligible(c) && t.topic.version.Load() == version
+			valid, err := r.eligible(c)
+			if err != nil {
+				future := dispatch.NewFuture[bool]()
+				future.Reject(err)
+				return future
+			}
+			valid = valid && t.topic.version.Load() == version
 			if valid {
 				g.mu.Lock()
 				g.validated = version
@@ -435,7 +445,11 @@ func (r *Runtime) validateSend(t *turn, g *sendGuard, request dispatch.Validatio
 		c.AddDependency(idOf(m))
 	}
 	expected := t.topic.version.Load()
-	if !r.eligible(c) || t.topic.version.Load() != expected {
+	validNow, err := r.eligible(c)
+	if err != nil {
+		return false, err
+	}
+	if !validNow || t.topic.version.Load() != expected {
 		return false, nil
 	}
 	g.mu.Lock()

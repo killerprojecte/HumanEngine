@@ -4,6 +4,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/topicroute"
 	"github.com/killerprojecte/HumanEngine/backend/internal/turnwait"
 	"math"
+	"strings"
 )
 
 func (r *Runtime) protectedLocked(s *sceneState, id string) bool {
@@ -225,20 +226,29 @@ func (r *Runtime) waitConfig() turnwait.Config {
 	c := r.config()
 	return turnwait.Config{QuietMS: math.Min(c.DebounceMS, c.MaxWaitMS), MaxWaitMS: c.MaxWaitMS, AddressedQuietMS: math.Min(c.DebounceMS, 500), MaxModelWaitMS: 60000, MaxPending: 60}
 }
-func (r *Runtime) drainDeferred(s *sceneState) {
+func (r *Runtime) drainDeferred(s *sceneState) (err error) {
+	defer func() {
+		if err != nil && strings.HasPrefix(err.Error(), "recovery_") {
+			err = nil
+		}
+	}()
 	if !r.config().TopicAdmissionEnabled || s.closed.Load() {
-		return
+		return nil
+	}
+	if err := r.services.Authority.Ready(); err != nil {
+		return err
 	}
 	scene := s.view.Load().scene
-	if !scene.ParticipationEnabled {
-		return
+	enabled, err := r.services.Authority.SceneParticipationEnabled(scene)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return nil
 	}
 	if scene.Kind != "simulation" {
 		if _, ok := r.adapters.Load(scene.AdapterID); !ok {
-			return
-		}
-		if r.services.Authority.Ready() != nil {
-			return
+			return nil
 		}
 	}
 	s.mu.Lock()
@@ -254,9 +264,18 @@ func (r *Runtime) drainDeferred(s *sceneState) {
 			}
 		}
 		s.mu.Unlock()
-		valid := message != nil && !r.recalled(s, p.Key)
-		if valid && scene.Kind != "simulation" {
-			valid = r.services.Authority.ValidateSources(scene, []*Object{message}, nil)
+		valid := message != nil
+		var err error
+		if valid {
+			var recalled bool
+			recalled, err = r.recalled(s, p.Key)
+			valid = !recalled
+		}
+		if err == nil && valid && scene.Kind != "simulation" {
+			valid, err = r.services.Authority.ValidateSources(scene, []*Object{message}, nil)
+		}
+		if err != nil {
+			return err
 		}
 		s.mu.Lock()
 		if !valid {
@@ -267,4 +286,5 @@ func (r *Runtime) drainDeferred(s *sceneState) {
 		r.publishLocked(s)
 		s.mu.Unlock()
 	}
+	return nil
 }

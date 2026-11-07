@@ -239,3 +239,37 @@ restore or witness reconciliation. Runtime enrollment, snapshot qualification,
 root recall composition and the source recovery adapter remain separate integration
 work. This checkpoint does not enable a production Go backend or establish full
 bot/provider/plugin parity.
+
+## Runtime source authority integration
+
+`sourceevents.RuntimeAuthority` now implements the runtime contract over real
+SQLite and durable authority, rather than a permissive test guard. It preserves
+enrollment flags, forged-reference stripping, ordered edits, exact body hashes,
+source snapshots, display projection, raw prompt authority and persisted scene
+participation. Scoped recall callbacks see the same uncommitted main transaction
+without exposing SQL or installing a global active-session bypass.
+
+The integration distinguishes an ordinary false eligibility result from a failed
+source read. Explicit checked planner/dispatch ports preserve errors at their
+original boundaries, including unknown delivery after adapter invocation and
+authoritative receipts already returned. Only the original readiness catch turns
+an exception into false. Dependency insertion order, empty-dependency shortcuts,
+source-validation installation order and the source's exact cleanup error cases
+are retained. Hidden ordered receipt causes remain available to diagnostics and
+never enter public receipt JSON.
+
+Actual TypeScript oracles include four ingress/edit/recall traces, twelve failure
+windows, two cleanup-state cases, four callback/dependency mutation cases, an
+actual durable recall/derived-validation rollback and thirty raw scene/identity
+row probes. Derived validations run inside recall before ACK, with an explicit
+scoped read authority; dependency and cancellation changes affect the same
+eligibility evaluation. Native
+tests exercise real dual-database authority, callback expiry, preparation/apply
+failures, snapshot isolation, raw prompt changes and single-failure receipt cause
+identity. These are functional and work-count checks, not a claim that all backend
+performance costs have been eliminated.
+
+Remaining work includes ingress discovery and identity writes at their original
+pre-duplicate/pre-recall position, memory privacy derivations joining recall,
+provider/plugin/adapter composition, offline reconciliation and production API
+startup. This checkpoint does not make the preview a production replacement.

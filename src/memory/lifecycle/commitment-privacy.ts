@@ -1,4 +1,5 @@
 import { isDeepStrictEqual } from 'node:util'
+import { captureCommitmentPrivacySnapshot } from '../recovery/ledger.ts'
 import type { Store } from '../../store.ts'
 import type { CommitmentService } from '../commitments/service.ts'
 import type { CommitmentContext, CommitmentEvidence, CommitmentRef } from '../domain/commitments.ts'
@@ -9,7 +10,7 @@ import type { MemoryRevisionCoordinator } from '../write/revision-coordinator.ts
 export class CommitmentPrivacy {
   private commitmentRequalifications?: ReadonlyMap<string, CommitmentRef>
   constructor(
-    private readonly store: Pick<Store, 'recalled'>,
+    private readonly store: Store,
     private readonly repository: AssertionRepository,
     private readonly authority: AssertionAuthority,
     private readonly revisions: MemoryRevisionCoordinator,
@@ -36,21 +37,7 @@ export class CommitmentPrivacy {
   }
   /** Privacy maintenance is independent of feature/learning flags and never starts models. */
   capture() {
-    const refs = new Map<string, CommitmentRef>()
-    for (const record of this.repository.all()) {
-      if (record.scope.kind !== 'scene') continue
-      const state = this.revisions.history.state(record.id)
-      if (state.deleted || state.version < 1) continue
-      const ref = { id: record.id, version: state.version, deletionEpoch: state.deletionEpoch }
-      if (
-        this.authority.relationAuthority(
-          { sceneId: record.scope.sceneId, simulation: false, provenance: 'source-only' },
-          ref,
-        )
-      )
-        refs.set(record.id, ref)
-    }
-    return refs
+    return captureCommitmentPrivacySnapshot(this.store)
   }
   refresh(before: ReadonlyMap<string, CommitmentRef> = new Map()) {
     this.revisions.checkpoint()

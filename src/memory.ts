@@ -47,7 +47,7 @@ import { createParentTraversal } from './memory/read/bound-parents.ts'
 import { domainSourceCurrent } from './memory/read/domain-source-events.ts'
 import { memorySearchTerms } from './memory/read/lexical.ts'
 import { assertionScopeFilter } from './memory/read/scope.ts'
-import { searchMemorySnapshot } from './memory/recovery/ledger.ts'
+import { listMemorySnapshot, searchMemorySnapshot } from './memory/recovery/ledger.ts'
 import { recordCommitmentMutation } from './memory/recovery/commitments.ts'
 import { RelationCandidates } from './memory/relations/candidates.ts'
 import {
@@ -486,24 +486,22 @@ export class MemoryService {
   list(ctx: MemoryContext, personId?: string): MemoryRecord[] {
     this.store.assertRecoveryReady()
     if (!ctx.simulation) this.lifecycleCommands.refreshSupport()
-    return this.scopedRows(ctx, personId)
-      .map(read)
-      .filter(
-        (record) => this.authority.supported(record) && this.authority.currentApplicable(record),
-      )
-      .map((record) => this.authority.sanitize(record))
+    return listMemorySnapshot(this.store, {
+      sceneId: ctx.sceneId,
+      simulation: ctx.simulation,
+      personId,
+    })
   }
   /** Exact-ID optimization only; every call retains list's fresh lifecycle and
    * authorization boundary. IDs are not authority and no result prefix is applied. */
   listByIds(ctx: MemoryContext, ids: readonly string[]): MemoryRecord[] {
     this.store.assertRecoveryReady()
     if (!ctx.simulation) this.lifecycleCommands.refreshSupport()
-    return this.scopedRows(ctx, undefined, ids)
-      .map(read)
-      .filter(
-        (record) => this.authority.supported(record) && this.authority.currentApplicable(record),
-      )
-      .map((record) => this.authority.sanitize(record))
+    return listMemorySnapshot(this.store, {
+      sceneId: ctx.sceneId,
+      simulation: ctx.simulation,
+      ids: Array.from(ids),
+    })
   }
   /** Read-only views; authoritative filtering remains in list(), never in a cache. */
   people(ctx: MemoryContext) {
@@ -1068,18 +1066,6 @@ export class MemoryService {
   ): { sql: string; params: string[] } | undefined {
     this.store.assertRecoveryReady()
     return assertionScopeFilter(ctx, personId)
-  }
-  private scopedRows(ctx: MemoryContext, personId?: string, ids?: readonly string[]): Row[] {
-    const scope = this.scopeFilter(ctx, personId)
-    if (!scope) return []
-    return this.store.db
-      .prepare(
-        `SELECT memories.* FROM ${ids === undefined ? 'memories' : 'json_each(?) AS wanted CROSS JOIN memories'} WHERE ${ids === undefined ? '' : 'memories.id=wanted.value AND '}${scope.sql} AND json_extract(memories.value,'$.internalUse') IS NULL AND COALESCE(json_extract(memories.value,'$.lineageStatus'),'') != 'quarantined' AND json_extract(memories.value,'$.status') IN ('active','disputed') AND (json_extract(memories.value,'$.validFrom') IS NULL OR julianday(json_extract(memories.value,'$.validFrom')) <= julianday('now')) AND (json_extract(memories.value,'$.validUntil') IS NULL OR julianday(json_extract(memories.value,'$.validUntil')) > julianday('now')) ORDER BY memories.rowid DESC`,
-      )
-      .all(
-        ...(ids === undefined ? [] : [JSON.stringify([...new Set(ids)])]),
-        ...scope.params,
-      ) as Row[]
   }
 
   subjectEvidence(ctx: MemoryContext, id: string) {

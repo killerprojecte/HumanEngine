@@ -1,3 +1,6 @@
+import { readMemoryList, type MemoryListRead } from '../read/list.ts'
+import { readCommitmentPrivacy } from '../read/commitment-privacy.ts'
+import type { CommitmentRef } from '../domain/commitments.ts'
 import type { Message } from '../../onebot.ts'
 import type { Store } from '../../store.ts'
 import type { RuntimeMessage } from '../../runtime.ts'
@@ -589,6 +592,20 @@ export function searchMemorySnapshot(store: Store, input: MemorySearchRead): Mem
   return validateFixedReads(store, { kind: 'memory-search', search })
 }
 
+/** Exact pre-mutation references only. The fixed implementation accepts no caller
+ * callback, and restores write access before returning to the recall transaction. */
+export function captureCommitmentPrivacySnapshot(store: Store): Map<string, CommitmentRef> {
+  return validateFixedReads(store, { kind: 'commitment-privacy' })
+}
+
+/** Listing reads run after lifecycle maintenance; no write callback is accepted. */
+export function listMemorySnapshot(store: Store, input: MemoryListRead): MemoryRecord[] {
+  const list = structuredClone(input)
+  return validateFixedReads(store, { kind: 'memory-list', list })
+}
+
+type ListReads = { kind: 'memory-list'; list: MemoryListRead }
+type CommitmentPrivacyReads = { kind: 'commitment-privacy' }
 type SearchReads = { kind: 'memory-search'; search: MemorySearchRead }
 type DisplayReads = {
   sceneId: string
@@ -602,45 +619,61 @@ type DomainSourceReads = { kind: 'domain-sources'; sources: readonly MemorySourc
 function validateFixedReads(store: Store, input: DisplayReads): RuntimeMessage[]
 function validateFixedReads(store: Store, input: FixedSourceReads): boolean
 function validateFixedReads(store: Store, input: DomainSourceReads): boolean[]
-function validateFixedReads(store: Store, input: SearchReads): MemoryRecord[]
+function validateFixedReads(store: Store, input: SearchReads | ListReads): MemoryRecord[]
+function validateFixedReads(store: Store, input: CommitmentPrivacyReads): Map<string, CommitmentRef>
 function validateFixedReads(
   store: Store,
-  input: FixedSourceReads | DomainSourceReads | DisplayReads | SearchReads,
-): boolean | boolean[] | RuntimeMessage[] | MemoryRecord[] {
+  input:
+    | FixedSourceReads
+    | DomainSourceReads
+    | DisplayReads
+    | SearchReads
+    | ListReads
+    | CommitmentPrivacyReads,
+): boolean | boolean[] | RuntimeMessage[] | MemoryRecord[] | Map<string, CommitmentRef> {
   const db = store.db
   const authority = bindings.get(db)
   const read = () =>
-    input.kind === 'memory-search'
-      ? readMemorySearch(store, input.search)
-      : input.kind === 'sources'
-        ? input.messages.every((message) => currentSourceSnapshot(store, message))
-        : input.kind === 'dependencies'
-          ? input.ids.every((id) => !store.recalled(input.sceneId, id))
-          : input.kind === 'domain-sources'
-            ? input.sources.map((source) => domainSourceCurrent(store, source))
-            : input.kind === 'remote-history-display'
-              ? input.messages
-                  .filter(
-                    (message) =>
-                      message.sceneId === input.sceneId &&
-                      !input.recalled.has(message.id) &&
-                      !store.recalled(input.sceneId, message.id),
-                  )
-                  .slice(-30)
-                  .map((message) =>
-                    store.presentMessage(normalizeBotMessage(message as Message, input.botUserId)),
-                  )
-              : input.messages.map((message) =>
-                  input.recalled.has(message.id) || store.recalled(input.sceneId, message.id)
-                    ? { ...message, parts: [], status: 'recalled' as const }
-                    : message.origin === 'simulation'
-                      ? message
-                      : store.presentMessage(message as Message),
-                )
-  // Preserve nested callers and nonstandard configurations without reducing any checks.
+    input.kind === 'memory-list'
+      ? readMemoryList(store, input.list)
+      : input.kind === 'commitment-privacy'
+        ? readCommitmentPrivacy(store)
+        : input.kind === 'memory-search'
+          ? readMemorySearch(store, input.search)
+          : input.kind === 'sources'
+            ? input.messages.every((message) => currentSourceSnapshot(store, message))
+            : input.kind === 'dependencies'
+              ? input.ids.every((id) => !store.recalled(input.sceneId, id))
+              : input.kind === 'domain-sources'
+                ? input.sources.map((source) => domainSourceCurrent(store, source))
+                : input.kind === 'remote-history-display'
+                  ? input.messages
+                      .filter(
+                        (message) =>
+                          message.sceneId === input.sceneId &&
+                          !input.recalled.has(message.id) &&
+                          !store.recalled(input.sceneId, message.id),
+                      )
+                      .slice(-30)
+                      .map((message) =>
+                        store.presentMessage(
+                          normalizeBotMessage(message as Message, input.botUserId),
+                        ),
+                      )
+                  : input.messages.map((message) =>
+                      input.recalled.has(message.id) || store.recalled(input.sceneId, message.id)
+                        ? { ...message, parts: [], status: 'recalled' as const }
+                        : message.origin === 'simulation'
+                          ? message
+                          : store.presentMessage(message as Message),
+                    )
+  const mayNestMain = input.kind === 'commitment-privacy' || input.kind === 'memory-list'
+  // Only fixed read implementations may nest within the main write transaction.
+  // Every other nested caller and nonstandard configuration keeps its original checks.
   if (
     !authority ||
-    db.inTransaction ||
+    (mayNestMain && maintenanceConnections.has(db)) ||
+    (db.inTransaction && !mayNestMain) ||
     authority.db.inTransaction ||
     db.pragma('journal_mode', { simple: true }) !== 'wal' ||
     authority.db.pragma('journal_mode', { simple: true }) !== 'delete' ||
@@ -648,7 +681,7 @@ function validateFixedReads(
     authority.db.pragma('query_only', { simple: true }) !== 0
   )
     return read()
-  let result: boolean | boolean[] | RuntimeMessage[] | MemoryRecord[]
+  let result: boolean | boolean[] | RuntimeMessage[] | MemoryRecord[] | Map<string, CommitmentRef>
   try {
     db.pragma('query_only = ON')
     authority.db.pragma('query_only = ON')
@@ -678,14 +711,16 @@ function validateFixedReads(
     })()
   } finally {
     sourceReadScopes.delete(authority)
-    // Transactions have ended before restoring writes, including exceptional paths.
+    // The owned read transaction/savepoint has ended before restoring writes.
+    // An enclosing recall transaction remains owned by its caller.
     try {
       authority.db.pragma('query_only = OFF')
     } finally {
       db.pragma('query_only = OFF')
     }
   }
-  // A fresh full check after releasing both snapshots: no permission survives this call.
+  // A fresh full check after releasing the authority lock: no scope survives this call.
+  // An enclosing main transaction retains its own snapshot and will recheck before writes.
   assertRecoveryReady(db)
   return result
 }

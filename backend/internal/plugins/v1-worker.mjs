@@ -1,5 +1,57 @@
 import { parentPort, workerData } from 'node:worker_threads'
 import { pathToFileURL } from 'node:url'
+import { registerHooks } from 'node:module'
+// Resolve only deployment-supplied exact module URLs, never a basename or suffix.
+// All aliases and the bridge itself load this one source-derived SDK instance.
+const sdkURL = 'humanengine:v1-model-protocols'
+const sdkAliases = new Set(
+  (workerData.modelProtocolModuleURLs ?? []).map((url) => new URL(url).href),
+)
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    let candidate
+    try {
+      candidate = /^(?:\.{1,2}\/|\/)/.test(specifier)
+        ? new URL(specifier, context.parentURL).href
+        : new URL(specifier).href
+    } catch {}
+    if (specifier === sdkURL || sdkAliases.has(candidate))
+      return { url: sdkURL, shortCircuit: true }
+    const resolved = nextResolve(specifier, context)
+    return sdkAliases.has(resolved.url) ? { url: sdkURL, shortCircuit: true } : resolved
+  },
+  load(url, context, nextLoad) {
+    return url === sdkURL
+      ? { format: 'module', source: workerData.modelProtocolSDK, shortCircuit: true }
+      : nextLoad(url, context)
+  },
+})
+const { ModelProtocolError } = await import(sdkURL)
+const privateProtocolFailure = (error) => {
+  const value = classifyProtocolFailure(error)
+  if (!value) return undefined
+  // Runtime mutations retain the source retry decision, but arbitrary status
+  // strings/objects cannot smuggle provider URLs, response bodies or credentials.
+  const result = { code: 'provider_request_failed', retryable: value.retryable === true }
+  if (Number.isSafeInteger(value.status)) {
+    result.status = value.status
+    if (value.status) result.code = `provider_http_${value.status}`
+  }
+  if (
+    [
+      'protocol_configuration_error',
+      'provider_timeout',
+      'memory_read_disabled',
+      'memory_read_revoked',
+      'personalization_disabled',
+    ].includes(value.code)
+  )
+    result.code = value.code
+  // Strings and objects are ignored by source retryDelay, not coerced. Preserve
+  // nonfinite numbers privately without JSON's NaN/Infinity -> null conversion.
+  if (typeof value.retryAfterMs === 'number') result.retryAfterMs = String(value.retryAfterMs)
+  return result
+}
 // All console output is diagnostic; stdout belongs to the host protocol.
 console.log = (...args) => console.error(...args)
 const failureMessage = (error) => {
@@ -139,7 +191,22 @@ parentPort.on('message', async (message) => {
         }
         args[0] = freeze(args[0])
       }
-      const result = await Reflect.apply(callback.handler, callback.receiver, args)
+      let result
+      try {
+        result = await Reflect.apply(callback.handler, callback.receiver, args)
+      } catch (error) {
+        if (callback.kind !== 'modelMethod' || signal.aborted) throw error
+        // Only adapter execution is inside legacy invokeProtocol's catch. Output
+        // serialization and continuation getters below are outside that boundary.
+        const protocolFailure = privateProtocolFailure(error)
+        parentPort.postMessage({
+          id: message.id,
+          failed: true,
+          error: 'model_protocol_failure',
+          protocolFailure,
+        })
+        return
+      }
       if (signal.aborted) throw Error('plugin_call_cancelled')
       if (completion) {
         if (!result || typeof result !== 'object' || Array.isArray(result))

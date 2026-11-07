@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/url"
 	"os/exec"
 	"strconv"
 	"sync"
@@ -22,13 +23,20 @@ var nodeConfigSource string
 //go:embed v1-worker.mjs
 var nodeWorkerSource string
 
+//go:embed v1-model-protocol-sdk.mjs
+var nodeModelProtocolSDK string
+
+//go:embed v1-model-error-classify.mjs
+var nodeModelErrorClassifier string
+
 type nodeReply struct {
-	ID     string          `json:"id"`
-	Result json.RawMessage `json:"result"`
-	Failed bool            `json:"failed"`
-	Error  string          `json:"error"`
-	Event  string          `json:"event"`
-	Plugin string          `json:"plugin"`
+	ID              string           `json:"id"`
+	Result          json.RawMessage  `json:"result"`
+	Failed          bool             `json:"failed"`
+	Error           string           `json:"error"`
+	Event           string           `json:"event"`
+	Plugin          string           `json:"plugin"`
+	ProtocolFailure *protocolFailure `json:"protocolFailure"`
 }
 type nodeProcess struct {
 	cmd        *exec.Cmd
@@ -59,18 +67,40 @@ type nodeLease struct {
 	err               error
 }
 type V1Host struct {
-	lifecycle        sync.Mutex
-	process          *nodeProcess
-	enabled          map[string]*nodeLease
-	sequence         uint64
-	registrySequence uint64
-	node             string
-	diagnostics      io.Writer
-	closed           bool
+	lifecycle               sync.Mutex
+	process                 *nodeProcess
+	enabled                 map[string]*nodeLease
+	sequence                uint64
+	registrySequence        uint64
+	node                    string
+	diagnostics             io.Writer
+	closed                  bool
+	modelProtocolModuleURLs []string
 }
 
 func NewV1Host(node string, diagnostics io.Writer) *V1Host {
 	return &V1Host{node: node, diagnostics: diagnostics, enabled: map[string]*nodeLease{}}
+}
+
+// V1HostOptions supplies deployment-owned resolution, not plugin metadata.
+// Module URLs must identify the actual legacy model-protocols SDK entry points.
+// No basename/path inference or runtime repository dependency is introduced.
+type V1HostOptions struct {
+	ModelProtocolModuleURLs []string
+}
+
+// NewV1HostWithOptions retains lazy startup even with explicit SDK aliases.
+// The original constructor remains valid and installs no deployment aliases.
+func NewV1HostWithOptions(node string, diagnostics io.Writer, options V1HostOptions) (*V1Host, error) {
+	h := NewV1Host(node, diagnostics)
+	for _, value := range options.ModelProtocolModuleURLs {
+		parsed, err := url.Parse(value)
+		if err != nil || !parsed.IsAbs() || parsed.Scheme == "" || parsed.User != nil {
+			return nil, errors.New("invalid_model_protocol_module_url")
+		}
+		h.modelProtocolModuleURLs = append(h.modelProtocolModuleURLs, value)
+	}
+	return h, nil
 }
 func (h *V1Host) PID() int {
 	h.lifecycle.Lock()
@@ -85,7 +115,7 @@ func (h *V1Host) PID() int {
 		return h.process.cmd.Process.Pid
 	}
 }
-func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorkerExit func(*nodeProcess, string)) (*nodeProcess, error) {
+func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorkerExit func(*nodeProcess, string), moduleURLs []string) (*nodeProcess, error) {
 	cmd := exec.Command(node, "--input-type=module", "--eval", nodeHostSource)
 	cmd.Stderr = diagnostics
 	input, err := cmd.StdinPipe()
@@ -138,7 +168,7 @@ func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorker
 		p.write.Unlock()
 	}()
 	go p.writeLoop()
-	if _, err = p.call(ctx, map[string]any{"op": "initialize", "source": nodeConfigSource + "\n" + nodeWorkerSource}); err != nil {
+	if _, err = p.call(ctx, map[string]any{"op": "initialize", "source": nodeConfigSource + "\n" + nodeModelErrorClassifier + "\n" + nodeWorkerSource, "modelProtocolSDK": nodeModelProtocolSDK, "modelProtocolModuleURLs": moduleURLs}); err != nil {
 		input.Close()
 		<-p.done
 		return nil, err
@@ -236,7 +266,7 @@ func (c *pendingNodeCall) wait(ctx context.Context) (json.RawMessage, error) {
 		select {
 		case reply := <-c.reply:
 			if reply.Failed {
-				return nil, fmt.Errorf("V1 plugin: %s", reply.Error)
+				return nil, nodeReplyError(reply)
 			}
 			return reply.Result, nil
 		default:
@@ -244,7 +274,7 @@ func (c *pendingNodeCall) wait(ctx context.Context) (json.RawMessage, error) {
 		}
 	case reply := <-c.reply:
 		if reply.Failed {
-			return nil, fmt.Errorf("V1 plugin: %s", reply.Error)
+			return nil, nodeReplyError(reply)
 		}
 		return reply.Result, nil
 	}
@@ -298,7 +328,7 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 		return nil, errors.New("plugin_already_loaded")
 	}
 	if h.process == nil {
-		h.process, err = startNode(ctx, h.node, h.diagnostics, h.workerExited)
+		h.process, err = startNode(ctx, h.node, h.diagnostics, h.workerExited, h.modelProtocolModuleURLs)
 		if err != nil {
 			h.lifecycle.Unlock()
 			return nil, err

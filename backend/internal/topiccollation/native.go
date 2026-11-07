@@ -9,7 +9,6 @@ package topiccollation
 import "C"
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"math"
 	"runtime"
@@ -18,12 +17,8 @@ import (
 	"unsafe"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/nodeicu"
 )
-
-var initialize struct {
-	sync.Once
-	err error
-}
 
 // Collator owns an immutable ICU collator. Compare and Close can be used
 // concurrently. Close releases its native resources and is idempotent.
@@ -40,23 +35,10 @@ func New(sourceResolvedLocale string) (*Collator, error) {
 	if sourceResolvedLocale == "" || strings.ContainsRune(sourceResolvedLocale, 0) {
 		return nil, ErrLocale
 	}
-	initialize.Do(func() {
-		if C.he_icu_data_length() != 33107952 {
-			initialize.err = fmt.Errorf("topiccollation: bundled ICU data length mismatch")
-			return
-		}
-		data := unsafe.Slice((*byte)(unsafe.Pointer(C.he_icu_data())), 33107952)
-		if fmt.Sprintf("%x", sha256.Sum256(data)) != DataSHA256 {
-			initialize.err = fmt.Errorf("topiccollation: bundled ICU data checksum mismatch")
-			return
-		}
-		if code := C.he_icu_initialize(); code > 0 {
-			initialize.err = fmt.Errorf("topiccollation: ICU initialization: %s", C.GoString(C.he_icu_error(code)))
-		}
-	})
-	if initialize.err != nil {
-		return nil, initialize.err
+	if err := nodeicu.Ensure(); err != nil {
+		return nil, err
 	}
+
 	tag := C.CString(sourceResolvedLocale)
 	defer C.free(unsafe.Pointer(tag))
 	var info C.HEICUInfo

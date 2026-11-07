@@ -5,31 +5,15 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <unicode/uchar.h>
-#include <unicode/udata.h>
 #include <unicode/uloc.h>
 #include <unicode/ulocdata.h>
 #include <unicode/icudataver.h>
-#include <unicode/uclean.h>
 
 #if U_ICU_VERSION_MAJOR_NUM != 78 || U_ICU_VERSION_MINOR_NUM != 3
 #error "HumanEngine requires the exact pinned Node ICU 78.3 headers"
 #endif
 
-extern const uint8_t icudt78_dat[];
-extern const uint8_t he_icu_data_end[];
-const uint8_t *he_icu_data(void) { return icudt78_dat; }
-uintptr_t he_icu_data_length(void) { return (uintptr_t)he_icu_data_end - (uintptr_t)icudt78_dat; }
 const char *he_icu_error(int error) { return u_errorName((UErrorCode)error); }
-
-int he_icu_initialize(void) {
-    UErrorCode status = U_ZERO_ERROR;
-    // The entire data package is linked into the binary and hashed by Go before
-    // this call. ICU_DATA and host resource files must not replace that data.
-    udata_setFileAccess(UDATA_NO_FILES, &status);
-    udata_setCommonData(icudt78_dat, &status);
-    u_init(&status);
-    return status;
-}
 
 UCollator *he_icu_open(const char *tag, HEICUInfo *info, int *error) {
     UErrorCode status = U_ZERO_ERROR;

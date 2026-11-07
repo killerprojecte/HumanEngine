@@ -3,6 +3,9 @@ import { createInterface } from 'node:readline'
 import { randomUUID } from 'node:crypto'
 const plugins = new Map()
 let workerSource = ''
+let modelProtocolSDK = ''
+let modelProtocolModuleURLs = []
+const protocolFailures = new WeakMap()
 const failureMessage = (error) => {
   try {
     if (typeof error === 'string' && error) return error
@@ -22,7 +25,11 @@ const request = (plugin, message) =>
     const onMessage = (reply) => {
       if (reply.id !== message.id) return
       cleanup()
-      reply.failed ? reject(Error(failureMessage(reply.error))) : resolve(reply.result)
+      if (reply.failed) {
+        const failure = Error(failureMessage(reply.error))
+        if (reply.protocolFailure) protocolFailures.set(failure, reply.protocolFailure)
+        reject(failure)
+      } else resolve(reply.result)
     }
     const onExit = () => {
       cleanup()
@@ -53,6 +60,8 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
     try {
       if (message.op === 'initialize') {
         workerSource = message.source
+        modelProtocolSDK = message.modelProtocolSDK
+        modelProtocolModuleURLs = message.modelProtocolModuleURLs
         send({ id: message.id, result: true })
         return
       }
@@ -76,6 +85,8 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
             path: message.path,
             config: message.config,
             requestId,
+            modelProtocolSDK,
+            modelProtocolModuleURLs,
           },
           stdout: true,
           stderr: true,
@@ -180,7 +191,12 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
       if (!plugin || plugin.closing) throw Error('plugin_not_loaded')
       send({ id: message.id, result: await request(plugin, message) })
     } catch (error) {
-      send({ id: message.id, failed: true, error: failureMessage(error) })
+      send({
+        id: message.id,
+        failed: true,
+        error: failureMessage(error),
+        protocolFailure: protocolFailures.get(error),
+      })
     }
   })()
 }

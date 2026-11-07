@@ -123,12 +123,13 @@ From the repository root, with Go on PATH:
 backend/native/icu/test-source-free.sh /absolute/path/icu-build /empty/output-dir
 ```
 
-This creates an isolated provider test executable, synthetic oracle fixture,
+This creates isolated collation, date-validity and shared-initialization test executables, synthetic oracle fixtures,
 build provenance and license. It verifies no `libicu` or `libnode` dependency via
 `ldd`, then runs with `PATH`, `ICU_DATA` and `LD_LIBRARY_PATH` set to nonexistent
 locations and an unrelated invalid `LANG`/`LC_ALL`. All 217,980 comparisons still
 pass without Node/TypeScript sources, native headers, or ICU data files in the
-working directory. The observed test executable is about 39 MiB. This is a
+working directory. The prior collation-only test executable was about 39 MiB;
+the expanded proof also exercises all date oracle zones and shared first use. This is a
 **provider distribution proof**, not a completed source-free bot image: runtime
 admission/scheduler composition and final production packaging remain separate.
 

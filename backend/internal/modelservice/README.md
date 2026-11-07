@@ -64,9 +64,19 @@ Only a direct, core-created `*ModelError` grants retry/fallback classification.
 Wrapping a retryable error, copying its message/status, or implementing a similarly
 named interface grants nothing. `HTTPFailure` and `BuiltinNetworkFailure` are for
 trusted native transport normalization; the latter takes the source's allowlisted
-own/own-cause network codes, never arbitrary V1 error text. The V1 SDK's unfinished
-`ModelProtocolError` identity must not be reconstructed by name, JSON shape or
-`errors.As`. No V1 error-identity parity is claimed by this package.
+own/own-cause network codes, never arbitrary V1 error text.
+
+`V1ProtocolFailure(err)` now adapts only a direct, host-authenticated SDK failure
+from a typed `plugins.V1Host` model call into a core `ModelError`. The worker uses
+one source-derived SDK module and the real `instanceof` identity before copying
+private classification metadata. Wrapping, names, JSON shapes and `errors.As`
+never confer identity. Explicit deployment SDK URL mapping remains necessary; see
+`../plugins/README.md`. Runtime-mutated noninteger/non-numeric statuses are publicly
+sanitized, while the source retry decision is retained. Ordinary `Error` admission
+messages and own/own-cause network-code normalization remain outside this SDK
+bridge. This helper does not make the whole custom invocation migrated or wire
+it into production; the caller still owns cancellation/lease precedence, visible
+validation, budget/credentials and continuation lifetimes.
 
 `Observe` exposes a bounded policy-event projection, not full diagnostics or
 billing. Observer panics cannot fail/repeat a provider operation. `Sleep` injection

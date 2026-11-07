@@ -154,6 +154,15 @@ func (h *V1Host) CompleteModelProtocol(ctx context.Context, id string, generatio
 	}()
 	raw, err := pending.wait(ctx)
 	if err != nil {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		h.lifecycle.Lock()
+		current := h.currentModelLease(owner, lease)
+		h.lifecycle.Unlock()
+		if !current {
+			return nil, ErrNotLoaded
+		}
 		return nil, protocolCallError(ctx, err)
 	}
 	if err := ctx.Err(); err != nil {

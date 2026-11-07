@@ -52,7 +52,8 @@ func (h *V1Host) RegisteredModelProtocols() []ModelProtocolMetadata {
 // generation. Completions must use CompleteModelProtocol. A disabled/reloaded
 // plugin must never receive a request admitted for its predecessor. The model
 // service remains responsible for provider configuration, budget, retries and
-// result validation. Transport errors here never confer retry permission.
+// result validation. Only the worker's authentic SDK exception classification
+// conveys retry permission; arbitrary transport/plugin errors never do.
 func (h *V1Host) CallModelProtocol(ctx context.Context, id string, generation uint64, operation string, args []any) (json.RawMessage, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -101,7 +102,13 @@ func protocolCallError(ctx context.Context, err error) error {
 	if err == nil || errors.Is(err, ErrNotLoaded) {
 		return err
 	}
-	return &ProtocolInvocationError{cause: err}
+	failure := &ProtocolInvocationError{cause: err}
+	// No errors.As/Unwrap traversal: only our exact transport-created value
+	// carries the private worker classification across this typed call boundary.
+	if nodeError, ok := err.(*nodeProtocolFailure); ok {
+		failure.protocol = nodeError.protocol
+	}
+	return failure
 }
 
 func protocolProcessLive(lease *nodeLease) bool {
@@ -117,9 +124,13 @@ func protocolProcessLive(lease *nodeLease) bool {
 }
 
 // ProtocolInvocationError hides arbitrary plugin error text from public model
-// failures. It deliberately carries no retry eligibility. The model service must
-// apply credential-aware diagnostics before rendering its internal cause.
-type ProtocolInvocationError struct{ cause error }
+// failures. Its private classification can only be minted by the actual worker
+// identity check. The model service must apply credential-aware diagnostics
+// before rendering its internal cause. Zero values convey no classification.
+type ProtocolInvocationError struct {
+	cause    error
+	protocol *protocolFailure
+}
 
 func (e *ProtocolInvocationError) Error() string { return "model_protocol_failure" }
 func (e *ProtocolInvocationError) Unwrap() error { return e.cause }

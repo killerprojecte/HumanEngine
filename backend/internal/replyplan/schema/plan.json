@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "reply",
+        "noReply"
+      ]
+    },
+    "deliveryTool": {
+      "default": "messages.send",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "targetMessageIds": {
+      "maxItems": 20,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "contextMessageIds": {
+      "maxItems": 24,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "strategy": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "constraints": {
+      "maxItems": 12,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    },
+    "facts": {
+      "maxItems": 24,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "evidenceIds": {
+            "minItems": 1,
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        },
+        "required": [
+          "text",
+          "evidenceIds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "assets": {
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "evidenceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "assetId",
+          "evidenceId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "emoji": {
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 32
+      }
+    },
+    "expressionGoals": {
+      "default": [],
+      "maxItems": 12,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "memorySelections": {
+      "default": [],
+      "maxItems": 6,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "evidenceId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Outer delivered tool receipt.id, not a memory record ID."
+          },
+          "memoryIds": {
+            "minItems": 1,
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Inner record.id values from that exact receipt.value array. Never copy the outer receipt.id here."
+          }
+        },
+        "required": [
+          "evidenceId",
+          "memoryIds"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "stateEvidenceIds": {
+      "default": [],
+      "maxItems": 4,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "actions": {
+      "maxItems": 4,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "toolName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "arguments": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "toolName",
+          "arguments"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "action",
+    "targetMessageIds",
+    "contextMessageIds",
+    "strategy",
+    "constraints",
+    "facts",
+    "assets",
+    "emoji",
+    "actions"
+  ],
+  "additionalProperties": false
+}

@@ -16,9 +16,6 @@ typedef struct {
     int normalization, strength, numeric, case_first, alternate, case_level;
 } HEICUInfo;
 
-const uint8_t *he_icu_data(void);
-uintptr_t he_icu_data_length(void);
-int he_icu_initialize(void);
 UCollator *he_icu_open(const char *tag, HEICUInfo *info, int *error);
 const char *he_icu_error(int error);
 #endif

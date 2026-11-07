@@ -1,0 +1,258 @@
+{
+  "sources": {
+    "src/model-protocols.ts": "95e45d005e786fcd2ef957354ffe7608cb5d827bc7e16cca5344a7905b193222",
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/models/request-policy.ts": "55f0080b2cd64ba68fd207bfe94cab162f10cd3d9f34d819094a39a85890a63d"
+  },
+  "cases": [
+    {
+      "mode": "network",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "timeout",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_timeout",
+      "delay": 250
+    },
+    {
+      "mode": "configuration",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "protocol_configuration_error",
+      "delay": 250
+    },
+    {
+      "mode": "http401",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_http_401",
+      "status": 401,
+      "delay": 250
+    },
+    {
+      "mode": "http429",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_http_429",
+      "status": 429,
+      "delay": 801
+    },
+    {
+      "mode": "http503",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_http_503",
+      "status": 503,
+      "delay": 250
+    },
+    {
+      "mode": "subclass",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_http_503",
+      "status": 503,
+      "delay": 250
+    },
+    {
+      "mode": "clamped-delay",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_http_503",
+      "status": 503,
+      "delay": 10000
+    },
+    {
+      "mode": "mutated-kind",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "mutated-status-zero",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "status": 0,
+      "delay": 250
+    },
+    {
+      "mode": "mutated-status-string",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_http_503",
+      "status": "503",
+      "delay": 250
+    },
+    {
+      "mode": "mutated-status-600",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_http_600",
+      "status": 600,
+      "delay": 250
+    },
+    {
+      "mode": "mutated-delay-string",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "mutated-delay-negative",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "mutated-delay-infinity",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 10000
+    },
+    {
+      "mode": "mutated-delay-nan",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "renamed",
+      "reads": [],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "message-mutates-kind",
+      "reads": ["message"],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_timeout",
+      "delay": 250
+    },
+    {
+      "mode": "kind-getter-order",
+      "reads": ["kind:0", "kind:1", "kind:2", "kind:3"],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "status-getter",
+      "reads": ["status"],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_http_503",
+      "status": 503,
+      "delay": 250
+    },
+    {
+      "mode": "ordered-getters",
+      "reads": ["message", "status", "kind", "kind", "kind", "kind", "retryAfterMs"],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 801
+    },
+    {
+      "mode": "retry-delay-getter",
+      "reads": ["retryAfterMs"],
+      "classified": true,
+      "retryable": true,
+      "code": "provider_request_failed",
+      "delay": 801
+    },
+    {
+      "mode": "throwing-message",
+      "reads": ["message"],
+      "classified": false,
+      "retryable": false
+    },
+    {
+      "mode": "throwing-status",
+      "reads": ["status"],
+      "classified": false,
+      "retryable": false
+    },
+    {
+      "mode": "throwing-delay",
+      "reads": ["retryAfterMs"],
+      "classified": false,
+      "retryable": false
+    },
+    {
+      "mode": "symbol-status",
+      "reads": [],
+      "classified": false,
+      "retryable": false
+    },
+    {
+      "mode": "admission",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "memory_read_disabled",
+      "delay": 250
+    },
+    {
+      "mode": "foreign",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "shape",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "named",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_request_failed",
+      "delay": 250
+    },
+    {
+      "mode": "wrapped",
+      "reads": [],
+      "classified": true,
+      "retryable": false,
+      "code": "provider_request_failed",
+      "delay": 250
+    }
+  ]
+}

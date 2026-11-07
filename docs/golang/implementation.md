@@ -124,8 +124,10 @@ checks cancellation after claim ACK and late exits from replaced workers.
 
 The assistant-message owner must explicitly release shared continuation ownership
 only when its last branch/user discards it. There is no automatic finalizer or
-production model-router wiring yet. The SDK’s explicit retry-error identity still
-requires a separate compatibility implementation.
+production model-router wiring yet. The source-derived SDK retry-error bridge now preserves exact constructor
+identity through explicitly configured deployment module URLs. Automatic
+deployment alias discovery and the remaining custom invocation normalization
+are separate composition work.
 
 The next candidate slice adds all twenty typed authority writes and a real
 maintenance capability for offline external-cost replay. Maintenance retains a
@@ -142,3 +144,30 @@ its tagged build and source-free provider tests are part of the feature workflow
 It does not start Node, substitute host ICU, or silently approximate collation.
 The default preview build does not yet compose this provider into a live scene
 actor. Full Planner/Replyer and surrounding runtime integration remain underway.
+
+The reply planning policy now runs natively with source-generated schemas,
+workspace refinements, exact context projection and complete read/repair loops.
+Its source-derived date-validity parser shares one initialized pinned ICU dataset
+with topic collation. Explicit locale/timezone constructors are not a deployment
+migration solution: automatic native default resolution remains to be composed.
+
+The private tool-result cache captures complete streams without a new size cap,
+produces source-compatible byte-budgeted text/base64 views, and indexes active
+writes and entries by plugin and source dependency for invalidation. Cancellation
+can retire observation of an uncooperative iterator without waiting for its next
+chunk. The actual plugin context/manager bridge still needs to own and compose
+this service; passing its independent lifecycle tests does not install that bridge.
+
+The complete pure Replyer handoff now preserves selected memory/state content,
+provenance and omissions through brief construction and dependency-aware packing.
+Read-only views prevent serializer callbacks from mutating retained evidence;
+callers explicitly copy when they need a writable tree. Actual source tests cover
+whole planning-to-brief-to-packed-prompt traces, but the real Replyer provider,
+action/dispatch lifecycle and live turn ownership remain unfinished.
+
+Prompt context windows and successful cache-prefix tickets are also implemented.
+They retain original authority signatures, cold/rolling suffixes, required-target
+failures and stale-completion behavior. Payloads are serialized once per candidate
+rather than repeatedly serializing a shrinking array. The membership cache does
+not replace the source's live raw-row authority snapshot or install model cache
+hints in a production request.

@@ -1,0 +1,3317 @@
+{
+  "version": 1,
+  "node": "v24.22.1",
+  "source": "src/tool-results.ts",
+  "sourceSHA256": "6a74dee6988aca28f22adb1f392dd8d7cd75e1dea23922fc7a8b280e1375a08b",
+  "traces": [
+    {
+      "name": "default_text_bom_surrogates_and_empty_metadata",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                97,
+                55357,
+                56832,
+                20013,
+                122
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":9,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":9,\"end\":9},\"encoding\":\"utf8\",\"content\":\"9b5a74d962b7676d593216a3f5821fceb9b6564978ffb49ebf37fbe78778c36f\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 15,
+            "decodedSHA256": "9b5a74d962b7676d593216a3f5821fceb9b6564978ffb49ebf37fbe78778c36f",
+            "contentBytes": 9,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 2,
+              "length": 3,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":9,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":2,\"length\":3},\"returnedRange\":{\"offset\":2,\"length\":3,\"end\":5},\"encoding\":\"base64\",\"content\":\"32bd8801695619f573e302ca51869163dd5b1a93c58abed1ed7d6af6349ef839\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":5,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 10,
+            "decodedSHA256": "a9466093b5d2f2c5acd20bff453f984626abdf3d7f40fa5d604b878b872fc13c",
+            "contentBytes": 4,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 9
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":9,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":9,\"length\":4096},\"returnedRange\":{\"offset\":9,\"length\":0,\"end\":9},\"encoding\":\"utf8\",\"content\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 6,
+            "decodedSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "contentBytes": 0,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 0
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":9,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":0},\"returnedRange\":{\"offset\":0,\"length\":0,\"end\":0},\"encoding\":\"utf8\",\"content\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":0,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 6,
+            "decodedSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "contentBytes": 0,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                65279,
+                101,
+                120,
+                97,
+                99,
+                116
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":8,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":8,\"end\":8},\"encoding\":\"utf8\",\"content\":\"a392295f805191105b83b27f6a9e362d93c94e0e9a3b0b6d04676196396636ee\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 14,
+            "decodedSHA256": "a392295f805191105b83b27f6a9e362d93c94e0e9a3b0b6d04676196396636ee",
+            "contentBytes": 8,
+            "adopted": [],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                55296,
+                55297,
+                56320,
+                57343
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":10,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":10,\"end\":10},\"encoding\":\"utf8\",\"content\":\"bc6e91aefc505cb2aaf89e419069c92e10b1202adf0fa0e9d2195825223fd375\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 16,
+            "decodedSHA256": "bc6e91aefc505cb2aaf89e419069c92e10b1202adf0fa0e9d2195825223fd375",
+            "contentBytes": 10,
+            "adopted": [],
+            "entries": 3,
+            "files": 3,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [],
+              "repeat": 1
+            },
+            "options": {
+              "contentType": ""
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":0,\"contentType\":\"\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":0,\"end\":0},\"encoding\":\"utf8\",\"content\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 6,
+            "decodedSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "contentBytes": 0,
+            "adopted": [],
+            "entries": 4,
+            "files": 4,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                109,
+                101,
+                116,
+                97,
+                100,
+                97,
+                116,
+                97
+              ],
+              "repeat": 1
+            },
+            "options": {
+              "contentType": "fixture/\ud800"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":8,\"contentType\":\"fixture/\\ud800\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":8,\"end\":8},\"encoding\":\"utf8\",\"content\":\"45447b7afbd5e544f7d0f1df0fccd26014d9850130abd3f020b89ff96b82079f\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 14,
+            "decodedSHA256": "45447b7afbd5e544f7d0f1df0fccd26014d9850130abd3f020b89ff96b82079f",
+            "contentBytes": 8,
+            "adopted": [],
+            "entries": 5,
+            "files": 5,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "bytes",
+              "length": 0
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":0,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":0,\"end\":0},\"encoding\":\"base64\",\"content\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 6,
+            "decodedSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "contentBytes": 0,
+            "adopted": [],
+            "entries": 6,
+            "files": 6,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":0,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":0},\"returnedRange\":{\"offset\":0,\"length\":0,\"end\":0},\"encoding\":\"base64\",\"content\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 6,
+            "decodedSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "contentBytes": 0,
+            "adopted": [],
+            "entries": 6,
+            "files": 6,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_ascii",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                97
+              ],
+              "repeat": 40000
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"utf8\",\"content\":\"c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 4102,
+            "decodedSHA256": "c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a",
+            "contentBytes": 4096,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":40000},\"returnedRange\":{\"offset\":0,\"length\":26214,\"end\":26214},\"encoding\":\"utf8\",\"content\":\"70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":26214,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 26220,
+            "decodedSHA256": "70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1",
+            "contentBytes": 26214,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":26214,\"end\":26214},\"encoding\":\"utf8\",\"content\":\"70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":26214,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 26220,
+            "decodedSHA256": "70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1",
+            "contentBytes": 26214,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":39997},\"returnedRange\":{\"offset\":3,\"length\":26214,\"end\":26217},\"encoding\":\"utf8\",\"content\":\"70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":26217,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 26220,
+            "decodedSHA256": "70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1",
+            "contentBytes": 26214,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"utf8\",\"content\":\"eefa4cfbea79400c2f4239e1f702e02ebece761f78b6a35c9d2c167a79f9570c\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 77,
+            "decodedSHA256": "eefa4cfbea79400c2f4239e1f702e02ebece761f78b6a35c9d2c167a79f9570c",
+            "contentBytes": 71,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":26214,\"end\":26214},\"encoding\":\"utf8\",\"content\":\"70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":26214,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 26220,
+            "decodedSHA256": "70a8530dc4d1ddb77d5403f50f6214f0a7ba44868b2aa2971c826b989fce1bd1",
+            "contentBytes": 26214,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_quotes",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                34
+              ],
+              "repeat": 40000
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"utf8\",\"content\":\"c1f4f9b7b95fd45ff6b7fbc2b094fddd0530f423ee84176527e15ce898aa40f0\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 16390,
+            "decodedSHA256": "c1f4f9b7b95fd45ff6b7fbc2b094fddd0530f423ee84176527e15ce898aa40f0",
+            "contentBytes": 4096,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":40000},\"returnedRange\":{\"offset\":0,\"length\":6870,\"end\":6870},\"encoding\":\"utf8\",\"content\":\"3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6870,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":6870,\"end\":6870},\"encoding\":\"utf8\",\"content\":\"3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6870,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":39997},\"returnedRange\":{\"offset\":3,\"length\":6870,\"end\":6873},\"encoding\":\"utf8\",\"content\":\"3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6873,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"utf8\",\"content\":\"65c801c810ff17dc76cd8576b71f53522705d4a98ce51f0a1b4922a17b2d938f\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 290,
+            "decodedSHA256": "65c801c810ff17dc76cd8576b71f53522705d4a98ce51f0a1b4922a17b2d938f",
+            "contentBytes": 71,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":6870,\"end\":6870},\"encoding\":\"utf8\",\"content\":\"3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6870,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "3d276024ded54a4e77be88743f21eacc93206beb2b701fc3143c10185bfd00e3",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_backslashes",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                92
+              ],
+              "repeat": 40000
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"utf8\",\"content\":\"ed9345ea3cbb19b8d167f8a5d6389af48181c3c6bf70d41839463d1b5293389c\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 16390,
+            "decodedSHA256": "ed9345ea3cbb19b8d167f8a5d6389af48181c3c6bf70d41839463d1b5293389c",
+            "contentBytes": 4096,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":40000},\"returnedRange\":{\"offset\":0,\"length\":6870,\"end\":6870},\"encoding\":\"utf8\",\"content\":\"72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6870,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":6870,\"end\":6870},\"encoding\":\"utf8\",\"content\":\"72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6870,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":39997},\"returnedRange\":{\"offset\":3,\"length\":6870,\"end\":6873},\"encoding\":\"utf8\",\"content\":\"72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6873,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"utf8\",\"content\":\"1394a7c62776877a47e2d746231b05b42d849505703ac28c99751b4bb216e93c\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 290,
+            "decodedSHA256": "1394a7c62776877a47e2d746231b05b42d849505703ac28c99751b4bb216e93c",
+            "contentBytes": 71,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":40000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":6870,\"end\":6870},\"encoding\":\"utf8\",\"content\":\"72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":6870,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27486,
+            "decodedSHA256": "72316da99e771b30095873ffcda3177a651fbc919fe76604ab779277ceb9c696",
+            "contentBytes": 6870,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_controls",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                0,
+                10,
+                9,
+                13,
+                8,
+                12
+              ],
+              "repeat": 8000
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":48000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"utf8\",\"content\":\"d5267a36a326cf64f7f103994dabb5406a390fd02999fc7ba4e49829997f77a2\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 15026,
+            "decodedSHA256": "d5267a36a326cf64f7f103994dabb5406a390fd02999fc7ba4e49829997f77a2",
+            "contentBytes": 4096,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":48000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":48000},\"returnedRange\":{\"offset\":0,\"length\":8588,\"end\":8588},\"encoding\":\"utf8\",\"content\":\"00bbe7a6d2a014f9937d8e59e2889dfd8695bc3f2a860e83aef2e0763d009a11\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":8588,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 31498,
+            "decodedSHA256": "00bbe7a6d2a014f9937d8e59e2889dfd8695bc3f2a860e83aef2e0763d009a11",
+            "contentBytes": 8588,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":48000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":8588,\"end\":8588},\"encoding\":\"utf8\",\"content\":\"00bbe7a6d2a014f9937d8e59e2889dfd8695bc3f2a860e83aef2e0763d009a11\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":8588,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 31498,
+            "decodedSHA256": "00bbe7a6d2a014f9937d8e59e2889dfd8695bc3f2a860e83aef2e0763d009a11",
+            "contentBytes": 8588,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":48000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":47997},\"returnedRange\":{\"offset\":3,\"length\":8588,\"end\":8591},\"encoding\":\"utf8\",\"content\":\"cbce2b7f4af8f4448af06248992d49a1d108e5e5b868d457f846caba837a7cd3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":8591,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 31494,
+            "decodedSHA256": "cbce2b7f4af8f4448af06248992d49a1d108e5e5b868d457f846caba837a7cd3",
+            "contentBytes": 8588,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":48000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"utf8\",\"content\":\"2c70a975b3e73fad616bd3172596017e56ec45bea2492658f6abbb00ff5e1a01\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 267,
+            "decodedSHA256": "2c70a975b3e73fad616bd3172596017e56ec45bea2492658f6abbb00ff5e1a01",
+            "contentBytes": 71,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":48000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":8588,\"end\":8588},\"encoding\":\"utf8\",\"content\":\"00bbe7a6d2a014f9937d8e59e2889dfd8695bc3f2a860e83aef2e0763d009a11\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":8588,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 31498,
+            "decodedSHA256": "00bbe7a6d2a014f9937d8e59e2889dfd8695bc3f2a860e83aef2e0763d009a11",
+            "contentBytes": 8588,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_unicode",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                55357,
+                56832,
+                20013,
+                233
+              ],
+              "repeat": 5000
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":45000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"base64\",\"content\":\"94dc691d45860eb00cfdf580c3269462a78f2950807acfb4fd4d2cc5f3e7b43a\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 5470,
+            "decodedSHA256": "35c8232bc21a87ebc8b90ca7b76b222ae5063124bbb60397fa56288432df0ddf",
+            "contentBytes": 5464,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":45000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":45000},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"24809952f7fcbf6ddde69f5876b561d763620616f385d7462e1d808a123e628a\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "c6baf9bd9f6e8c3978c5d41bf9b931313655083e4bf97f5acf8f76884bdaba04",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":45000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"24809952f7fcbf6ddde69f5876b561d763620616f385d7462e1d808a123e628a\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "c6baf9bd9f6e8c3978c5d41bf9b931313655083e4bf97f5acf8f76884bdaba04",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":45000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":44997},\"returnedRange\":{\"offset\":3,\"length\":20971,\"end\":20974},\"encoding\":\"base64\",\"content\":\"a2ffb8faf3ce6e3c9929218258b0b66971f1ffaff2aeeabc6abcc6c6e6f0837a\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20974,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "f0b3bd2cd32114e72e8c8d412a8655e5113131c2f6a01bbca36a11914c25309a",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":45000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"base64\",\"content\":\"05a115585baf07ee1ee129ec7e0f8a763cea1c7913998e1a1ccaeacf86b011c6\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 102,
+            "decodedSHA256": "54aa740f7df97f5bd25f7a0208526c2f8746d1e27359ce92a93520deeecf68d4",
+            "contentBytes": 96,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":45000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"24809952f7fcbf6ddde69f5876b561d763620616f385d7462e1d808a123e628a\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "c6baf9bd9f6e8c3978c5d41bf9b931313655083e4bf97f5acf8f76884bdaba04",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_html_not_escaped",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                60,
+                62,
+                38,
+                8232,
+                8233
+              ],
+              "repeat": 7000
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":63000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"utf8\",\"content\":\"fb43d669aa6c7f489b0afd7ba51ad79d42e601e53d892c4dea0f70c1ef983e75\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 4102,
+            "decodedSHA256": "fb43d669aa6c7f489b0afd7ba51ad79d42e601e53d892c4dea0f70c1ef983e75",
+            "contentBytes": 4096,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":63000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":63000},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"5e1ed3261d048c1c89ee8616a1252edecf6aab76e0922e08758ae8fc8b3ca0e3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "2f7aab3c308990a2a6e0d38f661b9dd8061689ada6687fb54ccbd9e3d1e63feb",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":63000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"5e1ed3261d048c1c89ee8616a1252edecf6aab76e0922e08758ae8fc8b3ca0e3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "2f7aab3c308990a2a6e0d38f661b9dd8061689ada6687fb54ccbd9e3d1e63feb",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":63000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":62997},\"returnedRange\":{\"offset\":3,\"length\":26214,\"end\":26217},\"encoding\":\"utf8\",\"content\":\"74a346face211a50e0cc949b744b121a70645ec88bd77d23f8fa9718910f5237\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":26217,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 26220,
+            "decodedSHA256": "74a346face211a50e0cc949b744b121a70645ec88bd77d23f8fa9718910f5237",
+            "contentBytes": 26214,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":63000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"utf8\",\"content\":\"e68cd192f6dd3bf63a25c51c8c0593d0cc031868ed83dedf1d0cb25ff769ea94\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 77,
+            "decodedSHA256": "e68cd192f6dd3bf63a25c51c8c0593d0cc031868ed83dedf1d0cb25ff769ea94",
+            "contentBytes": 71,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":63000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"5e1ed3261d048c1c89ee8616a1252edecf6aab76e0922e08758ae8fc8b3ca0e3\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "2f7aab3c308990a2a6e0d38f661b9dd8061689ada6687fb54ccbd9e3d1e63feb",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_binary",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "bytes",
+              "length": 60000
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":60000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"base64\",\"content\":\"e858bdae6f9bc6d820a0be399469073cd4e479c54429de326f320f2f0a41b9c6\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 5470,
+            "decodedSHA256": "c8f5d0341d54d951a71b136e6e2afcb14d11ed8489a7ae126a8fee0df6ecf193",
+            "contentBytes": 5464,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":60000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":60000},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"7cd37f7f4d8e985fa84f6e6ac7996433c330c6db5e8b5054e5afbe7ee23b581c\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "5348b6458314467be12e9bc50f7a956fdfe813ba64052eb4d9050cacf9330aff",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":60000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"7cd37f7f4d8e985fa84f6e6ac7996433c330c6db5e8b5054e5afbe7ee23b581c\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "5348b6458314467be12e9bc50f7a956fdfe813ba64052eb4d9050cacf9330aff",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":60000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":59997},\"returnedRange\":{\"offset\":3,\"length\":20971,\"end\":20974},\"encoding\":\"base64\",\"content\":\"ab7525190b237daa928b386f9ed9921bfe370afe85b87e2504608856f0b67643\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20974,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "c89450949054cb4adef86d5fd923f8cf51dc75e1ed23e5818b524580d4f2c728",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":60000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"utf8\",\"content\":\"56971c5e129af7cfcba05318873e74b7bc96decc653304f4be052dfb62c5ec45\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 234,
+            "decodedSHA256": "56971c5e129af7cfcba05318873e74b7bc96decc653304f4be052dfb62c5ec45",
+            "contentBytes": 71,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":60000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"7cd37f7f4d8e985fa84f6e6ac7996433c330c6db5e8b5054e5afbe7ee23b581c\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "5348b6458314467be12e9bc50f7a956fdfe813ba64052eb4d9050cacf9330aff",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "view_budget_stream",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "stream",
+              "length": 120000,
+              "chunkBytes": 7001
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":120000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4096,\"end\":4096},\"encoding\":\"base64\",\"content\":\"e858bdae6f9bc6d820a0be399469073cd4e479c54429de326f320f2f0a41b9c6\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":4096,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 5470,
+            "decodedSHA256": "c8f5d0341d54d951a71b136e6e2afcb14d11ed8489a7ae126a8fee0df6ecf193",
+            "contentBytes": 5464,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":120000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":120000},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"7cd37f7f4d8e985fa84f6e6ac7996433c330c6db5e8b5054e5afbe7ee23b581c\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "5348b6458314467be12e9bc50f7a956fdfe813ba64052eb4d9050cacf9330aff",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 32768
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":120000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":32768},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"7cd37f7f4d8e985fa84f6e6ac7996433c330c6db5e8b5054e5afbe7ee23b581c\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "5348b6458314467be12e9bc50f7a956fdfe813ba64052eb4d9050cacf9330aff",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":120000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":119997},\"returnedRange\":{\"offset\":3,\"length\":20971,\"end\":20974},\"encoding\":\"base64\",\"content\":\"ab7525190b237daa928b386f9ed9921bfe370afe85b87e2504608856f0b67643\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20974,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "c89450949054cb4adef86d5fd923f8cf51dc75e1ed23e5818b524580d4f2c728",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 3,
+              "length": 71,
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":120000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":3,\"length\":71},\"returnedRange\":{\"offset\":3,\"length\":71,\"end\":74},\"encoding\":\"utf8\",\"content\":\"56971c5e129af7cfcba05318873e74b7bc96decc653304f4be052dfb62c5ec45\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":74,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 234,
+            "decodedSHA256": "56971c5e129af7cfcba05318873e74b7bc96decc653304f4be052dfb62c5ec45",
+            "contentBytes": 71,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":120000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"7cd37f7f4d8e985fa84f6e6ac7996433c330c6db5e8b5054e5afbe7ee23b581c\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "5348b6458314467be12e9bc50f7a956fdfe813ba64052eb4d9050cacf9330aff",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "zero_preview_is_not_a_storage_cap",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "stream",
+              "length": 50000,
+              "chunkBytes": 1237
+            },
+            "options": {
+              "previewBytes": 0
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":50000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":0},\"returnedRange\":{\"offset\":0,\"length\":0,\"end\":0},\"encoding\":\"base64\",\"content\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":0,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 6,
+            "decodedSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "contentBytes": 0,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":50000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":50000},\"returnedRange\":{\"offset\":0,\"length\":20971,\"end\":20971},\"encoding\":\"base64\",\"content\":\"7cd37f7f4d8e985fa84f6e6ac7996433c330c6db5e8b5054e5afbe7ee23b581c\",\"truncated\":true,\"requestComplete\":false,\"nextOffset\":20971,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 27970,
+            "decodedSHA256": "5348b6458314467be12e9bc50f7a956fdfe813ba64052eb4d9050cacf9330aff",
+            "contentBytes": 27964,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 49990,
+              "full": true
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":50000,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":49990,\"length\":10},\"returnedRange\":{\"offset\":49990,\"length\":10,\"end\":50000},\"encoding\":\"base64\",\"content\":\"f097c9dae9c1db4d1141bdcdd683a8680a1f572475aa9c2b98312f13a6079532\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 22,
+            "decodedSHA256": "5e375855c909c7693cc95c40ee7305eafaf182d430fd97ff6bc25c3a095394bd",
+            "contentBytes": 16,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "explicit_encoding_and_preview",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                117,
+                116,
+                102,
+                56,
+                47,
+                55357,
+                56832
+              ],
+              "repeat": 1
+            },
+            "options": {
+              "encoding": "base64",
+              "previewBytes": 2
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":9,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":2},\"returnedRange\":{\"offset\":0,\"length\":2,\"end\":2},\"encoding\":\"base64\",\"content\":\"452abf1f6679a1487a800b31ffac2ff3e3778ba72bdcf2ea887364405eec70d9\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":2,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 10,
+            "decodedSHA256": "469cc643a19fb75901e5d331b8dc14befa8b98810b246c2fb22fff0c382dc39e",
+            "contentBytes": 4,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "encoding": "utf8"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":9,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":9,\"end\":9},\"encoding\":\"utf8\",\"content\":\"2362c93331ea8be0ad6f845b1b0beb6fcc40352298af1c924385cfc9be0b161c\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 15,
+            "decodedSHA256": "2362c93331ea8be0ad6f845b1b0beb6fcc40352298af1c924385cfc9be0b161c",
+            "contentBytes": 9,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "bytes",
+              "length": 123
+            },
+            "options": {
+              "encoding": "utf8",
+              "previewBytes": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":123,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":123,\"end\":123},\"encoding\":\"utf8\",\"content\":\"cc63be92e3a900cd067da89473b61b40579b54ef54f8305c2ffcc893743792e9\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 307,
+            "decodedSHA256": "cc63be92e3a900cd067da89473b61b40579b54ef54f8305c2ffcc893743792e9",
+            "contentBytes": 123,
+            "adopted": [],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid_ranges_and_error_order",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": -1
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 0.5
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": -1
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 9007199254740992
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "full": true,
+              "length": 0
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": -1
+            },
+            "cancel": true
+          },
+          "expected": {
+            "error": "fixture_cancelled",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                102,
+                105,
+                120,
+                116,
+                117,
+                114,
+                101
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":7,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":7,\"end\":7},\"encoding\":\"utf8\",\"content\":\"f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 13,
+            "decodedSHA256": "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+            "contentBytes": 7,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 8
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 8
+            },
+            "scope": "wrong"
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 9007199254740991
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 0,
+              "length": 0
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":7,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":0},\"returnedRange\":{\"offset\":0,\"length\":0,\"end\":0},\"encoding\":\"utf8\",\"content\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"truncated\":true,\"requestComplete\":true,\"nextOffset\":0,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 6,
+            "decodedSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "contentBytes": 0,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "length": 9007199254740991
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":7,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":9007199254740991},\"returnedRange\":{\"offset\":0,\"length\":7,\"end\":7},\"encoding\":\"utf8\",\"content\":\"f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 13,
+            "decodedSHA256": "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+            "contentBytes": 7,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                109,
+                111,
+                118,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {
+              "previewBytes": -1
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                109,
+                111,
+                118,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {
+              "previewBytes": 0.5
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                109,
+                111,
+                118,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {
+              "previewBytes": 9007199254740992
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalid_range",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "expiry_is_not_sliding_and_removal_is_immediate",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                102,
+                105,
+                120,
+                116,
+                117,
+                114,
+                101
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":7,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":7,\"end\":7},\"encoding\":\"utf8\",\"content\":\"f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 13,
+            "decodedSHA256": "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+            "contentBytes": 7,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "time",
+            "now": 10999
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":7,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":7,\"end\":7},\"encoding\":\"utf8\",\"content\":\"f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 13,
+            "decodedSHA256": "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+            "contentBytes": 7,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "time",
+            "now": 11000
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "scope": "wrong"
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 100
+            }
+          },
+          "expected": {
+            "error": "tool_result_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                110,
+                101,
+                120,
+                116
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":4,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:21.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4,\"end\":4},\"encoding\":\"utf8\",\"content\":\"c6c1c9a9c8543f1e4cd980064cf1625eeb61a90703b2464fff039f21682508b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 10,
+            "decodedSHA256": "c6c1c9a9c8543f1e4cd980064cf1625eeb61a90703b2464fff039f21682508b3",
+            "contentBytes": 4,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "time",
+            "now": 21000
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "expire"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "scope_scene_plugin_dependency_isolation",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                97
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "save": "a"
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":1,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":1,\"end\":1},\"encoding\":\"utf8\",\"content\":\"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 7,
+            "decodedSHA256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            "contentBytes": 1,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                98
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "save": "b",
+            "owner": {
+              "scope": "real:scene-b",
+              "sceneId": "scene-b"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":1,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":1,\"end\":1},\"encoding\":\"utf8\",\"content\":\"3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 7,
+            "decodedSHA256": "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+            "contentBytes": 1,
+            "adopted": [],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "handle": "a",
+            "scope": "simulation:scene-a:run-a"
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "handle": "a",
+            "adopt": true
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":1,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":1,\"end\":1},\"encoding\":\"utf8\",\"content\":\"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 7,
+            "decodedSHA256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            "contentBytes": 1,
+            "adopted": [
+              "message-a"
+            ],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "invalidate",
+            "sceneId": "scene-b",
+            "messageId": "not-dependent"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "handle": "b",
+            "scope": "real:scene-b"
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":1,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":1,\"end\":1},\"encoding\":\"utf8\",\"content\":\"3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 7,
+            "decodedSHA256": "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+            "contentBytes": 1,
+            "adopted": [],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "invalidate",
+            "sceneId": "scene-a",
+            "messageId": "message-a"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "handle": "a"
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "handle": "b",
+            "scope": "real:scene-b"
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":1,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":1,\"end\":1},\"encoding\":\"utf8\",\"content\":\"3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 7,
+            "decodedSHA256": "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+            "contentBytes": 1,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "invalidatePlugin",
+            "pluginId": "fixture"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "handle": "b",
+            "scope": "real:scene-b"
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                110,
+                101,
+                119
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "owner": {
+              "pluginId": "other"
+            }
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":3,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":3,\"end\":3},\"encoding\":\"utf8\",\"content\":\"11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 9,
+            "decodedSHA256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "contentBytes": 3,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "invalidatePlugin",
+            "pluginId": "fixture"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":3,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":3,\"end\":3},\"encoding\":\"utf8\",\"content\":\"11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 9,
+            "decodedSHA256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "contentBytes": 3,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "validation_false_throw_and_post_io_guard",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                118,
+                97,
+                108,
+                105,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "guard": true
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3",
+            "contentBytes": 5,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "value": false
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {
+              "offset": 999
+            }
+          },
+          "expected": {
+            "error": "tool_result_invalidated",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "value": true
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                118,
+                97,
+                108,
+                105,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "guard": true
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3",
+            "contentBytes": 5,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "error": "fixture_validation_failed"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "fixture_validation_failed",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "value": true
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3",
+            "contentBytes": 5,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "falseAt": 2
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "adopt": true
+          },
+          "expected": {
+            "error": "tool_result_invalidated",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_invalidated",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "falseAt": 1
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                106,
+                101,
+                99,
+                116,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "guard": true
+          },
+          "expected": {
+            "error": "tool_result_invalidated",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "falseAt": 2
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                106,
+                101,
+                99,
+                116,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "guard": true
+          },
+          "expected": {
+            "error": "tool_result_invalidated",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "falseAt": 3
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                106,
+                101,
+                99,
+                116,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "guard": true
+          },
+          "expected": {
+            "error": "tool_result_invalidated",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "error": "fixture_validation_failed"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                106,
+                101,
+                99,
+                116,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "guard": true
+          },
+          "expected": {
+            "error": "tool_result_storage_failed",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "guard",
+            "error": "tool_result_guard_error"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                106,
+                101,
+                99,
+                116,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "guard": true
+          },
+          "expected": {
+            "error": "tool_result_guard_error",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "adoption_is_after_guards_and_errors_do_not_remove",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                118,
+                97,
+                108,
+                105,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3",
+            "contentBytes": 5,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "adopt": true
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3",
+            "contentBytes": 5,
+            "adopted": [
+              "message-a"
+            ],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "adoptError": "fixture_adopt_failed"
+          },
+          "expected": {
+            "error": "fixture_adopt_failed",
+            "adopted": [
+              "message-a"
+            ],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3",
+            "contentBytes": 5,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {},
+            "adoptInvalidate": true
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "ec654fac9599f62e79e2706abef23dfb7c07c08185aa86db4d8695f0b718d1b3",
+            "contentBytes": 5,
+            "adopted": [
+              "message-a"
+            ],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "missing_or_short_file_and_recovery",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                102,
+                105,
+                120,
+                116,
+                117,
+                114,
+                101
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":7,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":7,\"end\":7},\"encoding\":\"utf8\",\"content\":\"f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 13,
+            "decodedSHA256": "f16d05ec6b29248d2c61adb1e9263f78e4f7bace1b955014a2d17872cfe4064d",
+            "contentBytes": 7,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "truncate"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_storage_failed",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                110,
+                101,
+                120,
+                116
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":4,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4,\"end\":4},\"encoding\":\"utf8\",\"content\":\"c6c1c9a9c8543f1e4cd980064cf1625eeb61a90703b2464fff039f21682508b3\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 10,
+            "decodedSHA256": "c6c1c9a9c8543f1e4cd980064cf1625eeb61a90703b2464fff039f21682508b3",
+            "contentBytes": 4,
+            "adopted": [],
+            "entries": 2,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "unlink"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 2,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 2,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                99,
+                111,
+                118,
+                101,
+                114,
+                121
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":8,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":8,\"end\":8},\"encoding\":\"utf8\",\"content\":\"8c585378513f5f7a2e1456ee54042605fdb890392becefadd2ab180fd02fb341\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 14,
+            "decodedSHA256": "8c585378513f5f7a2e1456ee54042605fdb890392becefadd2ab180fd02fb341",
+            "contentBytes": 8,
+            "adopted": [],
+            "entries": 3,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":8,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":8,\"end\":8},\"encoding\":\"utf8\",\"content\":\"8c585378513f5f7a2e1456ee54042605fdb890392becefadd2ab180fd02fb341\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 14,
+            "decodedSHA256": "8c585378513f5f7a2e1456ee54042605fdb890392becefadd2ab180fd02fb341",
+            "contentBytes": 8,
+            "adopted": [],
+            "entries": 3,
+            "files": 2,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "source_errors_clean_staged_files",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "failed"
+            },
+            "options": {}
+          },
+          "expected": {
+            "error": "tool_result_storage_failed",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "toolError"
+            },
+            "options": {}
+          },
+          "expected": {
+            "error": "tool_result_source_error",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "invalidChunk"
+            },
+            "options": {}
+          },
+          "expected": {
+            "error": "tool_result_storage_failed",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                114,
+                101,
+                99,
+                111,
+                118,
+                101,
+                114,
+                121
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":8,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":8,\"end\":8},\"encoding\":\"utf8\",\"content\":\"8c585378513f5f7a2e1456ee54042605fdb890392becefadd2ab180fd02fb341\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 14,
+            "decodedSHA256": "8c585378513f5f7a2e1456ee54042605fdb890392becefadd2ab180fd02fb341",
+            "contentBytes": 8,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                99,
+                97,
+                110,
+                99,
+                101,
+                108,
+                108,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "cancel": true
+          },
+          "expected": {
+            "error": "tool_result_cancelled",
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "dispose"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                99,
+                108,
+                111,
+                115,
+                101,
+                100
+              ],
+              "repeat": 1
+            },
+            "options": {},
+            "cancel": true
+          },
+          "expected": {
+            "error": "tool_result_cache_closed",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "no_restart_persistence",
+      "ttl": 10000,
+      "now": 1000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                101,
+                112,
+                104,
+                101,
+                109,
+                101,
+                114,
+                97,
+                108
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":9,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":9,\"end\":9},\"encoding\":\"utf8\",\"content\":\"8341425cafede9d24b0599aefdfdeff1c1526ed75b07217eb99bf8c0b7498b81\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 15,
+            "decodedSHA256": "8341425cafede9d24b0599aefdfdeff1c1526ed75b07217eb99bf8c0b7498b81",
+            "contentBytes": 9,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "restart"
+          },
+          "expected": {
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "read",
+            "input": {}
+          },
+          "expected": {
+            "error": "tool_result_not_found_or_expired",
+            "adopted": [],
+            "entries": 0,
+            "files": 0,
+            "pending": 0,
+            "writes": 0
+          }
+        },
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                102,
+                114,
+                101,
+                115,
+                104
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":5,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:11.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":5,\"end\":5},\"encoding\":\"utf8\",\"content\":\"d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 11,
+            "decodedSHA256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "contentBytes": 5,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "fractional_epoch_uses_date_timeclip",
+      "ttl": 10000.75,
+      "now": -0.25,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                116,
+                105,
+                109,
+                101
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":4,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"1970-01-01T00:00:10.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4,\"end\":4},\"encoding\":\"utf8\",\"content\":\"336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 10,
+            "decodedSHA256": "336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e",
+            "contentBytes": 4,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "extended_iso_year",
+      "ttl": 10000,
+      "now": 253402300800000,
+      "steps": [
+        {
+          "input": {
+            "op": "store",
+            "source": {
+              "kind": "text",
+              "units": [
+                116,
+                105,
+                109,
+                101
+              ],
+              "repeat": 1
+            },
+            "options": {}
+          },
+          "expected": {
+            "result": "{\"resultId\":\"<result>\",\"totalBytes\":4,\"contentType\":\"application/octet-stream\",\"complete\":true,\"expiresAt\":\"+010000-01-01T00:00:10.000Z\",\"retention\":\"Until expiry, source invalidation, plugin disable, or runtime shutdown; no restart persistence.\",\"rangeUnit\":\"bytes\",\"requestedRange\":{\"offset\":0,\"length\":4096},\"returnedRange\":{\"offset\":0,\"length\":4,\"end\":4},\"encoding\":\"utf8\",\"content\":\"336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e\",\"truncated\":false,\"requestComplete\":true,\"nextOffset\":null,\"viewBudgetBytes\":32768,\"retrievalTool\":\"tool-results.read\",\"trust\":\"untrusted_tool_content\"}",
+            "nestedBytes": 10,
+            "decodedSHA256": "336074805fc853987abe6f7fe3ad97a6a6f3077a16391fec744f671a015fbd7e",
+            "contentBytes": 4,
+            "adopted": [],
+            "entries": 1,
+            "files": 1,
+            "pending": 0,
+            "writes": 0
+          }
+        }
+      ]
+    }
+  ],
+  "stalled": [
+    {
+      "mode": "cancel",
+      "error": "tool_result_cancelled",
+      "returns": 1,
+      "destroys": 2,
+      "pending": 0,
+      "writes": 0,
+      "entries": 0
+    },
+    {
+      "mode": "dispose",
+      "error": "tool_result_cancelled",
+      "returns": 1,
+      "destroys": 2,
+      "pending": 0,
+      "writes": 0,
+      "entries": 0
+    },
+    {
+      "mode": "invalidate",
+      "error": "tool_result_invalidated",
+      "returns": 1,
+      "destroys": 2,
+      "pending": 0,
+      "writes": 0,
+      "entries": 0
+    },
+    {
+      "mode": "plugin",
+      "error": "tool_result_invalidated",
+      "returns": 1,
+      "destroys": 2,
+      "pending": 0,
+      "writes": 0,
+      "entries": 0
+    }
+  ]
+}

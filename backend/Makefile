@@ -14,6 +14,8 @@ build:
 	go build -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && node --import tsx backend/tests/generate-source-event-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-source-event-recovery-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-bot-runtime-fixtures.mjs --check
 	cd .. && node backend/tests/generate-timezone-fixtures.mjs --check
 	cd .. && node backend/internal/intltime/oracle.mjs --check

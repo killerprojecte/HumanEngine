@@ -1,0 +1,3245 @@
+{
+  "node": "v24.22.1",
+  "cases": [
+    {
+      "name": "before-append-caught",
+      "stage": "before-append",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-before-append",
+        "code": null
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 0,
+          "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "entries": [],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "before-append-uncaught",
+      "stage": "before-append",
+      "raise": null,
+      "catchInside": false,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": null,
+      "outerError": {
+        "message": "synthetic-before-append",
+        "code": null
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 0,
+          "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "entries": [],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "after-append-caught",
+      "stage": "after-append",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-after-append",
+        "code": null
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "after-append-uncaught",
+      "stage": "after-append",
+      "raise": null,
+      "catchInside": false,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": null,
+      "outerError": {
+        "message": "synthetic-after-append",
+        "code": null
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "gate-save-caught",
+      "stage": "gate-save",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-gate-save",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "gate-save-uncaught",
+      "stage": "gate-save",
+      "raise": null,
+      "catchInside": false,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": null,
+      "outerError": {
+        "message": "synthetic-gate-save",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "after-hook-caught",
+      "stage": "after-hook",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-after-hook",
+        "code": null
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 1,
+            "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "after-hook-uncaught",
+      "stage": "after-hook",
+      "raise": null,
+      "catchInside": false,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": null,
+      "outerError": {
+        "message": "synthetic-after-hook",
+        "code": null
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "subscriber-caught",
+      "stage": "subscriber",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-subscriber",
+        "code": null
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "committed-listener",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 2
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 2
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 2
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 2
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 1,
+            "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":1,\"orderMode\":\"platform_sequence\",\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          },
+          {
+            "event_id": "event-1",
+            "revision": 2,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [
+          {
+            "event_id": "event-1",
+            "edit_key": "edit-1",
+            "revision": 2,
+            "change_hash": "4c591691290933906035159ee719949c1e6d57251c6b66efc3acc30729712a4b"
+          }
+        ],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "subscriber-uncaught",
+      "stage": "subscriber",
+      "raise": null,
+      "catchInside": false,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": null,
+      "outerError": {
+        "message": "synthetic-subscriber",
+        "code": null
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "committed-listener",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 2
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "external-advance-caught",
+      "stage": "external-advance",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": {
+        "status": "edited",
+        "ref": {
+          "eventId": "event-1",
+          "revision": 2,
+          "deletionEpoch": 0
+        },
+        "previousRef": {
+          "eventId": "event-1",
+          "revision": 1,
+          "deletionEpoch": 0
+        },
+        "bodyCoverage": "unavailable"
+      },
+      "caught": null,
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "committed-listener",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 2
+        },
+        {
+          "label": "external-advanced",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 2,
+          "revision": 2
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 2,
+          "revision": 2
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 2,
+          "revision": 2
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 1,
+            "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 2,
+          "hash": "2befdadff1bccb062f5b3aef287a7d5c38515d5fa811c3c700f5117e3e04235c"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          },
+          {
+            "sequence": 2,
+            "revocation": {
+              "kind": "source",
+              "sceneId": "external",
+              "messageId": "advance"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":1,\"orderMode\":\"platform_sequence\",\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          },
+          {
+            "event_id": "event-1",
+            "revision": 2,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":2,\"deletionEpoch\":0},\"bodyHash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [
+          {
+            "event_id": "event-1",
+            "edit_key": "edit-1",
+            "revision": 2,
+            "change_hash": "4c591691290933906035159ee719949c1e6d57251c6b66efc3acc30729712a4b"
+          }
+        ],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "ordinary-constraint-caught",
+      "stage": "ordinary-constraint",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "UNIQUE constraint failed: marker.value",
+        "code": "SQLITE_CONSTRAINT_UNIQUE"
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 1,
+            "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "ordinary-constraint-uncaught",
+      "stage": "ordinary-constraint",
+      "raise": null,
+      "catchInside": false,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": null,
+      "outerError": {
+        "message": "UNIQUE constraint failed: marker.value",
+        "code": "SQLITE_CONSTRAINT_UNIQUE"
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "gate-save-ABORT-return",
+      "stage": "gate-save",
+      "raise": "ABORT",
+      "catchInside": true,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-gate-save",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "gate-save-ABORT-continue",
+      "stage": "gate-save",
+      "raise": "ABORT",
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-gate-save",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "gate-save-ROLLBACK-return",
+      "stage": "gate-save",
+      "raise": "ROLLBACK",
+      "catchInside": true,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-gate-save",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": {
+        "message": "cannot commit - no transaction is active",
+        "code": "SQLITE_ERROR"
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "gate-save-ROLLBACK-continue",
+      "stage": "gate-save",
+      "raise": "ROLLBACK",
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-gate-save",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": {
+        "message": "cannot commit - no transaction is active",
+        "code": "SQLITE_ERROR"
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "source-sql-ABORT-return",
+      "stage": "source-sql",
+      "raise": "ABORT",
+      "catchInside": true,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-source-sql",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 1,
+            "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "source-sql-ABORT-continue",
+      "stage": "source-sql",
+      "raise": "ABORT",
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-source-sql",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 1,
+            "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "source-sql-ROLLBACK-return",
+      "stage": "source-sql",
+      "raise": "ROLLBACK",
+      "catchInside": true,
+      "continueWrite": false,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-source-sql",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": {
+        "message": "cannot commit - no transaction is active",
+        "code": "SQLITE_ERROR"
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "source-sql-ROLLBACK-continue",
+      "stage": "source-sql",
+      "raise": "ROLLBACK",
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": false,
+      "result": null,
+      "caught": {
+        "message": "synthetic-source-sql",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": {
+        "message": "cannot commit - no transaction is active",
+        "code": "SQLITE_ERROR"
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": false,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    },
+    {
+      "name": "enrollment-reader-save-caught",
+      "stage": "reader-save",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": true,
+      "result": null,
+      "caught": {
+        "message": "synthetic-reader-save",
+        "code": "SQLITE_CONSTRAINT_TRIGGER"
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 1,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 1,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 1,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 1,
+          "authoritySequence": 0,
+          "revision": null
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 1,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 0,
+          "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "entries": [],
+        "heads": [],
+        "revisions": [],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "enrollment-after-hook-caught",
+      "stage": "after-hook",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": true,
+      "result": null,
+      "caught": {
+        "message": "synthetic-after-hook",
+        "code": null
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 1,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": null
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 0,
+          "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "entries": [],
+        "heads": [],
+        "revisions": [],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "enrollment-subscriber-caught",
+      "stage": "subscriber",
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": true,
+      "outerFailure": false,
+      "enrollment": true,
+      "result": null,
+      "caught": {
+        "message": "synthetic-subscriber",
+        "code": null
+      },
+      "outerError": null,
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 1,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": null
+        },
+        {
+          "label": "committed-listener",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "caught",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "continued-write",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "outer-return",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 0,
+          "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "entries": [],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          },
+          {
+            "value": "outer-after"
+          },
+          {
+            "value": "outer-before"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": null
+      }
+    },
+    {
+      "name": "outer-rollback-after-success",
+      "stage": null,
+      "raise": null,
+      "catchInside": true,
+      "continueWrite": false,
+      "outerFailure": true,
+      "enrollment": false,
+      "result": {
+        "status": "edited",
+        "ref": {
+          "eventId": "event-1",
+          "revision": 2,
+          "deletionEpoch": 0
+        },
+        "previousRef": {
+          "eventId": "event-1",
+          "revision": 1,
+          "deletionEpoch": 0
+        },
+        "bodyCoverage": "unavailable"
+      },
+      "caught": null,
+      "outerError": {
+        "message": "synthetic-outer",
+        "code": null
+      },
+      "timeline": [
+        {
+          "label": "before-record",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-entry",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 0,
+          "revision": 1
+        },
+        {
+          "label": "append-durable",
+          "inTransaction": true,
+          "gateSequence": 0,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "after-record",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 1
+        },
+        {
+          "label": "committed-listener",
+          "inTransaction": true,
+          "gateSequence": 1,
+          "minimumReader": 2,
+          "authoritySequence": 1,
+          "revision": 2
+        }
+      ],
+      "persisted": {
+        "gate": {
+          "head": {
+            "instanceId": "12345678-1234-4123-8123-123456789012",
+            "sequence": 0,
+            "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "minimumReader": 2,
+          "state": "ready"
+        },
+        "authorityHead": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "dc8bbb5978d3b65abf8aa6f3d31aba675dd207c1fdde25a210e2c3f2278a942f"
+        },
+        "entries": [
+          {
+            "sequence": 1,
+            "revocation": {
+              "kind": "source_edit_head",
+              "schemaVersion": 1,
+              "sceneId": "scene",
+              "messageId": "message",
+              "eventId": "event-1",
+              "revision": 2,
+              "deletionEpoch": 0,
+              "identityHash": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+              "headHash": "953d9b83efe704d5000785d94fe5d3cc7645ca2f5c6905c40d3eff53ea2b522d"
+            }
+          }
+        ],
+        "heads": [
+          {
+            "identity_key": "36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1",
+            "event_id": "event-1",
+            "scene_id": "scene",
+            "message_id": "message",
+            "value": "{\"metadata\":{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"},\"sequence\":null,\"orderMode\":null,\"deleted\":false}"
+          }
+        ],
+        "revisions": [
+          {
+            "event_id": "event-1",
+            "revision": 1,
+            "value": "{\"identity\":{\"sceneId\":\"scene\",\"adapterId\":\"synthetic\",\"accountId\":\"account\",\"messageId\":\"message\",\"senderId\":\"speaker\"},\"ref\":{\"eventId\":\"event-1\",\"revision\":1,\"deletionEpoch\":0},\"bodyHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"observedAt\":\"2026-10-28T00:00:00.000Z\",\"occurredAt\":null,\"bodyCoverage\":\"unavailable\"}"
+          }
+        ],
+        "editKeys": [],
+        "markers": [
+          {
+            "value": "original"
+          }
+        ],
+        "inTransaction": false,
+        "readiness": "recovery_authority_head_changed"
+      }
+    }
+  ],
+  "reviewCases": [
+    {
+      "name": "recall-corrupt-later-caught",
+      "recall": true,
+      "catchInside": true,
+      "callback": null,
+      "caught": "source_event_corrupt",
+      "outerError": null,
+      "inputOccurredAt": "2026-10-28T01:02:03.000Z",
+      "callbacks": [
+        {
+          "phase": "before-write",
+          "kind": "recalled",
+          "occurredAt": null,
+          "headHash": null
+        }
+      ],
+      "rows": "{\"source_event_edit_keys\":[],\"source_event_heads\":[{\"identity_key\":\"corrupt-later\",\"event_id\":\"corrupt-2\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\"}],\"source_event_revisions\":[],\"source_event_tombstones\":[]}",
+      "gate": {
+        "head": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "3f2427ceb04743c4c783a4d1b7b038336f2474b08beebb28e66f93cc5a1afff4"
+        },
+        "minimumReader": 2
+      },
+      "authorityHead": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "3f2427ceb04743c4c783a4d1b7b038336f2474b08beebb28e66f93cc5a1afff4"
+      }
+    },
+    {
+      "name": "recall-corrupt-later-uncaught",
+      "recall": true,
+      "catchInside": false,
+      "callback": null,
+      "caught": null,
+      "outerError": "source_event_corrupt",
+      "inputOccurredAt": "2026-10-28T01:02:03.000Z",
+      "callbacks": [
+        {
+          "phase": "before-write",
+          "kind": "recalled",
+          "occurredAt": null,
+          "headHash": null
+        }
+      ],
+      "rows": "{\"source_event_edit_keys\":[],\"source_event_heads\":[{\"identity_key\":\"36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1\",\"event_id\":\"event-1\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\\\"metadata\\\":{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":null,\\\"bodyCoverage\\\":\\\"unavailable\\\"},\\\"sequence\\\":null,\\\"orderMode\\\":null,\\\"deleted\\\":false}\"},{\"identity_key\":\"corrupt-later\",\"event_id\":\"corrupt-2\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\"}],\"source_event_revisions\":[{\"event_id\":\"event-1\",\"revision\":1,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":null,\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"}],\"source_event_tombstones\":[]}",
+      "gate": {
+        "head": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 0,
+          "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "minimumReader": 2
+      },
+      "authorityHead": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "3f2427ceb04743c4c783a4d1b7b038336f2474b08beebb28e66f93cc5a1afff4"
+      }
+    },
+    {
+      "name": "input-mutation-readiness",
+      "recall": false,
+      "catchInside": true,
+      "callback": "readiness",
+      "caught": null,
+      "outerError": null,
+      "inputOccurredAt": "2026-10-29T04:05:06.000Z",
+      "callbacks": [
+        {
+          "phase": "before-write",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "second-subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        }
+      ],
+      "rows": "{\"source_event_edit_keys\":[{\"event_id\":\"event-1\",\"edit_key\":\"edit-1\",\"revision\":2,\"change_hash\":\"9a730bad4fdc733c47abf4e83accc744ef4f20a4e71b4c8493398901333b4eb6\"}],\"source_event_heads\":[{\"identity_key\":\"36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1\",\"event_id\":\"event-1\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\\\"metadata\\\":{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"},\\\"sequence\\\":1,\\\"orderMode\\\":\\\"platform_sequence\\\",\\\"deleted\\\":false}\"}],\"source_event_revisions\":[{\"event_id\":\"event-1\",\"revision\":1,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":null,\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"},{\"event_id\":\"event-1\",\"revision\":2,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"}],\"source_event_tombstones\":[]}",
+      "gate": {
+        "head": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+        },
+        "minimumReader": 2
+      },
+      "authorityHead": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+      }
+    },
+    {
+      "name": "input-mutation-id",
+      "recall": false,
+      "catchInside": true,
+      "callback": "id",
+      "caught": null,
+      "outerError": null,
+      "inputOccurredAt": "2026-10-29T04:05:06.000Z",
+      "callbacks": [
+        {
+          "phase": "before-write",
+          "kind": "new",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "7971068f6a4450cd18b531e2885588580fe72a5a4e1e6707d67321dde304f982"
+        },
+        {
+          "phase": "subscriber",
+          "kind": "new",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "7971068f6a4450cd18b531e2885588580fe72a5a4e1e6707d67321dde304f982"
+        },
+        {
+          "phase": "second-subscriber",
+          "kind": "new",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "7971068f6a4450cd18b531e2885588580fe72a5a4e1e6707d67321dde304f982"
+        }
+      ],
+      "rows": "{\"source_event_edit_keys\":[],\"source_event_heads\":[{\"identity_key\":\"36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1\",\"event_id\":\"event-1\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\\\"metadata\\\":{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"},\\\"sequence\\\":null,\\\"orderMode\\\":null,\\\"deleted\\\":false}\"}],\"source_event_revisions\":[{\"event_id\":\"event-1\",\"revision\":1,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"}],\"source_event_tombstones\":[]}",
+      "gate": {
+        "head": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 0,
+          "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "minimumReader": 2
+      },
+      "authorityHead": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 0,
+        "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "name": "input-mutation-now",
+      "recall": false,
+      "catchInside": true,
+      "callback": "now",
+      "caught": null,
+      "outerError": null,
+      "inputOccurredAt": "2026-10-29T04:05:06.000Z",
+      "callbacks": [
+        {
+          "phase": "before-write",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "second-subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        }
+      ],
+      "rows": "{\"source_event_edit_keys\":[{\"event_id\":\"event-1\",\"edit_key\":\"edit-1\",\"revision\":2,\"change_hash\":\"9a730bad4fdc733c47abf4e83accc744ef4f20a4e71b4c8493398901333b4eb6\"}],\"source_event_heads\":[{\"identity_key\":\"36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1\",\"event_id\":\"event-1\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\\\"metadata\\\":{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"},\\\"sequence\\\":1,\\\"orderMode\\\":\\\"platform_sequence\\\",\\\"deleted\\\":false}\"}],\"source_event_revisions\":[{\"event_id\":\"event-1\",\"revision\":1,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":null,\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"},{\"event_id\":\"event-1\",\"revision\":2,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"}],\"source_event_tombstones\":[]}",
+      "gate": {
+        "head": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+        },
+        "minimumReader": 2
+      },
+      "authorityHead": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+      }
+    },
+    {
+      "name": "input-mutation-before-write",
+      "recall": false,
+      "catchInside": true,
+      "callback": "before-write",
+      "caught": null,
+      "outerError": null,
+      "inputOccurredAt": "2026-10-29T04:05:06.000Z",
+      "callbacks": [
+        {
+          "phase": "before-write",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "second-subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        }
+      ],
+      "rows": "{\"source_event_edit_keys\":[{\"event_id\":\"event-1\",\"edit_key\":\"edit-1\",\"revision\":2,\"change_hash\":\"9a730bad4fdc733c47abf4e83accc744ef4f20a4e71b4c8493398901333b4eb6\"}],\"source_event_heads\":[{\"identity_key\":\"36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1\",\"event_id\":\"event-1\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\\\"metadata\\\":{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"},\\\"sequence\\\":1,\\\"orderMode\\\":\\\"platform_sequence\\\",\\\"deleted\\\":false}\"}],\"source_event_revisions\":[{\"event_id\":\"event-1\",\"revision\":1,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":null,\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"},{\"event_id\":\"event-1\",\"revision\":2,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"}],\"source_event_tombstones\":[]}",
+      "gate": {
+        "head": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+        },
+        "minimumReader": 2
+      },
+      "authorityHead": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+      }
+    },
+    {
+      "name": "input-mutation-subscriber",
+      "recall": false,
+      "catchInside": true,
+      "callback": "subscriber",
+      "caught": null,
+      "outerError": null,
+      "inputOccurredAt": "2026-10-29T04:05:06.000Z",
+      "callbacks": [
+        {
+          "phase": "before-write",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        },
+        {
+          "phase": "second-subscriber",
+          "kind": "edited",
+          "occurredAt": "2026-10-28T01:02:03.000Z",
+          "headHash": "8e7f1115a43a38e1d6401fc8d741960ca4b611736383c22a1e84a99cf69f3902"
+        }
+      ],
+      "rows": "{\"source_event_edit_keys\":[{\"event_id\":\"event-1\",\"edit_key\":\"edit-1\",\"revision\":2,\"change_hash\":\"9a730bad4fdc733c47abf4e83accc744ef4f20a4e71b4c8493398901333b4eb6\"}],\"source_event_heads\":[{\"identity_key\":\"36a0341248d7162e841fd0ef541bb19bcb7bcf54626e3298d31e0d25f33efae1\",\"event_id\":\"event-1\",\"scene_id\":\"scene\",\"message_id\":\"message\",\"value\":\"{\\\"metadata\\\":{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"},\\\"sequence\\\":1,\\\"orderMode\\\":\\\"platform_sequence\\\",\\\"deleted\\\":false}\"}],\"source_event_revisions\":[{\"event_id\":\"event-1\",\"revision\":1,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":1,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":null,\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"},{\"event_id\":\"event-1\",\"revision\":2,\"value\":\"{\\\"identity\\\":{\\\"sceneId\\\":\\\"scene\\\",\\\"adapterId\\\":\\\"synthetic\\\",\\\"accountId\\\":\\\"account\\\",\\\"messageId\\\":\\\"message\\\",\\\"senderId\\\":\\\"speaker\\\"},\\\"ref\\\":{\\\"eventId\\\":\\\"event-1\\\",\\\"revision\\\":2,\\\"deletionEpoch\\\":0},\\\"bodyHash\\\":\\\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\\",\\\"observedAt\\\":\\\"2026-10-28T00:00:00.000Z\\\",\\\"occurredAt\\\":\\\"2026-10-28T01:02:03.000Z\\\",\\\"bodyCoverage\\\":\\\"unavailable\\\"}\"}],\"source_event_tombstones\":[]}",
+      "gate": {
+        "head": {
+          "instanceId": "12345678-1234-4123-8123-123456789012",
+          "sequence": 1,
+          "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+        },
+        "minimumReader": 2
+      },
+      "authorityHead": {
+        "instanceId": "12345678-1234-4123-8123-123456789012",
+        "sequence": 1,
+        "hash": "4b6036a8b2652d3faa60c5e3c3daa5436e65a30dd3b44f38f370eecafd28791b"
+      }
+    }
+  ]
+}

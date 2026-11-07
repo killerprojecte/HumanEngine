@@ -209,3 +209,33 @@ transactions, provider/budget/accounting services, plugin capability bridges,
 flow-log/SSE persistence and startup/HTTP write wiring remain required. See the
 package README and coverage map. The preview executable and existing production
 startup remain unchanged.
+
+## Native source-event transactions
+
+The candidate `sourceevents` package now stores source metadata/revisions in real
+SQLite transactions, preserving exact JS identity/change/head hashes and live
+Set-style subscriber ordering. `recovery.WriteSession` composes nested trusted
+stores without introducing savepoints. Ordinary callback or SQL errors may be
+caught by their caller; native transaction loss and cancellation expire the SQL
+capability so subsequent writes cannot accidentally autocommit. Existing
+`Write`/`MainMutation` semantics are unchanged.
+
+An authority ACK does not imply that later source material or subscriber effects
+completed. Actual TypeScript fault fixtures preserve these distinctions, including
+durable intent/main rollback, caught failures and an independent authority append
+before main commit. There is no extra final head check. Publication rejects an
+unacknowledged authority gap rather than waiting for the blocked subscriber.
+The TCP test exercises this store boundary, not an implemented production route.
+
+Closed and exhausted query handles are released during a write session rather
+than retained until commit. Fixed read snapshots reuse their schema inspection;
+write sessions do not cache readiness across callbacks. Optional embedding quotas
+and revision retention match existing source policy; there is no new default head
+quota or protective cap. The 100k-history work-count test concerns warmed,
+same-authority controlled writes, not arbitrary cross-connection audit elimination.
+
+Current-snapshot restart and old-backup rejection tests do not constitute offline
+restore or witness reconciliation. Runtime enrollment, snapshot qualification,
+root recall composition and the source recovery adapter remain separate integration
+work. This checkpoint does not enable a production Go backend or establish full
+bot/provider/plugin parity.

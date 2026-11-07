@@ -1,0 +1,7173 @@
+{
+  "sources": {
+    "src/models/stream-response.ts": "49e9742305b5a197ad6aeb98382057c31f2cbedeab1f3fd5a966b79d76173832",
+    "src/models/stream-dispatcher.ts": "a45a3edd71a250035992af2cd9f76e503033f7bd666289f280ddaacb7f8e28f0",
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/models/request-policy.ts": "55f0080b2cd64ba68fd207bfe94cab162f10cd3d9f34d819094a39a85890a63d",
+    "src/models/role-budget.ts": "a496b6d5f78baf5a690228c01290e798bdf8b4e570247a38358a4d780b5ec7fe",
+    "src/model-roles.ts": "d7014ef6614cc315df94c5773e54e5c990195ac98c2e7064833616a31412ab83",
+    "src/model-protocols.ts": "95e45d005e786fcd2ef957354ffe7608cb5d827bc7e16cca5344a7905b193222",
+    "src/models/stream-progress.ts": "ec2e74e2ebd6a07d2e2d79c380e7caec5d7d418c4301d82fec64e46af8b2a3e9",
+    "src/budget/errors.ts": "327292e444f7b4347f27da14ea30980e090d68c6f2905cda3df3225bf14fecbd",
+    "src/scheduler.ts": "3340a98e5545c146a2332dc335931efeb8c577806d08cb2d05f1c92d30b52d36",
+    "src/diagnostics/flow.ts": "1285d8fd3b3ca8f23dd9d7f718022dd3aef6d64e2e07fad553ec63471633c338"
+  },
+  "policies": [
+    {
+      "input": {},
+      "value": {
+        "retryCount": 2,
+        "maxAttempts": 3,
+        "timeoutMs": 30000,
+        "operationBudget": 110000
+      }
+    },
+    {
+      "input": {
+        "retryCount": -1
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "retryCount": 0
+      },
+      "value": {
+        "retryCount": 0,
+        "maxAttempts": 1,
+        "timeoutMs": 30000,
+        "operationBudget": 30000
+      }
+    },
+    {
+      "input": {
+        "retryCount": 1
+      },
+      "value": {
+        "retryCount": 1,
+        "maxAttempts": 2,
+        "timeoutMs": 30000,
+        "operationBudget": 70000
+      }
+    },
+    {
+      "input": {
+        "retryCount": 2
+      },
+      "value": {
+        "retryCount": 2,
+        "maxAttempts": 3,
+        "timeoutMs": 30000,
+        "operationBudget": 110000
+      }
+    },
+    {
+      "input": {
+        "retryCount": 5
+      },
+      "value": {
+        "retryCount": 5,
+        "maxAttempts": 6,
+        "timeoutMs": 30000,
+        "operationBudget": 230000
+      }
+    },
+    {
+      "input": {
+        "retryCount": 6
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "retryCount": 0.5
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "retryCount": {
+          "number": "NaN"
+        }
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "retryCount": {
+          "number": "Infinity"
+        }
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "timeoutMs": 99
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "timeoutMs": 100
+      },
+      "value": {
+        "retryCount": 2,
+        "maxAttempts": 3,
+        "timeoutMs": 100,
+        "operationBudget": 20300
+      }
+    },
+    {
+      "input": {
+        "timeoutMs": 30000
+      },
+      "value": {
+        "retryCount": 2,
+        "maxAttempts": 3,
+        "timeoutMs": 30000,
+        "operationBudget": 110000
+      }
+    },
+    {
+      "input": {
+        "timeoutMs": 300000
+      },
+      "value": {
+        "retryCount": 2,
+        "maxAttempts": 3,
+        "timeoutMs": 300000,
+        "operationBudget": 920000
+      }
+    },
+    {
+      "input": {
+        "timeoutMs": 300001
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "timeoutMs": 100.5
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "timeoutMs": {
+          "number": "NaN"
+        }
+      },
+      "error": "invalid_provider_request_policy"
+    },
+    {
+      "input": {
+        "timeoutMs": {
+          "number": "Infinity"
+        }
+      },
+      "error": "invalid_provider_request_policy"
+    }
+  ],
+  "delays": [
+    {
+      "attempt": -3,
+      "value": 250
+    },
+    {
+      "attempt": -3,
+      "after": -20,
+      "value": 250
+    },
+    {
+      "attempt": -3,
+      "after": 0,
+      "value": 250
+    },
+    {
+      "attempt": -3,
+      "after": 300,
+      "value": 300
+    },
+    {
+      "attempt": -3,
+      "after": 9999,
+      "value": 9999
+    },
+    {
+      "attempt": -3,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": -3,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 250
+    },
+    {
+      "attempt": -3,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 0,
+      "value": 250
+    },
+    {
+      "attempt": 0,
+      "after": -20,
+      "value": 250
+    },
+    {
+      "attempt": 0,
+      "after": 0,
+      "value": 250
+    },
+    {
+      "attempt": 0,
+      "after": 300,
+      "value": 300
+    },
+    {
+      "attempt": 0,
+      "after": 9999,
+      "value": 9999
+    },
+    {
+      "attempt": 0,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": 0,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 250
+    },
+    {
+      "attempt": 0,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 1,
+      "value": 250
+    },
+    {
+      "attempt": 1,
+      "after": -20,
+      "value": 250
+    },
+    {
+      "attempt": 1,
+      "after": 0,
+      "value": 250
+    },
+    {
+      "attempt": 1,
+      "after": 300,
+      "value": 300
+    },
+    {
+      "attempt": 1,
+      "after": 9999,
+      "value": 9999
+    },
+    {
+      "attempt": 1,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": 1,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 250
+    },
+    {
+      "attempt": 1,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 1.9,
+      "value": 250
+    },
+    {
+      "attempt": 1.9,
+      "after": -20,
+      "value": 250
+    },
+    {
+      "attempt": 1.9,
+      "after": 0,
+      "value": 250
+    },
+    {
+      "attempt": 1.9,
+      "after": 300,
+      "value": 300
+    },
+    {
+      "attempt": 1.9,
+      "after": 9999,
+      "value": 9999
+    },
+    {
+      "attempt": 1.9,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": 1.9,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 250
+    },
+    {
+      "attempt": 1.9,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 2,
+      "value": 500
+    },
+    {
+      "attempt": 2,
+      "after": -20,
+      "value": 500
+    },
+    {
+      "attempt": 2,
+      "after": 0,
+      "value": 500
+    },
+    {
+      "attempt": 2,
+      "after": 300,
+      "value": 500
+    },
+    {
+      "attempt": 2,
+      "after": 9999,
+      "value": 9999
+    },
+    {
+      "attempt": 2,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": 2,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 500
+    },
+    {
+      "attempt": 2,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 6,
+      "value": 8000
+    },
+    {
+      "attempt": 6,
+      "after": -20,
+      "value": 8000
+    },
+    {
+      "attempt": 6,
+      "after": 0,
+      "value": 8000
+    },
+    {
+      "attempt": 6,
+      "after": 300,
+      "value": 8000
+    },
+    {
+      "attempt": 6,
+      "after": 9999,
+      "value": 9999
+    },
+    {
+      "attempt": 6,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": 6,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 8000
+    },
+    {
+      "attempt": 6,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "after": -20,
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "after": 0,
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "after": 300,
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "after": 9999,
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 7,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "after": -20,
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "after": 0,
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "after": 300,
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "after": 9999,
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "after": {
+        "number": "NaN"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": 100,
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "after": -20,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "after": 0,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "after": 300,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "after": 9999,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "after": {
+        "number": "NaN"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "NaN"
+      },
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "after": -20,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "after": 0,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "after": 300,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "after": 9999,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "after": 20000,
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "after": {
+        "number": "NaN"
+      },
+      "value": 10000
+    },
+    {
+      "attempt": {
+        "number": "Infinity"
+      },
+      "after": {
+        "number": "Infinity"
+      },
+      "value": 10000
+    }
+  ],
+  "retryHeaders": [
+    {
+      "input": null,
+      "now": 1767225600000,
+      "value": null
+    },
+    {
+      "input": "",
+      "now": 1767225600000,
+      "value": null
+    },
+    {
+      "input": " ",
+      "now": 1767225600000,
+      "value": null
+    },
+    {
+      "input": "0",
+      "now": 1767225600000,
+      "value": 0
+    },
+    {
+      "input": "-1",
+      "now": 1767225600000,
+      "value": 0
+    },
+    {
+      "input": "+.25",
+      "now": 1767225600000,
+      "value": 250
+    },
+    {
+      "input": "1.5",
+      "now": 1767225600000,
+      "value": 1500
+    },
+    {
+      "input": "10",
+      "now": 1767225600000,
+      "value": 10000
+    },
+    {
+      "input": "100",
+      "now": 1767225600000,
+      "value": 10000
+    },
+    {
+      "input": "1e2",
+      "now": 1767225600000,
+      "value": null
+    },
+    {
+      "input": "﻿1﻿",
+      "now": 1767225600000,
+      "value": 1000
+    },
+    {
+      "input": "1",
+      "now": 1767225600000,
+      "value": null
+    },
+    {
+      "input": "garbage",
+      "now": 1767225600000,
+      "value": null
+    },
+    {
+      "input": "Thu, 01 Jan 2026 00:00:03 GMT",
+      "now": 1767225600000,
+      "value": 3000
+    },
+    {
+      "input": "Wednesday, 31-Dec-25 23:59:59 GMT",
+      "now": 1767225600000,
+      "value": 0
+    },
+    {
+      "input": "Sunday, 01-Jan-50 00:00:03 GMT",
+      "now": 1767225600000,
+      "value": 0
+    },
+    {
+      "input": "Sunday, 01-Jan-68 00:00:03 GMT",
+      "now": 1767225600000,
+      "value": 0
+    },
+    {
+      "input": "Thu Jan  1 00:00:20 2026",
+      "now": 1767225600000,
+      "value": 10000
+    }
+  ],
+  "roles": [
+    {
+      "input": "planner",
+      "value": "planner"
+    },
+    {
+      "input": "replyer",
+      "value": "replyer"
+    },
+    {
+      "input": "thinker",
+      "value": "replyer"
+    },
+    {
+      "input": "learning",
+      "value": "learning"
+    },
+    {
+      "input": "vision",
+      "value": "vision"
+    },
+    {
+      "input": "embedding",
+      "value": "embedding"
+    },
+    {
+      "input": "unknown",
+      "value": "unknown"
+    }
+  ],
+  "normalize": [
+    {
+      "input": [
+        "thinker"
+      ],
+      "value": [
+        "replyer"
+      ]
+    },
+    {
+      "input": [
+        "planner",
+        "thinker"
+      ],
+      "value": [
+        "planner",
+        "replyer"
+      ]
+    },
+    {
+      "input": [
+        "replyer",
+        "thinker"
+      ],
+      "error": "duplicate_role_routes"
+    },
+    {
+      "input": [
+        "planner",
+        "planner"
+      ],
+      "error": "duplicate_role_routes"
+    }
+  ],
+  "cases": [
+    {
+      "name": "first_candidate_success",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "a",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "retry_429_then_success",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_http_429",
+            "status": 429,
+            "retryable": true,
+            "retryAfterMs": 800
+          }
+        ]
+      },
+      "expected": {
+        "modelId": "a",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 800
+          },
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "fallback_after_three_attempts",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          }
+        ]
+      },
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 250
+          },
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 500
+          },
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 3,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_http_503"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 2
+          },
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 3
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "nonretryable_falls_back",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_http_401",
+            "status": 401,
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_http_401"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "timeout_falls_back_without_retry",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_timeout",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_timeout"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "arbitrary_error_never_retries",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "plain": true
+          }
+        ]
+      },
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_request_failed"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "all_retryable",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_http_429",
+            "status": 429,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_429",
+            "status": 429,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_429",
+            "status": 429,
+            "retryable": true
+          }
+        ],
+        "b": [
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "all_models_failed",
+          "retryable": true,
+          "status": 503,
+          "handled": true,
+          "failures": [
+            "provider_http_429",
+            "provider_http_503"
+          ]
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 250
+          },
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 500
+          },
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 3,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_http_429"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 250
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 500
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 3,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "b",
+            "index": 2,
+            "code": "provider_http_503"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 2
+          },
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 3
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 2
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 3
+          }
+        ]
+      }
+    },
+    {
+      "name": "mixed_retryability_removes_final_status",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "plain": true
+          }
+        ],
+        "b": [
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          },
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "all_models_failed",
+          "retryable": false,
+          "handled": true,
+          "failures": [
+            "plain",
+            "provider_http_503"
+          ]
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_request_failed"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 250
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "retry",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 2,
+            "maxAttempts": 3,
+            "timeoutMs": 100,
+            "delayMs": 500
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 3,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "b",
+            "index": 2,
+            "code": "provider_http_503"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 2
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 3
+          }
+        ]
+      }
+    },
+    {
+      "name": "six_failures_retains_last_four",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "c",
+            "providerId": "p",
+            "apiModelName": "c",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "d",
+            "providerId": "p",
+            "apiModelName": "d",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "e",
+            "providerId": "p",
+            "apiModelName": "e",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "f",
+            "providerId": "p",
+            "apiModelName": "f",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "failure_a",
+            "retryable": false
+          }
+        ],
+        "b": [
+          {
+            "code": "failure_b",
+            "retryable": false
+          }
+        ],
+        "c": [
+          {
+            "code": "failure_c",
+            "retryable": false
+          }
+        ],
+        "d": [
+          {
+            "code": "failure_d",
+            "retryable": false
+          }
+        ],
+        "e": [
+          {
+            "code": "failure_e",
+            "retryable": false
+          }
+        ],
+        "f": [
+          {
+            "code": "failure_f",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "all_models_failed",
+          "retryable": false,
+          "handled": true,
+          "failures": [
+            "failure_c",
+            "failure_d",
+            "failure_e",
+            "failure_f"
+          ]
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "failure_a"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "b",
+            "index": 2,
+            "code": "failure_b"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "c",
+            "index": 3,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "c",
+            "index": 3,
+            "code": "failure_c"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "d",
+            "index": 4,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "d",
+            "index": 4,
+            "code": "failure_d"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "e",
+            "index": 5,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "e",
+            "index": 5,
+            "code": "failure_e"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "f",
+            "index": 6,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "f",
+            "index": 6,
+            "code": "failure_f"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "c",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "d",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "e",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "f",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_admission_failed",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_admission_failed",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_admission_failed",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_admission_failed"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_external_cost_unknown",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_external_cost_unknown",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_external_cost_unknown",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_external_cost_unknown"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_restore_accounting_hold",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_restore_accounting_hold",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_restore_accounting_hold",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_restore_accounting_hold"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_amount_overflow",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_amount_overflow",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_amount_overflow",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_amount_overflow"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_estimate_unknown",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_estimate_unknown",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_estimate_unknown",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_estimate_unknown"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_price_unknown",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_price_unknown",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_price_unknown",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_price_unknown"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_contract_overrun",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_contract_overrun",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_contract_overrun",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_contract_overrun"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_daily_limit",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_daily_limit",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_daily_limit",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_daily_limit"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_lane_limit",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_lane_limit",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_lane_limit",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_lane_limit"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_turn_amount",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_turn_amount",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_turn_amount",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_turn_amount"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_turn_calls",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_turn_calls",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_turn_calls",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_turn_calls"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_turn_tokens",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_turn_tokens",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_turn_tokens",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_turn_tokens"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_turn_identity_required",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_turn_identity_required",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_turn_identity_required",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_turn_identity_required"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_unbounded_exposure",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_unbounded_exposure",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_unbounded_exposure",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_unbounded_exposure"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_unresolved_limit",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_unresolved_limit",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_unresolved_limit",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_unresolved_limit"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_output_cap_required",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_output_cap_required",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_output_cap_required",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_output_cap_required"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_output_cap_unverified",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_output_cap_unverified",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_output_cap_unverified",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_output_cap_unverified"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_protocol_unsupported",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_protocol_unsupported",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_protocol_unsupported",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_protocol_unsupported"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_opaque_input_unsupported",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_opaque_input_unsupported",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_opaque_input_unsupported",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_opaque_input_unsupported"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_verified_estimator_required",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_verified_estimator_required",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_verified_estimator_required",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_verified_estimator_required"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_estimate_contract_mismatch",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_estimate_contract_mismatch",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_estimate_contract_mismatch",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_estimate_contract_mismatch"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_attempt_already_started",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_attempt_already_started",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_attempt_already_started",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_attempt_already_started"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_attempt_identity_conflict",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_attempt_identity_conflict",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_attempt_identity_conflict",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_attempt_identity_conflict"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_idempotency_conflict",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_idempotency_conflict",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_idempotency_conflict",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_idempotency_conflict"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_invalid_transition",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_invalid_transition",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_invalid_transition",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_invalid_transition"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_attempt_owner",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_attempt_owner",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_attempt_owner",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_attempt_owner"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_attempt_missing",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_attempt_missing",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_attempt_missing",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_attempt_missing"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_release_started",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_release_started",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_release_started",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_release_started"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_receipt_conflict",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_receipt_conflict",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_receipt_conflict",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_receipt_conflict"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_configuration_invalid",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_configuration_invalid",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_configuration_invalid",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_configuration_invalid"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_budget_configuration_changed",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_configuration_changed",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "budget_configuration_changed",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_configuration_changed"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_protocol_disabled",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "protocol_disabled",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "protocol_disabled",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "protocol_disabled"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_provider_stream_interrupted",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_stream_interrupted",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "provider_stream_interrupted",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_stream_interrupted"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_provider_stream_invalid",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_stream_invalid",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "provider_stream_invalid",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_stream_invalid"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_provider_stream_future",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_stream_future",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "provider_stream_future",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_stream_future"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_memory_read_disabled",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "memory_read_disabled",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "memory_read_disabled",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "memory_read_disabled"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_memory_read_revoked",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "memory_read_revoked",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "memory_read_revoked",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "memory_read_revoked"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "terminal_personalization_disabled",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "personalization_disabled",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "error": {
+          "code": "personalization_disabled",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "personalization_disabled"
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown_budget_prefix_can_fallback",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "budget_not_in_source",
+            "retryable": false
+          }
+        ]
+      },
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "budget_not_in_source"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "skip_missing_model",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "missing",
+              "a"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "a",
+        "events": [
+          {
+            "kind": "skip",
+            "modelId": "missing",
+            "index": 1,
+            "code": "model_not_configured"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "skip_missing_provider",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "missing",
+            "capabilities": [
+              "text"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "skip",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_not_configured"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "skip_text_mismatch",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "capabilities": [
+              "embedding"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "skip",
+            "modelId": "a",
+            "index": 1,
+            "code": "model_capability_mismatch"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "skip_tools_mismatch",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "capabilities": [
+              "text",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          "memory.read"
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "skip",
+            "modelId": "a",
+            "index": 1,
+            "code": "model_capability_mismatch"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "skip_vision_mismatch",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "capabilities": [
+              "text",
+              "tools"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": true
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "skip",
+            "modelId": "a",
+            "index": 1,
+            "code": "model_capability_mismatch"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "no_compatible_model",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "no_compatible_model",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [
+          {
+            "kind": "skip",
+            "modelId": "a",
+            "index": 1,
+            "code": "model_not_configured"
+          },
+          {
+            "kind": "skip",
+            "modelId": "b",
+            "index": 2,
+            "code": "model_not_configured"
+          }
+        ],
+        "calls": []
+      }
+    },
+    {
+      "name": "empty_route",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "no_compatible_model",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "route_missing",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": []
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "route_not_configured",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "duplicate_normalized_routes",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a"
+            ]
+          },
+          {
+            "role": "thinker",
+            "orderedModelIds": [
+              "b"
+            ]
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "duplicate_role_routes",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "wire_name_collision",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          "a.b",
+          "a__b"
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "invalid_tool_names",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "tool_empty",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          ""
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "invalid_tool_names",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "tool_a-b_C.9",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          "a-b_C.9"
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "a",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "tool_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "modelId": "a",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 3,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "tool_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "invalid_tool_names",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "tool_a b",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          "a b"
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "invalid_tool_names",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "tool_工具",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [
+          "工具"
+        ],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "invalid_tool_names",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "invalid_stage_budget",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 2,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a"
+            ],
+            "timeoutMs": 0
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "invalid_role_budget",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "invalid_provider_policy_falls_back",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 6,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {},
+      "expected": {
+        "error": {
+          "code": "invalid_provider_request_policy",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        },
+        "events": [],
+        "calls": []
+      }
+    },
+    {
+      "name": "no_retry_configured",
+      "config": {
+        "providers": [
+          {
+            "id": "p",
+            "protocol": "oracle:policy",
+            "baseUrl": "http://unused.invalid",
+            "credentialEnv": "",
+            "retryCount": 0,
+            "timeoutMs": 100
+          }
+        ],
+        "models": [
+          {
+            "id": "a",
+            "providerId": "p",
+            "apiModelName": "a",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          },
+          {
+            "id": "b",
+            "providerId": "p",
+            "apiModelName": "b",
+            "capabilities": [
+              "text",
+              "tools",
+              "vision"
+            ]
+          }
+        ],
+        "routes": [
+          {
+            "role": "replyer",
+            "orderedModelIds": [
+              "a",
+              "b"
+            ],
+            "timeoutMs": 300000
+          }
+        ]
+      },
+      "request": {
+        "role": "thinker",
+        "toolNames": [],
+        "hasImages": false
+      },
+      "outcomes": {
+        "a": [
+          {
+            "code": "provider_http_503",
+            "status": 503,
+            "retryable": true
+          }
+        ]
+      },
+      "expected": {
+        "modelId": "b",
+        "events": [
+          {
+            "kind": "attempt",
+            "modelId": "a",
+            "index": 1,
+            "attempt": 1,
+            "maxAttempts": 1,
+            "timeoutMs": 100
+          },
+          {
+            "kind": "failed",
+            "modelId": "a",
+            "index": 1,
+            "code": "provider_http_503"
+          },
+          {
+            "kind": "attempt",
+            "modelId": "b",
+            "index": 2,
+            "attempt": 1,
+            "maxAttempts": 1,
+            "timeoutMs": 100
+          }
+        ],
+        "calls": [
+          {
+            "modelId": "a",
+            "role": "replyer",
+            "attempt": 1
+          },
+          {
+            "modelId": "b",
+            "role": "replyer",
+            "attempt": 1
+          }
+        ]
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "mode": "custom_queue",
+      "before": {
+        "entered": false,
+        "status": {
+          "running": 1,
+          "queued": 0,
+          "concurrency": 1
+        }
+      },
+      "result": {
+        "error": {
+          "code": "all_models_failed",
+          "retryable": false,
+          "handled": true,
+          "failures": [
+            "provider_timeout"
+          ]
+        }
+      },
+      "after": {
+        "running": 0,
+        "queued": 0,
+        "concurrency": 1
+      }
+    },
+    {
+      "mode": "native_queue",
+      "before": {
+        "entered": false,
+        "status": {
+          "running": 1,
+          "queued": 1,
+          "concurrency": 1
+        }
+      },
+      "result": {
+        "modelId": "a"
+      },
+      "after": {
+        "running": 0,
+        "queued": 0,
+        "concurrency": 1
+      }
+    },
+    {
+      "mode": "custom_uncooperative",
+      "before": {
+        "entered": true,
+        "status": {
+          "running": 0,
+          "queued": 0,
+          "concurrency": 1
+        }
+      },
+      "result": {
+        "error": {
+          "code": "all_models_failed",
+          "retryable": false,
+          "handled": true,
+          "failures": [
+            "provider_timeout"
+          ]
+        }
+      },
+      "after": {
+        "running": 0,
+        "queued": 0,
+        "concurrency": 1
+      }
+    },
+    {
+      "mode": "native_uncooperative",
+      "before": {
+        "entered": true,
+        "status": {
+          "running": 1,
+          "queued": 0,
+          "concurrency": 1
+        }
+      },
+      "result": {
+        "error": {
+          "code": "model_stage_timeout",
+          "retryable": false,
+          "handled": false,
+          "failures": []
+        }
+      },
+      "after": {
+        "running": 0,
+        "queued": 0,
+        "concurrency": 1
+      }
+    }
+  ],
+  "progress": [
+    {
+      "mode": "progress",
+      "active": [
+        false,
+        false
+      ],
+      "stageAborted": false,
+      "providerAborted": false,
+      "reason": null
+    },
+    {
+      "mode": "expire",
+      "active": [
+        true,
+        true
+      ],
+      "stageAborted": false,
+      "providerAborted": true,
+      "reason": "provider_timeout"
+    },
+    {
+      "mode": "dispose",
+      "active": [
+        false,
+        false
+      ],
+      "stageAborted": false,
+      "providerAborted": false,
+      "reason": null
+    },
+    {
+      "mode": "parent_abort",
+      "active": [
+        false,
+        false
+      ],
+      "stageAborted": true,
+      "providerAborted": true,
+      "reason": "caller"
+    }
+  ],
+  "roleBudgetRaces": [
+    {
+      "mode": "timeout_then_parent_abort",
+      "settledBeforeTask": true,
+      "result": {
+        "error": "model_stage_timeout"
+      }
+    },
+    {
+      "mode": "parent_abort_then_timeout",
+      "settledBeforeTask": false,
+      "result": {
+        "error": "request_cancelled"
+      }
+    }
+  ],
+  "streams": [
+    {
+      "mode": "progress_survives_deadlines",
+      "calls": 1,
+      "result": {
+        "modelId": "a"
+      },
+      "status": {
+        "running": 0,
+        "queued": 0,
+        "concurrency": 4
+      }
+    },
+    {
+      "mode": "partial_is_terminal",
+      "calls": 1,
+      "result": {
+        "error": {
+          "code": "provider_stream_interrupted",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        }
+      },
+      "status": {
+        "running": 0,
+        "queued": 0,
+        "concurrency": 4
+      }
+    },
+    {
+      "mode": "validation_after_content_is_terminal",
+      "calls": 1,
+      "result": {
+        "error": {
+          "code": "provider_stream_interrupted",
+          "retryable": false,
+          "handled": true,
+          "failures": []
+        }
+      },
+      "status": {
+        "running": 0,
+        "queued": 0,
+        "concurrency": 4
+      }
+    }
+  ]
+}

@@ -8,6 +8,11 @@ build:
 	go build -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && node --import tsx backend/tests/generate-secret-store-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-model-policy-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-http-string-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-credential-byte-fixtures.mjs --check
+	cd .. && node --import tsx backend/tests/generate-authority-domain-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-settings-write-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-lossless-events-fixtures.mjs --check
 	cd .. && node backend/tests/generate-sqlite-string-fixtures.mjs --check

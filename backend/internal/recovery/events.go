@@ -50,6 +50,18 @@ func ValidateEvent(payload string) error {
 		valid = validConfiguration(e)
 	case "assertion_eligibility":
 		valid = validEligibility(e)
+	case "external_cost_receipt":
+		valid = validExternalCost(e)
+	case "experience_trial":
+		valid = validExperienceTrial(e)
+	case "semantic_mutation":
+		valid = validSemanticMutation(e)
+	case "identity_mutation":
+		valid = validIdentityMutation(e)
+	case "working_set_pin":
+		valid = validWorkingSetPin(e)
+	case "commitment_head", "commitment_delete":
+		valid = validCommitment(e)
 	default:
 		return errors.New("recovery_event_domain_not_migrated")
 	}

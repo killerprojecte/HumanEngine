@@ -9,10 +9,10 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/tetratelabs/wazero v1.12.0
 	golang.org/x/net v0.62.0
+	golang.org/x/text v0.43.0
 )
 
 require (
 	github.com/bits-and-blooms/bitset v1.20.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
-	golang.org/x/text v0.43.0 // indirect
 )

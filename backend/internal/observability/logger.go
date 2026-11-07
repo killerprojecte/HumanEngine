@@ -80,11 +80,29 @@ func (l *Logger) Emit(e Event) error {
 	if e.At.IsZero() {
 		e.At = time.Now().UTC()
 	}
-	data, err := json.Marshal(e)
+	// Snapshot caller-owned fields exactly once. Besides avoiding duplicate
+	// encoding work, this keeps JSON and human output identical even when a
+	// custom marshaler has state or side effects.
+	var fields json.RawMessage
+	var err error
+	if len(e.Fields) != 0 {
+		fields, err = json.Marshal(e.Fields)
+		if err != nil {
+			return fmt.Errorf("encode diagnostic %s: %w", e.Code, err)
+		}
+	}
+	e.Fields = nil
+	data, err := json.Marshal(struct {
+		Event
+		Fields json.RawMessage `json:"fields,omitempty"`
+	}{Event: e, Fields: fields})
 	if err != nil {
 		return fmt.Errorf("encode diagnostic %s: %w", e.Code, err)
 	}
-	entry := queued{json: append(data, '\n'), human: []byte(Render(e) + "\n")}
+	entry := queued{json: append(data, '\n')}
+	if l.humanSink != nil {
+		entry.human = []byte(renderSnapshot(e, fields) + "\n")
+	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.closing {
@@ -162,7 +180,7 @@ func writeAll(w io.Writer, b []byte) error {
 		if e != nil {
 			return e
 		}
-		if n == 0 {
+		if n <= 0 || n > len(b) {
 			return io.ErrShortWrite
 		}
 		b = b[n:]
@@ -170,6 +188,13 @@ func writeAll(w io.Writer, b []byte) error {
 	return nil
 }
 func Render(e Event) string {
+	var fields []byte
+	if len(e.Fields) != 0 {
+		fields, _ = json.Marshal(e.Fields)
+	}
+	return renderSnapshot(e, fields)
+}
+func renderSnapshot(e Event, fields []byte) string {
 	var out strings.Builder
 	fmt.Fprintf(&out, "%s %-5s %s · %s | %s", e.At.UTC().Format(time.RFC3339Nano), strings.ToUpper(e.Level), e.Module, e.Code, e.Message)
 	for _, pair := range [][2]string{{"trace", e.TraceID}, {"scene", e.SceneID}, {"turn", e.TurnID}, {"request", e.RequestID}, {"stage", e.Stage}} {
@@ -180,11 +205,8 @@ func Render(e Event) string {
 	if e.DurationMS != 0 {
 		fmt.Fprintf(&out, " duration=%.3fms", e.DurationMS)
 	}
-	if len(e.Fields) > 0 {
-		data, err := json.Marshal(e.Fields)
-		if err == nil {
-			fmt.Fprintf(&out, " %s", data)
-		}
+	if len(fields) > 0 {
+		fmt.Fprintf(&out, " %s", fields)
 	}
 	return out.String()
 }

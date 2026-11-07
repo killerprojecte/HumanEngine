@@ -11,10 +11,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -24,6 +26,7 @@ type Server struct {
 	schemas   *contract.Schemas
 	token     string
 	logs      *observability.Logger
+	owned     *ownership
 }
 
 func Open(ctx context.Context, database, token string, logs *observability.Logger) (*Server, error) {
@@ -50,10 +53,28 @@ func Open(ctx context.Context, database, token string, logs *observability.Logge
 		main.Close()
 		return nil, err
 	}
-	return &Server{main: main, authority: authority, schemas: schemas, token: token, logs: logs}, nil
+	return &Server{main: main, authority: authority, schemas: schemas, token: token, logs: logs, owned: &ownership{close: func() error { return errors.Join(authority.Close(), main.Close()) }}}, nil
 }
-func (s *Server) Close() error { return errors.Join(s.authority.Close(), s.main.Close()) }
+
+// Close releases only resources acquired by Open. New borrows its dependencies.
+func (s *Server) Close() error {
+	if s.owned == nil {
+		return nil
+	}
+	s.owned.once.Do(func() { s.owned.err = s.owned.close() })
+	return s.owned.err
+}
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.serveHTTP(w, r, true)
+}
+
+// ServeUnavailable preserves authentication, headers and route semantics without
+// accessing dependencies after their owner has shut down.
+func (s *Server) ServeUnavailable(w http.ResponseWriter, r *http.Request) {
+	s.serveHTTP(w, r, false)
+}
+
+func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available bool) {
 	id := r.Header.Get("X-Request-ID")
 	if id == "" {
 		b := make([]byte, 16)
@@ -75,6 +96,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if (r.Method != "GET" && r.Method != "HEAD") || (r.URL.Path != "/api/settings" && r.URL.Path != "/api/models" && r.URL.Path != "/api/scenes") {
 		respondError(w, 503, "This API has not yet migrated to the Go preview")
+		return
+	}
+	if !available {
+		respondError(w, 503, "Request unavailable; outcome may be unknown. Do not automatically retry writes.")
 		return
 	}
 	emitted := false
@@ -119,7 +144,7 @@ func (s *Server) projection(ctx context.Context, q *sql.Conn, path string) ([]by
 		if err != nil {
 			return nil, err
 		}
-		return json.Marshal(value)
+		return marshalProjection(value)
 	case "/api/models":
 		raw, err := config(ctx, q, "models", []byte(`{"providers":[],"models":[],"routes":[]}`))
 		if err != nil {
@@ -144,28 +169,75 @@ func (s *Server) projection(ctx context.Context, q *sql.Conn, path string) ([]by
 			}
 			provider["credentialConfigured"] = exists
 		}
-		return json.Marshal(value)
+		return marshalProjection(value)
 	case "/api/scenes":
 		rows, err := q.QueryContext(ctx, "SELECT value FROM scenes ORDER BY id")
 		if err != nil {
 			return nil, err
 		}
 		defer rows.Close()
-		values := []json.RawMessage{}
+		values := []any{}
 		for rows.Next() {
 			var raw string
 			if err = rows.Scan(&raw); err != nil {
 				return nil, err
 			}
-			if !json.Valid([]byte(raw)) {
-				return nil, errors.New("invalid scene JSON")
+			value, err := jsjson.Parse(raw)
+			if err != nil {
+				return nil, err
 			}
-			values = append(values, json.RawMessage(raw))
+			values = append(values, value)
 		}
 		if err = rows.Err(); err != nil {
 			return nil, err
 		}
-		return json.Marshal(values)
+		return jsjson.Marshal(values)
 	}
 	return nil, fmt.Errorf("unknown config projection %s", path)
+}
+
+// HTTP object key order is not contractual. This local conversion explicitly
+// chooses sorted keys and preserves canonical WTF-8 values through jsjson.
+// Never use it for persistence, recovery payloads, or JSON.stringify hash input:
+// the schema-validation maps have already discarded source insertion order.
+func marshalProjection(value any) ([]byte, error) {
+	converted, err := projectionJSON(value)
+	if err != nil {
+		return nil, err
+	}
+	return jsjson.Marshal(converted)
+}
+
+func projectionJSON(value any) (any, error) {
+	switch v := value.(type) {
+	case map[string]any:
+		keys := make([]string, 0, len(v))
+		for key := range v {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		out := new(jsjson.Object)
+		for _, key := range keys {
+			child, err := projectionJSON(v[key])
+			if err != nil {
+				return nil, err
+			}
+			if err = out.Set(key, child); err != nil {
+				return nil, err
+			}
+		}
+		return out, nil
+	case []any:
+		out := make([]any, len(v))
+		for i, child := range v {
+			var err error
+			out[i], err = projectionJSON(child)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return out, nil
+	default:
+		return value, nil
+	}
 }

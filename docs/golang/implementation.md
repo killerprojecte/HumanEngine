@@ -1,0 +1,69 @@
+# Go server migration
+
+Status: implementation in progress on `feat/refactor-golang`. Not a production replacement yet.
+
+The baseline is GitHub master `24fe8a773d87f2f09996e259fca46524c2c02928`. The frozen OpenAPI and source hashes in `backend/compatibility` define the migration oracle. User-requested Go migration supersedes the contributor guide's TypeScript-runtime requirement on this branch. Nuxt remains the management UI.
+
+## Modules
+
+- `cmd/humanengine`: composition and process lifecycle, no business logic.
+- `internal/contract`: existing REST validation and compatibility projections.
+- `internal/credentials`: compatible AES-GCM storage and installation key custody.
+- `internal/observability`: structured events, readable rendering and scoped correlation.
+- `internal/storage`: SQLite main transactions and independent WAL query snapshots.
+- `internal/recovery`: authority chain, eligibility, restore and publication coordination.
+- `internal/httpapi`: authenticated transports; no global bot queue for queries.
+- `internal/runtime`: scene scheduling, Planner/Replyer, guarded sequential delivery.
+- `internal/models`: provider protocols, model routes, usage and cancellation.
+- `internal/memory`: source, writes, queries, learning and derived projections.
+- `internal/media`: ingestion, animation decoding and embedding/image operations.
+- `internal/plugins`: lifecycle, lazy shared Node V1 and WASM V2 host.
+- `plugins`: source and distributed WASM artifacts for all four builtins.
+
+A module is not complete merely because its directory or interface exists. Production startup remains the existing server until behavior, migration, fault, load and frontend checks pass. Existing limits are compatibility facts, not permission to add new protective caps.
+
+## Acceptance
+
+Each vertical slice must demonstrate real work, not proxy server requests back to the old bot. Cross-language fixtures cover JSON defaults, absence/null distinctions, cryptographic bytes and role aliases. Model/adapter deterministic traces compare decisions, source dependencies, actions and receipts. SQLite fault tests cover durable intent/main rollback, old backup restore, historical corruption, cancellation and lock handoffs. TCP HTTP load tests measure latency distributions, CPU, allocations, scan counts and lock waits. Test fixtures must not send real chat messages or call paid providers.
+
+No main merge or deployment is part of this branch's implementation. Staged commits are progress checkpoints, not an assertion of full parity.
+
+## Implemented checkpoint: query preview
+
+Go credential envelopes match a Node-generated Unicode/AAD fixture byte-for-byte. Installation key loading preserves existing keys, rejects missing keys when ciphertext exists and rejects symlinks/insecure modes. JSON and readable diagnostic sinks run off the request path; shutdown drains accepted events and reports delivery failures without dropping or truncating events.
+
+`make -C backend test differential` builds a real TCP Go preview and compares settings, models and scenes against values produced by the current TypeScript Store. The preview reads an existing SQLite copy and verifies authority before publishing. Repeated unchanged reads reuse a connection-local audit; external commits re-audit. Main ACK gaps and altered chain hashes reject publication. Existing main and authority formats are not migrated or rewritten.
+
+Run only on a test copy: `backend/bin/humanengine --read-only-preview --database /path/to/copy.sqlite`. It is deliberately **not a production server replacement**. All other routes return an explicit unavailable response. Domain event validation currently includes source, fingerprint, assertion, security-state, eligibility, source edit heads, configuration/scene flags, habit deletion, meme state/deletion and experience state/deletion; other domains reject with `recovery_event_domain_not_migrated` until ported. Full scheduling/timezone calculation parity, remaining schema custom refinements, authority writer concurrency, bot behavior and complete plugin parity remain pending. This checkpoint does not establish final performance acceptance.
+
+## In progress: executable plugin lifecycle
+
+A real Go/WASI reactor now runs typing-delay policy inside wazero. Its Unicode17 grapheme handling and timing have differential fixtures against Node24 Intl.Segmenter. Tests compile actual WASM bytes, invoke exports, unload both the module and compiled code, then reload. The distributed artifacts and partially migrated operations for the other three builtins are described below.
+
+V1 now has a lazy shared Node process with separate worker isolates for enabled JS plugins. Tests verify no startup with zero V1 plugins, shared PID with two plugins, callback rejection after disable, process exit after the last disable and interrupted setup unload. Isolates are terminated, rather than pretending that deleting an ESM import reference unloads its module cache. Tool/action/hook registrations are being bridged; model protocol, adapter, scoped cache and core-send bridges still require implementation before claiming full V1 compatibility.
+
+The plugin response schema has an additive optional `apiVersion`; legacy TypeScript plugins report V1 and the management list renders a V1/V2 badge. Generated REST types are regenerated from the source schema rather than edited manually. The Go plugin manager is not yet connected to production bot startup.
+
+The distribution build now compiles four real WASI reactors and embeds their bytes into the Go executable (`make bundle`). `--inspect-builtins` instantiates the distributed modules, obtains their V2 manifests and unloads them. The source-free test copies only the executable to a new directory and removes Node/Go from PATH. This proves packaging and guest execution, not complete plugin behavior. Current implemented guest operations also include inert WebRead extraction, WebSearch API request/result policy and SnowLuma CQ/opaque identity handling. Their networking, caches, adapter sessions and runtime effect integration remain pending.
+
+## Validation status
+
+Checkpoint one passed Go race tests/vet and real TCP differential tests. Subsequent focused checks passed V1 process/isolate lifecycle, actual WASM execution for each builtin's migrated operations, Unicode/CQ/identifier/parser fixtures, 30 legacy plugin tests and runtime/frontend typechecking. The second checkpoint passed Go race tests/vet, real TCP differential tests, embedded-module and source-free bundle execution, REST contract checks and frontend/runtime typechecking. The aggregate production build was killed after Nitro bundling; a separate rerun of the complete production build passed. Existing es2019/BigInt warnings remain. These checks do not establish full backend parity or performance acceptance.
+
+## Next compatibility checkpoint
+
+Nonempty model HTTP fixtures now cover provider defaults, presence-only credential reporting and persisted legacy thinker routes. Provider URLs use a pinned WHATWG parser and acceptance fixtures from Node, including empty query/hash markers and non-ASCII hosts. Zod 4.6 measures its schema string limits in Unicode code points; handwritten ledger/configuration string checks still use UTF-16 units. Tests preserve that distinction rather than assuming one rule for all strings.
+
+Plugin teardown retains a generation until it has actually exited. V1 control messages use an ordered queue independent of pipe backpressure, cancelled setup/disable can explicitly terminate an unresponsive isolate, and already-exited workers reject calls instead of hanging. WASM cancellation also covers guest free functions; failed/cancelled closed instances retire before explicit reload. No automatic replay or new production timeout caps are introduced. A crashed V1 process still requires explicit disable/re-enable; complete plugin configuration-schema validation and the remaining typed bridges are pending.
+
+The first aggregate pass for this checkpoint passed Go race/vet, HTTP differential, bundled WASM/source-free execution and REST/frontend checks. Independent review then identified additional URL normalization, timezone acceptance, UUID edge and scene revision/coercion cases. The final corrected tree passed Go race/vet, real HTTP differential, four-module bundled/source-free execution and REST contract checks again. Coverage includes 34 URL cases, 14 model cases, 7 scene revision cases, 1,291 timezone cases and 563 recovery-event cases. Frontend/runtime typechecking passed in the preceding aggregate run; frontend files did not change afterward. The timezone acceptance census uses Node 24.22.1 / ICU 78.3 / tzdata 2026e as oracle; porting scheduling calculations is separate.
+
+Remaining byte-level compatibility work includes lone UTF-16 surrogates accepted in some JavaScript strings: Go's standard JSON decoder replaces them. The preview is not a migration writer and must not be used to rewrite such data. A lossless JSON-string representation and fixtures are required before declaring migration parity.
+
+## Bot admission and V1 call contexts
+
+The topic-local turn admission coordinator now executes in Go with source-pinned differential traces: 43 traces, 1,263 transitions and 32 invalid-configuration cases. It preserves quiet/addressed/max-wait decisions, exact wake ownership, generation invalidation, trusted edits, recall, one-shot WAIT rechecks and empty restart. It does not start timers or models, restore queued work, or add policy limits. See `backend/internal/turnwait/README.md` for the surrounding runtime integration contract; this package is not yet a running Go bot.
+
+V1 calls now propagate cancellation to the individual callback rather than cancelling other calls or the entire plugin. Cancelled RPC bookkeeping retires even if plugin code ignores its signal. Tool completion expires its effect lease, while send hooks retain turn/plugin signal lifetime. Callbacks keep their original receiver, reconstructed dependency Sets and frozen scene/event data. Admission rechecks cancellation under its lock, and plugin metadata cannot replace internal registration handles or kinds. Full typed cache/send/adapter/model bridges and production manager composition remain unfinished.
+
+Focused repeated race tests and independent review passed. The final tree passed whole-backend race tests/vet, real HTTP differential, embedded-module tests, source-free bundle execution, pinned trace regeneration checks and REST contract checks. The initial bundle link exhausted temporary filesystem space; rerunning the bundle and remaining checks with a different temporary directory passed without source changes.

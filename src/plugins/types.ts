@@ -22,6 +22,8 @@ export interface AdminPage {
   entry: string
 }
 export interface PluginManifest {
+  /** Omitted by legacy local plugins, which use the V1 Node API. */
+  apiVersion?: 1 | 2
   id: string
   name: string
   version: string

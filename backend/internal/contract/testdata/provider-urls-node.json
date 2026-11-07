@@ -1,0 +1,157 @@
+[
+  {
+    "input": "https://example.com",
+    "valid": true,
+    "output": "https://example.com"
+  },
+  {
+    "input": "HTTP://EXAMPLE.com:80/a",
+    "valid": true,
+    "output": "HTTP://EXAMPLE.com:80/a"
+  },
+  {
+    "input": "https://例え.テスト/v1",
+    "valid": true,
+    "output": "https://例え.テスト/v1"
+  },
+  {
+    "input": " https://example.com/ ",
+    "valid": true,
+    "output": "https://example.com/"
+  },
+  {
+    "input": "http:example.com",
+    "valid": true,
+    "output": "http:example.com"
+  },
+  {
+    "input": "http:\\\\example.com\\api",
+    "valid": true,
+    "output": "http:\\\\example.com\\api"
+  },
+  {
+    "input": "https://example.com/?",
+    "valid": true,
+    "output": "https://example.com/?"
+  },
+  {
+    "input": "https://example.com/#",
+    "valid": true,
+    "output": "https://example.com/#"
+  },
+  {
+    "input": "https://example.com/?#",
+    "valid": true,
+    "output": "https://example.com/?#"
+  },
+  {
+    "input": "https://example.com/?q=1",
+    "valid": false
+  },
+  {
+    "input": "https://example.com/#x",
+    "valid": false
+  },
+  {
+    "input": "https://user@example.com",
+    "valid": false
+  },
+  {
+    "input": "https://:secret@example.com",
+    "valid": false
+  },
+  {
+    "input": "https://@example.com",
+    "valid": true,
+    "output": "https://@example.com"
+  },
+  {
+    "input": "https://example.com:65536",
+    "valid": false
+  },
+  {
+    "input": "https://[::1]/v1",
+    "valid": true,
+    "output": "https://[::1]/v1"
+  },
+  {
+    "input": "http://0x7f000001",
+    "valid": true,
+    "output": "http://0x7f000001"
+  },
+  {
+    "input": "https://exa mple.com",
+    "valid": false
+  },
+  {
+    "input": "https://example.com/%zz",
+    "valid": true,
+    "output": "https://example.com/%zz"
+  },
+  {
+    "input": "https://example.com/\tpath",
+    "valid": true,
+    "output": "https://example.com/path"
+  },
+  {
+    "input": "",
+    "valid": false
+  },
+  {
+    "input": "not a url",
+    "valid": false
+  },
+  {
+    "input": "/relative",
+    "valid": false
+  },
+  {
+    "input": "ftp://example.com",
+    "valid": false
+  },
+  {
+    "input": "file:///tmp/x",
+    "valid": false
+  },
+  {
+    "input": "javascript:alert(1)",
+    "valid": false
+  },
+  {
+    "input": "http://",
+    "valid": false
+  },
+  {
+    "input": "https://%",
+    "valid": false
+  },
+  {
+    "input": "https://example.com:0",
+    "valid": true,
+    "output": "https://example.com:0"
+  },
+  {
+    "input": "https://example.com./v1",
+    "valid": true,
+    "output": "https://example.com./v1"
+  },
+  {
+    "input": " https://example.com﻿",
+    "valid": true,
+    "output": "https://example.com"
+  },
+  {
+    "input": "https://example.com",
+    "valid": false
+  },
+  {
+    "input": " https://exa\nmple.com/v1 ",
+    "valid": true,
+    "output": "https://example.com/v1"
+  },
+  {
+    "input": "﻿https://example.com/\tpath",
+    "valid": true,
+    "output": "https://example.com/path"
+  }
+]

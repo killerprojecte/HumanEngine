@@ -1,0 +1,23 @@
+name: Go migration
+on:
+  push:
+    branches: [feat/refactor-golang]
+  pull_request:
+    paths: ['backend/**', '.github/workflows/golang.yml']
+permissions:
+  contents: read
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.22.1'
+          cache: npm
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - run: npm ci
+      - run: make -C backend test differential test-bundle bundle

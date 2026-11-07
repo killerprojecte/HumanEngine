@@ -1,0 +1,72 @@
+[
+  {
+    "html": "<title>A &amp; B</title><main><p>Hello <b>world</b></p><p>中文</p></main>",
+    "expected": {
+      "title": "A & B",
+      "text": "Hello world\n\n中文"
+    }
+  },
+  {
+    "html": "<head><title>Page</title><meta name=\"x\">hidden</head><body>visible</body>",
+    "expected": {
+      "title": "Page",
+      "text": "visible"
+    }
+  },
+  {
+    "html": "<script>secret()</script><style>secret</style><div hidden>hide</div><p aria-hidden=\"true\">hide</p><p>show</p>",
+    "expected": {
+      "title": "",
+      "text": "show"
+    }
+  },
+  {
+    "html": "<p>&amp;lt; &lt; &#x1f600;</p>",
+    "expected": {
+      "title": "",
+      "text": "&lt; < 😀"
+    }
+  },
+  {
+    "html": "<pre> a  b\n\n\n c </pre>",
+    "expected": {
+      "title": "",
+      "text": "a b\n\nc"
+    }
+  },
+  {
+    "html": "<div>one<br>two<hr>three</div>",
+    "expected": {
+      "title": "",
+      "text": "one\n\ntwo\n\nthree"
+    }
+  },
+  {
+    "html": "<table>loose<tr><td>A</td><td>B</td></tr></table>",
+    "expected": {
+      "title": "",
+      "text": "loose\nAB"
+    }
+  },
+  {
+    "html": "<p>one<p>two",
+    "expected": {
+      "title": "",
+      "text": "one\ntwo"
+    }
+  },
+  {
+    "html": "plain text",
+    "expected": {
+      "title": "",
+      "text": "plain text"
+    }
+  },
+  {
+    "html": "<svg><text>hide</text></svg><span>keep</span>",
+    "expected": {
+      "title": "",
+      "text": "keep"
+    }
+  }
+]

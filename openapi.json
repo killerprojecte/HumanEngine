@@ -7097,6 +7097,22 @@
           "version": {
             "type": "string"
           },
+          "apiVersion": {
+            "anyOf": [
+              {
+                "type": "number",
+                "enum": [
+                  1
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  2
+                ]
+              }
+            ]
+          },
           "capabilities": {
             "type": "array",
             "items": {

@@ -1,0 +1,30 @@
+{
+  "baselineCommit": "24fe8a773d87f2f09996e259fca46524c2c02928",
+  "files": {
+    "openapi.json": "7ece8eb57a30ce038d5aab4545d5b58682b11daa873e062186e9ffd3a68416b0",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a",
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/admin.ts": "5669bd78849313992f8770501a873590ddb762024422956cfb6312dd67a9165e",
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/model-roles.ts": "d7014ef6614cc315df94c5773e54e5c990195ac98c2e7064833616a31412ab83",
+    "src/plugins/types.ts": "d4f1f3fec765688f9705098b951bb66dd4b94e8c74032cc090a4e25a36df5c59",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "src/memory/recovery/eligibility-contract.ts": "f27f53c8e2f8f913d0e5cf2eb61aed300b40c2451a0e6e0b000ea6e024c7c1ef",
+    "src/secrets/store.ts": "489d4cda773e2c7ddc3062823f4e18f54bf818b66757da11015a918a2bb08393"
+  },
+  "invariants": [
+    "scene/person isolation",
+    "simulation has no real sends or persistent learning",
+    "recall and edits invalidate dependent unsent work",
+    "no restart replay or outgoing outbox",
+    "unknown delivery is never automatically retried",
+    "authority intent precedes main acknowledgement",
+    "reader capability 11",
+    "credential reads never return keys or ciphertext",
+    "thinker input aliases replyer",
+    "ordered model fallback only",
+    "V1 Node starts only with enabled V1 plugins and exits after last unload",
+    "V2 builtins ship as executable WASM; disable unloads"
+  ]
+}

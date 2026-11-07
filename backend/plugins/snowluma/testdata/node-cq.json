@@ -1,0 +1,130 @@
+[
+  {
+    "input": "",
+    "expected": []
+  },
+  {
+    "input": "plain &amp; text",
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "plain & text"
+        }
+      }
+    ]
+  },
+  {
+    "input": "before[CQ:at,qq=123]after",
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "before"
+        }
+      },
+      {
+        "type": "at",
+        "data": {
+          "qq": "123"
+        }
+      },
+      {
+        "type": "text",
+        "data": {
+          "text": "after"
+        }
+      }
+    ]
+  },
+  {
+    "input": "[CQ:reply,id=7][CQ:text,text=a&#44;b&#91;c&#93;]",
+    "expected": [
+      {
+        "type": "reply",
+        "data": {
+          "id": "7"
+        }
+      },
+      {
+        "type": "text",
+        "data": {
+          "text": "a,b[c]"
+        }
+      }
+    ]
+  },
+  {
+    "input": "broken[CQ:bad-name,x=1][CQ:at,qq=all]",
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "broken[CQ:bad-name,x=1]"
+        }
+      },
+      {
+        "type": "at",
+        "data": {
+          "qq": "all"
+        }
+      }
+    ]
+  },
+  {
+    "input": "[CQ:[CQ:at,qq=2]",
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "[CQ:"
+        }
+      },
+      {
+        "type": "at",
+        "data": {
+          "qq": "2"
+        }
+      }
+    ]
+  },
+  {
+    "input": "[CQ:image,url=https://example.com/?a=x&amp;b=y]",
+    "expected": [
+      {
+        "type": "image",
+        "data": {
+          "url": "https://example.com/?a=x&b=y"
+        }
+      }
+    ]
+  },
+  {
+    "input": "未闭合[CQ:at,qq=1",
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "未闭合[CQ:at,qq=1"
+        }
+      }
+    ]
+  },
+  {
+    "input": "a]b]c[CQ:face,id=123]",
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "a]b]c"
+        }
+      },
+      {
+        "type": "face",
+        "data": {
+          "id": "123"
+        }
+      }
+    ]
+  }
+]

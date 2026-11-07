@@ -1,0 +1,143 @@
+[
+  {
+    "input": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "proactiveEnabled": false,
+      "memoryReadRevision": 0
+    },
+    "valid": true,
+    "output": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "memoryReadRevision": 0,
+      "proactiveEnabled": false
+    }
+  },
+  {
+    "input": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "proactiveEnabled": false,
+      "memoryReadRevision": 1
+    },
+    "valid": true,
+    "output": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "memoryReadRevision": 1,
+      "proactiveEnabled": false
+    }
+  },
+  {
+    "input": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "proactiveEnabled": false,
+      "memoryReadRevision": -1
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "proactiveEnabled": false,
+      "memoryReadRevision": 1.5
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "proactiveEnabled": false,
+      "memoryReadRevision": 9007199254740991
+    },
+    "valid": true,
+    "output": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "memoryReadRevision": 9007199254740991,
+      "proactiveEnabled": false
+    }
+  },
+  {
+    "input": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "proactiveEnabled": false,
+      "memoryReadRevision": 9007199254740992
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "bot",
+      "platformSceneId": "scene",
+      "name": "fixture",
+      "participationEnabled": false,
+      "learningEnabled": false,
+      "proactiveEnabled": false,
+      "memoryReadRevision": null
+    },
+    "valid": false
+  }
+]

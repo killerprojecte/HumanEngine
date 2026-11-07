@@ -1,0 +1,101 @@
+{
+  "id": "web-search",
+  "name": "Web search",
+  "version": "0.1.0",
+  "description": "Structured untrusted web results via Tavily, You, You News and DeepSeek APIs; optional experimental Bing, Google, Sogou and DuckDuckGo HTML. Queries are sent to the selected provider.",
+  "capabilities": [
+    "tool",
+    "schema-form"
+  ],
+  "configSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "provider": {
+        "default": "bing",
+        "type": "string",
+        "enum": [
+          "bing",
+          "google",
+          "sogou",
+          "duckduckgo",
+          "tavily",
+          "you",
+          "you_news",
+          "deepseek"
+        ]
+      },
+      "fallbackProvider": {
+        "default": "none",
+        "type": "string",
+        "enum": [
+          "none",
+          "bing",
+          "google",
+          "sogou",
+          "duckduckgo",
+          "tavily",
+          "you",
+          "you_news",
+          "deepseek"
+        ]
+      },
+      "allowExperimentalHtml": {
+        "default": false,
+        "description": "Opt in to best-effort public HTML search. Markup, availability and terms vary; this is not a licensed search API or DDGS.",
+        "type": "boolean"
+      },
+      "maxResults": {
+        "default": 5,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10
+      },
+      "timeoutMs": {
+        "default": 10000,
+        "type": "integer",
+        "minimum": 500,
+        "maximum": 30000
+      },
+      "maxResponseBytes": {
+        "default": 262144,
+        "description": "Legacy setting name: parser memory budget only (4 KiB–16 MiB), not a download limit. Complete responses are streamed to the shared result cache; larger responses return parseLimited and can be read in full or by range.",
+        "type": "integer",
+        "minimum": 4096,
+        "maximum": 16777216
+      },
+      "maxConcurrency": {
+        "default": 2,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4
+      },
+      "tavilyKey": {
+        "secret": true,
+        "type": "string",
+        "maxLength": 16384
+      },
+      "clearTavilyKey": {
+        "type": "boolean"
+      },
+      "youKey": {
+        "secret": true,
+        "type": "string",
+        "maxLength": 16384
+      },
+      "clearYouKey": {
+        "type": "boolean"
+      },
+      "deepseekKey": {
+        "secret": true,
+        "type": "string",
+        "maxLength": 16384
+      },
+      "clearDeepseekKey": {
+        "type": "boolean"
+      }
+    },
+    "additionalProperties": false
+  },
+  "apiVersion": 2
+}

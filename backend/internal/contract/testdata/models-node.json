@@ -1,0 +1,649 @@
+[
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": true,
+    "output": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1",
+          "credentialEnv": "",
+          "retryCount": 2,
+          "timeoutMs": 30000
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ],
+          "embeddingBatchSize": 4
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    }
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": true,
+    "output": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1",
+          "credentialEnv": "",
+          "retryCount": 2,
+          "timeoutMs": 30000
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ],
+          "embeddingBatchSize": 4
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    }
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": true,
+    "output": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1",
+          "credentialEnv": "",
+          "retryCount": 2,
+          "timeoutMs": 30000
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ],
+          "embeddingBatchSize": 4
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    }
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        },
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        },
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        },
+        {
+          "role": "replyer",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "absent",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "absent"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model",
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ],
+      "unexpected": true
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1",
+          "credentialConfigured": true,
+          "imageUploadLimits": {
+            "maxWidth": 256
+          }
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": true,
+    "output": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1",
+          "credentialEnv": "",
+          "credentialConfigured": true,
+          "imageUploadLimits": {
+            "maxWidth": 256
+          },
+          "retryCount": 2,
+          "timeoutMs": 30000
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ],
+          "embeddingBatchSize": 4
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    }
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1"
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": []
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  },
+  {
+    "input": {
+      "providers": [
+        {
+          "id": "provider",
+          "name": "Fixture",
+          "protocol": "openai-chat",
+          "baseUrl": "https://example.com/v1",
+          "retryCount": null
+        }
+      ],
+      "models": [
+        {
+          "id": "model",
+          "displayName": "Fixture",
+          "providerId": "provider",
+          "apiModelName": "fixture",
+          "capabilities": [
+            "text",
+            "tools"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "role": "thinker",
+          "orderedModelIds": [
+            "model"
+          ],
+          "timeoutMs": 1000
+        }
+      ]
+    },
+    "valid": false
+  }
+]

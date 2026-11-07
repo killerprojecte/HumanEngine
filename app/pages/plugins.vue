@@ -683,7 +683,10 @@ const capabilityLabel = (name: string) => (capabilityKeys[name] ? t(capabilityKe
             pluginDescription(plugin)
           }}</span
           ><span class="block text-xs text-muted mt-2"
-            >v{{ plugin.version }} · {{ t(plugin.builtin ? 'pgBuiltin' : 'pgLocal') }}</span
+            >v{{ plugin.version }} · {{ t(plugin.builtin ? 'pgBuiltin' : 'pgLocal') }}
+            <UBadge size="xs" color="neutral" variant="subtle" class="ml-2"
+              >V{{ plugin.apiVersion ?? 1 }}</UBadge
+            ></span
           >
         </button>
         <p v-if="!visiblePlugins.length" class="p-4 text-sm text-muted">

@@ -128,6 +128,7 @@ const Plugin = z
     name: z.string(),
     description: z.string(),
     version: z.string(),
+    apiVersion: z.union([z.literal(1), z.literal(2)]).optional(),
     capabilities: z.array(z.string()),
     configSchema: z.record(z.string(), z.unknown()),
     builtin: z.boolean(),

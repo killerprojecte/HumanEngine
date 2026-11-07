@@ -164,6 +164,7 @@ export class PluginManager {
   list() {
     return [...this.loaded.values()].map((p) => ({
       ...p.plugin.manifest,
+      apiVersion: p.plugin.manifest.apiVersion ?? 1,
       configSchema: publicSchema(p.plugin.manifest.configSchema),
       builtin: p.builtin,
       enabled: p.enabled,

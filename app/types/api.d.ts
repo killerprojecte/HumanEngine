@@ -7458,6 +7458,7 @@ export interface components {
             name: string;
             description: string;
             version: string;
+            apiVersion?: 1 | 2;
             capabilities: string[];
             configSchema: {
                 [key: string]: unknown;

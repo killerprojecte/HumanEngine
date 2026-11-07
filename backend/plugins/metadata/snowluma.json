@@ -1,0 +1,95 @@
+{
+  "id": "snowluma",
+  "name": "SnowLuma",
+  "version": "0.2.0",
+  "description": "Built-in SnowLuma adapter with WebSocket or HTTP actions and authenticated HTTP events.",
+  "capabilities": [
+    "adapter",
+    "history",
+    "recall",
+    "schema-form"
+  ],
+  "configSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "transport": {
+        "default": "websocket",
+        "description": "Omitted means legacy WebSocket.",
+        "type": "string",
+        "enum": [
+          "websocket",
+          "http"
+        ]
+      },
+      "url": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 2048
+      },
+      "accountId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "token": {
+        "secret": true,
+        "type": "string",
+        "maxLength": 16384
+      },
+      "clearToken": {
+        "type": "boolean"
+      },
+      "eventToken": {
+        "secret": true,
+        "type": "string",
+        "maxLength": 16384
+      },
+      "clearEventToken": {
+        "type": "boolean"
+      },
+      "credentialEnv": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "eventHost": {
+        "default": "127.0.0.1",
+        "type": "string",
+        "enum": [
+          "127.0.0.1",
+          "::1",
+          "0.0.0.0",
+          "::"
+        ]
+      },
+      "eventPort": {
+        "description": "Required for HTTP transport.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 65535
+      },
+      "eventPath": {
+        "default": "/onebot/events",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256,
+        "pattern": "^\\/[a-zA-Z0-9/_-]+$"
+      },
+      "eventCredentialEnv": {
+        "description": "Optional legacy environment reference; prefer the database-backed event signature secret.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    },
+    "required": [
+      "url",
+      "accountId"
+    ],
+    "additionalProperties": false
+  },
+  "apiVersion": 2
+}

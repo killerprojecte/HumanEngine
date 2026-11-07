@@ -1,0 +1,5166 @@
+[
+  {
+    "input": "africa/abidjan",
+    "valid": true
+  },
+  {
+    "input": "africa/accra",
+    "valid": true
+  },
+  {
+    "input": "africa/addis_ababa",
+    "valid": true
+  },
+  {
+    "input": "africa/algiers",
+    "valid": true
+  },
+  {
+    "input": "africa/asmara",
+    "valid": true
+  },
+  {
+    "input": "africa/asmera",
+    "valid": true
+  },
+  {
+    "input": "africa/bamako",
+    "valid": true
+  },
+  {
+    "input": "africa/bangui",
+    "valid": true
+  },
+  {
+    "input": "africa/banjul",
+    "valid": true
+  },
+  {
+    "input": "africa/bissau",
+    "valid": true
+  },
+  {
+    "input": "africa/blantyre",
+    "valid": true
+  },
+  {
+    "input": "africa/brazzaville",
+    "valid": true
+  },
+  {
+    "input": "africa/bujumbura",
+    "valid": true
+  },
+  {
+    "input": "africa/cairo",
+    "valid": true
+  },
+  {
+    "input": "africa/casablanca",
+    "valid": true
+  },
+  {
+    "input": "africa/ceuta",
+    "valid": true
+  },
+  {
+    "input": "africa/conakry",
+    "valid": true
+  },
+  {
+    "input": "africa/dakar",
+    "valid": true
+  },
+  {
+    "input": "africa/dar_es_salaam",
+    "valid": true
+  },
+  {
+    "input": "africa/djibouti",
+    "valid": true
+  },
+  {
+    "input": "africa/douala",
+    "valid": true
+  },
+  {
+    "input": "africa/el_aaiun",
+    "valid": true
+  },
+  {
+    "input": "africa/freetown",
+    "valid": true
+  },
+  {
+    "input": "africa/gaborone",
+    "valid": true
+  },
+  {
+    "input": "africa/harare",
+    "valid": true
+  },
+  {
+    "input": "africa/johannesburg",
+    "valid": true
+  },
+  {
+    "input": "africa/juba",
+    "valid": true
+  },
+  {
+    "input": "africa/kampala",
+    "valid": true
+  },
+  {
+    "input": "africa/khartoum",
+    "valid": true
+  },
+  {
+    "input": "africa/kigali",
+    "valid": true
+  },
+  {
+    "input": "africa/kinshasa",
+    "valid": true
+  },
+  {
+    "input": "africa/lagos",
+    "valid": true
+  },
+  {
+    "input": "africa/libreville",
+    "valid": true
+  },
+  {
+    "input": "africa/lome",
+    "valid": true
+  },
+  {
+    "input": "africa/luanda",
+    "valid": true
+  },
+  {
+    "input": "africa/lubumbashi",
+    "valid": true
+  },
+  {
+    "input": "africa/lusaka",
+    "valid": true
+  },
+  {
+    "input": "africa/malabo",
+    "valid": true
+  },
+  {
+    "input": "africa/maputo",
+    "valid": true
+  },
+  {
+    "input": "africa/maseru",
+    "valid": true
+  },
+  {
+    "input": "africa/mbabane",
+    "valid": true
+  },
+  {
+    "input": "africa/mogadishu",
+    "valid": true
+  },
+  {
+    "input": "africa/monrovia",
+    "valid": true
+  },
+  {
+    "input": "africa/nairobi",
+    "valid": true
+  },
+  {
+    "input": "africa/ndjamena",
+    "valid": true
+  },
+  {
+    "input": "africa/niamey",
+    "valid": true
+  },
+  {
+    "input": "africa/nouakchott",
+    "valid": true
+  },
+  {
+    "input": "africa/ouagadougou",
+    "valid": true
+  },
+  {
+    "input": "africa/porto-novo",
+    "valid": true
+  },
+  {
+    "input": "africa/sao_tome",
+    "valid": true
+  },
+  {
+    "input": "africa/timbuktu",
+    "valid": true
+  },
+  {
+    "input": "africa/tripoli",
+    "valid": true
+  },
+  {
+    "input": "africa/tunis",
+    "valid": true
+  },
+  {
+    "input": "africa/windhoek",
+    "valid": true
+  },
+  {
+    "input": "america/adak",
+    "valid": true
+  },
+  {
+    "input": "america/anchorage",
+    "valid": true
+  },
+  {
+    "input": "america/anguilla",
+    "valid": true
+  },
+  {
+    "input": "america/antigua",
+    "valid": true
+  },
+  {
+    "input": "america/araguaina",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/buenos_aires",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/catamarca",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/comodrivadavia",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/cordoba",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/jujuy",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/la_rioja",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/mendoza",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/rio_gallegos",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/salta",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/san_juan",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/san_luis",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/tucuman",
+    "valid": true
+  },
+  {
+    "input": "america/argentina/ushuaia",
+    "valid": true
+  },
+  {
+    "input": "america/aruba",
+    "valid": true
+  },
+  {
+    "input": "america/asuncion",
+    "valid": true
+  },
+  {
+    "input": "america/atikokan",
+    "valid": true
+  },
+  {
+    "input": "america/atka",
+    "valid": true
+  },
+  {
+    "input": "america/bahia",
+    "valid": true
+  },
+  {
+    "input": "america/bahia_banderas",
+    "valid": true
+  },
+  {
+    "input": "america/barbados",
+    "valid": true
+  },
+  {
+    "input": "america/belem",
+    "valid": true
+  },
+  {
+    "input": "america/belize",
+    "valid": true
+  },
+  {
+    "input": "america/blanc-sablon",
+    "valid": true
+  },
+  {
+    "input": "america/boa_vista",
+    "valid": true
+  },
+  {
+    "input": "america/bogota",
+    "valid": true
+  },
+  {
+    "input": "america/boise",
+    "valid": true
+  },
+  {
+    "input": "america/buenos_aires",
+    "valid": true
+  },
+  {
+    "input": "america/cambridge_bay",
+    "valid": true
+  },
+  {
+    "input": "america/campo_grande",
+    "valid": true
+  },
+  {
+    "input": "america/cancun",
+    "valid": true
+  },
+  {
+    "input": "america/caracas",
+    "valid": true
+  },
+  {
+    "input": "america/catamarca",
+    "valid": true
+  },
+  {
+    "input": "america/cayenne",
+    "valid": true
+  },
+  {
+    "input": "america/cayman",
+    "valid": true
+  },
+  {
+    "input": "america/chicago",
+    "valid": true
+  },
+  {
+    "input": "america/chihuahua",
+    "valid": true
+  },
+  {
+    "input": "america/ciudad_juarez",
+    "valid": true
+  },
+  {
+    "input": "america/coral_harbour",
+    "valid": true
+  },
+  {
+    "input": "america/cordoba",
+    "valid": true
+  },
+  {
+    "input": "america/costa_rica",
+    "valid": true
+  },
+  {
+    "input": "america/coyhaique",
+    "valid": true
+  },
+  {
+    "input": "america/creston",
+    "valid": true
+  },
+  {
+    "input": "america/cuiaba",
+    "valid": true
+  },
+  {
+    "input": "america/curacao",
+    "valid": true
+  },
+  {
+    "input": "america/danmarkshavn",
+    "valid": true
+  },
+  {
+    "input": "america/dawson",
+    "valid": true
+  },
+  {
+    "input": "america/dawson_creek",
+    "valid": true
+  },
+  {
+    "input": "america/denver",
+    "valid": true
+  },
+  {
+    "input": "america/detroit",
+    "valid": true
+  },
+  {
+    "input": "america/dominica",
+    "valid": true
+  },
+  {
+    "input": "america/edmonton",
+    "valid": true
+  },
+  {
+    "input": "america/eirunepe",
+    "valid": true
+  },
+  {
+    "input": "america/el_salvador",
+    "valid": true
+  },
+  {
+    "input": "america/ensenada",
+    "valid": true
+  },
+  {
+    "input": "america/fort_nelson",
+    "valid": true
+  },
+  {
+    "input": "america/fort_wayne",
+    "valid": true
+  },
+  {
+    "input": "america/fortaleza",
+    "valid": true
+  },
+  {
+    "input": "america/glace_bay",
+    "valid": true
+  },
+  {
+    "input": "america/godthab",
+    "valid": true
+  },
+  {
+    "input": "america/goose_bay",
+    "valid": true
+  },
+  {
+    "input": "america/grand_turk",
+    "valid": true
+  },
+  {
+    "input": "america/grenada",
+    "valid": true
+  },
+  {
+    "input": "america/guadeloupe",
+    "valid": true
+  },
+  {
+    "input": "america/guatemala",
+    "valid": true
+  },
+  {
+    "input": "america/guayaquil",
+    "valid": true
+  },
+  {
+    "input": "america/guyana",
+    "valid": true
+  },
+  {
+    "input": "america/halifax",
+    "valid": true
+  },
+  {
+    "input": "america/havana",
+    "valid": true
+  },
+  {
+    "input": "america/hermosillo",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/indianapolis",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/knox",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/marengo",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/petersburg",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/tell_city",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/vevay",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/vincennes",
+    "valid": true
+  },
+  {
+    "input": "america/indiana/winamac",
+    "valid": true
+  },
+  {
+    "input": "america/indianapolis",
+    "valid": true
+  },
+  {
+    "input": "america/inuvik",
+    "valid": true
+  },
+  {
+    "input": "america/iqaluit",
+    "valid": true
+  },
+  {
+    "input": "america/jamaica",
+    "valid": true
+  },
+  {
+    "input": "america/jujuy",
+    "valid": true
+  },
+  {
+    "input": "america/juneau",
+    "valid": true
+  },
+  {
+    "input": "america/kentucky/louisville",
+    "valid": true
+  },
+  {
+    "input": "america/kentucky/monticello",
+    "valid": true
+  },
+  {
+    "input": "america/knox_in",
+    "valid": true
+  },
+  {
+    "input": "america/kralendijk",
+    "valid": true
+  },
+  {
+    "input": "america/la_paz",
+    "valid": true
+  },
+  {
+    "input": "america/lima",
+    "valid": true
+  },
+  {
+    "input": "america/los_angeles",
+    "valid": true
+  },
+  {
+    "input": "america/louisville",
+    "valid": true
+  },
+  {
+    "input": "america/lower_princes",
+    "valid": true
+  },
+  {
+    "input": "america/maceio",
+    "valid": true
+  },
+  {
+    "input": "america/managua",
+    "valid": true
+  },
+  {
+    "input": "america/manaus",
+    "valid": true
+  },
+  {
+    "input": "america/marigot",
+    "valid": true
+  },
+  {
+    "input": "america/martinique",
+    "valid": true
+  },
+  {
+    "input": "america/matamoros",
+    "valid": true
+  },
+  {
+    "input": "america/mazatlan",
+    "valid": true
+  },
+  {
+    "input": "america/mendoza",
+    "valid": true
+  },
+  {
+    "input": "america/menominee",
+    "valid": true
+  },
+  {
+    "input": "america/merida",
+    "valid": true
+  },
+  {
+    "input": "america/metlakatla",
+    "valid": true
+  },
+  {
+    "input": "america/mexico_city",
+    "valid": true
+  },
+  {
+    "input": "america/miquelon",
+    "valid": true
+  },
+  {
+    "input": "america/moncton",
+    "valid": true
+  },
+  {
+    "input": "america/monterrey",
+    "valid": true
+  },
+  {
+    "input": "america/montevideo",
+    "valid": true
+  },
+  {
+    "input": "america/montreal",
+    "valid": true
+  },
+  {
+    "input": "america/montserrat",
+    "valid": true
+  },
+  {
+    "input": "america/nassau",
+    "valid": true
+  },
+  {
+    "input": "america/new_york",
+    "valid": true
+  },
+  {
+    "input": "america/nipigon",
+    "valid": true
+  },
+  {
+    "input": "america/nome",
+    "valid": true
+  },
+  {
+    "input": "america/noronha",
+    "valid": true
+  },
+  {
+    "input": "america/north_dakota/beulah",
+    "valid": true
+  },
+  {
+    "input": "america/north_dakota/center",
+    "valid": true
+  },
+  {
+    "input": "america/north_dakota/new_salem",
+    "valid": true
+  },
+  {
+    "input": "america/nuuk",
+    "valid": true
+  },
+  {
+    "input": "america/ojinaga",
+    "valid": true
+  },
+  {
+    "input": "america/panama",
+    "valid": true
+  },
+  {
+    "input": "america/pangnirtung",
+    "valid": true
+  },
+  {
+    "input": "america/paramaribo",
+    "valid": true
+  },
+  {
+    "input": "america/phoenix",
+    "valid": true
+  },
+  {
+    "input": "america/port-au-prince",
+    "valid": true
+  },
+  {
+    "input": "america/port_of_spain",
+    "valid": true
+  },
+  {
+    "input": "america/porto_acre",
+    "valid": true
+  },
+  {
+    "input": "america/porto_velho",
+    "valid": true
+  },
+  {
+    "input": "america/puerto_rico",
+    "valid": true
+  },
+  {
+    "input": "america/punta_arenas",
+    "valid": true
+  },
+  {
+    "input": "america/rainy_river",
+    "valid": true
+  },
+  {
+    "input": "america/rankin_inlet",
+    "valid": true
+  },
+  {
+    "input": "america/recife",
+    "valid": true
+  },
+  {
+    "input": "america/regina",
+    "valid": true
+  },
+  {
+    "input": "america/resolute",
+    "valid": true
+  },
+  {
+    "input": "america/rio_branco",
+    "valid": true
+  },
+  {
+    "input": "america/rosario",
+    "valid": true
+  },
+  {
+    "input": "america/santa_isabel",
+    "valid": true
+  },
+  {
+    "input": "america/santarem",
+    "valid": true
+  },
+  {
+    "input": "america/santiago",
+    "valid": true
+  },
+  {
+    "input": "america/santo_domingo",
+    "valid": true
+  },
+  {
+    "input": "america/sao_paulo",
+    "valid": true
+  },
+  {
+    "input": "america/scoresbysund",
+    "valid": true
+  },
+  {
+    "input": "america/shiprock",
+    "valid": true
+  },
+  {
+    "input": "america/sitka",
+    "valid": true
+  },
+  {
+    "input": "america/st_barthelemy",
+    "valid": true
+  },
+  {
+    "input": "america/st_johns",
+    "valid": true
+  },
+  {
+    "input": "america/st_kitts",
+    "valid": true
+  },
+  {
+    "input": "america/st_lucia",
+    "valid": true
+  },
+  {
+    "input": "america/st_thomas",
+    "valid": true
+  },
+  {
+    "input": "america/st_vincent",
+    "valid": true
+  },
+  {
+    "input": "america/swift_current",
+    "valid": true
+  },
+  {
+    "input": "america/tegucigalpa",
+    "valid": true
+  },
+  {
+    "input": "america/thule",
+    "valid": true
+  },
+  {
+    "input": "america/thunder_bay",
+    "valid": true
+  },
+  {
+    "input": "america/tijuana",
+    "valid": true
+  },
+  {
+    "input": "america/toronto",
+    "valid": true
+  },
+  {
+    "input": "america/tortola",
+    "valid": true
+  },
+  {
+    "input": "america/vancouver",
+    "valid": true
+  },
+  {
+    "input": "america/virgin",
+    "valid": true
+  },
+  {
+    "input": "america/whitehorse",
+    "valid": true
+  },
+  {
+    "input": "america/winnipeg",
+    "valid": true
+  },
+  {
+    "input": "america/yakutat",
+    "valid": true
+  },
+  {
+    "input": "america/yellowknife",
+    "valid": true
+  },
+  {
+    "input": "antarctica/casey",
+    "valid": true
+  },
+  {
+    "input": "antarctica/davis",
+    "valid": true
+  },
+  {
+    "input": "antarctica/dumontdurville",
+    "valid": true
+  },
+  {
+    "input": "antarctica/macquarie",
+    "valid": true
+  },
+  {
+    "input": "antarctica/mawson",
+    "valid": true
+  },
+  {
+    "input": "antarctica/mcmurdo",
+    "valid": true
+  },
+  {
+    "input": "antarctica/palmer",
+    "valid": true
+  },
+  {
+    "input": "antarctica/rothera",
+    "valid": true
+  },
+  {
+    "input": "antarctica/south_pole",
+    "valid": true
+  },
+  {
+    "input": "antarctica/syowa",
+    "valid": true
+  },
+  {
+    "input": "antarctica/troll",
+    "valid": true
+  },
+  {
+    "input": "antarctica/vostok",
+    "valid": true
+  },
+  {
+    "input": "arctic/longyearbyen",
+    "valid": true
+  },
+  {
+    "input": "asia/aden",
+    "valid": true
+  },
+  {
+    "input": "asia/almaty",
+    "valid": true
+  },
+  {
+    "input": "asia/amman",
+    "valid": true
+  },
+  {
+    "input": "asia/anadyr",
+    "valid": true
+  },
+  {
+    "input": "asia/aqtau",
+    "valid": true
+  },
+  {
+    "input": "asia/aqtobe",
+    "valid": true
+  },
+  {
+    "input": "asia/ashgabat",
+    "valid": true
+  },
+  {
+    "input": "asia/ashkhabad",
+    "valid": true
+  },
+  {
+    "input": "asia/atyrau",
+    "valid": true
+  },
+  {
+    "input": "asia/baghdad",
+    "valid": true
+  },
+  {
+    "input": "asia/bahrain",
+    "valid": true
+  },
+  {
+    "input": "asia/baku",
+    "valid": true
+  },
+  {
+    "input": "asia/bangkok",
+    "valid": true
+  },
+  {
+    "input": "asia/barnaul",
+    "valid": true
+  },
+  {
+    "input": "asia/beirut",
+    "valid": true
+  },
+  {
+    "input": "asia/bishkek",
+    "valid": true
+  },
+  {
+    "input": "asia/brunei",
+    "valid": true
+  },
+  {
+    "input": "asia/calcutta",
+    "valid": true
+  },
+  {
+    "input": "asia/chita",
+    "valid": true
+  },
+  {
+    "input": "asia/choibalsan",
+    "valid": true
+  },
+  {
+    "input": "asia/chongqing",
+    "valid": true
+  },
+  {
+    "input": "asia/chungking",
+    "valid": true
+  },
+  {
+    "input": "asia/colombo",
+    "valid": true
+  },
+  {
+    "input": "asia/dacca",
+    "valid": true
+  },
+  {
+    "input": "asia/damascus",
+    "valid": true
+  },
+  {
+    "input": "asia/dhaka",
+    "valid": true
+  },
+  {
+    "input": "asia/dili",
+    "valid": true
+  },
+  {
+    "input": "asia/dubai",
+    "valid": true
+  },
+  {
+    "input": "asia/dushanbe",
+    "valid": true
+  },
+  {
+    "input": "asia/famagusta",
+    "valid": true
+  },
+  {
+    "input": "asia/gaza",
+    "valid": true
+  },
+  {
+    "input": "asia/harbin",
+    "valid": true
+  },
+  {
+    "input": "asia/hebron",
+    "valid": true
+  },
+  {
+    "input": "asia/ho_chi_minh",
+    "valid": true
+  },
+  {
+    "input": "asia/hong_kong",
+    "valid": true
+  },
+  {
+    "input": "asia/hovd",
+    "valid": true
+  },
+  {
+    "input": "asia/irkutsk",
+    "valid": true
+  },
+  {
+    "input": "asia/istanbul",
+    "valid": true
+  },
+  {
+    "input": "asia/jakarta",
+    "valid": true
+  },
+  {
+    "input": "asia/jayapura",
+    "valid": true
+  },
+  {
+    "input": "asia/jerusalem",
+    "valid": true
+  },
+  {
+    "input": "asia/kabul",
+    "valid": true
+  },
+  {
+    "input": "asia/kamchatka",
+    "valid": true
+  },
+  {
+    "input": "asia/karachi",
+    "valid": true
+  },
+  {
+    "input": "asia/kashgar",
+    "valid": true
+  },
+  {
+    "input": "asia/kathmandu",
+    "valid": true
+  },
+  {
+    "input": "asia/katmandu",
+    "valid": true
+  },
+  {
+    "input": "asia/khandyga",
+    "valid": true
+  },
+  {
+    "input": "asia/kolkata",
+    "valid": true
+  },
+  {
+    "input": "asia/krasnoyarsk",
+    "valid": true
+  },
+  {
+    "input": "asia/kuala_lumpur",
+    "valid": true
+  },
+  {
+    "input": "asia/kuching",
+    "valid": true
+  },
+  {
+    "input": "asia/kuwait",
+    "valid": true
+  },
+  {
+    "input": "asia/macao",
+    "valid": true
+  },
+  {
+    "input": "asia/macau",
+    "valid": true
+  },
+  {
+    "input": "asia/magadan",
+    "valid": true
+  },
+  {
+    "input": "asia/makassar",
+    "valid": true
+  },
+  {
+    "input": "asia/manila",
+    "valid": true
+  },
+  {
+    "input": "asia/muscat",
+    "valid": true
+  },
+  {
+    "input": "asia/nicosia",
+    "valid": true
+  },
+  {
+    "input": "asia/novokuznetsk",
+    "valid": true
+  },
+  {
+    "input": "asia/novosibirsk",
+    "valid": true
+  },
+  {
+    "input": "asia/omsk",
+    "valid": true
+  },
+  {
+    "input": "asia/oral",
+    "valid": true
+  },
+  {
+    "input": "asia/phnom_penh",
+    "valid": true
+  },
+  {
+    "input": "asia/pontianak",
+    "valid": true
+  },
+  {
+    "input": "asia/pyongyang",
+    "valid": true
+  },
+  {
+    "input": "asia/qatar",
+    "valid": true
+  },
+  {
+    "input": "asia/qostanay",
+    "valid": true
+  },
+  {
+    "input": "asia/qyzylorda",
+    "valid": true
+  },
+  {
+    "input": "asia/rangoon",
+    "valid": true
+  },
+  {
+    "input": "asia/riyadh",
+    "valid": true
+  },
+  {
+    "input": "asia/saigon",
+    "valid": true
+  },
+  {
+    "input": "asia/sakhalin",
+    "valid": true
+  },
+  {
+    "input": "asia/samarkand",
+    "valid": true
+  },
+  {
+    "input": "asia/seoul",
+    "valid": true
+  },
+  {
+    "input": "asia/shanghai",
+    "valid": true
+  },
+  {
+    "input": "asia/singapore",
+    "valid": true
+  },
+  {
+    "input": "asia/srednekolymsk",
+    "valid": true
+  },
+  {
+    "input": "asia/taipei",
+    "valid": true
+  },
+  {
+    "input": "asia/tashkent",
+    "valid": true
+  },
+  {
+    "input": "asia/tbilisi",
+    "valid": true
+  },
+  {
+    "input": "asia/tehran",
+    "valid": true
+  },
+  {
+    "input": "asia/tel_aviv",
+    "valid": true
+  },
+  {
+    "input": "asia/thimbu",
+    "valid": true
+  },
+  {
+    "input": "asia/thimphu",
+    "valid": true
+  },
+  {
+    "input": "asia/tokyo",
+    "valid": true
+  },
+  {
+    "input": "asia/tomsk",
+    "valid": true
+  },
+  {
+    "input": "asia/ujung_pandang",
+    "valid": true
+  },
+  {
+    "input": "asia/ulaanbaatar",
+    "valid": true
+  },
+  {
+    "input": "asia/ulan_bator",
+    "valid": true
+  },
+  {
+    "input": "asia/urumqi",
+    "valid": true
+  },
+  {
+    "input": "asia/ust-nera",
+    "valid": true
+  },
+  {
+    "input": "asia/vientiane",
+    "valid": true
+  },
+  {
+    "input": "asia/vladivostok",
+    "valid": true
+  },
+  {
+    "input": "asia/yakutsk",
+    "valid": true
+  },
+  {
+    "input": "asia/yangon",
+    "valid": true
+  },
+  {
+    "input": "asia/yekaterinburg",
+    "valid": true
+  },
+  {
+    "input": "asia/yerevan",
+    "valid": true
+  },
+  {
+    "input": "atlantic/azores",
+    "valid": true
+  },
+  {
+    "input": "atlantic/bermuda",
+    "valid": true
+  },
+  {
+    "input": "atlantic/canary",
+    "valid": true
+  },
+  {
+    "input": "atlantic/cape_verde",
+    "valid": true
+  },
+  {
+    "input": "atlantic/faeroe",
+    "valid": true
+  },
+  {
+    "input": "atlantic/faroe",
+    "valid": true
+  },
+  {
+    "input": "atlantic/jan_mayen",
+    "valid": true
+  },
+  {
+    "input": "atlantic/madeira",
+    "valid": true
+  },
+  {
+    "input": "atlantic/reykjavik",
+    "valid": true
+  },
+  {
+    "input": "atlantic/south_georgia",
+    "valid": true
+  },
+  {
+    "input": "atlantic/st_helena",
+    "valid": true
+  },
+  {
+    "input": "atlantic/stanley",
+    "valid": true
+  },
+  {
+    "input": "australia/act",
+    "valid": true
+  },
+  {
+    "input": "australia/adelaide",
+    "valid": true
+  },
+  {
+    "input": "australia/brisbane",
+    "valid": true
+  },
+  {
+    "input": "australia/broken_hill",
+    "valid": true
+  },
+  {
+    "input": "australia/canberra",
+    "valid": true
+  },
+  {
+    "input": "australia/currie",
+    "valid": true
+  },
+  {
+    "input": "australia/darwin",
+    "valid": true
+  },
+  {
+    "input": "australia/eucla",
+    "valid": true
+  },
+  {
+    "input": "australia/hobart",
+    "valid": true
+  },
+  {
+    "input": "australia/lhi",
+    "valid": true
+  },
+  {
+    "input": "australia/lindeman",
+    "valid": true
+  },
+  {
+    "input": "australia/lord_howe",
+    "valid": true
+  },
+  {
+    "input": "australia/melbourne",
+    "valid": true
+  },
+  {
+    "input": "australia/nsw",
+    "valid": true
+  },
+  {
+    "input": "australia/north",
+    "valid": true
+  },
+  {
+    "input": "australia/perth",
+    "valid": true
+  },
+  {
+    "input": "australia/queensland",
+    "valid": true
+  },
+  {
+    "input": "australia/south",
+    "valid": true
+  },
+  {
+    "input": "australia/sydney",
+    "valid": true
+  },
+  {
+    "input": "australia/tasmania",
+    "valid": true
+  },
+  {
+    "input": "australia/victoria",
+    "valid": true
+  },
+  {
+    "input": "australia/west",
+    "valid": true
+  },
+  {
+    "input": "australia/yancowinna",
+    "valid": true
+  },
+  {
+    "input": "brazil/acre",
+    "valid": true
+  },
+  {
+    "input": "brazil/denoronha",
+    "valid": true
+  },
+  {
+    "input": "brazil/east",
+    "valid": true
+  },
+  {
+    "input": "brazil/west",
+    "valid": true
+  },
+  {
+    "input": "cet",
+    "valid": true
+  },
+  {
+    "input": "cst6cdt",
+    "valid": true
+  },
+  {
+    "input": "canada/atlantic",
+    "valid": true
+  },
+  {
+    "input": "canada/central",
+    "valid": true
+  },
+  {
+    "input": "canada/eastern",
+    "valid": true
+  },
+  {
+    "input": "canada/mountain",
+    "valid": true
+  },
+  {
+    "input": "canada/newfoundland",
+    "valid": true
+  },
+  {
+    "input": "canada/pacific",
+    "valid": true
+  },
+  {
+    "input": "canada/saskatchewan",
+    "valid": true
+  },
+  {
+    "input": "canada/yukon",
+    "valid": true
+  },
+  {
+    "input": "chile/continental",
+    "valid": true
+  },
+  {
+    "input": "chile/easterisland",
+    "valid": true
+  },
+  {
+    "input": "cuba",
+    "valid": true
+  },
+  {
+    "input": "eet",
+    "valid": true
+  },
+  {
+    "input": "est",
+    "valid": true
+  },
+  {
+    "input": "est5edt",
+    "valid": true
+  },
+  {
+    "input": "egypt",
+    "valid": true
+  },
+  {
+    "input": "eire",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+0",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+1",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+10",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+11",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+12",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+2",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+3",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+4",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+5",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+6",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+7",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+8",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt+9",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-0",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-1",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-10",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-11",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-12",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-13",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-14",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-2",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-3",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-4",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-5",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-6",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-7",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-8",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt-9",
+    "valid": true
+  },
+  {
+    "input": "etc/gmt0",
+    "valid": true
+  },
+  {
+    "input": "etc/greenwich",
+    "valid": true
+  },
+  {
+    "input": "etc/uct",
+    "valid": true
+  },
+  {
+    "input": "etc/utc",
+    "valid": true
+  },
+  {
+    "input": "etc/universal",
+    "valid": true
+  },
+  {
+    "input": "etc/zulu",
+    "valid": true
+  },
+  {
+    "input": "europe/amsterdam",
+    "valid": true
+  },
+  {
+    "input": "europe/andorra",
+    "valid": true
+  },
+  {
+    "input": "europe/astrakhan",
+    "valid": true
+  },
+  {
+    "input": "europe/athens",
+    "valid": true
+  },
+  {
+    "input": "europe/belfast",
+    "valid": true
+  },
+  {
+    "input": "europe/belgrade",
+    "valid": true
+  },
+  {
+    "input": "europe/berlin",
+    "valid": true
+  },
+  {
+    "input": "europe/bratislava",
+    "valid": true
+  },
+  {
+    "input": "europe/brussels",
+    "valid": true
+  },
+  {
+    "input": "europe/bucharest",
+    "valid": true
+  },
+  {
+    "input": "europe/budapest",
+    "valid": true
+  },
+  {
+    "input": "europe/busingen",
+    "valid": true
+  },
+  {
+    "input": "europe/chisinau",
+    "valid": true
+  },
+  {
+    "input": "europe/copenhagen",
+    "valid": true
+  },
+  {
+    "input": "europe/dublin",
+    "valid": true
+  },
+  {
+    "input": "europe/gibraltar",
+    "valid": true
+  },
+  {
+    "input": "europe/guernsey",
+    "valid": true
+  },
+  {
+    "input": "europe/helsinki",
+    "valid": true
+  },
+  {
+    "input": "europe/isle_of_man",
+    "valid": true
+  },
+  {
+    "input": "europe/istanbul",
+    "valid": true
+  },
+  {
+    "input": "europe/jersey",
+    "valid": true
+  },
+  {
+    "input": "europe/kaliningrad",
+    "valid": true
+  },
+  {
+    "input": "europe/kiev",
+    "valid": true
+  },
+  {
+    "input": "europe/kirov",
+    "valid": true
+  },
+  {
+    "input": "europe/kyiv",
+    "valid": true
+  },
+  {
+    "input": "europe/lisbon",
+    "valid": true
+  },
+  {
+    "input": "europe/ljubljana",
+    "valid": true
+  },
+  {
+    "input": "europe/london",
+    "valid": true
+  },
+  {
+    "input": "europe/luxembourg",
+    "valid": true
+  },
+  {
+    "input": "europe/madrid",
+    "valid": true
+  },
+  {
+    "input": "europe/malta",
+    "valid": true
+  },
+  {
+    "input": "europe/mariehamn",
+    "valid": true
+  },
+  {
+    "input": "europe/minsk",
+    "valid": true
+  },
+  {
+    "input": "europe/monaco",
+    "valid": true
+  },
+  {
+    "input": "europe/moscow",
+    "valid": true
+  },
+  {
+    "input": "europe/nicosia",
+    "valid": true
+  },
+  {
+    "input": "europe/oslo",
+    "valid": true
+  },
+  {
+    "input": "europe/paris",
+    "valid": true
+  },
+  {
+    "input": "europe/podgorica",
+    "valid": true
+  },
+  {
+    "input": "europe/prague",
+    "valid": true
+  },
+  {
+    "input": "europe/riga",
+    "valid": true
+  },
+  {
+    "input": "europe/rome",
+    "valid": true
+  },
+  {
+    "input": "europe/samara",
+    "valid": true
+  },
+  {
+    "input": "europe/san_marino",
+    "valid": true
+  },
+  {
+    "input": "europe/sarajevo",
+    "valid": true
+  },
+  {
+    "input": "europe/saratov",
+    "valid": true
+  },
+  {
+    "input": "europe/simferopol",
+    "valid": true
+  },
+  {
+    "input": "europe/skopje",
+    "valid": true
+  },
+  {
+    "input": "europe/sofia",
+    "valid": true
+  },
+  {
+    "input": "europe/stockholm",
+    "valid": true
+  },
+  {
+    "input": "europe/tallinn",
+    "valid": true
+  },
+  {
+    "input": "europe/tirane",
+    "valid": true
+  },
+  {
+    "input": "europe/tiraspol",
+    "valid": true
+  },
+  {
+    "input": "europe/ulyanovsk",
+    "valid": true
+  },
+  {
+    "input": "europe/uzhgorod",
+    "valid": true
+  },
+  {
+    "input": "europe/vaduz",
+    "valid": true
+  },
+  {
+    "input": "europe/vatican",
+    "valid": true
+  },
+  {
+    "input": "europe/vienna",
+    "valid": true
+  },
+  {
+    "input": "europe/vilnius",
+    "valid": true
+  },
+  {
+    "input": "europe/volgograd",
+    "valid": true
+  },
+  {
+    "input": "europe/warsaw",
+    "valid": true
+  },
+  {
+    "input": "europe/zagreb",
+    "valid": true
+  },
+  {
+    "input": "europe/zaporozhye",
+    "valid": true
+  },
+  {
+    "input": "europe/zurich",
+    "valid": true
+  },
+  {
+    "input": "gb",
+    "valid": true
+  },
+  {
+    "input": "gb-eire",
+    "valid": true
+  },
+  {
+    "input": "gmt",
+    "valid": true
+  },
+  {
+    "input": "gmt+0",
+    "valid": true
+  },
+  {
+    "input": "gmt-0",
+    "valid": true
+  },
+  {
+    "input": "gmt0",
+    "valid": true
+  },
+  {
+    "input": "greenwich",
+    "valid": true
+  },
+  {
+    "input": "hst",
+    "valid": true
+  },
+  {
+    "input": "hongkong",
+    "valid": true
+  },
+  {
+    "input": "iceland",
+    "valid": true
+  },
+  {
+    "input": "indian/antananarivo",
+    "valid": true
+  },
+  {
+    "input": "indian/chagos",
+    "valid": true
+  },
+  {
+    "input": "indian/christmas",
+    "valid": true
+  },
+  {
+    "input": "indian/cocos",
+    "valid": true
+  },
+  {
+    "input": "indian/comoro",
+    "valid": true
+  },
+  {
+    "input": "indian/kerguelen",
+    "valid": true
+  },
+  {
+    "input": "indian/mahe",
+    "valid": true
+  },
+  {
+    "input": "indian/maldives",
+    "valid": true
+  },
+  {
+    "input": "indian/mauritius",
+    "valid": true
+  },
+  {
+    "input": "indian/mayotte",
+    "valid": true
+  },
+  {
+    "input": "indian/reunion",
+    "valid": true
+  },
+  {
+    "input": "iran",
+    "valid": true
+  },
+  {
+    "input": "israel",
+    "valid": true
+  },
+  {
+    "input": "jamaica",
+    "valid": true
+  },
+  {
+    "input": "japan",
+    "valid": true
+  },
+  {
+    "input": "kwajalein",
+    "valid": true
+  },
+  {
+    "input": "libya",
+    "valid": true
+  },
+  {
+    "input": "met",
+    "valid": true
+  },
+  {
+    "input": "mst",
+    "valid": true
+  },
+  {
+    "input": "mst7mdt",
+    "valid": true
+  },
+  {
+    "input": "mexico/bajanorte",
+    "valid": true
+  },
+  {
+    "input": "mexico/bajasur",
+    "valid": true
+  },
+  {
+    "input": "mexico/general",
+    "valid": true
+  },
+  {
+    "input": "nz",
+    "valid": true
+  },
+  {
+    "input": "nz-chat",
+    "valid": true
+  },
+  {
+    "input": "navajo",
+    "valid": true
+  },
+  {
+    "input": "prc",
+    "valid": true
+  },
+  {
+    "input": "pst8pdt",
+    "valid": true
+  },
+  {
+    "input": "pacific/apia",
+    "valid": true
+  },
+  {
+    "input": "pacific/auckland",
+    "valid": true
+  },
+  {
+    "input": "pacific/bougainville",
+    "valid": true
+  },
+  {
+    "input": "pacific/chatham",
+    "valid": true
+  },
+  {
+    "input": "pacific/chuuk",
+    "valid": true
+  },
+  {
+    "input": "pacific/easter",
+    "valid": true
+  },
+  {
+    "input": "pacific/efate",
+    "valid": true
+  },
+  {
+    "input": "pacific/enderbury",
+    "valid": true
+  },
+  {
+    "input": "pacific/fakaofo",
+    "valid": true
+  },
+  {
+    "input": "pacific/fiji",
+    "valid": true
+  },
+  {
+    "input": "pacific/funafuti",
+    "valid": true
+  },
+  {
+    "input": "pacific/galapagos",
+    "valid": true
+  },
+  {
+    "input": "pacific/gambier",
+    "valid": true
+  },
+  {
+    "input": "pacific/guadalcanal",
+    "valid": true
+  },
+  {
+    "input": "pacific/guam",
+    "valid": true
+  },
+  {
+    "input": "pacific/honolulu",
+    "valid": true
+  },
+  {
+    "input": "pacific/johnston",
+    "valid": true
+  },
+  {
+    "input": "pacific/kanton",
+    "valid": true
+  },
+  {
+    "input": "pacific/kiritimati",
+    "valid": true
+  },
+  {
+    "input": "pacific/kosrae",
+    "valid": true
+  },
+  {
+    "input": "pacific/kwajalein",
+    "valid": true
+  },
+  {
+    "input": "pacific/majuro",
+    "valid": true
+  },
+  {
+    "input": "pacific/marquesas",
+    "valid": true
+  },
+  {
+    "input": "pacific/midway",
+    "valid": true
+  },
+  {
+    "input": "pacific/nauru",
+    "valid": true
+  },
+  {
+    "input": "pacific/niue",
+    "valid": true
+  },
+  {
+    "input": "pacific/norfolk",
+    "valid": true
+  },
+  {
+    "input": "pacific/noumea",
+    "valid": true
+  },
+  {
+    "input": "pacific/pago_pago",
+    "valid": true
+  },
+  {
+    "input": "pacific/palau",
+    "valid": true
+  },
+  {
+    "input": "pacific/pitcairn",
+    "valid": true
+  },
+  {
+    "input": "pacific/pohnpei",
+    "valid": true
+  },
+  {
+    "input": "pacific/ponape",
+    "valid": true
+  },
+  {
+    "input": "pacific/port_moresby",
+    "valid": true
+  },
+  {
+    "input": "pacific/rarotonga",
+    "valid": true
+  },
+  {
+    "input": "pacific/saipan",
+    "valid": true
+  },
+  {
+    "input": "pacific/samoa",
+    "valid": true
+  },
+  {
+    "input": "pacific/tahiti",
+    "valid": true
+  },
+  {
+    "input": "pacific/tarawa",
+    "valid": true
+  },
+  {
+    "input": "pacific/tongatapu",
+    "valid": true
+  },
+  {
+    "input": "pacific/truk",
+    "valid": true
+  },
+  {
+    "input": "pacific/wake",
+    "valid": true
+  },
+  {
+    "input": "pacific/wallis",
+    "valid": true
+  },
+  {
+    "input": "pacific/yap",
+    "valid": true
+  },
+  {
+    "input": "poland",
+    "valid": true
+  },
+  {
+    "input": "portugal",
+    "valid": true
+  },
+  {
+    "input": "roc",
+    "valid": true
+  },
+  {
+    "input": "rok",
+    "valid": true
+  },
+  {
+    "input": "singapore",
+    "valid": true
+  },
+  {
+    "input": "turkey",
+    "valid": true
+  },
+  {
+    "input": "uct",
+    "valid": true
+  },
+  {
+    "input": "us/alaska",
+    "valid": true
+  },
+  {
+    "input": "us/aleutian",
+    "valid": true
+  },
+  {
+    "input": "us/arizona",
+    "valid": true
+  },
+  {
+    "input": "us/central",
+    "valid": true
+  },
+  {
+    "input": "us/east-indiana",
+    "valid": true
+  },
+  {
+    "input": "us/eastern",
+    "valid": true
+  },
+  {
+    "input": "us/hawaii",
+    "valid": true
+  },
+  {
+    "input": "us/indiana-starke",
+    "valid": true
+  },
+  {
+    "input": "us/michigan",
+    "valid": true
+  },
+  {
+    "input": "us/mountain",
+    "valid": true
+  },
+  {
+    "input": "us/pacific",
+    "valid": true
+  },
+  {
+    "input": "us/samoa",
+    "valid": true
+  },
+  {
+    "input": "utc",
+    "valid": true
+  },
+  {
+    "input": "universal",
+    "valid": true
+  },
+  {
+    "input": "w-su",
+    "valid": true
+  },
+  {
+    "input": "wet",
+    "valid": true
+  },
+  {
+    "input": "zulu",
+    "valid": true
+  },
+  {
+    "input": "act",
+    "valid": true
+  },
+  {
+    "input": "aet",
+    "valid": true
+  },
+  {
+    "input": "agt",
+    "valid": true
+  },
+  {
+    "input": "art",
+    "valid": true
+  },
+  {
+    "input": "ast",
+    "valid": true
+  },
+  {
+    "input": "bet",
+    "valid": true
+  },
+  {
+    "input": "bst",
+    "valid": true
+  },
+  {
+    "input": "cat",
+    "valid": true
+  },
+  {
+    "input": "cnt",
+    "valid": true
+  },
+  {
+    "input": "cst",
+    "valid": true
+  },
+  {
+    "input": "ctt",
+    "valid": true
+  },
+  {
+    "input": "canada/east-saskatchewan",
+    "valid": true
+  },
+  {
+    "input": "eat",
+    "valid": true
+  },
+  {
+    "input": "ect",
+    "valid": true
+  },
+  {
+    "input": "iet",
+    "valid": true
+  },
+  {
+    "input": "ist",
+    "valid": true
+  },
+  {
+    "input": "jst",
+    "valid": true
+  },
+  {
+    "input": "mit",
+    "valid": true
+  },
+  {
+    "input": "net",
+    "valid": true
+  },
+  {
+    "input": "nst",
+    "valid": true
+  },
+  {
+    "input": "plt",
+    "valid": true
+  },
+  {
+    "input": "pnt",
+    "valid": true
+  },
+  {
+    "input": "prt",
+    "valid": true
+  },
+  {
+    "input": "pst",
+    "valid": true
+  },
+  {
+    "input": "sst",
+    "valid": true
+  },
+  {
+    "input": "systemv/ast4",
+    "valid": true
+  },
+  {
+    "input": "systemv/ast4adt",
+    "valid": true
+  },
+  {
+    "input": "systemv/cst6",
+    "valid": true
+  },
+  {
+    "input": "systemv/cst6cdt",
+    "valid": true
+  },
+  {
+    "input": "systemv/est5",
+    "valid": true
+  },
+  {
+    "input": "systemv/est5edt",
+    "valid": true
+  },
+  {
+    "input": "systemv/hst10",
+    "valid": true
+  },
+  {
+    "input": "systemv/mst7",
+    "valid": true
+  },
+  {
+    "input": "systemv/mst7mdt",
+    "valid": true
+  },
+  {
+    "input": "systemv/pst8",
+    "valid": true
+  },
+  {
+    "input": "systemv/pst8pdt",
+    "valid": true
+  },
+  {
+    "input": "systemv/yst9",
+    "valid": true
+  },
+  {
+    "input": "systemv/yst9ydt",
+    "valid": true
+  },
+  {
+    "input": "us/pacific-new",
+    "valid": true
+  },
+  {
+    "input": "vst",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/ABIDJAN",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/ACCRA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/ADDIS_ABABA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/ALGIERS",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/ASMARA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/ASMERA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/BAMAKO",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/BANGUI",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/BANJUL",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/BISSAU",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/BLANTYRE",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/BRAZZAVILLE",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/BUJUMBURA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/CAIRO",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/CASABLANCA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/CEUTA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/CONAKRY",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/DAKAR",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/DAR_ES_SALAAM",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/DJIBOUTI",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/DOUALA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/EL_AAIUN",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/FREETOWN",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/GABORONE",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/HARARE",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/JOHANNESBURG",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/JUBA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/KAMPALA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/KHARTOUM",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/KIGALI",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/KINSHASA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/LAGOS",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/LIBREVILLE",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/LOME",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/LUANDA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/LUBUMBASHI",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/LUSAKA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/MALABO",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/MAPUTO",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/MASERU",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/MBABANE",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/MOGADISHU",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/MONROVIA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/NAIROBI",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/NDJAMENA",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/NIAMEY",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/NOUAKCHOTT",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/OUAGADOUGOU",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/PORTO-NOVO",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/SAO_TOME",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/TIMBUKTU",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/TRIPOLI",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/TUNIS",
+    "valid": true
+  },
+  {
+    "input": "AFRICA/WINDHOEK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ADAK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ANCHORAGE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ANGUILLA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ANTIGUA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARAGUAINA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/BUENOS_AIRES",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/CATAMARCA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/COMODRIVADAVIA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/CORDOBA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/JUJUY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/LA_RIOJA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/MENDOZA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/RIO_GALLEGOS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/SALTA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/SAN_JUAN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/SAN_LUIS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/TUCUMAN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARGENTINA/USHUAIA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ARUBA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ASUNCION",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ATIKOKAN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ATKA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BAHIA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BAHIA_BANDERAS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BARBADOS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BELEM",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BELIZE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BLANC-SABLON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BOA_VISTA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BOGOTA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BOISE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/BUENOS_AIRES",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CAMBRIDGE_BAY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CAMPO_GRANDE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CANCUN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CARACAS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CATAMARCA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CAYENNE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CAYMAN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CHICAGO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CHIHUAHUA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CIUDAD_JUAREZ",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CORAL_HARBOUR",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CORDOBA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/COSTA_RICA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/COYHAIQUE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CRESTON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CUIABA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/CURACAO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/DANMARKSHAVN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/DAWSON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/DAWSON_CREEK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/DENVER",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/DETROIT",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/DOMINICA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/EDMONTON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/EIRUNEPE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/EL_SALVADOR",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ENSENADA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/FORT_NELSON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/FORT_WAYNE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/FORTALEZA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GLACE_BAY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GODTHAB",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GOOSE_BAY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GRAND_TURK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GRENADA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GUADELOUPE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GUATEMALA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GUAYAQUIL",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/GUYANA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/HALIFAX",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/HAVANA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/HERMOSILLO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/INDIANAPOLIS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/KNOX",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/MARENGO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/PETERSBURG",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/TELL_CITY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/VEVAY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/VINCENNES",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANA/WINAMAC",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INDIANAPOLIS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/INUVIK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/IQALUIT",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/JAMAICA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/JUJUY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/JUNEAU",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/KENTUCKY/LOUISVILLE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/KENTUCKY/MONTICELLO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/KNOX_IN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/KRALENDIJK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/LA_PAZ",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/LIMA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/LOS_ANGELES",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/LOUISVILLE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/LOWER_PRINCES",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MACEIO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MANAGUA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MANAUS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MARIGOT",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MARTINIQUE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MATAMOROS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MAZATLAN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MENDOZA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MENOMINEE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MERIDA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/METLAKATLA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MEXICO_CITY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MIQUELON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MONCTON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MONTERREY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MONTEVIDEO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MONTREAL",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/MONTSERRAT",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NASSAU",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NEW_YORK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NIPIGON",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NOME",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NORONHA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NORTH_DAKOTA/BEULAH",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NORTH_DAKOTA/CENTER",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NORTH_DAKOTA/NEW_SALEM",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/NUUK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/OJINAGA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PANAMA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PANGNIRTUNG",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PARAMARIBO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PHOENIX",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PORT-AU-PRINCE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PORT_OF_SPAIN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PORTO_ACRE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PORTO_VELHO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PUERTO_RICO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/PUNTA_ARENAS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/RAINY_RIVER",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/RANKIN_INLET",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/RECIFE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/REGINA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/RESOLUTE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/RIO_BRANCO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ROSARIO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SANTA_ISABEL",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SANTAREM",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SANTIAGO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SANTO_DOMINGO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SAO_PAULO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SCORESBYSUND",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SHIPROCK",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SITKA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ST_BARTHELEMY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ST_JOHNS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ST_KITTS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ST_LUCIA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ST_THOMAS",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/ST_VINCENT",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/SWIFT_CURRENT",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/TEGUCIGALPA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/THULE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/THUNDER_BAY",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/TIJUANA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/TORONTO",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/TORTOLA",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/VANCOUVER",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/VIRGIN",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/WHITEHORSE",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/WINNIPEG",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/YAKUTAT",
+    "valid": true
+  },
+  {
+    "input": "AMERICA/YELLOWKNIFE",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/CASEY",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/DAVIS",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/DUMONTDURVILLE",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/MACQUARIE",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/MAWSON",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/MCMURDO",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/PALMER",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/ROTHERA",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/SOUTH_POLE",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/SYOWA",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/TROLL",
+    "valid": true
+  },
+  {
+    "input": "ANTARCTICA/VOSTOK",
+    "valid": true
+  },
+  {
+    "input": "ARCTIC/LONGYEARBYEN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ADEN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ALMATY",
+    "valid": true
+  },
+  {
+    "input": "ASIA/AMMAN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ANADYR",
+    "valid": true
+  },
+  {
+    "input": "ASIA/AQTAU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/AQTOBE",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ASHGABAT",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ASHKHABAD",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ATYRAU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BAGHDAD",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BAHRAIN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BAKU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BANGKOK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BARNAUL",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BEIRUT",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BISHKEK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/BRUNEI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/CALCUTTA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/CHITA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/CHOIBALSAN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/CHONGQING",
+    "valid": true
+  },
+  {
+    "input": "ASIA/CHUNGKING",
+    "valid": true
+  },
+  {
+    "input": "ASIA/COLOMBO",
+    "valid": true
+  },
+  {
+    "input": "ASIA/DACCA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/DAMASCUS",
+    "valid": true
+  },
+  {
+    "input": "ASIA/DHAKA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/DILI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/DUBAI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/DUSHANBE",
+    "valid": true
+  },
+  {
+    "input": "ASIA/FAMAGUSTA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/GAZA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/HARBIN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/HEBRON",
+    "valid": true
+  },
+  {
+    "input": "ASIA/HO_CHI_MINH",
+    "valid": true
+  },
+  {
+    "input": "ASIA/HONG_KONG",
+    "valid": true
+  },
+  {
+    "input": "ASIA/HOVD",
+    "valid": true
+  },
+  {
+    "input": "ASIA/IRKUTSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ISTANBUL",
+    "valid": true
+  },
+  {
+    "input": "ASIA/JAKARTA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/JAYAPURA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/JERUSALEM",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KABUL",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KAMCHATKA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KARACHI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KASHGAR",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KATHMANDU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KATMANDU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KHANDYGA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KOLKATA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KRASNOYARSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KUALA_LUMPUR",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KUCHING",
+    "valid": true
+  },
+  {
+    "input": "ASIA/KUWAIT",
+    "valid": true
+  },
+  {
+    "input": "ASIA/MACAO",
+    "valid": true
+  },
+  {
+    "input": "ASIA/MACAU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/MAGADAN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/MAKASSAR",
+    "valid": true
+  },
+  {
+    "input": "ASIA/MANILA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/MUSCAT",
+    "valid": true
+  },
+  {
+    "input": "ASIA/NICOSIA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/NOVOKUZNETSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/NOVOSIBIRSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/OMSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ORAL",
+    "valid": true
+  },
+  {
+    "input": "ASIA/PHNOM_PENH",
+    "valid": true
+  },
+  {
+    "input": "ASIA/PONTIANAK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/PYONGYANG",
+    "valid": true
+  },
+  {
+    "input": "ASIA/QATAR",
+    "valid": true
+  },
+  {
+    "input": "ASIA/QOSTANAY",
+    "valid": true
+  },
+  {
+    "input": "ASIA/QYZYLORDA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/RANGOON",
+    "valid": true
+  },
+  {
+    "input": "ASIA/RIYADH",
+    "valid": true
+  },
+  {
+    "input": "ASIA/SAIGON",
+    "valid": true
+  },
+  {
+    "input": "ASIA/SAKHALIN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/SAMARKAND",
+    "valid": true
+  },
+  {
+    "input": "ASIA/SEOUL",
+    "valid": true
+  },
+  {
+    "input": "ASIA/SHANGHAI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/SINGAPORE",
+    "valid": true
+  },
+  {
+    "input": "ASIA/SREDNEKOLYMSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/TAIPEI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/TASHKENT",
+    "valid": true
+  },
+  {
+    "input": "ASIA/TBILISI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/TEHRAN",
+    "valid": true
+  },
+  {
+    "input": "ASIA/TEL_AVIV",
+    "valid": true
+  },
+  {
+    "input": "ASIA/THIMBU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/THIMPHU",
+    "valid": true
+  },
+  {
+    "input": "ASIA/TOKYO",
+    "valid": true
+  },
+  {
+    "input": "ASIA/TOMSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/UJUNG_PANDANG",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ULAANBAATAR",
+    "valid": true
+  },
+  {
+    "input": "ASIA/ULAN_BATOR",
+    "valid": true
+  },
+  {
+    "input": "ASIA/URUMQI",
+    "valid": true
+  },
+  {
+    "input": "ASIA/UST-NERA",
+    "valid": true
+  },
+  {
+    "input": "ASIA/VIENTIANE",
+    "valid": true
+  },
+  {
+    "input": "ASIA/VLADIVOSTOK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/YAKUTSK",
+    "valid": true
+  },
+  {
+    "input": "ASIA/YANGON",
+    "valid": true
+  },
+  {
+    "input": "ASIA/YEKATERINBURG",
+    "valid": true
+  },
+  {
+    "input": "ASIA/YEREVAN",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/AZORES",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/BERMUDA",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/CANARY",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/CAPE_VERDE",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/FAEROE",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/FAROE",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/JAN_MAYEN",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/MADEIRA",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/REYKJAVIK",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/SOUTH_GEORGIA",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/ST_HELENA",
+    "valid": true
+  },
+  {
+    "input": "ATLANTIC/STANLEY",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/ACT",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/ADELAIDE",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/BRISBANE",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/BROKEN_HILL",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/CANBERRA",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/CURRIE",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/DARWIN",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/EUCLA",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/HOBART",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/LHI",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/LINDEMAN",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/LORD_HOWE",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/MELBOURNE",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/NSW",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/NORTH",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/PERTH",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/QUEENSLAND",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/SOUTH",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/SYDNEY",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/TASMANIA",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/VICTORIA",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/WEST",
+    "valid": true
+  },
+  {
+    "input": "AUSTRALIA/YANCOWINNA",
+    "valid": true
+  },
+  {
+    "input": "BRAZIL/ACRE",
+    "valid": true
+  },
+  {
+    "input": "BRAZIL/DENORONHA",
+    "valid": true
+  },
+  {
+    "input": "BRAZIL/EAST",
+    "valid": true
+  },
+  {
+    "input": "BRAZIL/WEST",
+    "valid": true
+  },
+  {
+    "input": "CET",
+    "valid": true
+  },
+  {
+    "input": "CST6CDT",
+    "valid": true
+  },
+  {
+    "input": "CANADA/ATLANTIC",
+    "valid": true
+  },
+  {
+    "input": "CANADA/CENTRAL",
+    "valid": true
+  },
+  {
+    "input": "CANADA/EASTERN",
+    "valid": true
+  },
+  {
+    "input": "CANADA/MOUNTAIN",
+    "valid": true
+  },
+  {
+    "input": "CANADA/NEWFOUNDLAND",
+    "valid": true
+  },
+  {
+    "input": "CANADA/PACIFIC",
+    "valid": true
+  },
+  {
+    "input": "CANADA/SASKATCHEWAN",
+    "valid": true
+  },
+  {
+    "input": "CANADA/YUKON",
+    "valid": true
+  },
+  {
+    "input": "CHILE/CONTINENTAL",
+    "valid": true
+  },
+  {
+    "input": "CHILE/EASTERISLAND",
+    "valid": true
+  },
+  {
+    "input": "CUBA",
+    "valid": true
+  },
+  {
+    "input": "EET",
+    "valid": true
+  },
+  {
+    "input": "EST",
+    "valid": true
+  },
+  {
+    "input": "EST5EDT",
+    "valid": true
+  },
+  {
+    "input": "EGYPT",
+    "valid": true
+  },
+  {
+    "input": "EIRE",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+0",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+1",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+10",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+11",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+12",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+2",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+3",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+4",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+5",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+6",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+7",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+8",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT+9",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-0",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-1",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-10",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-11",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-12",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-13",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-14",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-2",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-3",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-4",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-5",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-6",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-7",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-8",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT-9",
+    "valid": true
+  },
+  {
+    "input": "ETC/GMT0",
+    "valid": true
+  },
+  {
+    "input": "ETC/GREENWICH",
+    "valid": true
+  },
+  {
+    "input": "ETC/UCT",
+    "valid": true
+  },
+  {
+    "input": "ETC/UTC",
+    "valid": true
+  },
+  {
+    "input": "ETC/UNIVERSAL",
+    "valid": true
+  },
+  {
+    "input": "ETC/ZULU",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/AMSTERDAM",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ANDORRA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ASTRAKHAN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ATHENS",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BELFAST",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BELGRADE",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BERLIN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BRATISLAVA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BRUSSELS",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BUCHAREST",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BUDAPEST",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/BUSINGEN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/CHISINAU",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/COPENHAGEN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/DUBLIN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/GIBRALTAR",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/GUERNSEY",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/HELSINKI",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ISLE_OF_MAN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ISTANBUL",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/JERSEY",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/KALININGRAD",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/KIEV",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/KIROV",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/KYIV",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/LISBON",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/LJUBLJANA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/LONDON",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/LUXEMBOURG",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/MADRID",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/MALTA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/MARIEHAMN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/MINSK",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/MONACO",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/MOSCOW",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/NICOSIA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/OSLO",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/PARIS",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/PODGORICA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/PRAGUE",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/RIGA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ROME",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/SAMARA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/SAN_MARINO",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/SARAJEVO",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/SARATOV",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/SIMFEROPOL",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/SKOPJE",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/SOFIA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/STOCKHOLM",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/TALLINN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/TIRANE",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/TIRASPOL",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ULYANOVSK",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/UZHGOROD",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/VADUZ",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/VATICAN",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/VIENNA",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/VILNIUS",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/VOLGOGRAD",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/WARSAW",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ZAGREB",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ZAPOROZHYE",
+    "valid": true
+  },
+  {
+    "input": "EUROPE/ZURICH",
+    "valid": true
+  },
+  {
+    "input": "GB",
+    "valid": true
+  },
+  {
+    "input": "GB-EIRE",
+    "valid": true
+  },
+  {
+    "input": "GMT",
+    "valid": true
+  },
+  {
+    "input": "GMT+0",
+    "valid": true
+  },
+  {
+    "input": "GMT-0",
+    "valid": true
+  },
+  {
+    "input": "GMT0",
+    "valid": true
+  },
+  {
+    "input": "GREENWICH",
+    "valid": true
+  },
+  {
+    "input": "HST",
+    "valid": true
+  },
+  {
+    "input": "HONGKONG",
+    "valid": true
+  },
+  {
+    "input": "ICELAND",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/ANTANANARIVO",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/CHAGOS",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/CHRISTMAS",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/COCOS",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/COMORO",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/KERGUELEN",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/MAHE",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/MALDIVES",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/MAURITIUS",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/MAYOTTE",
+    "valid": true
+  },
+  {
+    "input": "INDIAN/REUNION",
+    "valid": true
+  },
+  {
+    "input": "IRAN",
+    "valid": true
+  },
+  {
+    "input": "ISRAEL",
+    "valid": true
+  },
+  {
+    "input": "JAMAICA",
+    "valid": true
+  },
+  {
+    "input": "JAPAN",
+    "valid": true
+  },
+  {
+    "input": "KWAJALEIN",
+    "valid": true
+  },
+  {
+    "input": "LIBYA",
+    "valid": true
+  },
+  {
+    "input": "MET",
+    "valid": true
+  },
+  {
+    "input": "MST",
+    "valid": true
+  },
+  {
+    "input": "MST7MDT",
+    "valid": true
+  },
+  {
+    "input": "MEXICO/BAJANORTE",
+    "valid": true
+  },
+  {
+    "input": "MEXICO/BAJASUR",
+    "valid": true
+  },
+  {
+    "input": "MEXICO/GENERAL",
+    "valid": true
+  },
+  {
+    "input": "NZ",
+    "valid": true
+  },
+  {
+    "input": "NZ-CHAT",
+    "valid": true
+  },
+  {
+    "input": "NAVAJO",
+    "valid": true
+  },
+  {
+    "input": "PRC",
+    "valid": true
+  },
+  {
+    "input": "PST8PDT",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/APIA",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/AUCKLAND",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/BOUGAINVILLE",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/CHATHAM",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/CHUUK",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/EASTER",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/EFATE",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/ENDERBURY",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/FAKAOFO",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/FIJI",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/FUNAFUTI",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/GALAPAGOS",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/GAMBIER",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/GUADALCANAL",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/GUAM",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/HONOLULU",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/JOHNSTON",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/KANTON",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/KIRITIMATI",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/KOSRAE",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/KWAJALEIN",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/MAJURO",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/MARQUESAS",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/MIDWAY",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/NAURU",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/NIUE",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/NORFOLK",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/NOUMEA",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/PAGO_PAGO",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/PALAU",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/PITCAIRN",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/POHNPEI",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/PONAPE",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/PORT_MORESBY",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/RAROTONGA",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/SAIPAN",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/SAMOA",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/TAHITI",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/TARAWA",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/TONGATAPU",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/TRUK",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/WAKE",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/WALLIS",
+    "valid": true
+  },
+  {
+    "input": "PACIFIC/YAP",
+    "valid": true
+  },
+  {
+    "input": "POLAND",
+    "valid": true
+  },
+  {
+    "input": "PORTUGAL",
+    "valid": true
+  },
+  {
+    "input": "ROC",
+    "valid": true
+  },
+  {
+    "input": "ROK",
+    "valid": true
+  },
+  {
+    "input": "SINGAPORE",
+    "valid": true
+  },
+  {
+    "input": "TURKEY",
+    "valid": true
+  },
+  {
+    "input": "UCT",
+    "valid": true
+  },
+  {
+    "input": "US/ALASKA",
+    "valid": true
+  },
+  {
+    "input": "US/ALEUTIAN",
+    "valid": true
+  },
+  {
+    "input": "US/ARIZONA",
+    "valid": true
+  },
+  {
+    "input": "US/CENTRAL",
+    "valid": true
+  },
+  {
+    "input": "US/EAST-INDIANA",
+    "valid": true
+  },
+  {
+    "input": "US/EASTERN",
+    "valid": true
+  },
+  {
+    "input": "US/HAWAII",
+    "valid": true
+  },
+  {
+    "input": "US/INDIANA-STARKE",
+    "valid": true
+  },
+  {
+    "input": "US/MICHIGAN",
+    "valid": true
+  },
+  {
+    "input": "US/MOUNTAIN",
+    "valid": true
+  },
+  {
+    "input": "US/PACIFIC",
+    "valid": true
+  },
+  {
+    "input": "US/SAMOA",
+    "valid": true
+  },
+  {
+    "input": "UTC",
+    "valid": true
+  },
+  {
+    "input": "UNIVERSAL",
+    "valid": true
+  },
+  {
+    "input": "W-SU",
+    "valid": true
+  },
+  {
+    "input": "WET",
+    "valid": true
+  },
+  {
+    "input": "ZULU",
+    "valid": true
+  },
+  {
+    "input": "ACT",
+    "valid": true
+  },
+  {
+    "input": "AET",
+    "valid": true
+  },
+  {
+    "input": "AGT",
+    "valid": true
+  },
+  {
+    "input": "ART",
+    "valid": true
+  },
+  {
+    "input": "AST",
+    "valid": true
+  },
+  {
+    "input": "BET",
+    "valid": true
+  },
+  {
+    "input": "BST",
+    "valid": true
+  },
+  {
+    "input": "CAT",
+    "valid": true
+  },
+  {
+    "input": "CNT",
+    "valid": true
+  },
+  {
+    "input": "CST",
+    "valid": true
+  },
+  {
+    "input": "CTT",
+    "valid": true
+  },
+  {
+    "input": "CANADA/EAST-SASKATCHEWAN",
+    "valid": true
+  },
+  {
+    "input": "EAT",
+    "valid": true
+  },
+  {
+    "input": "ECT",
+    "valid": true
+  },
+  {
+    "input": "IET",
+    "valid": true
+  },
+  {
+    "input": "IST",
+    "valid": true
+  },
+  {
+    "input": "JST",
+    "valid": true
+  },
+  {
+    "input": "MIT",
+    "valid": true
+  },
+  {
+    "input": "NET",
+    "valid": true
+  },
+  {
+    "input": "NST",
+    "valid": true
+  },
+  {
+    "input": "PLT",
+    "valid": true
+  },
+  {
+    "input": "PNT",
+    "valid": true
+  },
+  {
+    "input": "PRT",
+    "valid": true
+  },
+  {
+    "input": "PST",
+    "valid": true
+  },
+  {
+    "input": "SST",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/AST4",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/AST4ADT",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/CST6",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/CST6CDT",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/EST5",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/EST5EDT",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/HST10",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/MST7",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/MST7MDT",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/PST8",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/PST8PDT",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/YST9",
+    "valid": true
+  },
+  {
+    "input": "SYSTEMV/YST9YDT",
+    "valid": true
+  },
+  {
+    "input": "US/PACIFIC-NEW",
+    "valid": true
+  },
+  {
+    "input": "VST",
+    "valid": true
+  },
+  {
+    "input": "",
+    "valid": false
+  },
+  {
+    "input": "Local",
+    "valid": false
+  },
+  {
+    "input": "local",
+    "valid": false
+  },
+  {
+    "input": "not/a/timezone",
+    "valid": false
+  },
+  {
+    "input": " utc ",
+    "valid": false
+  },
+  {
+    "input": "﻿UTC",
+    "valid": false
+  },
+  {
+    "input": "+05:30",
+    "valid": true
+  },
+  {
+    "input": "+0530",
+    "valid": true
+  },
+  {
+    "input": "+05",
+    "valid": true
+  },
+  {
+    "input": "-00",
+    "valid": true
+  },
+  {
+    "input": "-2359",
+    "valid": true
+  },
+  {
+    "input": "+24:00",
+    "valid": false
+  },
+  {
+    "input": "+23:60",
+    "valid": false
+  },
+  {
+    "input": "+5:30",
+    "valid": false
+  },
+  {
+    "input": "−05:30",
+    "valid": true
+  },
+  {
+    "input": "+05:30:00",
+    "valid": false
+  },
+  {
+    "input": "Asia/Kolkata",
+    "valid": false
+  }
+]

@@ -573,3 +573,25 @@ still separate unfinished work. In particular, source workingSet/episodes reads
 also enqueue and drain metadata. A read-only low-level View does not establish
 that those higher-level HTTP workflows avoid writer contention. Historical
 schema/ledger audits and offline event parsing still have history-dependent costs.
+
+## Current commitment reads
+
+The commitment Current/List owner qualifies retained declarations through the
+actual current assertion authority. Projection preserves proposal-group logic,
+participant confirmation, cancellation precedence, lost-terminal review states,
+missing-revision fallback, exact filtering order and source coverage policies.
+It does not infer that a declaration proves an event occurred.
+
+The public composition entry point owns one publication snapshot or borrows the
+exact active write child. An assertion store already bound to another session is
+rejected before acquiring a connection; it cannot silently reenter publication
+or lose pending writes. Borrowed readers and services expire with their callback.
+Actual SQLite prepared statements are shared only within that synchronous support
+read scope, with fresh rows and eligibility on every call. Statements never grant
+writes, expose the connection or preserve authority decisions between snapshots.
+
+The actual TypeScript Current/List oracle uses explicit recording assertion ports
+for domain isolation. Native composition separately uses the real RelationAuthority
+and exercises current source-edit/recall/expiry/proof changes and scope faults.
+This does not implement commitment command admission, complete MemoryWorkspace,
+model capture/delivery identity or all remaining HTTP/runtime composition.

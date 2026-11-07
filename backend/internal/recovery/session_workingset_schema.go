@@ -100,12 +100,13 @@ func (s *WriteSession) EnsureWorkingSetSchema() error {
 // WorkingSetReadSession is an opaque, synchronous publication capability. It
 // never yields a raw connection or schema-control callback to its consumer.
 type WorkingSetReadSession struct {
-	mu     sync.Mutex
-	active bool
-	ctx    context.Context
-	conn   *sql.Conn
-	rows   map[*WorkingSetReadRows]bool
-	fatal  error
+	mu         sync.Mutex
+	active     bool
+	ctx        context.Context
+	conn       *sql.Conn
+	rows       map[*WorkingSetReadRows]bool
+	statements map[*WorkingSetReadStatement]bool
+	fatal      error
 }
 
 func (r *WorkingSetReadSession) check() error {
@@ -241,13 +242,16 @@ func (a *Authority) WithWorkingSetRead(ctx context.Context, main *sql.DB, fn fun
 		if err = protectPreparation(conn); err != nil {
 			return nil, err
 		}
-		r := &WorkingSetReadSession{active: true, ctx: ctx, conn: conn, rows: map[*WorkingSetReadRows]bool{}}
+		r := &WorkingSetReadSession{active: true, ctx: ctx, conn: conn, rows: map[*WorkingSetReadRows]bool{}, statements: map[*WorkingSetReadStatement]bool{}}
 		defer func() {
 			r.mu.Lock()
 			defer r.mu.Unlock()
 			err = errors.Join(err, r.checkNative())
 			for rows := range r.rows {
 				err = errors.Join(err, rows.closeLocked())
+			}
+			for statement := range r.statements {
+				err = errors.Join(err, statement.closeLocked())
 			}
 			err = errors.Join(err, r.checkNative())
 			r.active = false

@@ -32,6 +32,7 @@ type rows interface {
 	Close() error
 }
 type Reader struct {
+	check   func() error
 	query   func(string, ...any) (rows, error)
 	ready   func() error
 	options Options
@@ -142,7 +143,7 @@ func bind(args []any) []any {
 	return out
 }
 func (s *Store) reader() *Reader {
-	return &Reader{ready: s.ready, options: s.options, query: func(q string, args ...any) (rows, error) {
+	return &Reader{check: s.requireTransaction, ready: s.ready, options: s.options, query: func(q string, args ...any) (rows, error) {
 		if e := s.requireTransaction(); e != nil {
 			return nil, e
 		}
@@ -172,7 +173,7 @@ func (s *Store) Read(ctx context.Context, fn func(*Reader) error) error {
 			}
 			return ctx.Err()
 		}
-		r := &Reader{ready: ready, options: s.options, query: func(q string, args ...any) (rows, error) {
+		r := &Reader{check: ready, ready: ready, options: s.options, query: func(q string, args ...any) (rows, error) {
 			if e := ready(); e != nil {
 				return nil, e
 			}

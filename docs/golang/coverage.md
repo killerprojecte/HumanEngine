@@ -127,3 +127,14 @@ and runtime/HTTP composition remain unfinished. Existing policy limits are
 preserved, with no new protective caps. Read-only metadata publication avoids the
 main writer reservation but retains authority verification; this is not a claim
 that all HTTP paths are contention-free.
+
+### Current commitment read boundary
+
+Current/List and declaration projection now have an actual-source 35-scenario
+oracle, including source list ordering/coverage and remembered terminal-state
+loss. Production composition uses the real current assertion authority on one
+owned snapshot or active write child. Native tests cover source edit/recall,
+expiry, quarantine, proof changes, scope mismatch, native read-only enforcement
+and transaction loss. Reused prepared statements contain no cached row or
+eligibility answer. Interactive command admission and complete workspace/model
+exposure remain separate unfinished work.

@@ -227,7 +227,7 @@ func (s *Store) ReplaceTimeline(id string, timeline *Object) error {
 			return e
 		}
 	}
-	if e := s.session.EnsureCommitmentTemporalSchema(); e != nil {
+	if e := s.ensureTemporalSchema(); e != nil {
 		return e
 	}
 	if e := s.exec("DELETE FROM memory_commitment_transitions WHERE id=?", id); e != nil {

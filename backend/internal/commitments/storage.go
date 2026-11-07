@@ -21,6 +21,7 @@ type Store struct {
 	main         *sql.DB
 	authority    *recovery.Authority
 	session      *recovery.WriteSession
+	maintenance  *maintenanceScope
 	bindingError error
 	options      Options
 }
@@ -48,6 +49,10 @@ func New(main *sql.DB, authority *recovery.Authority, options Options) (*Store, 
 func (s *Store) WithSession(session *recovery.WriteSession) *Store {
 	n := *s
 	n.session = session
+	if s.maintenance != nil {
+		n.bindingError = errors.New("commitment_live_session_required")
+		return &n
+	}
 	if session == nil {
 		n.bindingError = errors.New("commitment_transaction_required")
 	} else {
@@ -59,6 +64,9 @@ func (s *Store) requireTransaction() error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
+	if s.maintenance != nil {
+		return s.maintenance.check()
+	}
 	if s.session == nil {
 		return errors.New("commitment_transaction_required")
 	}
@@ -67,6 +75,9 @@ func (s *Store) requireTransaction() error {
 func (s *Store) ready() error {
 	if e := s.requireTransaction(); e != nil {
 		return e
+	}
+	if s.maintenance != nil {
+		return nil
 	}
 	return s.session.AssertReady()
 }
@@ -77,6 +88,12 @@ func (s *Store) Transaction(ctx context.Context, fn func(*Store) error) error {
 	if fn == nil {
 		return errors.New("commitment_write_operation_required")
 	}
+	if s.maintenance != nil {
+		if e := s.requireTransaction(); e != nil {
+			return e
+		}
+		return s.maintenance.tx.Apply(ctx, 1, func(child *recovery.MaintenanceTx) error { return fn(s.withMaintenanceChild(ctx, child)) })
+	}
 	if s.session != nil {
 		return s.session.WithSavepoint(func(child *recovery.WriteSession) error { return fn(s.WithSession(child)) })
 	}
@@ -86,6 +103,9 @@ func (s *Store) Transaction(ctx context.Context, fn func(*Store) error) error {
 // Initialize creates only the three base tables, in the source constructor's
 // owned transaction. Constructing and reading this store never initializes it.
 func (s *Store) Initialize(ctx context.Context) error {
+	if s.maintenance != nil {
+		return errors.New("commitment_offline_initialization_forbidden")
+	}
 	if s.session != nil {
 		if e := s.requireTransaction(); e != nil {
 			return e
@@ -97,6 +117,9 @@ func (s *Store) Initialize(ctx context.Context) error {
 
 // WithWriteSession is a trusted domain-owner bridge, not a plugin capability.
 func (s *Store) WithWriteSession(fn func(*recovery.WriteSession) error) error {
+	if s.maintenance != nil {
+		return errors.New("commitment_live_session_required")
+	}
 	if e := s.requireTransaction(); e != nil {
 		return e
 	}
@@ -123,6 +146,9 @@ func (s *Store) reader() *Reader {
 		if e := s.requireTransaction(); e != nil {
 			return nil, e
 		}
+		if s.maintenance != nil {
+			return s.maintenance.tx.QueryContext(s.maintenance.ctx, q, bind(args)...)
+		}
 		return s.session.Query(q, bind(args)...)
 	}}
 }
@@ -133,7 +159,7 @@ func (s *Store) Read(ctx context.Context, fn func(*Reader) error) error {
 	if fn == nil {
 		return errors.New("commitment_read_operation_required")
 	}
-	if s.session != nil {
+	if s.session != nil || s.maintenance != nil {
 		return fn(s.reader())
 	}
 	return s.authority.Publish(ctx, s.main, func(conn *sql.Conn) ([]byte, error) {
@@ -195,6 +221,10 @@ func (r *Reader) strings(q string, args ...any) (out []string, err error) {
 }
 func (s *Store) exec(q string, args ...any) error {
 	if e := s.requireTransaction(); e != nil {
+		return e
+	}
+	if s.maintenance != nil {
+		_, e := s.maintenance.tx.ExecContext(s.maintenance.ctx, q, bind(args)...)
 		return e
 	}
 	_, e := s.session.Exec(q, bind(args)...)

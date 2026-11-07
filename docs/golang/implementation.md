@@ -429,3 +429,36 @@ preimages. Native privacy operations then run against real SQLite main and
 authority databases and compare table contents, history, hashes, intent order and
 reader metadata. Recording assertion/workspace ports isolate this domain; they
 are not a production fallback to the TypeScript backend.
+
+## Offline commitment domain replay
+
+The admitted offline owner audits the source's supported zero/three/five-table
+layouts, replays source/assertion purges and deletion, applies journaled temporal
+markers, and verifies exact retained snapshot qualification. It uses guarded
+MaintenanceTx handles on the caller-owned staging connection. It never converts
+quarantine into a live WriteSession, appends a new intent, advances the global ACK,
+or marks main ready. Required cross-domain owners must use the supplied guarded
+scope rather than reentering an outer maintenance owner.
+
+A zero-table database stays empty. On existing supported material, the source's
+first lazy service construction can repair a missing scene index before a later
+effect fails. Separate constructor/effect savepoints preserve both standalone
+commit prefixes and an enclosing caller's rollback. Verification retains source
+Map ordering and last-value semantics, checks residual deleted commands, and
+never reconstructs absent commitment terms.
+
+Offline writes still raise the source-required reader version and validate the
+typed recovery effect before changing local material, even though appending that
+effect is suppressed. Marker replay never reads the current clock. The actual
+source has one important metadata nuance: purging a legacy backup without a
+timeline can raise reader 3, then replaying its first journaled marker can leave
+that value unchanged. This candidate preserves that behavior while retaining
+quarantine and the old ACK. It is not permission to open the result with an older
+reader, and it is not completion of global reconciliation.
+
+Owner serialization is cancellable without a polling loop. Expired and wrong-root
+bindings, native transaction loss and changed external authority are rejected by
+the existing capability. Offline parent handles keep their existing maintenance
+semantics; this is not a claim that arbitrary callback reentry matches the live
+writer contract. Full-database restore, remaining domain replay, model holds and
+the final ACK/ready transition still require the reconciler owner.

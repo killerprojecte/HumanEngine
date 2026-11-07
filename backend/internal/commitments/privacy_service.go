@@ -70,18 +70,38 @@ func markerHead(head *Object) recovery.CommitmentMarkerHead {
 	return h
 }
 func (s *PrivacyService) record(kind string, head *Object, hash string, temporal bool, marker *Object) error {
-	session := s.Store.session
-	if e := session.RequireReader(3); e != nil {
-		return e
-	}
-	if temporal {
-		if e := session.RequireReader(10); e != nil {
+	var emit func(recovery.Revocation) error
+	if s.Store.maintenance != nil {
+		scope := s.Store.maintenance
+		if e := scope.requireReaders(temporal); e != nil {
 			return e
 		}
+		emit = func(event recovery.Revocation) error {
+			if e := scope.tx.ValidateReplayEffect(scope.ctx, event); e != nil {
+				// Preserve capability/cancellation errors. Only the existing typed
+				// codec's contract rejection maps to the source domain error.
+				switch e.Error() {
+				case "recovery_unknown_revocation", "recovery_write_string_unsupported":
+					return errors.New("recovery_commitment_event_invalid")
+				}
+				return e
+			}
+			return nil
+		}
+	} else {
+		session := s.Store.session
+		if e := session.RequireReader(3); e != nil {
+			return e
+		}
+		if temporal {
+			if e := session.RequireReader(10); e != nil {
+				return e
+			}
+		}
+		emit = func(event recovery.Revocation) error { _, e := session.AppendIntent(event); return e }
 	}
 	if get(head, "deleted") == true || kind == "delete" {
-		_, e := session.AppendIntent(recovery.CommitmentDelete{SceneID: str(get(head, "sceneId")), ID: str(get(head, "id")), DeletionEpoch: num(get(head, "deletionEpoch"))})
-		return e
+		return emit(recovery.CommitmentDelete{SceneID: str(get(head, "sceneId")), ID: str(get(head, "id")), DeletionEpoch: num(get(head, "deletionEpoch"))})
 	}
 	event := recovery.CommitmentHead{SchemaVersion: 1, SceneID: str(get(head, "sceneId")), ID: str(get(head, "id")), DeletionEpoch: num(get(head, "deletionEpoch")), TermsVersion: num(get(head, "latestVersion")), MutationVersion: num(get(head, "mutationVersion")), QualificationHash: hash}
 	if temporal {
@@ -92,8 +112,7 @@ func (s *PrivacyService) record(kind string, head *Object, hash string, temporal
 	if marker != nil {
 		event.PrivacyMarker = &recovery.CommitmentPrivacyMarker{RecordedAt: str(get(marker, "recordedAt")), Head: markerHead(object(get(marker, "head"))), Reason: str(get(marker, "reason"))}
 	}
-	_, e := session.AppendIntent(event)
-	return e
+	return emit(event)
 }
 
 // write prepares and qualifies the complete timeline before the durable intent.
@@ -118,7 +137,7 @@ func (s *PrivacyService) write(kind string, head *Object, revisions []any, prepa
 	var marker *Object
 	if get(head, "deleted") == true {
 		timeline = nil
-	} else {
+	} else if s.Store.maintenance == nil {
 		row := obj("schemaVersion", float64(1), "id", get(head, "id"), "sceneId", get(head, "sceneId"), "mutationVersion", get(head, "mutationVersion"), "recordedAt", s.Store.now(), "reason", kind, "head", clone(head), "states", nil)
 		marker, e = NormalizeMarker(obj("recordedAt", get(row, "recordedAt"), "head", get(row, "head"), "reason", kind))
 		if e != nil {

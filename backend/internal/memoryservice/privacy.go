@@ -126,7 +126,7 @@ func (s *Service) Recall(ctx context.Context, scene, message string) (affected [
 		}
 		return tx.Transaction(ctx, func(child *assertions.RevisionTxn) error {
 			var e error
-			affected, e = s.recallPrepared(ctx, child, scene, message, before, captured, false)
+			affected, e = s.recallPrepared(ctx, child, scene, message, before, captured)
 			return e
 		})
 	})
@@ -161,17 +161,18 @@ func (s *Service) RuntimeRecallPreparation() sourceevents.RecallPreparation {
 				return errors.New("memory_recall_preparation_consumed")
 			}
 			return s.revisions.WithSession(ws).Transaction(ctx, func(tx *assertions.RevisionTxn) error {
-				_, e := s.recallPrepared(ctx, tx, scene.ID, message, before, captured, true)
+				_, e := s.recallPrepared(ctx, tx, scene.ID, message, before, captured)
 				return e
 			})
 		}, nil
 	}
 }
-func (s *Service) recallPrepared(ctx context.Context, tx *assertions.RevisionTxn, scene, message string, before []commitments.Reference, captured map[string][]*Object, rootApplied bool) ([]string, error) {
-	if !rootApplied {
-		if e := tx.Store.RecallSource(scene, message); e != nil {
-			return nil, e
-		}
+func (s *Service) recallPrepared(ctx context.Context, tx *assertions.RevisionTxn, scene, message string, before []commitments.Reference, captured map[string][]*Object) ([]string, error) {
+	// The source always invokes Store.recall, including under runtime root
+	// recall. Authority payload dedup does not remove per-call ACK/tombstone
+	// attempts or their errors, so the root cannot substitute for this call.
+	if e := tx.Store.RecallSource(scene, message); e != nil {
+		return nil, e
 	}
 	if e := tx.Store.WithWriteSession(func(ws *recovery.WriteSession) error {
 		if e := identityprivacy.RecallSource(ws, scene, message); e != nil {
@@ -363,7 +364,7 @@ func (s *Service) PrepareRecall(ctx context.Context, ws *recovery.WriteSession, 
 		}
 		err = s.revisions.WithSession(ws).Transaction(ctx, func(tx *assertions.RevisionTxn) error {
 			var e error
-			out, e = s.recallPrepared(ctx, tx, scene, message, before, captured, false)
+			out, e = s.recallPrepared(ctx, tx, scene, message, before, captured)
 			return e
 		})
 		if err != nil {

@@ -1,0 +1,148 @@
+{
+  "source": {
+    "node": "v24.22.1",
+    "v8": "13.6.233.17-node.58",
+    "glibc": "2.41",
+    "files": {
+      "src/habits.ts": "2f86453bfbbbb7be2afa8227bb9676a7649902265c34cd5cb4d4f841cd7d62fd",
+      "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+      "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192"
+    },
+    "generatorSHA256": "afcd5c6ed5e18c0d43d35c81e9aecd233c81867a61ba817c425fce21e02e985c"
+  },
+  "policy": {
+    "halfLifeDays": 30,
+    "retentionDays": 90,
+    "maxSources": 128
+  },
+  "cases": [
+    {
+      "name": "mixed-first-fraction",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793701056789,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793701056789,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":1}],\"weight\":-0.0016237761165331544,\"confidence\":0.008118880582665772,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": "ae10bebc09ebdd81fd3628bfc99d8f095efbd0b1368e034a9aa7a5ca5e29eeb4"
+    },
+    {
+      "name": "mixed-three-fractions",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793701055555,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep2\",\"senderId\":\"pkeep2\",\"timestamp\":1793466488898,\"direction\":1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793701055555,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep2\",\"senderId\":\"pkeep2\",\"timestamp\":1793466488898,\"direction\":1}],\"weight\":0.04858372104201383,\"confidence\":0.1943348841680553,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": "afdc19f3dcfb9993891be39b0f86f98030c765f0a9923258aec05064e8fbfeb9"
+    },
+    {
+      "name": "negative-three-fractions",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793701055555,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep2\",\"senderId\":\"pkeep2\",\"timestamp\":1793466488898,\"direction\":-1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793701055555,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep2\",\"senderId\":\"pkeep2\",\"timestamp\":1793466488898,\"direction\":-1}],\"weight\":-0.04858372104201383,\"confidence\":0.1943348841680553,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": "294e8414db41d8bbd1491320dfe9587d64d3799183b6def45378bee8871ab4e9"
+    },
+    {
+      "name": "fraction-near-retention",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1786011444444,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1785925056790,\"direction\":-1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1786011444444,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1785925056790,\"direction\":-1}],\"weight\":0.0001460657081088501,\"confidence\":0.0007303285405442506,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": "3c1a57962343cfec203896430978319fdef335478dfbecf7ee8c9fe160e69dd0"
+    },
+    {
+      "name": "fraction-near-half-life",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1791109056790,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1791109056788,\"direction\":-1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1791109056790,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1791109056788,\"direction\":-1}],\"weight\":1.337089328146135e-11,\"confidence\":6.685446640730675e-11,\"status\":\"disputed\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": null
+    },
+    {
+      "name": "future-source",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793824513578,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":-1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793824513578,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793577600000,\"direction\":-1}],\"weight\":0.0016237761165331544,\"confidence\":0.008118880582665772,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": "0b887fd900b92003151b4c54b3a3b66d3af70600957abbb44579234c6d41f3a3"
+    },
+    {
+      "name": "fraction-positive",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793355377877,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793244267666,\"direction\":1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793355377877,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793244267666,\"direction\":1}],\"weight\":0.08983578412242664,\"confidence\":0.44917892061213316,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": "a0daeaa5bcd6b82cd305cd5730f27540cb744917df97182a7ece97d6eebce7a2"
+    },
+    {
+      "name": "fraction-negative",
+      "now": 1793701056789,
+      "initial": {
+        "id": "h",
+        "fingerprint": "synthetic-fingerprint",
+        "value": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"drop\",\"senderId\":\"pdrop\",\"timestamp\":1793701056789,\"direction\":1},{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793355377877,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793244267666,\"direction\":-1}],\"weight\":0,\"confidence\":0,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}"
+      },
+      "event": {
+        "kind": "source",
+        "sceneId": "s",
+        "messageId": "drop"
+      },
+      "final": "{\"id\":\"h\",\"kind\":\"botExpression\",\"preference\":\"concise\",\"evidenceVersion\":2,\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"keep0\",\"senderId\":\"pkeep0\",\"timestamp\":1793355377877,\"direction\":-1},{\"sceneId\":\"s\",\"messageId\":\"keep1\",\"senderId\":\"pkeep1\",\"timestamp\":1793244267666,\"direction\":-1}],\"weight\":-0.08983578412242664,\"confidence\":0.44917892061213316,\"status\":\"active\",\"locked\":false,\"learnedAt\":\"2026-11-02T00:00:00.000Z\"}",
+      "identity": "826120f9a18fccec7cc3818cc16a6097b9a2f4ae4537224436daed978e750642"
+    }
+  ]
+}

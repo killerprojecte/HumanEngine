@@ -30,3 +30,5 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y strace
           make -C backend native-image-check
+      - name: Verify frozen and current-host numeric identity compatibility
+        run: make -C backend habit-numeric-check

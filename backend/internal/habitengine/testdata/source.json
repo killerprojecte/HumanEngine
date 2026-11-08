@@ -1,0 +1,1249 @@
+{
+  "node": "v24.22.1",
+  "timezone": "UTC",
+  "boundary": "actual Engine.proposeHabit argument capture; not a persisted write oracle",
+  "hashes": {
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/habits.ts": "2f86453bfbbbb7be2afa8227bb9676a7649902265c34cd5cb4d4f841cd7d62fd",
+    "src/memory/learning/contracts.ts": "e0b9f09ed64a09bc33b095bab10b1ce208960c1a6ca22a8b1bc446bed9dce48b",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "cases": [
+    {
+      "name": "ordinary",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "simulation-invalid",
+      "simulation": true,
+      "input": {},
+      "messages": [],
+      "result": {
+        "status": "rejected",
+        "reason": "simulation_does_not_learn"
+      },
+      "error": null,
+      "capture": null
+    },
+    {
+      "name": "missing-author",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "missing"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "missing",
+              "senderId": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "duplicate-first-author",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        },
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "second",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            },
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "second",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "simulation-filter",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "simulation",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        },
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "unavailable",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "recalled",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": false,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "limited",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ],
+          "sourceEventRegistrationLimited": true
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": false,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "invalid-date",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "not a date",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": null,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "legacy-date",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "Nov 2 2026 00:00:00 GMT",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "scene-rule",
+      "simulation": false,
+      "input": {
+        "kind": "sceneRule",
+        "content": "Use short replies",
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "sceneRule",
+          "content": "Use short replies",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "extra-key",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ],
+        "extra": true
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": null,
+      "error": "ZodError",
+      "capture": null
+    },
+    {
+      "name": "empty-ids",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": []
+      },
+      "messages": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": null,
+      "error": "ZodError",
+      "capture": null
+    }
+  ],
+  "tools": [
+    {
+      "name": "propose-captured",
+      "tool": "habits.propose",
+      "simulation": false,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "snapshots": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "candidate": {
+          "kind": "botExpression",
+          "preference": "concise",
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "propose-simulation-captured",
+      "tool": "habits.propose",
+      "simulation": true,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "snapshots": [],
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "simulation_does_not_learn"
+      },
+      "error": null,
+      "capture": null
+    },
+    {
+      "name": "propose-simulation-invalid",
+      "tool": "habits.propose",
+      "simulation": true,
+      "input": {},
+      "snapshots": [],
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": null,
+      "error": "ZodError:[\n  {\n    \"code\": \"invalid_union\",\n    \"errors\": [],\n    \"note\": \"No matching discriminator\",\n    \"discriminator\": \"kind\",\n    \"options\": [\n      \"sceneRule\",\n      \"botExpression\"\n    ],\n    \"path\": [\n      \"kind\"\n    ],\n    \"message\": \"Invalid discriminator value. Expected 'sceneRule' | 'botExpression'\"\n  }\n]",
+      "capture": null
+    },
+    {
+      "name": "propose-simulation-fallback",
+      "tool": "habits.propose",
+      "simulation": true,
+      "input": {
+        "kind": "botExpression",
+        "preference": "concise",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "snapshots": null,
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "simulation_does_not_learn"
+      },
+      "error": null,
+      "capture": null
+    },
+    {
+      "name": "feedback-captured",
+      "tool": "habits.feedback",
+      "simulation": false,
+      "input": {
+        "id": "h",
+        "direction": 1,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "snapshots": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p",
+              "origin": "live",
+              "text": "assistant always use concise replies\nsecond",
+              "timestamp": 1793577600000,
+              "available": true,
+              "isBot": false
+            }
+          ]
+        },
+        "id": "h",
+        "candidate": {
+          "direction": 1,
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "p"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "feedback-simulation-invalid",
+      "tool": "habits.feedback",
+      "simulation": true,
+      "input": {},
+      "snapshots": null,
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "simulation_does_not_learn"
+      },
+      "error": null,
+      "capture": null
+    },
+    {
+      "name": "feedback-invalid-direction",
+      "tool": "habits.feedback",
+      "simulation": false,
+      "input": {
+        "id": "h",
+        "direction": 0,
+        "sourceMessageIds": [
+          "m"
+        ]
+      },
+      "snapshots": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": null,
+      "error": "ZodError:[\n  {\n    \"code\": \"invalid_union\",\n    \"errors\": [\n      [\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            1\n          ],\n          \"path\": [],\n          \"message\": \"Invalid input: expected 1\"\n        }\n      ],\n      [\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            -1\n          ],\n          \"path\": [],\n          \"message\": \"Invalid input: expected -1\"\n        }\n      ]\n    ],\n    \"path\": [],\n    \"message\": \"Invalid input\"\n  }\n]",
+      "capture": null
+    },
+    {
+      "name": "feedback-extra-ignored",
+      "tool": "habits.feedback",
+      "simulation": false,
+      "input": {
+        "id": "h",
+        "direction": -1,
+        "sourceMessageIds": [],
+        "extra": true
+      },
+      "snapshots": [],
+      "preview": [
+        {
+          "id": "m",
+          "sceneId": "s",
+          "senderId": "p",
+          "origin": "live",
+          "status": "available",
+          "sentAt": "2026-11-02T00:00:00.000Z",
+          "parts": [
+            {
+              "type": "text",
+              "text": "assistant always use concise replies"
+            },
+            {
+              "type": "image",
+              "url": "synthetic"
+            },
+            {
+              "type": "text",
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "result": {
+        "status": "captured"
+      },
+      "error": null,
+      "capture": {
+        "context": {
+          "sceneId": "s",
+          "simulation": false,
+          "sourceEvidence": []
+        },
+        "id": "h",
+        "candidate": {
+          "direction": -1,
+          "sources": []
+        }
+      }
+    }
+  ]
+}

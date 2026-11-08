@@ -1,0 +1,970 @@
+{
+  "node": "v24.22.1",
+  "entrypoint": "actual Engine.runtime.recall; engine.start is never called",
+  "hashes": {
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/habits.ts": "2f86453bfbbbb7be2afa8227bb9676a7649902265c34cd5cb4d4f841cd7d62fd",
+    "src/memes.ts": "cf477ac3f57827e77cc13b33aa9a177d5afa450abce3e84ba4c99fae25bf0756",
+    "src/memory/lifecycle/assertion-lifecycle.ts": "2edacdbee1fe9531b95d54fe8c219ccacbfd2361ebb5a7956cb21582124eeab7",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4",
+    "backend/tests/generate-habit-recall-composition-fixtures.mjs": "920a797f92536b5240ccf52d8fc63811b6c7ee119f9888d8cf08d1b6f2b3b191"
+  },
+  "cases": [
+    {
+      "name": "success",
+      "fault": null,
+      "events": [
+        {
+          "type": "store-recall",
+          "phase": "root"
+        },
+        {
+          "type": "append",
+          "phase": "root",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 0
+        },
+        {
+          "type": "append-return",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "root"
+        },
+        {
+          "type": "enter",
+          "phase": "experience"
+        },
+        {
+          "type": "leave",
+          "phase": "experience"
+        },
+        {
+          "type": "enter",
+          "phase": "memory"
+        },
+        {
+          "type": "store-recall",
+          "phase": "memory"
+        },
+        {
+          "type": "append",
+          "phase": "memory",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "memory"
+        },
+        {
+          "type": "leave",
+          "phase": "memory"
+        },
+        {
+          "type": "enter",
+          "phase": "meme"
+        },
+        {
+          "type": "store-recall",
+          "phase": "meme"
+        },
+        {
+          "type": "append",
+          "phase": "meme",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "meme"
+        },
+        {
+          "type": "leave",
+          "phase": "meme"
+        },
+        {
+          "type": "enter",
+          "phase": "habit"
+        },
+        {
+          "type": "store-recall",
+          "phase": "habit"
+        },
+        {
+          "type": "append",
+          "phase": "habit",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "habit",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "habit",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "habit"
+        },
+        {
+          "type": "leave",
+          "phase": "habit"
+        },
+        {
+          "type": "enter",
+          "phase": "learning"
+        },
+        {
+          "type": "leave",
+          "phase": "learning"
+        },
+        {
+          "type": "enter",
+          "phase": "contextual-learning"
+        },
+        {
+          "type": "leave",
+          "phase": "contextual-learning"
+        }
+      ],
+      "error": null,
+      "authoritySequenceDelta": 1,
+      "gateSequenceDelta": 1,
+      "durablePayloads": [
+        {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      ],
+      "tombstones": [
+        {
+          "scene_id": "s",
+          "message_id": "m1"
+        }
+      ],
+      "habit": {
+        "status": "invalidated",
+        "sourceCount": 0
+      },
+      "databaseEnrolled": true
+    },
+    {
+      "name": "memory-append-failure",
+      "fault": "memory:append",
+      "events": [
+        {
+          "type": "store-recall",
+          "phase": "root"
+        },
+        {
+          "type": "append",
+          "phase": "root",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 0
+        },
+        {
+          "type": "append-return",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "root"
+        },
+        {
+          "type": "enter",
+          "phase": "experience"
+        },
+        {
+          "type": "leave",
+          "phase": "experience"
+        },
+        {
+          "type": "enter",
+          "phase": "memory"
+        },
+        {
+          "type": "store-recall",
+          "phase": "memory"
+        },
+        {
+          "type": "append",
+          "phase": "memory",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "leave",
+          "phase": "memory"
+        }
+      ],
+      "error": "synthetic_memory_append",
+      "authoritySequenceDelta": 1,
+      "gateSequenceDelta": 0,
+      "durablePayloads": [
+        {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      ],
+      "tombstones": [],
+      "habit": {
+        "status": "active",
+        "sourceCount": 1
+      },
+      "databaseEnrolled": true
+    },
+    {
+      "name": "meme-append-failure",
+      "fault": "meme:append",
+      "events": [
+        {
+          "type": "store-recall",
+          "phase": "root"
+        },
+        {
+          "type": "append",
+          "phase": "root",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 0
+        },
+        {
+          "type": "append-return",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "root"
+        },
+        {
+          "type": "enter",
+          "phase": "experience"
+        },
+        {
+          "type": "leave",
+          "phase": "experience"
+        },
+        {
+          "type": "enter",
+          "phase": "memory"
+        },
+        {
+          "type": "store-recall",
+          "phase": "memory"
+        },
+        {
+          "type": "append",
+          "phase": "memory",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "memory"
+        },
+        {
+          "type": "leave",
+          "phase": "memory"
+        },
+        {
+          "type": "enter",
+          "phase": "meme"
+        },
+        {
+          "type": "store-recall",
+          "phase": "meme"
+        },
+        {
+          "type": "append",
+          "phase": "meme",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "leave",
+          "phase": "meme"
+        }
+      ],
+      "error": "synthetic_meme_append",
+      "authoritySequenceDelta": 1,
+      "gateSequenceDelta": 0,
+      "durablePayloads": [
+        {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      ],
+      "tombstones": [],
+      "habit": {
+        "status": "active",
+        "sourceCount": 1
+      },
+      "databaseEnrolled": true
+    },
+    {
+      "name": "habit-append-failure",
+      "fault": "habit:append",
+      "events": [
+        {
+          "type": "store-recall",
+          "phase": "root"
+        },
+        {
+          "type": "append",
+          "phase": "root",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 0
+        },
+        {
+          "type": "append-return",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "root"
+        },
+        {
+          "type": "enter",
+          "phase": "experience"
+        },
+        {
+          "type": "leave",
+          "phase": "experience"
+        },
+        {
+          "type": "enter",
+          "phase": "memory"
+        },
+        {
+          "type": "store-recall",
+          "phase": "memory"
+        },
+        {
+          "type": "append",
+          "phase": "memory",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "memory"
+        },
+        {
+          "type": "leave",
+          "phase": "memory"
+        },
+        {
+          "type": "enter",
+          "phase": "meme"
+        },
+        {
+          "type": "store-recall",
+          "phase": "meme"
+        },
+        {
+          "type": "append",
+          "phase": "meme",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "meme"
+        },
+        {
+          "type": "leave",
+          "phase": "meme"
+        },
+        {
+          "type": "enter",
+          "phase": "habit"
+        },
+        {
+          "type": "store-recall",
+          "phase": "habit"
+        },
+        {
+          "type": "append",
+          "phase": "habit",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "leave",
+          "phase": "habit"
+        }
+      ],
+      "error": "synthetic_habit_append",
+      "authoritySequenceDelta": 1,
+      "gateSequenceDelta": 0,
+      "durablePayloads": [
+        {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      ],
+      "tombstones": [],
+      "habit": {
+        "status": "active",
+        "sourceCount": 1
+      },
+      "databaseEnrolled": true
+    },
+    {
+      "name": "memory-ack-failure",
+      "fault": "memory:ack",
+      "events": [
+        {
+          "type": "store-recall",
+          "phase": "root"
+        },
+        {
+          "type": "append",
+          "phase": "root",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 0
+        },
+        {
+          "type": "append-return",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "root"
+        },
+        {
+          "type": "enter",
+          "phase": "experience"
+        },
+        {
+          "type": "leave",
+          "phase": "experience"
+        },
+        {
+          "type": "enter",
+          "phase": "memory"
+        },
+        {
+          "type": "store-recall",
+          "phase": "memory"
+        },
+        {
+          "type": "append",
+          "phase": "memory",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "leave",
+          "phase": "memory"
+        }
+      ],
+      "error": "synthetic_memory_ack",
+      "authoritySequenceDelta": 1,
+      "gateSequenceDelta": 0,
+      "durablePayloads": [
+        {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      ],
+      "tombstones": [],
+      "habit": {
+        "status": "active",
+        "sourceCount": 1
+      },
+      "databaseEnrolled": true
+    },
+    {
+      "name": "habit-ack-failure",
+      "fault": "habit:ack",
+      "events": [
+        {
+          "type": "store-recall",
+          "phase": "root"
+        },
+        {
+          "type": "append",
+          "phase": "root",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 0
+        },
+        {
+          "type": "append-return",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "root"
+        },
+        {
+          "type": "enter",
+          "phase": "experience"
+        },
+        {
+          "type": "leave",
+          "phase": "experience"
+        },
+        {
+          "type": "enter",
+          "phase": "memory"
+        },
+        {
+          "type": "store-recall",
+          "phase": "memory"
+        },
+        {
+          "type": "append",
+          "phase": "memory",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "memory"
+        },
+        {
+          "type": "leave",
+          "phase": "memory"
+        },
+        {
+          "type": "enter",
+          "phase": "meme"
+        },
+        {
+          "type": "store-recall",
+          "phase": "meme"
+        },
+        {
+          "type": "append",
+          "phase": "meme",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "meme"
+        },
+        {
+          "type": "leave",
+          "phase": "meme"
+        },
+        {
+          "type": "enter",
+          "phase": "habit"
+        },
+        {
+          "type": "store-recall",
+          "phase": "habit"
+        },
+        {
+          "type": "append",
+          "phase": "habit",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "habit",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "habit",
+          "sequence": 1
+        },
+        {
+          "type": "leave",
+          "phase": "habit"
+        }
+      ],
+      "error": "synthetic_habit_ack",
+      "authoritySequenceDelta": 1,
+      "gateSequenceDelta": 0,
+      "durablePayloads": [
+        {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      ],
+      "tombstones": [],
+      "habit": {
+        "status": "active",
+        "sourceCount": 1
+      },
+      "databaseEnrolled": true
+    },
+    {
+      "name": "habit-tombstone-failure",
+      "fault": "habit:tombstone",
+      "events": [
+        {
+          "type": "store-recall",
+          "phase": "root"
+        },
+        {
+          "type": "append",
+          "phase": "root",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 0
+        },
+        {
+          "type": "append-return",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "root",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "root"
+        },
+        {
+          "type": "enter",
+          "phase": "experience"
+        },
+        {
+          "type": "leave",
+          "phase": "experience"
+        },
+        {
+          "type": "enter",
+          "phase": "memory"
+        },
+        {
+          "type": "store-recall",
+          "phase": "memory"
+        },
+        {
+          "type": "append",
+          "phase": "memory",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "memory",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "memory"
+        },
+        {
+          "type": "leave",
+          "phase": "memory"
+        },
+        {
+          "type": "enter",
+          "phase": "meme"
+        },
+        {
+          "type": "store-recall",
+          "phase": "meme"
+        },
+        {
+          "type": "append",
+          "phase": "meme",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "meme",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "meme"
+        },
+        {
+          "type": "leave",
+          "phase": "meme"
+        },
+        {
+          "type": "enter",
+          "phase": "habit"
+        },
+        {
+          "type": "store-recall",
+          "phase": "habit"
+        },
+        {
+          "type": "append",
+          "phase": "habit",
+          "payload": {
+            "kind": "source",
+            "sceneId": "s",
+            "messageId": "m1"
+          },
+          "expectedSequence": 1
+        },
+        {
+          "type": "append-return",
+          "phase": "habit",
+          "sequence": 1
+        },
+        {
+          "type": "ack",
+          "phase": "habit",
+          "sequence": 1
+        },
+        {
+          "type": "tombstone",
+          "phase": "habit"
+        },
+        {
+          "type": "leave",
+          "phase": "habit"
+        }
+      ],
+      "error": "synthetic_habit_tombstone",
+      "authoritySequenceDelta": 1,
+      "gateSequenceDelta": 0,
+      "durablePayloads": [
+        {
+          "kind": "source",
+          "sceneId": "s",
+          "messageId": "m1"
+        }
+      ],
+      "tombstones": [],
+      "habit": {
+        "status": "active",
+        "sourceCount": 1
+      },
+      "databaseEnrolled": true
+    }
+  ]
+}

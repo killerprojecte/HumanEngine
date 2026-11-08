@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsnumber"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"math"
 )
@@ -32,7 +33,7 @@ func (o *Owner) recalculate(h *object) error {
 		stamp := get(s, "timestamp")
 		if stamp != nil && now-num(stamp) < 90*86400000 {
 			sources = append(sources, v)
-			net += num(get(s, "direction")) * math.Pow(2, -math.Max(0, now-num(stamp))/(30*86400000))
+			net += num(get(s, "direction")) * jsnumber.Pow(2, -math.Max(0, now-num(stamp))/(30*86400000))
 		}
 	}
 	set(h, "sources", sources)

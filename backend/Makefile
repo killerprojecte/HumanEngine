@@ -158,3 +158,10 @@ native-image-check:
 	go vet -tags sqlite_fts5 ./internal/imagecodec ./cmd/imagecodec-probe
 	@mkdir -p "$(IMAGE_PROOF_ROOT)" && out=$$(mktemp -d "$(IMAGE_PROOF_ROOT)/run.XXXXXXXX") && \
 	  HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_IMAGE_REQUIRE_TRACE=1 HUMANENGINE_IMAGE_PROOF_DIR="$$out/proof" sh tests/image-source-free.sh
+
+# Keep the frozen migration baseline and add an actual current-host Node oracle.
+.PHONY: habit-numeric-check
+habit-numeric-check:
+	@out=$$(mktemp -d) && trap 'rm -rf "$$out"' EXIT && \
+	  node tests/generate-js-pow-fixtures.mjs --host-output "$$out/pow.json" && \
+	  HE_POW_ORACLE="$$out/pow.json" go test -race -tags sqlite_fts5 ./internal/jsnumber

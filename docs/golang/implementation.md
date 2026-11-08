@@ -636,3 +636,33 @@ reentering publication or borrowing a second connection.
 These owners remain distinct from outer refresh/capture, complete workspace
 candidate selection and model delivery. Their presence does not establish full
 robot-state-machine or HTTP parity.
+
+## Refresh/capture, knowledge reads and episode composition
+
+`memoryservice.Service` owns support refresh, fixed listing and returned-body
+capture through the actual assertion revision coordinator. Capture nests refresh
+under its enclosing revision, imports legacy references only at version/epoch zero,
+and retains duplicate order. Projection errors after successful commit are logged
+rather than returned as failed writes. Semantic notification callbacks run after
+the synchronous owner stack and requalify exact references, so rollback cannot
+publish a stale job. The runtime must provide the serial dispatcher and policies;
+there is no default no-op owner.
+
+The knowledge Reader and semantic episode owner share one concrete working-set
+scope plus current assertion service. Episode closure, original declaration
+selection, internal-marker exclusion, source ordering and dependency hashing follow
+the TypeScript implementation. Native tests additionally exercise actual proof
+withdrawal and marker-created notification behavior. These read paths do not admit
+new graph rows or complete the proposal command.
+
+ReadScope creates a callback-local loan. Statements and rows check that loan on
+read operations while Close remains usable for resource cleanup. Native parent
+scope checks continue to enforce suspension and transaction ownership. A borrowed
+WriteSession is still the parent capability used by trusted composition, not a new
+session or a subloan-revocable writer.
+
+The next complete write path requires trusted source preparation, assertion
+proposal/reconciliation, revision checkpoint, graph admission and historical
+requalification together. A graph semantic rejection may preserve the saved backing
+assertion; a storage exception must roll back the complete enclosing transaction.
+Neither model delivery nor production HTTP write parity is claimed here.

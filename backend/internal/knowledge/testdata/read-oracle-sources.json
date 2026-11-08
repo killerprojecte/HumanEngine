@@ -1,0 +1,10 @@
+{
+  "src/memory/knowledge/read.ts": "9a912b53c8fdbf58778cd2eb0353212d56af71b1a40865b2ce1892084393babc",
+  "src/memory/knowledge/query.ts": "7420b8bda950b955e62c1164d5316da8a0901da734ed6b60bbca6ff92c0728f1",
+  "src/memory/knowledge/contracts.ts": "db1e46e78512e50944bca63d0982919bd1e3055826ed13479533149887cff059",
+  "src/memory/knowledge/qualification.ts": "98c464762fa12268dc4c36be47760cdb165184f90268ba84d99430a2138a84a5",
+  "src/memory/knowledge/registry.ts": "68890f82985bd22b9f9dd4ae386e3bcc579043b52227b39859689c4aa2f3f529",
+  "src/memory/domain/proofs.ts": "7750cf6113c5d61713ab408c43744ee5c74d0a5fadb9eb85902264773f160708",
+  "backend/internal/knowledge/testdata/generate-read-oracle.ts": "c74ad80a6bc2be3d7d46b7c00dd4fe4d0197afedc09ad2fb219a06e528019280",
+  "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+}

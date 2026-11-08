@@ -1,0 +1,297 @@
+{
+  "hashes": {
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/memory/write/revision-coordinator.ts": "751d74fc03dece31760ccbe371d175879a571f4fa7eebf1a9dacb538cabf3f35",
+    "src/memory/lifecycle/proof-invalidation.ts": "89b08b2002228436e34e64f03bedaa8a1e3ffc6d583e8fd8ebc585a3cbd6ca35",
+    "src/memory/semantic/notifications.ts": "0a7c7b6c489e3dda86b424549a69ceadd46e65508c9b07fe4bbee6c97d5eda9f",
+    "backend/tests/generate-memory-service-fixtures.mjs": "e4e42f6f704cce6063d1f934184510ab8e36c87556eec7518e52846ad249093c",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "outcomes": [
+    {
+      "name": "legacy_duplicate_score",
+      "value": [
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ]
+    },
+    {
+      "name": "reordered",
+      "value": [
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ]
+    },
+    {
+      "name": "stale",
+      "value": []
+    },
+    {
+      "name": "parent_41",
+      "error": "workspace_candidate_limit"
+    },
+    {
+      "name": "exposed_41",
+      "value": [
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ]
+    },
+    {
+      "name": "simulation_100",
+      "value": []
+    },
+    {
+      "name": "refresh_capture",
+      "value": []
+    },
+    {
+      "name": "unsupported_row",
+      "value": {
+        "id": "unsupported",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s",
+          "personId": "p"
+        },
+        "kind": "experience",
+        "content": "Synthetic",
+        "sources": [],
+        "status": "invalidated",
+        "learnedAt": "2000-01-01T00:00:00.000Z",
+        "lineageStatus": "verified"
+      }
+    },
+    {
+      "name": "states",
+      "value": [
+        {
+          "assertion_id": "a",
+          "version": 1,
+          "deletion_epoch": 0,
+          "deleted": 0
+        },
+        {
+          "assertion_id": "unsupported",
+          "version": 0,
+          "deletion_epoch": 1,
+          "deleted": 0
+        }
+      ]
+    }
+  ]
+}

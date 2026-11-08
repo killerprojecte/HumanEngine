@@ -171,3 +171,31 @@ The working-set read bridge additionally exercises a one-connection publication,
 wrong-owner/ancestor rejection and native query/prepared-write authorization.
 These checks do not establish complete refresh/capture, knowledge admission,
 semantic episode discovery or production notification/scheduler integration.
+
+### Authoritative refresh, capture and semantic episodes
+
+MemoryService now composes real revision transactions, support refresh, list and
+returned-body capture. Nine actual-source operations cover duplicate legacy
+capture, score-only omission, reordered properties, stale bodies and simulation/
+existing parent-limit ordering. Native tests additionally cover postcommit
+projection failure logging, nested ownership and rollback notification suppression.
+Notification delivery is deferred through a required serial dispatcher adapter and
+requalifies each exact reference. Listener removal is constant-time; live mutation
+and nested delivery preserve source iteration behavior without retaining closures.
+
+Knowledge read differential coverage has 46 reader scenarios and 30 schema cases.
+The source oracle uses recording storage/current ports; native owner tests use
+actual SQLite and assertion/source authority. Semantic episode discovery adds 33
+actual-source cases with ordered call traces. Its native graph tests use two
+participants, real provenance, revision-created internal markers, proof withdrawal
+and the real notification queue. Graph rows are seeded directly, so these tests do
+not establish graph admission or proposal compatibility.
+
+A working-set subloan expires its query, prepared statement and row operations
+without weakening underlying native ownership/read-only enforcement. The existing
+WriteSession handle remains an inherited parent capability, not a capability
+revoked by that subloan. Native tests exercise both publication and write owners.
+
+Production scheduler/source subscriptions, full proposal and graph admission,
+requalification, final model-context construction and HTTP/runtime wiring remain
+unfinished. These domain checks do not establish a complete bot migration.

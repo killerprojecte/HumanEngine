@@ -1,10 +1,11 @@
-# Knowledge historical storage and privacy maintenance
+# Knowledge storage, scoped reads and privacy maintenance
 
 This package implements the source optional storage, strict persisted edge/registry
 validation, assertion/source purge, unavailable-proof pruning, and ordered
-maintenance propagation. It does **not** implement knowledge admission,
-requalification, applicability reads, graph queries, model exposure, or a complete
-knowledge recovery port. Storage reads do not authorize exposure.
+maintenance propagation. The scoped Reader implements applicability, graph query
+and exact-backing discovery using real current assertion authority. Knowledge
+admission, requalification, model exposure and a complete knowledge recovery port
+remain unfinished. Raw storage reads do not authorize exposure.
 
 `New(main, authority)` constructs a service without creating tables. Its `Storage`
 requires an exact active `recovery.WriteSession`, via `WithSession` or
@@ -26,11 +27,10 @@ rules. Source schema limits are preserved. Reads and persisted writes normalize
 field order through the source schema; lifecycle preserves Map/Set insertion
 order, captured references, and pre-effect survivor validation.
 
-## Verification after overlay integration
+## Verification
 
-No builds or fixture generation were run while Stage22 was frozen. Generate the
-actual-source oracle from repository root (using the repository's supported Node
-runtime):
+Generate the actual-source purge oracle from repository root using the supported
+Node runtime:
 
     node --import tsx backend/internal/knowledge/testdata/generate-source-oracle.ts
 
@@ -46,3 +46,14 @@ tests additionally exercise SQLite rollback, optional-table behavior, reader6
 without independent intent, admission-key retention, row identity corruption,
 expired child rejection, strict schema cases, exact captured fingerprints/refs,
 span survival, and validation-before-effects.
+
+The read oracle separately covers 46 reader scenarios and 30 strict query-schema
+cases. Its recording authority/storage ports isolate the actual source algorithm;
+real native tests cover current source edits/recall, owner binding and expiration.
+Run its generator with `--check` to verify frozen bytes without rewriting them.
+
+`ReadWorkingSetCurrent` and `ReadWorkingSetEpisode` borrow one concrete working-set
+scope and actual current assertion owner. Both readers expire at callback return.
+The episode entry additionally lends that same current owner to provenance/anchor
+qualification, without a second publication. Knowledge and commitment settings
+remain distinct. Invocation-local memoization contains no cross-read eligibility.

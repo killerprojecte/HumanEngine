@@ -17,6 +17,7 @@ import (
 // There is no body limit, admission limit, timeout, or shared output queue.
 type publicationResponse struct {
 	header   http.Header
+	status   int
 	head     bool
 	body     string
 	accepted bool
@@ -25,7 +26,7 @@ type publicationResponse struct {
 }
 
 func newPublicationResponse(header http.Header, head bool) *publicationResponse {
-	return &publicationResponse{header: header.Clone(), head: head}
+	return &publicationResponse{header: header.Clone(), head: head, status: http.StatusOK}
 }
 
 func (p *publicationResponse) enqueue(ctx context.Context, body []byte) error {
@@ -67,7 +68,11 @@ func (p *publicationResponse) drain(ctx context.Context, w http.ResponseWriter) 
 	}
 	p.header = nil
 	p.started = true
-	w.WriteHeader(http.StatusOK)
+	status := p.status
+	if status == 0 {
+		status = http.StatusOK
+	}
+	w.WriteHeader(status)
 	if p.head {
 		return nil
 	}

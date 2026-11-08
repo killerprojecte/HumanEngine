@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
+	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
@@ -29,4 +30,18 @@ func New(main *sql.DB, authority *recovery.Authority, token string, logs *observ
 		return nil, err
 	}
 	return &Server{main: main, authority: authority, schemas: schemas, token: token, logs: logs}, nil
+}
+
+// NewWithHabits explicitly enables the concrete habit routes. The service must
+// belong to this exact database/authority; preview constructors remain unchanged.
+func NewWithHabits(main *sql.DB, authority *recovery.Authority, habits *habitservice.Service, token string, logs *observability.Logger) (*Server, error) {
+	if habits == nil || !habits.OwnedBy(main, authority) {
+		return nil, errors.New("http_habit_dependencies_invalid")
+	}
+	s, e := New(main, authority, token, logs)
+	if e != nil {
+		return nil, e
+	}
+	s.habits = habits
+	return s, nil
 }

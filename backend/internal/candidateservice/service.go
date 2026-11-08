@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/httpapi"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
@@ -39,6 +40,16 @@ type Service struct {
 // Open opens an already enrolled installation without changing its schemas or
 // repairing ACK gaps. As in the preview, actual publication verifies authority.
 func Open(ctx context.Context, database, token string, logs *observability.Logger) (*Service, error) {
+	return open(ctx, database, token, logs, false)
+}
+
+// OpenWithHabits initializes concrete habit storage and enables its actual admin
+// routes. Unlike Open it may initialize that domain schema, but never enrolls or
+// reconciles an installation or replays learning.
+func OpenWithHabits(ctx context.Context, database, token string, logs *observability.Logger) (*Service, error) {
+	return open(ctx, database, token, logs, true)
+}
+func open(ctx context.Context, database, token string, logs *observability.Logger, withHabits bool) (*Service, error) {
 	main, err := storage.OpenExisting(database, true)
 	if err != nil {
 		return nil, err
@@ -59,7 +70,16 @@ func Open(ctx context.Context, database, token string, logs *observability.Logge
 	if err != nil {
 		return fail(err)
 	}
-	handler, err := httpapi.New(main, authority, token, logs)
+	var handler *httpapi.Server
+	if withHabits {
+		var habits *habitservice.Service
+		habits, err = habitservice.New(ctx, main, authority, habitservice.Options{})
+		if err == nil {
+			handler, err = httpapi.NewWithHabits(main, authority, habits, token, logs)
+		}
+	} else {
+		handler, err = httpapi.New(main, authority, token, logs)
+	}
 	if err != nil {
 		return fail(errors.Join(err, authority.Close()))
 	}
@@ -70,7 +90,7 @@ func Open(ctx context.Context, database, token string, logs *observability.Logge
 	return s, nil
 }
 
-// ServeHTTP retains the unchanged read-only API. HTTP mutations remain disabled.
+// ServeHTTP exposes only the routes enabled by the selected constructor.
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !s.admit() {
 		s.http.ServeUnavailable(w, r)

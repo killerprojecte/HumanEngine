@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
+	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
@@ -21,6 +22,7 @@ import (
 )
 
 type Server struct {
+	habits    *habitservice.Service
 	main      *sql.DB
 	authority *recovery.Authority
 	schemas   *contract.Schemas
@@ -92,6 +94,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
 		respondError(w, 401, "Authentication required")
+		return
+	}
+	if s.habits != nil && habitPath(habitRoutingPath(r)) {
+		s.serveHabits(w, r, available, id)
 		return
 	}
 	if (r.Method != "GET" && r.Method != "HEAD") || (r.URL.Path != "/api/settings" && r.URL.Path != "/api/models" && r.URL.Path != "/api/scenes") {

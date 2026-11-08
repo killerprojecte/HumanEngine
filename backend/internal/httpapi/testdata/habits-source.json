@@ -1,0 +1,1015 @@
+{
+  "normalization": "Only generated requestId replaced with <request-id>; all status/body/rows retained",
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/admin.ts": "1c0075c91a98be05189c36c347f16bcd3f285d8ebc2afb50c2b6af7628a5969c",
+    "src/habits.ts": "2f86453bfbbbb7be2afa8227bb9676a7649902265c34cd5cb4d4f841cd7d62fd",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "node_modules/hono/dist/utils/url.js": "dfee0733103e376ecc92370d0faf70e4d202adcaa59d151021bce4f2c6319f65",
+    "node_modules/hono/dist/validator/validator.js": "baa0dc87b51af8d3c7a34a246a68068d19e58ec6f5695823e3b621114e5b7fe0",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "record": {
+    "id": "h",
+    "kind": "sceneRule",
+    "sceneId": "s",
+    "content": "Synthetic",
+    "evidenceVersion": 2,
+    "authorWatermarks": {
+      "s:p": 123
+    },
+    "sources": [],
+    "weight": 0,
+    "confidence": 0,
+    "status": "invalidated",
+    "locked": false,
+    "learnedAt": "2026-11-01T00:00:00.000Z"
+  },
+  "cases": [
+    {
+      "name": "get",
+      "method": "GET",
+      "path": "/api/habits",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "[{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}]",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "head",
+      "method": "HEAD",
+      "path": "/api/habits",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "missing-route-get",
+      "method": "GET",
+      "path": "/api/habits/missing",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 404,
+      "text": "404 Not Found",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "missing-route-head",
+      "method": "HEAD",
+      "path": "/api/habits/missing",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 404,
+      "text": "",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "not-found-withdrawal",
+      "method": "GET",
+      "path": "/api/habits/missing",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": true,
+      "headDelta": 1,
+      "gateDelta": 0,
+      "durablePayloads": [
+        "{\"kind\":\"source\",\"sceneId\":\"s\",\"messageId\":\"not-found-withdrawal\"}"
+      ],
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "patch",
+      "method": "PATCH",
+      "path": "/api/habits/h",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "delete",
+      "method": "DELETE",
+      "path": "/api/habits/h",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "rows": []
+    },
+    {
+      "name": "missing-delete",
+      "method": "DELETE",
+      "path": "/api/habits/absent",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "missing-patch",
+      "method": "PATCH",
+      "path": "/api/habits/absent",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "unknown",
+      "method": "PATCH",
+      "path": "/api/habits/h",
+      "body": "{\"locked\":true,\"other\":1}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "method": "PATCH",
+      "path": "/api/habits/h",
+      "body": "{}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "wrong",
+      "method": "PATCH",
+      "path": "/api/habits/h",
+      "body": "{\"locked\":1}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "malformed",
+      "method": "PATCH",
+      "path": "/api/habits/h",
+      "body": "{",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "no-type",
+      "method": "PATCH",
+      "path": "/api/habits/h",
+      "body": "{\"locked\":true}",
+      "jsonType": false,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "bad-auth",
+      "method": "GET",
+      "path": "/api/habits",
+      "body": null,
+      "jsonType": true,
+      "token": "bad",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "post",
+      "method": "POST",
+      "path": "/api/habits",
+      "body": "{}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 404,
+      "text": "404 Not Found",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "encoded-id",
+      "method": "PATCH",
+      "path": "/api/habits/%68",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "encoded-slash-patch",
+      "method": "PATCH",
+      "path": "/api/habits/h%2Fpart",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h/part",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"id\":\"h/part\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}",
+      "rows": [
+        {
+          "id": "h/part",
+          "value": "{\"id\":\"h/part\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "encoded-slash-delete",
+      "method": "DELETE",
+      "path": "/api/habits/h%2fpart",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h/part",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "rows": []
+    },
+    {
+      "name": "literal-slash-not-route",
+      "method": "PATCH",
+      "path": "/api/habits/h/part",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h/part",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 404,
+      "text": "404 Not Found",
+      "rows": [
+        {
+          "id": "h/part",
+          "value": "{\"id\":\"h/part\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "double-encoded-slash",
+      "method": "PATCH",
+      "path": "/api/habits/h%252Fpart",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h%2Fpart",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"id\":\"h%2Fpart\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}",
+      "rows": [
+        {
+          "id": "h%2Fpart",
+          "value": "{\"id\":\"h%2Fpart\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "encoded-static-prefix",
+      "method": "GET",
+      "path": "/api/%68abits",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "[{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}]",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "invalid-utf8-contiguous",
+      "method": "PATCH",
+      "path": "/api/habits/h%2F%FF",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h%2F%FF",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"id\":\"h%2F%FF\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}",
+      "rows": [
+        {
+          "id": "h%2F%FF",
+          "value": "{\"id\":\"h%2F%FF\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "invalid-utf8-separated",
+      "method": "PATCH",
+      "path": "/api/habits/h%2Fx%FF",
+      "body": "{\"locked\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h/x%FF",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": null,
+      "gateDelta": null,
+      "durablePayloads": [],
+      "status": 200,
+      "text": "{\"id\":\"h/x%FF\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}",
+      "rows": [
+        {
+          "id": "h/x%FF",
+          "value": "{\"id\":\"h/x%FF\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":true,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "delete-main-rollback",
+      "method": "DELETE",
+      "path": "/api/habits/h",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": false,
+      "deleteRollback": true,
+      "withdrawDuringNotFound": false,
+      "headDelta": 1,
+      "gateDelta": 0,
+      "durablePayloads": [
+        "{\"schemaVersion\":1,\"kind\":\"habit_delete\",\"id\":\"h\",\"fingerprint\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}"
+      ],
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    },
+    {
+      "name": "invalid-schema-after-body-withdrawal",
+      "method": "PATCH",
+      "path": "/api/habits/h",
+      "body": "{}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "initial": {
+        "id": "h",
+        "kind": "sceneRule",
+        "sceneId": "s",
+        "content": "Synthetic",
+        "evidenceVersion": 2,
+        "authorWatermarks": {
+          "s:p": 123
+        },
+        "sources": [],
+        "weight": 0,
+        "confidence": 0,
+        "status": "invalidated",
+        "locked": false,
+        "learnedAt": "2026-11-01T00:00:00.000Z"
+      },
+      "withdrawDuringBody": true,
+      "deleteRollback": false,
+      "withdrawDuringNotFound": false,
+      "headDelta": 1,
+      "gateDelta": 0,
+      "durablePayloads": [
+        "{\"kind\":\"source\",\"sceneId\":\"s\",\"messageId\":\"body-withdrawal\"}"
+      ],
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "rows": [
+        {
+          "id": "h",
+          "value": "{\"id\":\"h\",\"kind\":\"sceneRule\",\"sceneId\":\"s\",\"content\":\"Synthetic\",\"evidenceVersion\":2,\"authorWatermarks\":{\"s:p\":123},\"sources\":[],\"weight\":0,\"confidence\":0,\"status\":\"invalidated\",\"locked\":false,\"learnedAt\":\"2026-11-01T00:00:00.000Z\"}"
+        }
+      ]
+    }
+  ]
+}

@@ -25,7 +25,7 @@ func NewRuntimeAuthority(store *Store) (*RuntimeAuthority, error) {
 	if store == nil || store.session != nil || store.bindingError != nil {
 		return nil, errors.New("runtime_source_store_invalid")
 	}
-	schemas, err := contract.NewSchemas()
+	schemas, err := contract.SharedSchemas()
 	if err != nil {
 		return nil, err
 	}

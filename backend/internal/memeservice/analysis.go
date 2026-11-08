@@ -384,7 +384,7 @@ func (s *Service) analyzeOnce(signal context.Context, c Context, asset *Object, 
 		if e != nil {
 			return nil, e
 		}
-		schemas, e := contract.NewSchemas()
+		schemas, e := contract.SharedSchemas()
 		if e != nil {
 			return nil, e
 		}

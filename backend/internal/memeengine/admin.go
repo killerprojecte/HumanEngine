@@ -218,7 +218,7 @@ func (s *Service) persona(ctx context.Context) (string, error) {
 		} else if e != nil {
 			return nil, e
 		}
-		schemas, e := contract.NewSchemas()
+		schemas, e := contract.SharedSchemas()
 		if e != nil {
 			return nil, e
 		}

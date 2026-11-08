@@ -27,7 +27,7 @@ func New(main *sql.DB, authority *recovery.Authority, token string, logs *observ
 	if main == nil || authority == nil {
 		return nil, errors.New("http_dependencies_invalid")
 	}
-	schemas, err := contract.NewSchemas()
+	schemas, err := contract.SharedSchemas()
 	if err != nil {
 		return nil, err
 	}

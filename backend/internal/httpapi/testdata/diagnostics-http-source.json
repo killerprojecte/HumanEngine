@@ -1,0 +1,135 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/model-roles.ts": "d7014ef6614cc315df94c5773e54e5c990195ac98c2e7064833616a31412ab83",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a"
+  },
+  "cases": [
+    {
+      "name": "empty",
+      "empty": true,
+      "path": "/api/diagnostics",
+      "method": "GET",
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "captured",
+      "path": "/api/diagnostics",
+      "method": "GET",
+      "status": 200,
+      "text": "[{\"id\":\"<id>\",\"at\":\"<time>\",\"modelId\":\"synthetic\",\"role\":\"replyer\",\"input\":\"[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"[redacted]\\\",\\\"images\\\":[\\\"[image input]\\\"]}]\",\"output\":\"{\\\"text\\\":\\\"[redacted]\\\",\\\"toolCalls\\\":[]}\"}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "head",
+      "method": "HEAD",
+      "path": "/api/diagnostics",
+      "status": 200,
+      "text": "",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "disabled",
+      "disabled": true,
+      "path": "/api/diagnostics",
+      "method": "GET",
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "bad-auth",
+      "badAuth": true,
+      "path": "/api/diagnostics",
+      "method": "GET",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "no-auth",
+      "noAuth": true,
+      "path": "/api/diagnostics",
+      "method": "GET",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "wrong-method",
+      "method": "PUT",
+      "path": "/api/diagnostics",
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "encoded-path",
+      "path": "/api/%64iagnostics",
+      "method": "GET",
+      "status": 200,
+      "text": "[{\"id\":\"<id>\",\"at\":\"<time>\",\"modelId\":\"synthetic\",\"role\":\"replyer\",\"input\":\"[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"[redacted]\\\",\\\"images\\\":[\\\"[image input]\\\"]}]\",\"output\":\"{\\\"text\\\":\\\"[redacted]\\\",\\\"toolCalls\\\":[]}\"}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "trailing-path",
+      "path": "/api/diagnostics/",
+      "method": "GET",
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "query",
+      "path": "/api/diagnostics?unused=x",
+      "method": "GET",
+      "status": 200,
+      "text": "[{\"id\":\"<id>\",\"at\":\"<time>\",\"modelId\":\"synthetic\",\"role\":\"replyer\",\"input\":\"[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"[redacted]\\\",\\\"images\\\":[\\\"[image input]\\\"]}]\",\"output\":\"{\\\"text\\\":\\\"[redacted]\\\",\\\"toolCalls\\\":[]}\"}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    }
+  ]
+}

@@ -24,7 +24,7 @@ func replayConfiguration(ctx context.Context, owner *recovery.Maintenance, v *ob
 			if e == nil {
 				raw = stored
 			}
-			schema, e := contract.NewSchemas()
+			schema, e := contract.SharedSchemas()
 			if e != nil {
 				return e
 			}

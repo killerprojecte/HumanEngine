@@ -898,3 +898,26 @@ The complete contract, credentials and visioncontext race/vet suites passed;
 combined-tree full CI remains the publication acceptance gate. This is not a
 claim that all other repeated schema construction or authority-history costs
 have been removed.
+
+### Diagnostic HTTP and shared schema metadata
+
+The opt-in diagnostic route now has an independent read-only WAL pool and
+verification connection. It still uses the existing authority publication
+reservation, current recovery gate/head checks and final enqueue fence. Socket
+draining happens after acceptance. A held main writer does not consume the read
+pool, and shutdown waits for accepted physical read callbacks. The composition
+owner must drain HTTP, close the borrowed ReadPublisher, then close database
+owners; WithDiagnostics does not transfer those owners to Server.Close.
+
+All production configuration-schema call sites now share immutable compiled
+metadata through SharedSchemas. NewSchemas remains a fresh constructor. Every
+parse, default value, validation result, model value and credential-presence
+lookup remains caller-owned or freshly computed. Concurrent parsing and returned
+value mutation are covered by race tests. The complete eleven affected package
+suites, source diagnostic HTTP matrix and vet passed before publication; the
+combined tree still requires full CI acceptance.
+
+This does not make authority verification constant-time after external writes.
+A changed authority connection can still trigger a full history audit. No
+production latency or 100,000-entry mixed-workload benchmark is claimed, and the
+private live application and media HTTP 101 decision remain separate work.

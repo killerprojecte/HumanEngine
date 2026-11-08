@@ -14,7 +14,7 @@ import (
 // before Store.set('settings'). It deliberately is not folded into the settings
 // transaction: a later settings failure does not roll back the source history.
 func (s *Store) RecordPersona(ctx context.Context, settings *jsjson.Object) error {
-	schemas, e := contract.NewSchemas()
+	schemas, e := contract.SharedSchemas()
 	if e != nil {
 		return e
 	}

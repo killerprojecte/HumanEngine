@@ -98,7 +98,7 @@ func (s *Service) semanticPrivacyAuthority(ctx context.Context, tx *assertions.R
 			if closeErr != nil {
 				return false, closeErr
 			}
-			schemas, e := contract.NewSchemas()
+			schemas, e := contract.SharedSchemas()
 			if e != nil {
 				return false, e
 			}

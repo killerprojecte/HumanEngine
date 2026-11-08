@@ -190,7 +190,7 @@ var httpSchemas *contract.Schemas
 var httpSchemasError error
 
 func httpSettings(ws *recovery.WriteSession) (settings map[string]any, err error) {
-	httpSchemasOnce.Do(func() { httpSchemas, httpSchemasError = contract.NewSchemas() })
+	httpSchemasOnce.Do(func() { httpSchemas, httpSchemasError = contract.SharedSchemas() })
 	if httpSchemasError != nil {
 		return nil, httpSchemasError
 	}

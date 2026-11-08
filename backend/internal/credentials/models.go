@@ -23,7 +23,7 @@ func (s *Store) OwnedBy(main *sql.DB, authority *recovery.Authority) bool {
 // write-only credential object. It revalidates configuration at the Store
 // boundary, as the source does, and never persists plaintext or response flags.
 func (s *Store) SaveModels(ctx context.Context, input *jsjson.Object, mutations *jsjson.Object) (recovery.Head, error) {
-	schemas, err := contract.NewSchemas()
+	schemas, err := contract.SharedSchemas()
 	if err != nil {
 		return recovery.Head{}, err
 	}

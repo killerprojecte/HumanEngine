@@ -44,7 +44,7 @@ func semanticReadState(query func(string, ...any) (semanticRows, error), scene s
 	if !exists {
 		raw = string(contract.DefaultSettingsInput())
 	}
-	schemas, e := contract.NewSchemas()
+	schemas, e := contract.SharedSchemas()
 	if e != nil {
 		return out, e
 	}

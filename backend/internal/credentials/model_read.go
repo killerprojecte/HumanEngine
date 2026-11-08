@@ -8,7 +8,7 @@ import (
 
 // Compiled schema metadata is immutable; configuration and credential presence
 // are parsed/read anew on every call.
-var modelReadSchemas = sync.OnceValues(contract.NewSchemas)
+var modelReadSchemas = sync.OnceValues(contract.SharedSchemas)
 
 // ReadModelConfiguration is the source Store.models value projection. The
 // presence callback must borrow its caller's configuration read owner; it must

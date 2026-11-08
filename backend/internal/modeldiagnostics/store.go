@@ -66,10 +66,11 @@ func (s *Store) CloseAndWait(ctx context.Context) error {
 	s.mu.Unlock()
 	return s.work.Wait(ctx)
 }
-func (s *Store) Rows() []Row {
+func (s *Store) Rows() []Row { rows, _ := s.ReadRows(); return rows }
+func (s *Store) ReadRows() ([]Row, error) {
 	done, ok := s.work.Start()
 	if !ok {
-		return nil
+		return nil, errors.New("diagnostics_closed")
 	}
 	defer done()
 	enabled := s.ports.Enabled()
@@ -86,7 +87,7 @@ func (s *Store) Rows() []Row {
 			rows = append(rows, r)
 		}
 	}
-	return rows
+	return rows, nil
 }
 func (s *Store) Capture(ctx context.Context, entry Entry, credentials []string) error {
 	return s.CaptureLazy(ctx, func() (Entry, error) { return entry, nil }, credentials)

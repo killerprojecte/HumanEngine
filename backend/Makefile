@@ -28,6 +28,7 @@ differential: build
 	cd .. && V1_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/plugins/generate-v1-adapter-lifecycle-fixture.mjs --check
 	cd .. && for script in generate-experience-http-fixtures generate-experience-http-presence generate-experience-http-reviewfix generate-experience-http-rootfix; do HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/$$script.mjs --check || exit $$?; done
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-experience-runtime-fixtures.mjs --check
+	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-diagnostics-http.mjs --check
 	cd .. && TZ=UTC node backend/tests/check-meme-oracles.mjs
 	cd .. && TZ=UTC node backend/tests/check-experience-oracles.mjs
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-offline-lifecycle-fixtures.mjs --check

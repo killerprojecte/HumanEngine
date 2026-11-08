@@ -97,7 +97,7 @@ func (s *offlineFacade) semanticPrivacyAuthority(ctx context.Context, tx *assert
 			if closeErr != nil {
 				return false, closeErr
 			}
-			schemas, e := contract.NewSchemas()
+			schemas, e := contract.SharedSchemas()
 			if e != nil {
 				return false, e
 			}

@@ -24,20 +24,22 @@ import (
 )
 
 type Server struct {
-	configuration *configurationOwner
-	memes         *memeengine.Service
-	experience    *experienceservice.Service
-	habits        *habitservice.Service
-	main          *sql.DB
-	authority     *recovery.Authority
-	schemas       *contract.Schemas
-	token         string
-	logs          *observability.Logger
-	owned         *ownership
+	diagnostics         DiagnosticReader
+	diagnosticPublisher *recovery.ReadPublisher
+	configuration       *configurationOwner
+	memes               *memeengine.Service
+	experience          *experienceservice.Service
+	habits              *habitservice.Service
+	main                *sql.DB
+	authority           *recovery.Authority
+	schemas             *contract.Schemas
+	token               string
+	logs                *observability.Logger
+	owned               *ownership
 }
 
 func Open(ctx context.Context, database, token string, logs *observability.Logger) (*Server, error) {
-	schemas, err := contract.NewSchemas()
+	schemas, err := contract.SharedSchemas()
 	if err != nil {
 		return nil, err
 	}
@@ -92,11 +94,23 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	if s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r)) {
+		w.Header().Del("Cache-Control")
+		w.Header().Del("X-Content-Type-Options")
+	}
 	if s.configuration != nil && configurationPath(habitRoutingPath(r)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
+		if s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r)) {
+			if r.Method == "HEAD" {
+				w.WriteHeader(status)
+			} else {
+				habitError(w, status, message, "")
+			}
+			return
+		}
 		if s.configuration != nil && configurationPath(habitRoutingPath(r)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
@@ -130,6 +144,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
 		authenticationError(401, "Authentication required")
+		return
+	}
+	if s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r)) {
+		s.serveDiagnostics(w, r, available, id)
 		return
 	}
 	if s.configuration != nil && configurationPath(habitRoutingPath(r)) {

@@ -23,7 +23,7 @@ func (o *OfflineLifecycle) ReviewSemantic(ctx context.Context, scope *recovery.M
 			if e = errors.Join(e, rows.Err(), rows.Close()); e != nil {
 				return e
 			}
-			schemas, e := contract.NewSchemas()
+			schemas, e := contract.SharedSchemas()
 			if e != nil {
 				return e
 			}

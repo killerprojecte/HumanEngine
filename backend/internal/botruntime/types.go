@@ -48,7 +48,7 @@ type ParticipationWindow struct {
 // DefaultSettings retains source product defaults. Configuration/service routes
 // still validate the complete settings schema before publishing a replacement.
 func DefaultSettings() Settings {
-	schemas, err := contract.NewSchemas()
+	schemas, err := contract.SharedSchemas()
 	if err != nil {
 		panic(err)
 	}

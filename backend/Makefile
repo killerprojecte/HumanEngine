@@ -15,6 +15,8 @@ build:
 
 differential: build
 	cd .. && node --import tsx scripts/vision-oracle.ts --check
+	cd .. && node --import tsx scripts/vision-errors.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-configuration-http.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-meme-http.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/modelread/testdata/source-oracle.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/imagecodec/testdata/display-sharp.mjs --check
@@ -44,6 +46,7 @@ differential: build
 	cd .. && TZ=UTC node --import tsx backend/internal/memoryservice/testdata/generate-episode-oracle.ts --check
 	cd .. && TZ=UTC node --import tsx backend/internal/knowledge/testdata/generate-source-oracle.ts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-purge-fixtures.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-runtime-fixtures.ts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-workspace-resolve-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-list-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-experience-view-fixtures.mjs --check

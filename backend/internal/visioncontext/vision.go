@@ -50,17 +50,17 @@ type Result struct {
 
 // Library functions preserve undefined versus a matched empty string with the bool return.
 type Library struct {
-	Lookup              func(Candidate) (string, bool)
+	Lookup              func(Candidate) (string, bool, error)
 	AddLookupValidation func(Candidate, string)
-	CanRecognize        func(Candidate) bool
+	CanRecognize        func(Candidate) (bool, error)
 	Recognize           func(context.Context, []byte, Candidate) (string, bool, error)
 }
 
 // Ports are bound to the real turn authority by the composition owner. Complete
 // must release its provider completion ownership after copying the returned text.
 type Ports struct {
-	Recalled            func(sceneID, messageID string) bool
-	SourceAvailable     func(Candidate) bool
+	Recalled            func(sceneID, messageID string) (bool, error)
+	SourceAvailable     func(Candidate) (bool, error)
 	ReadImage           func(context.Context, Candidate) ([]byte, error)
 	ImageDataURL        func(context.Context, []byte) (string, error)
 	Complete            func(context.Context, []ChatMessage) (string, error)
@@ -242,9 +242,21 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 	selected := []Candidate{}
 	seen := map[string]bool{}
 	for _, c := range ranked {
-		if cfg.Mode == "real" && ctx.Err() == nil && !p.Recalled(cfg.SceneID, c.Message.ID) && !p.SourceAvailable(c) {
-			out.Images = append(out.Images, Image{c.Message.ID, Observation{Status: "unavailable", Reason: "image_source_unavailable"}})
-			continue
+		if cfg.Mode == "real" && ctx.Err() == nil {
+			recalled, e := p.Recalled(cfg.SceneID, c.Message.ID)
+			if e != nil {
+				return out, e
+			}
+			if !recalled {
+				available, e := p.SourceAvailable(c)
+				if e != nil {
+					return out, e
+				}
+				if !available {
+					out.Images = append(out.Images, Image{c.Message.ID, Observation{Status: "unavailable", Reason: "image_source_unavailable"}})
+					continue
+				}
+			}
 		}
 		key := pair(c)
 		if seen[key] {
@@ -269,9 +281,22 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		return out, nil
 	}
 	for _, c := range selected {
-		valid := func() bool { return ctx.Err() == nil && !p.Recalled(cfg.SceneID, c.Message.ID) && p.SourceAvailable(c) }
+		valid := func() (bool, error) {
+			if ctx.Err() != nil {
+				return false, nil
+			}
+			recalled, e := p.Recalled(cfg.SceneID, c.Message.ID)
+			if e != nil || recalled {
+				return false, e
+			}
+			return p.SourceAvailable(c)
+		}
 		ensure := func() error {
-			if !valid() {
+			ok, e := valid()
+			if e != nil {
+				return e
+			}
+			if !ok {
 				return ErrCancelled
 			}
 			return nil
@@ -292,7 +317,11 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			}
 		}
 		if lib != nil && lib.Lookup != nil {
-			if stored, ok := lib.Lookup(c); ok && stored != "" {
+			stored, ok, e := lib.Lookup(c)
+			if e != nil {
+				return out, e
+			}
+			if ok && stored != "" {
 				if e := ensure(); e != nil {
 					return out, e
 				}
@@ -324,7 +353,15 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		}
 		operation := "image.download"
 		o, e := func() (Observation, error) {
-			if !cfg.VisionRoute && (lib == nil || (lib.CanRecognize != nil && !lib.CanRecognize(c))) {
+			canRecognize := lib != nil
+			if !cfg.VisionRoute && lib != nil && lib.CanRecognize != nil {
+				var e error
+				canRecognize, e = lib.CanRecognize(c)
+				if e != nil {
+					return Observation{}, e
+				}
+			}
+			if !cfg.VisionRoute && !canRecognize {
 				operation = "image.describe"
 				return Observation{}, errors.New("route_not_configured")
 			}
@@ -406,7 +443,11 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			if p.ReportError != nil {
 				p.ReportError(operation, e)
 			}
-			if !valid() {
+			valid, validationError := valid()
+			if validationError != nil {
+				return out, validationError
+			}
+			if !valid {
 				return out, ErrCancelled
 			}
 			o = Observation{Status: "unavailable", Reason: FailureReason(e)}

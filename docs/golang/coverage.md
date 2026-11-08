@@ -453,3 +453,34 @@ These APIs are necessary resource ownership infrastructure, not proof that every
 application producer is wired. Private media/cache/adapter callback drains and
 full application shutdown are separate integration work; no pending media101
 behavior is included here.
+
+
+## Semantic scheduling and request runtime
+
+The isolated semantic coordinator now ports source notification scheduling,
+learning admission, snapshot capture, model proposal requests and writer-scoped
+model-read fencing. Actual TypeScript fixtures cover eleven captures, six requests,
+six coordinator outcomes and sixteen admission operations; focused, race and vet
+checks passed before independent source review. Cancellation retains request and
+receipt ownership until actual completion. Existing source limits are unchanged.
+
+The concrete semantic domain Owner, qualification/resolution, candidate and receipt
+transactions, and app wiring remain separate work. This runtime batch is not proof
+of end-to-end semantic learning or complete settings-change effects.
+
+
+## Ordered configuration writes and vision errors
+
+Opt-in native settings/model mutation routes preserve the actual source's response,
+SQL, encrypted credential, persona-history and reached durable-intent prefix. A
+separate ordered recovery API retains one main transaction while appending each
+reached step's intent immediately before its SQL; existing WritePlan callers are
+unchanged. Thirty actual HTTP/SQL cases, ten ordered fault stages and two key-custody
+cases passed final race validation and affected-package vet after static review.
+Earlier header failures and the assertions they prevented remain recorded.
+Concrete app settings effects remain a separate integration requirement.
+
+Vision authority/library ports now carry errors across the actual source catch
+boundaries. Twelve additional throw/catch cases preserve propagated error identity,
+callback counts and per-image unavailable classification, alongside sixteen existing
+cases. This does not yet establish the complete native media/vision binding.

@@ -79,7 +79,7 @@ func TestSourceOracle(t *testing.T) {
 			reads, calls, recognitions, validations := 0, 0, 0, 0
 			deps := []string{}
 			seen := map[string]bool{}
-			p := Ports{Recalled: func(string, string) bool { return false }, SourceAvailable: func(c Candidate) bool { return !(f.Name == "unavailable" && c.Message.ID == "m0") }, ReadImage: func(_ context.Context, c Candidate) ([]byte, error) {
+			p := Ports{Recalled: func(string, string) (bool, error) { return false, nil }, SourceAvailable: func(c Candidate) (bool, error) { return !(f.Name == "unavailable" && c.Message.ID == "m0"), nil }, ReadImage: func(_ context.Context, c Candidate) ([]byte, error) {
 				reads++
 				if f.Name == "failure" {
 					return nil, errors.New("public_http_403")
@@ -126,7 +126,7 @@ func TestSourceOracle(t *testing.T) {
 			}, AddSourceValidation: func(Candidate) { validations++ }}
 			var lib *Library
 			if f.Name == "library" || f.Name == "library_empty" || f.Name == "seeded_empty" {
-				lib = &Library{AddLookupValidation: func(Candidate, string) { validations++ }, Lookup: func(Candidate) (string, bool) { return "synthetic observation", f.Name == "library" }, Recognize: func(context.Context, []byte, Candidate) (string, bool, error) { recognitions++; return "", true, nil }}
+				lib = &Library{AddLookupValidation: func(Candidate, string) { validations++ }, Lookup: func(Candidate) (string, bool, error) { return "synthetic observation", f.Name == "library", nil }, Recognize: func(context.Context, []byte, Candidate) (string, bool, error) { recognitions++; return "", true, nil }}
 			}
 			turn := &Turn{}
 			cache := &Cache{}
@@ -240,7 +240,7 @@ func TestAuthorityAndLibraryRevision(t *testing.T) {
 	model, _ := jsjson.Parse(`{"routes":[]}`)
 	cfg := Config{SceneID: "s", Mode: "real", Models: model}
 	m := &Message{ID: "m", SceneID: "s", Status: "available", Parts: []Part{{Type: "media", MediaType: "image", AssetID: "a"}}}
-	p := Ports{Recalled: func(string, string) bool { return false }, SourceAvailable: func(Candidate) bool { return available }, ReadImage: func(context.Context, Candidate) ([]byte, error) {
+	p := Ports{Recalled: func(string, string) (bool, error) { return false, nil }, SourceAvailable: func(Candidate) (bool, error) { return available, nil }, ReadImage: func(context.Context, Candidate) ([]byte, error) {
 		reads++
 		available = false
 		return []byte("synthetic"), nil
@@ -248,7 +248,7 @@ func TestAuthorityAndLibraryRevision(t *testing.T) {
 		t.Fatal("model after invalidation")
 		return "", nil
 	}, AddDependency: func(string) {}, AddSourceValidation: func(Candidate) { sourceValidations++ }}
-	lib := &Library{Lookup: func(Candidate) (string, bool) { return stored, stored != "" }, AddLookupValidation: func(_ Candidate, s string) {
+	lib := &Library{Lookup: func(Candidate) (string, bool, error) { return stored, stored != "", nil }, AddLookupValidation: func(_ Candidate, s string) {
 		lookupValidations++
 		if s != stored {
 			t.Fatal("wrong stored revision")
@@ -338,7 +338,7 @@ func TestAuthorityRevocationAfterEachAsyncStage(t *testing.T) {
 			models, _ := jsjson.Parse(`{}`)
 			cfg := Config{SceneID: "s", Mode: "real", Models: models, VisionRoute: true}
 			m := &Message{ID: "m", SceneID: "s", Status: "available", Parts: []Part{{Type: "media", MediaType: "image", AssetID: "a"}}}
-			p := Ports{Recalled: func(string, string) bool { return false }, SourceAvailable: func(Candidate) bool { return available }, ReadImage: func(context.Context, Candidate) ([]byte, error) { return []byte("synthetic"), nil }, ImageDataURL: func(context.Context, []byte) (string, error) {
+			p := Ports{Recalled: func(string, string) (bool, error) { return false, nil }, SourceAvailable: func(Candidate) (bool, error) { return available, nil }, ReadImage: func(context.Context, Candidate) ([]byte, error) { return []byte("synthetic"), nil }, ImageDataURL: func(context.Context, []byte) (string, error) {
 				decoded++
 				if stage == "decode" {
 					available = false
@@ -378,7 +378,7 @@ func TestConcurrentDescribeSharesTurnBudget(t *testing.T) {
 		ms = append(ms, &Message{ID: fmt.Sprint(i), SceneID: "s", Status: "available", Parts: []Part{{Type: "media", MediaType: "image", AssetID: fmt.Sprint(i)}}})
 	}
 	reads, calls := 0, 0
-	p := Ports{Recalled: func(string, string) bool { return false }, SourceAvailable: func(Candidate) bool { return true }, ReadImage: func(context.Context, Candidate) ([]byte, error) { reads++; return []byte("synthetic"), nil }, ImageDataURL: func(context.Context, []byte) (string, error) { return "data:image/png;base64,c3ludGhldGlj", nil }, Complete: func(context.Context, []ChatMessage) (string, error) { calls++; return "synthetic", nil }, AddDependency: func(string) {}, AddSourceValidation: func(Candidate) {}}
+	p := Ports{Recalled: func(string, string) (bool, error) { return false, nil }, SourceAvailable: func(Candidate) (bool, error) { return true, nil }, ReadImage: func(context.Context, Candidate) ([]byte, error) { reads++; return []byte("synthetic"), nil }, ImageDataURL: func(context.Context, []byte) (string, error) { return "data:image/png;base64,c3ludGhldGlj", nil }, Complete: func(context.Context, []ChatMessage) (string, error) { calls++; return "synthetic", nil }, AddDependency: func(string) {}, AddSourceValidation: func(Candidate) {}}
 	turn := &Turn{}
 	cache := &Cache{}
 	start := make(chan struct{})

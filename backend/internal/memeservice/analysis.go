@@ -29,11 +29,12 @@ type AnalyzeOptions struct {
 	observation        *observationTask
 }
 type analysisTask struct {
-	id     string
-	done   chan struct{}
-	cancel context.CancelFunc
-	asset  *Object
-	err    error
+	projection *AssetProjection
+	id         string
+	done       chan struct{}
+	cancel     context.CancelFunc
+	asset      *Object
+	err        error
 }
 type observationTask struct {
 	root      context.Context // Independent supervised lifetime, closed before done.
@@ -97,7 +98,7 @@ func (s *Service) Analyze(ctx context.Context, c Context, id string, models *pro
 			return errors.New("meme_not_available")
 		}
 		asset = a
-		return nil
+		return s.captureProjection(ctx, p, a)
 	})
 	if e != nil {
 		return nil, e
@@ -110,8 +111,9 @@ func (s *Service) Analyze(ctx context.Context, c Context, id string, models *pro
 	task := s.analyses[key]
 	if task == nil {
 		signal, cancel := context.WithCancel(ctx)
-		task = &analysisTask{id: id, done: make(chan struct{}), cancel: cancel}
+		task = &analysisTask{projection: &AssetProjection{owner: s, scene: c.SceneID}, id: id, done: make(chan struct{}), cancel: cancel}
 		s.analyses[key] = task
+		signal = context.WithValue(signal, projectionCaptureKey{}, task.projection)
 		go func() {
 			defer cancel()
 			task.asset, task.err = s.analyzeWithRetry(signal, c, asset, models, codec, o)
@@ -125,6 +127,9 @@ func (s *Service) Analyze(ctx context.Context, c Context, id string, models *pro
 	}
 	s.mu.Unlock()
 	<-task.done
+	if task.err == nil {
+		s.copyProjection(ctx, task.projection)
+	}
 	return copyObject(task.asset), task.err
 }
 func (s *Service) Dispose(ctx context.Context) error {
@@ -160,6 +165,9 @@ func (s *Service) patchAnalysis(ctx context.Context, id string, patch *Object) (
 			}
 		}
 		if e = p.write(a); e != nil {
+			return e
+		}
+		if e = s.captureProjection(ctx, p, a); e != nil {
 			return e
 		}
 		out = sanitize(a)
@@ -199,6 +207,9 @@ func (s *Service) analyzeWithRetry(signal context.Context, c Context, asset *Obj
 				return errors.New("analysis_cancelled")
 			}
 			if get(current, "tagRevision") != get(asset, "tagRevision") {
+				if e = s.captureProjection(signal, p, current); e != nil {
+					return e
+				}
 				changed = sanitize(current)
 			}
 			return nil
@@ -393,6 +404,9 @@ func (s *Service) analyzeOnce(signal context.Context, c Context, asset *Object, 
 	if e != nil {
 		return nil, e
 	}
+	// One-shot analysis never transfers the assistant continuation to a turn.
+	// Release on every exit, without replacing the original analysis error.
+	defer completion.Release()
 	if signal.Err() != nil {
 		return nil, errors.New("analysis_cancelled")
 	}
@@ -431,12 +445,18 @@ func (s *Service) analyzeOnce(signal context.Context, c Context, asset *Object, 
 			return errors.New("media_no_longer_available")
 		}
 		if get(current, "tagRevision") != get(asset, "tagRevision") {
+			if e = s.captureProjection(signal, p, current); e != nil {
+				return e
+			}
 			result = sanitize(current)
 			return nil
 		}
 		oldTags, _ := jsjson.Stringify(get(asset, "tags"))
 		currentTags, _ := jsjson.Stringify(get(current, "tags"))
 		if yes(get(current, "analyzed")) && currentTags != oldTags {
+			if e = s.captureProjection(signal, p, current); e != nil {
+				return e
+			}
 			result = sanitize(current)
 			return nil
 		}
@@ -463,6 +483,9 @@ func (s *Service) analyzeOnce(signal context.Context, c Context, asset *Object, 
 		}
 		next.Delete("analysisError")
 		if e = p.write(next); e != nil {
+			return e
+		}
+		if e = s.captureProjection(signal, p, next); e != nil {
 			return e
 		}
 		result = sanitize(next)

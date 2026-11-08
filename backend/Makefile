@@ -14,6 +14,9 @@ build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-meme-http.mjs --check
+	cd .. && HE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/modelread/testdata/source-oracle.mjs --check
+	cd .. && HE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/imagecodec/testdata/display-sharp.mjs --check
 	cd .. && node backend/internal/plugins/generate-v1-adapters.mjs --check
 	cd .. && V1_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/plugins/generate-v1-adapter-fixture.mjs --check
 	cd .. && V1_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/plugins/generate-v1-adapter-lifecycle-fixture.mjs --check
@@ -124,7 +127,7 @@ native-icu-build: native-icu-builder-test $(ICU_ARCHIVE)
 	$(PYTHON) native/icu/build.py --archive "$(ICU_ARCHIVE)" --work-dir "$(ICU_WORK_DIR)"
 
 native-icu-test: native-icu-build
-	. "$(ICU_WORK_DIR)/env.sh" && go test -race -tags sqlite_fts5,humanengine_icu ./...
+	. "$(ICU_WORK_DIR)/env.sh" && REQUIRE_ICU=1 go test -race -tags sqlite_fts5,humanengine_icu ./...
 	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags sqlite_fts5,humanengine_icu ./...
 
 native-icu-source-free: native-icu-build
@@ -156,6 +159,7 @@ native-installation-check: native-icu-build
 # npm ci. This target does not publish or bundle the shared object.
 IMAGE_LIBRARY ?= $(abspath ../node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7)
 export HUMANENGINE_VIPS_LIBRARY ?= $(IMAGE_LIBRARY)
+export HE_IMAGE_LIBRARY ?= $(IMAGE_LIBRARY)
 IMAGE_PROOF_ROOT ?= $(or $(RUNNER_TEMP),$(TMPDIR),/tmp)/humanengine-image-proofs
 native-image-check:
 	cd .. && node backend/tests/check-meme-image-oracle.mjs

@@ -45,10 +45,10 @@ func (s *Service) AdminPage(ctx context.Context, o PageOptions) (out Page, e err
 			}
 			args = append(args, value)
 		} else if strings.HasPrefix(o.Scope, "scene:") {
-			clauses = append(clauses, "EXISTS (SELECT 1 FROM meme_sources s WHERE s.asset_id=a.id AND s.scene_id=?)")
+			clauses = append(clauses, "EXISTS (SELECT 1 FROM main.meme_sources s WHERE s.asset_id=a.id AND s.scene_id=?)")
 			args = append(args, strings.TrimPrefix(o.Scope, "scene:"))
 		}
-		states := map[string]string{"favorite": "json_extract(value,'$.favorite')=1", "disabled": "json_extract(value,'$.disabled')=1", "unanalyzed": "json_extract(value,'$.analyzed')=0", "known": "json_extract(value,'$.knownOnly')=1 AND json_extract(value,'$.disabled')=0", "available": "json_extract(value,'$.available')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0 AND json_extract(value,'$.disabled')=0 AND json_extract(value,'$.analyzed')=1 AND EXISTS (SELECT 1 FROM meme_sources s WHERE s.asset_id=a.id)"}
+		states := map[string]string{"favorite": "json_extract(value,'$.favorite')=1", "disabled": "json_extract(value,'$.disabled')=1", "unanalyzed": "json_extract(value,'$.analyzed')=0", "known": "json_extract(value,'$.knownOnly')=1 AND json_extract(value,'$.disabled')=0", "available": "json_extract(value,'$.available')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0 AND json_extract(value,'$.disabled')=0 AND json_extract(value,'$.analyzed')=1 AND EXISTS (SELECT 1 FROM main.meme_sources s WHERE s.asset_id=a.id)"}
 		if state := states[o.State]; state != "" {
 			clauses = append(clauses, state)
 		}
@@ -64,7 +64,7 @@ func (s *Service) AdminPage(ctx context.Context, o PageOptions) (out Page, e err
 					marks = append(marks, "?")
 					args = append(args, k)
 				}
-				clauses = append(clauses, "EXISTS (SELECT 1 FROM meme_search_concepts c WHERE c.asset_id=a.id AND c.concept IN ("+strings.Join(marks, ",")+"))")
+				clauses = append(clauses, "EXISTS (SELECT 1 FROM main.meme_search_concepts c WHERE c.asset_id=a.id AND c.concept IN ("+strings.Join(marks, ",")+"))")
 			} else {
 				clauses = append(clauses, `EXISTS (SELECT 1 FROM json_tree(a.value,'$.tags') tag WHERE tag.type='text' AND tag.value LIKE ? ESCAPE '\')`)
 				args = append(args, "%"+strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(query)+"%")
@@ -74,7 +74,7 @@ func (s *Service) AdminPage(ctx context.Context, o PageOptions) (out Page, e err
 		if len(clauses) > 0 {
 			where = " WHERE (" + strings.Join(clauses, ") AND (") + ")"
 		}
-		rows, e := p.ws.Query("SELECT COUNT(*) FROM meme_assets a"+where, args...)
+		rows, e := p.ws.Query("SELECT COUNT(*) FROM main.meme_assets a"+where, args...)
 		if e != nil {
 			return e
 		}
@@ -90,7 +90,7 @@ func (s *Service) AdminPage(ctx context.Context, o PageOptions) (out Page, e err
 			page = *o.Page
 		}
 		out.Page = math.Max(1, math.Min(math.Max(1, math.Ceil(float64(out.Total)/size)), math.Floor(page)))
-		out.Items, e = p.queryAssets("SELECT value FROM meme_assets a"+where+" ORDER BY rowid DESC LIMIT ? OFFSET ?", append(args, size, (out.Page-1)*size)...)
+		out.Items, e = p.queryAssets("SELECT value FROM main.meme_assets a"+where+" ORDER BY rowid DESC LIMIT ? OFFSET ?", append(args, size, (out.Page-1)*size)...)
 		return e
 	})
 	return

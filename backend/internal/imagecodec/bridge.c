@@ -265,3 +265,14 @@ int he_meme_render(const void *data,size_t n,int page,int thumbnail,void **out,s
  int rc=meme_render_image(data,n,page,thumbnail,out,len);*error=rc?vips_error_buffer_copy():NULL;
  if(rc&&*out){g_free(*out);*out=NULL;*len=0;}if(!rc)vips_error_clear();vips_thread_shutdown();return rc;
 }
+
+// chat-media.validateDisplayImage: metadata policy precedes sharp.stats().
+int he_display_validate(const void *data,size_t n,he_metadata *m){
+ int rc=-1;const char *fmt=format(data,n);VipsImage *im=NULL;
+ if(fmt){im=open_image(data,n,fmt,1,1);if(im){
+  m->width=vips_image_get_width(im);m->height=vips_image_get_height(im);
+  m->pages=field(im,"n-pages",1);m->page_height=field(im,"page-height",m->height);strcpy(m->format,fmt);
+  if(m->width>0&&m->height>0&&m->pages<=200&&(uint64_t)m->width*m->height*(uint64_t)m->pages<=40000000)rc=full_stats(im);
+ }}
+ if(im)g_object_unref(im);vips_error_clear();vips_thread_shutdown();return rc;
+}

@@ -1,0 +1,641 @@
+{
+  "initial": {
+    "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "format": "png",
+    "bytes": 12,
+    "width": 2,
+    "height": 2,
+    "frames": 1,
+    "sources": [],
+    "tags": {
+      "appearance": [],
+      "style": [],
+      "subject": [],
+      "emotion": [],
+      "intent": [],
+      "tone": [],
+      "intensity": [],
+      "memeMeaning": [],
+      "ocr": ""
+    },
+    "analyzed": false,
+    "available": false,
+    "shared": false,
+    "privacyReviewed": false,
+    "favorite": false,
+    "disabled": false,
+    "preference": 0,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "lastUsedAt": null
+  },
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/admin.ts": "1c0075c91a98be05189c36c347f16bcd3f285d8ebc2afb50c2b6af7628a5969c",
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/memes.ts": "cf477ac3f57827e77cc13b33aa9a177d5afa450abce3e84ba4c99fae25bf0756",
+    "src/memory/read/model-read-policy.ts": "82da719b296faefb9cc6386c70d7b6f344e3c5577da75acce03b8e12d7ec23f8",
+    "src/meme-intake.ts": "787444aafae1f8055e7c2d081e1b8255bf7cb690f2c0e473168e2c5fffefff1c"
+  },
+  "cases": [
+    {
+      "name": "list",
+      "method": "GET",
+      "path": "/api/memes",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "head",
+      "method": "HEAD",
+      "path": "/api/memes",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": ""
+    },
+    {
+      "name": "get",
+      "method": "GET",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}"
+    },
+    {
+      "name": "get-missing",
+      "method": "GET",
+      "path": "/api/memes/missing",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Asset unavailable\"}"
+    },
+    {
+      "name": "get-head",
+      "method": "HEAD",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": ""
+    },
+    {
+      "name": "unknown-query",
+      "method": "GET",
+      "path": "/api/memes?other=yes",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "wrong-method",
+      "method": "POST",
+      "path": "/api/memes",
+      "body": "{}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 404,
+      "text": "404 Not Found"
+    },
+    {
+      "name": "trailing-slash",
+      "method": "GET",
+      "path": "/api/memes/",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 404,
+      "text": "404 Not Found"
+    },
+    {
+      "name": "encoded-prefix",
+      "method": "GET",
+      "path": "/api/m%65mes",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "delete-missing",
+      "method": "DELETE",
+      "path": "/api/memes/missing",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"ok\":false}"
+    },
+    {
+      "name": "file-missing",
+      "method": "GET",
+      "path": "/api/memes/missing/file",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Asset unavailable\"}"
+    },
+    {
+      "name": "thumbnail-missing",
+      "method": "GET",
+      "path": "/api/memes/missing/thumbnail",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}"
+    },
+    {
+      "name": "page-",
+      "method": "GET",
+      "path": "/api/memes?page=",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "page-0",
+      "method": "GET",
+      "path": "/api/memes?page=0",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "page-1",
+      "method": "GET",
+      "path": "/api/memes?page=1",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "page-1.5",
+      "method": "GET",
+      "path": "/api/memes?page=1.5",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "page-0x2",
+      "method": "GET",
+      "path": "/api/memes?page=0x2",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "page-1e2",
+      "method": "GET",
+      "path": "/api/memes?page=1e2",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "page-1000000",
+      "method": "GET",
+      "path": "/api/memes?page=1000000",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "page-1000001",
+      "method": "GET",
+      "path": "/api/memes?page=1000001",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "page-Infinity",
+      "method": "GET",
+      "path": "/api/memes?page=Infinity",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "page-1&page=2",
+      "method": "GET",
+      "path": "/api/memes?page=1&page=2",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "size-0",
+      "method": "GET",
+      "path": "/api/memes?pageSize=0",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "size-1",
+      "method": "GET",
+      "path": "/api/memes?pageSize=1",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":1}"
+    },
+    {
+      "name": "size-96",
+      "method": "GET",
+      "path": "/api/memes?pageSize=96",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":96}"
+    },
+    {
+      "name": "size-97",
+      "method": "GET",
+      "path": "/api/memes?pageSize=97",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "size-1&pageSize=2",
+      "method": "GET",
+      "path": "/api/memes?pageSize=1&pageSize=2",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "scope-*",
+      "method": "GET",
+      "path": "/api/memes?scope=*",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "scope-shared",
+      "method": "GET",
+      "path": "/api/memes?scope=shared",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "scope-local",
+      "method": "GET",
+      "path": "/api/memes?scope=local",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "scope-scene:",
+      "method": "GET",
+      "path": "/api/memes?scope=scene%3A",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "scope-scene:s",
+      "method": "GET",
+      "path": "/api/memes?scope=scene%3As",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "scope-bad",
+      "method": "GET",
+      "path": "/api/memes?scope=bad",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "state-*",
+      "method": "GET",
+      "path": "/api/memes?state=*",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "state-favorite",
+      "method": "GET",
+      "path": "/api/memes?state=favorite",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "state-disabled",
+      "method": "GET",
+      "path": "/api/memes?state=disabled",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "state-available",
+      "method": "GET",
+      "path": "/api/memes?state=available",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "state-unanalyzed",
+      "method": "GET",
+      "path": "/api/memes?state=unanalyzed",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}],\"total\":1,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "state-known",
+      "method": "GET",
+      "path": "/api/memes?state=known",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "state-bad",
+      "method": "GET",
+      "path": "/api/memes?state=bad",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "query-400",
+      "method": "GET",
+      "path": "/api/memes?query=%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"items\":[],\"total\":0,\"page\":1,\"pageSize\":24}"
+    },
+    {
+      "name": "query-402",
+      "method": "GET",
+      "path": "/api/memes?query=%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80%F0%9F%98%80",
+      "body": null,
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "patch-favorite",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{\"favorite\":true}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":true,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}"
+    },
+    {
+      "name": "patch-empty",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null}"
+    },
+    {
+      "name": "patch-unknown",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{\"secret\":1}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "patch-wrong-boolean",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{\"shared\":1}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "patch-tags",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\",\"extra\":\"stripped\"}}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":true,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null,\"tagRevision\":1}"
+    },
+    {
+      "name": "patch-bad-tags",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{\"tags\":{\"appearance\":[],\"style\":[],\"subject\":12,\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"}}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "patch-long-tags",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"}}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}"
+    },
+    {
+      "name": "patch-null",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "null",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "patch-array",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "[]",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "include",
+      "method": "POST",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/inclusion",
+      "body": "{\"included\":false}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 200,
+      "text": "{\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"format\":\"png\",\"bytes\":12,\"width\":2,\"height\":2,\"frames\":1,\"sources\":[],\"tags\":{\"appearance\":[],\"style\":[],\"subject\":[],\"emotion\":[],\"intent\":[],\"tone\":[],\"intensity\":[],\"memeMeaning\":[],\"ocr\":\"\"},\"analyzed\":false,\"available\":false,\"shared\":false,\"privacyReviewed\":false,\"favorite\":false,\"disabled\":false,\"preference\":0,\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"lastUsedAt\":null,\"knownOnly\":true,\"selectionOrigin\":\"manual\",\"sharingOrigin\":\"manual\",\"tagRevision\":1}"
+    },
+    {
+      "name": "include-invalid",
+      "method": "POST",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/inclusion",
+      "body": "{\"included\":\"yes\"}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "analyze-denied",
+      "method": "POST",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/analyze",
+      "body": "{\"sceneId\":\"missing\"}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}"
+    },
+    {
+      "name": "analyze-invalid",
+      "method": "POST",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/analyze",
+      "body": "{\"sceneId\":1}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "import-missing",
+      "method": "POST",
+      "path": "/api/memes/import",
+      "body": "{\"sceneId\":\"s\",\"messageId\":\"missing\",\"base64\":\"\"}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"An available real source message is required\"}"
+    },
+    {
+      "name": "import-invalid",
+      "method": "POST",
+      "path": "/api/memes/import",
+      "body": "{\"sceneId\":\"s\",\"messageId\":\"missing\"}",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}"
+    },
+    {
+      "name": "malformed",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{",
+      "jsonType": true,
+      "token": "synthetic-http-test-token",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}"
+    },
+    {
+      "name": "no-mime",
+      "method": "PATCH",
+      "path": "/api/memes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "body": "{}",
+      "jsonType": false,
+      "token": "synthetic-http-test-token",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}"
+    },
+    {
+      "name": "bad-auth",
+      "method": "GET",
+      "path": "/api/memes",
+      "body": null,
+      "jsonType": true,
+      "token": "wrong",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}"
+    }
+  ]
+}

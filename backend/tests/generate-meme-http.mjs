@@ -1,0 +1,22 @@
+import {readFileSync,writeFileSync} from 'node:fs'
+import {resolve} from 'node:path'
+import {pathToFileURL} from 'node:url'
+import {createHash} from 'node:crypto'
+const root=resolve(process.env.HE_SOURCE_ROOT??new URL('../..',import.meta.url).pathname)
+const {Store}=await import(pathToFileURL(resolve(root,'src/store.ts')))
+const {Engine}=await import(pathToFileURL(resolve(root,'src/engine.ts')))
+const {createApp}=await import(pathToFileURL(resolve(root,'src/api.ts')))
+const base='/api/memes',id='a'.repeat(64),tags=Object.fromEntries(['appearance','style','subject','emotion','intent','tone','intensity','memeMeaning'].map(k=>[k,[]]));tags.ocr=''
+const initial={id,format:'png',bytes:12,width:2,height:2,frames:1,sources:[],tags,analyzed:false,available:false,shared:false,privacyReviewed:false,favorite:false,disabled:false,preference:0,createdAt:'2026-01-01T00:00:00.000Z',lastUsedAt:null}
+const specs=[['list','GET',base],['head','HEAD',base],['get','GET',base+'/'+id],['get-missing','GET',base+'/missing'],['get-head','HEAD',base+'/'+id],['unknown-query','GET',base+'?other=yes'],['wrong-method','POST',base,'{}'],['trailing-slash','GET',base+'/'],['encoded-prefix','GET','/api/m%65mes'],['delete-missing','DELETE',base+'/missing'],['file-missing','GET',base+'/missing/file'],['thumbnail-missing','GET',base+'/missing/thumbnail']]
+for(const page of ['','0','1','1.5','0x2','1e2','1000000','1000001','Infinity','1&page=2'])specs.push(['page-'+page,'GET',base+'?page='+page])
+for(const pageSize of ['0','1','96','97','1&pageSize=2'])specs.push(['size-'+pageSize,'GET',base+'?pageSize='+pageSize])
+for(const scope of ['*','shared','local','scene:','scene:s','bad'])specs.push(['scope-'+scope,'GET',base+'?scope='+encodeURIComponent(scope)])
+for(const state of ['*','favorite','disabled','available','unanalyzed','known','bad'])specs.push(['state-'+state,'GET',base+'?state='+state])
+for(const query of ['😀'.repeat(200),'😀'.repeat(201)])specs.push(['query-'+query.length,'GET',base+'?query='+encodeURIComponent(query)])
+for(const [name,body] of [['favorite',{favorite:true}],['empty',{}],['unknown',{secret:1}],['wrong-boolean',{shared:1}],['tags',{tags:{...tags,extra:'stripped'}}],['bad-tags',{tags:{...tags,subject:12}}],['long-tags',{tags:{...tags,subject:['x'.repeat(161)]}}],['null',null],['array',[]]])specs.push(['patch-'+name,'PATCH',base+'/'+id,JSON.stringify(body)])
+for(const [name,method,path,body] of [['include','POST',base+'/'+id+'/inclusion',{included:false}],['include-invalid','POST',base+'/'+id+'/inclusion',{included:'yes'}],['analyze-denied','POST',base+'/'+id+'/analyze',{sceneId:'missing'}],['analyze-invalid','POST',base+'/'+id+'/analyze',{sceneId:1}],['import-missing','POST',base+'/import',{sceneId:'s',messageId:'missing',base64:''}],['import-invalid','POST',base+'/import',{sceneId:'s',messageId:'missing'}]])specs.push([name,method,path,JSON.stringify(body)])
+specs.push(['malformed','PATCH',base+'/'+id,'{'],['no-mime','PATCH',base+'/'+id,'{}',false],['bad-auth','GET',base,undefined,true,'wrong'])
+const cases=[]
+for(const [name,method,path,body,jsonType=true,token='synthetic-http-test-token'] of specs){const store=new Store(':memory:');const engine=new Engine(store);try{store.db.prepare('INSERT INTO meme_assets(id,value) VALUES(?,?)').run(id,JSON.stringify(initial));const app=createApp(store,{engine,token:'synthetic-http-test-token'});const response=await app.request('http://example.test'+path,{method,headers:{Authorization:'Bearer '+token,...(jsonType?{'Content-Type':'application/json'}:{})},...(body!==undefined?{body}:{})});cases.push({name,method,path,body:body??null,jsonType,token,status:response.status,text:(await response.text()).replace(/"requestId":"[^"]+"/g,'"requestId":"<request-id>"')})}finally{await engine.dispose();store.close()}}
+const files=['src/admin.ts','src/api.ts','src/memes.ts','src/memory/read/model-read-policy.ts','src/meme-intake.ts'];const result={initial,node:process.version,sourceHashes:Object.fromEntries(files.map(p=>[p,createHash('sha256').update(readFileSync(resolve(root,p))).digest('hex')])),cases};const output=new URL('../internal/httpapi/testdata/meme-source.json',import.meta.url),text=JSON.stringify(result,null,2)+'\n';if(process.argv.includes('--check')){if(readFileSync(output,'utf8')!==text)throw new Error('meme_http_fixture_mismatch')}else writeFileSync(output,text);console.log(cases.length+' actual Meme HTTP cases')

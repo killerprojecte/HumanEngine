@@ -275,19 +275,21 @@ type turn struct {
 	guard        *sendGuard
 }
 type TurnContext struct {
-	Scene               Scene
-	Mode, TurnID        string
-	root                *dispatch.Signal
-	stage               atomic.Pointer[stage]
-	owner               *turn
-	mu                  sync.Mutex
-	dependencies        map[string]bool
-	dependencyOrder     []string
-	validations         []func(ReadAuthority) (bool, error)
-	sources             []*Object
-	sourceTimes         []float64
-	ImagePriorityIDs    []string // turn-owned; extension callbacks must not mutate
-	deferMemoryExposure atomic.Bool
+	extensionStateClosed bool
+	extensionState       map[any]any
+	Scene                Scene
+	Mode, TurnID         string
+	root                 *dispatch.Signal
+	stage                atomic.Pointer[stage]
+	owner                *turn
+	mu                   sync.Mutex
+	dependencies         map[string]bool
+	dependencyOrder      []string
+	validations          []func(ReadAuthority) (bool, error)
+	sources              []*Object
+	sourceTimes          []float64
+	ImagePriorityIDs     []string // turn-owned; extension callbacks must not mutate
+	deferMemoryExposure  atomic.Bool
 }
 
 func (c *TurnContext) Signal() *dispatch.Signal {

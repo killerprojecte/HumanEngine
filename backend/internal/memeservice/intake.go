@@ -214,6 +214,9 @@ func (s *Service) Intake(ctx context.Context, c Context, b []byte, source *Objec
 		if e = p.write(a); e != nil {
 			return e
 		}
+		if e = s.captureProjection(ctx, p, a); e != nil {
+			return e
+		}
 		out = sanitize(a)
 		return nil
 	})

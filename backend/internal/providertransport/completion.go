@@ -30,9 +30,10 @@ type Completion struct {
 	Summary   map[string]any
 }
 type CompletionRequest struct {
-	Role     string
-	Messages []*Message
-	Tools    []map[string]any
+	FirstContent func()
+	Role         string
+	Messages     []*Message
+	Tools        []map[string]any
 }
 type NativeModels struct {
 	Host              *plugins.V1Host
@@ -49,6 +50,9 @@ type NativeModels struct {
 func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) (*Completion, error) {
 	if ctx == nil {
 		ctx = context.Background()
+	}
+	if e := checkModelRead(ctx); e != nil {
+		return nil, e
 	}
 	if m.Policy == nil || m.Client == nil {
 		return nil, errors.New("native_provider_composition_required")
@@ -85,6 +89,14 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 		return nil, safe("provider_request_failed")
 	}
 	value, e := m.Policy.Run(ctx, modelservice.Request{Role: request.Role, ToolNames: names, HasImages: hasImages}, asyncInvocation(func(ctx context.Context, attempt modelservice.Attempt, complete func(any, error)) {
+		if request.FirstContent != nil {
+			first := attempt.FirstContent
+			attempt.FirstContent = func() { first(); request.FirstContent() }
+		}
+		if err := checkModelRead(ctx); err != nil {
+			complete(nil, err)
+			return
+		}
 		if !modelservice.IsBuiltin(attempt.Candidate.Provider.Protocol) {
 			value, err := m.completeV1(ctx, attempt, request, expanded)
 			complete(value, err)

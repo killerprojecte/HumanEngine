@@ -399,3 +399,24 @@ confirmed the repaired cancellation and failed-install disposal paths. Integrate
 HEAD CI still supplies whole-plugin/WASM/source-free acceptance. This host bridge
 is not the complete application plugin manager or runtime assembly; deployment
 SDK aliases and remaining model-router work remain explicit outstanding scope.
+
+## Meme HTTP and native runtime integration
+
+Meme admin REST routes, native model-read policy, model/provider composition,
+source-bound observation and display-image validation are connected through the
+actual database owners. Publication rechecks the original full row and source
+read witness in the final writer. Shared analysis retains its captured authority;
+consumer cancellation does not silently acquire a fresh one.
+
+Turn cleanup now releases opaque continuations outside the turn lock, including
+late allocation and panic paths. Standalone vision analysis also releases its
+owned V1 completion on success, invalid output and cancellation. Four actual
+Node-host tests observe claimed handles return to zero, rather than fake counters.
+
+The combined candidate passed the affected package race suites and vet, actual
+Meme60/Experience232 HTTP cases, model-read9, display26, compression52 and large
+image boundary source checks. Missing test-copy source links and an incomplete
+new fixture schema were corrected and their failed runs retained. Whole integrated
+HEAD CI remains required after publication. Full application startup, adapter
+composition and shutdown draining are still being implemented; this slice does
+not remove the read-only command gate or publish the pending media101 change.

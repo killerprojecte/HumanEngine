@@ -14,6 +14,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
@@ -23,6 +24,7 @@ import (
 )
 
 type Server struct {
+	memes      *memeengine.Service
 	experience *experienceservice.Service
 	habits     *habitservice.Service
 	main       *sql.DB
@@ -90,6 +92,14 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	authenticationError := func(status int, message string) {
+		if s.memes != nil && memePath(habitRoutingPath(r)) {
+			if r.Method == "HEAD" {
+				w.WriteHeader(status)
+			} else {
+				habitError(w, status, message, "")
+			}
+			return
+		}
 		if s.experience != nil && experiencePath(habitRoutingPath(r)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
@@ -107,6 +117,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
 		authenticationError(401, "Authentication required")
+		return
+	}
+	if s.memes != nil && memePath(habitRoutingPath(r)) {
+		s.serveMemes(w, r, available, id)
 		return
 	}
 	if s.experience != nil && experiencePath(habitRoutingPath(r)) {

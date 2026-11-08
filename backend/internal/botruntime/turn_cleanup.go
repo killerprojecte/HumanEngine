@@ -84,7 +84,8 @@ func (r *Runtime) finish(t *turn, issues int) {
 	close(t.done)
 }
 
-func (r *Runtime) cleanupTurn(t *turn) error {
+func (r *Runtime) cleanupTurn(t *turn) (result error) {
+	defer func() { result = errors.Join(result, t.context.releaseExtensionState()) }()
 	c, s := t.context, t.state
 	t.sendMu.Lock()
 	t.guard = nil

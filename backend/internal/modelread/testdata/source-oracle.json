@@ -1,0 +1,125 @@
+{
+  "source": "src/memory/read/model-read-policy.ts",
+  "cases": [
+    {
+      "scene": null,
+      "allowed": false,
+      "personal": false,
+      "require": {
+        "error": "memory_read_disabled"
+      }
+    },
+    {
+      "scene": {
+        "id": "s"
+      },
+      "allowed": true,
+      "personal": true,
+      "require": {
+        "revision": 0,
+        "personal": true,
+        "valid": true,
+        "copy": false
+      }
+    },
+    {
+      "scene": {
+        "id": "s",
+        "memoryReadEnabled": false
+      },
+      "allowed": false,
+      "personal": false,
+      "require": {
+        "error": "memory_read_disabled"
+      }
+    },
+    {
+      "scene": {
+        "id": "s",
+        "memoryReadEnabled": null
+      },
+      "allowed": {
+        "error": "memory_read_revoked"
+      },
+      "personal": {
+        "error": "memory_read_revoked"
+      },
+      "require": {
+        "error": "memory_read_revoked"
+      }
+    },
+    {
+      "scene": {
+        "id": "s",
+        "memoryReadRevision": null
+      },
+      "allowed": true,
+      "personal": true,
+      "require": {
+        "revision": 0,
+        "personal": true,
+        "valid": true,
+        "copy": false
+      }
+    },
+    {
+      "scene": {
+        "id": "s",
+        "memoryReadRevision": 0.5
+      },
+      "allowed": {
+        "error": "memory_read_revoked"
+      },
+      "personal": {
+        "error": "memory_read_revoked"
+      },
+      "require": {
+        "error": "memory_read_revoked"
+      }
+    },
+    {
+      "scene": {
+        "id": "s",
+        "memoryReadRevision": -1
+      },
+      "allowed": {
+        "error": "memory_read_revoked"
+      },
+      "personal": {
+        "error": "memory_read_revoked"
+      },
+      "require": {
+        "error": "memory_read_revoked"
+      }
+    },
+    {
+      "scene": {
+        "id": "s",
+        "personalizationEnabled": false
+      },
+      "allowed": true,
+      "personal": false,
+      "require": {
+        "revision": 0,
+        "personal": false,
+        "valid": true,
+        "copy": false
+      }
+    },
+    {
+      "scene": {
+        "id": "s",
+        "personalizationEnabled": "yes"
+      },
+      "allowed": {
+        "error": "memory_read_revoked"
+      },
+      "personal": {
+        "error": "memory_read_revoked"
+      },
+      "require": {
+        "error": "memory_read_revoked"
+      }
+    }
+  ]
+}

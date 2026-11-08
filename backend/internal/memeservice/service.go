@@ -91,13 +91,21 @@ func (s *Service) transaction(ctx context.Context, fn func(*scope) error) error 
 		if e := ws.AssertReady(); e != nil {
 			return e
 		}
-		return s.assertions.WithSession(ws).Read(ctx, func(r *assertions.Reader) error {
-			a, e := assertionauthority.New(r, s.policy)
-			if e != nil {
-				return e
-			}
-			return fn(&scope{ws, r, a, s})
-		})
+		run := func() error {
+			return s.assertions.WithSession(ws).Read(ctx, func(r *assertions.Reader) error {
+				a, e := assertionauthority.New(r, s.policy)
+				if e != nil {
+					return e
+				}
+				return fn(&scope{ws, r, a, s})
+			})
+		}
+		if capture, _ := ctx.Value(pageCaptureKey{}).(*pageCapture); capture != nil {
+			var e error
+			capture.witness, e = ws.CaptureReadWitness(run)
+			return e
+		}
+		return run()
 	})
 }
 func (p *scope) assets() ([]*Object, error) {

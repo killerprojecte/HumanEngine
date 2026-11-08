@@ -15,3 +15,4 @@ void he_free(void *);
 int he_meme_metadata(const void *,size_t,he_metadata *,char **);
 int he_meme_render(const void *,size_t,int,int,void **,size_t *,char **);
 #endif
+int he_display_validate(const void *,size_t,he_metadata *);

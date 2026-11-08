@@ -322,41 +322,42 @@ func (p *scope) recomputePreference(a *Object) error {
 	return p.write(a)
 }
 func (s *Service) RecordFeedback(ctx context.Context, c Context, id string, source *Object, positive bool) error {
-	return s.transaction(ctx, func(p *scope) error {
-		if e := p.allow(c); e != nil {
-			return e
-		}
-		if e := p.observed(c, source); e != nil {
-			return e
-		}
-		a, e := p.asset(id)
-		if e != nil {
-			return e
-		}
-		ok, e := p.visible(c, a, true)
-		if e != nil {
-			return e
-		}
-		if !ok {
-			return errors.New("meme_not_available")
-		}
-		value := -1
-		if positive {
-			value = 1
-		}
-		r, e := p.ws.Exec("INSERT OR IGNORE INTO meme_feedback VALUES(?,?,?,?)", id, get(source, "sceneId"), get(source, "messageId"), value)
-		if e != nil {
-			return e
-		}
-		n, e := r.RowsAffected()
-		if e != nil {
-			return e
-		}
-		if n > 0 {
-			return p.recomputePreference(a)
-		}
-		return nil
-	})
+	return s.transaction(ctx, func(p *scope) error { return p.recordFeedback(c, id, source, positive) })
+}
+func (p *scope) recordFeedback(c Context, id string, source *Object, positive bool) error {
+	if e := p.allow(c); e != nil {
+		return e
+	}
+	if e := p.observed(c, source); e != nil {
+		return e
+	}
+	a, e := p.asset(id)
+	if e != nil {
+		return e
+	}
+	ok, e := p.visible(c, a, true)
+	if e != nil {
+		return e
+	}
+	if !ok {
+		return errors.New("meme_not_available")
+	}
+	value := -1
+	if positive {
+		value = 1
+	}
+	r, e := p.ws.Exec("INSERT OR IGNORE INTO meme_feedback VALUES(?,?,?,?)", id, get(source, "sceneId"), get(source, "messageId"), value)
+	if e != nil {
+		return e
+	}
+	n, e := r.RowsAffected()
+	if e != nil {
+		return e
+	}
+	if n > 0 {
+		return p.recomputePreference(a)
+	}
+	return nil
 }
 
 // RecallWithSession is the synchronous lifecycle port for a runtime-owned recall.

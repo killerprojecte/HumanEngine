@@ -8,6 +8,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
@@ -72,4 +73,14 @@ func NewWithMemoryAdministration(main *sql.DB, authority *recovery.Authority, ha
 	}
 	s.habits = habits
 	return s, nil
+}
+
+// WithMemes composes the complete Meme route family onto an existing owned
+// server, retaining Experience/Habit routes. Call before serving requests.
+func (s *Server) WithMemes(engine *memeengine.Service) error {
+	if s == nil || !engine.OwnedBy(s.main, s.authority) {
+		return errors.New("http_meme_dependencies_invalid")
+	}
+	s.memes = engine
+	return nil
 }

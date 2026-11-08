@@ -15,8 +15,10 @@ import (
 // The source store's owner must outlive every runtime operation.
 type RuntimeAuthority struct {
 	*runtimeReads
-	schemas *contract.Schemas
-	routing *ingressrouting.Router
+	schemas           *contract.Schemas
+	routing           *ingressrouting.Router
+	recallPreparation RecallPreparation
+	recallCompletion  func(context.Context) error
 }
 
 func NewRuntimeAuthority(store *Store) (*RuntimeAuthority, error) {

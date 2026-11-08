@@ -746,3 +746,29 @@ use creates the fixed receipt schema inside the owned transaction.
 Receipt pruning explicitly names the main database because SQLite otherwise
 reports an ambiguous database name for its rowid subquery. The transaction
 authorizer is unchanged; attached-database access remains denied.
+
+### Live deletion and recall
+
+The candidate memory service now composes deletion, source recall and prepared
+recall with real assertion, commitment, knowledge, semantic, identity and
+working-set owners. Graph requalification retains exact historical references;
+no latest-version substitution or empty privacy callback is used. Preparation
+and execution share the original root writer, consume the snapshot once, and
+expire with that writer. Projection flushing runs only after successful root
+completion. Durable intent can outlive a failed main transaction; an ACK alone
+is not a proof that every business effect completed.
+
+The actual-source oracle includes 18 scenarios: 23 privacy mutations and 29
+source setup operations, plus nine separate identity cases. It compares relevant
+retained tables; vector deletion and durable-intent rollback have separate native
+tests. Random fresh working-set generations are normalized only after UUID,
+uniqueness and prior-generation checks; business fields remain exact.
+
+Local validation passed race tests for memoryservice, semantic, knowledge and
+sourceevents. The identity test fixture's authority directory placement was then
+corrected; that correction and the remaining assertions/vet tail await exact
+commit CI validation. This checkpoint does not claim the unrun local tail passed.
+
+Offline quarantined recovered-history adapters, application-wide runtime/REST
+composition and production startup remain unfinished. The explicit runtime recall
+binding is exercised by integration tests but is not yet wired into the command.

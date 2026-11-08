@@ -15,6 +15,8 @@ build:
 
 differential: build
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-manual-fixtures.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-privacy-fixtures.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/internal/identityprivacy/testdata/generate-source-oracle.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-outer-proposal-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-commitment-command-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/internal/knowledge/testdata/generate-admission-oracle.ts --check

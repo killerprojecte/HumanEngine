@@ -117,6 +117,34 @@ func survivingSpans(spans any, proofs []any) []any {
 	return out
 }
 func (l *Lifecycle) purge(matches func(any, any) bool, assertion, scene *string) error {
+	return l.purgeChecked(func(p, b any) (bool, error) { return matches(p, b), nil }, assertion, scene)
+}
+
+// PruneUnavailableProofChecked preserves unknown authority errors before any
+// maintenance write; false availability and traversal failure are not equivalent.
+func (l *Lifecycle) PruneUnavailableProofChecked(scene string, simulation bool, available func(*Object, *Object) (bool, error)) error {
+	if e := l.storage.RequireTransaction(); e != nil {
+		return e
+	}
+	if simulation {
+		return nil
+	}
+	return l.purgeChecked(func(p, b any) (bool, error) { ok, e := available(object(b), object(p)); return !ok, e }, nil, &scene)
+}
+func filterProofsChecked(proofs, backing any, matches func(any, any) (bool, error)) ([]any, error) {
+	out := []any{}
+	for _, p := range arr(proofs) {
+		drop, e := matches(p, backing)
+		if e != nil {
+			return nil, e
+		}
+		if !drop {
+			out = append(out, p)
+		}
+	}
+	return out, nil
+}
+func (l *Lifecycle) purgeChecked(matches func(any, any) (bool, error), assertion, scene *string) error {
 	if e := l.storage.RequireTransaction(); e != nil {
 		return e
 	}
@@ -126,14 +154,20 @@ func (l *Lifecycle) purge(matches func(any, any) bool, assertion, scene *string)
 	}
 	c := changes()
 	for _, edge := range rows {
-		proofs := filterProofs(get(edge, "proofs"), get(edge, "backing"), matches)
+		proofs, e := filterProofsChecked(get(edge, "proofs"), get(edge, "backing"), matches)
+		if e != nil {
+			return e
+		}
 		deps := []any{}
 		reads := []any{}
 		remove := len(proofs) == 0 || (assertion != nil && str(get(get(edge, "backing"), "id")) == *assertion)
 		for _, d := range arr(get(edge, "dependencies")) {
 			n := object(clone(d))
 			backing := get(get(d, "entity"), "backing")
-			p := filterProofs(get(d, "proofs"), backing, matches)
+			p, e := filterProofsChecked(get(d, "proofs"), backing, matches)
+			if e != nil {
+				return e
+			}
 			_ = n.Set("proofs", p)
 			deps = append(deps, n)
 			if len(p) == 0 || (assertion != nil && str(get(backing, "id")) == *assertion) {
@@ -143,7 +177,10 @@ func (l *Lifecycle) purge(matches func(any, any) bool, assertion, scene *string)
 		for _, d := range arr(get(edge, "readDependencies")) {
 			n := object(clone(d))
 			backing := get(d, "backing")
-			p := filterProofs(get(d, "proofs"), backing, matches)
+			p, e := filterProofsChecked(get(d, "proofs"), backing, matches)
+			if e != nil {
+				return e
+			}
 			_ = n.Set("proofs", p)
 			reads = append(reads, n)
 			if len(p) == 0 || (assertion != nil && str(get(backing, "id")) == *assertion) {

@@ -1,0 +1,1580 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/memory/identities/facade.ts": "dc4a3a96fa5284cb90f74dac0168acd497ea7c4966a0e9724fccb23a1eb11fce",
+    "src/memory/identities/service.ts": "f48a7b6ad5b96c17cbe9e64f3e11b5b633134d81ddb1458e41e6d56a104b634a",
+    "src/memory/identities/storage.ts": "cf51317f5eccc1ed7aa74aba8c4227732362bd26d79d6261f5ecf0d0cbc81e47",
+    "src/memory/identities/contracts.ts": "2188e0667279a0654655e5c9c90ce6744ee9cfc2e9e24b0464f543d6e744abec",
+    "src/memory/recovery/identities.ts": "a0a13df2a78e603ae046094983a53e77f057337633cd0db9e10978d252b869c4",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "cases": [
+    {
+      "name": "mixed-aliases",
+      "input": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "scene": "s",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 1,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+            "hash": "abdcfa7f427dda2ce7245c3e6bd7e963f7da0885d552f2287fe345888a9cd87e",
+            "revision": 1
+          }
+        ]
+      },
+      "events": [
+        {
+          "kind": "source_recall",
+          "operationId": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+          "expectedRevision": 0,
+          "nextRevision": 1,
+          "beforeHash": "4271788ce9c8e7936f62c479ba386e0890cec03edd63ce4942e87648764697c3",
+          "targets": {
+            "endpoints": [],
+            "aliasIds": [
+              "match"
+            ],
+            "source": {
+              "sceneId": "s",
+              "messageId": "m"
+            }
+          },
+          "qualificationHash": "194136220c4fe4611d9fdc7bd0041ab16b8c04df0a912367f90d60d24c2a7519"
+        }
+      ]
+    },
+    {
+      "name": "missing-table",
+      "input": null,
+      "scene": "s",
+      "message": "m",
+      "after": null,
+      "events": []
+    },
+    {
+      "name": "unmatched",
+      "input": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "scene": "missing",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "events": []
+    },
+    {
+      "name": "schema-key-order",
+      "input": {
+        "operations": [],
+        "aliases": [
+          {
+            "validUntil": null,
+            "validFrom": null,
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "scopeSceneId": "s",
+            "label": "Synthetic match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "id": "match"
+          },
+          {
+            "validUntil": null,
+            "validFrom": null,
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "scopeSceneId": "s",
+            "label": "Synthetic manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "id": "manual"
+          },
+          {
+            "validUntil": null,
+            "validFrom": null,
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "scopeSceneId": "s",
+            "label": "Synthetic other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "id": "other-message"
+          },
+          {
+            "validUntil": null,
+            "validFrom": null,
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "scopeSceneId": "other",
+            "label": "Synthetic other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "id": "other-scene"
+          }
+        ],
+        "edges": [],
+        "revision": 0,
+        "format": 1
+      },
+      "scene": "s",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 1,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+            "hash": "abdcfa7f427dda2ce7245c3e6bd7e963f7da0885d552f2287fe345888a9cd87e",
+            "revision": 1
+          }
+        ]
+      },
+      "events": [
+        {
+          "kind": "source_recall",
+          "operationId": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+          "expectedRevision": 0,
+          "nextRevision": 1,
+          "beforeHash": "4271788ce9c8e7936f62c479ba386e0890cec03edd63ce4942e87648764697c3",
+          "targets": {
+            "endpoints": [],
+            "aliasIds": [
+              "match"
+            ],
+            "source": {
+              "sceneId": "s",
+              "messageId": "m"
+            }
+          },
+          "qualificationHash": "194136220c4fe4611d9fdc7bd0041ab16b8c04df0a912367f90d60d24c2a7519"
+        }
+      ]
+    },
+    {
+      "name": "repeat-noop",
+      "input": {
+        "format": 1,
+        "revision": 1,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+            "hash": "abdcfa7f427dda2ce7245c3e6bd7e963f7da0885d552f2287fe345888a9cd87e",
+            "revision": 1
+          }
+        ]
+      },
+      "scene": "s",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 1,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+            "hash": "abdcfa7f427dda2ce7245c3e6bd7e963f7da0885d552f2287fe345888a9cd87e",
+            "revision": 1
+          }
+        ]
+      },
+      "events": []
+    },
+    {
+      "name": "duplicate-alias-corrupt",
+      "input": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "scene": "s",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "events": [],
+      "error": "identity_registry_corrupt"
+    },
+    {
+      "name": "extra-field-corrupt",
+      "input": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [],
+        "extra": true
+      },
+      "scene": "s",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [],
+        "extra": true
+      },
+      "events": [],
+      "error": "identity_registry_corrupt"
+    },
+    {
+      "name": "expired-observation-still-purged",
+      "input": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": "2020-01-01T00:00:00Z",
+            "validUntil": "2021-01-01T00:00:00Z"
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "scene": "s",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 1,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+            "hash": "abdcfa7f427dda2ce7245c3e6bd7e963f7da0885d552f2287fe345888a9cd87e",
+            "revision": 1
+          }
+        ]
+      },
+      "events": [
+        {
+          "kind": "source_recall",
+          "operationId": "recall-672944d45327f7424dc12682f934dcbd52a050d697e70fb9cf21effb15c54ef1",
+          "expectedRevision": 0,
+          "nextRevision": 1,
+          "beforeHash": "494e37acdf6e742ac2a6e5434d5ab414bd1989456d64097bacf4ad20bb8a5bb0",
+          "targets": {
+            "endpoints": [],
+            "aliasIds": [
+              "match"
+            ],
+            "source": {
+              "sceneId": "s",
+              "messageId": "m"
+            }
+          },
+          "qualificationHash": "194136220c4fe4611d9fdc7bd0041ab16b8c04df0a912367f90d60d24c2a7519"
+        }
+      ]
+    },
+    {
+      "name": "invalid-date-corrupt",
+      "input": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": "2026-02-30T00:00:00Z",
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "scene": "s",
+      "message": "m",
+      "after": {
+        "format": 1,
+        "revision": 0,
+        "edges": [],
+        "aliases": [
+          {
+            "id": "match",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic match",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-match",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": "2026-02-30T00:00:00Z",
+            "validUntil": null
+          },
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic manual",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-message",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-message",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "other",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-message",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "other-scene",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "person"
+            },
+            "label": "Synthetic other-scene",
+            "scopeSceneId": "other",
+            "source": {
+              "kind": "observation",
+              "sceneId": "other",
+              "messageId": "m",
+              "senderId": "person",
+              "eventRef": {
+                "eventId": "event-other-scene",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": []
+      },
+      "events": [],
+      "error": "identity_registry_corrupt"
+    }
+  ]
+}

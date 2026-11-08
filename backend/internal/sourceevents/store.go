@@ -24,13 +24,16 @@ type Options struct {
 	MaxHeadsPerScene, MaxHeadsTotal *int
 }
 type Store struct {
-	main             *sql.DB
-	authority        *recovery.Authority
-	session          *recovery.WriteSession
-	bindingError     error
-	options          Options
-	revisions, edits int
-	listeners        *listeners
+	maintenance        *recovery.Maintenance
+	maintenanceTx      *recovery.MaintenanceTx
+	maintenanceContext context.Context
+	main               *sql.DB
+	authority          *recovery.Authority
+	session            *recovery.WriteSession
+	bindingError       error
+	options            Options
+	revisions, edits   int
+	listeners          *listeners
 }
 
 // Listener identity is its pointer, not a Go function's code address. Registering
@@ -78,6 +81,11 @@ func New(main *sql.DB, authority *recovery.Authority, options Options) (*Store, 
 // WithSession joins the caller's existing transaction, without savepoints. The
 // returned store and all its query handles expire with that transaction.
 func (s *Store) WithSession(session *recovery.WriteSession) *Store {
+	if s.maintenance != nil {
+		n := *s
+		n.bindingError = errors.New("source_event_live_scope_required")
+		return &n
+	}
 	copy := *s
 	copy.session = session
 	if session == nil {
@@ -178,6 +186,9 @@ func (s *Store) hook(m Mutation) error {
 	return s.RecordMutation(m)
 }
 func (s *Store) RecordMutation(m Mutation) error {
+	if s.maintenance != nil {
+		return s.recordOffline(m)
+	}
 	if s.bindingError != nil {
 		return s.bindingError
 	}
@@ -205,6 +216,12 @@ func (s *Store) RecordMutation(m Mutation) error {
 	return nil
 }
 func (s *Store) transaction(ctx context.Context, fn func(*Store) error) error {
+	if s.maintenance != nil {
+		if e := s.ready(); e != nil {
+			return e
+		}
+		return fn(s)
+	}
 	if s.bindingError != nil {
 		return s.bindingError
 	}
@@ -214,6 +231,12 @@ func (s *Store) transaction(ctx context.Context, fn func(*Store) error) error {
 	return s.authority.WithWriteSession(ctx, s.main, func(tx *recovery.WriteSession) error { return fn(s.WithSession(tx)) })
 }
 func (s *Store) ready() error {
+	if s.maintenance != nil {
+		if s.bindingError != nil {
+			return s.bindingError
+		}
+		return s.maintenanceTx.CheckBinding(s.maintenanceContext, s.maintenance)
+	}
 	if s.bindingError != nil {
 		return s.bindingError
 	}
@@ -228,6 +251,12 @@ func (s *Store) ready() error {
 	return nil
 }
 func (s *Store) initialize() error {
+	if s.maintenance != nil {
+		if e := s.ready(); e != nil {
+			return e
+		}
+		return s.maintenanceTx.EnsureSourceEventSchema(s.maintenanceContext)
+	}
 	if s.bindingError != nil {
 		return s.bindingError
 	}
@@ -240,6 +269,13 @@ func (s *Store) initialize() error {
 	return s.session.EnsureSourceEventSchema()
 }
 func (s *Store) EnsureLookupIndex(ctx context.Context) error {
+	if s.maintenance != nil {
+		if e := s.ready(); e != nil {
+			return e
+		}
+		_, e := s.maintenanceTx.ExecContext(ctx, "CREATE INDEX IF NOT EXISTS idx_source_event_heads_scene_message ON source_event_heads(scene_id,message_id)")
+		return e
+	}
 	return s.transaction(ctx, func(bound *Store) error { return bound.session.EnsureSourceEventLookupIndex() })
 }
 func text(s string) string {
@@ -260,6 +296,13 @@ func bind(args []any) []any {
 	return out
 }
 func (s *Store) exec(query string, args ...any) error {
+	if s.maintenance != nil {
+		if e := s.ready(); e != nil {
+			return e
+		}
+		_, e := s.maintenanceTx.ExecContext(s.maintenanceContext, query, bind(args)...)
+		return e
+	}
 	_, e := s.session.Exec(query, bind(args)...)
 	return e
 }

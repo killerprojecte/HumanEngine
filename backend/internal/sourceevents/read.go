@@ -28,13 +28,18 @@ type View struct {
 }
 
 func (s *Store) view() *View {
+	if s.maintenance != nil {
+		return &View{ready: s.ready, query: func(q string, args ...any) (Rows, error) {
+			return s.maintenanceTx.QueryContext(s.maintenanceContext, q, bind(args)...)
+		}}
+	}
 	return &View{ready: s.ready, query: func(q string, args ...any) (Rows, error) { return s.session.Query(q, bind(args)...) }}
 }
 func (s *Store) Read(ctx context.Context, fn func(*View) error) error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
-	if s.session != nil {
+	if s.session != nil || s.maintenance != nil {
 		return fn(s.view())
 	}
 	return s.authority.Publish(ctx, s.main, func(conn *sql.Conn) ([]byte, error) {

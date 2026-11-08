@@ -48,28 +48,29 @@ func NewOfflineLifecycle(owner *recovery.Maintenance, options OfflineLifecycleOp
 	return &OfflineLifecycle{owner, options}, nil
 }
 func (o *OfflineLifecycle) within(ctx context.Context, fn func(*offlineFacade, *assertions.RevisionTxn) error) ([]string, error) {
-	return o.owner.CaptureEffects(ctx, func(scope *recovery.MaintenanceTx) error {
-		s, e := o.bind(ctx, scope)
-		if e != nil {
+	return o.owner.CaptureEffects(ctx, func(scope *recovery.MaintenanceTx) error { return o.inScope(ctx, scope, fn) })
+}
+func (o *OfflineLifecycle) inScope(ctx context.Context, scope *recovery.MaintenanceTx, fn func(*offlineFacade, *assertions.RevisionTxn) error) error {
+	s, e := o.bind(ctx, scope)
+	if e != nil {
+		return e
+	}
+	revisions, e := assertions.NewCoordinator(s.d.Assertions, assertions.CoordinatorOptions{HistorySupports: s.historySupports, Retain: s.retain, RemoveProjection: func(st *assertions.Store, id string) error {
+		if e := s.removeProjection(st, id); e != nil {
 			return e
 		}
-		revisions, e := assertions.NewCoordinator(s.d.Assertions, assertions.CoordinatorOptions{HistorySupports: s.historySupports, Retain: s.retain, RemoveProjection: func(st *assertions.Store, id string) error {
-			if e := s.removeProjection(st, id); e != nil {
-				return e
-			}
-			return s.unavailable(st, id)
-		}, Committed: s.committed, AfterCommit: func() error {
-			_, e := s.d.Projections.Flush(ctx)
-			if e != nil {
-				s.d.Log("warn", "memory", "memory_projection_refresh_failed")
-			}
-			return nil
-		}})
+		return s.unavailable(st, id)
+	}, Committed: s.committed, AfterCommit: func() error {
+		_, e := s.d.Projections.Flush(ctx)
 		if e != nil {
-			return e
+			s.d.Log("warn", "memory", "memory_projection_refresh_failed")
 		}
-		return revisions.Transaction(ctx, func(tx *assertions.RevisionTxn) error { return fn(s, tx) })
-	})
+		return nil
+	}})
+	if e != nil {
+		return e
+	}
+	return revisions.Transaction(ctx, func(tx *assertions.RevisionTxn) error { return fn(s, tx) })
 }
 func (o *OfflineLifecycle) bind(ctx context.Context, tx *recovery.MaintenanceTx) (*offlineFacade, error) {
 	s := &offlineFacade{ctx: ctx, owner: o.owner, options: o.options, notifications: &NotificationQueue{pending: map[string]notification{}}}

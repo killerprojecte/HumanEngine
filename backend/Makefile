@@ -16,6 +16,7 @@ build:
 differential: build
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-offline-lifecycle-fixtures.mjs --check
 	$(PYTHON) tests/check-provider-fixtures.py
+	$(PYTHON) tests/check-reconcile-fixtures.py
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/installation/testdata/oracle.mts --check
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/installation/testdata/usage-oracle.mts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-manual-fixtures.mjs --check

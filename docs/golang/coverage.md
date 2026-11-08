@@ -4,6 +4,21 @@ This is an implementation map, not a declaration that the Go backend can replace
 production. The current executable still requires `--read-only-preview` and the
 existing TypeScript production startup has not been replaced.
 
+## Latest integration status
+
+The detailed entries below retain historical slice boundaries. See
+[the exact-head acceptance record](acceptance.md) for accepted checkpoints through
+native installation, provider transport and recovered-history privacy. Their
+older pending-CI statements are superseded only for those verified heads.
+
+The current integration adds [whole quarantined reconciliation](recovery-reconciliation.md),
+including real offline habit/media/experience/trial owners and final verified
+main ACK/readiness. It replaces the older global-reconciliation gaps below at
+the package level; production boot and HTTP/runtime composition remain open.
+Source regeneration, targeted private tests and twelve affected-package
+integrated race/vet checks passed. Full-project exact-head CI remains pending. The native image codec
+remains a private candidate, not part of this integration.
+
 ## Implemented candidate modules
 
 | Module                               | Executable behavior                                                                                                                                                                        | Still outside this module                                                                                                                     |

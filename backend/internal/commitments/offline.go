@@ -13,6 +13,8 @@ import (
 // or transition quarantine to ready. Supplied events must be the reconciler's
 // already-audited original ledger entries, not a reconstructed state summary.
 type OfflineMaintenance struct {
+	scope       *recovery.MaintenanceTx
+	scopeError  error
 	owner       *recovery.Maintenance
 	options     Options
 	owners      Owners
@@ -54,6 +56,20 @@ func (o *OfflineMaintenance) acquire(ctx context.Context) error {
 }
 func (o *OfflineMaintenance) release() { o.ownership <- struct{}{} }
 func (o *OfflineMaintenance) within(ctx context.Context, fn func(*PrivacyService) error) error {
+	if o.scopeError != nil {
+		return o.scopeError
+	}
+	if o.scope != nil {
+		if e := o.scope.CheckBinding(ctx, o.owner); e != nil {
+			return e
+		}
+		store := &Store{options: o.options, maintenance: &maintenanceScope{o.owner, o.scope, ctx}}
+		service, e := NewPrivacyService(store, o.owners)
+		if e != nil {
+			return e
+		}
+		return fn(service)
+	}
 	return o.owner.Apply(ctx, 1, func(tx *recovery.MaintenanceTx) error {
 		store := &Store{options: o.options, maintenance: &maintenanceScope{o.owner, tx, ctx}}
 		service, e := NewPrivacyService(store, o.owners)
@@ -175,7 +191,11 @@ func (o *OfflineMaintenance) existing(ctx context.Context) (bool, error) {
 		return false, e
 	}
 	if !o.initialized {
-		e = o.owner.Apply(ctx, 1, func(tx *recovery.MaintenanceTx) error { return tx.EnsureCommitmentStorageSchema(ctx) })
+		if o.scope != nil {
+			e = o.scope.EnsureCommitmentStorageSchema(ctx)
+		} else {
+			e = o.owner.Apply(ctx, 1, func(tx *recovery.MaintenanceTx) error { return tx.EnsureCommitmentStorageSchema(ctx) })
+		}
 		if e != nil {
 			return false, e
 		}
@@ -421,4 +441,17 @@ func (s *PrivacyService) recoverErase(id, scene string, epoch float64) error {
 	_ = head.Set("deletionEpoch", nextEpoch)
 	_ = head.Set("mutationVersion", num(get(head, "mutationVersion"))+1)
 	return s.write("delete", head, []any{}, nil)
+}
+
+// WithScope borrows final reconciliation's transaction. It neither opens a
+// second root transaction nor acquires the maintenance owner recursively.
+func (o *OfflineMaintenance) WithScope(ctx context.Context, tx *recovery.MaintenanceTx) *OfflineMaintenance {
+	next := *o
+	next.scope = tx
+	if tx == nil {
+		next.scopeError = errors.New("recovery_transaction_required")
+	} else {
+		next.scopeError = tx.CheckBinding(ctx, o.owner)
+	}
+	return &next
 }

@@ -389,6 +389,12 @@ func (s *Store) CaptureQualification(ctx Context, a PrivacyAuthority) ([]*jsjson
 	if e != nil {
 		return nil, e
 	}
+	return s.qualifyCandidates(ctx, a, rows, false)
+}
+
+func (s *Store) qualifyCandidates(ctx Context, a PrivacyAuthority, rows []*jsjson.Object, permitRejected bool) ([]*jsjson.Object, error) {
+	out := []*jsjson.Object{}
+	var e error
 	partitions := map[any]string{}
 	for _, row := range rows {
 		if e = a.AssertReady(); e != nil {
@@ -398,7 +404,7 @@ func (s *Store) CaptureQualification(ctx Context, a PrivacyAuthority) ([]*jsjson
 		if e != nil {
 			return nil, e
 		}
-		if candidate == nil || scGet(candidate, "sceneId") != ctx.SceneID || scGet(candidate, "status") == "rejected" {
+		if candidate == nil || scGet(candidate, "sceneId") != ctx.SceneID || (!permitRejected && scGet(candidate, "status") == "rejected") {
 			continue
 		}
 		if scGet(candidate, "partitionKey") != nil {

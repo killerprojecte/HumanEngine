@@ -1,0 +1,5 @@
+import{pathToFileURL}from'node:url';import{resolve,join}from'node:path';
+const root=resolve(process.env.HE_SOURCE_ROOT??'humanengine-golang-recovered'),load=p=>import(pathToFileURL(join(root,p)));
+const{Store}=await load('src/store.ts'),{domainSourceCurrent}=await load('src/memory/read/domain-source-events.ts');
+const store=new Store(':memory:');try{const source={sceneId:'scene',messageId:'message',senderId:'person'},fixture={recalled:()=>false,sourceEvents:store.sourceEvents,scene:()=>({adapterId:'adapter',accountId:'account'})};const cases=[];
+for(const[name,ref]of[['legacy',undefined],['unregistered-ref',{eventId:'event',revision:1,deletionEpoch:0}],['invalid-ref',{eventId:'event',revision:0,deletionEpoch:0}]]){const s={...source,...(ref?{eventRef:ref}:{})};let eligible=null,error=null;try{eligible=domainSourceCurrent(fixture,s)}catch(e){error=e.message};cases.push({name,source:s,eligible,error})};process.stdout.write(JSON.stringify({source:'actual TypeScript domainSourceCurrent',cases}));}finally{store.close()}

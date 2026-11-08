@@ -1,12 +1,17 @@
 package botruntime
 
-import "math"
+import (
+	"math"
+	"sync/atomic"
+)
 
 // Block width controls structural sharing only, never message admission. Each
 // immutable record retains its once-parsed source timestamp beside the body.
 const messageBlockWidth = 32
 
+type recordRetention struct{ discarded atomic.Bool }
 type messageRecord struct {
+	retention  *recordRetention
 	body       *Object
 	receivedAt float64
 }
@@ -18,6 +23,9 @@ type messageBlock struct {
 }
 
 func appendRecord(root *messageBlock, record *messageRecord) *messageBlock {
+	if record.retention == nil {
+		record.retention = &recordRetention{}
+	}
 	if root == nil {
 		return &messageBlock{rows: []*Object{record.body}, records: []*messageRecord{record}, count: 1}
 	}
@@ -51,7 +59,7 @@ func bodyRecords(root *messageBlock) []*messageRecord {
 	return r
 }
 func (r *Runtime) appendMessageLocked(s *sceneState, m *Object) {
-	record := &messageRecord{m, r.date(str(get(m, "receivedAt")))}
+	record := &messageRecord{body: m, receivedAt: r.date(str(get(m, "receivedAt"))), retention: &recordRetention{}}
 	s.parsedBodies++
 	s.byID[idOf(m)] = record
 	s.byBody[m] = record
@@ -71,7 +79,7 @@ func (r *Runtime) replaceRecordLocked(s *sceneState, old, next *Object) {
 		at = r.date(str(get(next, "receivedAt")))
 		s.parsedBodies++
 	}
-	record := &messageRecord{next, at}
+	record := &messageRecord{body: next, receivedAt: at, retention: previous.retention}
 	delete(s.byBody, old)
 	s.byBody[next] = record
 	s.byID[idOf(next)] = record

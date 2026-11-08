@@ -81,6 +81,11 @@ func (r *Runtime) Close() {
 	if alreadyClosed {
 		return
 	}
+	for _, extension := range r.exts() {
+		if extension.Closed != nil {
+			extension.Closed()
+		}
+	}
 	r.cleanupMu.Lock()
 	if r.cleanup != nil {
 		r.cleanup.Stop()

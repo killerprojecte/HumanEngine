@@ -91,3 +91,32 @@ redistribution licensing and full application startup remain separate gates.
 A related Experience identifier correction follows the pinned Zod validator's
 Unicode-code-point length, including astral and lone-surrogate fixtures. Explicit
 JavaScript string-length validation in other source paths remains UTF-16 based.
+
+## Experience runtime composition candidate (2026-11-08)
+
+The native Experience extension now composes actual Runtime ingress, planner
+hints, outcome exposure, scoped source validation, proposal/feedback, delivered
+memory-tool observations and sent association. Read capabilities borrow the exact
+native owner; preview does not reenter the scene owner or acquire a second writer.
+Preview and Snapshot make cache removal irreversible, including later cache-window
+expansion, while a genuinely new edit can be admitted again. Readers use a short
+publication mutex and O(n) reference filtering, not an unqualified lock-free or
+constant-memory claim. SQL projection remains outside that mutex.
+
+Successful-send association reserves a FIFO sequence in the same scene critical
+section that publishes the ACK/body. The association executes after unlocking,
+independently of inherited Sent callbacks. Immediate feedback therefore cannot
+race ahead of a published bot reply's association. Cancellation, panic and failed
+publication finish or cancel reservations rather than strand subsequent ingress.
+ACK still does not establish model/tool business completion or successful learning.
+
+The complete botruntime, sourceevents and experienceservice native race packages,
+their vet checks and actual TypeScript source oracle passed locally. A real
+Runtime/SQLite fixture blocks inherited Sent, observes the published ACK, and
+processes immediate feedback before releasing that callback. Exact-commit full
+CI remains a separate acceptance gate.
+
+The extension requires caller-supplied model-read, exposure and proposal policies;
+it does not install permissive substitutes. Experience HTTP and the final Go
+Engine/application constructor are still being completed. This does not change
+the executable's read-only-preview startup or claim complete production parity.

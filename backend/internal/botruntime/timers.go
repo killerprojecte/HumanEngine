@@ -70,6 +70,7 @@ func (r *Runtime) wake(s *sceneState, id string, ticket *timerTicket) {
 	delete(s.timers, id)
 	a := s.admissions[id]
 	if a == nil {
+		r.publishLocked(s)
 		s.mu.Unlock()
 		return
 	}

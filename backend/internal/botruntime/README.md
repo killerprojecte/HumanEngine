@@ -58,10 +58,23 @@ removed by that existing wire normalization. `null` is never treated as missing.
 
 ## Query and hot-path costs
 
-Snapshots load an atomic immutable view and do their own projection/copying. They
-never wait on the scene mutex, a model/tool wait, or a transport request. Display
-projection can still wait on its own authority service; that service must provide
-independent read snapshots rather than acquiring a model/scene execution queue.
+Snapshot and exact PreviewMessage use an atomic immutable view, then briefly
+join a per-scene publication mutex to commit irreversible cache retention. They
+never acquire the scene mutex or hold that publication mutex across SQL, model,
+tool, or transport work. This is not a lock-free or universally wait-free path:
+a reader may wait for another reader or an owner publication. Logical trim does
+O(n) record checks and allocates O(n) temporary references, without cloning
+unrelated message bodies. Exact preview clones/projects only its selected body;
+Snapshot copies its retained result. Display projection occurs after publication
+unlock and can still wait on its own authority service. Scoped preview accepts
+the caller's active ReadAuthority rather than opening a nested transaction.
+
+Reader eviction marks only in-memory membership tokens, never durable source
+revocation. Owner Lock/TryLock reconciles these removals before mutable indexes
+are used; publication reconciles again for readers concurrent with an existing
+owner operation. Same-membership body replacement shares a token; genuine edit
+re-admission receives a fresh one. Increasing cache lifetime or re-enabling the
+cache cannot revive previously discarded memberships.
 
 Immutable message records parse receivedAt exactly once using `jsdate.ParseMillis`.
 ID/body/availability indexes handle duplicate lookup and replacement. Publication

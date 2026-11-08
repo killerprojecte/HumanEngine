@@ -115,6 +115,12 @@ type ModelFunc func(context.Context, ModelRequest, func(Completion, error))
 func (f ModelFunc) Start(c context.Context, r ModelRequest, s func(Completion, error)) { f(c, r, s) }
 
 type Extension struct {
+	// SentSequencers reserve only controlled bookkeeping alongside ACK publication.
+	SentSequencers []*SentSequencer
+	// Sent runs after retained-row publication, without scene ownership. Queue domain work here.
+	Sent               func(Scene, string, string)
+	Closed             func()
+	SceneChanged       func(Scene)
 	Tools              []*Object
 	ContextPrompt      func(*TurnContext) (string, error)
 	ContextData        func(*TurnContext) (any, error)
@@ -221,7 +227,9 @@ type sceneState struct {
 	parsedBodies, trimVisits  uint64
 	operationKeys             map[string]bool
 	sequence                  uint64
-	mu                        sync.Mutex
+	mu                        sceneOwnerMutex
+	publicationMu             sync.Mutex
+	retentionDirty            atomic.Bool
 	ingress                   sync.Mutex // durable change ordering only; queries never acquire it
 	scene                     Scene
 	closed                    atomic.Bool
@@ -421,6 +429,7 @@ func (r *Runtime) exts() []*Extension {
 // changes the live prompt-authority tool set and never revives an old turn.
 func (r *Runtime) AddExtension(e *Extension) func() {
 	registered := *e
+	registered.SentSequencers = append([]*SentSequencer(nil), e.SentSequencers...)
 	registered.Tools = nil
 	for _, tool := range e.Tools {
 		registered.Tools = append(registered.Tools, cloneJSON(tool).(*Object))

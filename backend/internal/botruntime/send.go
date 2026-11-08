@@ -339,41 +339,73 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 		}
 		appendReceipt(receipt)
 		s := t.state
+		var reservations []*SentReservation
+		published := false
 		s.mu.Lock()
-		if !s.closed.Load() {
-			if r.config().TopicAdmissionEnabled {
-				adapterNow, _ := r.adapters.Load(c.Scene.AdapterID)
-				if receipt.Status == dispatch.Sent && receipt.MessageID != nil && adapterNow == adapterAtSend && !signal.Aborted() {
-					s.routing.Acknowledge(*receipt.MessageID, t.topic.id)
-				}
-				if receipt.Status == dispatch.Unknown || (receipt.Status != dispatch.Sent && anySent(observed)) {
-					s.routing.ProtectedSends.Set(t.topic.id, struct{}{})
-				}
-			}
-			if receipt.Status == dispatch.Sent {
-				id := newID()
-				if receipt.MessageID != nil {
-					id = *receipt.MessageID
-				}
-				exists := s.byID[id] != nil
-				if !exists {
-					now := iso(r.services.Clock.Now())
-					origin := "live"
-					if c.Mode == "simulation" {
-						origin = "simulation"
+		func() {
+			defer func() {
+				s.mu.Unlock()
+				// Complete reservations even if publication panics. No callback
+				// can run until scene ownership has been released.
+				for _, reservation := range reservations {
+					if published {
+						reservation.Release()
+					} else {
+						reservation.Cancel()
 					}
-					m := obj("id", id, "sceneId", c.Scene.ID, "senderId", "bot", "sentAt", now, "receivedAt", now, "origin", origin, "parts", fromRawParts(segment.Parts), "status", "available")
-					if segment.ReplyToID != nil {
-						_ = m.Set("replyToId", *segment.ReplyToID)
-					}
-					r.appendMessageLocked(s, m)
 				}
+			}()
+			if !s.closed.Load() {
+				if r.config().TopicAdmissionEnabled {
+					adapterNow, _ := r.adapters.Load(c.Scene.AdapterID)
+					if receipt.Status == dispatch.Sent && receipt.MessageID != nil && adapterNow == adapterAtSend && !signal.Aborted() {
+						s.routing.Acknowledge(*receipt.MessageID, t.topic.id)
+					}
+					if receipt.Status == dispatch.Unknown || (receipt.Status != dispatch.Sent && anySent(observed)) {
+						s.routing.ProtectedSends.Set(t.topic.id, struct{}{})
+					}
+				}
+				if receipt.Status == dispatch.Sent {
+					id := newID()
+					if receipt.MessageID != nil {
+						id = *receipt.MessageID
+					}
+					exists := s.byID[id] != nil
+					if !exists {
+						now := iso(r.services.Clock.Now())
+						origin := "live"
+						if c.Mode == "simulation" {
+							origin = "simulation"
+						}
+						m := obj("id", id, "sceneId", c.Scene.ID, "senderId", "bot", "sentAt", now, "receivedAt", now, "origin", origin, "parts", fromRawParts(segment.Parts), "status", "available")
+						if segment.ReplyToID != nil {
+							_ = m.Set("replyToId", *segment.ReplyToID)
+						}
+						r.appendMessageLocked(s, m)
+					}
+				}
+				if receipt.Status == dispatch.Sent && c.Mode == "real" && receipt.MessageID != nil {
+					for _, extension := range r.exts() {
+						for _, sequence := range extension.SentSequencers {
+							if sequence != nil {
+								reservations = append(reservations, sequence.reserve(c.Scene, c.TurnID, *receipt.MessageID))
+							}
+						}
+					}
+				}
+				r.publishLocked(s)
+				published = true
 			}
-			r.publishLocked(s)
-		}
-		s.mu.Unlock()
+		}()
 		if receipt.Status == dispatch.Sent && c.Mode == "real" {
 			r.lastReply.Store(int64(r.services.Clock.Now()))
+			if receipt.MessageID != nil {
+				for _, extension := range r.exts() {
+					if extension.Sent != nil {
+						extension.Sent(c.Scene, c.TurnID, *receipt.MessageID)
+					}
+				}
+			}
 			r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: "message.sent", Status: "completed", Reason: "segment_delivered"})
 		}
 		if receipt.Status != dispatch.Sent {

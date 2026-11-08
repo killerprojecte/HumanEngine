@@ -1,0 +1,745 @@
+{
+  "node": "v24.22.1",
+  "hashes": {
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/memory/experience/runtime-hints.ts": "92170c53f0d2d5b4c9d36930513b813b5d5e2b14a49fc2286358cb05aaa5e9c4",
+    "node_modules/zod/v4/core/checks.js": "bc42543274218aa7ef72192b3218d2a4a399e53df8de240a04d9ff275096f563",
+    "node_modules/zod/v4/core/util.js": "bb08133b11b478c8e715038fff26ebea204d7fd5443fba31fe138b142d202efb",
+    "node_modules/zod/package.json": "c2d190d9ee4e0bdb60332aaa2130a6a98d65ddb903fe1d29248b15de57832c45"
+  },
+  "cases": [
+    {
+      "name": "valid",
+      "view": {
+        "id": "o",
+        "version": 1,
+        "source": {
+          "messageId": "m",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "b"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": 1,
+      "dependencies": [
+        "m",
+        "b"
+      ],
+      "validations": 1
+    },
+    {
+      "name": "identity-copy",
+      "view": {
+        "id": "o",
+        "version": 1,
+        "source": {
+          "messageId": "m",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "b"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": 0,
+      "dependencies": [],
+      "validations": 0
+    },
+    {
+      "name": "mutated-view",
+      "view": {
+        "id": "o",
+        "version": 1,
+        "source": {
+          "messageId": "m",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "b"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": 0,
+      "dependencies": [],
+      "validations": 0
+    },
+    {
+      "name": "mutated-current",
+      "view": {
+        "id": "o",
+        "version": 1,
+        "source": {
+          "messageId": "m",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "b"
+        },
+        "code": "wrong",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": 0,
+      "dependencies": [],
+      "validations": 0
+    },
+    {
+      "name": "mixed",
+      "view": {
+        "id": "o",
+        "version": 1,
+        "source": {
+          "messageId": "m",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "b"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": 0,
+      "dependencies": [],
+      "validations": 0
+    },
+    {
+      "name": "empty",
+      "view": {
+        "id": "o",
+        "version": 1,
+        "source": {
+          "messageId": "m",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "b"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": 0,
+      "dependencies": [],
+      "validations": 0
+    },
+    {
+      "name": "aborted",
+      "view": {
+        "id": "o",
+        "version": 1,
+        "source": {
+          "messageId": "m",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "b"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": 0,
+      "dependencies": [],
+      "validations": 0
+    }
+  ],
+  "planners": [
+    {
+      "text": "我是谁？",
+      "queries": [
+        {
+          "requesterId": "alice",
+          "personId": "alice",
+          "personQuestion": true,
+          "planQuestion": false
+        }
+      ],
+      "uses": [
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed"
+        }
+      ],
+      "result": {
+        "policy": "Experimental low-priority operation hints, not facts or permissions. Hard rules, source qualifications and budgets dominate. Mechanical checks do not establish effectiveness; decline inappropriate hints.",
+        "hints": [
+          {
+            "policyId": "p",
+            "version": 1,
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0,
+            "interpretation": "Bounded trial authorized by an explicit instruction; effectiveness is unproven.",
+            "hint": "For this resolved person question, prefer the existing exact scoped person lookup before semantic expansion. Existing authorization and evidence rules still apply."
+          }
+        ]
+      },
+      "before": [
+        true
+      ],
+      "after": [
+        false
+      ]
+    },
+    {
+      "text": "what is my plan?",
+      "queries": [
+        {
+          "requesterId": "alice",
+          "personId": "alice",
+          "personQuestion": true,
+          "planQuestion": true
+        }
+      ],
+      "uses": [
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed"
+        }
+      ],
+      "result": {
+        "policy": "Experimental low-priority operation hints, not facts or permissions. Hard rules, source qualifications and budgets dominate. Mechanical checks do not establish effectiveness; decline inappropriate hints.",
+        "hints": [
+          {
+            "policyId": "p",
+            "version": 1,
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0,
+            "interpretation": "Bounded trial authorized by an explicit instruction; effectiveness is unproven.",
+            "hint": "For this resolved person question, prefer the existing exact scoped person lookup before semantic expansion. Existing authorization and evidence rules still apply."
+          }
+        ]
+      },
+      "before": [
+        true
+      ],
+      "after": [
+        false
+      ]
+    },
+    {
+      "text": "quote \"who am I?\"",
+      "queries": [
+        {
+          "requesterId": "alice",
+          "personId": "alice",
+          "personQuestion": false,
+          "planQuestion": false
+        }
+      ],
+      "uses": [],
+      "result": null,
+      "before": [],
+      "after": []
+    },
+    {
+      "text": "hello",
+      "queries": [
+        {
+          "requesterId": "alice",
+          "personId": "alice",
+          "personQuestion": false,
+          "planQuestion": false
+        }
+      ],
+      "uses": [],
+      "result": null,
+      "before": [],
+      "after": []
+    }
+  ],
+  "tools": [
+    {
+      "name": "person-first",
+      "uses": [
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed"
+        },
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "applied",
+          "operation": "memory_person"
+        },
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed",
+          "targetMessageId": "b"
+        },
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "applied",
+          "operation": "memory_person",
+          "targetMessageId": "b"
+        }
+      ]
+    },
+    {
+      "name": "semantic-first",
+      "uses": [
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed"
+        },
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed",
+          "targetMessageId": "b"
+        }
+      ]
+    },
+    {
+      "name": "ack-only",
+      "uses": [
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed"
+        },
+        {
+          "turnId": "t",
+          "policyRef": {
+            "id": "p",
+            "version": 1,
+            "hash": "h",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "tier": "mechanical_only",
+            "expiresAt": "2026-11-05T00:00:00.000Z",
+            "eligibilityBasis": "explicit_instruction_trial",
+            "trialExpiresAt": "2026-11-05T00:00:00.000Z",
+            "reportedHelpfulCount": 0
+          },
+          "kind": "exposed",
+          "targetMessageId": "b"
+        }
+      ]
+    }
+  ],
+  "previews": [
+    {
+      "name": "tail500",
+      "n": 502,
+      "index": 0,
+      "result": null
+    },
+    {
+      "name": "boundary500",
+      "n": 502,
+      "index": 2,
+      "result": {
+        "id": "2",
+        "sceneId": "s",
+        "receivedAt": "2026-10-29T00:00:00.000Z",
+        "senderId": "alice",
+        "origin": "live",
+        "status": "available",
+        "parts": [
+          {
+            "type": "text",
+            "text": "2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate-first",
+      "n": 3,
+      "index": 0,
+      "duplicate": true,
+      "result": {
+        "id": "same",
+        "sceneId": "s",
+        "receivedAt": "2026-10-29T00:00:00.000Z",
+        "senderId": "alice",
+        "origin": "live",
+        "status": "available",
+        "parts": [
+          {
+            "type": "text",
+            "text": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "expired",
+      "n": 1,
+      "index": 0,
+      "expired": true,
+      "result": null
+    },
+    {
+      "name": "idle-disabled",
+      "n": 1,
+      "index": 0,
+      "disabled": true,
+      "result": null
+    },
+    {
+      "name": "timer-disabled",
+      "n": 1,
+      "index": 0,
+      "disabled": true,
+      "timer": true,
+      "result": {
+        "id": "0",
+        "sceneId": "s",
+        "receivedAt": "2026-10-29T00:00:00.000Z",
+        "senderId": "alice",
+        "origin": "live",
+        "status": "available",
+        "parts": [
+          {
+            "type": "text",
+            "text": "0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "simulation",
+      "n": 502,
+      "index": 0,
+      "disabled": true,
+      "simulation": true,
+      "result": {
+        "id": "0",
+        "sceneId": "sim:s",
+        "receivedAt": "2026-10-29T00:00:00.000Z",
+        "senderId": "alice",
+        "origin": "simulation",
+        "status": "available",
+        "parts": [
+          {
+            "type": "text",
+            "text": "0"
+          }
+        ]
+      }
+    }
+  ],
+  "proposals": [
+    {
+      "name": "ascii512",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "alice"
+        },
+        "outcomeRefs": [
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": true
+    },
+    {
+      "name": "ascii513",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "alice"
+        },
+        "outcomeRefs": [
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": false
+    },
+    {
+      "name": "astral512",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "alice"
+        },
+        "outcomeRefs": [
+          {
+            "id": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": true
+    },
+    {
+      "name": "astral513",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "alice"
+        },
+        "outcomeRefs": [
+          {
+            "id": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": false
+    },
+    {
+      "name": "lone512",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "alice"
+        },
+        "outcomeRefs": [
+          {
+            "id": "\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": true
+    },
+    {
+      "name": "lone513",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "alice"
+        },
+        "outcomeRefs": [
+          {
+            "id": "\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": false
+    },
+    {
+      "name": "person-astral512",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "outcomeRefs": [
+          {
+            "id": "o",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": true
+    },
+    {
+      "name": "person-astral513",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "outcomeRefs": [
+          {
+            "id": "o",
+            "version": 1
+          }
+        ]
+      },
+      "accepted": false
+    }
+  ],
+  "retentionSequences": [
+    {
+      "name": "expiry-expand",
+      "removed": false,
+      "expanded": false,
+      "previous": "not-called",
+      "editStatus": null,
+      "newText": null
+    },
+    {
+      "name": "idle-reenable",
+      "removed": false,
+      "expanded": false,
+      "previous": "not-called",
+      "editStatus": null,
+      "newText": null
+    },
+    {
+      "name": "expired-edit-readmit",
+      "removed": false,
+      "expanded": false,
+      "previous": null,
+      "editStatus": "edited",
+      "newText": "new"
+    }
+  ]
+}

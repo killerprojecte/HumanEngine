@@ -39,6 +39,7 @@ func (r *Runtime) RegisteredScene(id string) (Scene, bool) {
 
 func (r *Runtime) newSceneState(scene Scene) *sceneState {
 	s := &sceneState{byID: map[string]*messageRecord{}, byBody: map[*Object]*messageRecord{}, available: map[string]bool{}, earliest: math.Inf(1), historyEarliest: math.Inf(1), operationKeys: map[string]bool{}, sequence: r.sequence.Add(1), scene: scene, tasks: map[string]*turn{}, admissions: map[string]*turnwait.Coordinator{}, timers: map[string]*timerTicket{}, pending: map[string]bool{}, recalled: map[string]bool{}, lastAutomatic: map[string]float64{}, lastTouched: r.services.Clock.Now()}
+	s.mu.before = func() { r.reconcilePublishedRetentionLocked(s) }
 	s.mu.Lock()
 	r.publishLocked(s)
 	s.mu.Unlock()
@@ -80,6 +81,11 @@ func (r *Runtime) RegisterScene(scene Scene) error {
 		p.mu.Unlock()
 		if !scene.ParticipationEnabled && scene.Kind != "simulation" {
 			r.Cancel(scene.ID)
+		}
+	}
+	for _, extension := range r.exts() {
+		if extension.SceneChanged != nil {
+			extension.SceneChanged(scene)
 		}
 	}
 	return nil

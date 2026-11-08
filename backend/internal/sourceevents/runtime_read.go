@@ -12,12 +12,22 @@ import (
 
 type runtimeReads struct {
 	store *Store
+	view  *View
 	lease *atomic.Bool
 }
 
 func (r *runtimeReads) read(fn func(*View) error) error {
 	if r.lease != nil && !r.lease.Load() {
 		return sql.ErrTxDone
+	}
+	if r.view != nil {
+		if err := r.view.ready(); err != nil {
+			return err
+		}
+		if err := fn(r.view); err != nil {
+			return err
+		}
+		return r.view.ready()
 	}
 	if r.store.session != nil {
 		if err := r.store.ready(); err != nil {

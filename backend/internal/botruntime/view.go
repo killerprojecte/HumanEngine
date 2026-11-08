@@ -18,6 +18,7 @@ type sceneView struct {
 	active, deferred, pending, waiting int
 	protected                          []string
 	recalled                           map[string]bool
+	timers                             int
 	closed                             bool
 }
 type Snapshot struct {
@@ -30,7 +31,10 @@ type Snapshot struct {
 }
 
 func (r *Runtime) publishLocked(s *sceneState) {
-	v := &sceneView{scene: s.scene, history: s.history, active: len(s.tasks), deferred: s.routing.Deferred.Len(), pending: s.queue.Len(), recalled: s.recalled, closed: s.closed.Load()}
+	s.publicationMu.Lock()
+	defer s.publicationMu.Unlock()
+	r.reconcilePublishedRetentionUnderPublication(s)
+	v := &sceneView{scene: s.scene, history: s.history, active: len(s.tasks), deferred: s.routing.Deferred.Len(), pending: s.queue.Len(), recalled: s.recalled, closed: s.closed.Load(), timers: len(s.timers)}
 	available := s.available
 	for _, e := range s.topics.Entries() {
 		t := e.Value
@@ -63,20 +67,8 @@ func (r *Runtime) Snapshot(id string) (Snapshot, error) {
 		}
 		return Snapshot{}, code("scene_missing")
 	}
-	v := s.view.Load()
-	var rows []*Object
-	cfg := r.config()
-	if v.scene.Kind != "simulation" {
-		cutoff := r.services.Clock.Now() - r.lifetime(cfg)
-		rows = []*Object{}
-		for _, record := range bodyRecords(v.history) {
-			if record.receivedAt >= cutoff {
-				rows = append(rows, record.body)
-			}
-		}
-	} else {
-		rows = bodyRows(v.history)
-	}
+	v := r.trimPublished(s)
+	rows := bodyRows(v.history)
 	copyRows := make([]*Object, len(rows))
 	for i, m := range rows {
 		copyRows[i] = cloneJSON(m).(*Object)

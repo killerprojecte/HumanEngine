@@ -733,3 +733,16 @@ trusted context, not the rewritten declaration context. JSON serialization keeps
 the complete ordered memory and branch objects. Runtime settings are supplied
 at invocation, not captured while queueing. This completes the internal proposal
 command, not robot/provider or REST mutation wiring.
+
+### Manual and guarded memory commands
+
+Manual create, update, lock, reviewed public promotion and guarded update compose
+real revision/lifecycle/projection owners. Reviewed content and lock-only edits
+preserve their distinct source semantics. Retry receipts store metadata only,
+retain the source's 4096-entry policy, and replay the current authorized body
+only when the recorded version and deletion epoch still match. First guarded
+use creates the fixed receipt schema inside the owned transaction.
+
+Receipt pruning explicitly names the main database because SQLite otherwise
+reports an ambiguous database name for its rowid subquery. The transaction
+authorizer is unchanged; attached-database access remains denied.

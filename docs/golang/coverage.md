@@ -303,3 +303,20 @@ does not create an authority intent; workspace checkpointing legitimately reads
 commitment settings. Graph admission adds no extra such read. Production semantics
 were not changed to satisfy those initial assertions. Complete aggregate/native
 acceptance for this outer composition remains pending exact-commit CI.
+
+### Manual memory commands
+
+The actual TypeScript/SQLite oracle contains 21 scenarios and 58 operations:
+57 manual operations replayed by Go plus one explicitly identified learned
+proposal setup. Tests compare records, sources/supports, tombstones, assertion
+history/state/parents and guarded receipts. Native tests cover real projections,
+vectors, guarded replay/eviction, SQL ABORT/native ROLLBACK, eligibility intent
+and ACK, expired scopes and first-use lazy schema creation.
+
+Focused race/vet passed for memorymanual, memoryservice, assertions and recovery.
+The first run exposed SQLite's ambiguous READ opcode in the unqualified receipt
+prune query; main qualification fixed that exact query without broadening the
+authorizer, with attached-database denial regression coverage. Full aggregate
+and native ICU acceptance for this manual slice remains pending exact-commit CI.
+Delete/recall privacy closure and runtime/HTTP mutation integration remain separate
+uncompleted work.

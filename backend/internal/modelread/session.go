@@ -2,6 +2,7 @@ package modelread
 
 import (
 	"context"
+	"database/sql"
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
@@ -23,4 +24,17 @@ func (p *Policy) ValidInSession(ctx context.Context, t *Ticket, session *recover
 		return e
 	})
 	return err == nil && valid
+}
+
+// SceneID exposes only the authenticated ticket's captured scene identity.
+func (t *Ticket) SceneID() string {
+	if t == nil || t.self != t {
+		return ""
+	}
+	return t.scene
+}
+
+// CheckBinding prevents composing a model-read owner from another application.
+func (p *Policy) CheckBinding(authority *recovery.Authority, main *sql.DB) error {
+	return p.store.CheckReadBinding(authority, main, nil)
 }

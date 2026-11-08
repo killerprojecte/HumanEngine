@@ -1,7 +1,9 @@
 package workingset
 
 import (
+	"context"
 	"errors"
+	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 	"sync"
 	"time"
 )
@@ -30,10 +32,12 @@ type MaintenancePorts struct {
 // source replay. Dispose revokes a running callback's ability to reschedule.
 type Maintenance struct {
 	mu         sync.Mutex
+	work       quiescence.Group
 	ports      MaintenancePorts
 	interval   time.Duration
 	scheduler  TimerScheduler
 	started    bool
+	closed     bool
 	timer      CancelTimer
 	generation uint64
 	scheduled  bool
@@ -65,8 +69,13 @@ func (m *Maintenance) failed() {
 	}
 }
 func (m *Maintenance) Start() {
+	done, ok := m.work.Start()
+	if !ok {
+		return
+	}
+	defer done()
 	m.mu.Lock()
-	if m.started {
+	if m.started || m.closed {
 		m.mu.Unlock()
 		return
 	}
@@ -76,6 +85,11 @@ func (m *Maintenance) Start() {
 }
 func (m *Maintenance) Notify() { m.notify(nil) }
 func (m *Maintenance) notify(lifecycle *uint64) {
+	done, ok := m.work.Start()
+	if !ok {
+		return
+	}
+	defer done()
 	m.mu.Lock()
 	if !m.started || m.scheduled || (lifecycle != nil && *lifecycle != m.lifecycle) {
 		m.mu.Unlock()
@@ -106,6 +120,11 @@ func (m *Maintenance) notify(lifecycle *uint64) {
 // A timer that expires during that callback becomes one deferred event-loop
 // tick; it cannot run a second drain or lose a later notification.
 func (m *Maintenance) tick(generation uint64) {
+	done, ok := m.work.Start()
+	if !ok {
+		return
+	}
+	defer done()
 	m.mu.Lock()
 	if !m.started || !m.scheduled || m.generation != generation {
 		m.mu.Unlock()
@@ -173,4 +192,16 @@ func (m *Maintenance) Dispose() {
 	m.scheduled = false
 	m.deferred = false
 	m.mu.Unlock()
+}
+
+// CloseAndWait is permanent application shutdown. Dispose keeps its existing
+// restartable source semantics; this boundary additionally seals all root owner
+// reads and waits actual Enabled/drain/failure callbacks, not just timer Stop.
+func (m *Maintenance) CloseAndWait(ctx context.Context) error {
+	m.mu.Lock()
+	m.closed = true
+	m.work.Seal()
+	m.mu.Unlock()
+	m.Dispose()
+	return m.work.Wait(ctx)
 }

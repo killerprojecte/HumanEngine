@@ -1,0 +1,4146 @@
+{
+  "sources": {
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/memory/semantic/candidates.ts": "898e1790d66e45c3fe809b7be6548afd824fbaefef343e6c742a365906524122",
+    "src/memory/semantic/neighborhood.ts": "b381f84ac919f6e3aac8a9894a6dafd07d580b96082463792c6e75b39369e830",
+    "src/memory/semantic/notifications.ts": "0a7c7b6c489e3dda86b424549a69ceadd46e65508c9b07fe4bbee6c97d5eda9f",
+    "src/memory/semantic/authority.ts": "c0cdd0d5ff465b044ce94f5ebab002dca9463e7eaafd5ee50d5a5c93b79d9dd0",
+    "src/memory/semantic/episode-anchors.ts": "331aae28857dc5afecc77398e90ef9c2b7b65225051d826390eddcca83c7be45",
+    "src/memory/semantic/contracts.ts": "bfa01c9f2c84412456921d30f9994c7023bd0055908933352f4905ab6ee4aa03",
+    "src/memory/semantic/storage.ts": "a0db38c860a31955d8ba29989e0373f967bbdac91a8ccd6d091fc09368f982f2"
+  },
+  "cases": [
+    {
+      "scenario": "auto",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "created": [
+          {
+            "schemaVersion": 1,
+            "id": "candidate-1",
+            "sceneId": "scene",
+            "personId": "person",
+            "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+            "anchorDependencies": [],
+            "anchorQualifications": [],
+            "version": 1,
+            "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+            "kind": "summary_candidate",
+            "text": "Synthetic attributed summary",
+            "selectedParentIds": [
+              "a",
+              "b"
+            ],
+            "parents": [
+              {
+                "ref": {
+                  "id": "a",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+                "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+                "proofs": [
+                  {
+                    "proofId": "proof-a",
+                    "sources": [
+                      {
+                        "sceneId": "scene",
+                        "messageId": "msg-a",
+                        "senderId": "person"
+                      }
+                    ],
+                    "parents": []
+                  }
+                ],
+                "roots": [
+                  "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+                ]
+              },
+              {
+                "ref": {
+                  "id": "b",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+                "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+                "proofs": [
+                  {
+                    "proofId": "proof-b",
+                    "sources": [
+                      {
+                        "sceneId": "scene",
+                        "messageId": "msg-b",
+                        "senderId": "person"
+                      }
+                    ],
+                    "parents": []
+                  }
+                ],
+                "roots": [
+                  "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+                ]
+              }
+            ],
+            "hypothesis": false,
+            "status": "admitted",
+            "admission": "structural_low_risk_summary",
+            "createdAt": "2026-01-02T03:04:05.006Z",
+            "applicableUntil": null
+          }
+        ],
+        "rejected": []
+      },
+      "error": null,
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "id": "candidate-1",
+          "sceneId": "scene",
+          "personId": "person",
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+          "kind": "summary_candidate",
+          "text": "Synthetic attributed summary",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-a",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-b",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": false,
+          "status": "admitted",
+          "admission": "structural_low_risk_summary",
+          "createdAt": "2026-01-02T03:04:05.006Z",
+          "applicableUntil": null
+        }
+      ],
+      "attempts": []
+    },
+    {
+      "scenario": "manual",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": false,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "created": [
+          {
+            "schemaVersion": 1,
+            "id": "candidate-1",
+            "sceneId": "scene",
+            "personId": "person",
+            "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+            "anchorDependencies": [],
+            "anchorQualifications": [],
+            "version": 1,
+            "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+            "kind": "summary_candidate",
+            "text": "Synthetic attributed summary",
+            "selectedParentIds": [
+              "a",
+              "b"
+            ],
+            "parents": [
+              {
+                "ref": {
+                  "id": "a",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+                "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+                "proofs": [
+                  {
+                    "proofId": "proof-a",
+                    "sources": [
+                      {
+                        "sceneId": "scene",
+                        "messageId": "msg-a",
+                        "senderId": "person"
+                      }
+                    ],
+                    "parents": []
+                  }
+                ],
+                "roots": [
+                  "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+                ]
+              },
+              {
+                "ref": {
+                  "id": "b",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+                "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+                "proofs": [
+                  {
+                    "proofId": "proof-b",
+                    "sources": [
+                      {
+                        "sceneId": "scene",
+                        "messageId": "msg-b",
+                        "senderId": "person"
+                      }
+                    ],
+                    "parents": []
+                  }
+                ],
+                "roots": [
+                  "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+                ]
+              }
+            ],
+            "hypothesis": false,
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "createdAt": "2026-01-02T03:04:05.006Z",
+            "applicableUntil": null
+          }
+        ],
+        "rejected": []
+      },
+      "error": null,
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "id": "candidate-1",
+          "sceneId": "scene",
+          "personId": "person",
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+          "kind": "summary_candidate",
+          "text": "Synthetic attributed summary",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-a",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-b",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-01-02T03:04:05.006Z",
+          "applicableUntil": null
+        }
+      ],
+      "attempts": []
+    },
+    {
+      "scenario": "hypothesis",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": true
+        }
+      ],
+      "result": {
+        "created": [
+          {
+            "schemaVersion": 1,
+            "id": "candidate-1",
+            "sceneId": "scene",
+            "personId": "person",
+            "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+            "anchorDependencies": [],
+            "anchorQualifications": [],
+            "version": 1,
+            "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+            "kind": "summary_candidate",
+            "text": "Synthetic attributed summary",
+            "selectedParentIds": [
+              "a",
+              "b"
+            ],
+            "parents": [
+              {
+                "ref": {
+                  "id": "a",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+                "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+                "proofs": [
+                  {
+                    "proofId": "proof-a",
+                    "sources": [
+                      {
+                        "sceneId": "scene",
+                        "messageId": "msg-a",
+                        "senderId": "person"
+                      }
+                    ],
+                    "parents": []
+                  }
+                ],
+                "roots": [
+                  "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+                ]
+              },
+              {
+                "ref": {
+                  "id": "b",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+                "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+                "proofs": [
+                  {
+                    "proofId": "proof-b",
+                    "sources": [
+                      {
+                        "sceneId": "scene",
+                        "messageId": "msg-b",
+                        "senderId": "person"
+                      }
+                    ],
+                    "parents": []
+                  }
+                ],
+                "roots": [
+                  "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+                ]
+              }
+            ],
+            "hypothesis": true,
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "createdAt": "2026-01-02T03:04:05.006Z",
+            "applicableUntil": "2026-01-09T03:04:05.006Z"
+          }
+        ],
+        "rejected": []
+      },
+      "error": null,
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "id": "candidate-1",
+          "sceneId": "scene",
+          "personId": "person",
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+          "kind": "summary_candidate",
+          "text": "Synthetic attributed summary",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-a",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-b",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": true,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-01-02T03:04:05.006Z",
+          "applicableUntil": "2026-01-09T03:04:05.006Z"
+        }
+      ],
+      "attempts": []
+    },
+    {
+      "scenario": "disabled",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": false,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "created": [],
+        "rejected": [
+          {
+            "index": 0,
+            "reason": "semantic_disabled"
+          }
+        ]
+      },
+      "error": null,
+      "rows": [],
+      "attempts": []
+    },
+    {
+      "scenario": "cross-person",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "other"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "created": [],
+        "rejected": [
+          {
+            "index": 0,
+            "reason": "semantic_subject_partition"
+          }
+        ]
+      },
+      "error": null,
+      "rows": [],
+      "attempts": []
+    },
+    {
+      "scenario": "duplicate-parent",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "created": [],
+        "rejected": [
+          {
+            "index": 0,
+            "reason": "semantic_duplicate_parent"
+          }
+        ]
+      },
+      "error": null,
+      "rows": [],
+      "attempts": []
+    },
+    {
+      "scenario": "duplicate-proposal",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        },
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Other prose, same semantic input",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "created": [],
+        "rejected": [
+          {
+            "index": 1,
+            "reason": "semantic_duplicate_proposal"
+          }
+        ]
+      },
+      "error": null,
+      "rows": [],
+      "attempts": []
+    },
+    {
+      "scenario": "seen",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "first": {
+          "created": [
+            {
+              "schemaVersion": 1,
+              "id": "candidate-1",
+              "sceneId": "scene",
+              "personId": "person",
+              "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+              "anchorDependencies": [],
+              "anchorQualifications": [],
+              "version": 1,
+              "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+              "kind": "summary_candidate",
+              "text": "Synthetic attributed summary",
+              "selectedParentIds": [
+                "a",
+                "b"
+              ],
+              "parents": [
+                {
+                  "ref": {
+                    "id": "a",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+                  "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+                  "proofs": [
+                    {
+                      "proofId": "proof-a",
+                      "sources": [
+                        {
+                          "sceneId": "scene",
+                          "messageId": "msg-a",
+                          "senderId": "person"
+                        }
+                      ],
+                      "parents": []
+                    }
+                  ],
+                  "roots": [
+                    "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+                  ]
+                },
+                {
+                  "ref": {
+                    "id": "b",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+                  "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+                  "proofs": [
+                    {
+                      "proofId": "proof-b",
+                      "sources": [
+                        {
+                          "sceneId": "scene",
+                          "messageId": "msg-b",
+                          "senderId": "person"
+                        }
+                      ],
+                      "parents": []
+                    }
+                  ],
+                  "roots": [
+                    "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+                  ]
+                }
+              ],
+              "hypothesis": false,
+              "status": "admitted",
+              "admission": "structural_low_risk_summary",
+              "createdAt": "2026-01-02T03:04:05.006Z",
+              "applicableUntil": null
+            }
+          ],
+          "rejected": []
+        },
+        "second": {
+          "created": [],
+          "rejected": []
+        }
+      },
+      "error": null,
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "id": "candidate-1",
+          "sceneId": "scene",
+          "personId": "person",
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "d7f18076baf1e8aa08566f70511a98ae74d5452dd586ff54dd2f01d417df29da",
+          "kind": "summary_candidate",
+          "text": "Synthetic attributed summary",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "4081e47e1daa2ffa28396bf7453e681712b7dc28020cbeb29a2d56344e2a7587",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-a",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "487d3218ad68d3054fb712fa7e9d9ee5b640066138d22bafcaf980f7035eb43f",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [
+                    {
+                      "sceneId": "scene",
+                      "messageId": "msg-b",
+                      "senderId": "person"
+                    }
+                  ],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": false,
+          "status": "admitted",
+          "admission": "structural_low_risk_summary",
+          "createdAt": "2026-01-02T03:04:05.006Z",
+          "applicableUntil": null
+        }
+      ],
+      "attempts": []
+    },
+    {
+      "scenario": "missing-parent",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "created": [],
+        "rejected": [
+          {
+            "index": 0,
+            "reason": "semantic_parent_unavailable"
+          }
+        ]
+      },
+      "error": null,
+      "rows": [],
+      "attempts": []
+    },
+    {
+      "scenario": "attempt",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "first": true,
+        "duplicate": false
+      },
+      "error": null,
+      "rows": [],
+      "attempts": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "inputKey": "48aed2374cea5f3bbbee1c8742439be758dcc1e999e0e3f0e03c1ee80e3565a0",
+          "status": "finished",
+          "version": 2,
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+            }
+          ],
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f",
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "abandoned",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": {
+        "first": true,
+        "duplicate": false
+      },
+      "error": null,
+      "rows": [],
+      "attempts": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "inputKey": "48aed2374cea5f3bbbee1c8742439be758dcc1e999e0e3f0e03c1ee80e3565a0",
+          "status": "abandoned",
+          "version": 2,
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+            }
+          ],
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f",
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": "attempt-missing",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "enabled": true,
+      "auto": true,
+      "parents": [
+        {
+          "ref": {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+        },
+        {
+          "ref": {
+            "id": "b",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+        }
+      ],
+      "inputs": [
+        {
+          "kind": "summary_candidate",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "text": "Synthetic attributed summary",
+          "hypothesis": false
+        }
+      ],
+      "result": null,
+      "error": "semantic_attempt_missing",
+      "rows": [],
+      "attempts": []
+    }
+  ],
+  "notificationCases": [
+    {
+      "scenario": "committed",
+      "trace": [
+        [
+          "checkpoint",
+          0
+        ],
+        [
+          "notify",
+          "assertion_committed",
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ]
+      ]
+    },
+    {
+      "scenario": "rolled-back",
+      "trace": [
+        [
+          "checkpoint",
+          0
+        ]
+      ]
+    },
+    {
+      "scenario": "policy-changed",
+      "trace": [
+        [
+          "checkpoint",
+          0
+        ]
+      ]
+    },
+    {
+      "scenario": "listener-failure",
+      "trace": [
+        [
+          "checkpoint",
+          0
+        ],
+        [
+          "notify",
+          "assertion_committed",
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "failed"
+        ]
+      ]
+    },
+    {
+      "scenario": "replaced-reason",
+      "trace": [
+        [
+          "checkpoint",
+          0
+        ],
+        [
+          "notify",
+          "source_qualification_changed",
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ]
+      ]
+    }
+  ],
+  "neighborhoodCases": [
+    {
+      "scenario": "complete",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": {
+        "coverage": "complete",
+        "ids": [
+          "a",
+          "b"
+        ],
+        "partitionKey": "ae16f32bd63e7bcfda5d977ac5af6083f1ae6922eddf2ab0edc276db3be48de2",
+        "episodeAnchor": null,
+        "episodeMembershipKey": null
+      }
+    },
+    {
+      "scenario": "stale-trigger",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "2d4211a0f2e96a71e3986ba7b43f3cfd03648d2826cd4ef49e7487a1d139ddfc"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "scenario": "stale-then-current",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "2d4211a0f2e96a71e3986ba7b43f3cfd03648d2826cd4ef49e7487a1d139ddfc"
+          },
+          "reason": "assertion_committed"
+        },
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": {
+        "coverage": "complete",
+        "ids": [
+          "a",
+          "b"
+        ],
+        "partitionKey": "ae16f32bd63e7bcfda5d977ac5af6083f1ae6922eddf2ab0edc276db3be48de2",
+        "episodeAnchor": null,
+        "episodeMembershipKey": null
+      }
+    },
+    {
+      "scenario": "mixed-scene",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed"
+        },
+        {
+          "sceneId": "other",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "scenario": "missing-ref",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "scenario": "unavailable-member",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": {
+        "coverage": "limited",
+        "ids": [
+          "a"
+        ],
+        "partitionKey": null,
+        "episodeAnchor": null,
+        "episodeMembershipKey": null
+      }
+    },
+    {
+      "scenario": "overflow",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "c": {
+          "record": {
+            "id": "c",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic c",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-c",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-c",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "879923da020d1533f4d8e921ea7bac61e8ba41d3c89d17a4d14e3a89c6780d5d",
+          "roots": [
+            "3b007c596e046f6859826a6681d765dd46155268f972c5846c5a5437c0ab5ac5"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "d": {
+          "record": {
+            "id": "d",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic d",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-d",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-d",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "3fa5834dc920d385ca9b099c9fe55dcca163a6b256a261f8f147291b0e7cf633",
+          "roots": [
+            "02261ed043d2ecdc1457cc2d487b382ede414dac3b48eeaff14025f3ae5ac169"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "e": {
+          "record": {
+            "id": "e",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic e",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-e",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-e",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "8c8656c5d114d7f8b2a412d2d5fd03accce3ed050624a0493734591a9666b110",
+          "roots": [
+            "cd2bda54c7ec774d076ba3ecb5409cbc0144d24f08b5353649c3f102095cf7c6"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "f": {
+          "record": {
+            "id": "f",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic f",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-f",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-f",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "30f8b180d63559f2512b744f60449e1245803dd6b6af9766e11acac8ddca0aae",
+          "roots": [
+            "0f77c81f0a729115cbc7c1c966d4400a12b4c624e3d73c4c749da26f9523e93d"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "g": {
+          "record": {
+            "id": "g",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic g",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-g",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-g",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "e6c67f7247161354cd7e1d34d5149f373a433fa472a7e957dfdc60dfa66e162e",
+          "roots": [
+            "d4229369b62dd584f384842ddbe4cf684433e8aa8ed698aa6a6ed7ff006092f2"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "h": {
+          "record": {
+            "id": "h",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic h",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-h",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-h",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "71e0bdc1413ca781ffeb37612d10c7a727cd747943bd577288a9bd86b848c0d7",
+          "roots": [
+            "a3419ea71f78e15045f2c49e7e9362bf43c9dff1e633854a292fa301bb667e74"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "i": {
+          "record": {
+            "id": "i",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic i",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-i",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-i",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "a05447c5b6502c5938db0f77f99354078bd88674bb56712709fd2cfdbcd56ac2",
+          "roots": [
+            "5aa67971380beb10f91ad2dd216c60312c54f86ee94ddcb1b361a34a84dd75ab"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "j": {
+          "record": {
+            "id": "j",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic j",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-j",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-j",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "f24246db819f400c542047f9328a8e2940051e077c3d059c57d392b7e9c78a11",
+          "roots": [
+            "667729d7826f252496851504b67111c610de1341ada82d05e4c1e08a8e731b7b"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "k": {
+          "record": {
+            "id": "k",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic k",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-k",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-k",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "37664d5895f78758ec8e94e440b30c9a2cfc68873c28306301b40d6a2f3fefa3",
+          "roots": [
+            "1a088875fa5849e7b38b8ad1199d2d969cced77b469411a4d0d473c6a47c579e"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "l": {
+          "record": {
+            "id": "l",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic l",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-l",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-l",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "fbdc9072aa3d1b97bdde1b18d5babeedfa1c3519d5e51a5f90567ce7bdd86589",
+          "roots": [
+            "bade61a157b0243ba04d9db3e307d16b1bab22ab8bca9ff558e2ee186d7d9745"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "m": {
+          "record": {
+            "id": "m",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic m",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-m",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-m",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "1d576f473e30e1b5828ea271d2a25598d6c7db12c47112c1ade052e2a6293fac",
+          "roots": [
+            "6424143a2e80daabb7b86ab8d20adb369e9efe3aadc0e3f65ace74e0a0d4f89b"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        },
+        {
+          "id": "c",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic c",
+          "origin": "learned"
+        },
+        {
+          "id": "d",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic d",
+          "origin": "learned"
+        },
+        {
+          "id": "e",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic e",
+          "origin": "learned"
+        },
+        {
+          "id": "f",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic f",
+          "origin": "learned"
+        },
+        {
+          "id": "g",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic g",
+          "origin": "learned"
+        },
+        {
+          "id": "h",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic h",
+          "origin": "learned"
+        },
+        {
+          "id": "i",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic i",
+          "origin": "learned"
+        },
+        {
+          "id": "j",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic j",
+          "origin": "learned"
+        },
+        {
+          "id": "k",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic k",
+          "origin": "learned"
+        },
+        {
+          "id": "l",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic l",
+          "origin": "learned"
+        },
+        {
+          "id": "m",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic m",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": {
+        "coverage": "limited",
+        "ids": [],
+        "partitionKey": null,
+        "episodeAnchor": null,
+        "episodeMembershipKey": null
+      }
+    },
+    {
+      "scenario": "filtered",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "hidden": {
+          "record": {
+            "id": "hidden",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic hidden",
+            "origin": "learned",
+            "internalUse": true
+          },
+          "proofs": [
+            {
+              "proofId": "proof-hidden",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-hidden",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "86d3147e0de86e0ebd654db2412091a20ab0eaf2eec43f162fa77642310fe63a",
+          "roots": [
+            "f463fb6ddd979c09a5f58af7a7ba18aa022e64630444a6c9ba3cf099656a2170"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        },
+        {
+          "id": "hidden",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic hidden",
+          "origin": "learned",
+          "internalUse": true
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed"
+        }
+      ],
+      "expected": {
+        "coverage": "complete",
+        "ids": [
+          "a",
+          "b"
+        ],
+        "partitionKey": "ae16f32bd63e7bcfda5d977ac5af6083f1ae6922eddf2ab0edc276db3be48de2",
+        "episodeAnchor": null,
+        "episodeMembershipKey": null
+      }
+    },
+    {
+      "scenario": "episode",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed",
+          "episodeAnchor": {
+            "id": "episode",
+            "version": 1
+          }
+        }
+      ],
+      "expected": {
+        "coverage": "complete",
+        "ids": [
+          "a",
+          "b"
+        ],
+        "partitionKey": null,
+        "episodeAnchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "episodeMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20"
+      }
+    },
+    {
+      "scenario": "stale-episode",
+      "views": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic a",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-a",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-a",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+          "roots": [
+            "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        },
+        "b": {
+          "record": {
+            "id": "b",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "person"
+            },
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "content": "Synthetic b",
+            "origin": "learned"
+          },
+          "proofs": [
+            {
+              "proofId": "proof-b",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "msg-b",
+                  "senderId": "person"
+                }
+              ],
+              "parents": []
+            }
+          ],
+          "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+          "roots": [
+            "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+          ],
+          "rootCoverage": "complete",
+          "derived": false
+        }
+      },
+      "records": [
+        {
+          "id": "a",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic a",
+          "origin": "learned"
+        },
+        {
+          "id": "b",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "person"
+          },
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "status": "active",
+          "content": "Synthetic b",
+          "origin": "learned"
+        }
+      ],
+      "group": {
+        "anchor": {
+          "id": "episode",
+          "version": 1
+        },
+        "anchorMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed"
+          }
+        ]
+      },
+      "dirty": [
+        {
+          "sceneId": "s",
+          "trigger": {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+          },
+          "reason": "assertion_committed",
+          "episodeAnchor": {
+            "id": "episode",
+            "version": 2
+          }
+        }
+      ],
+      "expected": null
+    }
+  ]
+}

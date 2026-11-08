@@ -199,6 +199,13 @@ func (s *Service) committed(st *assertions.Store, id string, version, epoch int6
 	}); e != nil {
 		return e
 	}
+	if scoped, ok := s.d.Notifications.(interface {
+		AssertionCommittedInSession(*recovery.WriteSession, string, Reference) error
+	}); ok {
+		return st.WithWriteSession(func(ws *recovery.WriteSession) error {
+			return scoped.AssertionCommittedInSession(ws, scene, Reference{id, version, epoch})
+		})
+	}
 	return s.d.Notifications.AssertionCommitted(scene, Reference{id, version, epoch})
 }
 func (s *Service) owners() assertionlifecycle.Owners {

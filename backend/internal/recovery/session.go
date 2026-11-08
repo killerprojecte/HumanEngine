@@ -33,12 +33,36 @@ type writeSessionState struct {
 	fatal       error
 	current     *WriteSession
 	readCapture *[]readWitnessQuery
+	afterRoot   []func(RootOutcome)
 }
 
 func (a *Authority) WithWriteSession(ctx context.Context, main *sql.DB, fn func(*WriteSession) error) error {
 	return a.withWriteSession(ctx, main, fn, nil)
 }
 func (a *Authority) withWriteSession(ctx context.Context, main *sql.DB, fn func(*WriteSession) error, commit commitExec) (err error) {
+	// Registered observers run after rollback/commit, connection return and authority release.
+	var rootState *writeSessionState
+	var committed bool
+	var cleanupErr error
+	defer func() {
+		if rootState != nil {
+			status := RootRolledBack
+			if committed {
+				status = RootCommitted
+			}
+			if errors.Is(err, ErrCommitOutcomeUnknown) || cleanupErr != nil {
+				status = RootUncertain
+			}
+			rootState.mu.Lock()
+			callbacks := append([]func(RootOutcome){}, rootState.afterRoot...)
+			rootState.afterRoot = nil
+			rootState.mu.Unlock()
+			for _, fn := range callbacks {
+				func() { defer func() { _ = recover() }(); fn(RootOutcome{Status: status, Err: err}) }()
+			}
+		}
+	}()
+
 	if fn == nil {
 		return errors.New("recovery_write_invalid")
 	}
@@ -58,12 +82,13 @@ func (a *Authority) withWriteSession(ctx context.Context, main *sql.DB, fn func(
 	if err = beginOwned(ctx, conn, "BEGIN IMMEDIATE"); err != nil {
 		return err
 	}
-	defer func() { err = errors.Join(err, rollbackOwned(conn)) }()
+	defer func() { cleanupErr = rollbackOwned(conn); err = errors.Join(err, cleanupErr) }()
 	if _, err = conn.ExecContext(ctx, "UPDATE main.recovery_gate SET id=id WHERE 0"); err != nil {
 		return err
 	}
 	s := &WriteSession{writeSessionState: &writeSessionState{authority: a, main: main, conn: conn, ctx: ctx}, active: true}
 	s.current = s
+	rootState = s.writeSessionState
 	if err = s.protect(0); err != nil {
 		return err
 	}
@@ -71,7 +96,9 @@ func (a *Authority) withWriteSession(ctx context.Context, main *sql.DB, fn func(
 	if err != nil {
 		return err
 	}
-	return commitOwned(ctx, conn, "main", commit)
+	err = commitOwned(ctx, conn, "main", commit)
+	committed = err == nil
+	return err
 }
 func (s *WriteSession) check() error {
 	if !s.active {
@@ -361,4 +388,34 @@ func (s *WriteSession) CheckBinding(a *Authority, main *sql.DB) error {
 		return errors.New("recovery_session_binding_mismatch")
 	}
 	return nil
+}
+
+// AfterRoot schedules non-authoritative observation after the complete root
+// writer stack unwinds, on success or failure. It never runs at a savepoint.
+// Observers must requalify their exact refs; a rollback does not authorize work.
+func (s *WriteSession) AfterRoot(fn func(RootOutcome)) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if fn == nil {
+		return errors.New("recovery_observer_required")
+	}
+	if e := s.check(); e != nil {
+		return e
+	}
+	s.afterRoot = append(s.afterRoot, fn)
+	return nil
+}
+
+type RootStatus string
+
+const (
+	RootCommitted  RootStatus = "committed"
+	RootRolledBack RootStatus = "rolled_back"
+	RootUncertain  RootStatus = "uncertain"
+)
+
+// RootOutcome reports physical root completion; observers never receive a writer.
+type RootOutcome struct {
+	Status RootStatus
+	Err    error
 }

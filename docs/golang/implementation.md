@@ -855,3 +855,26 @@ This completes the recovered-history operation facade, not global reconciliation
 Whole authority replay orchestration, receipt accounting, filesystem effects and
 final ACK/readiness remain separate. Semantic-attempt and source-edit-dependent
 proof fixture expansion also remains work; no universal recovery parity is claimed.
+
+### Semantic owner and diagnostic lifetime checkpoint
+
+The concrete semantic owner now uses the existing writer-scoped policy, ticket,
+assertion, partition and episode checks. Root observers execute only after SQL
+cleanup, connection return and authority release. Uncertain outcomes do not
+publish notifications; rollback notifications requalify their exact references.
+This is a physical-root completion boundary, not a claim of whole-JavaScript-stack
+microtask equivalence. Application composition and the learning coordinator remain
+separate acceptance work.
+
+Model diagnostics retain the source retention/redaction policy. Disabled debug
+mode does not project or JSON-copy model context. Generation checks cover the
+Enabled callback, lazy projection and secret resolution, preventing Clear from
+being undone by old work. Diagnostic failure cannot retry a model completion or
+lose a V1 continuation. Permanent maintenance shutdown joins real callbacks while
+Dispose remains restartable. Settings admission/deferred-topic operations retain
+their physical runtime ownership.
+
+The individual affected race/vet suites and actual-source diagnostic/semantic
+oracles passed before integration. Combined-tree full CI is required for this
+checkpoint. This does not enable the preview application, resolve media HTTP 101,
+complete the plugin manager, or establish that all performance issues are fixed.

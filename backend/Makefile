@@ -47,6 +47,7 @@ differential: build
 	cd .. && TZ=UTC node --import tsx backend/internal/knowledge/testdata/generate-source-oracle.ts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-purge-fixtures.ts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-runtime-fixtures.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-owner-fixtures.ts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-workspace-resolve-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-list-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-experience-view-fixtures.mjs --check

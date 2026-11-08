@@ -37,6 +37,7 @@ type CompletionRequest struct {
 	Tools        []map[string]any
 }
 type NativeModels struct {
+	Diagnostics       DiagnosticSink
 	requests          quiescence.Group
 	attempts          quiescence.Group
 	Host              *plugins.V1Host
@@ -163,7 +164,9 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 			path = "responses"
 		}
 		descriptor := Descriptor{ProviderID: provider.ID, ModelID: model.ID, Protocol: provider.Protocol, APIModelName: model.APIModelName, Operation: "complete", Role: attempt.Candidate.Role, Prices: m.Prices[model.ID]}
-		m.nativeCompletion(Request{Provider: provider, Path: path, Body: body, Descriptor: &descriptor}, model.ID, wireNames)(ctx, attempt, complete)
+		m.nativeCompletion(Request{Provider: provider, Path: path, Body: body, Descriptor: &descriptor, diagnostic: func(ctx context.Context, c *Completion, secrets []string) {
+			m.captureDiagnostic(ctx, attempt.Candidate.Role, expanded, c, false, secrets)
+		}}, model.ID, wireNames)(ctx, attempt, complete)
 
 	}))
 	if e != nil {
@@ -190,8 +193,15 @@ func (m *Message) Release() error {
 func (m *NativeModels) nativeCompletion(r Request, modelID string, wireNames map[string]string) modelservice.Invocation {
 	return m.asyncInvocation(func(ctx context.Context, attempt modelservice.Attempt, complete func(any, error)) {
 		r.FirstContent = attempt.FirstContent
+		secrets := append([]string{}, r.diagnosticSecrets...)
+		r.credentialUsed = func(value string) {
+			if value != "" {
+				secrets = append(secrets, value)
+			}
+		}
 		result, err := m.Client.Request(ctx, r)
 		if retry, ok := err.(*imageRetry); ok {
+			retry.request.diagnosticSecrets = secrets
 			complete(nil, modelservice.RescheduleNativeImage(m.nativeCompletion(retry.request, modelID, wireNames)))
 			return
 		}
@@ -220,7 +230,11 @@ func (m *NativeModels) nativeCompletion(r Request, modelID string, wireNames map
 			assistant.modelID = modelID
 			assistant.output, _ = result["output"].([]any)
 		}
-		complete(&Completion{text, calls, usage, modelID, assistant, summary}, nil)
+		completion := &Completion{text, calls, usage, modelID, assistant, summary}
+		if r.diagnostic != nil {
+			r.diagnostic(ctx, completion, secrets)
+		}
+		complete(completion, nil)
 	})
 }
 

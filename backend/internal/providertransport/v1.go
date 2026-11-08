@@ -134,7 +134,13 @@ func (m *NativeModels) completeV1(ctx context.Context, a modelservice.Attempt, r
 	usage, _ := parsed["usage"].(map[string]any)
 	assistant := &Message{Visible: map[string]any{"role": "assistant", "content": text, "toolCalls": calls}, modelID: a.Candidate.Model.ID, continuation: result.Continuation()}
 	assistant.owner = assistant
-	return &Completion{Text: text, ToolCalls: calls, Usage: usage, ModelID: a.Candidate.Model.ID, Assistant: assistant}, nil
+	completion := &Completion{Text: text, ToolCalls: calls, Usage: usage, ModelID: a.Candidate.Model.ID, Assistant: assistant}
+	secrets := []string{}
+	if credential != "" {
+		secrets = append(secrets, credential)
+	}
+	m.captureDiagnostic(ctx, a.Candidate.Role, messages, completion, true, secrets)
+	return completion, nil
 }
 func parseCustom(raw []byte, tools []map[string]any) (map[string]any, error) {
 	if len(raw) > 8*1024*1024 {

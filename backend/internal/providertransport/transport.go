@@ -94,6 +94,9 @@ type Client struct {
 	Counter         CounterRegistry
 }
 type Request struct {
+	credentialUsed    func(string)
+	diagnostic        func(context.Context, *Completion, []string)
+	diagnosticSecrets []string
 	ImageRequestLimit *int
 
 	Provider     Provider
@@ -150,6 +153,9 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 	credential, e := c.Credentials.Resolve(ctx, r.Provider)
 	if e != nil {
 		return nil, safe("provider_request_failed")
+	}
+	if r.credentialUsed != nil {
+		r.credentialUsed(credential)
 	}
 	if credential == "" && (r.Provider.CredentialEnv != "" || r.Provider.CredentialConfigured) {
 		return nil, safe("credential_not_configured")

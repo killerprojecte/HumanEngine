@@ -566,3 +566,14 @@ func (s *Store) RevokeAll(ctx context.Context, sceneID, messageID string) error 
 		return bound.exec("INSERT OR IGNORE INTO source_event_tombstones VALUES(?,?)", sceneID, messageID)
 	})
 }
+
+// UseWriteSession borrows only the active source callback's exact writer.
+func (s *Store) UseWriteSession(fn func(*recovery.WriteSession) error) error {
+	if fn == nil || s.session == nil {
+		return errors.New("source_event_transaction_required")
+	}
+	if e := s.ready(); e != nil {
+		return e
+	}
+	return fn(s.session)
+}

@@ -571,7 +571,15 @@ func (c *Coordinator) commitGuard(a *activeWork, session *recovery.WriteSession)
 		return errors.New("semantic_authority_changed")
 	}
 	for _, e := range a.entries {
-		if !c.owner.Enabled(e.dirty.SceneID) || c.owner.PolicyRevision() != e.revision || !c.read.ValidInSession(a.ctx, e.ticket, session) {
+		policyValid := false
+		if scoped, ok := c.owner.(interface {
+			PolicyInSession(context.Context, string, uint64, *recovery.WriteSession) bool
+		}); ok {
+			policyValid = scoped.PolicyInSession(a.ctx, e.dirty.SceneID, e.revision, session)
+		} else {
+			policyValid = c.owner.Enabled(e.dirty.SceneID) && c.owner.PolicyRevision() == e.revision
+		}
+		if !policyValid || !c.read.ValidInSession(a.ctx, e.ticket, session) {
 			return errors.New("semantic_authority_changed")
 		}
 	}

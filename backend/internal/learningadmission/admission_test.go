@@ -1,13 +1,18 @@
 package learningadmission
 
 import (
+	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/topiccollation"
+	"os"
 	"testing"
 )
 
 func setup(t *testing.T) (*Admission, *int64) {
 	t.Helper()
 	collator, e := topiccollation.New("en-US")
+	if errors.Is(e, topiccollation.ErrUnavailable) && os.Getenv("REQUIRE_ICU") == "" {
+		t.Skip("native ICU profile required for source admission collation")
+	}
 	if e != nil {
 		t.Fatal(e)
 	}

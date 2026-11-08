@@ -9,6 +9,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/topiccollation"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -153,6 +154,9 @@ func coordinatorSetup(t *testing.T) (*Coordinator, *testOwner, *testClock, *bloc
 	options.Admission.MinIntervalMS = 0
 	options.Clock = clock
 	options.Collator, e = topiccollation.New("en-US")
+	if errors.Is(e, topiccollation.ErrUnavailable) && os.Getenv("REQUIRE_ICU") == "" {
+		t.Skip("native ICU profile required for semantic admission collation")
+	}
 	semMust(t, e)
 	t.Cleanup(func() { options.Collator.Close() })
 	c, e := newCoordinator(owner, read, router, options)

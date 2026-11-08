@@ -1,0 +1,7029 @@
+{
+  "sourceNode": "v24.22.1",
+  "sources": {
+    "src/memory/read/workspace-authority.ts": "20f0943892786df74da0fc68d7d4977f0b66830d84d5ae95775e67abaaa6a2d7",
+    "src/memory/read/memory-workspace.ts": "3761a9b8a9b47ce77fabc8b1f02ad208853b12eeb85dab59a70f8f0e39fc0e97",
+    "src/memory/working-set/contracts.ts": "e1dae930ee1037ad99476130f68c41e0c58c9d2074d7e0936df1f10842bdb6b4",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "scenarios": [
+    {
+      "name": "open plan protects assertion",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "28092b98097069d4f858eb44ae0fb76cd315b4082ac251eb4783f28db71a5a16",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "open_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "no plans",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {},
+      "heads": [],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "9ae0fc2fc29b0fff91797ebe7fd8a1fdffdfd400673a28281fa16c760cc9f5b0",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": null
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ]
+      ]
+    },
+    {
+      "name": "simulation before width",
+      "context": {
+        "sceneId": "s",
+        "simulation": true
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [],
+      "calls": [
+        [
+          "ready"
+        ]
+      ]
+    },
+    {
+      "name": "source width",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "error": "workspace_candidate_limit",
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ]
+      ]
+    },
+    {
+      "name": "unknown kinds filtered before width",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "unknown",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "disabled retained plans unknown",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": false,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "5e7e0bd2617df0d4f9e1f9b3da80b67a162c4567cbfce7d76fbf6398a310b422",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "unresolved_commitment_coverage"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ]
+      ]
+    },
+    {
+      "name": "disabled empty complete",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {},
+      "heads": [],
+      "sourceHeads": {},
+      "enabled": false,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "9ae0fc2fc29b0fff91797ebe7fd8a1fdffdfd400673a28281fa16c760cc9f5b0",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": null
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ]
+      ]
+    },
+    {
+      "name": "201 heads unknown",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {},
+      "heads": [
+        {
+          "id": "p0",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p1",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p2",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p3",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p4",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p5",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p6",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p7",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p8",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p9",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p10",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p11",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p12",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p13",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p14",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p15",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p16",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p17",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p18",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p19",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p20",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p21",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p22",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p23",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p24",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p25",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p26",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p27",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p28",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p29",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p30",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p31",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p32",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p33",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p34",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p35",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p36",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p37",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p38",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p39",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p40",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p41",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p42",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p43",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p44",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p45",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p46",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p47",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p48",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p49",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p50",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p51",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p52",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p53",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p54",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p55",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p56",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p57",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p58",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p59",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p60",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p61",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p62",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p63",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p64",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p65",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p66",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p67",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p68",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p69",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p70",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p71",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p72",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p73",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p74",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p75",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p76",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p77",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p78",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p79",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p80",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p81",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p82",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p83",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p84",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p85",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p86",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p87",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p88",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p89",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p90",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p91",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p92",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p93",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p94",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p95",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p96",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p97",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p98",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p99",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p100",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p101",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p102",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p103",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p104",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p105",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p106",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p107",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p108",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p109",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p110",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p111",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p112",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p113",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p114",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p115",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p116",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p117",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p118",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p119",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p120",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p121",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p122",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p123",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p124",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p125",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p126",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p127",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p128",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p129",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p130",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p131",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p132",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p133",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p134",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p135",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p136",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p137",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p138",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p139",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p140",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p141",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p142",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p143",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p144",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p145",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p146",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p147",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p148",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p149",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p150",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p151",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p152",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p153",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p154",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p155",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p156",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p157",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p158",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p159",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p160",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p161",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p162",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p163",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p164",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p165",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p166",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p167",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p168",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p169",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p170",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p171",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p172",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p173",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p174",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p175",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p176",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p177",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p178",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p179",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p180",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p181",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p182",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p183",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p184",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p185",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p186",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p187",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p188",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p189",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p190",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p191",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p192",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p193",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p194",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p195",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p196",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p197",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p198",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p199",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p200",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "5e7e0bd2617df0d4f9e1f9b3da80b67a162c4567cbfce7d76fbf6398a310b422",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "unresolved_commitment_coverage"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ]
+      ]
+    },
+    {
+      "name": "exact 200 heads complete",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {},
+      "heads": [
+        {
+          "id": "p0",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p1",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p2",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p3",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p4",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p5",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p6",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p7",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p8",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p9",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p10",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p11",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p12",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p13",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p14",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p15",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p16",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p17",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p18",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p19",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p20",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p21",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p22",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p23",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p24",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p25",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p26",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p27",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p28",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p29",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p30",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p31",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p32",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p33",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p34",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p35",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p36",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p37",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p38",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p39",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p40",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p41",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p42",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p43",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p44",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p45",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p46",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p47",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p48",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p49",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p50",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p51",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p52",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p53",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p54",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p55",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p56",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p57",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p58",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p59",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p60",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p61",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p62",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p63",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p64",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p65",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p66",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p67",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p68",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p69",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p70",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p71",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p72",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p73",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p74",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p75",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p76",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p77",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p78",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p79",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p80",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p81",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p82",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p83",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p84",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p85",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p86",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p87",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p88",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p89",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p90",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p91",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p92",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p93",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p94",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p95",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p96",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p97",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p98",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p99",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p100",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p101",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p102",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p103",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p104",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p105",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p106",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p107",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p108",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p109",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p110",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p111",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p112",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p113",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p114",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p115",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p116",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p117",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p118",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p119",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p120",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p121",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p122",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p123",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p124",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p125",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p126",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p127",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p128",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p129",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p130",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p131",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p132",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p133",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p134",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p135",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p136",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p137",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p138",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p139",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p140",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p141",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p142",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p143",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p144",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p145",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p146",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p147",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p148",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p149",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p150",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p151",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p152",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p153",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p154",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p155",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p156",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p157",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p158",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p159",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p160",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p161",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p162",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p163",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p164",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p165",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p166",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p167",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p168",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p169",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p170",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p171",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p172",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p173",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p174",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p175",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p176",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p177",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p178",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p179",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p180",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p181",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p182",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p183",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p184",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p185",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p186",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p187",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p188",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p189",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p190",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p191",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p192",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p193",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p194",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p195",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p196",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p197",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p198",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        },
+        {
+          "id": "p199",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": true
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "9ae0fc2fc29b0fff91797ebe7fd8a1fdffdfd400673a28281fa16c760cc9f5b0",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": null
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ]
+      ]
+    },
+    {
+      "name": "needs review precedence",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        "q:1": {
+          "ref": {
+            "id": "q",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "needs_review",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        },
+        {
+          "id": "q",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "3da35935fb9c8b6942273d840310a66be8b9082918a660036883f6c16ec6b882",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "needs_review_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "q",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "active latest unique order",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        "p:2": {
+          "ref": {
+            "id": "p",
+            "version": 2,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 2,
+          "lifecycle": "needs_review",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 2,
+          "activeVersion": 1,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "13c4d4fc1685c2103b8d3906a3dd2c638702b2c70a00eb44e0d63f01205d6f0f",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "needs_review_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "qualification reference overrides backing",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "old",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "qualificationRef": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": []
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "024c4e746c0153a7cee6b20d6862cb8e15f3df2ddaa8881fe79e7216bcf2394a",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "open_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ]
+      ]
+    },
+    {
+      "name": "terminal plan no assertion protection",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "completed",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "9ae0fc2fc29b0fff91797ebe7fd8a1fdffdfd400673a28281fa16c760cc9f5b0",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": null
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ]
+      ]
+    },
+    {
+      "name": "both reference kinds reorder",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "commitment",
+          "id": "p",
+          "version": 1,
+          "deletionEpoch": 0,
+          "mutationVersion": 1
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "28092b98097069d4f858eb44ae0fb76cd315b4082ac251eb4783f28db71a5a16",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "open_commitment"
+        },
+        {
+          "ref": {
+            "kind": "commitment",
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0,
+            "mutationVersion": 1
+          },
+          "dependencyKey": "c1c7a4f6ceaf80adc7f79338d7656198b2f0abee5e4e73d7d4ba4075d2df7dfd",
+          "sceneId": "s",
+          "recordedAt": 978307200000,
+          "protection": "open_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "changed mutation omitted",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "commitment",
+          "id": "p",
+          "version": 1,
+          "deletionEpoch": 0,
+          "mutationVersion": 2
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "duplicate references retained",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "28092b98097069d4f858eb44ae0fb76cd315b4082ac251eb4783f28db71a5a16",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "open_commitment"
+        },
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "28092b98097069d4f858eb44ae0fb76cd315b4082ac251eb4783f28db71a5a16",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "open_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "missing assertion",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {},
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "internal assertion omitted",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z",
+            "internalUse": "working"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "shared assertion omitted",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "sharedPublicKnowledge"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "wrong scene omitted",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "other"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "empty person and invalid time",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": ""
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "invalid",
+            "epistemicKind": "explicit"
+          },
+          "proofs": [
+            {
+              "proofId": "one",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {},
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "a187c573a4bb3ae0e8981a18967fee0418dafa912b26b661c8bdba577c7af899",
+          "sceneId": "s",
+          "recordedAt": null,
+          "epistemicKind": "explicit",
+          "protection": "open_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ]
+      ]
+    },
+    {
+      "name": "ordered duplicate source-head occurrences",
+      "context": {
+        "sceneId": "s",
+        "simulation": false
+      },
+      "refs": [
+        {
+          "kind": "assertion",
+          "id": "a",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      ],
+      "assertions": {
+        "a": {
+          "record": {
+            "id": "a",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "s",
+              "personId": "p"
+            },
+            "content": "Synthetic a",
+            "kind": "experience",
+            "status": "active",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "learnedAt": "2000-01-01T00:00:00.000Z"
+          },
+          "proofs": [
+            {
+              "proofId": "two",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                },
+                {
+                  "sceneId": "s",
+                  "messageId": "n",
+                  "senderId": "p"
+                },
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "parents": []
+            }
+          ]
+        }
+      },
+      "plans": {
+        "p:1": {
+          "ref": {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "mutationVersion": 1,
+          "lifecycle": "pending",
+          "recordedAt": "2001-01-01T00:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "proofs": [
+                {
+                  "proofId": "one",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "m",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "requiredProposalGroups": [
+            [
+              {
+                "backing": {
+                  "id": "a",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "proofs": [
+                  {
+                    "proofId": "g",
+                    "sources": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "n",
+                        "senderId": "p"
+                      }
+                    ],
+                    "parents": []
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      },
+      "heads": [
+        {
+          "id": "p",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "sourceHeads": {
+        "s:m": {
+          "ref": {
+            "eventId": "synthetic",
+            "revision": 2,
+            "deletionEpoch": 0
+          },
+          "bodyCoverage": "metadata_only"
+        },
+        "s:n": {
+          "second": true
+        }
+      },
+      "enabled": true,
+      "value": [
+        {
+          "ref": {
+            "kind": "assertion",
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "816cbdc0abf35bda55aea41f0c3843fb712b28a9e932dca16515af85e2baa8dc",
+          "sceneId": "s",
+          "personId": "p",
+          "recordedAt": 946684800000,
+          "protection": "open_commitment"
+        }
+      ],
+      "calls": [
+        [
+          "ready"
+        ],
+        [
+          "ready"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "n"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "heads",
+          "s"
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "plan",
+          {
+            "sceneId": "s",
+            "simulation": false
+          },
+          {
+            "id": "p",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        ],
+        [
+          "enabled",
+          {
+            "sceneId": "s",
+            "simulation": false
+          }
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "n"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "m"
+        ],
+        [
+          "sourceHead",
+          "s",
+          "n"
+        ]
+      ]
+    }
+  ]
+}

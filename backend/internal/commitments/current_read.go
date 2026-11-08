@@ -139,10 +139,11 @@ type ReadOptions struct {
 }
 
 type ReadService struct {
-	reader  *Reader
-	current func(Context, Reference) (*Assertion, error)
-	enabled func(Context) (bool, error)
-	check   func() error
+	sourceHead func(string, string) (*Object, error)
+	reader     *Reader
+	current    func(Context, Reference) (*Assertion, error)
+	enabled    func(Context) (bool, error)
+	check      func() error
 }
 
 // newReadService binds the production authority to an already-owned assertion
@@ -162,7 +163,17 @@ func newReadService(reader *Reader, assertionsReader *assertions.Reader, enabled
 	if err != nil {
 		return nil, err
 	}
-	return &ReadService{reader: reader, enabled: enabled, check: func() error {
+	return &ReadService{reader: reader, enabled: enabled, sourceHead: func(scene, message string) (*Object, error) {
+		events, err := assertionsReader.AuthoritySourceEvents()
+		if err != nil {
+			return nil, err
+		}
+		metadata, err := events.Registered(scene, message)
+		if err != nil || metadata == nil {
+			return nil, err
+		}
+		return metadata.Value(), nil
+	}, check: func() error {
 		if err := reader.CheckScope(); err != nil {
 			return err
 		}

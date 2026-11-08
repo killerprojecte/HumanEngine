@@ -150,3 +150,24 @@ changed evidence, exact callback references and keyed item comparisons.
 These are focused domain contracts, not completion of MemoryService or workspace
 capture. Native scoped tests separately exercise lifetime, suspended/foreign
 capabilities, fresh pending mutations, ownership and readonly operation.
+
+### Workspace qualification and privacy storage
+
+The knowledge oracle executes 12 actual-source purge scenarios and 16 schema
+cases, including canonical field order and Unicode/time boundaries. Its purge
+ports record effects; separate native tests exercise optional schema, exact
+write-child binding, rollback, readiness, retained admission keys and the absence
+of invented knowledge intents. The semantic oracle executes real TypeScript
+SQLite storage/lifecycle for four purge scenarios and 11 contract cases. Native
+coverage includes typed durable-prefix/local-ACK gaps, attempt-write failures,
+all-candidate planning, retained tombstone capacities, duplicate/hash conflicts
+and exact owner binding.
+
+The workspace oracle covers 22 actual-source resolver scenarios through recording
+current-read ports. Native tests use real assertion history, registered source
+metadata, edits/recall, enabled commitment protection and exact mutation anchors.
+They verify ordered repeated hash inputs, same-child freshness and callback expiry.
+The working-set read bridge additionally exercises a one-connection publication,
+wrong-owner/ancestor rejection and native query/prepared-write authorization.
+These checks do not establish complete refresh/capture, knowledge admission,
+semantic episode discovery or production notification/scheduler integration.

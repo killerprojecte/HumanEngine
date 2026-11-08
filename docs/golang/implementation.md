@@ -614,3 +614,25 @@ These modules do not stand in for MemoryService lifecycle refresh, legacy revisi
 capture, WorkspaceAuthority qualification hashes, final model-context identity or
 runtime delivery. Those remaining composition owners must be wired and exercised
 before declaring full robot or HTTP parity.
+
+## Scoped workspace and privacy owners
+
+Knowledge privacy maintenance owns its optional schema and preserves admission
+keys while pruning unavailable proofs, bound spans and dependent edges. Its
+writes raise the source reader capability without inventing a knowledge intent.
+Semantic storage preserves typed durable mutation intents before local changes,
+ordered attempt updates and complete candidate-effect planning before candidate
+writes. A local rollback does not erase an already durable intent or imply ACK.
+Neither module replaces semantic/knowledge admission or offline recovery.
+
+The workspace resolver composes actual current assertions, registered source
+heads and current commitments on one owner snapshot. Dependency hashes preserve
+source JSON field order and repeated evidence occurrences. Exact mutation anchors,
+open/needs-review protection and existing coverage policies remain explicit.
+A concrete working-set scope can lend native prepared reads to this composition;
+owner identity, active-child binding and callback lifetime are checked without
+reentering publication or borrowing a second connection.
+
+These owners remain distinct from outer refresh/capture, complete workspace
+candidate selection and model delivery. Their presence does not establish full
+robot-state-machine or HTTP parity.

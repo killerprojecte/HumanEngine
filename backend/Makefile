@@ -14,6 +14,9 @@ build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && TZ=UTC node --import tsx backend/internal/knowledge/testdata/generate-source-oracle.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-purge-fixtures.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-workspace-resolve-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-list-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-experience-view-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-commitment-read-fixtures.mjs --check

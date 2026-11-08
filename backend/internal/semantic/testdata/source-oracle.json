@@ -1,0 +1,1600 @@
+{
+  "sourceNode": "v24.22.1",
+  "sources": {
+    "src/memory/semantic/storage.ts": "a0db38c860a31955d8ba29989e0373f967bbdac91a8ccd6d091fc09368f982f2",
+    "src/memory/semantic/lifecycle.ts": "e05a0cd71ab27e5b13cfed176a464a1b07041293531a1c1efcff13a2c9da9836",
+    "src/memory/semantic/contracts.ts": "bfa01c9f2c84412456921d30f9994c7023bd0055908933352f4905ab6ee4aa03",
+    "src/memory/knowledge/contracts.ts": "db1e46e78512e50944bca63d0982919bd1e3055826ed13479533149887cff059",
+    "src/memory/domain/proofs.ts": "7750cf6113c5d61713ab408c43744ee5c74d0a5fadb9eb85902264773f160708",
+    "src/memory/domain/events.ts": "0fb9fee44f86ba46d78dee632e053ebfb20227056f63c993262279ff4e24f288",
+    "src/memory/recovery/semantic-contract.ts": "3a39f7a777d7d891a215d0cf37038fc72ce4b4a8718d5aee1cb5e1523f5e36eb",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "cases": [
+    {
+      "name": "absent",
+      "candidates": [],
+      "attempts": [],
+      "target": "victim",
+      "expectedCandidates": [],
+      "expectedAttempts": [],
+      "events": []
+    },
+    {
+      "name": "direct-and-ordered-attempts",
+      "candidates": [
+        {
+          "schemaVersion": 1,
+          "id": "z-delete",
+          "sceneId": "scene",
+          "personId": null,
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "d9c191138ba84e17d59bbc2f1a6876d3d2db40f3cb80a81d5dee4e6ed0de78f8",
+          "kind": "summary_candidate",
+          "text": "Synthetic declaration",
+          "selectedParentIds": [
+            "victim",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "victim",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "6832b79d7c5651e39cbd673a802b5c3fa49c61d1afe7c154954c80130fdae045",
+              "fingerprint": "a01aae5e95a9ff5de0ae9066ee478e30c838fced4cbbad764026148faf1ecaa4",
+              "proofs": [
+                {
+                  "proofId": "proof-victim",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "708858e9e7bcacc3e6a6eb38aa6f07fa60433d7084eb66b41c362581341ef382"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-10-29T00:00:00Z",
+          "applicableUntil": null
+        },
+        {
+          "schemaVersion": 1,
+          "id": "a-keep",
+          "sceneId": "scene",
+          "personId": null,
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "1b8274275a6a33a10c6a6847327015f666a7b00046db172bf343e564b83d7149",
+          "kind": "summary_candidate",
+          "text": "Synthetic declaration",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-10-29T00:00:00Z",
+          "applicableUntil": null
+        }
+      ],
+      "attempts": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "inputKey": "8004b95f4b9ba73a49be0276132f6af06ff54795ab7fc46650665d636c44997e",
+          "status": "started",
+          "version": 1,
+          "parents": [
+            {
+              "ref": {
+                "id": "victim",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "30d2d4d0a5e709cc7ffb1a7eb17b21b07a4fd835ee9abc7fffe1fd45f58c46d9"
+            }
+          ],
+          "roots": [
+            "956e6e33fe8b21fbf3e7e43d41c304862c78627deb92e26a72fd2b3b57bc60f2"
+          ]
+        },
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "inputKey": "cc5f6b6e67f0db0c531db9c6350fad415f601c908b9b638143339b72086c3345",
+          "status": "started",
+          "version": 1,
+          "parents": [
+            {
+              "ref": {
+                "id": "victim",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "30d2d4d0a5e709cc7ffb1a7eb17b21b07a4fd835ee9abc7fffe1fd45f58c46d9"
+            }
+          ],
+          "roots": [
+            "956e6e33fe8b21fbf3e7e43d41c304862c78627deb92e26a72fd2b3b57bc60f2"
+          ]
+        },
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "inputKey": "c0c8a20f0b0d256f2ae1431035630184e0db76480f500b284e67f9dbd005ec08",
+          "status": "started",
+          "version": 1,
+          "parents": [
+            {
+              "ref": {
+                "id": "other",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "30d2d4d0a5e709cc7ffb1a7eb17b21b07a4fd835ee9abc7fffe1fd45f58c46d9"
+            }
+          ],
+          "roots": [
+            "956e6e33fe8b21fbf3e7e43d41c304862c78627deb92e26a72fd2b3b57bc60f2"
+          ]
+        }
+      ],
+      "target": "victim",
+      "expectedCandidates": [
+        {
+          "id": "a-keep",
+          "scene_id": "scene",
+          "input_key": "1b8274275a6a33a10c6a6847327015f666a7b00046db172bf343e564b83d7149",
+          "version": 1,
+          "value": "{\"schemaVersion\":1,\"id\":\"a-keep\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":\"c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7\",\"version\":1,\"inputKey\":\"1b8274275a6a33a10c6a6847327015f666a7b00046db172bf343e564b83d7149\",\"kind\":\"summary_candidate\",\"text\":\"Synthetic declaration\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"anchorDependencies\":[],\"anchorQualifications\":[],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-10-29T00:00:00Z\",\"applicableUntil\":null}"
+        },
+        {
+          "id": "z-delete",
+          "scene_id": "scene",
+          "input_key": "d9c191138ba84e17d59bbc2f1a6876d3d2db40f3cb80a81d5dee4e6ed0de78f8",
+          "version": 2,
+          "value": null
+        }
+      ],
+      "expectedAttempts": [
+        {
+          "scene_id": "scene",
+          "input_key": "8004b95f4b9ba73a49be0276132f6af06ff54795ab7fc46650665d636c44997e",
+          "value": "{\"schemaVersion\":1,\"sceneId\":\"scene\",\"inputKey\":\"8004b95f4b9ba73a49be0276132f6af06ff54795ab7fc46650665d636c44997e\",\"status\":\"abandoned\",\"version\":2,\"parents\":[],\"roots\":[]}"
+        },
+        {
+          "scene_id": "scene",
+          "input_key": "c0c8a20f0b0d256f2ae1431035630184e0db76480f500b284e67f9dbd005ec08",
+          "value": "{\"schemaVersion\":1,\"sceneId\":\"scene\",\"inputKey\":\"c0c8a20f0b0d256f2ae1431035630184e0db76480f500b284e67f9dbd005ec08\",\"status\":\"started\",\"version\":1,\"parents\":[{\"ref\":{\"id\":\"other\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"30d2d4d0a5e709cc7ffb1a7eb17b21b07a4fd835ee9abc7fffe1fd45f58c46d9\"}],\"roots\":[\"956e6e33fe8b21fbf3e7e43d41c304862c78627deb92e26a72fd2b3b57bc60f2\"]}"
+        },
+        {
+          "scene_id": "scene",
+          "input_key": "cc5f6b6e67f0db0c531db9c6350fad415f601c908b9b638143339b72086c3345",
+          "value": "{\"schemaVersion\":1,\"sceneId\":\"scene\",\"inputKey\":\"cc5f6b6e67f0db0c531db9c6350fad415f601c908b9b638143339b72086c3345\",\"status\":\"abandoned\",\"version\":2,\"parents\":[],\"roots\":[]}"
+        }
+      ],
+      "events": [
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "attempt",
+          "id": "8004b95f4b9ba73a49be0276132f6af06ff54795ab7fc46650665d636c44997e",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": 2,
+          "beforeHash": "c0f08d6cb4256cd54034c680a9542488680ad96e75385657943222e3b0cef10f",
+          "afterHash": "4208344c89333f9ef950564e0a1a2db8d22198e231574458b8cdd8e9c221226a"
+        },
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "attempt",
+          "id": "cc5f6b6e67f0db0c531db9c6350fad415f601c908b9b638143339b72086c3345",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": 2,
+          "beforeHash": "a945690f2a6b8ad035f21a461360f0864e01e1e2263f3f8c6471eebaacfae5e6",
+          "afterHash": "9ec74093867ee96b9830bd93f741f8f7521f80a96fb50282e799dfcde93c5a90"
+        },
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "privacy",
+          "id": "z-delete",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": null,
+          "beforeHash": "5490a13366e43b28fe2a3519f73b13da7c7dcfc21caff8b5833252cbaa2f79ac",
+          "afterHash": null
+        }
+      ]
+    },
+    {
+      "name": "proof-survival-and-exhaustion",
+      "candidates": [
+        {
+          "schemaVersion": 1,
+          "id": "z-delete",
+          "sceneId": "scene",
+          "personId": null,
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "d9c191138ba84e17d59bbc2f1a6876d3d2db40f3cb80a81d5dee4e6ed0de78f8",
+          "kind": "summary_candidate",
+          "text": "Synthetic declaration",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+              "proofs": [
+                {
+                  "proofId": "only",
+                  "sources": [],
+                  "parents": [
+                    "victim"
+                  ]
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-10-29T00:00:00Z",
+          "applicableUntil": null
+        },
+        {
+          "schemaVersion": 1,
+          "id": "a-survive",
+          "sceneId": "scene",
+          "personId": null,
+          "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+          "version": 1,
+          "inputKey": "2b8ab2c1f5c736488b078e201651a132d682d51b828e5fd40be86b24664b449f",
+          "kind": "summary_candidate",
+          "text": "Synthetic declaration",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+              "proofs": [
+                {
+                  "proofId": "drop",
+                  "sources": [],
+                  "parents": [
+                    "victim"
+                  ]
+                },
+                {
+                  "proofId": "keep",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "anchorDependencies": [],
+          "anchorQualifications": [],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-10-29T00:00:00Z",
+          "applicableUntil": null
+        }
+      ],
+      "attempts": [],
+      "target": "victim",
+      "expectedCandidates": [
+        {
+          "id": "a-survive",
+          "scene_id": "scene",
+          "input_key": "2b8ab2c1f5c736488b078e201651a132d682d51b828e5fd40be86b24664b449f",
+          "version": 2,
+          "value": "{\"schemaVersion\":1,\"id\":\"a-survive\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":\"c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7\",\"version\":2,\"inputKey\":\"2b8ab2c1f5c736488b078e201651a132d682d51b828e5fd40be86b24664b449f\",\"kind\":\"summary_candidate\",\"text\":\"Synthetic declaration\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"keep\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"anchorDependencies\":[],\"anchorQualifications\":[],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-10-29T00:00:00Z\",\"applicableUntil\":null}"
+        },
+        {
+          "id": "z-delete",
+          "scene_id": "scene",
+          "input_key": "d9c191138ba84e17d59bbc2f1a6876d3d2db40f3cb80a81d5dee4e6ed0de78f8",
+          "version": 2,
+          "value": null
+        }
+      ],
+      "expectedAttempts": [],
+      "events": [
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "privacy",
+          "id": "a-survive",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": 2,
+          "beforeHash": "be7859e74fcfa201a3ff273b944b860c4908e197439413a777ad2814377bd1bc",
+          "afterHash": "505c0e4cedea7b37ab6281edc5731495ef048715d29d84e4fdc45a53e303a9b8"
+        },
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "privacy",
+          "id": "z-delete",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": null,
+          "beforeHash": "b1dfafc00608c2ae6a3d182af0085e52f8fe6d28fdef563ded8115e4118b06f1",
+          "afterHash": null
+        }
+      ]
+    },
+    {
+      "name": "anchor-direct-and-proof",
+      "candidates": [
+        {
+          "schemaVersion": 1,
+          "id": "anchor-direct",
+          "sceneId": "scene",
+          "personId": null,
+          "partitionKey": null,
+          "version": 1,
+          "inputKey": "f6aac67e3b01630e6f1fffadf7e46be5cd8d9f93189654fa96485c7496ed9e7e",
+          "kind": "episode_candidate",
+          "text": "Synthetic declaration",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "episodeAnchor": {
+            "id": "anchor",
+            "version": 1
+          },
+          "episodeMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+          "anchorDependencies": [
+            {
+              "ref": {
+                "id": "victim",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "fingerprint": "a01aae5e95a9ff5de0ae9066ee478e30c838fced4cbbad764026148faf1ecaa4",
+              "proofs": [
+                {
+                  "proofId": "proof-victim",
+                  "sources": [],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "anchorQualifications": [
+            {
+              "edgeId": "edge",
+              "edgeVersion": 1,
+              "registryVersion": 1,
+              "predicate": "participates_in",
+              "subject": {
+                "kind": "person",
+                "personId": "person"
+              },
+              "object": {
+                "kind": "entity",
+                "entityId": "anchor",
+                "entityKind": "event",
+                "backing": {
+                  "id": "a",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "originEdgeId": "edge"
+              },
+              "polarity": "positive",
+              "modality": "asserted",
+              "temporalScope": "past",
+              "conditions": [],
+              "occurredAt": null,
+              "validFrom": null,
+              "validUntil": null,
+              "status": "candidate",
+              "admission": "qualified_candidate",
+              "interpretation": "attributed_proposed_association_not_observed_event"
+            }
+          ],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-10-29T00:00:00Z",
+          "applicableUntil": null
+        },
+        {
+          "schemaVersion": 1,
+          "id": "anchor-exhausted",
+          "sceneId": "scene",
+          "personId": null,
+          "partitionKey": null,
+          "version": 1,
+          "inputKey": "08a73d13310436e290757d05d5fc19adb9d38eef46550dc90098e4bc81b71875",
+          "kind": "episode_candidate",
+          "text": "Synthetic declaration",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "episodeAnchor": {
+            "id": "anchor",
+            "version": 1
+          },
+          "episodeMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+          "anchorDependencies": [
+            {
+              "ref": {
+                "id": "anchor-parent",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "fingerprint": "e82deb72c5ce1f4746651afbef4676c476fa5411fc260a0cbc79df31a46a2fe0",
+              "proofs": [
+                {
+                  "proofId": "drop",
+                  "sources": [],
+                  "parents": [
+                    "victim"
+                  ]
+                }
+              ]
+            }
+          ],
+          "anchorQualifications": [
+            {
+              "edgeId": "edge",
+              "edgeVersion": 1,
+              "registryVersion": 1,
+              "predicate": "participates_in",
+              "subject": {
+                "kind": "person",
+                "personId": "person"
+              },
+              "object": {
+                "kind": "entity",
+                "entityId": "anchor",
+                "entityKind": "event",
+                "backing": {
+                  "id": "a",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "originEdgeId": "edge"
+              },
+              "polarity": "positive",
+              "modality": "asserted",
+              "temporalScope": "past",
+              "conditions": [],
+              "occurredAt": null,
+              "validFrom": null,
+              "validUntil": null,
+              "status": "candidate",
+              "admission": "qualified_candidate",
+              "interpretation": "attributed_proposed_association_not_observed_event"
+            }
+          ],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-10-29T00:00:00Z",
+          "applicableUntil": null
+        },
+        {
+          "schemaVersion": 1,
+          "id": "anchor-survive",
+          "sceneId": "scene",
+          "personId": null,
+          "partitionKey": null,
+          "version": 1,
+          "inputKey": "49a66d82fc12a44a5efde5ee16ca6ae5714bc4c6bc6420ecbd7961ae019782ac",
+          "kind": "episode_candidate",
+          "text": "Synthetic declaration",
+          "selectedParentIds": [
+            "a",
+            "b"
+          ],
+          "parents": [
+            {
+              "ref": {
+                "id": "a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+              "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+              "proofs": [
+                {
+                  "proofId": "proof-a",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+              ]
+            },
+            {
+              "ref": {
+                "id": "b",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+              "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+              "proofs": [
+                {
+                  "proofId": "proof-b",
+                  "sources": [],
+                  "parents": []
+                }
+              ],
+              "roots": [
+                "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+              ]
+            }
+          ],
+          "episodeAnchor": {
+            "id": "anchor",
+            "version": 1
+          },
+          "episodeMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+          "anchorDependencies": [
+            {
+              "ref": {
+                "id": "anchor-parent",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "fingerprint": "e82deb72c5ce1f4746651afbef4676c476fa5411fc260a0cbc79df31a46a2fe0",
+              "proofs": [
+                {
+                  "proofId": "drop",
+                  "sources": [],
+                  "parents": [
+                    "victim"
+                  ]
+                },
+                {
+                  "proofId": "keep",
+                  "sources": [],
+                  "parents": []
+                }
+              ]
+            }
+          ],
+          "anchorQualifications": [
+            {
+              "edgeId": "edge",
+              "edgeVersion": 1,
+              "registryVersion": 1,
+              "predicate": "participates_in",
+              "subject": {
+                "kind": "person",
+                "personId": "person"
+              },
+              "object": {
+                "kind": "entity",
+                "entityId": "anchor",
+                "entityKind": "event",
+                "backing": {
+                  "id": "a",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "originEdgeId": "edge"
+              },
+              "polarity": "positive",
+              "modality": "asserted",
+              "temporalScope": "past",
+              "conditions": [],
+              "occurredAt": null,
+              "validFrom": null,
+              "validUntil": null,
+              "status": "candidate",
+              "admission": "qualified_candidate",
+              "interpretation": "attributed_proposed_association_not_observed_event"
+            }
+          ],
+          "hypothesis": false,
+          "status": "candidate",
+          "admission": "qualified_candidate",
+          "createdAt": "2026-10-29T00:00:00Z",
+          "applicableUntil": null
+        }
+      ],
+      "attempts": [],
+      "target": "victim",
+      "expectedCandidates": [
+        {
+          "id": "anchor-direct",
+          "scene_id": "scene",
+          "input_key": "f6aac67e3b01630e6f1fffadf7e46be5cd8d9f93189654fa96485c7496ed9e7e",
+          "version": 2,
+          "value": null
+        },
+        {
+          "id": "anchor-exhausted",
+          "scene_id": "scene",
+          "input_key": "08a73d13310436e290757d05d5fc19adb9d38eef46550dc90098e4bc81b71875",
+          "version": 2,
+          "value": null
+        },
+        {
+          "id": "anchor-survive",
+          "scene_id": "scene",
+          "input_key": "49a66d82fc12a44a5efde5ee16ca6ae5714bc4c6bc6420ecbd7961ae019782ac",
+          "version": 2,
+          "value": "{\"schemaVersion\":1,\"id\":\"anchor-survive\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":null,\"version\":2,\"inputKey\":\"49a66d82fc12a44a5efde5ee16ca6ae5714bc4c6bc6420ecbd7961ae019782ac\",\"kind\":\"episode_candidate\",\"text\":\"Synthetic declaration\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"episodeAnchor\":{\"id\":\"anchor\",\"version\":1},\"episodeMembershipKey\":\"4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20\",\"anchorDependencies\":[{\"ref\":{\"id\":\"anchor-parent\",\"version\":1,\"deletionEpoch\":0},\"fingerprint\":\"e82deb72c5ce1f4746651afbef4676c476fa5411fc260a0cbc79df31a46a2fe0\",\"proofs\":[{\"proofId\":\"keep\",\"sources\":[],\"parents\":[]}]}],\"anchorQualifications\":[{\"edgeId\":\"edge\",\"edgeVersion\":1,\"registryVersion\":1,\"predicate\":\"participates_in\",\"subject\":{\"kind\":\"person\",\"personId\":\"person\"},\"object\":{\"kind\":\"entity\",\"entityId\":\"anchor\",\"entityKind\":\"event\",\"backing\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"originEdgeId\":\"edge\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"past\",\"conditions\":[],\"occurredAt\":null,\"validFrom\":null,\"validUntil\":null,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"interpretation\":\"attributed_proposed_association_not_observed_event\"}],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-10-29T00:00:00Z\",\"applicableUntil\":null}"
+        }
+      ],
+      "expectedAttempts": [],
+      "events": [
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "privacy",
+          "id": "anchor-direct",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": null,
+          "beforeHash": "3e5ed7d59e63a22152954f562ceab60d545765b026516297dcc1f82ccacdc1b3",
+          "afterHash": null
+        },
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "privacy",
+          "id": "anchor-exhausted",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": null,
+          "beforeHash": "26f1b30755bcd4cf3e1aa1a672aa5e5c482b4754ecf4eb4bd1c26c9c804f3a3f",
+          "afterHash": null
+        },
+        {
+          "kind": "semantic_mutation",
+          "schemaVersion": 1,
+          "operation": "privacy",
+          "id": "anchor-survive",
+          "sceneId": "scene",
+          "previousVersion": 1,
+          "nextVersion": 2,
+          "beforeHash": "acfcb6668bc3f3134314e9afc76e0ea9186faf7c7696c0ef8a21116628815078",
+          "afterHash": "55f563dc7f87e3fe6c36f317589067646917093966a0e81cf9612be719e6bf64"
+        }
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "name": "reordered-candidate",
+      "kind": "candidate",
+      "input": {
+        "applicableUntil": null,
+        "createdAt": "2026-10-29T00:00:00Z",
+        "admission": "qualified_candidate",
+        "status": "candidate",
+        "hypothesis": false,
+        "anchorQualifications": [],
+        "anchorDependencies": [],
+        "parents": [
+          {
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ],
+            "proofs": [
+              {
+                "parents": [],
+                "sources": [],
+                "proofId": "proof-a"
+              }
+            ],
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "ref": {
+              "deletionEpoch": 0,
+              "version": 1,
+              "id": "a"
+            }
+          },
+          {
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ],
+            "proofs": [
+              {
+                "parents": [],
+                "sources": [],
+                "proofId": "proof-b"
+              }
+            ],
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "ref": {
+              "deletionEpoch": 0,
+              "version": 1,
+              "id": "b"
+            }
+          }
+        ],
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "text": "Synthetic declaration",
+        "kind": "summary_candidate",
+        "inputKey": "1db36da41b374e34cba63c5c125a9f4869933bc539c99255c2fc81fc9ed69ab3",
+        "version": 1,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "personId": null,
+        "sceneId": "scene",
+        "id": "canonical",
+        "schemaVersion": 1
+      },
+      "valid": true,
+      "canonical": "{\"schemaVersion\":1,\"id\":\"canonical\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":\"c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7\",\"version\":1,\"inputKey\":\"1db36da41b374e34cba63c5c125a9f4869933bc539c99255c2fc81fc9ed69ab3\",\"kind\":\"summary_candidate\",\"text\":\"Synthetic declaration\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"anchorDependencies\":[],\"anchorQualifications\":[],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-10-29T00:00:00Z\",\"applicableUntil\":null}"
+    },
+    {
+      "name": "reordered-attempt",
+      "kind": "attempt",
+      "input": {
+        "roots": [
+          "956e6e33fe8b21fbf3e7e43d41c304862c78627deb92e26a72fd2b3b57bc60f2"
+        ],
+        "parents": [
+          {
+            "dependencyKey": "30d2d4d0a5e709cc7ffb1a7eb17b21b07a4fd835ee9abc7fffe1fd45f58c46d9",
+            "ref": {
+              "deletionEpoch": 0,
+              "version": 1,
+              "id": "victim"
+            }
+          }
+        ],
+        "version": 1,
+        "status": "started",
+        "inputKey": "1db36da41b374e34cba63c5c125a9f4869933bc539c99255c2fc81fc9ed69ab3",
+        "sceneId": "scene",
+        "schemaVersion": 1
+      },
+      "valid": true,
+      "canonical": "{\"schemaVersion\":1,\"sceneId\":\"scene\",\"inputKey\":\"1db36da41b374e34cba63c5c125a9f4869933bc539c99255c2fc81fc9ed69ab3\",\"status\":\"started\",\"version\":1,\"parents\":[{\"ref\":{\"id\":\"victim\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"30d2d4d0a5e709cc7ffb1a7eb17b21b07a4fd835ee9abc7fffe1fd45f58c46d9\"}],\"roots\":[\"956e6e33fe8b21fbf3e7e43d41c304862c78627deb92e26a72fd2b3b57bc60f2\"]}"
+    },
+    {
+      "name": "unicode-text-5999",
+      "kind": "candidate",
+      "input": {
+        "schemaVersion": 1,
+        "id": "unicode",
+        "sceneId": "scene",
+        "personId": null,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "version": 1,
+        "inputKey": "d6daa03cf047710cd3fbfd0a30e7948f856c0416d94abefa8c81613d07103a49",
+        "kind": "summary_candidate",
+        "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "proofs": [
+              {
+                "proofId": "proof-a",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ]
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "proofs": [
+              {
+                "proofId": "proof-b",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ]
+          }
+        ],
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "hypothesis": false,
+        "status": "candidate",
+        "admission": "qualified_candidate",
+        "createdAt": "2026-10-29T00:00:00Z",
+        "applicableUntil": null
+      },
+      "valid": true,
+      "canonical": "{\"schemaVersion\":1,\"id\":\"unicode\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":\"c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7\",\"version\":1,\"inputKey\":\"d6daa03cf047710cd3fbfd0a30e7948f856c0416d94abefa8c81613d07103a49\",\"kind\":\"summary_candidate\",\"text\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"anchorDependencies\":[],\"anchorQualifications\":[],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-10-29T00:00:00Z\",\"applicableUntil\":null}"
+    },
+    {
+      "name": "unicode-text-6000",
+      "kind": "candidate",
+      "input": {
+        "schemaVersion": 1,
+        "id": "unicode",
+        "sceneId": "scene",
+        "personId": null,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "version": 1,
+        "inputKey": "d6daa03cf047710cd3fbfd0a30e7948f856c0416d94abefa8c81613d07103a49",
+        "kind": "summary_candidate",
+        "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "proofs": [
+              {
+                "proofId": "proof-a",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ]
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "proofs": [
+              {
+                "proofId": "proof-b",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ]
+          }
+        ],
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "hypothesis": false,
+        "status": "candidate",
+        "admission": "qualified_candidate",
+        "createdAt": "2026-10-29T00:00:00Z",
+        "applicableUntil": null
+      },
+      "valid": true,
+      "canonical": "{\"schemaVersion\":1,\"id\":\"unicode\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":\"c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7\",\"version\":1,\"inputKey\":\"d6daa03cf047710cd3fbfd0a30e7948f856c0416d94abefa8c81613d07103a49\",\"kind\":\"summary_candidate\",\"text\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"anchorDependencies\":[],\"anchorQualifications\":[],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-10-29T00:00:00Z\",\"applicableUntil\":null}"
+    },
+    {
+      "name": "unicode-text-6001",
+      "kind": "candidate",
+      "input": {
+        "schemaVersion": 1,
+        "id": "unicode",
+        "sceneId": "scene",
+        "personId": null,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "version": 1,
+        "inputKey": "d6daa03cf047710cd3fbfd0a30e7948f856c0416d94abefa8c81613d07103a49",
+        "kind": "summary_candidate",
+        "text": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "proofs": [
+              {
+                "proofId": "proof-a",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ]
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "proofs": [
+              {
+                "proofId": "proof-b",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ]
+          }
+        ],
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "hypothesis": false,
+        "status": "candidate",
+        "admission": "qualified_candidate",
+        "createdAt": "2026-10-29T00:00:00Z",
+        "applicableUntil": null
+      },
+      "valid": false
+    },
+    {
+      "name": "date-2024-02-29T23:59:59.999Z",
+      "kind": "candidate",
+      "input": {
+        "schemaVersion": 1,
+        "id": "date",
+        "sceneId": "scene",
+        "personId": null,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "version": 1,
+        "inputKey": "e9a1b6946539eafb0979c6151fc2848d28154453cac162b73845b2a28144c7b4",
+        "kind": "summary_candidate",
+        "text": "Synthetic declaration",
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "proofs": [
+              {
+                "proofId": "proof-a",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ]
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "proofs": [
+              {
+                "proofId": "proof-b",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ]
+          }
+        ],
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "hypothesis": false,
+        "status": "candidate",
+        "admission": "qualified_candidate",
+        "createdAt": "2024-02-29T23:59:59.999Z",
+        "applicableUntil": null
+      },
+      "valid": true,
+      "canonical": "{\"schemaVersion\":1,\"id\":\"date\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":\"c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7\",\"version\":1,\"inputKey\":\"e9a1b6946539eafb0979c6151fc2848d28154453cac162b73845b2a28144c7b4\",\"kind\":\"summary_candidate\",\"text\":\"Synthetic declaration\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"anchorDependencies\":[],\"anchorQualifications\":[],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2024-02-29T23:59:59.999Z\",\"applicableUntil\":null}"
+    },
+    {
+      "name": "date-2025-02-29T00:00:00Z",
+      "kind": "candidate",
+      "input": {
+        "schemaVersion": 1,
+        "id": "date",
+        "sceneId": "scene",
+        "personId": null,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "version": 1,
+        "inputKey": "e9a1b6946539eafb0979c6151fc2848d28154453cac162b73845b2a28144c7b4",
+        "kind": "summary_candidate",
+        "text": "Synthetic declaration",
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "proofs": [
+              {
+                "proofId": "proof-a",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ]
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "proofs": [
+              {
+                "proofId": "proof-b",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ]
+          }
+        ],
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "hypothesis": false,
+        "status": "candidate",
+        "admission": "qualified_candidate",
+        "createdAt": "2025-02-29T00:00:00Z",
+        "applicableUntil": null
+      },
+      "valid": false
+    },
+    {
+      "name": "date-2026-11-01T00:00:00+00:00",
+      "kind": "candidate",
+      "input": {
+        "schemaVersion": 1,
+        "id": "date",
+        "sceneId": "scene",
+        "personId": null,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "version": 1,
+        "inputKey": "e9a1b6946539eafb0979c6151fc2848d28154453cac162b73845b2a28144c7b4",
+        "kind": "summary_candidate",
+        "text": "Synthetic declaration",
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "proofs": [
+              {
+                "proofId": "proof-a",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ]
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "proofs": [
+              {
+                "proofId": "proof-b",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ]
+          }
+        ],
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "hypothesis": false,
+        "status": "candidate",
+        "admission": "qualified_candidate",
+        "createdAt": "2026-11-01T00:00:00+00:00",
+        "applicableUntil": null
+      },
+      "valid": true,
+      "canonical": "{\"schemaVersion\":1,\"id\":\"date\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":\"c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7\",\"version\":1,\"inputKey\":\"e9a1b6946539eafb0979c6151fc2848d28154453cac162b73845b2a28144c7b4\",\"kind\":\"summary_candidate\",\"text\":\"Synthetic declaration\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"anchorDependencies\":[],\"anchorQualifications\":[],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-11-01T00:00:00+00:00\",\"applicableUntil\":null}"
+    },
+    {
+      "name": "fractional-version",
+      "kind": "candidate",
+      "input": {
+        "schemaVersion": 1,
+        "id": "fractional",
+        "sceneId": "scene",
+        "personId": null,
+        "partitionKey": "c740807d096c76b8818a92181b3be9c572d3fc03c8f9c511f385b4630d58e7a7",
+        "version": 1.5,
+        "inputKey": "7dab0c3f6ee01f1e2ff7bf3838cb384eec562b537877152e9dd774d0eecf6509",
+        "kind": "summary_candidate",
+        "text": "Synthetic declaration",
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "parents": [
+          {
+            "ref": {
+              "id": "a",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "proofs": [
+              {
+                "proofId": "proof-a",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ]
+          },
+          {
+            "ref": {
+              "id": "b",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "proofs": [
+              {
+                "proofId": "proof-b",
+                "sources": [],
+                "parents": []
+              }
+            ],
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ]
+          }
+        ],
+        "anchorDependencies": [],
+        "anchorQualifications": [],
+        "hypothesis": false,
+        "status": "candidate",
+        "admission": "qualified_candidate",
+        "createdAt": "2026-10-29T00:00:00Z",
+        "applicableUntil": null
+      },
+      "valid": false
+    },
+    {
+      "name": "unsafe-attempt-version",
+      "kind": "attempt",
+      "input": {
+        "schemaVersion": 1,
+        "sceneId": "scene",
+        "inputKey": "80a6ece55370ded00a40ba36b483e308b56eca7f22dbbc4a821d6d14b54e5ed5",
+        "status": "started",
+        "version": 9007199254740992,
+        "parents": [
+          {
+            "ref": {
+              "id": "victim",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "30d2d4d0a5e709cc7ffb1a7eb17b21b07a4fd835ee9abc7fffe1fd45f58c46d9"
+          }
+        ],
+        "roots": [
+          "956e6e33fe8b21fbf3e7e43d41c304862c78627deb92e26a72fd2b3b57bc60f2"
+        ]
+      },
+      "valid": false
+    },
+    {
+      "name": "nested-optional-episode",
+      "kind": "candidate",
+      "input": {
+        "applicableUntil": null,
+        "createdAt": "2026-10-29T00:00:00Z",
+        "admission": "qualified_candidate",
+        "status": "candidate",
+        "hypothesis": false,
+        "anchorQualifications": [
+          {
+            "interpretation": "attributed_proposed_association_not_observed_event",
+            "admission": "qualified_candidate",
+            "status": "candidate",
+            "validUntil": null,
+            "validFrom": null,
+            "occurredAt": null,
+            "conditions": [],
+            "temporalScope": "past",
+            "modality": "asserted",
+            "polarity": "positive",
+            "object": {
+              "originEdgeId": "edge",
+              "backing": {
+                "deletionEpoch": 0,
+                "version": 1,
+                "id": "a"
+              },
+              "entityKind": "event",
+              "entityId": "anchor",
+              "kind": "entity"
+            },
+            "subject": {
+              "personId": "person",
+              "kind": "person"
+            },
+            "predicate": "participates_in",
+            "registryVersion": 1,
+            "edgeVersion": 1,
+            "edgeId": "edge"
+          }
+        ],
+        "anchorDependencies": [
+          {
+            "proofs": [
+              {
+                "parents": [],
+                "sources": [],
+                "proofId": "proof-anchor-parent"
+              }
+            ],
+            "fingerprint": "e82deb72c5ce1f4746651afbef4676c476fa5411fc260a0cbc79df31a46a2fe0",
+            "ref": {
+              "deletionEpoch": 0,
+              "version": 1,
+              "id": "anchor-parent"
+            }
+          }
+        ],
+        "episodeMembershipKey": "4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20",
+        "episodeAnchor": {
+          "version": 1,
+          "id": "anchor"
+        },
+        "parents": [
+          {
+            "roots": [
+              "07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f"
+            ],
+            "proofs": [
+              {
+                "parents": [],
+                "sources": [],
+                "proofId": "proof-a"
+              }
+            ],
+            "fingerprint": "a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363",
+            "dependencyKey": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c",
+            "ref": {
+              "deletionEpoch": 0,
+              "version": 1,
+              "id": "a"
+            }
+          },
+          {
+            "roots": [
+              "f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615"
+            ],
+            "proofs": [
+              {
+                "parents": [],
+                "sources": [],
+                "proofId": "proof-b"
+              }
+            ],
+            "fingerprint": "0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4",
+            "dependencyKey": "c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed",
+            "ref": {
+              "deletionEpoch": 0,
+              "version": 1,
+              "id": "b"
+            }
+          }
+        ],
+        "selectedParentIds": [
+          "a",
+          "b"
+        ],
+        "text": "Synthetic declaration",
+        "kind": "episode_candidate",
+        "inputKey": "235978cc71f82027795456f9ef980c39e898323bf80f51caaf4effeaf4f5a39a",
+        "version": 1,
+        "partitionKey": null,
+        "personId": null,
+        "sceneId": "scene",
+        "id": "episode",
+        "schemaVersion": 1
+      },
+      "valid": true,
+      "canonical": "{\"schemaVersion\":1,\"id\":\"episode\",\"sceneId\":\"scene\",\"personId\":null,\"partitionKey\":null,\"version\":1,\"inputKey\":\"235978cc71f82027795456f9ef980c39e898323bf80f51caaf4effeaf4f5a39a\",\"kind\":\"episode_candidate\",\"text\":\"Synthetic declaration\",\"selectedParentIds\":[\"a\",\"b\"],\"parents\":[{\"ref\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c\",\"fingerprint\":\"a0031fa30403458cbf4660344adf27655273853b3f9570cc541aff371fb0b363\",\"proofs\":[{\"proofId\":\"proof-a\",\"sources\":[],\"parents\":[]}],\"roots\":[\"07da6a85c01278de9903736fc2f2783ea1dcc442d9c85aa7f856f33467a6705f\"]},{\"ref\":{\"id\":\"b\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"c100f95c1913f9c72fc1f4ef0847e1e723ffe0bde0b36e5f36c13f81fe8c26ed\",\"fingerprint\":\"0864e979f7cd9d70efc4d19cb4a69c973b03037a869636e85dd1ef99a02537a4\",\"proofs\":[{\"proofId\":\"proof-b\",\"sources\":[],\"parents\":[]}],\"roots\":[\"f650fb6c30e2a2f7c4ffadba2c9dacbb5b51be84f1b0ff3b47286f03ce5a7615\"]}],\"episodeAnchor\":{\"id\":\"anchor\",\"version\":1},\"episodeMembershipKey\":\"4c8e9268334d0abc7c2cb275e220cb187e7ff345c4ec2195bd500ca064652c20\",\"anchorDependencies\":[{\"ref\":{\"id\":\"anchor-parent\",\"version\":1,\"deletionEpoch\":0},\"fingerprint\":\"e82deb72c5ce1f4746651afbef4676c476fa5411fc260a0cbc79df31a46a2fe0\",\"proofs\":[{\"proofId\":\"proof-anchor-parent\",\"sources\":[],\"parents\":[]}]}],\"anchorQualifications\":[{\"edgeId\":\"edge\",\"edgeVersion\":1,\"registryVersion\":1,\"predicate\":\"participates_in\",\"subject\":{\"kind\":\"person\",\"personId\":\"person\"},\"object\":{\"kind\":\"entity\",\"entityId\":\"anchor\",\"entityKind\":\"event\",\"backing\":{\"id\":\"a\",\"version\":1,\"deletionEpoch\":0},\"originEdgeId\":\"edge\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"past\",\"conditions\":[],\"occurredAt\":null,\"validFrom\":null,\"validUntil\":null,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"interpretation\":\"attributed_proposed_association_not_observed_event\"}],\"hypothesis\":false,\"status\":\"candidate\",\"admission\":\"qualified_candidate\",\"createdAt\":\"2026-10-29T00:00:00Z\",\"applicableUntil\":null}"
+    }
+  ]
+}

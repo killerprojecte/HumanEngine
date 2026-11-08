@@ -2,6 +2,7 @@ package workingset
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
@@ -18,11 +19,19 @@ type Rows interface {
 // publication scope is native read-only; a write scope borrows its real active
 // session. Neither grants independent authorization or a second connection.
 // Use synchronously, never concurrently with the owner's callback return.
+type PreparedRead interface {
+	Query(...any) (Rows, error)
+	Close() error
+}
+
 type Scope struct {
-	session *recovery.WriteSession
-	query   func(string, ...any) (Rows, error)
-	check   func() error
-	audit   func() (bool, error)
+	main      *sql.DB
+	authority *recovery.Authority
+	prepare   func(string) (PreparedRead, error)
+	session   *recovery.WriteSession
+	query     func(string, ...any) (Rows, error)
+	check     func() error
+	audit     func() (bool, error)
 }
 
 func (s *Scope) CheckScope() error {
@@ -52,7 +61,13 @@ func (s *Service) scope() *Scope {
 	if s.session == nil {
 		return nil
 	}
-	return &Scope{session: s.session, check: s.check, query: func(q string, args ...any) (Rows, error) { return s.session.Query(q, args...) }, audit: s.session.WorkingSetSchemaSupported}
+	return &Scope{main: s.main, authority: s.authority, prepare: func(q string) (PreparedRead, error) {
+		p, e := s.session.PrepareQuery(q)
+		if e != nil {
+			return nil, e
+		}
+		return writeStatement{p}, nil
+	}, session: s.session, check: s.check, query: func(q string, args ...any) (Rows, error) { return s.session.Query(q, args...) }, audit: s.session.WorkingSetSchemaSupported}
 }
 func (s *Service) Read(ctx context.Context, fn func(*Service) error) error {
 	if s.bindingError != nil {
@@ -65,7 +80,13 @@ func (s *Service) Read(ctx context.Context, fn func(*Service) error) error {
 		return fn(s)
 	}
 	return s.authority.WithWorkingSetRead(ctx, s.main, func(reader *recovery.WorkingSetReadSession) error {
-		scope := &Scope{check: reader.CheckScope, audit: reader.SchemaSupported}
+		scope := &Scope{main: s.main, authority: s.authority, check: reader.CheckScope, audit: reader.SchemaSupported, prepare: func(q string) (PreparedRead, error) {
+			p, e := reader.PrepareQuery(q)
+			if e != nil {
+				return nil, e
+			}
+			return publicationStatement{p}, nil
+		}}
 		scope.query = func(q string, args ...any) (Rows, error) {
 			return reader.Query(q, args...)
 		}
@@ -74,3 +95,40 @@ func (s *Service) Read(ctx context.Context, fn func(*Service) error) error {
 		return fn(&b)
 	})
 }
+
+// CheckReadBinding verifies the concrete owner, without exposing its connection.
+func (s *Scope) CheckReadBinding(a *recovery.Authority, main *sql.DB) error {
+	if e := s.CheckScope(); e != nil {
+		return e
+	}
+	if s.authority != a || s.main != main {
+		return errors.New("working_set_read_binding")
+	}
+	if s.session != nil {
+		return s.session.CheckBinding(a, main)
+	}
+	return nil
+}
+
+// PrepareQuery borrows a native statement, not cached rows. Owner exit closes it.
+func (s *Scope) PrepareQuery(q string) (PreparedRead, error) {
+	if e := s.CheckScope(); e != nil {
+		return nil, e
+	}
+	if s.prepare == nil {
+		return nil, errors.New("working_set_native_prepare_required")
+	}
+	return s.prepare(q)
+}
+
+type writeStatement struct{ p *recovery.SessionStatement }
+
+func (s writeStatement) Query(args ...any) (Rows, error) { return s.p.Query(args...) }
+func (s writeStatement) Close() error                    { return s.p.Close() }
+
+type publicationStatement struct {
+	p *recovery.WorkingSetReadStatement
+}
+
+func (s publicationStatement) Query(args ...any) (Rows, error) { return s.p.Query(args...) }
+func (s publicationStatement) Close() error                    { return s.p.Close() }

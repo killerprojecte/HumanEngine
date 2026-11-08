@@ -3,6 +3,7 @@ package modelservice
 import (
 	"context"
 	"errors"
+	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 	"math"
 	"strings"
 	"sync"
@@ -44,6 +45,7 @@ type Options struct {
 	Sleep func(context.Context, float64) error
 }
 type Policy struct {
+	work      quiescence.Group
 	config    Config
 	clock     Clock
 	scheduler *scheduler.Scheduler
@@ -154,6 +156,11 @@ type outcome struct {
 // context messages: the caller supplies HasImages from the expanded prompt and
 // ToolNames from the exact tools passed to the response validator.
 func (p *Policy) Run(ctx context.Context, request Request, invoke Invocation) (any, error) {
+	doneWork, ok := p.work.Start()
+	if !ok {
+		return nil, errors.New("model_policy_closed")
+	}
+	defer doneWork()
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -183,7 +190,9 @@ func (p *Policy) Run(ctx context.Context, request Request, invoke Invocation) (a
 		settle(nil, cause)
 	})
 	defer deadline.Close()
+	finishRunner, _ := p.work.Child()
 	go func() {
+		defer finishRunner()
 		value, err := p.run(deadline.Context, request, invoke)
 		deadline.mu.Lock()
 		defer deadline.mu.Unlock()

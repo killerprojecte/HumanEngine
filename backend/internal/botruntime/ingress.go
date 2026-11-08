@@ -34,6 +34,11 @@ func (r *Runtime) Ingest(ctx context.Context, sceneID string, message *Object, s
 // IngestScene is the transport ingress entry point. Scene metadata is registered
 // before routing persistence, without RegisterScene's lifecycle readiness/cancel.
 func (r *Runtime) IngestScene(ctx context.Context, scene Scene, message *Object, schedule bool) (string, error) {
+	done, accepted := r.beginOperation()
+	if !accepted {
+		return "", code("runtime_closed")
+	}
+	defer done()
 	m := r.normalize(message, scene)
 	if get(m, "sceneId") != scene.ID || get(m, "origin") == "history" {
 		return "", nil
@@ -196,6 +201,11 @@ func (r *Runtime) notifyReceived(m *Object, scene Scene) {
 }
 
 func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Object, schedule bool) (string, error) {
+	done, accepted := r.beginOperation()
+	if !accepted {
+		return "", code("runtime_closed")
+	}
+	defer done()
 	s := r.state(sceneID)
 	if s == nil {
 		return "", code("scene_missing")
@@ -291,6 +301,11 @@ func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Objec
 	return status, err
 }
 func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
+	done, accepted := r.beginOperation()
+	if !accepted {
+		return code("runtime_closed")
+	}
+	defer done()
 	s := r.state(sceneID)
 	if s == nil {
 		return code("scene_missing")

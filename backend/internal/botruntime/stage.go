@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelservice"
-	"github.com/killerprojecte/HumanEngine/backend/internal/replyplan"
 	"github.com/killerprojecte/HumanEngine/backend/internal/scheduler"
 	"sync"
 )
@@ -117,7 +116,7 @@ func (r *Runtime) eligibleSignal(c *TurnContext, signal *dispatch.Signal) (bool,
 }
 func (r *Runtime) completion(t *turn, s *stage, role, stageName string, messages, tools []*Object) (Completion, error) {
 	r.trace(Event{SceneID: t.context.Scene.ID, TurnID: t.context.TurnID, Stage: stageName, Status: "started"})
-	return replyplan.WithinSignal(s, func(settle func(Completion, error)) {
+	return trackedWithin(r, s, func(settle func(Completion, error)) {
 		r.services.Models.Start(s, ModelRequest{role, stageName, messages, tools, t.context, s.progress}, settle)
 	})
 }
@@ -131,7 +130,7 @@ func (r *Runtime) executeTool(t *turn, ctx context.Context, name string, args an
 				if e.Execute == nil {
 					return nil, code("tool_unavailable")
 				}
-				return replyplan.WithinSignal(ctx, func(settle func(any, error)) { e.Execute(ctx, name, args, t.context, settle) })
+				return trackedWithin(r, ctx, func(settle func(any, error)) { e.Execute(ctx, name, args, t.context, settle) })
 			}
 		}
 	}

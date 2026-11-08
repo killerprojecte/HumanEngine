@@ -47,6 +47,11 @@ func (r *Runtime) newSceneState(scene Scene) *sceneState {
 }
 
 func (r *Runtime) RegisterScene(scene Scene) error {
+	done, accepted := r.beginOperation()
+	if !accepted {
+		return code("runtime_closed")
+	}
+	defer done()
 	if r.closed.Load() {
 		return code("runtime_closed")
 	}

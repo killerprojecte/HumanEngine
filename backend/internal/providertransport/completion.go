@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
+	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 	"reflect"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelservice"
@@ -36,6 +37,8 @@ type CompletionRequest struct {
 	Tools        []map[string]any
 }
 type NativeModels struct {
+	requests          quiescence.Group
+	attempts          quiescence.Group
 	Host              *plugins.V1Host
 	ProviderSnapshots map[string]map[string]any
 	ModelSnapshots    map[string]map[string]any
@@ -48,6 +51,11 @@ type NativeModels struct {
 }
 
 func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) (*Completion, error) {
+	doneWork, ok := m.requests.Start()
+	if !ok {
+		return nil, safe("native_models_closed")
+	}
+	defer doneWork()
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -88,7 +96,7 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 	if e != nil {
 		return nil, safe("provider_request_failed")
 	}
-	value, e := m.Policy.Run(ctx, modelservice.Request{Role: request.Role, ToolNames: names, HasImages: hasImages}, asyncInvocation(func(ctx context.Context, attempt modelservice.Attempt, complete func(any, error)) {
+	value, e := m.Policy.Run(ctx, modelservice.Request{Role: request.Role, ToolNames: names, HasImages: hasImages}, m.asyncInvocation(func(ctx context.Context, attempt modelservice.Attempt, complete func(any, error)) {
 		if request.FirstContent != nil {
 			first := attempt.FirstContent
 			attempt.FirstContent = func() { first(); request.FirstContent() }
@@ -180,7 +188,7 @@ func (m *Message) Release() error {
 }
 
 func (m *NativeModels) nativeCompletion(r Request, modelID string, wireNames map[string]string) modelservice.Invocation {
-	return asyncInvocation(func(ctx context.Context, attempt modelservice.Attempt, complete func(any, error)) {
+	return m.asyncInvocation(func(ctx context.Context, attempt modelservice.Attempt, complete func(any, error)) {
 		r.FirstContent = attempt.FirstContent
 		result, err := m.Client.Request(ctx, r)
 		if retry, ok := err.(*imageRetry); ok {

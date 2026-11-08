@@ -22,6 +22,11 @@ type EmbeddingResult struct {
 }
 
 func (m *NativeModels) ListModels(ctx context.Context, providerID string) ([]string, error) {
+	doneWork, ok := m.requests.Start()
+	if !ok {
+		return nil, safe("native_models_closed")
+	}
+	defer doneWork()
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -32,7 +37,7 @@ func (m *NativeModels) ListModels(ctx context.Context, providerID string) ([]str
 	if !ok {
 		return nil, safe("provider_not_configured")
 	}
-	value, err := m.Policy.RunProviderOperation(ctx, providerID, "", "models", asyncInvocation(func(ctx context.Context, a modelservice.Attempt, done func(any, error)) {
+	value, err := m.Policy.RunProviderOperation(ctx, providerID, "", "models", m.asyncInvocation(func(ctx context.Context, a modelservice.Attempt, done func(any, error)) {
 		if !modelservice.IsBuiltin(provider.Protocol) {
 			raw, e := m.customOperation(ctx, a, "listModels", nil)
 			if e != nil {
@@ -76,6 +81,11 @@ func (m *NativeModels) ListModels(ctx context.Context, providerID string) ([]str
 	return value.([]string), nil
 }
 func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inputs []string) (*EmbeddingResult, error) {
+	doneWork, ok := m.requests.Start()
+	if !ok {
+		return nil, safe("native_models_closed")
+	}
+	defer doneWork()
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -112,7 +122,7 @@ func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inp
 			end = len(pending)
 		}
 		batch := pending[offset:end]
-		value, e := m.Policy.RunProviderOperation(ctx, model.ProviderID, model.ID, "embedding", asyncInvocation(func(ctx context.Context, a modelservice.Attempt, done func(any, error)) {
+		value, e := m.Policy.RunProviderOperation(ctx, model.ProviderID, model.ID, "embedding", m.asyncInvocation(func(ctx context.Context, a modelservice.Attempt, done func(any, error)) {
 			if !modelservice.IsBuiltin(provider.Protocol) {
 				raw, e := m.customOperation(ctx, a, "embeddings", batch)
 				if e != nil {

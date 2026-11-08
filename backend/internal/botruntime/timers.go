@@ -53,6 +53,11 @@ func (r *Runtime) scheduleLocked(s *sceneState, id string) {
 	ticket.timer = r.services.Clock.AfterFunc(math.Max(0, due-r.services.Clock.Now()), func() { r.wake(s, id, ticket) })
 }
 func (r *Runtime) wake(s *sceneState, id string, ticket *timerTicket) {
+	done, ok := r.work.Start()
+	if !ok {
+		return
+	}
+	defer done()
 	if s.view.Load().scene.Kind != "simulation" && r.config().TopicAdmissionEnabled && r.services.Authority.Ready() != nil {
 		s.mu.Lock()
 		if s.timers[id] == ticket {
@@ -140,6 +145,17 @@ func (r *Runtime) startLocked(s *sceneState, id string, proactive bool, wake *tu
 	records := map[*Object]*messageRecord{}
 	t := &turn{records: records, runtime: r, state: s, topic: topic, context: c, settings: r.config(), wake: wake, proactive: proactive, version: topic.version.Load(), done: make(chan struct{}), result: &TurnResult{TurnID: turnID, Status: "completed", Reason: "processing_finished"}}
 	c.owner = t
+	r.lifecycleMu.Lock()
+	if r.closed.Load() {
+		r.lifecycleMu.Unlock()
+		return nil, code("runtime_closed")
+	}
+	done, accepted := r.work.Start()
+	r.lifecycleMu.Unlock()
+	if !accepted {
+		return nil, code("runtime_closed")
+	}
+	t.drainDone = done
 	s.tasks[id] = t
 	s.routing.Turns.Set(turnID, id)
 	s.queue.Delete(id)

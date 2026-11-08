@@ -101,7 +101,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			settle(replyplan.Completion{}, err)
 			return
 		}
-		r.services.Models.Start(ctx, ModelRequest{"planner", "plan", messages, tools, c, planningStage.progress}, func(out Completion, e error) {
+		trackedStart(r, func(done func(Completion, error)) {
+			r.services.Models.Start(ctx, ModelRequest{"planner", "plan", messages, tools, c, planningStage.progress}, done)
+		}, func(out Completion, e error) {
 			if e == nil {
 				var valid bool
 				valid, e = r.eligible(c)
@@ -119,7 +121,13 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 		}
 		return value, nil
 	}, Execute: func(ctx context.Context, name string, args any, settle func(any, error)) {
+		done, ok := r.work.Child()
+		if !ok {
+			settle(nil, code("runtime_closed"))
+			return
+		}
 		go func() {
+			defer done()
 			previous := c.deferMemoryExposure.Load()
 			c.deferMemoryExposure.Store(true)
 			output, e := r.executeTool(t, ctx, name, args)
@@ -135,7 +143,7 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 				}
 				for _, extension := range extensions {
 					if extension.DescribeImages != nil {
-						v, err := replyplan.WithinSignal(ctx, func(done func(any, error)) { extension.DescribeImages(ctx, c, rows, done) })
+						v, err := trackedWithin(r, ctx, func(done func(any, error)) { extension.DescribeImages(ctx, c, rows, done) })
 						if err != nil {
 							e = err
 							break

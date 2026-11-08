@@ -7,6 +7,11 @@ import "context"
 // do not require a model. Native model listing bypasses the model scheduler, as
 // the source does. Custom listing uses the shared scheduler and cancellation race.
 func (p *Policy) RunProviderOperation(ctx context.Context, providerID, modelID, role string, invoke Invocation) (any, error) {
+	doneWork, ok := p.work.Start()
+	if !ok {
+		return nil, NewError("model_policy_closed", nil, false)
+	}
+	defer doneWork()
 	if ctx == nil {
 		ctx = context.Background()
 	}

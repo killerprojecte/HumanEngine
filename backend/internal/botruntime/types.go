@@ -12,6 +12,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/promptcache"
+	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 	"github.com/killerprojecte/HumanEngine/backend/internal/replyplan"
 	"github.com/killerprojecte/HumanEngine/backend/internal/topicroute"
 	"github.com/killerprojecte/HumanEngine/backend/internal/turnwait"
@@ -185,6 +186,8 @@ type TurnHandle struct {
 func (h *TurnHandle) Wait() TurnResult { <-h.Done; return *h.result }
 
 type Runtime struct {
+	observer                      atomic.Pointer[func(Event)]
+	work                          quiescence.Group
 	sequence                      atomic.Uint64
 	services                      Services
 	settings                      atomic.Pointer[Settings]
@@ -256,6 +259,7 @@ type receiptOperation struct {
 	receipts       []dispatch.Receipt
 }
 type turn struct {
+	drainDone    func()
 	toolIssues   []error
 	records      map[*Object]*messageRecord
 	operations   topicroute.OrderedMap[string, *receiptOperation]
@@ -417,6 +421,9 @@ func New(settings Settings, services Services) (*Runtime, error) {
 }
 func (r *Runtime) config() Settings { return *r.settings.Load() }
 func (r *Runtime) trace(e Event) {
+	if observer := r.observer.Load(); observer != nil {
+		(*observer)(e)
+	}
 	if r.services.Trace != nil {
 		r.services.Trace(e)
 	}

@@ -35,6 +35,7 @@ type turnFrame struct {
 }
 
 func (r *Runtime) execute(t *turn) {
+	defer t.drainDone()
 	var err error
 	issues := 0
 	defer func() {

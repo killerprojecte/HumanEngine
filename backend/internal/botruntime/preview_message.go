@@ -6,6 +6,11 @@ package botruntime
 // not a lock-free read. Trim uses O(n) record checks and temporary references,
 // never unrelated body-byte cloning. SQL projection runs after that mutex exits.
 func (r *Runtime) PreviewMessage(sceneID, messageID string, reads ReadAuthority) (*Object, error) {
+	done, accepted := r.beginOperation()
+	if !accepted {
+		return nil, code("runtime_closed")
+	}
+	defer done()
 	if reads == nil {
 		return nil, code("runtime_read_authority_required")
 	}

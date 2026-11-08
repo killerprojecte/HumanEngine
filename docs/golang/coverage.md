@@ -420,3 +420,36 @@ new fixture schema were corrected and their failed runs retained. Whole integrat
 HEAD CI remains required after publication. Full application startup, adapter
 composition and shutdown draining are still being implemented; this slice does
 not remove the read-only command gate or publish the pending media101 change.
+
+## Native vision context contracts
+
+The native visioncontext domain preserves source ranking, per-turn image budget,
+FIFO description cache, library precedence, authority rechecks, ordered hashes
+and prompts. Sixteen actual TypeScript cases and race tests cover lossless UTF-16
+result projection, MIME matching, model-order cache separation, cross-turn content
+reuse, concurrent turns and revocation after asynchronous stages. Its source
+fingerprint check runs in differential CI. These standalone ports are not yet
+proof of the final Engine codec/model/authority wiring or outgoing image gate.
+
+Runtime model completion projection now accepts native provider maps through the
+existing provider-wire encoder while preserving ordered objects and WTF-8. This
+fix was verified through the real V1-to-runtime send/recall lifecycle and an actual
+application boot with stored model configuration, not only a serialization unit.
+
+## Explicit resource draining
+
+A shared quiescence primitive now separates cancellation from physical completion.
+Runtime turns, timers, external entrypoints and dispatch authority callbacks,
+model-policy timeout losers and native provider attempts retain their owners until
+actual cleanup completes. Immediate Close behavior stays unchanged; explicit
+CloseAndWait/Drain APIs reject new work and support canceled waits without closing
+borrowed database owners. A starter panic with unresolved settlement reports an
+explicit uncertainty error and retains ownership until real completion.
+
+The safe core's five affected packages passed complete race tests, vet and input
+verification after independent review fixed premature panic settlement. Tests also
+cover already-blocked background wait notification and later successful retry.
+These APIs are necessary resource ownership infrastructure, not proof that every
+application producer is wired. Private media/cache/adapter callback drains and
+full application shutdown are separate integration work; no pending media101
+behavior is included here.

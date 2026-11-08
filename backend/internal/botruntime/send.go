@@ -238,7 +238,7 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 			appendReceipt(dispatch.Receipt{Status: dispatch.Cancelled})
 			return observed, nil
 		}
-		result, e := replyplan.WithinSignal(ctx, func(settle func(HookResult, error)) { hook.Run(ctx, cloneSegments(segments), c, settle) })
+		result, e := trackedWithin(r, ctx, func(settle func(HookResult, error)) { hook.Run(ctx, cloneSegments(segments), c, settle) })
 		if e != nil {
 			return observed, e
 		}
@@ -288,8 +288,10 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 	services := dispatch.Services{Writer: dispatch.FlowWriterFunc(func(e dispatch.FlowEvent) {
 		r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: e.Stage, Status: e.Status, Reason: e.Reason, Counts: e.Counts})
 	}), EligibleChecked: func(d *dispatch.TurnContext) (bool, error) {
-		return r.eligibleSignal(c, d.Signal)
-	}, IsRecalledChecked: func(_ string, id string) (bool, error) { return r.recalled(t.state, id) }, Adapter: func(id string) *dispatch.Adapter {
+		return r.dispatchRead(func() (bool, error) { return r.eligibleSignal(c, d.Signal) })
+	}, IsRecalledChecked: func(_ string, id string) (bool, error) {
+		return r.dispatchRead(func() (bool, error) { return r.recalled(t.state, id) })
+	}, Adapter: func(id string) *dispatch.Adapter {
 		if a, ok := r.adapters.Load(id); ok {
 			return a.(*Adapter).Transport
 		}
@@ -318,7 +320,13 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 			return dispatch.Resolved(valid)
 		}
 		future := dispatch.NewFuture[bool]()
+		done, ok := r.work.Child()
+		if !ok {
+			future.Reject(code("runtime_closed"))
+			return future
+		}
 		go func() {
+			defer done()
 			valid, e := r.validateSend(t, g, request)
 			if e != nil {
 				future.Reject(e)

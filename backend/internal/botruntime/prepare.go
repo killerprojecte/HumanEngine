@@ -190,7 +190,7 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 				return nil
 			}
 			if e.DescribeImages != nil {
-				out, err := replyplan.WithinSignal(c.root, func(settle func(any, error)) { e.DescribeImages(c.root, c, images, settle) })
+				out, err := trackedWithin(r, c.root, func(settle func(any, error)) { e.DescribeImages(c.root, c, images, settle) })
 				if err != nil {
 					return err
 				}

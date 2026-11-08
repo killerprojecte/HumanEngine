@@ -77,10 +77,16 @@ func (r *Runtime) RemoveAdapter(id string) {
 func (r *Runtime) Close() {
 	r.lifecycleMu.Lock()
 	alreadyClosed := r.closed.Swap(true)
+	var finishClose func()
+	if !alreadyClosed {
+		finishClose, _ = r.work.Start()
+	}
+	r.work.Seal()
 	r.lifecycleMu.Unlock()
 	if alreadyClosed {
 		return
 	}
+	defer finishClose()
 	for _, extension := range r.exts() {
 		if extension.Closed != nil {
 			extension.Closed()
@@ -125,6 +131,11 @@ func (r *Runtime) armCleanup() {
 	r.cleanup = r.services.Clock.AfterFunc(60000, func() { r.CleanupIdle(); r.armCleanup() })
 }
 func (r *Runtime) CleanupIdle() {
+	done, ok := r.work.Start()
+	if !ok {
+		return
+	}
+	defer done()
 	now := r.services.Clock.Now()
 	c := r.config()
 	r.scenes.Range(func(k, v any) bool {

@@ -7,6 +7,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelread"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
+	"github.com/killerprojecte/HumanEngine/backend/internal/providerwire"
 	"github.com/killerprojecte/HumanEngine/backend/internal/replyplan"
 	"sync"
 )
@@ -68,7 +69,7 @@ func plain(v any) any {
 	}
 }
 func objectValue(v any) (*Object, error) {
-	b, e := jsjson.Marshal(v)
+	b, e := providerwire.EncodeJSON(v)
 	if e != nil {
 		return nil, e
 	}

@@ -2,7 +2,6 @@ package botruntime
 
 import (
 	"context"
-	"github.com/killerprojecte/HumanEngine/backend/internal/replyplan"
 	"math"
 )
 
@@ -46,7 +45,7 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 				_ = m.Set("origin", "history")
 				items = append(items, m)
 			} else if c.Mode == "real" && adapter != nil && adapter.GetMessage != nil {
-				out, e := replyplan.WithinSignal(ctx, func(settle func(*Object, error)) { adapter.GetMessage(ctx, c.Scene, id, settle) })
+				out, e := trackedWithin(r, ctx, func(settle func(*Object, error)) { adapter.GetMessage(ctx, c.Scene, id, settle) })
 				if e != nil {
 					return nil, e
 				}
@@ -73,7 +72,7 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 			return nil, code("runtime_invalid_tool_input")
 		}
 		if c.Mode == "real" && adapter != nil && adapter.History != nil {
-			out, err := replyplan.WithinSignal(ctx, func(settle func(*Object, error)) { adapter.History(ctx, c.Scene, int(limit), settle) })
+			out, err := trackedWithin(r, ctx, func(settle func(*Object, error)) { adapter.History(ctx, c.Scene, int(limit), settle) })
 			if err != nil {
 				return nil, err
 			}

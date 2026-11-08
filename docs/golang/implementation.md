@@ -595,3 +595,22 @@ for domain isolation. Native composition separately uses the real RelationAuthor
 and exercises current source-edit/recall/expiry/proof changes and scope faults.
 This does not implement commitment command admission, complete MemoryWorkspace,
 model capture/delivery identity or all remaining HTTP/runtime composition.
+
+## Fixed memory list and experience views
+
+The fixed memory list applies the source SQLite scope, JSON and time filters,
+then fresh support/applicability and sanitization within the same verified reader.
+Exact-ID selection uses a deduplicated JSON table join without a result prefix.
+It shares native prepared support statements, not rows or eligibility answers.
+Simulation selects shared public records and rejects person-specific selection.
+
+The pure experience view projects already-authorized assertion/plan snapshots,
+clones the result and revalidates only included references through one fresh
+owner-controlled batch. Existing 40-input/12-output product policies and coverage
+semantics are unchanged. Verification is not itself an authority grant, an event
+observation, a model call or exposure registration.
+
+These modules do not stand in for MemoryService lifecycle refresh, legacy revision
+capture, WorkspaceAuthority qualification hashes, final model-context identity or
+runtime delivery. Those remaining composition owners must be wired and exercised
+before declaring full robot or HTTP parity.

@@ -1,0 +1,5043 @@
+{
+  "sourceNode": "v24.22.1",
+  "nowMillis": 1793188800000,
+  "sources": {
+    "src/memory/read/list.ts": "50fdd18ab06a9ee8fd0b186b50fd0bf117db8e2030ef2618258774826dda4353",
+    "src/memory/read/scope.ts": "a1c21cf89add4734f4088fe1acfe9386fdccbe0f18940106295b2d66e0723ab6",
+    "src/memory/read/assertion-authority.ts": "8dfb7c1fd0d34945e8b8c3c0db18469e63e8b169c3f3fd2bb577067edbbf3ecc",
+    "src/memory/read/applicability.ts": "ea853d23623ce79118856fde2e93e85578187927d19db746e15cd6940c4eb8c4",
+    "src/memory/read/provenance.ts": "398a6eadd56d274e0c7ebca33dc09487d055f8ea6c78e27b1052f9078782ac3f",
+    "src/memory/storage/assertion-repository.ts": "fe51160c09c4bc3eb9d308bc1cb167551d6b251dd764042adad1b8caa4dfc54b",
+    "src/memory/storage/assertion-history.ts": "063e842d326e7e32a4c95b4bb6f0ce9adf749cef5491cc3014903b0ca3c1c00f",
+    "src/memory/read/bound-parents.ts": "b572bc9953365057e5cbb728638ed0a4adf0316a84b1ffd9e127dd1e8a01aa78",
+    "src/memory/read/domain-source-events.ts": "503191095057564078f5fc2ba337de6682e5798ee6cbf9904547f96d1422e273",
+    "src/memory/domain/proofs.ts": "7750cf6113c5d61713ab408c43744ee5c74d0a5fadb9eb85902264773f160708",
+    "src/memory/domain/record-values.ts": "d2022164f6fa4d36f4a8993b87f784c6f959a69c48270ec1da4786a3ee375dfc",
+    "src/memory/write/subject-attribution.ts": "d3cec07452a8529f12011a6c827bb3969da3f25109e6461b68f53f6903ad30bc",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "scenarios": [
+    {
+      "name": "scene person simulation exact IDs and rowid",
+      "rows": [
+        {
+          "id": "a",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic a",
+          "value": "{\"id\":\"a\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic a\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "a"
+        },
+        {
+          "id": "b",
+          "scope_key": "scene:s",
+          "person_id": "q",
+          "content": "Synthetic b",
+          "value": "{\"id\":\"b\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"q\"},\"kind\":\"experience\",\"content\":\"Synthetic b\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "b"
+        },
+        {
+          "id": "shared",
+          "scope_key": "shared:public",
+          "person_id": null,
+          "content": "Synthetic shared",
+          "value": "{\"id\":\"shared\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"kind\":\"experience\",\"content\":\"Synthetic shared\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"observedAt\":\"discarded\",\"supersedesId\":\"discarded\"}",
+          "fingerprint": "shared"
+        },
+        {
+          "id": "other",
+          "scope_key": "scene:other",
+          "person_id": null,
+          "content": "Synthetic other",
+          "value": "{\"id\":\"other\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"other\"},\"kind\":\"experience\",\"content\":\"Synthetic other\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "other"
+        }
+      ],
+      "proofs": {},
+      "recalled": [],
+      "notReady": false,
+      "ops": [
+        {
+          "sceneId": "s",
+          "simulation": false
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "personId": ""
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": true
+        },
+        {
+          "sceneId": "s",
+          "simulation": true,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": true,
+          "personId": ""
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": []
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": [
+            "a",
+            "a",
+            "shared",
+            "absent"
+          ]
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": [
+            "b",
+            "a"
+          ]
+        }
+      ],
+      "results": [
+        {
+          "value": [
+            {
+              "id": "shared",
+              "scope": {
+                "kind": "sharedPublicKnowledge"
+              },
+              "kind": "experience",
+              "content": "Synthetic shared",
+              "sources": [],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "b",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "q"
+              },
+              "kind": "experience",
+              "content": "Synthetic b",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "shared",
+              "scope": {
+                "kind": "sharedPublicKnowledge"
+              },
+              "kind": "experience",
+              "content": "Synthetic shared",
+              "sources": [],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "b",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "q"
+              },
+              "kind": "experience",
+              "content": "Synthetic b",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "shared",
+              "scope": {
+                "kind": "sharedPublicKnowledge"
+              },
+              "kind": "experience",
+              "content": "Synthetic shared",
+              "sources": [],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": []
+        },
+        {
+          "value": [
+            {
+              "id": "shared",
+              "scope": {
+                "kind": "sharedPublicKnowledge"
+              },
+              "kind": "experience",
+              "content": "Synthetic shared",
+              "sources": [],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": []
+        },
+        {
+          "value": [
+            {
+              "id": "shared",
+              "scope": {
+                "kind": "sharedPublicKnowledge"
+              },
+              "kind": "experience",
+              "content": "Synthetic shared",
+              "sources": [],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "b",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "q"
+              },
+              "kind": "experience",
+              "content": "Synthetic b",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SQL value filters",
+      "rows": [
+        {
+          "id": "a",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic a",
+          "value": "{\"id\":\"a\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic a\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "a"
+        },
+        {
+          "id": "null-internal",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic null-internal",
+          "value": "{\"id\":\"null-internal\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic null-internal\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"internalUse\":null}",
+          "fingerprint": "null-internal"
+        },
+        {
+          "id": "false-internal",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic false-internal",
+          "value": "{\"id\":\"false-internal\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic false-internal\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"internalUse\":false}",
+          "fingerprint": "false-internal"
+        },
+        {
+          "id": "internal",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic internal",
+          "value": "{\"id\":\"internal\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic internal\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"internalUse\":\"workspace\"}",
+          "fingerprint": "internal"
+        },
+        {
+          "id": "quarantine",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic quarantine",
+          "value": "{\"id\":\"quarantine\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic quarantine\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"quarantined\"}",
+          "fingerprint": "quarantine"
+        },
+        {
+          "id": "inactive",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic inactive",
+          "value": "{\"id\":\"inactive\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic inactive\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"superseded\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "inactive"
+        },
+        {
+          "id": "disputed",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic disputed",
+          "value": "{\"id\":\"disputed\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic disputed\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"disputed\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "disputed"
+        },
+        {
+          "id": "future",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic future",
+          "value": "{\"id\":\"future\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic future\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"validFrom\":\"2100-01-01\"}",
+          "fingerprint": "future"
+        },
+        {
+          "id": "expired",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic expired",
+          "value": "{\"id\":\"expired\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic expired\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"validUntil\":\"2000-01-01\"}",
+          "fingerprint": "expired"
+        },
+        {
+          "id": "invalid-from",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic invalid-from",
+          "value": "{\"id\":\"invalid-from\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic invalid-from\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"validFrom\":\"invalid\"}",
+          "fingerprint": "invalid-from"
+        },
+        {
+          "id": "invalid-until",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic invalid-until",
+          "value": "{\"id\":\"invalid-until\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic invalid-until\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"validUntil\":\"invalid\"}",
+          "fingerprint": "invalid-until"
+        },
+        {
+          "id": "null-times",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic null-times",
+          "value": "{\"id\":\"null-times\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic null-times\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"validFrom\":null,\"validUntil\":null}",
+          "fingerprint": "null-times"
+        },
+        {
+          "id": "valid-window",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic valid-window",
+          "value": "{\"id\":\"valid-window\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic valid-window\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"validFrom\":\"2000-01-01\",\"validUntil\":\"2100-01-01\"}",
+          "fingerprint": "valid-window"
+        }
+      ],
+      "proofs": {},
+      "recalled": [],
+      "notReady": false,
+      "ops": [
+        {
+          "sceneId": "s",
+          "simulation": false
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": true
+        },
+        {
+          "sceneId": "s",
+          "simulation": true,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": []
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": [
+            "a",
+            "a",
+            "shared",
+            "absent"
+          ]
+        }
+      ],
+      "results": [
+        {
+          "value": [
+            {
+              "id": "valid-window",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic valid-window",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "validFrom": "2000-01-01",
+              "validUntil": "2100-01-01"
+            },
+            {
+              "id": "null-times",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic null-times",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "validFrom": null,
+              "validUntil": null
+            },
+            {
+              "id": "disputed",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic disputed",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "disputed",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "null-internal",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic null-internal",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "internalUse": null
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "valid-window",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic valid-window",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "validFrom": "2000-01-01",
+              "validUntil": "2100-01-01"
+            },
+            {
+              "id": "null-times",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic null-times",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "validFrom": null,
+              "validUntil": null
+            },
+            {
+              "id": "disputed",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic disputed",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "disputed",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "null-internal",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic null-internal",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "internalUse": null
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": []
+        },
+        {
+          "value": []
+        },
+        {
+          "value": []
+        },
+        {
+          "value": [
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fresh real proof qualification",
+      "rows": [
+        {
+          "id": "a",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic a",
+          "value": "{\"id\":\"a\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic a\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+          "fingerprint": "a"
+        },
+        {
+          "id": "unsupported",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic unsupported",
+          "value": "{\"id\":\"unsupported\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic unsupported\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+          "fingerprint": "unsupported"
+        },
+        {
+          "id": "recalled",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic recalled",
+          "value": "{\"id\":\"recalled\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic recalled\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+          "fingerprint": "recalled"
+        },
+        {
+          "id": "alternative",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic alternative",
+          "value": "{\"id\":\"alternative\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic alternative\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+          "fingerprint": "alternative"
+        },
+        {
+          "id": "legacy-recalled",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic legacy-recalled",
+          "value": "{\"id\":\"legacy-recalled\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic legacy-recalled\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"gone\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "legacy-recalled"
+        }
+      ],
+      "proofs": {
+        "a": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": []
+          }
+        ],
+        "recalled": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "gone",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": []
+          }
+        ],
+        "alternative": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "gone",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": []
+          },
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "live",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": []
+          }
+        ]
+      },
+      "recalled": [
+        "gone"
+      ],
+      "notReady": false,
+      "ops": [
+        {
+          "sceneId": "s",
+          "simulation": false
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": true
+        },
+        {
+          "sceneId": "s",
+          "simulation": true,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": []
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": [
+            "a",
+            "a",
+            "shared",
+            "absent"
+          ]
+        }
+      ],
+      "results": [
+        {
+          "value": [
+            {
+              "id": "alternative",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic alternative",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "live",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "lineageStatus": "verified"
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "lineageStatus": "verified"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "alternative",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic alternative",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "live",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "lineageStatus": "verified"
+            },
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "lineageStatus": "verified"
+            }
+          ]
+        },
+        {
+          "value": []
+        },
+        {
+          "value": []
+        },
+        {
+          "value": []
+        },
+        {
+          "value": [
+            {
+              "id": "a",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic a",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "lineageStatus": "verified"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invalidated proof and parent graph",
+      "rows": [
+        {
+          "id": "a",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic a",
+          "value": "{\"id\":\"a\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic a\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+          "fingerprint": "a"
+        },
+        {
+          "id": "parent",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic parent",
+          "value": "{\"id\":\"parent\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic parent\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "parent"
+        },
+        {
+          "id": "child",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic child",
+          "value": "{\"id\":\"child\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic child\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+          "fingerprint": "child"
+        },
+        {
+          "id": "missing",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic missing",
+          "value": "{\"id\":\"missing\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic missing\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"}",
+          "fingerprint": "missing"
+        }
+      ],
+      "proofs": {
+        "a": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "invalidatedBy": "recall"
+          }
+        ],
+        "child": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "parents": [
+              "parent"
+            ]
+          }
+        ],
+        "missing": [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "parents": [
+              "absent"
+            ]
+          }
+        ]
+      },
+      "recalled": [],
+      "notReady": false,
+      "ops": [
+        {
+          "sceneId": "s",
+          "simulation": false
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": true
+        },
+        {
+          "sceneId": "s",
+          "simulation": true,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": []
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": [
+            "a",
+            "a",
+            "shared",
+            "absent"
+          ]
+        }
+      ],
+      "results": [
+        {
+          "value": [
+            {
+              "id": "child",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic child",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "lineageStatus": "verified"
+            },
+            {
+              "id": "parent",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic parent",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "child",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic child",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned",
+              "lineageStatus": "verified"
+            },
+            {
+              "id": "parent",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic parent",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": []
+        },
+        {
+          "value": []
+        },
+        {
+          "value": []
+        },
+        {
+          "value": []
+        }
+      ]
+    },
+    {
+      "name": "no prefix cap exact ID",
+      "rows": [
+        {
+          "id": "r0",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r0",
+          "value": "{\"id\":\"r0\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r0\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r0"
+        },
+        {
+          "id": "r1",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r1",
+          "value": "{\"id\":\"r1\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r1\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r1"
+        },
+        {
+          "id": "r2",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r2",
+          "value": "{\"id\":\"r2\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r2\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r2"
+        },
+        {
+          "id": "r3",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r3",
+          "value": "{\"id\":\"r3\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r3\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r3"
+        },
+        {
+          "id": "r4",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r4",
+          "value": "{\"id\":\"r4\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r4\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r4"
+        },
+        {
+          "id": "r5",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r5",
+          "value": "{\"id\":\"r5\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r5\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r5"
+        },
+        {
+          "id": "r6",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r6",
+          "value": "{\"id\":\"r6\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r6\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r6"
+        },
+        {
+          "id": "r7",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r7",
+          "value": "{\"id\":\"r7\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r7\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r7"
+        },
+        {
+          "id": "r8",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r8",
+          "value": "{\"id\":\"r8\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r8\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r8"
+        },
+        {
+          "id": "r9",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r9",
+          "value": "{\"id\":\"r9\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r9\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r9"
+        },
+        {
+          "id": "r10",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r10",
+          "value": "{\"id\":\"r10\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r10\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r10"
+        },
+        {
+          "id": "r11",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r11",
+          "value": "{\"id\":\"r11\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r11\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r11"
+        },
+        {
+          "id": "r12",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r12",
+          "value": "{\"id\":\"r12\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r12\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r12"
+        },
+        {
+          "id": "r13",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r13",
+          "value": "{\"id\":\"r13\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r13\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r13"
+        },
+        {
+          "id": "r14",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r14",
+          "value": "{\"id\":\"r14\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r14\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r14"
+        },
+        {
+          "id": "r15",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r15",
+          "value": "{\"id\":\"r15\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r15\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r15"
+        },
+        {
+          "id": "r16",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r16",
+          "value": "{\"id\":\"r16\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r16\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r16"
+        },
+        {
+          "id": "r17",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r17",
+          "value": "{\"id\":\"r17\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r17\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r17"
+        },
+        {
+          "id": "r18",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r18",
+          "value": "{\"id\":\"r18\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r18\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r18"
+        },
+        {
+          "id": "r19",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r19",
+          "value": "{\"id\":\"r19\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r19\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r19"
+        },
+        {
+          "id": "r20",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r20",
+          "value": "{\"id\":\"r20\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r20\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r20"
+        },
+        {
+          "id": "r21",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r21",
+          "value": "{\"id\":\"r21\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r21\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r21"
+        },
+        {
+          "id": "r22",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r22",
+          "value": "{\"id\":\"r22\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r22\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r22"
+        },
+        {
+          "id": "r23",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r23",
+          "value": "{\"id\":\"r23\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r23\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r23"
+        },
+        {
+          "id": "r24",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r24",
+          "value": "{\"id\":\"r24\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r24\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r24"
+        },
+        {
+          "id": "r25",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r25",
+          "value": "{\"id\":\"r25\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r25\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r25"
+        },
+        {
+          "id": "r26",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r26",
+          "value": "{\"id\":\"r26\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r26\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r26"
+        },
+        {
+          "id": "r27",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r27",
+          "value": "{\"id\":\"r27\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r27\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r27"
+        },
+        {
+          "id": "r28",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r28",
+          "value": "{\"id\":\"r28\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r28\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r28"
+        },
+        {
+          "id": "r29",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r29",
+          "value": "{\"id\":\"r29\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r29\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r29"
+        },
+        {
+          "id": "r30",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r30",
+          "value": "{\"id\":\"r30\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r30\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r30"
+        },
+        {
+          "id": "r31",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r31",
+          "value": "{\"id\":\"r31\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r31\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r31"
+        },
+        {
+          "id": "r32",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r32",
+          "value": "{\"id\":\"r32\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r32\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r32"
+        },
+        {
+          "id": "r33",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r33",
+          "value": "{\"id\":\"r33\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r33\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r33"
+        },
+        {
+          "id": "r34",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r34",
+          "value": "{\"id\":\"r34\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r34\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r34"
+        },
+        {
+          "id": "r35",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r35",
+          "value": "{\"id\":\"r35\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r35\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r35"
+        },
+        {
+          "id": "r36",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r36",
+          "value": "{\"id\":\"r36\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r36\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r36"
+        },
+        {
+          "id": "r37",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r37",
+          "value": "{\"id\":\"r37\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r37\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r37"
+        },
+        {
+          "id": "r38",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r38",
+          "value": "{\"id\":\"r38\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r38\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r38"
+        },
+        {
+          "id": "r39",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r39",
+          "value": "{\"id\":\"r39\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r39\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r39"
+        },
+        {
+          "id": "r40",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r40",
+          "value": "{\"id\":\"r40\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r40\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r40"
+        },
+        {
+          "id": "r41",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r41",
+          "value": "{\"id\":\"r41\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r41\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r41"
+        },
+        {
+          "id": "r42",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r42",
+          "value": "{\"id\":\"r42\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r42\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r42"
+        },
+        {
+          "id": "r43",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r43",
+          "value": "{\"id\":\"r43\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r43\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r43"
+        },
+        {
+          "id": "r44",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r44",
+          "value": "{\"id\":\"r44\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r44\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r44"
+        },
+        {
+          "id": "r45",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r45",
+          "value": "{\"id\":\"r45\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r45\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r45"
+        },
+        {
+          "id": "r46",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r46",
+          "value": "{\"id\":\"r46\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r46\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r46"
+        },
+        {
+          "id": "r47",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r47",
+          "value": "{\"id\":\"r47\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r47\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r47"
+        },
+        {
+          "id": "r48",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r48",
+          "value": "{\"id\":\"r48\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r48\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r48"
+        },
+        {
+          "id": "r49",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r49",
+          "value": "{\"id\":\"r49\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r49\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r49"
+        },
+        {
+          "id": "r50",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r50",
+          "value": "{\"id\":\"r50\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r50\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r50"
+        },
+        {
+          "id": "r51",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r51",
+          "value": "{\"id\":\"r51\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r51\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r51"
+        },
+        {
+          "id": "r52",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r52",
+          "value": "{\"id\":\"r52\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r52\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r52"
+        },
+        {
+          "id": "r53",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r53",
+          "value": "{\"id\":\"r53\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r53\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r53"
+        },
+        {
+          "id": "r54",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r54",
+          "value": "{\"id\":\"r54\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r54\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r54"
+        },
+        {
+          "id": "r55",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r55",
+          "value": "{\"id\":\"r55\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r55\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r55"
+        },
+        {
+          "id": "r56",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r56",
+          "value": "{\"id\":\"r56\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r56\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r56"
+        },
+        {
+          "id": "r57",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r57",
+          "value": "{\"id\":\"r57\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r57\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r57"
+        },
+        {
+          "id": "r58",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r58",
+          "value": "{\"id\":\"r58\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r58\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r58"
+        },
+        {
+          "id": "r59",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r59",
+          "value": "{\"id\":\"r59\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r59\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r59"
+        },
+        {
+          "id": "r60",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r60",
+          "value": "{\"id\":\"r60\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r60\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r60"
+        },
+        {
+          "id": "r61",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r61",
+          "value": "{\"id\":\"r61\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r61\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r61"
+        },
+        {
+          "id": "r62",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r62",
+          "value": "{\"id\":\"r62\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r62\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r62"
+        },
+        {
+          "id": "r63",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r63",
+          "value": "{\"id\":\"r63\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r63\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r63"
+        },
+        {
+          "id": "r64",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic r64",
+          "value": "{\"id\":\"r64\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic r64\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "r64"
+        },
+        {
+          "id": "quote\"id",
+          "scope_key": "scene:s",
+          "person_id": "p",
+          "content": "Synthetic quote\"id",
+          "value": "{\"id\":\"quote\\\"id\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"experience\",\"content\":\"Synthetic quote\\\"id\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"importance\":\"low\",\"confidence\":0.5,\"learnedAt\":\"2000-01-01T00:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\"}",
+          "fingerprint": "quote\"id"
+        }
+      ],
+      "proofs": {},
+      "recalled": [],
+      "notReady": false,
+      "ops": [
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": [
+            "r0",
+            "r1",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8",
+            "r9",
+            "r10",
+            "r11",
+            "r12",
+            "r13",
+            "r14",
+            "r15",
+            "r16",
+            "r17",
+            "r18",
+            "r19",
+            "r20",
+            "r21",
+            "r22",
+            "r23",
+            "r24",
+            "r25",
+            "r26",
+            "r27",
+            "r28",
+            "r29",
+            "r30",
+            "r31",
+            "r32",
+            "r33",
+            "r34",
+            "r35",
+            "r36",
+            "r37",
+            "r38",
+            "r39",
+            "r40",
+            "r41",
+            "r42",
+            "r43",
+            "r44",
+            "r45",
+            "r46",
+            "r47",
+            "r48",
+            "r49",
+            "r50",
+            "r51",
+            "r52",
+            "r53",
+            "r54",
+            "r55",
+            "r56",
+            "r57",
+            "r58",
+            "r59",
+            "r60",
+            "r61",
+            "r62",
+            "r63",
+            "r64",
+            "quote\"id",
+            "r64"
+          ]
+        },
+        {
+          "sceneId": "s",
+          "simulation": false
+        }
+      ],
+      "results": [
+        {
+          "value": [
+            {
+              "id": "quote\"id",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic quote\"id",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r64",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r64",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r63",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r63",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r62",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r62",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r61",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r61",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r60",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r60",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r59",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r59",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r58",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r58",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r57",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r57",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r56",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r56",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r55",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r55",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r54",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r54",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r53",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r53",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r52",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r52",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r51",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r51",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r50",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r50",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r49",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r49",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r48",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r48",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r47",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r47",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r46",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r46",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r45",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r45",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r44",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r44",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r43",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r43",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r42",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r42",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r41",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r41",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r40",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r40",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r39",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r39",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r38",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r38",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r37",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r37",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r36",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r36",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r35",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r35",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r34",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r34",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r33",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r33",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r32",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r32",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r31",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r31",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r30",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r30",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r29",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r29",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r28",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r28",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r27",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r27",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r26",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r26",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r25",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r25",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r24",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r24",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r23",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r23",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r22",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r22",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r21",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r21",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r20",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r20",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r19",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r19",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r18",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r18",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r17",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r17",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r16",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r16",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r15",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r15",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r14",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r14",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r13",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r13",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r12",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r12",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r11",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r11",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r10",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r10",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r9",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r9",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r8",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r8",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r7",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r7",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r6",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r6",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r5",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r5",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r4",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r4",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r3",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r3",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r2",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r2",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r1",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r0",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        },
+        {
+          "value": [
+            {
+              "id": "quote\"id",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic quote\"id",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r64",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r64",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r63",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r63",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r62",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r62",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r61",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r61",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r60",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r60",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r59",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r59",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r58",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r58",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r57",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r57",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r56",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r56",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r55",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r55",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r54",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r54",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r53",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r53",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r52",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r52",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r51",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r51",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r50",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r50",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r49",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r49",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r48",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r48",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r47",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r47",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r46",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r46",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r45",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r45",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r44",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r44",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r43",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r43",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r42",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r42",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r41",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r41",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r40",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r40",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r39",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r39",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r38",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r38",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r37",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r37",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r36",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r36",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r35",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r35",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r34",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r34",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r33",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r33",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r32",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r32",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r31",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r31",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r30",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r30",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r29",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r29",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r28",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r28",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r27",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r27",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r26",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r26",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r25",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r25",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r24",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r24",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r23",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r23",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r22",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r22",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r21",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r21",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r20",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r20",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r19",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r19",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r18",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r18",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r17",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r17",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r16",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r16",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r15",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r15",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r14",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r14",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r13",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r13",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r12",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r12",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r11",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r11",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r10",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r10",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r9",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r9",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r8",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r8",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r7",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r7",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r6",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r6",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r5",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r5",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r4",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r4",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r3",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r3",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r2",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r2",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r1",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            },
+            {
+              "id": "r0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "kind": "experience",
+              "content": "Synthetic r0",
+              "sources": [
+                {
+                  "sceneId": "s",
+                  "messageId": "m",
+                  "senderId": "p"
+                }
+              ],
+              "importance": "low",
+              "confidence": 0.5,
+              "learnedAt": "2000-01-01T00:00:00.000Z",
+              "status": "active",
+              "locked": false,
+              "origin": "learned"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "readiness before simulation short circuit",
+      "rows": [],
+      "proofs": {},
+      "recalled": [],
+      "notReady": true,
+      "ops": [
+        {
+          "sceneId": "s",
+          "simulation": true,
+          "personId": "p"
+        },
+        {
+          "sceneId": "s",
+          "simulation": false,
+          "ids": []
+        }
+      ],
+      "results": [
+        {
+          "error": "synthetic_not_ready"
+        },
+        {
+          "error": "synthetic_not_ready"
+        }
+      ]
+    }
+  ]
+}

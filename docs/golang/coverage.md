@@ -138,3 +138,15 @@ expiry, quarantine, proof changes, scope mismatch, native read-only enforcement
 and transaction loss. Reused prepared statements contain no cached row or
 eligibility answer. Interactive command admission and complete workspace/model
 exposure remain separate unfinished work.
+
+### Fixed list and experience read projection
+
+Actual TypeScript fixtures cover six native-SQL list scenarios with scene/person/
+simulation scopes, exact-ID deduplication without prefix truncation, rowid order,
+JSON/time filters, real support qualification, recall and readiness ordering.
+The experience fixture includes 50 projections and 17 verification scenarios,
+including duplicates, simulation validation, existing product limits, coverage,
+changed evidence, exact callback references and keyed item comparisons.
+These are focused domain contracts, not completion of MemoryService or workspace
+capture. Native scoped tests separately exercise lifetime, suspended/foreign
+capabilities, fresh pending mutations, ownership and readonly operation.

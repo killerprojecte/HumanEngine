@@ -49,7 +49,7 @@ type PreparedRead = preparedRead
 
 // CheckReadBinding rejects a store already bound to any different write child.
 func (s *Store) CheckReadBinding(authority *recovery.Authority, main *sql.DB, expected *recovery.WriteSession) error {
-	if s == nil || s.authority != authority || s.main != main {
+	if s == nil || s.maintenance != nil || s.authority != authority || s.main != main {
 		return errors.New("assertion_store_binding")
 	}
 	if s.bindingError != nil {
@@ -67,6 +67,9 @@ func (s *Store) CheckReadBinding(authority *recovery.Authority, main *sql.DB, ex
 // BorrowReader preserves this store's readiness policy inside an owner's
 // existing publication. Owner identity must be checked by the composition.
 func (s *Store) BorrowReader(check func() error, query func(string, ...any) (Rows, error), prepare func(string) (PreparedRead, error)) (*Reader, error) {
+	if s.maintenance != nil {
+		return nil, errors.New("assertion_live_session_required")
+	}
 	return BorrowReadScope(check, func() error {
 		if s.options.AssertReady != nil {
 			return s.options.AssertReady()

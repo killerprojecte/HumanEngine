@@ -8,7 +8,6 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertionauthority"
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
-	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
 type Object = assertions.Object
@@ -39,11 +38,9 @@ func New(tx *assertions.RevisionTxn, owners Owners, options assertionauthority.O
 	if tx == nil || tx.Store == nil || tx.Repository == nil || owners.RemoveProjection == nil || owners.BeforePurgeHistory == nil || owners.BeforeInvalidateRecord == nil {
 		return nil, errors.New("assertion_lifecycle_dependencies_required")
 	}
-	if e := tx.Store.WithWriteSession(func(*recovery.WriteSession) error {
-		return tx.Store.Read(context.Background(), func(r *assertions.Reader) error {
-			_, e := assertionauthority.New(r, options)
-			return e
-		})
+	if e := tx.Store.Read(context.Background(), func(r *assertions.Reader) error {
+		_, e := assertionauthority.New(r, options)
+		return e
 	}); e != nil {
 		return nil, e
 	}

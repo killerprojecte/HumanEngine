@@ -61,8 +61,7 @@ func (s *PrivacyService) Refresh(ctx context.Context, tx *assertions.RevisionTxn
 	if e := tx.Checkpoint(); e != nil {
 		return e
 	}
-	return tx.Store.WithWriteSession(func(session *recovery.WriteSession) error {
-		bound := s.WithSession(session)
+	run := func(bound *PrivacyService) error {
 		if e := bound.Store.ready(); e != nil {
 			return e
 		}
@@ -150,7 +149,16 @@ func (s *PrivacyService) Refresh(ctx context.Context, tx *assertions.RevisionTxn
 			}
 			return nil
 		})
-	})
+	}
+	if s.Store.maintenance != nil {
+		return tx.Store.WithMaintenanceScope(func(scope *recovery.MaintenanceTx) error {
+			if scope != s.Store.maintenance.tx {
+				return errors.New("commitment_maintenance_binding_mismatch")
+			}
+			return run(s)
+		})
+	}
+	return tx.Store.WithWriteSession(func(session *recovery.WriteSession) error { return run(s.WithSession(session)) })
 }
 
 // Avoid shadowing the service named bound in Refresh.

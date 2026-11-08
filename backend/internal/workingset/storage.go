@@ -10,8 +10,9 @@ import (
 // Storage borrows one active session. A held Storage expires with that scope.
 // It performs metadata persistence, never content authorization.
 type Storage struct {
-	session *recovery.WriteSession
-	scope   *Scope
+	session     *recovery.WriteSession
+	maintenance *maintenanceScope
+	scope       *Scope
 }
 
 func (s *Storage) AssertSupported() (bool, error) {
@@ -35,6 +36,12 @@ func bind(args []any) []any {
 	return out
 }
 func (s *Storage) exec(q string, args ...any) (sql.Result, error) {
+	if s.maintenance != nil {
+		if e := s.maintenance.check(); e != nil {
+			return nil, e
+		}
+		return s.maintenance.tx.ExecContext(s.maintenance.ctx, q, bind(args)...)
+	}
 	if s.session == nil {
 		return nil, errors.New("working_set_transaction_required")
 	}
@@ -59,6 +66,9 @@ func (s *Storage) Exists() (bool, error) {
 	return s.one("SELECT 1 FROM sqlite_master WHERE type='table' AND name='memory_working_set_items'", nil, &n)
 }
 func (s *Storage) Ensure() error {
+	if s.maintenance != nil {
+		return s.maintenance.tx.EnsureWorkingSetSchema(s.maintenance.ctx)
+	}
 	if s.session == nil {
 		return errors.New("working_set_transaction_required")
 	}

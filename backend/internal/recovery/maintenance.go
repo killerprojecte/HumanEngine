@@ -27,16 +27,18 @@ type Maintenance struct {
 	mu        authorityLock
 	failed    error
 	sqlMu     sync.Mutex
+	effects   *[]string
 }
 
 // MaintenanceTx permits domain composition on the same transaction. Apply uses
 // a savepoint, so an inner failure does not undo earlier outer work. The handle
 // expires when its callback returns. SQL remains owned by the caller.
 type MaintenanceTx struct {
-	m      *Maintenance
-	active bool
-	failed error
-	rows   []*MaintenanceRows
+	m          *Maintenance
+	active     bool
+	failed     error
+	rows       []*MaintenanceRows
+	statements []*MaintenanceStatement
 }
 
 // Statement methods reject use after callback completion or native transaction
@@ -68,9 +70,8 @@ func (t *MaintenanceTx) fail(err error) error {
 		if stateErr != nil || !active {
 			t.m.failed = errors.Join(stateErr, errors.New("recovery_main_transaction_lost"))
 		}
-		if t.failed == nil {
-			t.failed = err
-		}
+		// A caught ordinary statement error leaves SQLite transaction usable.
+		// Only native transaction loss is poisoned across owner scopes.
 	}
 	return err
 }
@@ -105,6 +106,9 @@ func (t *MaintenanceTx) finish(prior error) error {
 	defer t.m.sqlMu.Unlock()
 	for _, rows := range t.rows {
 		prior = errors.Join(prior, rows.closeLocked())
+	}
+	for _, statement := range t.statements {
+		prior = errors.Join(prior, statement.closeLocked())
 	}
 	prior = errors.Join(prior, t.usable(context.Background()), t.m.failed)
 	t.active = false

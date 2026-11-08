@@ -22,10 +22,13 @@ type Reader struct {
 	query func(string, ...any) (Rows, error)
 }
 type Store struct {
-	main         *sql.DB
-	authority    *recovery.Authority
-	session      *recovery.WriteSession
-	bindingError error
+	maintenance        *recovery.Maintenance
+	maintenanceTx      *recovery.MaintenanceTx
+	maintenanceContext context.Context
+	main               *sql.DB
+	authority          *recovery.Authority
+	session            *recovery.WriteSession
+	bindingError       error
 }
 
 func New(main *sql.DB, authority *recovery.Authority) (*Store, error) {
@@ -36,6 +39,10 @@ func New(main *sql.DB, authority *recovery.Authority) (*Store, error) {
 }
 func (s *Store) WithSession(session *recovery.WriteSession) *Store {
 	n := *s
+	if s.maintenance != nil {
+		n.bindingError = errors.New("relation_live_scope_required")
+		return &n
+	}
 	n.session = session
 	if session == nil {
 		n.bindingError = errors.New("relation_transaction_required")
@@ -48,12 +55,24 @@ func (s *Store) RequireTransaction() error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
+	if s.maintenance != nil {
+		return s.maintenanceTx.CheckBinding(s.maintenanceContext, s.maintenance)
+	}
 	if s.session == nil {
 		return errors.New("relation_transaction_required")
 	}
 	return s.session.CheckBinding(s.authority, s.main)
 }
 func (s *Store) Transaction(ctx context.Context, fn func(*Store) error) error {
+	if s.maintenance != nil {
+		if e := s.RequireTransaction(); e != nil {
+			return e
+		}
+		if fn == nil {
+			return errors.New("relation_callback_required")
+		}
+		return s.maintenanceTx.Apply(ctx, 1, func(tx *recovery.MaintenanceTx) error { return fn(s.WithMaintenanceTx(ctx, tx)) })
+	}
 	if s.bindingError != nil {
 		return s.bindingError
 	}
@@ -63,6 +82,12 @@ func (s *Store) Transaction(ctx context.Context, fn func(*Store) error) error {
 	return s.authority.WithWriteSession(ctx, s.main, func(c *recovery.WriteSession) error { return fn(s.WithSession(c)) })
 }
 func (s *Store) Initialize(ctx context.Context) error {
+	if s.maintenance != nil {
+		if e := s.RequireTransaction(); e != nil {
+			return e
+		}
+		return s.maintenanceTx.EnsureRelationStorageSchema(ctx)
+	}
 	if s.session != nil {
 		if e := s.RequireTransaction(); e != nil {
 			return e
@@ -72,6 +97,9 @@ func (s *Store) Initialize(ctx context.Context) error {
 	return s.Transaction(ctx, func(b *Store) error { return b.session.EnsureRelationStorageSchema() })
 }
 func (s *Store) WithWriteSession(fn func(*recovery.WriteSession) error) error {
+	if s.maintenance != nil {
+		return errors.New("relation_live_scope_required")
+	}
 	if e := s.RequireTransaction(); e != nil {
 		return e
 	}
@@ -89,7 +117,7 @@ func BorrowReadScope(check func() error, query func(string, ...any) (Rows, error
 	return &Reader{check, query}, nil
 }
 func (s *Store) Reader() (*Reader, error) {
-	return BorrowReadScope(s.RequireTransaction, func(q string, args ...any) (Rows, error) { return s.session.Query(q, bind(args)...) })
+	return BorrowReadScope(s.RequireTransaction, func(q string, args ...any) (Rows, error) { return s.query(q, bind(args)...) })
 }
 func bind(args []any) []any {
 	out := append([]any{}, args...)
@@ -180,7 +208,7 @@ func (s *Store) exec(q string, args ...any) (sql.Result, error) {
 	if e := s.RequireTransaction(); e != nil {
 		return nil, e
 	}
-	return s.session.Exec(q, bind(args)...)
+	return s.execSQL(q, bind(args)...)
 }
 func (s *Store) Put(record *Object, key string, entity *Object) error {
 	if e := s.RequireTransaction(); e != nil {
@@ -240,7 +268,7 @@ func (s *Store) PurgeAssertion(id string) (out []string, err error) {
 	if err = s.RequireTransaction(); err != nil {
 		return
 	}
-	rows, err := s.session.Query("SELECT id,version FROM memory_relation_candidates WHERE assertion_id=? OR target_id IN(SELECT id FROM memory_relation_entities WHERE assertion_id=?)", bind([]any{id, id})...)
+	rows, err := s.query("SELECT id,version FROM memory_relation_candidates WHERE assertion_id=? OR target_id IN(SELECT id FROM memory_relation_entities WHERE assertion_id=?)", bind([]any{id, id})...)
 	if err != nil {
 		return
 	}

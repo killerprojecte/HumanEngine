@@ -32,6 +32,7 @@ type Store struct {
 	main         *sql.DB
 	authority    *recovery.Authority
 	session      *recovery.WriteSession
+	maintenance  *maintenanceScope
 	bindingError error
 	options      Options
 }
@@ -62,6 +63,10 @@ func New(main *sql.DB, authority *recovery.Authority, options Options) (*Store, 
 func (s *Store) WithSession(session *recovery.WriteSession) *Store {
 	n := *s
 	n.session = session
+	if s.maintenance != nil {
+		n.bindingError = errors.New("assertion_live_session_required")
+		return &n
+	}
 	if session == nil {
 		n.bindingError = errors.New("assertion_transaction_required")
 	} else {
@@ -73,6 +78,9 @@ func (s *Store) requireTransaction() error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
+	if s.maintenance != nil {
+		return s.maintenance.tx.CheckBinding(s.maintenance.ctx, s.maintenance.owner)
+	}
 	if s.session == nil {
 		return errors.New("assertion_transaction_required")
 	}
@@ -81,6 +89,9 @@ func (s *Store) requireTransaction() error {
 func (s *Store) ready() error {
 	if e := s.requireTransaction(); e != nil {
 		return e
+	}
+	if s.maintenance != nil {
+		return nil
 	}
 	if s.options.AssertReady != nil {
 		if e := s.options.AssertReady(); e != nil {
@@ -93,6 +104,9 @@ func (s *Store) Transaction(ctx context.Context, fn func(*Store) error) error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
+	if s.maintenance != nil {
+		return s.maintenance.tx.Apply(ctx, 1, func(child *recovery.MaintenanceTx) error { return fn(s.withMaintenanceChild(ctx, child)) })
+	}
 	if s.session != nil {
 		return s.session.WithSavepoint(func(child *recovery.WriteSession) error { return fn(s.WithSession(child)) })
 	}
@@ -102,6 +116,9 @@ func (s *Store) Transaction(ctx context.Context, fn func(*Store) error) error {
 // Initialize is explicit writer initialization. Constructing a reader never
 // creates tables or imports legacy assertions.
 func (s *Store) Initialize(ctx context.Context) error {
+	if s.maintenance != nil {
+		return errors.New("assertion_live_initialization_required")
+	}
 	return s.Transaction(ctx, func(b *Store) error {
 		if e := b.session.EnsureMemoryStorageSchema(); e != nil {
 			return e
@@ -114,6 +131,13 @@ func (s *Store) reader() *Reader {
 		if e := s.requireTransaction(); e != nil {
 			return nil, e
 		}
+		if s.maintenance != nil {
+			statement, e := s.maintenance.tx.PrepareQuery(s.maintenance.ctx, q)
+			if e != nil {
+				return nil, e
+			}
+			return &maintenancePreparedRead{statement}, nil
+		}
 		statement, e := s.session.PrepareQuery(q)
 		if e != nil {
 			return nil, e
@@ -123,6 +147,9 @@ func (s *Store) reader() *Reader {
 		if e := s.requireTransaction(); e != nil {
 			return nil, e
 		}
+		if s.maintenance != nil {
+			return s.maintenance.tx.QueryContext(s.maintenance.ctx, q, bind(args)...)
+		}
 		return s.session.Query(q, bind(args)...)
 	}}
 }
@@ -130,7 +157,7 @@ func (s *Store) Read(ctx context.Context, fn func(*Reader) error) error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
-	if s.session != nil {
+	if s.session != nil || s.maintenance != nil {
 		return fn(s.reader())
 	}
 	return s.authority.Publish(ctx, s.main, func(conn *sql.Conn) ([]byte, error) {
@@ -172,6 +199,10 @@ func (s *Store) Read(ctx context.Context, fn func(*Reader) error) error {
 }
 func (s *Store) exec(q string, args ...any) error {
 	if e := s.requireTransaction(); e != nil {
+		return e
+	}
+	if s.maintenance != nil {
+		_, e := s.maintenance.tx.ExecContext(s.maintenance.ctx, q, bind(args)...)
 		return e
 	}
 	_, e := s.session.Exec(q, bind(args)...)

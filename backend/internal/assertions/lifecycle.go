@@ -16,6 +16,9 @@ func (s *Store) WithWriteSession(fn func(*recovery.WriteSession) error) error {
 	if e := s.requireTransaction(); e != nil {
 		return e
 	}
+	if s.maintenance != nil {
+		return errors.New("assertion_live_session_required")
+	}
 	if fn == nil {
 		return errors.New("assertion_write_operation_required")
 	}

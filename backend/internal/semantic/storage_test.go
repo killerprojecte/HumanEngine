@@ -100,7 +100,7 @@ func TestPurgeDurableOrderTombstoneAndBinding(t *testing.T) {
 	}
 	var reader int
 	semMust(t, f.main.QueryRow("SELECT json_extract(value,'$.minimumReader') FROM recovery_gate").Scan(&reader))
-	if reader != 7 {
+	if reader != 8 {
 		t.Fatal(reader)
 	}
 	events := semEvents(t, f, 2)

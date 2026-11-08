@@ -43,6 +43,7 @@ type Outbox struct {
 	main         *sql.DB
 	authority    *recovery.Authority
 	session      *recovery.WriteSession
+	maintenance  *maintenanceScope
 	bindingError error
 	options      Options
 }
@@ -75,6 +76,10 @@ func randomToken() (string, error) {
 func (o *Outbox) WithSession(s *recovery.WriteSession) *Outbox {
 	n := *o
 	n.session = s
+	if o.maintenance != nil {
+		n.bindingError = errors.New("projection_live_session_required")
+		return &n
+	}
 	if s == nil {
 		n.bindingError = errors.New("projection_transaction_required")
 	} else {
@@ -85,6 +90,9 @@ func (o *Outbox) WithSession(s *recovery.WriteSession) *Outbox {
 func (o *Outbox) check() error {
 	if o.bindingError != nil {
 		return o.bindingError
+	}
+	if o.maintenance != nil {
+		return o.maintenance.tx.CheckBinding(o.maintenance.ctx, o.maintenance.owner)
 	}
 	if o.session == nil {
 		return errors.New("projection_transaction_required")
@@ -97,6 +105,12 @@ func (o *Outbox) Transaction(ctx context.Context, fn func(*Outbox) error) error 
 	}
 	if fn == nil {
 		return errors.New("projection_callback_required")
+	}
+	if o.maintenance != nil {
+		if e := o.check(); e != nil {
+			return e
+		}
+		return o.maintenance.tx.Apply(ctx, 1, func(tx *recovery.MaintenanceTx) error { return fn(o.withMaintenanceChild(ctx, tx)) })
 	}
 	run := func(s *recovery.WriteSession) error { return fn(o.WithSession(s)) }
 	if o.session != nil {
@@ -116,13 +130,16 @@ func (o *Outbox) exec(q string, args ...any) (sql.Result, error) {
 	if e := o.check(); e != nil {
 		return nil, e
 	}
+	if o.maintenance != nil {
+		return o.maintenance.tx.ExecContext(o.maintenance.ctx, q, bind(args)...)
+	}
 	return o.session.Exec(q, bind(args)...)
 }
 func (o *Outbox) one(q string, args []any, dest ...any) (found bool, err error) {
 	if err = o.check(); err != nil {
 		return
 	}
-	rows, e := o.session.Query(q, bind(args)...)
+	rows, e := o.query(q, bind(args)...)
 	if e != nil {
 		return false, e
 	}
@@ -187,7 +204,7 @@ func (o *Outbox) Claim(ctx context.Context, leaseMs int64, limit int) (leases []
 		if e != nil {
 			return e
 		}
-		rows, e := b.session.Query(`SELECT id,assertion_id,version,deletion_epoch,kind,attempts FROM memory_projection_outbox WHERE state='pending' AND available_at<=? ORDER BY available_at,id LIMIT ?`, now, limit)
+		rows, e := b.query(`SELECT id,assertion_id,version,deletion_epoch,kind,attempts FROM memory_projection_outbox WHERE state='pending' AND available_at<=? ORDER BY available_at,id LIMIT ?`, now, limit)
 		if e != nil {
 			return e
 		}

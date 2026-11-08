@@ -35,7 +35,7 @@ type EditedResult struct {
 }
 
 func (m *MutationHooks) ready() error {
-	if m.service.session == nil {
+	if m.service.session == nil && m.service.maintenance == nil {
 		return errors.New("working_set_mutation_transaction_required")
 	}
 	return m.service.ready()
@@ -74,14 +74,20 @@ func (m *MutationHooks) enqueue(ctx Context, refs []Reference) (MutationResult, 
 	if len(refs) == 0 {
 		return out, nil
 	}
-	if m.ports.ResolveCommitted == nil {
+	if m.ports.ResolveCommitted == nil && s.maintenance == nil {
 		return out, errors.New("working_set_mutation_authority_invalid")
 	}
 	wanted := map[string]bool{}
 	for _, r := range refs {
 		wanted[ReferenceKey(r)] = true
 	}
-	resolved, e := m.ports.ResolveCommitted(s.session, ctx, refs)
+	var resolved []Snapshot
+	var e error
+	if s.maintenance != nil {
+		resolved, e = s.ports.ResolveCurrent(s.scope(), ctx, refs)
+	} else {
+		resolved, e = m.ports.ResolveCommitted(s.session, ctx, refs)
+	}
 	if e != nil {
 		return out, e
 	}

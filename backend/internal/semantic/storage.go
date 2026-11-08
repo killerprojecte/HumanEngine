@@ -3,6 +3,7 @@
 package semantic
 
 import (
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"errors"
@@ -13,10 +14,13 @@ import (
 )
 
 type Store struct {
-	main         *sql.DB
-	authority    *recovery.Authority
-	session      *recovery.WriteSession
-	bindingError error
+	maintenance        *recovery.Maintenance
+	maintenanceTx      *recovery.MaintenanceTx
+	maintenanceContext context.Context
+	main               *sql.DB
+	authority          *recovery.Authority
+	session            *recovery.WriteSession
+	bindingError       error
 }
 
 func New(main *sql.DB, authority *recovery.Authority) (*Store, error) {
@@ -27,6 +31,10 @@ func New(main *sql.DB, authority *recovery.Authority) (*Store, error) {
 }
 func (s *Store) WithSession(session *recovery.WriteSession) *Store {
 	n := *s
+	if s.maintenance != nil {
+		n.bindingError = errors.New("semantic_live_scope_required")
+		return &n
+	}
 	n.session = session
 	n.bindingError = nil
 	if session == nil {
@@ -40,6 +48,9 @@ func (s *Store) RequireTransaction() error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
+	if s.maintenance != nil {
+		return s.maintenanceTx.CheckBinding(s.maintenanceContext, s.maintenance)
+	}
 	if s.session == nil {
 		return errors.New("semantic_transaction_required")
 	}
@@ -52,6 +63,9 @@ func (s *Store) RequireTransaction() error {
 // WithWriteSession borrows exactly the currently bound child, never a sibling
 // session or an independently committed transaction.
 func (s *Store) WithWriteSession(fn func(*recovery.WriteSession) error) error {
+	if s.maintenance != nil {
+		return errors.New("semantic_live_scope_required")
+	}
 	if e := s.RequireTransaction(); e != nil {
 		return e
 	}
@@ -97,7 +111,7 @@ func (s *Store) exists(table string) (bool, error) {
 	if e := s.RequireTransaction(); e != nil {
 		return false, e
 	}
-	r, e := s.session.Query("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", table)
+	r, e := s.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", table)
 	if e != nil {
 		return false, e
 	}
@@ -143,7 +157,7 @@ func (s *Store) candidates(where string, args []any, limit int) (out []*jsjson.O
 	if e != nil || !yes {
 		return out, e
 	}
-	r, e := s.session.Query("SELECT id,scene_id,input_key,version,value FROM memory_semantic_candidates"+where, semBind(args)...)
+	r, e := s.query("SELECT id,scene_id,input_key,version,value FROM memory_semantic_candidates"+where, semBind(args)...)
 	if e != nil {
 		return nil, e
 	}
@@ -188,7 +202,7 @@ func (s *Store) candidateExists(column, value string) (bool, error) {
 	if e != nil || !yes {
 		return false, e
 	}
-	r, e := s.session.Query("SELECT 1 FROM memory_semantic_candidates WHERE "+column+"=?", semBind([]any{value})...)
+	r, e := s.query("SELECT 1 FROM memory_semantic_candidates WHERE "+column+"=?", semBind([]any{value})...)
 	if e != nil {
 		return false, e
 	}
@@ -202,7 +216,7 @@ func (s *Store) AvailableSlots(scene string) (int, error) {
 		return 40, e
 	}
 	// Explicit main qualification preserves SQLite count fast-path authority metadata.
-	r, e := s.session.Query("SELECT (SELECT COUNT(*) FROM main.memory_semantic_candidates WHERE scene_id=?),COUNT(*) FROM main.memory_semantic_candidates", semBind([]any{scene})...)
+	r, e := s.query("SELECT (SELECT COUNT(*) FROM main.memory_semantic_candidates WHERE scene_id=?),COUNT(*) FROM main.memory_semantic_candidates", semBind([]any{scene})...)
 	if e != nil {
 		return 0, e
 	}
@@ -219,7 +233,7 @@ func (s *Store) Attempts() (out []*jsjson.Object, err error) {
 	if e != nil || !yes {
 		return out, e
 	}
-	r, e := s.session.Query("SELECT scene_id,input_key,value FROM memory_semantic_attempts ORDER BY input_key")
+	r, e := s.query("SELECT scene_id,input_key,value FROM memory_semantic_attempts ORDER BY input_key")
 	if e != nil {
 		return nil, e
 	}
@@ -283,8 +297,11 @@ func mutation(next, previous *jsjson.Object, operation string) (recovery.Semanti
 	return m, nil
 }
 func (s *Store) record(m recovery.SemanticMutation) error {
-	if e := s.session.RequireReader(7); e != nil {
+	if e := s.requireReader(8); e != nil {
 		return e
+	}
+	if s.maintenance != nil {
+		return s.maintenanceTx.RecordReplayEffect(s.maintenanceContext, m)
 	}
 	_, e := s.session.AppendIntent(m)
 	return e
@@ -348,7 +365,7 @@ func (s *Store) Write(next, previous *jsjson.Object, operation string) error {
 	if e = s.record(m); e != nil {
 		return e
 	}
-	if e = s.session.EnsureSemanticCandidatesSchema(); e != nil {
+	if e = s.ensureCandidatesSchema(); e != nil {
 		return e
 	}
 	if next != nil {
@@ -356,10 +373,10 @@ func (s *Store) Write(next, previous *jsjson.Object, operation string) error {
 		if e != nil {
 			return e
 		}
-		_, e = s.session.Exec("INSERT INTO memory_semantic_candidates(id,scene_id,input_key,version,value) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version,value=excluded.value", semBind([]any{semGet(next, "id"), semGet(next, "sceneId"), semGet(next, "inputKey"), semGet(next, "version"), raw})...)
+		_, e = s.execSQL("INSERT INTO memory_semantic_candidates(id,scene_id,input_key,version,value) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version,value=excluded.value", semBind([]any{semGet(next, "id"), semGet(next, "sceneId"), semGet(next, "inputKey"), semGet(next, "version"), raw})...)
 		return e
 	}
-	_, e = s.session.Exec("UPDATE memory_semantic_candidates SET version=version+1,value=NULL WHERE id=?", semBind([]any{semGet(previous, "id")})...)
+	_, e = s.execSQL("UPDATE memory_semantic_candidates SET version=version+1,value=NULL WHERE id=?", semBind([]any{semGet(previous, "id")})...)
 	return e
 }
 func (s *Store) WriteAttempt(next, previous *jsjson.Object) error {
@@ -416,13 +433,13 @@ func (s *Store) WriteAttempt(next, previous *jsjson.Object) error {
 	if e = s.record(m); e != nil {
 		return e
 	}
-	if e = s.session.EnsureSemanticAttemptsSchema(); e != nil {
+	if e = s.ensureAttemptsSchema(); e != nil {
 		return e
 	}
 	raw, e := jsjson.Stringify(next)
 	if e != nil {
 		return e
 	}
-	_, e = s.session.Exec("INSERT INTO memory_semantic_attempts(scene_id,input_key,value) VALUES(?,?,?) ON CONFLICT(input_key) DO UPDATE SET value=excluded.value", semBind([]any{semGet(next, "sceneId"), semGet(next, "inputKey"), raw})...)
+	_, e = s.execSQL("INSERT INTO memory_semantic_attempts(scene_id,input_key,value) VALUES(?,?,?) ON CONFLICT(input_key) DO UPDATE SET value=excluded.value", semBind([]any{semGet(next, "sceneId"), semGet(next, "inputKey"), raw})...)
 	return e
 }

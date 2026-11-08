@@ -12,7 +12,7 @@ func (s *Store) RecallSource(scene, message string) error {
 	if e := s.requireTransaction(); e != nil {
 		return e
 	}
-	if _, e := s.session.AppendIntent(recovery.Source{SceneID: scene, MessageID: message}); e != nil {
+	if _, e := s.appendIntent(recovery.Source{SceneID: scene, MessageID: message}); e != nil {
 		return e
 	}
 	return s.exec("INSERT OR IGNORE INTO recall_tombstones VALUES(?,?,?)", scene, message, s.now())
@@ -25,7 +25,7 @@ func (s *Store) RevokeTerminalAssertion(id string) error {
 	if e != nil {
 		return e
 	}
-	_, e = s.session.AppendIntent(recovery.Assertion{ID: id, ThroughVersion: state.Version, Terminal: true})
+	_, e = s.appendIntent(recovery.Assertion{ID: id, ThroughVersion: state.Version, Terminal: true})
 	return e
 }
 func (s *Store) DeletePrivacyFingerprints(record *Object) error {
@@ -34,7 +34,7 @@ func (s *Store) DeletePrivacyFingerprints(record *Object) error {
 		return e
 	}
 	emit := func(v, at string) error {
-		if _, e := s.session.AppendIntent(recovery.Fingerprint{Value: v}); e != nil {
+		if _, e := s.appendIntent(recovery.Fingerprint{Value: v}); e != nil {
 			return e
 		}
 		return s.exec("INSERT OR REPLACE INTO memory_deleted VALUES(?,?)", v, at)

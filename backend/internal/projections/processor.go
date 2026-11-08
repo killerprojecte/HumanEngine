@@ -15,9 +15,10 @@ type Object = assertions.Object
 // Complete's active child. No independent publication connection is permitted.
 type EligibleReader func(*recovery.WriteSession, string) (*Object, error)
 type Processor struct {
-	outbox       *Outbox
-	readEligible EligibleReader
-	now          func() float64
+	outbox              *Outbox
+	readEligible        EligibleReader
+	maintenanceEligible func(*recovery.MaintenanceTx, string) (*Object, error)
+	now                 func() float64
 }
 type DrainResult struct {
 	Claimed   int `json:"claimed"`
@@ -38,7 +39,7 @@ func NewProcessor(ctx context.Context, outbox *Outbox, readEligible EligibleRead
 	if now == nil {
 		now = outbox.options.Now
 	}
-	p := &Processor{outbox, readEligible, now}
+	p := &Processor{outbox: outbox, readEligible: readEligible, now: now}
 	e := outbox.Transaction(ctx, func(b *Outbox) error { return b.session.EnsureProjectionProcessorSchema() })
 	if e != nil {
 		return nil, e
@@ -77,7 +78,13 @@ func (p *Processor) Drain(ctx context.Context, maxJobs int) (result DrainResult,
 		result.Claimed += len(leases)
 		for _, lease := range leases {
 			completed, e := p.outbox.Complete(ctx, lease, func(b *Outbox) error {
-				record, e := p.readEligible(b.session, lease.AssertionID)
+				var record *Object
+				var e error
+				if b.maintenance != nil {
+					record, e = p.maintenanceEligible(b.maintenance.tx, lease.AssertionID)
+				} else {
+					record, e = p.readEligible(b.session, lease.AssertionID)
+				}
 				if e != nil {
 					return e
 				}

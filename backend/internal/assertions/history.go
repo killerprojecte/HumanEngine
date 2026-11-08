@@ -399,7 +399,7 @@ func (s *Store) erase(id string, terminal bool) (State, error) {
 	if e != nil {
 		return state, e
 	}
-	if _, e = s.session.AppendIntent(recovery.Assertion{ID: id, ThroughVersion: state.Version, Terminal: terminal}); e != nil {
+	if _, e = s.appendIntent(recovery.Assertion{ID: id, ThroughVersion: state.Version, Terminal: terminal}); e != nil {
 		return state, e
 	}
 	if state.Deleted {

@@ -43,12 +43,21 @@ or perform external effects. `MaintenanceTx` exposes guarded SQL methods, not th
 statement checks native transaction state; loss is latched across nested
 scopes so catching a trigger rollback cannot lead to later autocommit writes.
 The caller still owns the original connection and must not bypass the handle.
-The candidate callback contract latches its first SQL or Scan failure even if
-that callback catches the error. In contrast, a caught nested `MaintenanceTx.Apply`
-error rolls back only that nested savepoint, unless SQLite lost the entire main
-transaction. Canonical domain callbacks return SQL errors, so this distinction
-does not change the verified external-cost replay cases. Parity is not claimed
-for arbitrary callbacks that intentionally swallow SQL or Scan failures.
+Ordinary statement errors do not poison an otherwise active native SQLite
+transaction. A caller may catch an ABORT/constraint error and continue within
+that same callback, matching source synchronous transaction behavior. An
+uncaught error returned by the callback rolls back the enclosing effect.
+Native transaction loss remains latched across all child scopes, even when its
+error is caught; no subsequent statement can fall through into autocommit.
+A caught nested `MaintenanceTx.Apply` error rolls back its savepoint only when
+the native outer transaction still exists.
+
+`CaptureEffects` returns ordered validated JSON receipts only when the root
+capture succeeds. Repeated identical effects are preserved. As in the source
+collector, a caught nested savepoint rollback does not truncate collected
+receipts; a failed root capture returns no receipts. Collection never appends to
+the durable authority or advances the staging gate.
+
 Rows are guarded too: deferred stepping checks native state, and all rows
 close when the callback ends. Escaped rows cannot execute later SQL. Callers
 should still consume and close rows promptly within their callback.

@@ -25,13 +25,14 @@ type PreparedRead interface {
 }
 
 type Scope struct {
-	main      *sql.DB
-	authority *recovery.Authority
-	prepare   func(string) (PreparedRead, error)
-	session   *recovery.WriteSession
-	query     func(string, ...any) (Rows, error)
-	check     func() error
-	audit     func() (bool, error)
+	main        *sql.DB
+	authority   *recovery.Authority
+	prepare     func(string) (PreparedRead, error)
+	session     *recovery.WriteSession
+	maintenance *recovery.MaintenanceTx
+	query       func(string, ...any) (Rows, error)
+	check       func() error
+	audit       func() (bool, error)
 }
 
 func (s *Scope) CheckScope() error {
@@ -55,6 +56,9 @@ func (s *Scope) WriteSession() *recovery.WriteSession {
 	return s.session
 }
 func (s *Service) scope() *Scope {
+	if s.maintenance != nil {
+		return s.maintenanceScope()
+	}
 	if s.readScope != nil {
 		return s.readScope
 	}
@@ -73,7 +77,7 @@ func (s *Service) Read(ctx context.Context, fn func(*Service) error) error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
-	if s.session != nil || s.readScope != nil {
+	if s.session != nil || s.readScope != nil || s.maintenance != nil {
 		if e := s.scope().CheckScope(); e != nil {
 			return e
 		}

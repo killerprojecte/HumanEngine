@@ -829,3 +829,29 @@ is not: configured decoding/resizing fails explicitly without a supplied native
 codec. This is not a complete production provider deployment. Pinned native
 libvips parity, application/REST composition and offline lifecycle integration
 remain active work. No new protective resource limits were introduced.
+
+## Stage37: real quarantined recovered-history composition
+
+Offline redaction and assertion erasure now use native maintenance-scoped owners
+for assertions/history, relations, knowledge, semantic, commitments, working-set
+pins/items, and projection outbox/processing. The facade follows source ordering
+for current and absent assertions, dependent graphs, historical-only dependents
+and legacy cycles. Maintenance does not synthesize live eligibility events.
+
+Effects remain ordered with multiplicity intact. Failed root capture discards
+receipts; a caught nested savepoint rollback retains already captured effects,
+matching the source collector. Ordinary caught SQLite ABORT/constraint errors do
+not poison a still-active transaction. Uncaught callback errors roll back, and
+actual native transaction loss remains a shared latch that blocks all scopes.
+Scoped prepared handles cannot escape their owner lifetime.
+
+The actual quarantined TS Store/MemoryService oracle covers 14 scenarios and 28
+operations, including real nonempty relation/knowledge/semantic/pin/commitment
+owners. Two initial compatibility failures were corrected rather than changing
+expected fixtures. Final narrow tests and ten affected-domain race/vet passed;
+independent static review also passed. Exact full/native CI remains pending.
+
+This completes the recovered-history operation facade, not global reconciliation.
+Whole authority replay orchestration, receipt accounting, filesystem effects and
+final ACK/readiness remain separate. Semantic-attempt and source-edit-dependent
+proof fixture expansion also remains work; no universal recovery parity is claimed.

@@ -11,10 +11,13 @@ import (
 )
 
 type Store struct {
-	main         *sql.DB
-	authority    *recovery.Authority
-	session      *recovery.WriteSession
-	bindingError error
+	maintenance        *recovery.Maintenance
+	maintenanceTx      *recovery.MaintenanceTx
+	maintenanceContext context.Context
+	main               *sql.DB
+	authority          *recovery.Authority
+	session            *recovery.WriteSession
+	bindingError       error
 }
 
 func NewStore(main *sql.DB, authority *recovery.Authority) (*Store, error) {
@@ -25,6 +28,10 @@ func NewStore(main *sql.DB, authority *recovery.Authority) (*Store, error) {
 }
 func (s *Store) WithSession(session *recovery.WriteSession) *Store {
 	n := *s
+	if s.maintenance != nil {
+		n.bindingError = errors.New("knowledge_live_scope_required")
+		return &n
+	}
 	n.session = session
 	if session == nil {
 		n.bindingError = errors.New("knowledge_transaction_required")
@@ -37,6 +44,9 @@ func (s *Store) RequireTransaction() error {
 	if s.bindingError != nil {
 		return s.bindingError
 	}
+	if s.maintenance != nil {
+		return s.maintenanceTx.CheckBinding(s.maintenanceContext, s.maintenance)
+	}
 	if s.session == nil {
 		return errors.New("knowledge_transaction_required")
 	}
@@ -46,12 +56,24 @@ func (s *Store) RequireTransaction() error {
 	return s.session.AssertReady()
 }
 func (s *Store) WithWriteSession(fn func(*recovery.WriteSession) error) error {
+	if s.maintenance != nil {
+		return errors.New("knowledge_live_scope_required")
+	}
 	if e := s.RequireTransaction(); e != nil {
 		return e
 	}
 	return errors.Join(fn(s.session), s.RequireTransaction())
 }
 func (s *Store) Transaction(ctx context.Context, fn func(*Store) error) error {
+	if s.maintenance != nil {
+		if e := s.RequireTransaction(); e != nil {
+			return e
+		}
+		if fn == nil {
+			return errors.New("knowledge_callback_required")
+		}
+		return s.maintenanceTx.Apply(ctx, 1, func(tx *recovery.MaintenanceTx) error { return fn(s.WithMaintenanceTx(ctx, tx)) })
+	}
 	if s.bindingError != nil {
 		return s.bindingError
 	}
@@ -75,7 +97,7 @@ func (s *Store) exists() (exists bool, err error) {
 	if err = s.RequireTransaction(); err != nil {
 		return
 	}
-	rows, err := s.session.Query("SELECT 1 FROM sqlite_master WHERE name='memory_knowledge_edges' AND type='table'")
+	rows, err := s.query("SELECT 1 FROM sqlite_master WHERE name='memory_knowledge_edges' AND type='table'")
 	if err != nil {
 		return
 	}
@@ -111,7 +133,7 @@ func (s *Store) readRows(q string, args ...any) (out []*Object, err error) {
 	if err = s.RequireTransaction(); err != nil {
 		return
 	}
-	rows, err := s.session.Query(q, bind(args)...)
+	rows, err := s.query(q, bind(args)...)
 	if err != nil {
 		return
 	}
@@ -173,7 +195,7 @@ func (s *Store) writeBoundary() error {
 	if e := s.RequireTransaction(); e != nil {
 		return e
 	}
-	return s.session.RequireReader(6)
+	return s.requireReader(7)
 }
 func (s *Store) Put(edge *Object, key string) error {
 	if e := s.RequireTransaction(); e != nil {
@@ -186,14 +208,14 @@ func (s *Store) Put(edge *Object, key string) error {
 	if e := s.writeBoundary(); e != nil {
 		return e
 	}
-	if e := s.session.EnsureKnowledgeStorageSchema(); e != nil {
+	if e := s.ensureKnowledgeSchema(); e != nil {
 		return e
 	}
 	raw, e := jsjson.Stringify(safe)
 	if e != nil {
 		return e
 	}
-	_, e = s.session.Exec("INSERT INTO memory_knowledge_edges VALUES(?,?,?,?,?)", bind([]any{get(edge, "id"), get(edge, "sceneId"), get(get(edge, "backing"), "id"), key, raw})...)
+	_, e = s.execSQL("INSERT INTO memory_knowledge_edges VALUES(?,?,?,?,?)", bind([]any{get(edge, "id"), get(edge, "sceneId"), get(get(edge, "backing"), "id"), key, raw})...)
 	return e
 }
 func (s *Store) Replace(edge *Object) error {
@@ -211,7 +233,7 @@ func (s *Store) Replace(edge *Object) error {
 	if e != nil {
 		return e
 	}
-	_, e = s.session.Exec("UPDATE memory_knowledge_edges SET value=? WHERE id=?", bind([]any{raw, get(edge, "id")})...)
+	_, e = s.execSQL("UPDATE memory_knowledge_edges SET value=? WHERE id=?", bind([]any{raw, get(edge, "id")})...)
 	return e
 }
 func (s *Store) Remove(id string) error {
@@ -222,6 +244,6 @@ func (s *Store) Remove(id string) error {
 	if e = s.writeBoundary(); e != nil {
 		return e
 	}
-	_, e = s.session.Exec("DELETE FROM memory_knowledge_edges WHERE id=?", bind([]any{id})...)
+	_, e = s.execSQL("DELETE FROM memory_knowledge_edges WHERE id=?", bind([]any{id})...)
 	return e
 }

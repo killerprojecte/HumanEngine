@@ -117,7 +117,7 @@ func TestOptionalStorageAndBarrierWithoutIntent(t *testing.T) {
 	must(t, f.storage.Transaction(ctx, func(s *Store) error { return s.Put(edge, "preserved-key") }))
 	gate, e := recovery.ReadGate(ctx, f.main)
 	must(t, e)
-	if gate.MinimumReader != 6 || gate.Head.Sequence != 0 {
+	if gate.MinimumReader != 7 || gate.Head.Sequence != 0 {
 		t.Fatal(gate)
 	}
 	must(t, f.storage.Transaction(ctx, func(s *Store) error {

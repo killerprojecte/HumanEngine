@@ -33,6 +33,7 @@ type Service struct {
 	main         *sql.DB
 	authority    *recovery.Authority
 	session      *recovery.WriteSession
+	maintenance  *maintenanceScope
 	readScope    *Scope
 	bindingError error
 	ports        Ports
@@ -75,6 +76,10 @@ func randomToken() (string, error) {
 func (s *Service) WithSession(session *recovery.WriteSession) *Service {
 	b := *s
 	b.session = session
+	if s.maintenance != nil {
+		b.bindingError = errors.New("working_set_live_session_required")
+		return &b
+	}
 	b.readScope = nil
 	if session == nil {
 		b.bindingError = errors.New("working_set_transaction_required")
@@ -84,10 +89,15 @@ func (s *Service) WithSession(session *recovery.WriteSession) *Service {
 	return &b
 }
 func (s *Service) Session() *recovery.WriteSession { return s.session }
-func (s *Service) Storage() *Storage               { return &Storage{session: s.session, scope: s.scope()} }
+func (s *Service) Storage() *Storage {
+	return &Storage{session: s.session, scope: s.scope(), maintenance: s.maintenance}
+}
 func (s *Service) check() error {
 	if s.bindingError != nil {
 		return s.bindingError
+	}
+	if s.maintenance != nil {
+		return s.maintenance.check()
 	}
 	if s.session == nil {
 		return errors.New("working_set_transaction_required")
@@ -109,6 +119,15 @@ func (s *Service) ready() error {
 	return nil
 }
 func (s *Service) Transaction(ctx context.Context, fn func(*Service) error) error {
+	if s.maintenance != nil {
+		if fn == nil {
+			return errors.New("working_set_callback_required")
+		}
+		if e := s.check(); e != nil {
+			return e
+		}
+		return s.maintenance.tx.Apply(ctx, 1, func(tx *recovery.MaintenanceTx) error { return fn(s.withMaintenanceChild(ctx, tx)) })
+	}
 	if s.readScope != nil {
 		return errors.New("working_set_read_only_scope")
 	}
@@ -147,7 +166,7 @@ func (s *Service) write() error {
 			return e
 		}
 	}
-	if e := s.session.RequireReader(4); e != nil {
+	if e := s.requireReader(4); e != nil {
 		return e
 	}
 	return s.Storage().Ensure()
@@ -168,10 +187,10 @@ func (s *Service) writePin(p PinPolicy) error {
 			return e
 		}
 	}
-	if e := s.session.RequireReader(4); e != nil {
+	if e := s.requireReader(4); e != nil {
 		return e
 	}
-	if _, e := s.session.AppendIntent(recovery.WorkingSetPin{Policy: p}); e != nil {
+	if _, e := s.appendIntent(recovery.WorkingSetPin{Policy: p}); e != nil {
 		return e
 	}
 	return s.Storage().PutPin(p)

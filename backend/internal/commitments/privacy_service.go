@@ -77,7 +77,7 @@ func (s *PrivacyService) record(kind string, head *Object, hash string, temporal
 			return e
 		}
 		emit = func(event recovery.Revocation) error {
-			if e := scope.tx.ValidateReplayEffect(scope.ctx, event); e != nil {
+			if e := scope.tx.RecordReplayEffect(scope.ctx, event); e != nil {
 				// Preserve capability/cancellation errors. Only the existing typed
 				// codec's contract rejection maps to the source domain error.
 				switch e.Error() {

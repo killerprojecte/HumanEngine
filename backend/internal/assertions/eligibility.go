@@ -92,6 +92,10 @@ type EligibilityTransition struct{ Before, After *Object }
 // RecordEligibilityChanges emits one final transition batch. It is a live writer
 // operation, not maintenance replay or automatic baseline enrollment.
 func (s *Store) RecordEligibilityChanges(records []EligibilityTransition) error {
+	// Source eligibility.ts suppresses offline transition synthesis entirely.
+	if s.maintenance != nil {
+		return s.requireTransaction()
+	}
 	changes := []recovery.EligibilityChange{}
 	for _, pair := range records {
 		if !permissionChanged(pair.Before, pair.After) {
@@ -129,7 +133,7 @@ func (s *Store) RecordEligibilityChanges(records []EligibilityTransition) error 
 	if e := s.requireTransaction(); e != nil {
 		return e
 	}
-	if e := s.session.RequireReader(11); e != nil {
+	if e := s.requireReader(11); e != nil {
 		return e
 	}
 	var id string
@@ -142,7 +146,7 @@ func (s *Store) RecordEligibilityChanges(records []EligibilityTransition) error 
 			return e
 		}
 	}
-	_, e = s.session.AppendIntent(recovery.AssertionEligibility{OperationID: id, Mode: "transition", Changes: changes})
+	_, e = s.appendIntent(recovery.AssertionEligibility{OperationID: id, Mode: "transition", Changes: changes})
 	return e
 }
 func operationID() (string, error) {

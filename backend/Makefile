@@ -15,6 +15,7 @@ build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
 plugin-source-check:
+	cd .. && node --import tsx backend/internal/plugins/generate-configuration-errors.mjs --check
 	cd .. && node --experimental-transform-types backend/internal/pluginmanager/generate-configuration-source.mjs --check
 	cd .. && node --experimental-transform-types backend/internal/pluginmanager/generate-enablement-source.mjs --check
 	cd .. && node --experimental-transform-types backend/internal/pluginmanager/generate-async-configuration-source.mjs --check

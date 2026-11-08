@@ -60,21 +60,65 @@ func TestV1ConfigVocabularyRejectsInvalidBeforeSetup(t *testing.T) {
 	ctx := context.Background()
 	host := NewV1Host("node", io.Discard)
 	defer host.Close(ctx)
-	path := filepath.Join(t.TempDir(), "config.mjs")
-	source := `export default{manifest:{id:'config',configSchema:{type:'object',properties:{speed:{type:'number',minimum:1}},required:['speed'],additionalProperties:false},capabilities:[]},setup(){throw Error('setup should not run for invalid configuration')}}`
+	root := t.TempDir()
+	path := filepath.Join(root, "config.mjs")
+	marker := filepath.Join(root, "setup-called")
+	markerJSON, _ := json.Marshal(marker)
+	source := `import {writeFileSync} from 'node:fs';export default{manifest:{id:'config',configSchema:{type:'object',properties:{speed:{type:'number',minimum:1}},required:['speed'],additionalProperties:false},capabilities:[]},setup(){writeFileSync(` + string(markerJSON) + `,'entered');throw Error('setup entered after valid configuration')}}`
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
-	for _, item := range []struct {
-		config map[string]any
-		code   string
-	}{{map[string]any{}, "required_property"}, {map[string]any{"speed": 0}, "expected_number"}, {map[string]any{"speed": 2, "unknown": true}, "unknown_property"}} {
-		if _, err := host.Enable(ctx, "config", path, item.config); err == nil || !strings.Contains(err.Error(), item.code) {
-			t.Fatal("configuration did not fail at validation", err)
+	raw, err := os.ReadFile("testdata/configuration-errors.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cases []struct {
+		Name    string
+		Config  map[string]any
+		Reason  string
+		Wrapped struct {
+			Typed         bool
+			Name, Message string
+			Issues        []any
 		}
-		if host.PID() != 0 {
-			t.Fatal("failed validation retained Node")
-		}
+	}
+	if err = json.Unmarshal(raw, &cases); err != nil {
+		t.Fatal(err)
+	}
+	expectedReasons := map[string]string{"required": "required_property", "minimum": "expected_number", "unknown": "unknown_property"}
+	if len(cases) != len(expectedReasons) {
+		t.Fatal("missing source cases", len(cases))
+	}
+	for _, item := range cases {
+		t.Run(item.Name, func(t *testing.T) {
+			if item.Reason != expectedReasons[item.Name] || !item.Wrapped.Typed || item.Wrapped.Name != "PluginConfigurationError" || item.Wrapped.Message != "invalid_plugin_configuration" || item.Wrapped.Issues == nil || len(item.Wrapped.Issues) != 0 {
+				t.Fatal("unexpected source error projection", item)
+			}
+			_, err := host.Enable(ctx, "config", path, item.Config)
+			var configuration *V1ConfigurationError
+			if !errors.As(err, &configuration) || err.Error() != item.Wrapped.Message {
+				t.Fatal("configuration did not fail at validation", err)
+			}
+			if _, err = os.Stat(marker); !errors.Is(err, os.ErrNotExist) {
+				t.Fatal("setup ran before configuration rejection", err)
+			}
+			if host.PID() != 0 {
+				t.Fatal("failed validation retained Node")
+			}
+		})
+	}
+	// Positive control: a valid value reaches setup and its failure is NOT
+	// mislabeled as validation. This prevents accepting any generic startup error.
+	_, err = host.Enable(ctx, "config", path, map[string]any{"speed": 2})
+	var configuration *V1ConfigurationError
+	if err == nil || errors.As(err, &configuration) {
+		t.Fatal("setup failure mislabeled", err)
+	}
+	if raw, err := os.ReadFile(marker); err != nil || string(raw) != "entered" {
+		t.Fatal("valid configuration did not reach setup", err)
+	}
+	if host.PID() != 0 {
+		t.Fatal("failed setup retained Node")
 	}
 }
 

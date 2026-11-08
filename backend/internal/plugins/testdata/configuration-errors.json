@@ -1,0 +1,40 @@
+[
+  {
+    "name": "required",
+    "config": {},
+    "reason": "required_property",
+    "wrapped": {
+      "typed": true,
+      "name": "PluginConfigurationError",
+      "message": "invalid_plugin_configuration",
+      "issues": []
+    }
+  },
+  {
+    "name": "minimum",
+    "config": {
+      "speed": 0
+    },
+    "reason": "expected_number",
+    "wrapped": {
+      "typed": true,
+      "name": "PluginConfigurationError",
+      "message": "invalid_plugin_configuration",
+      "issues": []
+    }
+  },
+  {
+    "name": "unknown",
+    "config": {
+      "speed": 2,
+      "unknown": true
+    },
+    "reason": "unknown_property",
+    "wrapped": {
+      "typed": true,
+      "name": "PluginConfigurationError",
+      "message": "invalid_plugin_configuration",
+      "issues": []
+    }
+  }
+]

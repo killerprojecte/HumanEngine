@@ -34,8 +34,8 @@ func (r *Runtime) Ingest(ctx context.Context, sceneID string, message *Object, s
 // IngestScene is the transport ingress entry point. Scene metadata is registered
 // before routing persistence, without RegisterScene's lifecycle readiness/cancel.
 func (r *Runtime) IngestScene(ctx context.Context, scene Scene, message *Object, schedule bool) (string, error) {
-	done, accepted := r.beginOperation()
-	if !accepted {
+	done, admitted := r.beginOperation()
+	if !admitted {
 		return "", code("runtime_closed")
 	}
 	defer done()
@@ -201,17 +201,38 @@ func (r *Runtime) notifyReceived(m *Object, scene Scene) {
 }
 
 func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Object, schedule bool) (string, error) {
-	done, accepted := r.beginOperation()
-	if !accepted {
+	done, admitted := r.beginOperation()
+	if !admitted {
 		return "", code("runtime_closed")
 	}
 	defer done()
+	return r.editResult(ctx, sceneID, message, edit, schedule, nil, nil)
+}
+
+type DetailedSourceAuthority interface {
+	ObserveDetailed(context.Context, Scene, *Object, *Object) (string, *Object, *Object, error)
+}
+
+func (r *Runtime) EditResult(ctx context.Context, sceneID string, message, edit *Object, schedule bool) (*Object, error) {
+	done, admitted := r.beginOperation()
+	if !admitted {
+		return nil, code("runtime_closed")
+	}
+	defer done()
+	var result *Object
+	_, err := r.editResult(ctx, sceneID, message, edit, schedule, func(value *Object) { result = value }, nil)
+	return result, err
+}
+func (r *Runtime) editResult(ctx context.Context, sceneID string, message, edit *Object, schedule bool, capture func(*Object), accepted *acceptedSourceEdit) (string, error) {
 	s := r.state(sceneID)
 	if s == nil {
 		return "", code("scene_missing")
 	}
 	scene := s.view.Load().scene
 	if scene.Kind == "simulation" {
+		if capture != nil {
+			capture(obj("status", "simulation", "bodyCoverage", "unavailable"))
+		}
 		return "simulation", nil
 	}
 	if get(message, "origin") != "live" || get(message, "status") != "available" || get(message, "senderId") == "bot" {
@@ -219,7 +240,27 @@ func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Objec
 	}
 	s.ingress.Lock()
 	defer s.ingress.Unlock()
-	status, current, err := r.services.Authority.Observe(ctx, scene, cloneJSON(message).(*Object), edit)
+	var status string
+	var current *Object
+	var err error
+	if accepted != nil {
+		status, current = accepted.status, accepted.current
+		if capture != nil {
+			capture(accepted.result)
+		}
+	} else if capture == nil {
+		status, current, err = r.services.Authority.Observe(ctx, scene, cloneJSON(message).(*Object), edit)
+	} else {
+		detailed, ok := r.services.Authority.(DetailedSourceAuthority)
+		if !ok {
+			return "", code("runtime_detailed_source_authority_required")
+		}
+		var result *Object
+		status, current, result, err = detailed.ObserveDetailed(ctx, scene, cloneJSON(message).(*Object), edit)
+		if err == nil {
+			capture(result)
+		}
+	}
 	if err != nil || status != "edited" {
 		return status, err
 	}
@@ -301,8 +342,8 @@ func (r *Runtime) Edit(ctx context.Context, sceneID string, message, edit *Objec
 	return status, err
 }
 func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
-	done, accepted := r.beginOperation()
-	if !accepted {
+	done, admitted := r.beginOperation()
+	if !admitted {
 		return code("runtime_closed")
 	}
 	defer done()
@@ -352,7 +393,7 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 		}, nil
 	}
 	apply := func() error {
-		var abort []*dispatch.Signal
+			var abort []*dispatch.Signal
 		s.mu.Lock()
 		next := map[string]bool{}
 		for k, v := range s.recalled {

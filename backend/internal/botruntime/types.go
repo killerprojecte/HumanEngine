@@ -117,7 +117,8 @@ func (f ModelFunc) Start(c context.Context, r ModelRequest, s func(Completion, e
 
 type Extension struct {
 	// SentSequencers reserve only controlled bookkeeping alongside ACK publication.
-	SentSequencers []*SentSequencer
+	SentSequencers        []*SentSequencer
+	SegmentSentSequencers []*SegmentSentSequencer
 	// Sent runs after retained-row publication, without scene ownership. Queue domain work here.
 	Sent               func(Scene, string, string)
 	Closed             func()
@@ -439,6 +440,7 @@ func (r *Runtime) exts() []*Extension {
 func (r *Runtime) AddExtension(e *Extension) func() {
 	registered := *e
 	registered.SentSequencers = append([]*SentSequencer(nil), e.SentSequencers...)
+	registered.SegmentSentSequencers = append([]*SegmentSentSequencer(nil), e.SegmentSentSequencers...)
 	registered.Tools = nil
 	for _, tool := range e.Tools {
 		registered.Tools = append(registered.Tools, cloneJSON(tool).(*Object))

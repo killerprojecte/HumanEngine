@@ -50,6 +50,16 @@ func (a *RuntimeAuthority) RouteIngress(ctx context.Context, scene botruntime.Sc
 // supplied identity/body until the later ingress normalization step. Ingress never
 // accepts a caller's ref, and an enrolled source remains versioned when disabled.
 func (a *RuntimeAuthority) Observe(ctx context.Context, scene botruntime.Scene, message, edit *jsjson.Object) (status string, trusted *jsjson.Object, err error) {
+	return a.observeDetailed(ctx, scene, message, edit, nil)
+}
+
+// ObserveDetailed exposes the exact source result captured by the mutation, not
+// a later registered-head read which could already refer to another edit.
+func (a *RuntimeAuthority) ObserveDetailed(ctx context.Context, scene botruntime.Scene, message, edit *jsjson.Object) (status string, trusted, result *jsjson.Object, err error) {
+	status, trusted, err = a.observeDetailed(ctx, scene, message, edit, func(value *jsjson.Object) { result = value })
+	return
+}
+func (a *RuntimeAuthority) observeDetailed(ctx context.Context, scene botruntime.Scene, message, edit *jsjson.Object, capture func(*jsjson.Object)) (status string, trusted *jsjson.Object, err error) {
 	if message == nil {
 		return "", nil, ErrInvalid
 	}
@@ -58,6 +68,9 @@ func (a *RuntimeAuthority) Observe(ctx context.Context, scene botruntime.Scene, 
 		edit = cloneRuntimeJSON(edit).(*jsjson.Object)
 	}
 	if scene.Kind == "simulation" {
+		if capture != nil {
+			capture((Result{Status: "simulation"}).Value())
+		}
 		return "simulation", nil, nil
 	}
 	if edit != nil && (str(m, "origin") != "live" || str(m, "status") != "available" || str(m, "senderId") == "bot") {
@@ -75,6 +88,9 @@ func (a *RuntimeAuthority) Observe(ctx context.Context, scene botruntime.Scene, 
 			}
 			if recalled {
 				status = "recalled"
+				if capture != nil {
+					capture((Result{Status: status}).Value())
+				}
 				return nil
 			}
 		}
@@ -92,6 +108,9 @@ func (a *RuntimeAuthority) Observe(ctx context.Context, scene botruntime.Scene, 
 		}
 		if edit != nil && enrolled == nil {
 			status = "unorderable"
+			if capture != nil {
+				capture((Result{Status: status}).Value())
+			}
 			return nil
 		}
 		if edit != nil {
@@ -115,6 +134,9 @@ func (a *RuntimeAuthority) Observe(ctx context.Context, scene botruntime.Scene, 
 			if settings["sourceEventRevisionsEnabled"] != true && enrolled == nil {
 				m.Delete("sourceEventRef")
 				status, trusted = "new", m
+				if capture != nil {
+					capture((Result{Status: status}).Value())
+				}
 				return nil
 			}
 		}
@@ -137,6 +159,9 @@ func (a *RuntimeAuthority) Observe(ctx context.Context, scene botruntime.Scene, 
 			return e
 		}
 		status = result.Status
+		if capture != nil {
+			capture(result.Value())
+		}
 		if edit != nil {
 			if status == "edited" && result.Ref != nil {
 				_ = m.Set("sourceEventRef", result.Ref.Value())

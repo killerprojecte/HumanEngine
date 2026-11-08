@@ -49,6 +49,7 @@ func NewRuntime(main *sql.DB, a *recovery.Authority, memes *memeservice.Service,
 	}
 	engine.Read = read.Policy
 	engine.TurnRead = read
+	engine.installOutgoing()
 	runtime.AddExtension(engine.ComposeExtension(base))
 	return engine, nil
 }

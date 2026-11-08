@@ -122,5 +122,6 @@ func (s *Service) ComposeExtension(base botruntime.Extension) *botruntime.Extens
 		v, e := s.executeMeme(root, name, input, turn)
 		settle(v, e)
 	}
+	s.composeOutgoing(&ext)
 	return &ext
 }

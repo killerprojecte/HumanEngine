@@ -19,6 +19,7 @@ differential: build
 	cd .. && node --import tsx backend/internal/credentials/testdata/model-read-source.mjs --check
 	cd .. && node --import tsx scripts/vision-dynamic.mjs --check
 	cd .. && node --import tsx scripts/vision-errors-diagnostics.mjs --check
+	cd .. && node --import tsx backend/internal/httpapi/testdata/meme-outgoing.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-configuration-http.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-meme-http.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/modelread/testdata/source-oracle.mjs --check

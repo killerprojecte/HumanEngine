@@ -348,11 +348,15 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 		appendReceipt(receipt)
 		s := t.state
 		var reservations []*SentReservation
+		var mediaReservations []*SegmentSentReservation
 		published := false
 		s.mu.Lock()
 		func() {
 			defer func() {
 				s.mu.Unlock()
+				for _, reservation := range mediaReservations {
+					reservation.Release()
+				}
 				// Complete reservations even if publication panics. No callback
 				// can run until scene ownership has been released.
 				for _, reservation := range reservations {
@@ -363,6 +367,15 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 					}
 				}
 			}()
+			if receipt.Status == dispatch.Sent && c.Mode == "real" {
+				for _, extension := range r.exts() {
+					for _, sequence := range extension.SegmentSentSequencers {
+						if sequence != nil {
+							mediaReservations = append(mediaReservations, sequence.reserve(r, c.Scene, c.TurnID, segment, receipt))
+						}
+					}
+				}
+			}
 			if !s.closed.Load() {
 				if r.config().TopicAdmissionEnabled {
 					adapterNow, _ := r.adapters.Load(c.Scene.AdapterID)

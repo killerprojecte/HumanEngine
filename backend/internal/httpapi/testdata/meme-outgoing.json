@@ -1,0 +1,159 @@
+{
+  "sourceHashes": {
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/memes.ts": "cf477ac3f57827e77cc13b33aa9a177d5afa450abce3e84ba4c99fae25bf0756"
+  },
+  "cases": [
+    {
+      "name": "managed",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "calls": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "name": "uppercase",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [],
+      "calls": []
+    },
+    {
+      "name": "short",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [],
+      "calls": []
+    },
+    {
+      "name": "non-media",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [],
+      "calls": []
+    },
+    {
+      "name": "duplicate",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "calls": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "name": "no-receipt",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "calls": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "name": "recalled",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "usage-throws",
+      "priority": -100,
+      "action": "continue",
+      "before": 0,
+      "original": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "calls": [
+        {
+          "context": {
+            "sceneId": "s",
+            "simulation": false
+          },
+          "assetId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    }
+  ]
+}

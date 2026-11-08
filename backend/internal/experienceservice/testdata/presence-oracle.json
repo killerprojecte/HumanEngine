@@ -1,0 +1,3798 @@
+{
+  "node": "v24.22.1",
+  "hashes": {
+    "src/memory/experience/service.ts": "73ebaf775105d2791bc67bd0b998c5cca203b76ae9d084cff9326d6ed4c05bf5",
+    "src/memory/experience/outcomes.ts": "1c3323f85de678397485a251dcf88a4d9ec8f24a5d818a448e1fc3000f9a3161",
+    "src/memory/storage/event-revisions.ts": "a2bbccdc7c510dec5e4364b7e834e91e899bd20cf5b514ebe6149985b76e2963",
+    "src/memory/domain/events.ts": "0fb9fee44f86ba46d78dee632e053ebfb20227056f63c993262279ff4e24f288",
+    "src/memory/recovery/domain-contracts.ts": "83f8b7a24a2d4365b8442cecb61236bbda9472ac11cd0b00f7afbb75e3f9f9fb"
+  },
+  "cases": [
+    {
+      "name": "missing",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "7b73585d2bb0f13562bca36e136e0d1dfa9a04020bb20f632169e53277d19f87",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "null",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "0fe9b716100215275e460780c9ddf7f9bca74eaa79c6d2fbc0cd4d62ce351080",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "false",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": false
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": false
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "6632a0de6f8a36ed64d9c2070b87308d928b82a666f36c7fd6157e6f178396a9",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "true",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": true
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": true
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "4950ef0eda6c39544a1f7c6f0d9af0278a8e00dfb6f4d75be441882d1c2f17bf",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "zero",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 0
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 0
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "3208d90d05b8fc5f3d9c2599cb1f2cf21502b944f7f367369cef2db95e2dcc72",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "number",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 1.9
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 1.9
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "1fd90be14a5664d9b169c80fc6c56a6acd9cd1b9c6c9a3b3986014fd2fc0d79b",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-string",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": ""
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": ""
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "87eb8e3a7cb2ac18d8267f8b58f625f0015b51415ce80e9cad1f5f66e85c16f2",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "string",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": "event"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": "event"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "b64f629a80cd952aba4a8f3c8d51cf7ab5ba1a208d597cd143fafdf966d8e5af",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-array",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": []
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": []
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "9a851c4106a882d25dbeff43047039f6f2c7e7b0895c11e072230388613cf7ff",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "array",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "1e99a90e03a3e21b8f918b74ccb365da472dc1ea0a5d7619fd11ec49fd2e751c",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {}
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {}
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "906f9ace220467a533629b86724947c489f8a69bbba80ffea7945f609781396a",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "valid-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "94bdbde7be77e6ebbbb46f2f247c393fb9a04dda85f9fa96617ef22c882e0237",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "fractional-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "bc858d224b0f0f1ed16850eb2dee3d8c17e35e40b602f5a073859000a90e4726",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "extra-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "34e69958069654b57a14cd2ec61129bc62c8c04445585f294a053fe88d52e366",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "missing",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_exact_person_lookup",
+        "snapshotBound": true
+      },
+      "qualification": "e6a65f64a07c5758ef943f862e6ea93de277d5b1e7d261221afaaff602806ac5",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "null",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "false",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": false
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "true",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": true
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "zero",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 0
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "number",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 1.9
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "empty-string",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": ""
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "string",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": "event"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "empty-array",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": []
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "array",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "empty-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {}
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "valid-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "fractional-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "extra-object",
+      "side": "source",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "missing",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "7b73585d2bb0f13562bca36e136e0d1dfa9a04020bb20f632169e53277d19f87",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "null",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "0fe9b716100215275e460780c9ddf7f9bca74eaa79c6d2fbc0cd4d62ce351080",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "false",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": false
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": false
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "6632a0de6f8a36ed64d9c2070b87308d928b82a666f36c7fd6157e6f178396a9",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "true",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": true
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": true
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "4950ef0eda6c39544a1f7c6f0d9af0278a8e00dfb6f4d75be441882d1c2f17bf",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "zero",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 0
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 0
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "3208d90d05b8fc5f3d9c2599cb1f2cf21502b944f7f367369cef2db95e2dcc72",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "number",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 1.9
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 1.9
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "1fd90be14a5664d9b169c80fc6c56a6acd9cd1b9c6c9a3b3986014fd2fc0d79b",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-string",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": ""
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": ""
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "87eb8e3a7cb2ac18d8267f8b58f625f0015b51415ce80e9cad1f5f66e85c16f2",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "string",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": "event"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": "event"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "b64f629a80cd952aba4a8f3c8d51cf7ab5ba1a208d597cd143fafdf966d8e5af",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-array",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": []
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": []
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "9a851c4106a882d25dbeff43047039f6f2c7e7b0895c11e072230388613cf7ff",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "array",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "1e99a90e03a3e21b8f918b74ccb365da472dc1ea0a5d7619fd11ec49fd2e751c",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {}
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {}
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "906f9ace220467a533629b86724947c489f8a69bbba80ffea7945f609781396a",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "valid-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "94bdbde7be77e6ebbbb46f2f247c393fb9a04dda85f9fa96617ef22c882e0237",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "fractional-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "bc858d224b0f0f1ed16850eb2dee3d8c17e35e40b602f5a073859000a90e4726",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "extra-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "34e69958069654b57a14cd2ec61129bc62c8c04445585f294a053fe88d52e366",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "missing",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "null",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": null
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "false",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": false
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "true",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": true
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "zero",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 0
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "number",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": 1.9
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "empty-string",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": ""
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "string",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": "event"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "empty-array",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": []
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "array",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "empty-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {}
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "valid-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_exact_person_lookup",
+        "snapshotBound": true
+      },
+      "qualification": "62c76286c68f4ad43a3ada6c0fe22026a1d40127055552495328debdcfb97e8b",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "fractional-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "extra-object",
+      "side": "source",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "missing",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "7b73585d2bb0f13562bca36e136e0d1dfa9a04020bb20f632169e53277d19f87",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "null",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": null
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": null
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "12eb326134f70e608529d2a4d39f6e3661bd34975bdc591762813f2403a8c5b2",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "false",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": false
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": false
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "cf86210ce50b6bf5100a5ba80da4080cb8594bbfdb43a30b5419327e72fb368e",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "true",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": true
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": true
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "f42190f0ea37be223f6270522c12795749937d968e7325eb00f63a9ba228ff67",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "zero",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 0
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 0
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "4bb88925f804fed385b7be06797cf6dc9013a1ec4b8119f7265ba0935bada4b8",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "number",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 1.9
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 1.9
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "666e6116966e0e941a54456c58ae5f893bc34af1491b4bcaf9c566b97363567f",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-string",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": ""
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": ""
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "3d3ec51ce166d8fa4cce02e4fa78088858aea6b926cf58d2c458a32d4b3dc3bb",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "string",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": "event"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": "event"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "1942715cd6150a90c65c3ca378ef7bff89d3768678715d3357a3e59f841a5278",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-array",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": []
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": []
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "3a37ea9da1dbfd8e9d61754da3937e578d4b819e97d9cc96f1e487de9e4d8134",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "array",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "4c4f4729af4bd53b6f67fa5e273ce80b29b4753faba84de07134f4a95c18aae7",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {}
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {}
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "f01c6de3b0c8848c20ddd8dbb63d557d0c3b19dc10c5426848b124519fa02a74",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "valid-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "37bd716aaa95535ae2c219f33bedd39206647b7c535d9c250c10582d799aab69",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "fractional-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "c1917ce4dcd1a79f59e5b5afaa5baeef12724cbd75922c90381d671d87e0a073",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "extra-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "a4bfb7ad968733bee34e34b242db916e62d45ce82f0f32d9d8ecff07b0718c3d",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "missing",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_exact_person_lookup",
+        "snapshotBound": true
+      },
+      "qualification": "e6a65f64a07c5758ef943f862e6ea93de277d5b1e7d261221afaaff602806ac5",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "null",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": null
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "false",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": false
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "true",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": true
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "zero",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 0
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "number",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 1.9
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "empty-string",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": ""
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "string",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": "event"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "empty-array",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": []
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "array",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "empty-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {}
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "valid-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "fractional-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "extra-object",
+      "side": "target",
+      "registered": false,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "missing",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "7b73585d2bb0f13562bca36e136e0d1dfa9a04020bb20f632169e53277d19f87",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "null",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": null
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": null
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "12eb326134f70e608529d2a4d39f6e3661bd34975bdc591762813f2403a8c5b2",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "false",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": false
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": false
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "cf86210ce50b6bf5100a5ba80da4080cb8594bbfdb43a30b5419327e72fb368e",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "true",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": true
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": true
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "f42190f0ea37be223f6270522c12795749937d968e7325eb00f63a9ba228ff67",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "zero",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 0
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 0
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "4bb88925f804fed385b7be06797cf6dc9013a1ec4b8119f7265ba0935bada4b8",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "number",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 1.9
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 1.9
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "666e6116966e0e941a54456c58ae5f893bc34af1491b4bcaf9c566b97363567f",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-string",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": ""
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": ""
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "3d3ec51ce166d8fa4cce02e4fa78088858aea6b926cf58d2c458a32d4b3dc3bb",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "string",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": "event"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": "event"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "1942715cd6150a90c65c3ca378ef7bff89d3768678715d3357a3e59f841a5278",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-array",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": []
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": []
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "3a37ea9da1dbfd8e9d61754da3937e578d4b819e97d9cc96f1e487de9e4d8134",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "array",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "4c4f4729af4bd53b6f67fa5e273ce80b29b4753faba84de07134f4a95c18aae7",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "empty-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {}
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {}
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "f01c6de3b0c8848c20ddd8dbb63d557d0c3b19dc10c5426848b124519fa02a74",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "valid-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "37bd716aaa95535ae2c219f33bedd39206647b7c535d9c250c10582d799aab69",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "fractional-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "c1917ce4dcd1a79f59e5b5afaa5baeef12724cbd75922c90381d671d87e0a073",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "extra-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "a4bfb7ad968733bee34e34b242db916e62d45ce82f0f32d9d8ecff07b0718c3d",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "missing",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "null",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": null
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "false",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": false
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "true",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": true
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "zero",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 0
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "number",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": 1.9
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "empty-string",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": ""
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "experience_feedback_snapshot_stale",
+      "count": 0
+    },
+    {
+      "name": "string",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": "event"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "empty-array",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": []
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "array",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": [
+            null,
+            1,
+            {
+              "extra": true
+            }
+          ]
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "empty-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {}
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "valid-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_exact_person_lookup",
+        "snapshotBound": true
+      },
+      "qualification": "6d4a2d045ac78cc69316099bb2b4fc5aaf1acbbee0dd3f17edcd47d5758aa615",
+      "error": null,
+      "count": 1
+    },
+    {
+      "name": "fractional-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    },
+    {
+      "name": "extra-object",
+      "side": "target",
+      "registered": true,
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice"
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "error": "source_ref_schema_rejection",
+      "count": 0
+    }
+  ]
+}

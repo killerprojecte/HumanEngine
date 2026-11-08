@@ -14,6 +14,7 @@ build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && TZ=UTC node backend/tests/check-experience-oracles.mjs
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-offline-lifecycle-fixtures.mjs --check
 	$(PYTHON) tests/check-provider-fixtures.py
 	$(PYTHON) tests/check-reconcile-fixtures.py

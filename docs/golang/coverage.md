@@ -17,8 +17,22 @@ main ACK/readiness. It replaces the older global-reconciliation gaps below at
 the package level; production boot and HTTP/runtime composition remain open.
 Source regeneration, targeted private tests and twelve affected-package
 integrated race/vet checks passed, followed by complete exact-head default and
-native-ICU CI acceptance recorded in the acceptance document. The native image codec
-remains a private candidate, not part of this integration.
+native-ICU CI acceptance recorded in the acceptance document. The native image codec is now integrated as a source-only checkpoint. Its complete
+exact-head CI and real standalone file trace are recorded in
+[native image acceptance](native-image-validation.md); binary source/license
+delivery and complete live media ownership remain separate requirements.
+
+Live habit behavior, exact numeric decay and same-owned-session Engine proposal/
+feedback adapters are integrated. The config preview remains unchanged; explicit
+`NewWithHabits`/`OpenWithHabits` constructors now enable real habit GET/HEAD, PATCH
+and DELETE with final publication and durable-write semantics. See
+[habit HTTP boundaries](../../backend/internal/httpapi/HABITS.md). These packages
+passed local full/focused race and vet checks and source oracles. The live-domain
+and Engine-call head `31269fb7` also passed complete CI run42463496736, including
+the frozen and current-host numeric oracles. The newer HTTP head `155515af` passed its own complete CI run42464453844,
+including native ICU, actual image trace and both numeric oracles. Full runtime/exposure wiring,
+learning persistence, live experience/media owners and remaining REST routes are
+not implied complete by these domain checkpoints.
 
 ## Implemented candidate modules
 

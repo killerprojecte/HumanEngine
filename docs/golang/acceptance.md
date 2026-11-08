@@ -35,3 +35,25 @@ for known controlled writes, but first-open and external-change audits still
 cost linear history work. Slow-client publication contention and full HTTP/worker
 load behavior remain open; these checkpoints do not prove the whole project has
 no remaining performance problems.
+
+## Live Experience owner candidate (2026-11-08)
+
+The native owner now includes feedback admission, mechanical policy validation,
+policy review, instruction trials, positive reports, expiry, source withdrawal,
+use accounting, and existing recovery-schema enrollment. Real persisted ports
+share the same guarded writer as dependent mutations. Native ICU supplies the
+source locale comparison; no lexical fallback was introduced.
+
+The exact final owner patch passed its isolated native-ICU race suite and vet
+with `REQUIRE_ICU=1`, without skips. Tests include actual pinned-TypeScript
+policy/feedback/holdout traces, six live service scenarios and the 112-case
+source/target, registered/unregistered, snapshot/non-snapshot reference matrix.
+Disk-backed tests cover independent authority layout, transaction loss, durable
+intent without ACK, source edits, and genuine main/authority close and reopen.
+The reference matrix preserves arbitrary historical JSON material and property
+order, while strict proof validation occurs only on the source's snapshot paths.
+
+This owner checkpoint does not implement the Experience runtime-hints caller
+chain or its REST routes. Those are separate active integration work. The default
+command remains the read-only preview. Full exact-commit aggregate CI for this
+new owner is pending publication; targeted success is not full robot parity.

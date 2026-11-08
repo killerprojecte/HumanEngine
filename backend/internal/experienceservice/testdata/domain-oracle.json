@@ -1,0 +1,2341 @@
+{
+  "node": "v24.22.1",
+  "provenance": {
+    "src/memory/domain/experience.ts": "2c6359f6fac1436f61e675dab08130412ca7750ab44b09e4204fc15573476e70",
+    "src/memory/experience/outcomes.ts": "1c3323f85de678397485a251dcf88a4d9ec8f24a5d818a448e1fc3000f9a3161",
+    "src/memory/experience/candidates.ts": "8c55990d91273d88eb2afba300279f1f782cbf43c6116954e887b858db43ab5d",
+    "src/memory/experience/policy-actions.ts": "3c2250ee70af16f162af3ad89ef7a3e2f9624a3f63685ca3894e722115e4479d",
+    "src/memory/experience/operation-eligibility.ts": "ff01a49462cb54d7df11f5f26475a45286034ea7532fe17685654dcd61cb363b",
+    "src/memory/experience/validation.ts": "efb3561a6e4313de2e665daaae93c41e7dc63ef4779b9c78f926b5cba549aa13",
+    "src/memory/experience/behavior-holdouts.ts": "d4a174038a64cd9adeb5c95aa8608f3ae4857632a28138af5372e9f69c344be3",
+    "src/memory/experience/feedback-adapter.ts": "bcedef30415a2486f73a20ada2295ac72cd2b9357b3a55a4f21a01365a4ec592"
+  },
+  "candidates": [
+    {
+      "ctx": {
+        "sceneId": "synthetic-scene",
+        "simulation": false
+      },
+      "input": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-01-01T00:00:00Z"
+      },
+      "outcome": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-01-01T00:00:00Z",
+        "id": "outcome-request_conclusion_first",
+        "version": 1,
+        "sceneId": "synthetic-scene",
+        "rootId": "7a516c8267ef47931a0ab24d6ac5146673c11ff8911cc38d943be62941b34bc1",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "d82b6c09521b1d7111c98a7916b20fefccdc94ba793e6f87903ceaa60dd70ea2",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "d82b6c09521b1d7111c98a7916b20fefccdc94ba793e6f87903ceaa60dd70ea2",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [],
+        "passed": true
+      }
+    },
+    {
+      "ctx": {
+        "sceneId": "synthetic-scene",
+        "simulation": false
+      },
+      "input": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-01-01T00:00:00Z"
+      },
+      "outcome": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-01-01T00:00:00Z",
+        "id": "outcome-request_exact_person_lookup",
+        "version": 1,
+        "sceneId": "synthetic-scene",
+        "rootId": "7a516c8267ef47931a0ab24d6ac5146673c11ff8911cc38d943be62941b34bc1",
+        "rootFamily": "feedback:request_exact_person_lookup"
+      },
+      "candidate": {
+        "id": "candidate-request_exact_person_lookup",
+        "version": 1,
+        "hash": "3824dc359758fa2e2455d8b5df0975722f4ab8a40a6fd5868e36a7278ef5079c",
+        "sceneId": "synthetic-scene",
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_exact_person_lookup"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_exact_person_lookup"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_exact_person_lookup",
+        "candidateVersion": 1,
+        "candidateHash": "3824dc359758fa2e2455d8b5df0975722f4ab8a40a6fd5868e36a7278ef5079c",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_exact_person_lookup"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [],
+        "passed": true
+      }
+    },
+    {
+      "ctx": {
+        "sceneId": "synthetic-scene",
+        "simulation": false
+      },
+      "input": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_verify_plan_qualifiers",
+        "observedAt": "2026-01-01T00:00:00Z"
+      },
+      "outcome": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_verify_plan_qualifiers",
+        "observedAt": "2026-01-01T00:00:00Z",
+        "id": "outcome-request_verify_plan_qualifiers",
+        "version": 1,
+        "sceneId": "synthetic-scene",
+        "rootId": "7a516c8267ef47931a0ab24d6ac5146673c11ff8911cc38d943be62941b34bc1",
+        "rootFamily": "feedback:request_verify_plan_qualifiers"
+      },
+      "candidate": {
+        "id": "candidate-request_verify_plan_qualifiers",
+        "version": 1,
+        "hash": "1af1abfbbfbe9282aa3799b387600434c05cdd0541324c7c6fcac84914fdeaed",
+        "sceneId": "synthetic-scene",
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_verify_plan_qualifiers"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_verify_plan_qualifiers"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_verify_plan_qualifiers",
+        "candidateVersion": 1,
+        "candidateHash": "1af1abfbbfbe9282aa3799b387600434c05cdd0541324c7c6fcac84914fdeaed",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_verify_plan_qualifiers"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [],
+        "passed": true
+      }
+    }
+  ],
+  "validation": [
+    {
+      "name": "badHash",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "bad",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "bad",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "exact_semantic_hash"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "emptySupport",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "9e24164f762d62802c9eb3e542814bbd98bf0656e3d1137e035fdeb6d5a8ea06",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "9e24164f762d62802c9eb3e542814bbd98bf0656e3d1137e035fdeb6d5a8ea06",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "support_lineage"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "counterexample",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "2178397473d5a03eb91ce643bfaa2c4bd2373d9962598644929544f6c948760b",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [
+          "negative"
+        ],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "2178397473d5a03eb91ce643bfaa2c4bd2373d9962598644929544f6c948760b",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "no_counterexamples"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "badCondition",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "85b578389a987bee5e566e0c65d9226b234fc1a37d44da181243ec3a0746c86d",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "85b578389a987bee5e566e0c65d9226b234fc1a37d44da181243ec3a0746c86d",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "action_condition_whitelist"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "emptyPerson",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "d60e9567cdafd90a2aacb9b3d7701336a8deec7e9856573cdcabdf6e07e91a79",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": ""
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "d60e9567cdafd90a2aacb9b3d7701336a8deec7e9856573cdcabdf6e07e91a79",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "action_condition_whitelist"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "extraCondition",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "031b13f1319796dfd14f6fbc1c9460f6aa74f6cba2a2942d069f1f48744a367e",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person",
+          "extra": true
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "031b13f1319796dfd14f6fbc1c9460f6aa74f6cba2a2942d069f1f48744a367e",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "action_condition_whitelist"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "longExpiry",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "f3a8dcb97abaad16831e69ad4aab1cdcd038859d10fdbe0c7efbfea00f35278e",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2028-01-01T00:00:00Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "f3a8dcb97abaad16831e69ad4aab1cdcd038859d10fdbe0c7efbfea00f35278e",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "4e38f095528d60370213e5a0364eb0726c2a8919ccb03094eacdeda3287c17f0"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "bounded_expiry"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "duplicateRoots",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "c93eaab34e9a2c8a58fb12891e05923ed330342e43450af512165c5dba797910",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "x",
+          "x"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "c93eaab34e9a2c8a58fb12891e05923ed330342e43450af512165c5dba797910",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [
+          "support_lineage"
+        ],
+        "passed": false
+      }
+    },
+    {
+      "name": "unicodeOrder",
+      "candidate": {
+        "id": "candidate-request_conclusion_first",
+        "version": 1,
+        "hash": "df95bad1e40f52ec620ee7d6ada89ea4ba6291ee43a74418f3942fc347584643",
+        "sceneId": "synthetic-scene",
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "person"
+        },
+        "status": "candidate",
+        "supportIds": [
+          "outcome-request_conclusion_first"
+        ],
+        "counterexampleIds": [],
+        "generationRoots": [
+          "",
+          "😀",
+          "\ud800"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "expiresAt": "2026-01-08T00:00:00.000Z"
+      },
+      "receipt": {
+        "candidateId": "candidate-request_conclusion_first",
+        "candidateVersion": 1,
+        "candidateHash": "df95bad1e40f52ec620ee7d6ada89ea4ba6291ee43a74418f3942fc347584643",
+        "tier": "mechanical_only",
+        "ruleVersion": "experience-mechanical-v2",
+        "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+        "datasetVersion": "experience-fixed-behavior-holdout-v2",
+        "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+        "generationRoots": [
+          "",
+          "😀",
+          "\ud800"
+        ],
+        "generationFamilies": [
+          "feedback:request_conclusion_first"
+        ],
+        "heldoutRoots": [
+          "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "heldoutFamilies": [
+          "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+          "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+          "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+          "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+          "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+          "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+          "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+          "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+          "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+          "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+          "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+          "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+          "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+          "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+          "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+          "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+          "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+          "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+          "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+          "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+          "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+        ],
+        "checks": [
+          "candidate_shape",
+          "exact_semantic_hash",
+          "action_condition_whitelist",
+          "support_lineage",
+          "holdout_root_disjoint",
+          "holdout_family_disjoint",
+          "bounded_expiry",
+          "no_counterexamples",
+          "fixed_protocol_holdouts",
+          "fixed_operation_behavior_holdouts",
+          "fixed_non_authoritative_templates"
+        ],
+        "failures": [],
+        "passed": true
+      }
+    }
+  ],
+  "feedbackCases": [
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "请先说结论"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": " 请，先给结论再给细节！ "
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "涉及我的问题请先查我的记忆"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "回答计划问题前请先核对条件"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "plan_qualifiers_checked"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_verify_plan_qualifiers",
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "取消先说结论"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "withdraw_instruction",
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "这次先查我的记忆有帮助"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "user_reported_helpful",
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "这次先查我的记忆有帮助？"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": null
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "这次先核对计划条件不合适"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "plan_qualifiers_checked"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "counterexample",
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "谢谢"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": null
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "请先说结论"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": null
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "请先说结论﻿"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": {
+        "source": {
+          "messageId": "source",
+          "senderId": "person"
+        },
+        "target": {
+          "messageId": "target"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-01-01T00:00:00Z"
+      }
+    },
+    {
+      "message": {
+        "sceneId": "synthetic-scene",
+        "id": "source",
+        "senderId": "person",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "replyToId": "target",
+        "parts": [
+          {
+            "type": "text",
+            "text": "请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论请先说结论"
+          }
+        ]
+      },
+      "target": {
+        "sceneId": "synthetic-scene",
+        "id": "target",
+        "senderId": "bot",
+        "origin": "live",
+        "status": "available",
+        "receivedAt": "2025-12-31T23:59:59Z",
+        "parts": []
+      },
+      "selectedPolicy": {
+        "id": "p",
+        "version": 2
+      },
+      "appliedPolicy": {
+        "policyRef": {
+          "id": "p",
+          "version": 2
+        },
+        "operation": "memory_person"
+      },
+      "result": null
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "scoped-person-first",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.person",
+        "arguments": {
+          "personId": "fixed-holdout-person"
+        },
+        "value": [
+          {
+            "id": "fixed-authorized-record"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      },
+      "expected": "memory_person"
+    },
+    {
+      "id": "other-person",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.person",
+        "arguments": {
+          "personId": "other-person"
+        },
+        "value": [
+          {
+            "id": "fixed-authorized-record"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "semantic-read-already-occurred",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.person",
+        "arguments": {
+          "personId": "fixed-holdout-person"
+        },
+        "value": [
+          {
+            "id": "fixed-authorized-record"
+          }
+        ],
+        "semanticRead": true,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "person-empty-result",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.person",
+        "arguments": {
+          "personId": "fixed-holdout-person"
+        },
+        "value": [],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "person-tool-mismatch",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.search",
+        "arguments": {
+          "personId": "fixed-holdout-person"
+        },
+        "value": [
+          {
+            "id": "fixed-authorized-record"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "invalidated-turn-person",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "person_question",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.person",
+        "arguments": {
+          "personId": "fixed-holdout-person"
+        },
+        "value": [
+          {
+            "id": "fixed-authorized-record"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": false
+      }
+    },
+    {
+      "id": "person-condition-mismatch",
+      "input": {
+        "action": "exact_person_before_semantic",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "memory.person",
+        "arguments": {
+          "personId": "fixed-holdout-person"
+        },
+        "value": [
+          {
+            "id": "fixed-authorized-record"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "qualified-plan-read",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "memory.relations",
+        "arguments": {},
+        "value": [
+          {
+            "relationCoverage": "complete",
+            "relationEvidence": [
+              {
+                "polarity": "negative",
+                "conditions": [
+                  "only if explicitly confirmed"
+                ]
+              }
+            ]
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      },
+      "expected": "plan_qualifiers_checked"
+    },
+    {
+      "id": "plan-limited-coverage",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "memory.relations",
+        "arguments": {},
+        "value": [
+          {
+            "relationCoverage": "limited",
+            "relationEvidence": [
+              {
+                "polarity": "positive"
+              }
+            ]
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "plan-mixed-limited-packet",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "memory.relations",
+        "arguments": {},
+        "value": [
+          {
+            "relationCoverage": "complete",
+            "relationEvidence": [
+              {
+                "polarity": "positive"
+              }
+            ]
+          },
+          {
+            "relationCoverage": "limited",
+            "relationEvidence": []
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "plan-no-qualifications",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "memory.relations",
+        "arguments": {},
+        "value": [
+          {
+            "relationCoverage": "complete",
+            "relationEvidence": []
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "plan-unstructured-result",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "memory.relations",
+        "arguments": {},
+        "value": [
+          {
+            "id": "record-only"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "invalidated-turn-plan",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "memory.relations",
+        "arguments": {},
+        "value": [
+          {
+            "relationCoverage": "complete",
+            "relationEvidence": [
+              {
+                "polarity": "negative",
+                "conditions": [
+                  "only if explicitly confirmed"
+                ]
+              }
+            ]
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": false
+      }
+    },
+    {
+      "id": "plan-condition-mismatch",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "person_question",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.relations",
+        "arguments": {},
+        "value": [
+          {
+            "relationCoverage": "complete",
+            "relationEvidence": [
+              {
+                "polarity": "negative",
+                "conditions": [
+                  "only if explicitly confirmed"
+                ]
+              }
+            ]
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "style-is-not-an-observed-operation",
+      "input": {
+        "action": "conclusion_before_detail",
+        "condition": {
+          "kind": "response_style",
+          "personId": "fixed-holdout-person"
+        },
+        "tool": "memory.person",
+        "arguments": {
+          "personId": "fixed-holdout-person"
+        },
+        "value": [
+          {
+            "id": "fixed-authorized-record"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    },
+    {
+      "id": "transport-ack-is-not-application",
+      "input": {
+        "action": "verify_plan_qualifiers",
+        "condition": {
+          "kind": "plan_question"
+        },
+        "tool": "message.sent",
+        "arguments": {},
+        "value": [
+          {
+            "status": "sent",
+            "messageId": "fixed-ack"
+          }
+        ],
+        "semanticRead": false,
+        "turnValid": true
+      }
+    }
+  ],
+  "behaviorResults": [
+    {
+      "id": "scoped-person-first",
+      "passed": true
+    },
+    {
+      "id": "other-person",
+      "passed": true
+    },
+    {
+      "id": "semantic-read-already-occurred",
+      "passed": true
+    },
+    {
+      "id": "person-empty-result",
+      "passed": true
+    },
+    {
+      "id": "person-tool-mismatch",
+      "passed": true
+    },
+    {
+      "id": "invalidated-turn-person",
+      "passed": true
+    },
+    {
+      "id": "person-condition-mismatch",
+      "passed": true
+    },
+    {
+      "id": "qualified-plan-read",
+      "passed": true
+    },
+    {
+      "id": "plan-limited-coverage",
+      "passed": true
+    },
+    {
+      "id": "plan-mixed-limited-packet",
+      "passed": true
+    },
+    {
+      "id": "plan-no-qualifications",
+      "passed": true
+    },
+    {
+      "id": "plan-unstructured-result",
+      "passed": true
+    },
+    {
+      "id": "invalidated-turn-plan",
+      "passed": true
+    },
+    {
+      "id": "plan-condition-mismatch",
+      "passed": true
+    },
+    {
+      "id": "style-is-not-an-observed-operation",
+      "passed": true
+    },
+    {
+      "id": "transport-ack-is-not-application",
+      "passed": true
+    }
+  ]
+}

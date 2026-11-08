@@ -1,0 +1,608 @@
+{
+  "node": "v24.22.1",
+  "hashes": {
+    "src/memory/domain/events.ts": "0fb9fee44f86ba46d78dee632e053ebfb20227056f63c993262279ff4e24f288",
+    "src/memory/storage/event-revisions.ts": "a2bbccdc7c510dec5e4364b7e834e91e899bd20cf5b514ebe6149985b76e2963",
+    "src/memory/experience/trial-contracts.ts": "c8fcc653120576fa8707d685b2ab7f4f8c801c5f6c4f205f1c4f7e47f4110e23",
+    "src/memory/experience/service.ts": "73ebaf775105d2791bc67bd0b998c5cca203b76ae9d084cff9326d6ed4c05bf5",
+    "src/memory/experience/outcomes.ts": "1c3323f85de678397485a251dcf88a4d9ec8f24a5d818a448e1fc3000f9a3161",
+    "src/memory/recovery/domain-contracts.ts": "83f8b7a24a2d4365b8442cecb61236bbda9472ac11cd0b00f7afbb75e3f9f9fb"
+  },
+  "refs": [
+    {
+      "name": "valid",
+      "raw": "{\"eventId\":\"event\",\"revision\":1,\"deletionEpoch\":0}",
+      "accepted": true
+    },
+    {
+      "name": "fractional-revision",
+      "raw": "{\"eventId\":\"event\",\"revision\":1.9,\"deletionEpoch\":0}",
+      "accepted": false
+    },
+    {
+      "name": "fractional-epoch",
+      "raw": "{\"eventId\":\"event\",\"revision\":1,\"deletionEpoch\":0.9}",
+      "accepted": false
+    },
+    {
+      "name": "unsafe-revision",
+      "raw": "{\"eventId\":\"event\",\"revision\":9007199254740992,\"deletionEpoch\":0}",
+      "accepted": false
+    },
+    {
+      "name": "unsafe-epoch",
+      "raw": "{\"eventId\":\"event\",\"revision\":1,\"deletionEpoch\":9007199254740992}",
+      "accepted": false
+    },
+    {
+      "name": "negative-epoch",
+      "raw": "{\"eventId\":\"event\",\"revision\":1,\"deletionEpoch\":-1}",
+      "accepted": false
+    },
+    {
+      "name": "zero-revision",
+      "raw": "{\"eventId\":\"event\",\"revision\":0,\"deletionEpoch\":0}",
+      "accepted": false
+    },
+    {
+      "name": "overflow",
+      "raw": "{\"eventId\":\"event\",\"revision\":1e400,\"deletionEpoch\":0}",
+      "accepted": false
+    },
+    {
+      "name": "extra",
+      "raw": "{\"eventId\":\"event\",\"revision\":1,\"deletionEpoch\":0,\"extra\":{\"proof\":\"not-authority\"}}",
+      "accepted": false
+    },
+    {
+      "name": "lone-surrogate-512",
+      "raw": "{\"eventId\":\"\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\",\"revision\":1,\"deletionEpoch\":0}",
+      "accepted": true
+    },
+    {
+      "name": "lone-surrogate-513",
+      "raw": "{\"eventId\":\"\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\\ud800\",\"revision\":1,\"deletionEpoch\":0}",
+      "accepted": false
+    }
+  ],
+  "trial": {
+    "schemaVersion": 1,
+    "policyId": "policy",
+    "sceneId": "scene",
+    "version": 1,
+    "policyVersion": 2,
+    "evidencePolicyVersion": 2,
+    "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "requesterId": "alice",
+    "settingsRevision": 1,
+    "phase": "trial",
+    "createdAt": "2026-10-29T00:00:00.000Z",
+    "expiresAt": "2026-11-05T00:00:00.000Z",
+    "instruction": {
+      "id": "instruction",
+      "version": 1
+    },
+    "validationId": "validation",
+    "positives": [],
+    "reason": "explicit_instruction_trial"
+  },
+  "ids": [
+    {
+      "id": "\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800",
+      "accepted": true
+    },
+    {
+      "id": "\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800",
+      "accepted": true
+    },
+    {
+      "id": "\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800\ud800",
+      "accepted": false
+    }
+  ],
+  "material": {
+    "input": {
+      "source": {
+        "messageId": "instruction",
+        "senderId": "alice",
+        "eventRef": {
+          "eventId": "event",
+          "revision": 1,
+          "deletionEpoch": 0,
+          "extra": {
+            "ä": "\ud800"
+          }
+        }
+      },
+      "target": {
+        "messageId": "intro",
+        "eventRef": {
+          "eventId": "event",
+          "revision": 1,
+          "deletionEpoch": 0,
+          "extra": "target"
+        }
+      },
+      "code": "request_conclusion_first",
+      "observedAt": "2026-10-29T00:00:00.000Z",
+      "policyRef": {
+        "version": 3,
+        "id": "unrelated",
+        "extra": {
+          "x": 1
+        }
+      }
+    },
+    "outcome": {
+      "source": {
+        "messageId": "instruction",
+        "senderId": "alice",
+        "eventRef": {
+          "eventId": "event",
+          "revision": 1,
+          "deletionEpoch": 0,
+          "extra": {
+            "ä": "\ud800"
+          }
+        }
+      },
+      "target": {
+        "messageId": "intro",
+        "eventRef": {
+          "eventId": "event",
+          "revision": 1,
+          "deletionEpoch": 0,
+          "extra": "target"
+        }
+      },
+      "code": "request_conclusion_first",
+      "observedAt": "2026-10-29T00:00:00.000Z",
+      "policyRef": {
+        "version": 3,
+        "id": "unrelated",
+        "extra": {
+          "x": 1
+        }
+      },
+      "id": "outcome",
+      "version": 1,
+      "sceneId": "scene",
+      "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+      "rootFamily": "feedback:request_conclusion_first"
+    },
+    "qualification": "b381c770c088ab20bc911800db83cb0312ef1b1193ee3c83b8a88cd83ee05464"
+  },
+  "duplicate": [
+    {
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "ä": "\ud800"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": "target"
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "policyRef": {
+          "version": 3,
+          "id": "unrelated",
+          "extra": {
+            "x": 1
+          }
+        }
+      },
+      "result": {
+        "duplicate": false
+      }
+    },
+    {
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "ä": "\ud800"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": "target"
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "policyRef": {
+          "version": 3,
+          "id": "unrelated",
+          "extra": {
+            "x": 1
+          }
+        }
+      },
+      "result": {
+        "duplicate": true
+      }
+    },
+    {
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "ä": "\ud800"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": "target"
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "policyRef": {
+          "version": 3,
+          "id": "unrelated",
+          "extra": {
+            "x": 2
+          }
+        }
+      },
+      "result": {
+        "error": "experience_root_conflict"
+      }
+    },
+    {
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "ä": "\ud800"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro",
+          "eventRef": {
+            "eventId": "event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": "target"
+          }
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "policyRef": {
+          "id": "unrelated",
+          "version": 3,
+          "extra": {
+            "x": 1
+          }
+        }
+      },
+      "result": {
+        "error": "experience_root_conflict"
+      }
+    }
+  ],
+  "serviceBoundaries": [
+    {
+      "name": "fractional-revision",
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "bc858d224b0f0f1ed16850eb2dee3d8c17e35e40b602f5a073859000a90e4726",
+      "count": 1
+    },
+    {
+      "name": "fractional-epoch",
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0.9
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0.9
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "6bc587544527915d795a30b088e9a5c66e8e80969431e90ba4e2f380040628a7",
+      "count": 1
+    },
+    {
+      "name": "unsafe-revision",
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 9007199254740992,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 9007199254740992,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "0028da1b3d10fe39704447049e0a8786dd5785bfe6f6d48a3d0a458cdf76856b",
+      "count": 1
+    },
+    {
+      "name": "extra",
+      "snapshot": false,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": true,
+      "outcome": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_conclusion_first",
+        "observedAt": "2026-10-29T00:00:00.000Z",
+        "id": "id1",
+        "version": 1,
+        "sceneId": "scene",
+        "rootId": "663d42f16288f9235ed2c6ef1e80ddefe58f2548ee0d75fe7695d6f17ac69ba6",
+        "rootFamily": "feedback:request_conclusion_first"
+      },
+      "qualification": "34e69958069654b57a14cd2ec61129bc62c8c04445585f294a053fe88d52e366",
+      "count": 1
+    },
+    {
+      "name": "fractional-revision",
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1.9,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "count": 0
+    },
+    {
+      "name": "fractional-epoch",
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0.9
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "count": 0
+    },
+    {
+      "name": "unsafe-revision",
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 9007199254740992,
+            "deletionEpoch": 0
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "count": 0
+    },
+    {
+      "name": "extra",
+      "snapshot": true,
+      "feedback": {
+        "source": {
+          "messageId": "instruction",
+          "senderId": "alice",
+          "eventRef": {
+            "eventId": "source-event",
+            "revision": 1,
+            "deletionEpoch": 0,
+            "extra": {
+              "historical": "retain"
+            }
+          }
+        },
+        "target": {
+          "messageId": "intro"
+        },
+        "code": "request_exact_person_lookup",
+        "observedAt": "2026-10-29T00:00:00.000Z"
+      },
+      "accepted": false,
+      "outcome": null,
+      "qualification": null,
+      "count": 0
+    }
+  ]
+}

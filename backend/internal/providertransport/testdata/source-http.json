@@ -1,0 +1,430 @@
+{
+  "sources": {
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/models/stream-response.ts": "49e9742305b5a197ad6aeb98382057c31f2cbedeab1f3fd5a966b79d76173832"
+  },
+  "cases": [
+    {
+      "name": "json",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic",
+        "stream": false
+      },
+      "status": 200,
+      "type": "application/json",
+      "response": "{\"choices\":[{\"finish_reason\":\"stop\",\"message\":{\"content\":\"synthetic\"}}],\"usage\":{\"prompt_tokens\":2,\"completion_tokens\":1,\"total_tokens\":3}}",
+      "output": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "synthetic"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 2,
+          "completion_tokens": 1,
+          "total_tokens": 3
+        }
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "stream": false
+        }
+      }
+    },
+    {
+      "name": "json-fallback",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic",
+        "stream": true
+      },
+      "status": 200,
+      "type": "application/json",
+      "response": "{\"choices\":[{\"finish_reason\":\"stop\",\"message\":{\"content\":\"synthetic\"}}]}",
+      "output": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "synthetic"
+            }
+          }
+        ]
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "text/event-stream, application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "stream": true
+        }
+      }
+    },
+    {
+      "name": "list",
+      "path": "models",
+      "status": 200,
+      "type": "application/json",
+      "response": "{\"data\":[{\"id\":\"synthetic-model\"}]}",
+      "output": {
+        "data": [
+          {
+            "id": "synthetic-model"
+          }
+        ]
+      },
+      "received": {
+        "method": "GET",
+        "path": "/models",
+        "accept": "application/json",
+        "authorization": "Bearer synthetic-key"
+      }
+    },
+    {
+      "name": "embedding",
+      "path": "embeddings",
+      "body": {
+        "model": "synthetic",
+        "input": [
+          "synthetic"
+        ],
+        "encoding_format": "float"
+      },
+      "status": 200,
+      "type": "application/json",
+      "response": "{\"data\":[{\"index\":0,\"embedding\":[0.5,0.25]}],\"usage\":{\"prompt_tokens\":2,\"total_tokens\":2}}",
+      "output": {
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              0.5,
+              0.25
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 2,
+          "total_tokens": 2
+        }
+      },
+      "received": {
+        "method": "POST",
+        "path": "/embeddings",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "input": [
+            "synthetic"
+          ],
+          "encoding_format": "float"
+        }
+      }
+    },
+    {
+      "name": "invalid-json",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic"
+      },
+      "status": 200,
+      "type": "application/json",
+      "response": "synthetic invalid",
+      "error": {
+        "code": "invalid_provider_json",
+        "retryable": false
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic"
+        }
+      }
+    },
+    {
+      "name": "wrong-content-type",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic"
+      },
+      "status": 200,
+      "type": "text/plain",
+      "response": "synthetic text",
+      "error": {
+        "code": "invalid_provider_content_type",
+        "retryable": false
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic"
+        }
+      }
+    },
+    {
+      "name": "array-root",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic"
+      },
+      "status": 200,
+      "type": "application/json",
+      "response": "[]",
+      "error": {
+        "code": "invalid_provider_response",
+        "retryable": false
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic"
+        }
+      }
+    },
+    {
+      "name": "http-429",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic"
+      },
+      "status": 429,
+      "type": "application/json",
+      "response": "{\"error\":\"synthetic private\"}",
+      "retryAfter": "2",
+      "error": {
+        "code": "provider_http_429",
+        "retryable": true,
+        "status": 429,
+        "retryAfterMs": 2000
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic"
+        }
+      }
+    },
+    {
+      "name": "http-503",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic"
+      },
+      "status": 503,
+      "type": "application/json",
+      "response": "{\"error\":\"synthetic private\"}",
+      "error": {
+        "code": "provider_http_503",
+        "retryable": true,
+        "status": 503
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic"
+        }
+      }
+    },
+    {
+      "name": "http-400",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic"
+      },
+      "status": 400,
+      "type": "application/json",
+      "response": "{\"error\":\"synthetic private\"}",
+      "error": {
+        "code": "provider_http_400",
+        "retryable": false,
+        "status": 400
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic"
+        }
+      }
+    },
+    {
+      "name": "stream-text",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic",
+        "stream": true
+      },
+      "status": 200,
+      "type": "text/event-stream",
+      "response": "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hello\"},\"finish_reason\":null}]}\n\ndata: {\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n",
+      "output": {
+        "object": "chat.completion",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "hello"
+            },
+            "finish_reason": "stop"
+          }
+        ]
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "text/event-stream, application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "stream": true
+        }
+      }
+    },
+    {
+      "name": "stream-partial",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic",
+        "stream": true
+      },
+      "status": 200,
+      "type": "text/event-stream",
+      "response": "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"hello\"}}]}\n\n",
+      "error": {
+        "code": "provider_stream_interrupted",
+        "retryable": false
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "text/event-stream, application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "stream": true
+        }
+      }
+    },
+    {
+      "name": "stream-empty-partial",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic",
+        "stream": true
+      },
+      "status": 200,
+      "type": "text/event-stream",
+      "response": "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\" \"}}]}\n\n",
+      "error": {
+        "code": "provider_stream_invalid",
+        "retryable": false
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "text/event-stream, application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "stream": true
+        }
+      }
+    },
+    {
+      "name": "stream-json-error",
+      "path": "chat/completions",
+      "body": {
+        "model": "synthetic",
+        "stream": true
+      },
+      "status": 200,
+      "type": "text/event-stream",
+      "response": "data: not-json\n\n",
+      "error": {
+        "code": "provider_stream_invalid",
+        "retryable": false
+      },
+      "received": {
+        "method": "POST",
+        "path": "/chat/completions",
+        "accept": "text/event-stream, application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "stream": true
+        }
+      }
+    },
+    {
+      "name": "responses-stream",
+      "protocol": "openai-responses",
+      "path": "responses",
+      "body": {
+        "model": "synthetic",
+        "stream": true
+      },
+      "status": 200,
+      "type": "text/event-stream",
+      "response": "event: response.completed\ndata: {\"type\":\"response.completed\",\"response\":{\"id\":\"synthetic\",\"status\":\"completed\",\"output\":[]}}\n\n",
+      "output": {
+        "id": "synthetic",
+        "status": "completed",
+        "output": []
+      },
+      "received": {
+        "method": "POST",
+        "path": "/responses",
+        "accept": "text/event-stream, application/json",
+        "contentType": "application/json",
+        "authorization": "Bearer synthetic-key",
+        "body": {
+          "model": "synthetic",
+          "stream": true
+        }
+      }
+    }
+  ]
+}

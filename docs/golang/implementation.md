@@ -805,3 +805,27 @@ pool. Provider completion, offline recovered-history composition, application
 startup wiring and remaining authority/publication performance work are still
 open. Long-history audit cost and slow-client publication contention are not
 claimed solved by this checkpoint.
+
+## Stage36: native provider operations and durable budget ownership
+
+Native transport now handles builtin HTTP requests, SSE progress/closure, 413
+rescheduling under the original deadline, complete/embedding/model-list
+operations, usage accounting, and a real SQL budget ledger with restoration
+holds. Custom protocols use the existing shared V1 host; opaque continuation
+references stay host-owned and assistant identity is preserved. Cancellation
+after successful settlement releases unpublished references exactly once.
+
+Source JSON argument order survives assistant roundtrips, URL handling uses the
+existing WHATWG parser, and missing custom arguments remain distinct from null.
+Independent review found these four differences and the corrected candidate
+passed four-package race/vet plus all six freshly regenerated source-fixture
+documents: wire49, streams16, usage16, HTTP15, ledger8, and complete-roundtrip/URL/
+custom-error cases. Tests use synthetic loopback data, not live provider secrets.
+The exact checkpoint's full CI remains pending; local focused execution does not
+stand in for unrun full/native acceptance.
+
+Image request envelope handling is present, but the required pixel compressor
+is not: configured decoding/resizing fails explicitly without a supplied native
+codec. This is not a complete production provider deployment. Pinned native
+libvips parity, application/REST composition and offline lifecycle integration
+remain active work. No new protective resource limits were introduced.

@@ -173,7 +173,11 @@ func (p *Policy) Run(ctx context.Context, request Request, invoke Invocation) (a
 	done := make(chan outcome, 1)
 	var finished sync.Once
 	settle := func(value any, err error) {
-		finished.Do(func() { done <- outcome{value, err} })
+		published := false
+		finished.Do(func() { published = true; done <- outcome{value, err} })
+		if !published {
+			releaseUnpublished(value)
+		}
 	}
 	deadline := newDeadlineWithTimeout(ctx, timeout, "model_stage_timeout", p.clock, func(cause error) {
 		settle(nil, cause)
@@ -276,6 +280,7 @@ func (p *Policy) attempts(ctx context.Context, c Candidate, invoke Invocation) (
 		}
 		value, err := p.execute(ctx, c, attempt, policy, invoke)
 		if ctx.Err() != nil {
+			releaseUnpublished(value)
 			return nil, cancelled(err)
 		}
 		if err == nil {
@@ -303,6 +308,9 @@ func (p *Policy) attempts(ctx context.Context, c Candidate, invoke Invocation) (
 	return nil, errors.New("invalid_provider_request_policy")
 }
 func (p *Policy) execute(parent context.Context, c Candidate, number int, policy RequestPolicy, invoke Invocation) (any, error) {
+	if IsBuiltin(c.Provider.Protocol) {
+		return p.executeNative(parent, c, number, policy, invoke)
+	}
 	builtin := IsBuiltin(c.Provider.Protocol)
 	var custom *progressDeadline
 	queueContext := parent
@@ -311,7 +319,7 @@ func (p *Policy) execute(parent context.Context, c Candidate, number int, policy
 		defer custom.Close()
 		queueContext = custom.Context
 	}
-	future := p.scheduler.SubmitModel(queueContext, BasePriority(c.Role), func(ctx context.Context, complete func(any, error)) {
+	future := p.scheduler.SubmitModel(queueContext, operationPriority(queueContext, c.Role), func(ctx context.Context, complete func(any, error)) {
 		if ctx.Err() != nil {
 			complete(nil, attemptCancellation(parent, ctx))
 			return
@@ -328,10 +336,13 @@ func (p *Policy) execute(parent context.Context, c Candidate, number int, policy
 			mu.Lock()
 			if settled {
 				mu.Unlock()
+				releaseUnpublished(value)
 				return
 			}
 			settled = true
+			var unpublished any
 			if attemptCtx.Err() != nil {
+				unpublished = value
 				value = nil
 				err = attemptCancellation(parent, attemptCtx)
 			} else if err != nil && builtin && content {
@@ -341,6 +352,7 @@ func (p *Policy) execute(parent context.Context, c Candidate, number int, policy
 			}
 			stop := stopCancel
 			mu.Unlock()
+			releaseUnpublished(unpublished)
 			if stop != nil {
 				stop()
 			}
@@ -388,6 +400,7 @@ func (p *Policy) execute(parent context.Context, c Candidate, number int, policy
 	})
 	value, err := future.Wait()
 	if custom != nil && custom.Err() != nil {
+		releaseUnpublished(value)
 		return nil, attemptCancellation(parent, custom.Context)
 	}
 	return value, err
@@ -400,4 +413,12 @@ func attemptCancellation(parent, attempt context.Context) error {
 		return withCause(NewError("provider_timeout", nil, false), e)
 	}
 	return cancelled(context.Cause(attempt))
+}
+
+// A completion discarded by cancellation/duplicate settlement must release its
+// isolate-owned continuation. This never serializes or inspects opaque state.
+func releaseUnpublished(value any) {
+	if owned, ok := value.(interface{ Release() error }); ok {
+		_ = owned.Release()
+	}
 }

@@ -1,0 +1,3387 @@
+{
+  "sources": {
+    "src/budget/ledger.ts": "b521d6a516a550d004322b57f325f866b7c8178a43847d065984bcf507e3ab49",
+    "src/budget/estimate.ts": "90849b6a37698ed2c892cd41b5339150a2b17520355ae325cd4e6a2e7c05dacc",
+    "src/budget/storage.ts": "2f200c5767e603d8a011cfbd6b7f7e6b217dc5d94a346910409e858cd7a47135",
+    "src/budget/contracts.ts": "30043fabe498cf2c08c6dc27f34d51d82a7327003784485cbd9d94dea0db372d",
+    "src/model-cost.ts": "f015bf12dd2d66bf73655a083e4d12c9cdd7d1d260e4585df4304c349b121d8e",
+    "src/budget/external-cost/service.ts": "efa11c0049f6923491f29dbc44d8aa14b63989c193aff69ca2ff82f78f912bd4",
+    "src/budget/native-attempt.ts": "71116e0b652c057ed46aa53466b5942dbb3b769e659b2ec2b9a47bbd3c1d067f",
+    "src/budget/errors.ts": "327292e444f7b4347f27da14ea30980e090d68c6f2905cda3df3225bf14fecbd",
+    "src/scheduler.ts": "3340a98e5545c146a2332dc335931efeb8c577806d08cb2d05f1c92d30b52d36"
+  },
+  "base": {
+    "id": "one",
+    "requestId": "request-one",
+    "attempt": 1,
+    "providerId": "synthetic",
+    "modelId": "model",
+    "operation": "complete",
+    "lane": "foreground",
+    "turnId": "turn",
+    "estimate": {
+      "source": "verified_contract",
+      "estimatorVersion": "v1",
+      "contractVersion": "c1",
+      "enforceable": true,
+      "inputUpperTokens": 100,
+      "outputUpperTokens": 10,
+      "inputCategories": [
+        "inputUsdPerMillion",
+        "cacheReadUsdPerMillion",
+        "cacheWriteUsdPerMillion",
+        "cacheWrite5mUsdPerMillion",
+        "cacheWrite1hUsdPerMillion",
+        "cacheWrite30mUsdPerMillion",
+        "cacheWrite12hUsdPerMillion"
+      ]
+    },
+    "prices": {
+      "inputUsdPerMillion": 1e-7,
+      "outputUsdPerMillion": 2e-7,
+      "cacheReadUsdPerMillion": 3e-8,
+      "cacheWriteUsdPerMillion": 2e-7,
+      "cacheWrite5mUsdPerMillion": 3e-7,
+      "cacheWrite1hUsdPerMillion": 4e-7,
+      "cacheWrite30mUsdPerMillion": 5e-7,
+      "cacheWrite12hUsdPerMillion": 6e-7
+    }
+  },
+  "policy": {
+    "dailyNanoUsd": 1000000,
+    "maxUnresolvedNanoUsd": 1000000
+  },
+  "full": {
+    "inputTokens": 10,
+    "outputTokens": 2,
+    "cacheKnown": true,
+    "cacheReadInputTokens": 2,
+    "cacheWriteInputTokens": 4,
+    "cacheWrite5mInputTokens": 1,
+    "cacheWrite1hInputTokens": 1,
+    "cacheWrite30mInputTokens": 1,
+    "cacheWrite12hInputTokens": 1
+  },
+  "cases": [
+    {
+      "name": "complete_and_conflicts",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "start",
+          "args": [
+            "one"
+          ],
+          "result": true
+        },
+        {
+          "method": "start",
+          "args": [
+            "one"
+          ],
+          "result": false
+        },
+        {
+          "method": "settle",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "complete",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "usage": {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1,
+              "cacheKnown": true
+            },
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "settle",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "complete",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "usage": {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1,
+              "cacheKnown": true
+            },
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "settle",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 3,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            }
+          ],
+          "error": "budget_receipt_conflict"
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "carriedNanoUsd": 0,
+            "unresolvedNanoUsd": 0,
+            "admissionExposureNanoUsd": 1,
+            "remainingNanoUsd": 999999,
+            "laneExposureNanoUsd": {
+              "foreground": 1,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 0,
+            "unboundedAttempts": 0
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "one",
+          "payload_hash": "ea770c1621e3779cc5a7a159585e1493a5d4491b37732e0244bf145f1707ff38",
+          "payload": "{\"id\":\"one\",\"requestId\":\"request-one\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "boot",
+          "state": "complete",
+          "window_start": "2026-11-08",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 1,
+          "held_nano": 0,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": "2026-11-08T12:00:00.000Z",
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": "{\"inputTokens\":10,\"outputTokens\":2,\"cacheReadInputTokens\":2,\"cacheWriteInputTokens\":4,\"cacheWrite5mInputTokens\":1,\"cacheWrite1hInputTokens\":1,\"cacheWrite30mInputTokens\":1,\"cacheWrite12hInputTokens\":1,\"cacheKnown\":true}",
+          "receipt_hash": "e557eb6545bd75089a71881f1b80f1cbdc9a8173dfa80b73a08a9f8bd6b6c37f",
+          "overrun": 0,
+          "unbounded_exposure": 0
+        }
+      ],
+      "reconciliations": []
+    },
+    {
+      "name": "partial_reconciliation",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "start",
+          "args": [
+            "one"
+          ],
+          "result": true
+        },
+        {
+          "method": "settle",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 2
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "partial",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 1,
+            "usage": {
+              "inputTokens": 10,
+              "outputTokens": 2
+            },
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 1,
+            "carriedNanoUsd": 0,
+            "unresolvedNanoUsd": 1,
+            "admissionExposureNanoUsd": 2,
+            "remainingNanoUsd": 999998,
+            "laneExposureNanoUsd": {
+              "foreground": 2,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 0,
+            "unboundedAttempts": 0
+          }
+        },
+        {
+          "method": "reconcile",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            },
+            "evidence"
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "complete",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "usage": {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1,
+              "cacheKnown": true
+            },
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "reconcile",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            },
+            "evidence"
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "complete",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "usage": {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1,
+              "cacheKnown": true
+            },
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "reconcile",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 3,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            },
+            "evidence"
+          ],
+          "error": "budget_reconciliation_conflict"
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "carriedNanoUsd": 0,
+            "unresolvedNanoUsd": 0,
+            "admissionExposureNanoUsd": 1,
+            "remainingNanoUsd": 999999,
+            "laneExposureNanoUsd": {
+              "foreground": 1,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 0,
+            "unboundedAttempts": 0
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "one",
+          "payload_hash": "ea770c1621e3779cc5a7a159585e1493a5d4491b37732e0244bf145f1707ff38",
+          "payload": "{\"id\":\"one\",\"requestId\":\"request-one\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "boot",
+          "state": "complete",
+          "window_start": "2026-11-08",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 1,
+          "held_nano": 0,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": "2026-11-08T12:00:00.000Z",
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": "{\"inputTokens\":10,\"outputTokens\":2,\"cacheReadInputTokens\":2,\"cacheWriteInputTokens\":4,\"cacheWrite5mInputTokens\":1,\"cacheWrite1hInputTokens\":1,\"cacheWrite30mInputTokens\":1,\"cacheWrite12hInputTokens\":1,\"cacheKnown\":true}",
+          "receipt_hash": "e557eb6545bd75089a71881f1b80f1cbdc9a8173dfa80b73a08a9f8bd6b6c37f",
+          "overrun": 0,
+          "unbounded_exposure": 0
+        }
+      ],
+      "reconciliations": [
+        {
+          "evidence_id": "evidence",
+          "attempt_id": "one",
+          "receipt_hash": "e557eb6545bd75089a71881f1b80f1cbdc9a8173dfa80b73a08a9f8bd6b6c37f",
+          "reconciled_at": "2026-11-08T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "unknown_invalid_usage",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "start",
+          "args": [
+            "one"
+          ],
+          "result": true
+        },
+        {
+          "method": "settle",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 100,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "unknown",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "usage": {
+              "inputTokens": 0,
+              "outputTokens": 0,
+              "known": false
+            },
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "carriedNanoUsd": 0,
+            "unresolvedNanoUsd": 2,
+            "admissionExposureNanoUsd": 2,
+            "remainingNanoUsd": 999998,
+            "laneExposureNanoUsd": {
+              "foreground": 2,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 0,
+            "unboundedAttempts": 0
+          }
+        },
+        {
+          "method": "reconcile",
+          "args": [
+            "one",
+            {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1
+            },
+            "fixed"
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "complete",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "usage": {
+              "inputTokens": 10,
+              "outputTokens": 2,
+              "cacheReadInputTokens": 2,
+              "cacheWriteInputTokens": 4,
+              "cacheWrite5mInputTokens": 1,
+              "cacheWrite1hInputTokens": 1,
+              "cacheWrite30mInputTokens": 1,
+              "cacheWrite12hInputTokens": 1,
+              "cacheKnown": true
+            },
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "one",
+          "payload_hash": "ea770c1621e3779cc5a7a159585e1493a5d4491b37732e0244bf145f1707ff38",
+          "payload": "{\"id\":\"one\",\"requestId\":\"request-one\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "boot",
+          "state": "complete",
+          "window_start": "2026-11-08",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 1,
+          "held_nano": 0,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": "2026-11-08T12:00:00.000Z",
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": "{\"inputTokens\":10,\"outputTokens\":2,\"cacheReadInputTokens\":2,\"cacheWriteInputTokens\":4,\"cacheWrite5mInputTokens\":1,\"cacheWrite1hInputTokens\":1,\"cacheWrite30mInputTokens\":1,\"cacheWrite12hInputTokens\":1,\"cacheKnown\":true}",
+          "receipt_hash": "e557eb6545bd75089a71881f1b80f1cbdc9a8173dfa80b73a08a9f8bd6b6c37f",
+          "overrun": 0,
+          "unbounded_exposure": 0
+        }
+      ],
+      "reconciliations": [
+        {
+          "evidence_id": "fixed",
+          "attempt_id": "one",
+          "receipt_hash": "e557eb6545bd75089a71881f1b80f1cbdc9a8173dfa80b73a08a9f8bd6b6c37f",
+          "reconciled_at": "2026-11-08T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "overrun_and_quarantine",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "start",
+          "args": [
+            "one"
+          ],
+          "result": true
+        },
+        {
+          "method": "settle",
+          "args": [
+            "one",
+            {
+              "inputTokens": 101,
+              "outputTokens": 2
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "partial",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 1,
+            "usage": {
+              "inputTokens": 101,
+              "outputTokens": 2
+            },
+            "overrun": true,
+            "unboundedExposure": true
+          }
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 1,
+            "carriedNanoUsd": 0,
+            "unresolvedNanoUsd": 1,
+            "admissionExposureNanoUsd": 2,
+            "remainingNanoUsd": 0,
+            "laneExposureNanoUsd": {
+              "foreground": 2,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 1,
+            "unboundedAttempts": 1
+          }
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "two",
+              "requestId": "two",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "error": "budget_unbounded_exposure"
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "two",
+              "requestId": "two",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000,
+              "mode": "best_effort"
+            }
+          ],
+          "error": "budget_contract_overrun"
+        },
+        {
+          "method": "reconcile",
+          "args": [
+            "one",
+            {
+              "inputTokens": 101,
+              "outputTokens": 2,
+              "cacheKnown": true,
+              "cacheReadInputTokens": 0,
+              "cacheWriteInputTokens": 0
+            },
+            "proof"
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "complete",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 1,
+            "heldNanoUsd": 0,
+            "usage": {
+              "inputTokens": 101,
+              "outputTokens": 2,
+              "cacheReadInputTokens": 0,
+              "cacheWriteInputTokens": 0,
+              "cacheKnown": true
+            },
+            "overrun": true,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "two",
+              "requestId": "two",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "error": "budget_contract_overrun"
+        }
+      ],
+      "rows": [
+        {
+          "id": "one",
+          "payload_hash": "ea770c1621e3779cc5a7a159585e1493a5d4491b37732e0244bf145f1707ff38",
+          "payload": "{\"id\":\"one\",\"requestId\":\"request-one\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "boot",
+          "state": "complete",
+          "window_start": "2026-11-08",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 1,
+          "held_nano": 0,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": "2026-11-08T12:00:00.000Z",
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": "{\"inputTokens\":101,\"outputTokens\":2,\"cacheReadInputTokens\":0,\"cacheWriteInputTokens\":0,\"cacheKnown\":true}",
+          "receipt_hash": "91d8638c0cea72873c6036164d11c9f818f1001575613f31bd1ad668c27566ef",
+          "overrun": 1,
+          "unbounded_exposure": 0
+        }
+      ],
+      "reconciliations": [
+        {
+          "evidence_id": "proof",
+          "attempt_id": "one",
+          "receipt_hash": "91d8638c0cea72873c6036164d11c9f818f1001575613f31bd1ad668c27566ef",
+          "reconciled_at": "2026-11-08T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "release_and_identity",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "duplicate",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "error": "budget_attempt_identity_conflict"
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "other",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "error": "budget_idempotency_conflict"
+        },
+        {
+          "method": "release",
+          "args": [
+            "one"
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "released",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 0,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "release",
+          "args": [
+            "one"
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "released",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 0,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "start",
+          "args": [
+            "one"
+          ],
+          "result": false
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 0,
+            "carriedNanoUsd": 0,
+            "unresolvedNanoUsd": 0,
+            "admissionExposureNanoUsd": 0,
+            "remainingNanoUsd": 1000000,
+            "laneExposureNanoUsd": {
+              "foreground": 0,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 0,
+            "unboundedAttempts": 0
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "one",
+          "payload_hash": "ea770c1621e3779cc5a7a159585e1493a5d4491b37732e0244bf145f1707ff38",
+          "payload": "{\"id\":\"one\",\"requestId\":\"request-one\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "boot",
+          "state": "released",
+          "window_start": "2026-11-08",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 0,
+          "held_nano": 0,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": null,
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": null,
+          "receipt_hash": null,
+          "overrun": 0,
+          "unbounded_exposure": 0
+        }
+      ],
+      "reconciliations": []
+    },
+    {
+      "name": "policy_caps",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000,
+              "perTurnCalls": 0
+            }
+          ],
+          "error": "budget_turn_calls"
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000,
+              "perTurnTokens": 1
+            }
+          ],
+          "error": "budget_turn_tokens"
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000,
+              "perTurnNanoUsd": 0
+            }
+          ],
+          "error": "budget_turn_amount"
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000,
+              "laneDailyNanoUsd": {
+                "foreground": 0
+              }
+            }
+          ],
+          "error": "budget_lane_limit"
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 0,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "error": "budget_daily_limit"
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000,
+              "perTurnCalls": 1
+            }
+          ],
+          "error": "budget_turn_identity_required"
+        }
+      ],
+      "rows": [],
+      "reconciliations": []
+    },
+    {
+      "name": "dead_boot",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "two",
+              "requestId": "two",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "two",
+              "requestId": "two",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "start",
+          "args": [
+            "two"
+          ],
+          "result": true
+        },
+        {
+          "method": "recoverDeadBoot",
+          "args": [
+            "boot"
+          ],
+          "error": "budget_active_boot"
+        },
+        {
+          "method": "recoverDeadBoot",
+          "args": [
+            "dead"
+          ],
+          "result": 2
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "carriedNanoUsd": 0,
+            "unresolvedNanoUsd": 2,
+            "admissionExposureNanoUsd": 2,
+            "remainingNanoUsd": 999998,
+            "laneExposureNanoUsd": {
+              "foreground": 2,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 0,
+            "unboundedAttempts": 0
+          }
+        }
+      ],
+      "rows": [
+        {
+          "id": "one",
+          "payload_hash": "ea770c1621e3779cc5a7a159585e1493a5d4491b37732e0244bf145f1707ff38",
+          "payload": "{\"id\":\"one\",\"requestId\":\"request-one\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "dead",
+          "state": "released",
+          "window_start": "2026-11-08",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 0,
+          "held_nano": 0,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": null,
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": null,
+          "receipt_hash": null,
+          "overrun": 0,
+          "unbounded_exposure": 0
+        },
+        {
+          "id": "two",
+          "payload_hash": "d64ba949fe5f57250afcc7fd83e198d799b78a55ecfb0ec5556a704890f7191f",
+          "payload": "{\"id\":\"two\",\"requestId\":\"two\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "dead",
+          "state": "unknown",
+          "window_start": "2026-11-08",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 0,
+          "held_nano": 2,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": "2026-11-08T12:00:00.000Z",
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": null,
+          "receipt_hash": null,
+          "overrun": 0,
+          "unbounded_exposure": 0
+        }
+      ],
+      "reconciliations": []
+    },
+    {
+      "name": "old_day_holds",
+      "steps": [
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "reserved",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "start",
+          "args": [
+            "one"
+          ],
+          "result": true
+        },
+        {
+          "method": "unknown",
+          "args": [
+            "one"
+          ],
+          "result": {
+            "request": {
+              "id": "one",
+              "requestId": "request-one",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "cacheReadUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "inputUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            "bootId": "boot",
+            "currency": "USD",
+            "policy": {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            },
+            "state": "unknown",
+            "windowStart": "2026-11-08",
+            "createdAt": "2026-11-08T12:00:00.000Z",
+            "startedAt": "2026-11-08T12:00:00.000Z",
+            "settledAt": "2026-11-08T12:00:00.000Z",
+            "reservedNanoUsd": 2,
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 2,
+            "overrun": false,
+            "unboundedExposure": false
+          }
+        },
+        {
+          "method": "coverage",
+          "args": [
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 1000000
+            }
+          ],
+          "result": {
+            "currency": "USD",
+            "externalKnownNanoUsd": 0,
+            "externalUnknownReceipts": 0,
+            "windowStart": "2026-11-08",
+            "knownNanoUsd": 0,
+            "heldNanoUsd": 0,
+            "carriedNanoUsd": 2,
+            "unresolvedNanoUsd": 2,
+            "admissionExposureNanoUsd": 2,
+            "remainingNanoUsd": 999998,
+            "laneExposureNanoUsd": {
+              "foreground": 2,
+              "realtime": 0,
+              "maintenance": 0
+            },
+            "overrunAttempts": 0,
+            "unboundedAttempts": 0
+          }
+        },
+        {
+          "method": "reserve",
+          "args": [
+            {
+              "id": "two",
+              "requestId": "two",
+              "attempt": 1,
+              "providerId": "synthetic",
+              "modelId": "model",
+              "operation": "complete",
+              "lane": "foreground",
+              "turnId": "turn",
+              "estimate": {
+                "source": "verified_contract",
+                "estimatorVersion": "v1",
+                "contractVersion": "c1",
+                "enforceable": true,
+                "inputUpperTokens": 100,
+                "outputUpperTokens": 10,
+                "inputCategories": [
+                  "inputUsdPerMillion",
+                  "cacheReadUsdPerMillion",
+                  "cacheWriteUsdPerMillion",
+                  "cacheWrite5mUsdPerMillion",
+                  "cacheWrite1hUsdPerMillion",
+                  "cacheWrite30mUsdPerMillion",
+                  "cacheWrite12hUsdPerMillion"
+                ]
+              },
+              "prices": {
+                "inputUsdPerMillion": 1e-7,
+                "outputUsdPerMillion": 2e-7,
+                "cacheReadUsdPerMillion": 3e-8,
+                "cacheWriteUsdPerMillion": 2e-7,
+                "cacheWrite5mUsdPerMillion": 3e-7,
+                "cacheWrite1hUsdPerMillion": 4e-7,
+                "cacheWrite30mUsdPerMillion": 5e-7,
+                "cacheWrite12hUsdPerMillion": 6e-7
+              }
+            },
+            {
+              "dailyNanoUsd": 1000000,
+              "maxUnresolvedNanoUsd": 0
+            }
+          ],
+          "error": "budget_unresolved_limit"
+        }
+      ],
+      "rows": [
+        {
+          "id": "one",
+          "payload_hash": "ea770c1621e3779cc5a7a159585e1493a5d4491b37732e0244bf145f1707ff38",
+          "payload": "{\"id\":\"one\",\"requestId\":\"request-one\",\"attempt\":1,\"providerId\":\"synthetic\",\"modelId\":\"model\",\"operation\":\"complete\",\"lane\":\"foreground\",\"turnId\":\"turn\",\"estimate\":{\"source\":\"verified_contract\",\"estimatorVersion\":\"v1\",\"contractVersion\":\"c1\",\"enforceable\":true,\"inputUpperTokens\":100,\"outputUpperTokens\":10,\"inputCategories\":[\"cacheReadUsdPerMillion\",\"cacheWrite12hUsdPerMillion\",\"cacheWrite1hUsdPerMillion\",\"cacheWrite30mUsdPerMillion\",\"cacheWrite5mUsdPerMillion\",\"cacheWriteUsdPerMillion\",\"inputUsdPerMillion\"]},\"prices\":{\"inputUsdPerMillion\":1e-7,\"outputUsdPerMillion\":2e-7,\"cacheReadUsdPerMillion\":3e-8,\"cacheWriteUsdPerMillion\":2e-7,\"cacheWrite5mUsdPerMillion\":3e-7,\"cacheWrite1hUsdPerMillion\":4e-7,\"cacheWrite30mUsdPerMillion\":5e-7,\"cacheWrite12hUsdPerMillion\":6e-7}}",
+          "policy": "{\"dailyNanoUsd\":1000000,\"maxUnresolvedNanoUsd\":1000000}",
+          "boot_id": "boot",
+          "state": "unknown",
+          "window_start": "2026-11-07",
+          "lane": "foreground",
+          "turn_id": "turn",
+          "reserved_nano": 2,
+          "known_nano": 0,
+          "held_nano": 2,
+          "created_at": "2026-11-08T12:00:00.000Z",
+          "started_at": "2026-11-08T12:00:00.000Z",
+          "settled_at": "2026-11-08T12:00:00.000Z",
+          "usage": null,
+          "receipt_hash": null,
+          "overrun": 0,
+          "unbounded_exposure": 0
+        }
+      ],
+      "reconciliations": []
+    }
+  ],
+  "quotes": [
+    {
+      "request": {
+        "id": "one",
+        "requestId": "request-one",
+        "attempt": 1,
+        "providerId": "synthetic",
+        "modelId": "model",
+        "operation": "complete",
+        "lane": "foreground",
+        "turnId": "turn",
+        "estimate": {
+          "source": "verified_contract",
+          "estimatorVersion": "v1",
+          "contractVersion": "c1",
+          "enforceable": true,
+          "inputUpperTokens": 100,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "inputUsdPerMillion",
+            "cacheReadUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "cacheWrite5mUsdPerMillion",
+            "cacheWrite1hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWrite12hUsdPerMillion"
+          ]
+        },
+        "prices": {
+          "inputUsdPerMillion": 0,
+          "outputUsdPerMillion": 0,
+          "cacheReadUsdPerMillion": 0,
+          "cacheWriteUsdPerMillion": 0,
+          "cacheWrite5mUsdPerMillion": 0,
+          "cacheWrite1hUsdPerMillion": 0,
+          "cacheWrite30mUsdPerMillion": 0,
+          "cacheWrite12hUsdPerMillion": 0
+        }
+      },
+      "amount": 0
+    },
+    {
+      "request": {
+        "id": "one",
+        "requestId": "request-one",
+        "attempt": 1,
+        "providerId": "synthetic",
+        "modelId": "model",
+        "operation": "complete",
+        "lane": "foreground",
+        "turnId": "turn",
+        "estimate": {
+          "source": "verified_contract",
+          "estimatorVersion": "v1",
+          "contractVersion": "c1",
+          "enforceable": true,
+          "inputUpperTokens": 100,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "inputUsdPerMillion",
+            "cacheReadUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "cacheWrite5mUsdPerMillion",
+            "cacheWrite1hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWrite12hUsdPerMillion"
+          ]
+        },
+        "prices": {
+          "inputUsdPerMillion": 1e-7,
+          "outputUsdPerMillion": 1e-7,
+          "cacheReadUsdPerMillion": 1e-7,
+          "cacheWriteUsdPerMillion": 1e-7,
+          "cacheWrite5mUsdPerMillion": 1e-7,
+          "cacheWrite1hUsdPerMillion": 1e-7,
+          "cacheWrite30mUsdPerMillion": 1e-7,
+          "cacheWrite12hUsdPerMillion": 1e-7
+        }
+      },
+      "amount": 2
+    },
+    {
+      "request": {
+        "id": "one",
+        "requestId": "request-one",
+        "attempt": 1,
+        "providerId": "synthetic",
+        "modelId": "model",
+        "operation": "complete",
+        "lane": "foreground",
+        "turnId": "turn",
+        "estimate": {
+          "source": "verified_contract",
+          "estimatorVersion": "v1",
+          "contractVersion": "c1",
+          "enforceable": true,
+          "inputUpperTokens": 100,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "inputUsdPerMillion",
+            "cacheReadUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "cacheWrite5mUsdPerMillion",
+            "cacheWrite1hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWrite12hUsdPerMillion"
+          ]
+        },
+        "prices": {
+          "inputUsdPerMillion": 0.1,
+          "outputUsdPerMillion": 0.1,
+          "cacheReadUsdPerMillion": 0.1,
+          "cacheWriteUsdPerMillion": 0.1,
+          "cacheWrite5mUsdPerMillion": 0.1,
+          "cacheWrite1hUsdPerMillion": 0.1,
+          "cacheWrite30mUsdPerMillion": 0.1,
+          "cacheWrite12hUsdPerMillion": 0.1
+        }
+      },
+      "amount": 11000
+    },
+    {
+      "request": {
+        "id": "one",
+        "requestId": "request-one",
+        "attempt": 1,
+        "providerId": "synthetic",
+        "modelId": "model",
+        "operation": "complete",
+        "lane": "foreground",
+        "turnId": "turn",
+        "estimate": {
+          "source": "verified_contract",
+          "estimatorVersion": "v1",
+          "contractVersion": "c1",
+          "enforceable": true,
+          "inputUpperTokens": 100,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "inputUsdPerMillion",
+            "cacheReadUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "cacheWrite5mUsdPerMillion",
+            "cacheWrite1hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWrite12hUsdPerMillion"
+          ]
+        },
+        "prices": {
+          "inputUsdPerMillion": 0.30000000000000004,
+          "outputUsdPerMillion": 0.30000000000000004,
+          "cacheReadUsdPerMillion": 0.30000000000000004,
+          "cacheWriteUsdPerMillion": 0.30000000000000004,
+          "cacheWrite5mUsdPerMillion": 0.30000000000000004,
+          "cacheWrite1hUsdPerMillion": 0.30000000000000004,
+          "cacheWrite30mUsdPerMillion": 0.30000000000000004,
+          "cacheWrite12hUsdPerMillion": 0.30000000000000004
+        }
+      },
+      "amount": 33002
+    },
+    {
+      "request": {
+        "id": "one",
+        "requestId": "request-one",
+        "attempt": 1,
+        "providerId": "synthetic",
+        "modelId": "model",
+        "operation": "complete",
+        "lane": "foreground",
+        "turnId": "turn",
+        "estimate": {
+          "source": "verified_contract",
+          "estimatorVersion": "v1",
+          "contractVersion": "c1",
+          "enforceable": true,
+          "inputUpperTokens": 100,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "inputUsdPerMillion",
+            "cacheReadUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "cacheWrite5mUsdPerMillion",
+            "cacheWrite1hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWrite12hUsdPerMillion"
+          ]
+        },
+        "prices": {
+          "inputUsdPerMillion": 1e-20,
+          "outputUsdPerMillion": 1e-20,
+          "cacheReadUsdPerMillion": 1e-20,
+          "cacheWriteUsdPerMillion": 1e-20,
+          "cacheWrite5mUsdPerMillion": 1e-20,
+          "cacheWrite1hUsdPerMillion": 1e-20,
+          "cacheWrite30mUsdPerMillion": 1e-20,
+          "cacheWrite12hUsdPerMillion": 1e-20
+        }
+      },
+      "amount": 2
+    },
+    {
+      "request": {
+        "id": "one",
+        "requestId": "request-one",
+        "attempt": 1,
+        "providerId": "synthetic",
+        "modelId": "model",
+        "operation": "complete",
+        "lane": "foreground",
+        "turnId": "turn",
+        "estimate": {
+          "source": "verified_contract",
+          "estimatorVersion": "v1",
+          "contractVersion": "c1",
+          "enforceable": true,
+          "inputUpperTokens": 100,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "inputUsdPerMillion",
+            "cacheReadUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "cacheWrite5mUsdPerMillion",
+            "cacheWrite1hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWrite12hUsdPerMillion"
+          ]
+        },
+        "prices": {
+          "inputUsdPerMillion": 100000000000000000000,
+          "outputUsdPerMillion": 100000000000000000000,
+          "cacheReadUsdPerMillion": 100000000000000000000,
+          "cacheWriteUsdPerMillion": 100000000000000000000,
+          "cacheWrite5mUsdPerMillion": 100000000000000000000,
+          "cacheWrite1hUsdPerMillion": 100000000000000000000,
+          "cacheWrite30mUsdPerMillion": 100000000000000000000,
+          "cacheWrite12hUsdPerMillion": 100000000000000000000
+        }
+      },
+      "error": "budget_amount_overflow"
+    }
+  ],
+  "native": {
+    "descriptor": {
+      "providerId": "synthetic",
+      "modelId": "model",
+      "protocol": "openai-chat",
+      "operation": "complete",
+      "role": "planner",
+      "prices": {
+        "inputUsdPerMillion": 1e-7,
+        "outputUsdPerMillion": 2e-7,
+        "cacheReadUsdPerMillion": 3e-8,
+        "cacheWriteUsdPerMillion": 2e-7,
+        "cacheWrite5mUsdPerMillion": 3e-7,
+        "cacheWrite1hUsdPerMillion": 4e-7,
+        "cacheWrite30mUsdPerMillion": 5e-7,
+        "cacheWrite12hUsdPerMillion": 6e-7
+      }
+    },
+    "body": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "synthetic"
+        }
+      ]
+    },
+    "usage": {
+      "inputTokens": 10,
+      "outputTokens": 2,
+      "cacheKnown": true,
+      "cacheReadInputTokens": 0,
+      "cacheWriteInputTokens": 0
+    },
+    "limitedBody": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "synthetic"
+        }
+      ],
+      "max_completion_tokens": 10
+    },
+    "rows": [
+      {
+        "attempt": 1,
+        "lane": "maintenance",
+        "turnId": "native-turn",
+        "estimate": {
+          "source": "conservative_estimate",
+          "estimatorVersion": "utf8-plus-1024-v1",
+          "contractVersion": "unverified-native-text-v1",
+          "enforceable": false,
+          "inputUpperTokens": 1103,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "cacheReadUsdPerMillion",
+            "cacheWrite12hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "inputUsdPerMillion"
+          ]
+        },
+        "state": "complete",
+        "reservedNanoUsd": 2,
+        "knownNanoUsd": 1,
+        "heldNanoUsd": 0,
+        "overrun": 0,
+        "unboundedExposure": 0
+      },
+      {
+        "attempt": 2,
+        "lane": "maintenance",
+        "turnId": "native-turn",
+        "estimate": {
+          "source": "conservative_estimate",
+          "estimatorVersion": "utf8-plus-1024-v1",
+          "contractVersion": "unverified-native-text-v1",
+          "enforceable": false,
+          "inputUpperTokens": 1103,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "cacheReadUsdPerMillion",
+            "cacheWrite12hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "inputUsdPerMillion"
+          ]
+        },
+        "state": "unknown",
+        "reservedNanoUsd": 2,
+        "knownNanoUsd": 0,
+        "heldNanoUsd": 2,
+        "overrun": 0,
+        "unboundedExposure": 0
+      },
+      {
+        "attempt": 3,
+        "lane": "maintenance",
+        "turnId": "native-turn",
+        "estimate": {
+          "source": "conservative_estimate",
+          "estimatorVersion": "utf8-plus-1024-v1",
+          "contractVersion": "unverified-native-text-v1",
+          "enforceable": false,
+          "inputUpperTokens": 1103,
+          "outputUpperTokens": 10,
+          "inputCategories": [
+            "cacheReadUsdPerMillion",
+            "cacheWrite12hUsdPerMillion",
+            "cacheWrite30mUsdPerMillion",
+            "cacheWriteUsdPerMillion",
+            "inputUsdPerMillion"
+          ]
+        },
+        "state": "released",
+        "reservedNanoUsd": 2,
+        "knownNanoUsd": 0,
+        "heldNanoUsd": 0,
+        "overrun": 0,
+        "unboundedExposure": 0
+      }
+    ],
+    "coverage": {
+      "currency": "USD",
+      "externalKnownNanoUsd": 0,
+      "externalUnknownReceipts": 0,
+      "windowStart": "2026-11-08",
+      "knownNanoUsd": 1,
+      "heldNanoUsd": 2,
+      "carriedNanoUsd": 0,
+      "unresolvedNanoUsd": 2,
+      "admissionExposureNanoUsd": 3,
+      "remainingNanoUsd": 999997,
+      "laneExposureNanoUsd": {
+        "foreground": 0,
+        "realtime": 0,
+        "maintenance": 3
+      },
+      "overrunAttempts": 0,
+      "unboundedAttempts": 0
+    }
+  },
+  "exactSubtotal": 1
+}

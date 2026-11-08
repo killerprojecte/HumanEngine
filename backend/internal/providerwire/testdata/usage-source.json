@@ -1,0 +1,305 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/models/native-tool-schema.ts": "58e63bf1d583be93c012cc049c61f54efd847924ddf502768b04f547e1c5dc0d",
+    "src/models/stream-response.ts": "49e9742305b5a197ad6aeb98382057c31f2cbedeab1f3fd5a966b79d76173832",
+    "src/models/prompt-context.ts": "82b3a4d5abc1d018521c1ce1fbe653b16650e0253e3e1746c392aa2d6e9e7817"
+  },
+  "cases": [
+    {
+      "input": {},
+      "convention": "openai",
+      "embedding": false,
+      "output": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0,
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "total_tokens": 12
+      },
+      "convention": "openai",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12
+      }
+    },
+    {
+      "input": {
+        "prompt_tokens": 10,
+        "completion_tokens": 2,
+        "prompt_cache_hit_tokens": 3,
+        "prompt_cache_miss_tokens": 7
+      },
+      "convention": "openai",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "cacheKnown": true,
+        "rawTokenCounters": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "prompt_cache_hit_tokens": 3,
+          "prompt_cache_miss_tokens": 7
+        },
+        "cacheReadInputTokens": 3,
+        "cacheWriteInputTokens": 0,
+        "ordinaryInputTokens": 7
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "cache_read_input_tokens": 3,
+        "cache_creation_input_tokens": 4
+      },
+      "convention": "openai",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "cacheKnown": false,
+        "rawTokenCounters": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "cache_read_input_tokens": 3,
+          "cache_creation_input_tokens": 4
+        },
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "prompt_tokens": 11,
+        "output_tokens": 2
+      },
+      "convention": "openai",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "input_tokens_details": {
+          "cached_tokens": 3,
+          "cache_write_tokens": 2
+        }
+      },
+      "convention": "openai",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "cacheKnown": true,
+        "rawTokenCounters": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "input_tokens_details.cached_tokens": 3,
+          "input_tokens_details.cache_write_tokens": 2
+        },
+        "cacheReadInputTokens": 3,
+        "cacheWriteInputTokens": 2,
+        "ordinaryInputTokens": 5
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "total_tokens": 1
+      },
+      "convention": "openai",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "known": false
+      }
+    },
+    {
+      "input": {},
+      "convention": "anthropic",
+      "embedding": false,
+      "output": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0,
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "total_tokens": 12
+      },
+      "convention": "anthropic",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "prompt_tokens": 10,
+        "completion_tokens": 2,
+        "prompt_cache_hit_tokens": 3,
+        "prompt_cache_miss_tokens": 7
+      },
+      "convention": "anthropic",
+      "embedding": false,
+      "output": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0,
+        "cacheKnown": false,
+        "rawTokenCounters": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "prompt_cache_hit_tokens": 3,
+          "prompt_cache_miss_tokens": 7
+        },
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "cache_read_input_tokens": 3,
+        "cache_creation_input_tokens": 4
+      },
+      "convention": "anthropic",
+      "embedding": false,
+      "output": {
+        "inputTokens": 17,
+        "outputTokens": 2,
+        "totalTokens": 19,
+        "cacheKnown": true,
+        "rawTokenCounters": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "cache_read_input_tokens": 3,
+          "cache_creation_input_tokens": 4
+        },
+        "cacheReadInputTokens": 3,
+        "cacheWriteInputTokens": 4,
+        "ordinaryInputTokens": 10
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "prompt_tokens": 11,
+        "output_tokens": 2
+      },
+      "convention": "anthropic",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "input_tokens_details": {
+          "cached_tokens": 3,
+          "cache_write_tokens": 2
+        }
+      },
+      "convention": "anthropic",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "cacheKnown": false,
+        "rawTokenCounters": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "input_tokens_details.cached_tokens": 3,
+          "input_tokens_details.cache_write_tokens": 2
+        },
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 2,
+        "total_tokens": 1
+      },
+      "convention": "anthropic",
+      "embedding": false,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "known": false
+      }
+    },
+    {
+      "input": {
+        "prompt_tokens": 10,
+        "total_tokens": 10
+      },
+      "convention": "openai",
+      "embedding": true,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 0,
+        "totalTokens": 10,
+        "cacheKnown": true,
+        "ordinaryInputTokens": 10,
+        "cacheReadInputTokens": 0,
+        "cacheWriteInputTokens": 0
+      }
+    },
+    {
+      "input": {
+        "input_tokens": 10,
+        "output_tokens": 0,
+        "total_tokens": 10
+      },
+      "convention": "openai",
+      "embedding": true,
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 0,
+        "totalTokens": 10,
+        "cacheKnown": true,
+        "ordinaryInputTokens": 10,
+        "cacheReadInputTokens": 0,
+        "cacheWriteInputTokens": 0
+      }
+    }
+  ]
+}

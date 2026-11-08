@@ -1,0 +1,396 @@
+{
+  "node": "v24.22.1",
+  "rebuilt": true,
+  "sources": {
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/models/native-tool-schema.ts": "58e63bf1d583be93c012cc049c61f54efd847924ddf502768b04f547e1c5dc0d",
+    "src/models/stream-response.ts": "49e9742305b5a197ad6aeb98382057c31f2cbedeab1f3fd5a966b79d76173832",
+    "src/models/prompt-context.ts": "82b3a4d5abc1d018521c1ce1fbe653b16650e0253e3e1746c392aa2d6e9e7817"
+  },
+  "cases": [
+    {
+      "name": "chat-text",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZGF0YTogeyJjaG9pY2VzIjpbeyJpbmRleCI6MCwiZGVsdGEiOnsiY29udGVudCI6InN5bnRoZXRpYyJ9LCJmaW5pc2hfcmVhc29uIjoic3RvcCJ9XX0KCmRhdGE6IFtET05FXQoK"
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": false,
+      "output": {
+        "object": "chat.completion",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "synthetic"
+            },
+            "finish_reason": "stop"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chat-split",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZA==",
+        "YQ==",
+        "dA==",
+        "YQ==",
+        "Og==",
+        "IA==",
+        "ew==",
+        "Ig==",
+        "Yw==",
+        "aA==",
+        "bw==",
+        "aQ==",
+        "Yw==",
+        "ZQ==",
+        "cw==",
+        "Ig==",
+        "Og==",
+        "Ww==",
+        "ew==",
+        "Ig==",
+        "aQ==",
+        "bg==",
+        "ZA==",
+        "ZQ==",
+        "eA==",
+        "Ig==",
+        "Og==",
+        "MA==",
+        "LA==",
+        "Ig==",
+        "ZA==",
+        "ZQ==",
+        "bA==",
+        "dA==",
+        "YQ==",
+        "Ig==",
+        "Og==",
+        "ew==",
+        "Ig==",
+        "Yw==",
+        "bw==",
+        "bg==",
+        "dA==",
+        "ZQ==",
+        "bg==",
+        "dA==",
+        "Ig==",
+        "Og==",
+        "Ig==",
+        "cw==",
+        "eQ==",
+        "bg==",
+        "dA==",
+        "aA==",
+        "ZQ==",
+        "dA==",
+        "aQ==",
+        "Yw==",
+        "Ig==",
+        "fQ==",
+        "LA==",
+        "Ig==",
+        "Zg==",
+        "aQ==",
+        "bg==",
+        "aQ==",
+        "cw==",
+        "aA==",
+        "Xw==",
+        "cg==",
+        "ZQ==",
+        "YQ==",
+        "cw==",
+        "bw==",
+        "bg==",
+        "Ig==",
+        "Og==",
+        "Ig==",
+        "cw==",
+        "dA==",
+        "bw==",
+        "cA==",
+        "Ig==",
+        "fQ==",
+        "XQ==",
+        "fQ==",
+        "Cg==",
+        "Cg==",
+        "ZA==",
+        "YQ==",
+        "dA==",
+        "YQ==",
+        "Og==",
+        "IA==",
+        "Ww==",
+        "RA==",
+        "Tw==",
+        "Tg==",
+        "RQ==",
+        "XQ==",
+        "Cg==",
+        "Cg=="
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": false,
+      "output": {
+        "object": "chat.completion",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "synthetic"
+            },
+            "finish_reason": "stop"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chat-eof",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZGF0YTogeyJjaG9pY2VzIjpbeyJpbmRleCI6MCwiZGVsdGEiOnsiY29udGVudCI6InBhcnRpYWwifSwiZmluaXNoX3JlYXNvbiI6bnVsbH1dfQoK"
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": false,
+      "error": {
+        "message": "incomplete_model_response",
+        "code": "incomplete_model_response"
+      }
+    },
+    {
+      "name": "chat-invalid-json",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZGF0YTogewoK"
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "invalid_provider_stream",
+        "code": "provider_stream_invalid_json"
+      }
+    },
+    {
+      "name": "chat-invalid-utf8",
+      "protocol": "openai-chat",
+      "chunks": [
+        "/w=="
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "provider_stream_error",
+        "code": "provider_stream_invalid_utf8"
+      }
+    },
+    {
+      "name": "chat-mismatch",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZGF0YTogeyJ0eXBlIjoicmVzcG9uc2UuY3JlYXRlZCIsInJlc3BvbnNlIjp7ImlkIjoiciJ9fQoK"
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "invalid_provider_stream",
+        "code": "provider_stream_protocol_mismatch"
+      }
+    },
+    {
+      "name": "upstream-error",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZXZlbnQ6IGVycm9yCmRhdGE6IHt9Cgo="
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "provider_stream_error",
+        "code": "provider_stream_upstream_error"
+      }
+    },
+    {
+      "name": "callback-error",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZGF0YTogeyJjaG9pY2VzIjpbeyJpbmRleCI6MCwiZGVsdGEiOnsiY29udGVudCI6InN5bnRoZXRpYyJ9LCJmaW5pc2hfcmVhc29uIjoic3RvcCJ9XX0KCmRhdGE6IFtET05FXQoK"
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": true,
+      "error": {
+        "message": "provider_stream_error",
+        "code": "provider_stream_transport_error"
+      }
+    },
+    {
+      "name": "chat-bom",
+      "protocol": "openai-chat",
+      "chunks": [
+        "7w==",
+        "uw==",
+        "vw==",
+        "ZGF0YTogeyJjaG9pY2VzIjpbeyJpbmRleCI6MCwiZGVsdGEiOnsiY29udGVudCI6InN5bnRoZXRpYyJ9LCJmaW5pc2hfcmVhc29uIjoic3RvcCJ9XX0KCmRhdGE6IFtET05FXQoK"
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": false,
+      "output": {
+        "object": "chat.completion",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "synthetic"
+            },
+            "finish_reason": "stop"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chat-crlf",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZGF0YTogeyJjaG9pY2VzIjpbeyJpbmRleCI6MCwiZGVsdGEiOnsiY29udGVudCI6InN5bnRoZXRpYyJ9LCJmaW5pc2hfcmVhc29uIjoic3RvcCJ9XX0NCg0KZGF0YTogW0RPTkVdDQoNCg=="
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": false,
+      "output": {
+        "object": "chat.completion",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "synthetic"
+            },
+            "finish_reason": "stop"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chat-truncated-utf8",
+      "protocol": "openai-chat",
+      "chunks": [
+        "4oI="
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "provider_stream_error",
+        "code": "provider_stream_invalid_utf8"
+      }
+    },
+    {
+      "name": "chat-surrogate",
+      "protocol": "openai-chat",
+      "chunks": [
+        "ZGF0YTogeyJjaG9pY2VzIjpbeyJpbmRleCI6MCwiZGVsdGEiOnsiY29udGVudCI6Ilx1ZDgwMCJ9LCJmaW5pc2hfcmVhc29uIjoic3RvcCJ9XX0KCmRhdGE6IFtET05FXQoK"
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": false,
+      "output": {
+        "object": "chat.completion",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "\ud800"
+            },
+            "finish_reason": "stop"
+          }
+        ]
+      }
+    },
+    {
+      "name": "responses-completed",
+      "protocol": "openai-responses",
+      "chunks": [
+        "ZGF0YTogeyJ0eXBlIjoicmVzcG9uc2UuY29tcGxldGVkIiwicmVzcG9uc2UiOnsiaWQiOiJyIiwic3RhdHVzIjoiY29tcGxldGVkIiwib3V0cHV0IjpbeyJ0eXBlIjoibWVzc2FnZSIsImNvbnRlbnQiOlt7InR5cGUiOiJvdXRwdXRfdGV4dCIsInRleHQiOiJzeW50aGV0aWMifV19XX19Cgo="
+      ],
+      "progress": [
+        "text"
+      ],
+      "callbackError": false,
+      "output": {
+        "id": "r",
+        "status": "completed",
+        "output": [
+          {
+            "type": "message",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "synthetic"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "responses-event-mismatch",
+      "protocol": "openai-responses",
+      "chunks": [
+        "ZXZlbnQ6IHJlc3BvbnNlLmNyZWF0ZWQKZGF0YTogeyJ0eXBlIjoicmVzcG9uc2UuY29tcGxldGVkIiwicmVzcG9uc2UiOnsiaWQiOiJyIiwic3RhdHVzIjoiY29tcGxldGVkIiwib3V0cHV0IjpbeyJ0eXBlIjoibWVzc2FnZSIsImNvbnRlbnQiOlt7InR5cGUiOiJvdXRwdXRfdGV4dCIsInRleHQiOiJzeW50aGV0aWMifV19XX19Cgo="
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "invalid_provider_stream",
+        "code": "provider_stream_event_mismatch"
+      }
+    },
+    {
+      "name": "responses-done",
+      "protocol": "openai-responses",
+      "chunks": [
+        "ZGF0YTogW0RPTkVdCgo="
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "incomplete_model_response",
+        "code": "incomplete_model_response"
+      }
+    },
+    {
+      "name": "responses-incomplete",
+      "protocol": "openai-responses",
+      "chunks": [
+        "ZGF0YTogeyJ0eXBlIjoicmVzcG9uc2UuaW5jb21wbGV0ZSJ9Cgo="
+      ],
+      "progress": [],
+      "callbackError": false,
+      "error": {
+        "message": "provider_stream_error",
+        "code": "provider_stream_upstream_error"
+      }
+    }
+  ]
+}

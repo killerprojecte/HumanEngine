@@ -1,0 +1,185 @@
+{
+  "sources": {
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/model-protocols.ts": "95e45d005e786fcd2ef957354ffe7608cb5d827bc7e16cca5344a7905b193222"
+  },
+  "roundtrip": [
+    {
+      "protocol": "openai-chat",
+      "response": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "c",
+                  "type": "function",
+                  "function": {
+                    "name": "lookup",
+                    "arguments": "{\"z\":1,\"a\":2}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "assistantArgumentJSON": "{\"z\":1,\"a\":2}",
+      "secondRequest": {
+        "model": "synthetic",
+        "messages": [
+          {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+              {
+                "id": "c",
+                "type": "function",
+                "function": {
+                  "name": "lookup",
+                  "arguments": "{\"z\":1,\"a\":2}"
+                }
+              }
+            ]
+          }
+        ],
+        "stream": false,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "lookup",
+              "description": "Synthetic",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "z": {
+                    "type": "number"
+                  },
+                  "a": {
+                    "type": "number"
+                  }
+                }
+              },
+              "strict": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "protocol": "openai-responses",
+      "response": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "function_call",
+            "call_id": "c",
+            "name": "lookup",
+            "arguments": "{\"z\":1,\"a\":2}"
+          }
+        ]
+      },
+      "assistantArgumentJSON": "{\"z\":1,\"a\":2}",
+      "secondRequest": {
+        "model": "synthetic",
+        "input": [
+          {
+            "type": "function_call",
+            "call_id": "c",
+            "name": "lookup",
+            "arguments": "{\"z\":1,\"a\":2}"
+          }
+        ],
+        "store": false,
+        "stream": false,
+        "include": [
+          "reasoning.encrypted_content"
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "name": "lookup",
+            "description": "Synthetic",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "z": {
+                  "type": "number"
+                },
+                "a": {
+                  "type": "number"
+                }
+              }
+            },
+            "strict": false
+          }
+        ]
+      }
+    }
+  ],
+  "custom": [
+    {
+      "name": "ordered",
+      "raw": "{\"text\":\"\",\"toolCalls\":[{\"id\":\"c\",\"name\":\"lookup\",\"arguments\":{\"z\":1,\"a\":2}}],\"usage\":{\"inputTokens\":1,\"outputTokens\":1,\"totalTokens\":2}}",
+      "argumentJSON": "{\"z\":1,\"a\":2}"
+    },
+    {
+      "name": "missing",
+      "raw": "{\"text\":\"\",\"toolCalls\":[{\"id\":\"c\",\"name\":\"lookup\"}],\"usage\":{\"inputTokens\":1,\"outputTokens\":1,\"totalTokens\":2}}",
+      "error": "invalid_tool_arguments"
+    },
+    {
+      "name": "null",
+      "raw": "{\"text\":\"\",\"toolCalls\":[{\"id\":\"c\",\"name\":\"lookup\",\"arguments\":null}],\"usage\":{\"inputTokens\":1,\"outputTokens\":1,\"totalTokens\":2}}",
+      "error": "invalid_provider_response"
+    },
+    {
+      "name": "unknown-missing",
+      "raw": "{\"text\":\"\",\"toolCalls\":[{\"id\":\"c\",\"name\":\"unknown\"}],\"usage\":{\"inputTokens\":1,\"outputTokens\":1,\"totalTokens\":2}}",
+      "error": "unknown_tool_call"
+    },
+    {
+      "name": "empty-id-missing",
+      "raw": "{\"text\":\"\",\"toolCalls\":[{\"id\":\"\",\"name\":\"lookup\"}],\"usage\":{\"inputTokens\":1,\"outputTokens\":1,\"totalTokens\":2}}",
+      "error": "unknown_tool_call"
+    },
+    {
+      "name": "array",
+      "raw": "{\"text\":\"\",\"toolCalls\":[{\"id\":\"c\",\"name\":\"lookup\",\"arguments\":[]}],\"usage\":{\"inputTokens\":1,\"outputTokens\":1,\"totalTokens\":2}}",
+      "error": "invalid_provider_response"
+    }
+  ],
+  "customRoundtrip": {
+    "assistantArgumentJSON": "{\"z\":1,\"a\":2}",
+    "secondArgumentJSON": "{\"z\":1,\"a\":2}"
+  },
+  "urls": [
+    {
+      "suffix": "/a/../v1",
+      "path": "/v1/models"
+    },
+    {
+      "suffix": "/v1?",
+      "path": "/v1?/models"
+    },
+    {
+      "suffix": "/v1#",
+      "path": "/v1"
+    },
+    {
+      "suffix": "/a/%2e%2e/v1",
+      "path": "/v1/models"
+    },
+    {
+      "suffix": "/v1?x=1",
+      "error": "invalid_provider_url"
+    },
+    {
+      "suffix": "/v1#x",
+      "error": "invalid_provider_url"
+    }
+  ]
+}

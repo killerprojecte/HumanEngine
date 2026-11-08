@@ -1,0 +1,1055 @@
+{
+  "node": "v24.22.1",
+  "rebuilt": true,
+  "sources": {
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/models/native-tool-schema.ts": "58e63bf1d583be93c012cc049c61f54efd847924ddf502768b04f547e1c5dc0d",
+    "src/models/stream-response.ts": "49e9742305b5a197ad6aeb98382057c31f2cbedeab1f3fd5a966b79d76173832",
+    "src/models/prompt-context.ts": "82b3a4d5abc1d018521c1ce1fbe653b16650e0253e3e1746c392aa2d6e9e7817"
+  },
+  "cases": [
+    {
+      "name": "chat-text",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "synthetic"
+            }
+          }
+        ]
+      },
+      "output": {
+        "responseSummary": {
+          "protocol": "openai-chat",
+          "terminalReason": "stop",
+          "reasoningPresent": false
+        },
+        "text": "synthetic",
+        "toolCalls": [],
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "known": false
+        }
+      }
+    },
+    {
+      "name": "chat-nullText",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": null
+            }
+          }
+        ]
+      },
+      "output": {
+        "responseSummary": {
+          "protocol": "openai-chat",
+          "terminalReason": "stop",
+          "reasoningPresent": false
+        },
+        "text": "",
+        "toolCalls": [],
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "known": false
+        }
+      }
+    },
+    {
+      "name": "chat-empty",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {}
+          }
+        ]
+      },
+      "error": "invalid_provider_response"
+    },
+    {
+      "name": "chat-calls",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "content": null,
+              "tool_calls": [
+                {
+                  "id": "call1",
+                  "type": "function",
+                  "function": {
+                    "name": "memory__read",
+                    "arguments": "{\"query\":\"synthetic\"}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "output": {
+        "responseSummary": {
+          "protocol": "openai-chat",
+          "terminalReason": "tool_calls",
+          "reasoningPresent": false
+        },
+        "text": "",
+        "toolCalls": [
+          {
+            "id": "call1",
+            "name": "memory.read",
+            "arguments": {
+              "query": "synthetic"
+            }
+          }
+        ],
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "known": false
+        }
+      }
+    },
+    {
+      "name": "chat-duplicate",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "tool_calls": [
+                {
+                  "id": "call1",
+                  "type": "function",
+                  "function": {
+                    "name": "memory__read",
+                    "arguments": "{\"query\":\"synthetic\"}"
+                  }
+                },
+                {
+                  "id": "call1",
+                  "type": "function",
+                  "function": {
+                    "name": "memory__read",
+                    "arguments": "{\"query\":\"synthetic\"}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "error": "duplicate_tool_call_id"
+    },
+    {
+      "name": "chat-missingCalls",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "content": ""
+            }
+          }
+        ]
+      },
+      "error": "incomplete_tool_call"
+    },
+    {
+      "name": "chat-badFinish",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "length",
+            "message": {
+              "content": "partial"
+            }
+          }
+        ]
+      },
+      "error": "incomplete_model_response"
+    },
+    {
+      "name": "chat-refusal",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "",
+              "refusal": "no"
+            }
+          }
+        ]
+      },
+      "error": "model_response_refused"
+    },
+    {
+      "name": "chat-badContent",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": 1
+            }
+          }
+        ]
+      },
+      "error": "invalid_provider_response"
+    },
+    {
+      "name": "chat-badArguments",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "tool_calls": [
+                {
+                  "id": "call1",
+                  "type": "function",
+                  "function": {
+                    "name": "memory__read",
+                    "arguments": "[]"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "error": "invalid_provider_response"
+    },
+    {
+      "name": "chat-unknownTool",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "tool_calls": [
+                {
+                  "id": "call1",
+                  "type": "function",
+                  "function": {
+                    "name": "unknown",
+                    "arguments": "{\"query\":\"synthetic\"}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "error": "unknown_tool_call"
+    },
+    {
+      "name": "chat-usage",
+      "method": "parseChat",
+      "input": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "content": "ok",
+              "reasoning_content": "hidden"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 12,
+          "completion_tokens": 3,
+          "total_tokens": 15,
+          "prompt_tokens_details": {
+            "cached_tokens": 4
+          }
+        }
+      },
+      "output": {
+        "responseSummary": {
+          "protocol": "openai-chat",
+          "terminalReason": "stop",
+          "reasoningPresent": true
+        },
+        "text": "ok",
+        "toolCalls": [],
+        "usage": {
+          "inputTokens": 12,
+          "outputTokens": 3,
+          "totalTokens": 15,
+          "cacheKnown": false,
+          "rawTokenCounters": {
+            "total_tokens": 15,
+            "prompt_tokens": 12,
+            "completion_tokens": 3,
+            "prompt_tokens_details.cached_tokens": 4
+          },
+          "cacheReadInputTokens": 4
+        }
+      }
+    },
+    {
+      "name": "responses-empty",
+      "method": "parseResponses",
+      "input": {
+        "status": "completed",
+        "output": []
+      },
+      "output": {
+        "text": "",
+        "toolCalls": [],
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "known": false
+        },
+        "responseSummary": {
+          "protocol": "openai-responses",
+          "terminalReason": "completed",
+          "reasoningPresent": false
+        }
+      }
+    },
+    {
+      "name": "responses-text",
+      "method": "parseResponses",
+      "input": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "message",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "one"
+              },
+              {
+                "type": "output_text",
+                "text": "two"
+              }
+            ]
+          }
+        ]
+      },
+      "output": {
+        "text": "one\ntwo",
+        "toolCalls": [],
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "known": false
+        },
+        "responseSummary": {
+          "protocol": "openai-responses",
+          "terminalReason": "completed",
+          "reasoningPresent": false
+        }
+      }
+    },
+    {
+      "name": "responses-reasoning",
+      "method": "parseResponses",
+      "input": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "reasoning"
+          }
+        ]
+      },
+      "output": {
+        "text": "",
+        "toolCalls": [],
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "known": false
+        },
+        "responseSummary": {
+          "protocol": "openai-responses",
+          "terminalReason": "completed",
+          "reasoningPresent": true
+        }
+      }
+    },
+    {
+      "name": "responses-call",
+      "method": "parseResponses",
+      "input": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "function_call",
+            "call_id": "c",
+            "name": "lookup",
+            "arguments": "{}"
+          }
+        ]
+      },
+      "output": {
+        "text": "",
+        "toolCalls": [
+          {
+            "id": "c",
+            "name": "lookup",
+            "arguments": {}
+          }
+        ],
+        "usage": {
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "totalTokens": 0,
+          "known": false
+        },
+        "responseSummary": {
+          "protocol": "openai-responses",
+          "terminalReason": "completed",
+          "reasoningPresent": false
+        }
+      }
+    },
+    {
+      "name": "responses-incompleteCall",
+      "method": "parseResponses",
+      "input": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "function_call",
+            "status": "in_progress",
+            "call_id": "c",
+            "name": "lookup",
+            "arguments": "{}"
+          }
+        ]
+      },
+      "error": "incomplete_tool_call"
+    },
+    {
+      "name": "responses-unknownItem",
+      "method": "parseResponses",
+      "input": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "image"
+          }
+        ]
+      },
+      "error": "unsupported_response_item"
+    },
+    {
+      "name": "responses-refusal",
+      "method": "parseResponses",
+      "input": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "message",
+            "content": [
+              {
+                "type": "refusal"
+              }
+            ]
+          }
+        ]
+      },
+      "error": "model_response_refused"
+    },
+    {
+      "name": "responses-incomplete",
+      "method": "parseResponses",
+      "input": {
+        "status": "in_progress",
+        "output": []
+      },
+      "error": "incomplete_model_response"
+    },
+    {
+      "name": "chat-input-20",
+      "method": "chatInput",
+      "input": {
+        "role": "user",
+        "content": "synthetic"
+      },
+      "extra": false,
+      "output": {
+        "role": "user",
+        "content": "synthetic"
+      }
+    },
+    {
+      "name": "responses-input-21",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "user",
+          "content": "synthetic"
+        }
+      ],
+      "extra": false,
+      "output": [
+        {
+          "role": "user",
+          "content": "synthetic"
+        }
+      ]
+    },
+    {
+      "name": "chat-input-22",
+      "method": "chatInput",
+      "input": {
+        "role": "user",
+        "content": "synthetic"
+      },
+      "extra": true,
+      "output": {
+        "role": "user",
+        "content": "synthetic"
+      }
+    },
+    {
+      "name": "responses-input-23",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "user",
+          "content": "synthetic"
+        }
+      ],
+      "extra": true,
+      "output": [
+        {
+          "role": "user",
+          "content": "synthetic"
+        }
+      ]
+    },
+    {
+      "name": "chat-input-24",
+      "method": "chatInput",
+      "input": {
+        "role": "assistant",
+        "content": "",
+        "toolCalls": [
+          {
+            "id": "c",
+            "name": "memory.read",
+            "arguments": {
+              "query": "synthetic"
+            }
+          }
+        ]
+      },
+      "extra": false,
+      "output": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "c",
+            "type": "function",
+            "function": {
+              "name": "memory__read",
+              "arguments": "{\"query\":\"synthetic\"}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "responses-input-25",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "c",
+              "name": "memory.read",
+              "arguments": {
+                "query": "synthetic"
+              }
+            }
+          ]
+        }
+      ],
+      "extra": false,
+      "output": [
+        {
+          "type": "function_call",
+          "call_id": "c",
+          "name": "memory__read",
+          "arguments": "{\"query\":\"synthetic\"}"
+        }
+      ]
+    },
+    {
+      "name": "chat-input-26",
+      "method": "chatInput",
+      "input": {
+        "role": "assistant",
+        "content": "",
+        "toolCalls": [
+          {
+            "id": "c",
+            "name": "memory.read",
+            "arguments": {
+              "query": "synthetic"
+            }
+          }
+        ]
+      },
+      "extra": true,
+      "output": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "c",
+            "type": "function",
+            "function": {
+              "name": "memory__read",
+              "arguments": "{\"query\":\"synthetic\"}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "responses-input-27",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "assistant",
+          "content": "",
+          "toolCalls": [
+            {
+              "id": "c",
+              "name": "memory.read",
+              "arguments": {
+                "query": "synthetic"
+              }
+            }
+          ]
+        }
+      ],
+      "extra": true,
+      "output": [
+        {
+          "type": "function_call",
+          "call_id": "c",
+          "name": "memory__read",
+          "arguments": "{\"query\":\"synthetic\"}"
+        }
+      ]
+    },
+    {
+      "name": "chat-input-28",
+      "method": "chatInput",
+      "input": {
+        "role": "tool",
+        "content": "synthetic",
+        "toolCallId": "c"
+      },
+      "extra": false,
+      "output": {
+        "role": "tool",
+        "content": "synthetic",
+        "tool_call_id": "c"
+      }
+    },
+    {
+      "name": "responses-input-29",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "tool",
+          "content": "synthetic",
+          "toolCallId": "c"
+        }
+      ],
+      "extra": false,
+      "output": [
+        {
+          "type": "function_call_output",
+          "call_id": "c",
+          "output": "synthetic"
+        }
+      ]
+    },
+    {
+      "name": "chat-input-30",
+      "method": "chatInput",
+      "input": {
+        "role": "tool",
+        "content": "synthetic",
+        "toolCallId": "c"
+      },
+      "extra": true,
+      "output": {
+        "role": "tool",
+        "content": "synthetic",
+        "tool_call_id": "c"
+      }
+    },
+    {
+      "name": "responses-input-31",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "tool",
+          "content": "synthetic",
+          "toolCallId": "c"
+        }
+      ],
+      "extra": true,
+      "output": [
+        {
+          "type": "function_call_output",
+          "call_id": "c",
+          "output": "synthetic"
+        }
+      ]
+    },
+    {
+      "name": "chat-input-32",
+      "method": "chatInput",
+      "input": {
+        "role": "tool",
+        "content": "synthetic"
+      },
+      "extra": false,
+      "error": "missing_tool_call_id"
+    },
+    {
+      "name": "responses-input-33",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "tool",
+          "content": "synthetic"
+        }
+      ],
+      "extra": false,
+      "error": "missing_tool_call_id"
+    },
+    {
+      "name": "chat-input-34",
+      "method": "chatInput",
+      "input": {
+        "role": "tool",
+        "content": "synthetic"
+      },
+      "extra": true,
+      "error": "missing_tool_call_id"
+    },
+    {
+      "name": "responses-input-35",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "tool",
+          "content": "synthetic"
+        }
+      ],
+      "extra": true,
+      "error": "missing_tool_call_id"
+    },
+    {
+      "name": "chat-input-36",
+      "method": "chatInput",
+      "input": {
+        "role": "user",
+        "content": "image",
+        "images": [
+          "https://example.invalid/synthetic.png"
+        ],
+        "promptCacheBreakpoint": true
+      },
+      "extra": false,
+      "output": {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "image"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://example.invalid/synthetic.png"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "responses-input-37",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "user",
+          "content": "image",
+          "images": [
+            "https://example.invalid/synthetic.png"
+          ],
+          "promptCacheBreakpoint": true
+        }
+      ],
+      "extra": false,
+      "output": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "image"
+            },
+            {
+              "type": "input_image",
+              "image_url": "https://example.invalid/synthetic.png",
+              "detail": "auto"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "chat-input-38",
+      "method": "chatInput",
+      "input": {
+        "role": "user",
+        "content": "image",
+        "images": [
+          "https://example.invalid/synthetic.png"
+        ],
+        "promptCacheBreakpoint": true
+      },
+      "extra": true,
+      "output": {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "image"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "https://example.invalid/synthetic.png"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "responses-input-39",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "user",
+          "content": "image",
+          "images": [
+            "https://example.invalid/synthetic.png"
+          ],
+          "promptCacheBreakpoint": true
+        }
+      ],
+      "extra": true,
+      "output": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "image"
+            },
+            {
+              "type": "input_image",
+              "image_url": "https://example.invalid/synthetic.png",
+              "detail": "auto"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "chat-input-40",
+      "method": "chatInput",
+      "input": {
+        "role": "system",
+        "content": "rules",
+        "promptCacheBreakpoint": true
+      },
+      "extra": false,
+      "output": {
+        "role": "system",
+        "content": "rules"
+      }
+    },
+    {
+      "name": "responses-input-41",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "system",
+          "content": "rules",
+          "promptCacheBreakpoint": true
+        }
+      ],
+      "extra": false,
+      "output": [
+        {
+          "role": "system",
+          "content": "rules"
+        }
+      ]
+    },
+    {
+      "name": "chat-input-42",
+      "method": "chatInput",
+      "input": {
+        "role": "system",
+        "content": "rules",
+        "promptCacheBreakpoint": true
+      },
+      "extra": true,
+      "output": {
+        "role": "system",
+        "content": [
+          {
+            "type": "text",
+            "text": "rules",
+            "prompt_cache_breakpoint": {
+              "mode": "explicit"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "responses-input-43",
+      "method": "responsesInput",
+      "input": [
+        {
+          "role": "system",
+          "content": "rules",
+          "promptCacheBreakpoint": true
+        }
+      ],
+      "extra": true,
+      "output": [
+        {
+          "role": "system",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "rules",
+              "prompt_cache_breakpoint": {
+                "mode": "explicit"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normalized-usage-44",
+      "method": "normalizedUsage",
+      "input": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12
+      },
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12
+      }
+    },
+    {
+      "name": "normalized-usage-45",
+      "method": "normalizedUsage",
+      "input": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 11
+      },
+      "error": "invalid_provider_usage"
+    },
+    {
+      "name": "normalized-usage-46",
+      "method": "normalizedUsage",
+      "input": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "cacheKnown": true,
+        "cacheReadInputTokens": 3,
+        "cacheWriteInputTokens": 2
+      },
+      "output": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "cacheKnown": true,
+        "cacheReadInputTokens": 3,
+        "cacheWriteInputTokens": 2,
+        "ordinaryInputTokens": 5
+      }
+    },
+    {
+      "name": "normalized-usage-47",
+      "method": "normalizedUsage",
+      "input": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "cacheKnown": true
+      },
+      "error": "invalid_provider_usage"
+    },
+    {
+      "name": "normalized-usage-48",
+      "method": "normalizedUsage",
+      "input": {
+        "inputTokens": 10,
+        "outputTokens": 2,
+        "totalTokens": 12,
+        "rawTokenCounters": {
+          "unknown": 1
+        }
+      },
+      "error": "invalid_provider_usage"
+    }
+  ]
+}

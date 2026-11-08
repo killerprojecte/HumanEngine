@@ -290,6 +290,7 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 		if measurement != nil && r.Measurement != nil {
 			func() { defer func() { _ = recover() }(); r.Measurement(*measurement) }()
 		}
+		requestStarted := time.Now()
 		response, e := httpClient.Do(req)
 		if e != nil {
 			return nil, networkFailure(e)
@@ -313,7 +314,8 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 		}
 		contentType := response.Header.Get("Content-Type")
 		if streaming && strings.Contains(contentType, "text/event-stream") {
-			result, e = providerwire.ReadStream(response.Body, r.Provider.Protocol, func(string) {
+			result, e = providerwire.ReadStream(response.Body, r.Provider.Protocol, func(kind string) {
+				modelservice.ObserveFirstContent(ctx, kind, float64(time.Since(requestStarted))/float64(time.Millisecond))
 				first = true
 				if r.FirstContent != nil {
 					r.FirstContent()
@@ -323,6 +325,9 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 				return nil, e
 			}
 		} else {
+			if streaming {
+				modelservice.ObserveTransportMode(ctx, "non_stream")
+			}
 			if !strings.Contains(contentType, "application/json") {
 				_ = response.Body.Close()
 				return nil, safe("invalid_provider_content_type")

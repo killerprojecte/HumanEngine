@@ -287,7 +287,7 @@ func (p *Policy) attempts(ctx context.Context, c Candidate, invoke Invocation) (
 		if ctx.Err() != nil {
 			return nil, cancelled(context.Cause(ctx))
 		}
-		value, err := p.execute(ctx, c, attempt, policy, invoke)
+		value, err := p.executeObserved(ctx, c, attempt, policy, invoke)
 		if ctx.Err() != nil {
 			releaseUnpublished(value)
 			return nil, cancelled(err)

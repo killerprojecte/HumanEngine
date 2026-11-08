@@ -15,6 +15,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
+	"github.com/killerprojecte/HumanEngine/backend/internal/modelcalls"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
@@ -24,6 +25,8 @@ import (
 )
 
 type Server struct {
+	modelCalls          *modelcalls.Store
+	modelCallsPublisher *recovery.ReadPublisher
 	diagnostics         DiagnosticReader
 	diagnosticPublisher *recovery.ReadPublisher
 	configuration       *configurationOwner
@@ -94,7 +97,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	if s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r)) {
+	if (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
@@ -103,7 +106,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r)) {
+		if (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -144,6 +147,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
 		authenticationError(401, "Authentication required")
+		return
+	}
+	if s.modelCalls != nil && modelCallsPath(habitRoutingPath(r)) {
+		s.serveModelCalls(w, r, available, id)
 		return
 	}
 	if s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r)) {

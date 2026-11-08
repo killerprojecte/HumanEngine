@@ -38,6 +38,7 @@ type CompletionRequest struct {
 }
 type NativeModels struct {
 	Diagnostics       DiagnosticSink
+	Calls             ModelCallSink
 	requests          quiescence.Group
 	attempts          quiescence.Group
 	Host              *plugins.V1Host
@@ -97,6 +98,7 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 	if e != nil {
 		return nil, safe("provider_request_failed")
 	}
+	ctx = m.withCallObserver(ctx)
 	value, e := m.Policy.Run(ctx, modelservice.Request{Role: request.Role, ToolNames: names, HasImages: hasImages}, m.asyncInvocation(func(ctx context.Context, attempt modelservice.Attempt, complete func(any, error)) {
 		if request.FirstContent != nil {
 			first := attempt.FirstContent
@@ -108,6 +110,9 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 		}
 		if !modelservice.IsBuiltin(attempt.Candidate.Provider.Protocol) {
 			value, err := m.completeV1(ctx, attempt, request, expanded)
+			if err == nil && value != nil {
+				observeCallUsage(ctx, value.Usage)
+			}
 			complete(value, err)
 			return
 		}
@@ -234,6 +239,7 @@ func (m *NativeModels) nativeCompletion(r Request, modelID string, wireNames map
 		if r.diagnostic != nil {
 			r.diagnostic(ctx, completion, secrets)
 		}
+		observeCallUsage(ctx, usage)
 		complete(completion, nil)
 	})
 }

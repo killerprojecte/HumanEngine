@@ -115,6 +115,7 @@ func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inp
 	if err != nil {
 		return nil, safe("provider_request_failed")
 	}
+	ctx = m.withCallObserver(ctx)
 	out := &EmbeddingResult{Vectors: [][]float64{}, Usage: map[string]any{"inputTokens": float64(0), "outputTokens": float64(0), "totalTokens": float64(0)}, ModelID: model.ID}
 	for offset := 0; offset < len(pending); offset += batchSize {
 		end := offset + batchSize
@@ -153,6 +154,7 @@ func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inp
 					done(nil, safe(e.Error()))
 					return
 				}
+				observeCallUsage(ctx, usage)
 				done(&EmbeddingResult{vectors, usage, model.ID}, nil)
 				return
 			}
@@ -171,6 +173,7 @@ func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inp
 				done(nil, safe(e.Error()))
 				return
 			}
+			observeCallUsage(ctx, usage)
 			done(&EmbeddingResult{vectors, usage, model.ID}, nil)
 		}))
 		if e != nil {

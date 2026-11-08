@@ -1,0 +1,268 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/model-roles.ts": "d7014ef6614cc315df94c5773e54e5c990195ac98c2e7064833616a31412ab83",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a",
+    "src/model-calls.ts": "0a42f24669f93f47d4352099e3b985394eeda1831eca8202a3b998d984649559"
+  },
+  "cases": [
+    {
+      "name": "default",
+      "path": "/api/model-calls",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":2,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"vision\",\"status\":\"failed\",\"attempt\":2,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":null},{\"id\":1,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"replyer\",\"status\":\"completed\",\"attempt\":1,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":40}],\"nextCursor\":null,\"retentionDays\":30,\"maxRecords\":100000}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "limit",
+      "query": "?limit=1",
+      "path": "/api/model-calls?limit=1",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":2,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"vision\",\"status\":\"failed\",\"attempt\":2,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":null}],\"nextCursor\":2,\"retentionDays\":30,\"maxRecords\":100000}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "cursor",
+      "query": "?beforeId=2",
+      "path": "/api/model-calls?beforeId=2",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":1,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"replyer\",\"status\":\"completed\",\"attempt\":1,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":40}],\"nextCursor\":null,\"retentionDays\":30,\"maxRecords\":100000}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "role",
+      "query": "?role=replyer",
+      "path": "/api/model-calls?role=replyer",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":1,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"replyer\",\"status\":\"completed\",\"attempt\":1,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":40}],\"nextCursor\":null,\"retentionDays\":30,\"maxRecords\":100000}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "status",
+      "query": "?status=failed",
+      "path": "/api/model-calls?status=failed",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":2,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"vision\",\"status\":\"failed\",\"attempt\":2,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":null}],\"nextCursor\":null,\"retentionDays\":30,\"maxRecords\":100000}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "model",
+      "query": "?modelId=missing",
+      "path": "/api/model-calls?modelId=missing",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"items\":[],\"nextCursor\":null,\"retentionDays\":30,\"maxRecords\":100000}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "empty-limit",
+      "query": "?limit=",
+      "path": "/api/model-calls?limit=",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "zero-limit",
+      "query": "?limit=0",
+      "path": "/api/model-calls?limit=0",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "high-limit",
+      "query": "?limit=101",
+      "path": "/api/model-calls?limit=101",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "nan-limit",
+      "query": "?limit=no",
+      "path": "/api/model-calls?limit=no",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "fraction",
+      "query": "?limit=1.5",
+      "path": "/api/model-calls?limit=1.5",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "hex-limit",
+      "query": "?limit=0x2",
+      "path": "/api/model-calls?limit=0x2",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"items\":[{\"id\":2,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"vision\",\"status\":\"failed\",\"attempt\":2,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":null},{\"id\":1,\"at\":\"<time>\",\"modelId\":\"synthetic\",\"providerId\":\"provider\",\"apiModelName\":\"unknown\",\"role\":\"replyer\",\"status\":\"completed\",\"attempt\":1,\"inputTokens\":2,\"outputTokens\":4,\"cacheReadInputTokens\":null,\"cacheWriteInputTokens\":null,\"durationMs\":100,\"transportMode\":\"non_stream\",\"firstTokenMs\":null,\"firstTokenKind\":null,\"failureReason\":null,\"tokensPerSecond\":40}],\"nextCursor\":null,\"retentionDays\":30,\"maxRecords\":100000}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "duplicate-limit",
+      "query": "?limit=1&limit=2",
+      "path": "/api/model-calls?limit=1&limit=2",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-role",
+      "query": "?role=thinker",
+      "path": "/api/model-calls?role=thinker",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "bad-cursor",
+      "query": "?beforeId=0",
+      "path": "/api/model-calls?beforeId=0",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-status",
+      "query": "?status=x",
+      "path": "/api/model-calls?status=x",
+      "method": "GET",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "head",
+      "method": "HEAD",
+      "path": "/api/model-calls",
+      "status": 200,
+      "text": "",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "bad-auth",
+      "badAuth": true,
+      "path": "/api/model-calls",
+      "method": "GET",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "wrong-method",
+      "method": "PUT",
+      "path": "/api/model-calls",
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "trailing-path",
+      "path": "/api/model-calls/",
+      "method": "GET",
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    }
+  ]
+}

@@ -895,7 +895,7 @@ entire embedded OpenAPI document per call. Input values and credential presence
 remain fresh. Concurrent mixed parsing and result-mutation tests verify that
 cached metadata does not leak mutable defaults or configuration between calls.
 The complete contract, credentials and visioncontext race/vet suites passed;
-combined-tree full CI remains the publication acceptance gate. This is not a
+exact-head full CI passed for 7a5f9ac. This is not a
 claim that all other repeated schema construction or authority-history costs
 have been removed.
 
@@ -915,9 +915,25 @@ parse, default value, validation result, model value and credential-presence
 lookup remains caller-owned or freshly computed. Concurrent parsing and returned
 value mutation are covered by race tests. The complete eleven affected package
 suites, source diagnostic HTTP matrix and vet passed before publication; the
-combined tree still requires full CI acceptance.
+combined tree passed exact-head full CI at 1f8d6762.
 
 This does not make authority verification constant-time after external writes.
 A changed authority connection can still trigger a full history audit. No
 production latency or 100,000-entry mixed-workload benchmark is claimed, and the
 private live application and media HTTP 101 decision remain separate work.
+
+### Model-call metadata and history
+
+The opt-in model-call history route uses the existing owned ReadPublisher.
+Provider-attempt observations start before scheduler checkout; an HTTP 413 image
+reschedule remains the same attempt. Cancellation before transmission, retries,
+partial streams and physical SQL observation drain are covered by real transport
+and V1 tests. The optional observer receives only identifiers, timing, numeric
+usage and classified failure metadata, never response text, tool arguments,
+credentials or continuation objects. Its failure cannot retry a model operation.
+
+Twenty actual-source HTTP cases and the complete modelservice, providertransport,
+modelcalls and httpapi race/vet suites passed on this slice before publication.
+Its combined-tree full CI remains the acceptance gate. This adds neither a
+production limit nor the private live application/media HTTP 101 behavior; full
+application composition and complete named logging writers remain separate work.

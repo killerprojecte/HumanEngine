@@ -123,5 +123,6 @@ func (s *Service) ComposeExtension(base botruntime.Extension) *botruntime.Extens
 		settle(v, e)
 	}
 	s.composeOutgoing(&ext)
+	s.composeToolResultGuards(&ext, base.CaptureToolResultGuards)
 	return &ext
 }

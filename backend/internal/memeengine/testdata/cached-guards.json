@@ -1,0 +1,33 @@
+{
+  "hashes": {
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/plugins/manager.ts": "191ac3360889ab0eefcd50289b57c79933f0d479b6ae7ec88df8f84c4eaec620",
+    "src/memory/read/model-read-policy.ts": "82da719b296faefb9cc6386c70d7b6f344e3c5577da75acce03b8e12d7ec23f8"
+  },
+  "cases": [
+    {
+      "name": "before-read",
+      "guards": 0
+    },
+    {
+      "name": "after-search",
+      "guards": 1,
+      "ordinary": 2,
+      "valid": true
+    },
+    {
+      "name": "meme-hidden",
+      "ordinary": false,
+      "cached": true
+    },
+    {
+      "name": "read-disabled",
+      "cached": false
+    },
+    {
+      "name": "new-turn-after-reenable",
+      "old": false,
+      "fresh": true
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "status": "design only; not a permitted replacement for pinned tested binary",
+  "retainedDirectSourceComponents": [
+    "exif",
+    "expat",
+    "ffi",
+    "glib",
+    "highway",
+    "jpeg",
+    "lcms",
+    "png",
+    "uhdr",
+    "vips",
+    "webp",
+    "zlib-ng"
+  ],
+  "requiresEmbeddedSources": [
+    "libnsgif (inside libvips)",
+    "gvdb (GLib fallback source)"
+  ],
+  "keptKnownArchiveBytes": 43144245,
+  "removedKnownArchiveBytes": 59861075,
+  "excludedDirectComponents": [
+    "aom",
+    "archive",
+    "cairo",
+    "cgif",
+    "fontconfig",
+    "freetype",
+    "fribidi",
+    "harfbuzz",
+    "heif",
+    "imagequant",
+    "pango",
+    "pixman",
+    "proxy-libintl",
+    "rsvg",
+    "tiff",
+    "xml2"
+  ],
+  "formatBoundary": "Retain libultrahdr for JPEG gain-map inputs; cgif is output GIF encoder and not required by the PNG/JPEG output policy."
+}

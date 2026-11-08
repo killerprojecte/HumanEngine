@@ -143,3 +143,18 @@ installation-bundle-check:
 native-installation-check: native-icu-build
 	. "$(ICU_WORK_DIR)/env.sh" && HUMANENGINE_TEST_REQUIRE_ICU=1 go test -race -tags sqlite_fts5,bundled_sqlite_vec,humanengine_icu ./internal/installation ./internal/vectorasset
 	. "$(ICU_WORK_DIR)/env.sh" && HUMANENGINE_EXTRA_BUILD_TAGS=humanengine_icu sh tests/installation-source-free.sh
+
+.PHONY: native-image-check
+# Verification uses the lockfile-pinned official artifact already installed by
+# npm ci. This target does not publish or bundle the shared object.
+IMAGE_LIBRARY ?= $(abspath ../node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7)
+export HUMANENGINE_VIPS_LIBRARY ?= $(IMAGE_LIBRARY)
+IMAGE_PROOF_ROOT ?= $(or $(RUNNER_TEMP),$(TMPDIR),/tmp)/humanengine-image-proofs
+native-image-check:
+	$(PYTHON) tests/check-image-trace-test.py
+	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-image-codec-fixtures.mjs --check
+	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-image-boundary-fixtures.mjs --check
+	HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_RUN_LARGE_IMAGE_BOUNDARY=1 VIPS_CONCURRENCY=1 go test -race -tags sqlite_fts5 ./internal/imagecodec
+	go vet -tags sqlite_fts5 ./internal/imagecodec ./cmd/imagecodec-probe
+	@mkdir -p "$(IMAGE_PROOF_ROOT)" && out=$$(mktemp -d "$(IMAGE_PROOF_ROOT)/run.XXXXXXXX") && \
+	  HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_IMAGE_REQUIRE_TRACE=1 HUMANENGINE_IMAGE_PROOF_DIR="$$out/proof" sh tests/image-source-free.sh

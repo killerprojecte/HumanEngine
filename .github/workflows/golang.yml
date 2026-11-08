@@ -25,3 +25,8 @@ jobs:
         env:
           ICU_WORK_DIR: ${{ runner.temp }}/humanengine-native-icu
         run: make -C backend native-icu-test native-icu-source-free native-installation-check
+      - name: Verify native image pixels and standalone runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y strace
+          make -C backend native-image-check

@@ -1,0 +1,14 @@
+HumanEngine native image bridge includes algorithm adaptations of sharp 0.35.5:
+Copyright 2013 Lovell Fuller and others.
+SPDX-License-Identifier: Apache-2.0
+
+Source portions adapted: src/common.cc (input options, ResolveShrink,
+orientation/alpha semantics), src/pipeline.cc (resize/ICC/encoding),
+src/stats.cc (decode and secondary statistics), dist/utility.cjs (cache and
+allocator/concurrency defaults), dist/output.cjs (PNG/JPEG encoder defaults).
+These adaptations replace Node/C++ wrappers with Go and opaque public C ABI.
+The complete sharp Apache-2.0 license is included alongside this notice.
+
+The unmodified libvips shared object and statically bundled third-party
+components are separately licensed; consult the bundled notices, versions,
+source records and LGPL/GPL texts. This notice does not relicense them.

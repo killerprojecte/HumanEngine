@@ -1,0 +1,25 @@
+{
+  "source": "GitHub REST pull/commits and packaging commit",
+  "patchSHA256": "57658db2a11ae964755e513b01db21bcfa408c350b11b3a6ef9bc8576fb749ba",
+  "pullURL": "https://github.com/google/libultrahdr/pull/383",
+  "state": "closed",
+  "merged": true,
+  "mergedAt": "2026-09-18T01:45:27Z",
+  "head": "7af35883ee575266cc43bbd05686734ebd5b1a82",
+  "mergeCommit": "9242cd48a80d4089973fae5ad705cdfc26d245be",
+  "commits": [
+    {
+      "sha": "e2daed8da97d8857dcec2fd68d2f6f3326170f67",
+      "committedAt": "2025-12-10T14:01:28Z"
+    },
+    {
+      "sha": "7af35883ee575266cc43bbd05686734ebd5b1a82",
+      "committedAt": "2026-09-10T09:59:33Z"
+    }
+  ],
+  "packaging": {
+    "sha": "ebb95f8add54eee8bed840e3fb587e4cbec857d7",
+    "committedAt": "2026-09-27T11:24:22Z"
+  },
+  "conclusion": "Pull was merged before packaging release; downloaded patch contains these two commit identifiers. This narrows mutable-URL provenance, not binary reproducibility proof."
+}

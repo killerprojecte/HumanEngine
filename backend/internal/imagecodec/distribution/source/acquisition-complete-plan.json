@@ -1,0 +1,285 @@
+{
+  "packagingGitHead": "ebb95f8add54eee8bed840e3fb587e4cbec857d7",
+  "packagingArchive": {
+    "file": "sharp-libvips-ebb95f8.tar.gz",
+    "bytes": 24490,
+    "sha256": "65fdb633c2d97626352a3771b7a0ce30b6a89af03d2a1238491c8b068e6b8dad"
+  },
+  "versionsMatchBundledBinary": true,
+  "sources": [
+    {
+      "kind": "source",
+      "component": "proxy-libintl",
+      "url": "https://github.com/frida/proxy-libintl/archive/0.5.tar.gz",
+      "recipeLine": 123,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "zlib-ng",
+      "url": "https://github.com/zlib-ng/zlib-ng/archive/2.3.3.tar.gz",
+      "recipeLine": 130,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "ffi",
+      "url": "https://github.com/libffi/libffi/releases/download/v3.8.0/libffi-3.8.0.tar.gz",
+      "recipeLine": 138,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "glib",
+      "url": "https://download.gnome.org/sources/glib/2.90/glib-2.90.0.tar.xz",
+      "recipeLine": 145,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "patch",
+      "component": null,
+      "url": "https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/bdad5489a61c217850631571caf57f5db6ea8b2c/glib-without-gregex.patch",
+      "recipeLine": 147,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "xml2",
+      "url": "https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.4.tar.xz",
+      "recipeLine": 155,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "exif",
+      "url": "https://github.com/libexif/libexif/releases/download/v0.6.26/libexif-0.6.26.tar.xz",
+      "recipeLine": 162,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "lcms",
+      "url": "https://github.com/mm2/Little-CMS/releases/download/lcms2.19.1/lcms2-2.19.1.tar.gz",
+      "recipeLine": 170,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "aom",
+      "url": "https://storage.googleapis.com/aom-releases/libaom-3.15.1.tar.gz",
+      "recipeLine": 177,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "heif",
+      "url": "https://github.com/strukturag/libheif/releases/download/v1.23.5/libheif-1.23.5.tar.gz",
+      "recipeLine": 190,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "jpeg",
+      "url": "https://github.com/mozilla/mozjpeg/archive/0826579.tar.gz",
+      "recipeLine": 198,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "patch",
+      "component": null,
+      "url": "https://github.com/mozilla/mozjpeg/commit/f90668e0e4fb79c81e1f24a0ccc0e2090af761bf.patch",
+      "recipeLine": 201,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "png",
+      "url": "https://github.com/pnggroup/libpng/archive/v1.6.58.tar.gz",
+      "recipeLine": 210,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "imagequant",
+      "url": "https://github.com/lovell/libimagequant/archive/v2.4.1.tar.gz",
+      "recipeLine": 217,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "webp",
+      "url": "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz",
+      "recipeLine": 223,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "tiff",
+      "url": "https://gitlab.com/libtiff/libtiff/-/archive/v4.7.2/libtiff-v4.7.2.tar.gz",
+      "recipeLine": 230,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "highway",
+      "url": "https://github.com/google/highway/archive/1.4.0.tar.gz",
+      "recipeLine": 241,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "freetype",
+      "url": "https://github.com/freetype/freetype/archive/VER-2-14-3.tar.gz",
+      "recipeLine": 252,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "expat",
+      "url": "https://github.com/libexpat/libexpat/releases/download/R_2_8_5/expat-2.8.5.tar.xz",
+      "recipeLine": 261,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "archive",
+      "url": "https://github.com/libarchive/libarchive/releases/download/v3.8.9/libarchive-3.8.9.tar.xz",
+      "recipeLine": 269,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "fontconfig",
+      "url": "https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/2.18.3/fontconfig-2.18.3.tar.gz",
+      "recipeLine": 278,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "harfbuzz",
+      "url": "https://github.com/harfbuzz/harfbuzz/archive/14.5.0.tar.gz",
+      "recipeLine": 291,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "pixman",
+      "url": "https://cairographics.org/releases/pixman-0.46.4.tar.gz",
+      "recipeLine": 302,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "cairo",
+      "url": "https://cairographics.org/releases/cairo-1.18.6.tar.xz",
+      "recipeLine": 310,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "fribidi",
+      "url": "https://github.com/fribidi/fribidi/releases/download/v1.0.17/fribidi-1.0.17.tar.xz",
+      "recipeLine": 318,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "pango",
+      "url": "https://download.gnome.org/sources/pango/1.58/pango-1.58.2.tar.xz",
+      "recipeLine": 325,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "rsvg",
+      "url": "https://download.gnome.org/sources/librsvg/2.63/librsvg-2.63.2.tar.xz",
+      "recipeLine": 334,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "patch",
+      "component": null,
+      "url": "https://github.com/GNOME/librsvg/commit/9106011db93d701728ac2c9da50c9ab2c1bb5dc6.patch",
+      "recipeLine": 345,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "cgif",
+      "url": "https://github.com/dloebl/cgif/archive/v0.5.4.tar.gz",
+      "recipeLine": 354,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "uhdr",
+      "url": "https://github.com/google/libultrahdr/archive/v2.0.2.tar.gz",
+      "recipeLine": 361,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "patch",
+      "component": null,
+      "url": "https://patch-diff.githubusercontent.com/raw/google/libultrahdr/pull/383.patch",
+      "recipeLine": 364,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "vips",
+      "url": "https://github.com/libvips/libvips/releases/download/v8.18.7/vips-8.18.7.tar.xz",
+      "recipeLine": 373,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "patch",
+      "component": null,
+      "url": "https://gist.githubusercontent.com/lovell/313a6901e9db1bf285f2a1f1180499e4/raw/3988223c7dfa4d22745d9392034b0117abef1446/libvips-cpp-soversion.patch",
+      "recipeLine": 376,
+      "retrieved": false,
+      "sha256": null
+    },
+    {
+      "kind": "source",
+      "component": "gvdb",
+      "url": "https://gitlab.gnome.org/GNOME/gvdb/-/archive/2b42fc75f09dbe1cd1057580b5782b08f2dcb400/gvdb-2b42fc75f09dbe1cd1057580b5782b08f2dcb400.tar.gz",
+      "recipeLine": 10001,
+      "retrieved": false,
+      "sha256": null,
+      "sourceEvidence": "glib-2.90.0-gvdb.wrap; upstream recipe forces gvdb fallback"
+    }
+  ],
+  "status": "complete direct recipe inputs plus identified native transitive gvdb; Rust sources remain in separate manifest"
+}

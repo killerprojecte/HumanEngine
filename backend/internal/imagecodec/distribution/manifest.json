@@ -1,0 +1,50 @@
+{
+  "artifact": "@img/sharp-libvips-linux-x64",
+  "version": "1.3.4",
+  "binary": "lib/libvips-cpp.so.8.18.7",
+  "binarySize": 18699288,
+  "sha256": "4aa73553408c3964071728f4a231a8e86918e39bc49f1fbae75355f7ea933ea9",
+  "npm": {
+    "version": "1.3.4",
+    "resolved": "https://registry.npmjs.org/@img/sharp-libvips-linux-x64/-/sharp-libvips-linux-x64-1.3.4.tgz",
+    "integrity": "sha512-GJ//SSXbnwSDes02umB3nDJLFcQzw8a18V8fyhqr6tV515tOEMdImjjxj1AoafMRz56F3PHgftnj1QEKSU1zkw==",
+    "cpu": [
+      "x64"
+    ],
+    "license": "LGPL-3.0-or-later",
+    "optional": true,
+    "os": [
+      "linux"
+    ],
+    "funding": {
+      "url": "https://opencollective.com/libvips"
+    }
+  },
+  "abi": "public opaque C ABI; dlopen/dlsym; no C++ object layouts",
+  "source": "https://github.com/libvips/libvips/tree/v8.18.7",
+  "sharpSource": "sharp@0.35.5 (Apache-2.0), src/pipeline.cc and src/common.cc",
+  "license": "LGPL-3.0-or-later with bundled dependencies; see README.md; full corresponding-source and notices bundle required before distribution",
+  "status": "Source-only module: 52 exact native cases and original 40M boundary passed locally; standalone functional run passed, traced CI verification pending. Shared library and complete redistribution source material are not included.",
+  "nativeValidation": {
+    "cases": 52,
+    "race": "passed locally",
+    "vet": "passed locally",
+    "validPixelBoundary": [
+      39995000,
+      40000000,
+      40008000
+    ],
+    "standaloneFunctionalCases": 52,
+    "localFileTrace": "unavailable: environment denies ptrace",
+    "completeRedistribution": false
+  },
+  "currentSourceCases": 52,
+  "packagingGitHead": "ebb95f8add54eee8bed840e3fb587e4cbec857d7",
+  "runtimeLibrary": "native/linux-amd64/libvips-cpp.so.8.18.7",
+  "sourceAcquisitionManifest": "source/acquisition-manifest.json",
+  "licensesComplete": false,
+  "sourceFreeExecution": "52-case standalone functional run passed; file-traced CI verification pending",
+  "sourceTools": "source/tools",
+  "lastValidatedNativeCases": 52,
+  "runtimeLibraryIncluded": false
+}

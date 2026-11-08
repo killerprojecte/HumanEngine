@@ -1,0 +1,263 @@
+{
+  "sourceSHA256": "b3f016006bd2633123eeb330e13dc4048f0af610872dea27b762ea11fa5b2002",
+  "cases": [
+    {
+      "port": "source",
+      "at": 1,
+      "readFailure": false,
+      "counts": {
+        "source": 1,
+        "recalled": 1,
+        "lookup": 0,
+        "canRecognize": 0,
+        "read": 0
+      },
+      "reports": [],
+      "error": "synthetic_owner_failure"
+    },
+    {
+      "port": "source",
+      "at": 2,
+      "readFailure": false,
+      "counts": {
+        "source": 2,
+        "recalled": 2,
+        "lookup": 0,
+        "canRecognize": 0,
+        "read": 0
+      },
+      "reports": [],
+      "error": "synthetic_owner_failure"
+    },
+    {
+      "port": "source",
+      "at": 3,
+      "readFailure": false,
+      "counts": {
+        "source": 4,
+        "recalled": 4,
+        "lookup": 1,
+        "canRecognize": 1,
+        "read": 1
+      },
+      "reports": [
+        {
+          "operation": "image.download",
+          "error": "synthetic_owner_failure"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "port": "source",
+      "at": 4,
+      "readFailure": false,
+      "counts": {
+        "source": 5,
+        "recalled": 5,
+        "lookup": 1,
+        "canRecognize": 1,
+        "read": 1
+      },
+      "reports": [
+        {
+          "operation": "image.recognize",
+          "error": "synthetic_owner_failure"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "port": "recalled",
+      "at": 1,
+      "readFailure": false,
+      "counts": {
+        "source": 0,
+        "recalled": 1,
+        "lookup": 0,
+        "canRecognize": 0,
+        "read": 0
+      },
+      "reports": [],
+      "error": "synthetic_owner_failure"
+    },
+    {
+      "port": "recalled",
+      "at": 2,
+      "readFailure": false,
+      "counts": {
+        "source": 1,
+        "recalled": 2,
+        "lookup": 0,
+        "canRecognize": 0,
+        "read": 0
+      },
+      "reports": [],
+      "error": "synthetic_owner_failure"
+    },
+    {
+      "port": "recalled",
+      "at": 3,
+      "readFailure": false,
+      "counts": {
+        "source": 3,
+        "recalled": 4,
+        "lookup": 1,
+        "canRecognize": 1,
+        "read": 1
+      },
+      "reports": [
+        {
+          "operation": "image.download",
+          "error": "synthetic_owner_failure"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "port": "recalled",
+      "at": 4,
+      "readFailure": false,
+      "counts": {
+        "source": 4,
+        "recalled": 5,
+        "lookup": 1,
+        "canRecognize": 1,
+        "read": 1
+      },
+      "reports": [
+        {
+          "operation": "image.recognize",
+          "error": "synthetic_owner_failure"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "port": "lookup",
+      "at": 1,
+      "readFailure": false,
+      "counts": {
+        "source": 2,
+        "recalled": 2,
+        "lookup": 1,
+        "canRecognize": 0,
+        "read": 0
+      },
+      "reports": [],
+      "error": "synthetic_owner_failure"
+    },
+    {
+      "port": "canRecognize",
+      "at": 1,
+      "readFailure": false,
+      "counts": {
+        "source": 3,
+        "recalled": 3,
+        "lookup": 1,
+        "canRecognize": 1,
+        "read": 0
+      },
+      "reports": [
+        {
+          "operation": "image.download",
+          "error": "synthetic_owner_failure"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "port": "source",
+      "at": 3,
+      "readFailure": true,
+      "counts": {
+        "source": 3,
+        "recalled": 3,
+        "lookup": 1,
+        "canRecognize": 1,
+        "read": 1
+      },
+      "reports": [
+        {
+          "operation": "image.download",
+          "error": "public_http_403"
+        }
+      ],
+      "error": "synthetic_owner_failure"
+    },
+    {
+      "port": "recalled",
+      "at": 3,
+      "readFailure": true,
+      "counts": {
+        "source": 2,
+        "recalled": 3,
+        "lookup": 1,
+        "canRecognize": 1,
+        "read": 1
+      },
+      "reports": [
+        {
+          "operation": "image.download",
+          "error": "public_http_403"
+        }
+      ],
+      "error": "synthetic_owner_failure"
+    }
+  ]
+}

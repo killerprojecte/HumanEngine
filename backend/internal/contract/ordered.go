@@ -1,7 +1,6 @@
 package contract
 
 import (
-	"github.com/killerprojecte/HumanEngine/backend/compatibility"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"strings"
 )
@@ -14,12 +13,8 @@ func (s *Schemas) ParseOrdered(name string, input []byte) (*jsjson.Object, error
 	if e != nil {
 		return nil, e
 	}
-	document, e := jsjson.ParseBytes(compatibility.OpenAPI)
-	if e != nil {
-		return nil, e
-	}
-	read := func(o any, k string) any { v, _ := o.(*jsjson.Object).Get(k); return v }
-	definitions := read(read(document, "components"), "schemas").(*jsjson.Object)
+	// Shared immutable schema metadata; every converted value below is fresh.
+	definitions := s.orderedDefinitions
 	var convert func(any, any) any
 	convert = func(schema any, value any) any {
 		spec, _ := schema.(*jsjson.Object)

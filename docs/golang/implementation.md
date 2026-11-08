@@ -878,3 +878,23 @@ The individual affected race/vet suites and actual-source diagnostic/semantic
 oracles passed before integration. Combined-tree full CI is required for this
 checkpoint. This does not enable the preview application, resolve media HTTP 101,
 complete the plugin manager, or establish that all performance issues are fixed.
+
+### Dynamic vision configuration read checkpoint
+
+The pure vision/configuration slice re-reads model configuration and timezone at
+source await boundaries and preserves the original catch/error-callback scope.
+Credential projection reads presence through its caller's existing scope, never
+plaintext. Actual-source matrices cover seven model projections, eleven dynamic
+boundary cases and twelve diagnostic callback cases; their generation checks are
+part of CI. This slice does not publish the private media/Engine/history adapter
+or change HTTP 101 behavior.
+
+The configuration-read helper reuses immutable compiled schema metadata;
+ParseOrdered reuses constructor-owned schema definitions instead of reparsing the
+entire embedded OpenAPI document per call. Input values and credential presence
+remain fresh. Concurrent mixed parsing and result-mutation tests verify that
+cached metadata does not leak mutable defaults or configuration between calls.
+The complete contract, credentials and visioncontext race/vet suites passed;
+combined-tree full CI remains the publication acceptance gate. This is not a
+claim that all other repeated schema construction or authority-history costs
+have been removed.

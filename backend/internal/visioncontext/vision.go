@@ -77,6 +77,8 @@ type ChatMessage struct {
 type Config struct {
 	SceneID, Mode, Timezone string
 	Models                  any
+	ReadModels              func() (*jsjson.Object, error)
+	ReadTimezone            func() (string, error)
 	VisionRoute             bool
 	PriorityIDs             []string
 	Now                     func() time.Time
@@ -200,6 +202,42 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 	if t == nil || p.Recalled == nil || p.SourceAvailable == nil || p.ReadImage == nil || p.ImageDataURL == nil || p.Complete == nil || p.AddDependency == nil || p.AddSourceValidation == nil {
 		return out, errors.New("vision_context_composition_required")
 	}
+	models := func() (any, error) {
+		if cfg.ReadModels != nil {
+			return cfg.ReadModels()
+		}
+		return cfg.Models, nil
+	}
+	hasVision := func() (bool, error) {
+		if cfg.ReadModels == nil {
+			return cfg.VisionRoute, nil
+		}
+		config, e := cfg.ReadModels()
+		if e != nil {
+			return false, e
+		}
+		if config == nil {
+			return false, errors.New("vision_model_configuration_invalid")
+		}
+		raw, _ := config.Get("routes")
+		routes, ok := raw.([]any)
+		if !ok {
+			return false, errors.New("vision_model_configuration_invalid")
+		}
+		for _, raw := range routes {
+			route, ok := raw.(*jsjson.Object)
+			if !ok {
+				return false, errors.New("vision_model_configuration_invalid")
+			}
+			role, _ := route.Get("role")
+			ids, _ := route.Get("orderedModelIds")
+			ordered, _ := ids.([]any)
+			if role == "vision" && len(ordered) > 0 {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
 	if cache == nil {
 		cache = &Cache{}
 	}
@@ -274,7 +312,15 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 	if cfg.Mode != "real" || len(selected) == 0 {
 		return out, nil
 	}
-	if lib == nil && !cfg.VisionRoute {
+	route := true
+	if lib == nil {
+		var e error
+		route, e = hasVision()
+		if e != nil {
+			return out, e
+		}
+	}
+	if !route {
 		for _, c := range selected {
 			out.Images = append(out.Images, Image{c.Message.ID, Observation{Status: "unavailable", Reason: "route_not_configured"}})
 		}
@@ -306,7 +352,11 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		if e := ensure(); e != nil {
 			return out, e
 		}
-		key, e := hash("visual-expression-v2", cfg.SceneID, c.Message.ID, c.Part.AssetID, cfg.Models)
+		modelValue, e := models()
+		if e != nil {
+			return out, e
+		}
+		key, e := hash("visual-expression-v2", cfg.SceneID, c.Message.ID, c.Part.AssetID, modelValue)
 		if e != nil {
 			return out, e
 		}
@@ -353,15 +403,19 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		}
 		operation := "image.download"
 		o, e := func() (Observation, error) {
+			route, e := hasVision()
+			if e != nil {
+				return Observation{}, e
+			}
 			canRecognize := lib != nil
-			if !cfg.VisionRoute && lib != nil && lib.CanRecognize != nil {
+			if !route && lib != nil && lib.CanRecognize != nil {
 				var e error
 				canRecognize, e = lib.CanRecognize(c)
 				if e != nil {
 					return Observation{}, e
 				}
 			}
-			if !cfg.VisionRoute && !canRecognize {
+			if !route && !canRecognize {
 				operation = "image.describe"
 				return Observation{}, errors.New("route_not_configured")
 			}
@@ -384,7 +438,11 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			if e = ensure(); e != nil {
 				return Observation{}, e
 			}
-			contentKey, e := hash("visual-expression-v2", cfg.SceneID, fmt.Sprintf("%x", sha256.Sum256(bytes)), cfg.Models)
+			modelValue, e := models()
+			if e != nil {
+				return Observation{}, e
+			}
+			contentKey, e := hash("visual-expression-v2", cfg.SceneID, fmt.Sprintf("%x", sha256.Sum256(bytes)), modelValue)
 			if e != nil {
 				return Observation{}, e
 			}
@@ -394,7 +452,11 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 				found = true
 			}
 			if !found {
-				if !cfg.VisionRoute {
+				route, e := hasVision()
+				if e != nil {
+					return Observation{}, e
+				}
+				if !route {
 					return Observation{}, errors.New("route_not_configured")
 				}
 				operation = "image.decode"
@@ -410,7 +472,15 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 				if cfg.Now != nil {
 					now = cfg.Now()
 				}
-				user, _ := jsjson.NewObject(jsjson.Member{Key: "instruction", Value: UserInstruction}, jsjson.Member{Key: "sentAt", Value: c.Message.SentAt}, jsjson.Member{Key: "now", Value: now.UTC().Format("2006-01-02T15:04:05.000Z")}, jsjson.Member{Key: "timezone", Value: cfg.Timezone})
+				timezone := cfg.Timezone
+				if cfg.ReadTimezone != nil {
+					var e error
+					timezone, e = cfg.ReadTimezone()
+					if e != nil {
+						return Observation{}, e
+					}
+				}
+				user, _ := jsjson.NewObject(jsjson.Member{Key: "instruction", Value: UserInstruction}, jsjson.Member{Key: "sentAt", Value: c.Message.SentAt}, jsjson.Member{Key: "now", Value: now.UTC().Format("2006-01-02T15:04:05.000Z")}, jsjson.Member{Key: "timezone", Value: timezone})
 				content, e := jsjson.Stringify(user)
 				if e != nil {
 					return Observation{}, e

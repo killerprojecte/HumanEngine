@@ -1,0 +1,359 @@
+{
+  "sourceHashes": {
+    "src/vision-context.ts": "b3f016006bd2633123eeb330e13dc4048f0af610872dea27b762ea11fa5b2002",
+    "src/media.ts": "62c5e58a29f192bd140e930bf95b385f898af8c190ea9887e1fe36c8617abdbd",
+    "src/image-upload.ts": "ae0540c331ce737875b290304c49e856a6f4ca503f8fed53578716e75c187439"
+  },
+  "png": "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAD0lEQVQImWNgYPgPRmAKABf2A/38FIMyAAAAAElFTkSuQmCC",
+  "fixedTime": "2026-01-02T03:04:05.678Z",
+  "cases": [
+    {
+      "name": "read-route-off",
+      "modelReads": 4,
+      "timezoneReads": 0,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 0,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[]}"
+      ],
+      "cacheKeys": [],
+      "prompts": [],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "unavailable",
+            "reason": "route_not_configured"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "read-credential",
+      "modelReads": 4,
+      "timezoneReads": 1,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 1,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":true}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":true}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [
+        "e72f94ff2f5ad83fa435646834c431b28601f66d291424355831cbafd6fb43fe",
+        "1dd44c477bb77d8ab9410479b897a9e8b6bcbbb1a78621081182e6a9baf949e5"
+      ],
+      "prompts": [
+        {
+          "instruction": "Describe this message image, including its visible expression and possible meme/sticker meaning when supported. This description is temporary context for a reply, not a durable memory or permission to act.",
+          "sentAt": "2026-01-01T00:00:00.000Z",
+          "now": "2026-01-02T03:04:05.678Z",
+          "timezone": "UTC"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "described",
+            "description": "synthetic description",
+            "framePolicy": "first_frame_only"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "recognize-route-off",
+      "modelReads": 4,
+      "timezoneReads": 0,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 0,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[]}"
+      ],
+      "cacheKeys": [],
+      "prompts": [],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "unavailable",
+            "reason": "route_not_configured"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "recognize-timezone",
+      "modelReads": 4,
+      "timezoneReads": 1,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 1,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [
+        "e72f94ff2f5ad83fa435646834c431b28601f66d291424355831cbafd6fb43fe",
+        "081b4ad434d87f7a1afee8d9d0e24812b62cf4e6ce111175bfd08ed168f85edc"
+      ],
+      "prompts": [
+        {
+          "instruction": "Describe this message image, including its visible expression and possible meme/sticker meaning when supported. This description is temporary context for a reply, not a durable memory or permission to act.",
+          "sentAt": "2026-01-01T00:00:00.000Z",
+          "now": "2026-01-02T03:04:05.678Z",
+          "timezone": "Asia/Tokyo"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "described",
+            "description": "synthetic description",
+            "framePolicy": "first_frame_only"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "decode-change",
+      "modelReads": 4,
+      "timezoneReads": 1,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 1,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [
+        "e72f94ff2f5ad83fa435646834c431b28601f66d291424355831cbafd6fb43fe",
+        "081b4ad434d87f7a1afee8d9d0e24812b62cf4e6ce111175bfd08ed168f85edc"
+      ],
+      "prompts": [
+        {
+          "instruction": "Describe this message image, including its visible expression and possible meme/sticker meaning when supported. This description is temporary context for a reply, not a durable memory or permission to act.",
+          "sentAt": "2026-01-01T00:00:00.000Z",
+          "now": "2026-01-02T03:04:05.678Z",
+          "timezone": "Europe/Paris"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "described",
+            "description": "synthetic description",
+            "framePolicy": "first_frame_only"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "complete-change",
+      "modelReads": 8,
+      "timezoneReads": 2,
+      "reads": 2,
+      "recognitions": 2,
+      "calls": 2,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":true}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":true}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":true}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":true}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [
+        "e72f94ff2f5ad83fa435646834c431b28601f66d291424355831cbafd6fb43fe",
+        "081b4ad434d87f7a1afee8d9d0e24812b62cf4e6ce111175bfd08ed168f85edc",
+        "e83d40e320babe5b3a3f39b06317766f16df88494b768cbf1bb98fd10a899761",
+        "1dd44c477bb77d8ab9410479b897a9e8b6bcbbb1a78621081182e6a9baf949e5"
+      ],
+      "prompts": [
+        {
+          "instruction": "Describe this message image, including its visible expression and possible meme/sticker meaning when supported. This description is temporary context for a reply, not a durable memory or permission to act.",
+          "sentAt": "2026-01-01T00:00:00.000Z",
+          "now": "2026-01-02T03:04:05.678Z",
+          "timezone": "UTC"
+        },
+        {
+          "instruction": "Describe this message image, including its visible expression and possible meme/sticker meaning when supported. This description is temporary context for a reply, not a durable memory or permission to act.",
+          "sentAt": "2026-01-01T00:00:00.000Z",
+          "now": "2026-01-02T03:04:05.678Z",
+          "timezone": "UTC"
+        }
+      ],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "described",
+            "description": "synthetic description",
+            "framePolicy": "first_frame_only"
+          },
+          {
+            "messageId": "m1",
+            "status": "described",
+            "description": "synthetic description",
+            "framePolicy": "first_frame_only"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "models-error-1",
+      "modelReads": 1,
+      "timezoneReads": 0,
+      "reads": 0,
+      "recognitions": 0,
+      "calls": 0,
+      "modelValues": [],
+      "cacheKeys": [],
+      "prompts": [],
+      "error": "synthetic_models_read"
+    },
+    {
+      "name": "models-error-2",
+      "modelReads": 2,
+      "timezoneReads": 0,
+      "reads": 0,
+      "recognitions": 0,
+      "calls": 0,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [],
+      "prompts": [],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "models-error-3",
+      "modelReads": 3,
+      "timezoneReads": 0,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 0,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [],
+      "prompts": [],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "models-error-4",
+      "modelReads": 4,
+      "timezoneReads": 0,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 0,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [],
+      "prompts": [],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    },
+    {
+      "name": "timezone-error",
+      "modelReads": 4,
+      "timezoneReads": 1,
+      "reads": 1,
+      "recognitions": 1,
+      "calls": 0,
+      "modelValues": [
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}",
+        "{\"providers\":[{\"id\":\"p\",\"credentialConfigured\":false}],\"routes\":[{\"role\":\"vision\",\"orderedModelIds\":[\"m\"]}]}"
+      ],
+      "cacheKeys": [],
+      "prompts": [],
+      "result": {
+        "trust": "untrusted_image_descriptions",
+        "framePolicy": "first_frame_only",
+        "images": [
+          {
+            "messageId": "m0",
+            "status": "unavailable",
+            "reason": "image_description_unavailable"
+          }
+        ],
+        "omitted": []
+      }
+    }
+  ]
+}

@@ -13,8 +13,9 @@ import (
 )
 
 type Schemas struct {
-	root     map[string]any
-	compiled map[string]*jsonschema.Schema
+	orderedDefinitions *jsjson.Object
+	root               map[string]any
+	compiled           map[string]*jsonschema.Schema
 }
 
 func NewSchemas() (*Schemas, error) {
@@ -28,7 +29,13 @@ func NewSchemas() (*Schemas, error) {
 	if err := compiler.AddResource("https://humanengine.invalid/contract.json", withoutStringLengths(root)); err != nil {
 		return nil, err
 	}
-	s := &Schemas{root: root, compiled: map[string]*jsonschema.Schema{}}
+	document, err := jsjson.ParseBytes(compatibility.OpenAPI)
+	if err != nil {
+		return nil, err
+	}
+	components, _ := document.(*jsjson.Object).Get("components")
+	definitions, _ := components.(*jsjson.Object).Get("schemas")
+	s := &Schemas{root: root, compiled: map[string]*jsonschema.Schema{}, orderedDefinitions: definitions.(*jsjson.Object)}
 	for _, name := range []string{"Settings", "ModelConfig", "Scene"} {
 		compiled, err := compiler.Compile("https://humanengine.invalid/contract.json#/components/schemas/" + name)
 		if err != nil {

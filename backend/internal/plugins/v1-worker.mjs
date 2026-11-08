@@ -22,7 +22,11 @@ registerHooks({
   },
   load(url, context, nextLoad) {
     return url === sdkURL
-      ? { format: 'module', source: workerData.modelProtocolSDK, shortCircuit: true }
+      ? {
+          format: 'module',
+          source: workerData.modelProtocolSDK,
+          shortCircuit: true,
+        }
       : nextLoad(url, context)
   },
 })
@@ -32,7 +36,10 @@ const privateProtocolFailure = (error) => {
   if (!value) return undefined
   // Runtime mutations retain the source retry decision, but arbitrary status
   // strings/objects cannot smuggle provider URLs, response bodies or credentials.
-  const result = { code: 'provider_request_failed', retryable: value.retryable === true }
+  const result = {
+    code: 'provider_request_failed',
+    retryable: value.retryable === true,
+  }
   if (Number.isSafeInteger(value.status)) {
     result.status = value.status
     if (value.status) result.code = `provider_http_${value.status}`
@@ -104,6 +111,7 @@ const register = (kind, definition, handler, receiver) => {
       handler,
       kind,
       operation: definition.operation,
+      name: definition.name,
       receiver: receiver ?? (kind === 'tool' || kind === 'sendHook' ? definition : undefined),
     })
   const { execute, handler: ignored, ...metadata } = definition
@@ -121,7 +129,10 @@ parentPort.on('message', async (message) => {
     if (message.op === 'continuation_status') {
       parentPort.postMessage({
         id: message.id,
-        result: { pending: pendingContinuations.size, claimed: continuations.size },
+        result: {
+          pending: pendingContinuations.size,
+          claimed: continuations.size,
+        },
       })
       return
     }
@@ -132,7 +143,10 @@ parentPort.on('message', async (message) => {
     }
     if (message.op === 'dispose') {
       const errors = await dispose('plugin_disabled')
-      parentPort.postMessage({ id: message.id, result: { disposed: true, errors } })
+      parentPort.postMessage({
+        id: message.id,
+        result: { disposed: true, errors },
+      })
       return
     }
     if (closing) throw Error('plugin_unloaded')
@@ -158,6 +172,8 @@ parentPort.on('message', async (message) => {
     const completion = callback.kind === 'modelMethod' && callback.operation === 'complete'
     if (completion !== (message.op === 'complete_model'))
       throw Error('typed_model_completion_required')
+    if (callback.kind === 'adapterMethod' && message.op !== 'invoke_adapter')
+      throw Error('typed_adapter_operation_required')
     const args = message.args ?? []
     const invocation = new AbortController()
     invocations.set(message.id, invocation)
@@ -172,6 +188,12 @@ parentPort.on('message', async (message) => {
           validations: [],
           signal,
         }
+      }
+      if (callback.kind === 'adapterMethod') {
+        args[2] = signal
+        if (callback.operation === 'send' && message.beforeTransmit)
+          args[3] = () =>
+            adapterRPC(workerData.id + ':' + callback.name, 'beforeTransmit', [], message.id)
       }
       if (callback.kind === 'modelMethod') args[0] = { ...args[0], signal }
       if (completion) {
@@ -193,8 +215,22 @@ parentPort.on('message', async (message) => {
       }
       let result
       try {
-        result = await Reflect.apply(callback.handler, callback.receiver, args)
+        // AsyncLocalStorage follows source-owned awaits, including history's
+        // normalization/tombstone callbacks, without contaminating another call
+        // or transport ingress scheduled outside this invocation.
+        result = await adapterInvocation.run({ id: message.id }, () =>
+          Reflect.apply(callback.handler, callback.receiver, args),
+        )
       } catch (error) {
+        if (callback.kind === 'adapterMethod' && callback.operation === 'send') {
+          // Validation outside installAdapter's send try/catch is a rejection,
+          // not an uncertain transport receipt. Preserve that separate boundary.
+          parentPort.postMessage({
+            id: message.id,
+            result: { rejected: failureMessage(error) },
+          })
+          return
+        }
         if (callback.kind !== 'modelMethod' || signal.aborted) throw error
         // Only adapter execution is inside legacy invokeProtocol's catch. Output
         // serialization and continuation getters below are outside that boundary.
@@ -207,8 +243,20 @@ parentPort.on('message', async (message) => {
         })
         return
       }
-      if (signal.aborted) throw Error('plugin_call_cancelled')
-      if (completion) {
+      // The source send wrapper owns settlement and returns an authoritative
+      // receipt even when its transport synchronously aborts while settling.
+      if (signal.aborted && !(callback.kind === 'adapterMethod' && callback.operation === 'send'))
+        throw Error('plugin_call_cancelled')
+      if (callback.kind === 'adapterMethod' && callback.operation === 'send') {
+        const failure = outcomeError(result)
+        parentPort.postMessage({
+          id: message.id,
+          result: {
+            receipt: result,
+            ...(failure === undefined ? {} : { failure: { message: failureMessage(failure) } }),
+          },
+        })
+      } else if (completion) {
         if (!result || typeof result !== 'object' || Array.isArray(result))
           throw Error('invalid_provider_response')
         const visible = JSON.stringify({
@@ -240,7 +288,11 @@ parentPort.on('message', async (message) => {
       if (callback.kind === 'tool') invocation.abort('plugin_call_finished')
     }
   } catch (error) {
-    parentPort.postMessage({ id: message.id, failed: true, error: failureMessage(error) })
+    parentPort.postMessage({
+      id: message.id,
+      failed: true,
+      error: failureMessage(error),
+    })
   }
 })
 
@@ -295,8 +347,16 @@ try {
         throw Error('invalid_protocol_registration')
       protocols.push({ name, label, protocol })
     },
-    registerAdapter: () => {
-      throw Error('v1_adapter_bridge_pending')
+    registerAdapter: (name, factory) => {
+      if (closing) throw Error('plugin_unloaded')
+      if (
+        !plugin.manifest.capabilities.includes('adapter') ||
+        !/^[a-z0-9-]{1,32}$/.test(name) ||
+        (workerData.id + ':' + name).length > 64 ||
+        adapterDefinitions.some((entry) => entry.name === name)
+      )
+        throw Error('invalid_adapter_registration')
+      adapterDefinitions.push({ name, factory })
     },
   }
   await plugin.setup(context)
@@ -324,6 +384,11 @@ try {
         )
     register('modelProtocol', { name, label, handles })
   }
+  const adapterStarts = installV1Adapters()
+  for (const start of adapterStarts) {
+    await untilAbort(start(), AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]))
+    if (closing) throw Error('plugin_unloaded')
+  }
   parentPort.postMessage({
     ready: true,
     manifest: { ...plugin.manifest, apiVersion: 1 },
@@ -331,5 +396,9 @@ try {
   })
 } catch (error) {
   await dispose('plugin_setup_failed')
-  parentPort.postMessage({ startup: true, failed: true, error: failureMessage(error) })
+  parentPort.postMessage({
+    startup: true,
+    failed: true,
+    error: failureMessage(error),
+  })
 }

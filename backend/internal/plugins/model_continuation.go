@@ -97,6 +97,9 @@ func (h *V1Host) CompleteModelProtocol(ctx context.Context, id string, generatio
 	if err != nil {
 		return nil, err
 	}
+	if err := adapterReentry(ctx, lease); err != nil {
+		return nil, err
+	}
 	if request.Validate == nil {
 		return nil, errors.New("model_response_validator_required")
 	}
@@ -127,6 +130,7 @@ func (h *V1Host) CompleteModelProtocol(ctx context.Context, id string, generatio
 		h.lifecycle.Unlock()
 		return nil, protocolCallError(ctx, err)
 	}
+	lease.adapterCalls[pending.id] = newAdapterCall(ctx, lease, nil)
 	if ctx.Done() != nil {
 		lease.turnStops[pending.id] = context.AfterFunc(ctx, func() {
 			h.lifecycle.Lock()
@@ -136,6 +140,7 @@ func (h *V1Host) CompleteModelProtocol(ctx context.Context, id string, generatio
 		})
 	}
 	h.lifecycle.Unlock()
+	defer h.endAdapterCall(lease, pending.id)
 	owned := false
 	defer func() {
 		if owned {

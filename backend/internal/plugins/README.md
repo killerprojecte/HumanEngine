@@ -131,3 +131,102 @@ through complete/embeddings/listModels workers, SDK aliases and foreign copies,
 getter boundaries and exact getter read order/counts, cancellation, metadata
 privacy and source-free SDK loading. The actual repository SDK module URL is also
 resolved through the canonical module and compared by constructor identity.
+
+## V1 adapter boundary
+
+`V1HostOptions.AdapterServices` connects trusted V1 transport code to synchronous
+native runtime/authority callbacks. `RegisteredAdapters` returns installation-order
+metadata with a generation token. `AdapterSend`, `AdapterHistory`,
+`AdapterGetMessage`, and `AdapterStatus` require that token, so a reload cannot
+redirect a stale call to the replacement transport. The runtime composition owner
+must install/remove native registry handles and supply real ingress/edit/recall
+and tombstone reads. An absent required service errors rather than inventing an
+authority result. `Edit` carries the complete native SourceEventResult JSON,
+including ref/previousRef. Media resolution remains scene-scoped and optional.
+
+`generate-v1-adapters.mjs` embeds the actual pinned `installAdapter`,
+`untilAbort`, `awaitSendStage`, and diagnostic normalization sources. Scene hashing,
+message/history validation and normalization, tombstone filtering, clone/freeze,
+receiver binding, synchronous throws and async returns run in that source code.
+The only history/message-size restrictions are the existing source product policy.
+Factories are collected during setup, installed in order afterwards, started in
+order after all installations, and disposed in reverse order before setup cleanups.
+The existing source 30-second adapter-start deadline is retained; no new caps or
+transport retry loops are introduced.
+
+Worker-to-Go requests use a MessagePort response and one shared wake-up word.
+Payloads do not occupy a fixed-size shared buffer. `edit`, `isRecalled`, `media`,
+`receive`, `recall`, and the final `beforeTransmit` guard stay synchronous JavaScript
+calls, including exception propagation. The Node control loop and Go protocol
+reader stay independent while an isolate waits. Disable cancels native callback
+contexts, releases the blocked worker, runs cleanup, and truly terminates the
+isolate. A cleanup request can only remove its exact old generation.
+
+These service callbacks are a new **native composition contract**, not additional
+restrictions on plugin JavaScript: they perform native work and schedule, rather
+than await, asynchronous plugin events, as source runtime.ingest does. Native code
+must propagate the provided context. Attempting to await an operation in the same
+isolate using that context returns `adapter_native_callback_reentry`; this diagnoses
+a native circular wait. Ordinary concurrent callers and other isolates are not
+rejected. Discarding that context and synchronously waiting on the blocked isolate
+violates this internal contract and can deadlock. No plugin callback is made a
+Promise in place of a synchronous API, and plugins can still initiate asynchronous
+work normally.
+
+A call cancelled before admission yields cancelled-before-send. Once admitted,
+interrupted/unloaded/transport-lost sends are unknown, never replayed. Source
+validation outside the transport catch remains an error, not an unknown receipt.
+An authoritative receipt is normalized by source code. Private outcome failures
+remain separate from receipt JSON; model protocol error identity and opaque
+continuations continue through their existing independent paths.
+
+Although RuntimeAdapter permits optional `readImage`, source V1 `installAdapter`
+does **not** copy it into the installed wrapper. This compatibility bridge preserves
+that observable omission: there is no V1 readImage handle. Native transports that
+actually support images use their separate native runtime ReadImage contract.
+
+Synthetic evidence:
+
+```sh
+node backend/internal/plugins/generate-v1-adapters.mjs --check
+node --import tsx backend/internal/plugins/generate-v1-adapter-fixture.mjs --check
+go test -C backend -tags sqlite_fts5 -race -p 1 ./internal/plugins
+go vet -C backend -tags sqlite_fts5 ./internal/plugins
+```
+
+The differential generator invokes the actual TypeScript installAdapter with the
+same synthetic transport used by Go integration tests. Tests exercise registration
+validation, synchronous ingress/edit/recall/media, receiver binding, async methods,
+large reverse responses, send/guard exceptions, invalid and unknown receipts,
+history/tombstones, cancellation, pending native callbacks, unload/reload,
+cleanup order, and the legacy readImage omission. They use no user data, accounts,
+provider endpoints, database contents or source proxy server.
+
+### Adapter cancellation and installation review regressions
+
+Every active callback now carries an AsyncLocalStorage invocation identity through
+its awaited work. This includes source history/getMessage normalization after an
+await, not only the transport method itself or beforeTransmit. The Go native RPC
+context joins that call's context with the plugin lease, and is retired when the
+call ends. Cancellation releases only the matching synchronous waiter; late native
+responses cannot settle another invocation. Transport receive and its source
+validation explicitly keep lease scope, including receives emitted from inside an
+outbound callback. Independently scheduled ingress and other active calls are not
+cancelled with that outbound call.
+
+The source wrapper is owned as soon as runtime.addAdapter passes it to the bridge,
+before fallible native registration. Startup failure disposes it exactly once in
+reverse cleanup order, even when a disposer throws, and preserves the original
+startup error. Failed/cancelled native installs hide their metadata and remove
+callback handles immediately. If an Installed callback has not returned yet,
+Stopped is delivered once after it returns so its late completion cannot occur
+*after* its own native cleanup. Native composition must use the generation token
+when processing that notification. Explicit forced isolate termination retains the
+host's existing semantics: arbitrary uncooperative JavaScript cleanup cannot be
+guaranteed to finish after a hard kill.
+
+`generate-v1-adapter-lifecycle-fixture.mjs` runs the actual TypeScript source for
+call cancellation, subsequent sends, independent ingress, and idempotent disposal.
+The additional native registration failure is a new internal fallible boundary;
+its rollback coverage is an actual Node/Go integration fixture, not a claim that
+the original TypeScript runtime has a native Installed callback.

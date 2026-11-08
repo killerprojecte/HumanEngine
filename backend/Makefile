@@ -14,6 +14,9 @@ build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && node backend/internal/plugins/generate-v1-adapters.mjs --check
+	cd .. && V1_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/plugins/generate-v1-adapter-fixture.mjs --check
+	cd .. && V1_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/plugins/generate-v1-adapter-lifecycle-fixture.mjs --check
 	cd .. && for script in generate-experience-http-fixtures generate-experience-http-presence generate-experience-http-reviewfix generate-experience-http-rootfix; do HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/$$script.mjs --check || exit $$?; done
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-experience-runtime-fixtures.mjs --check
 	cd .. && TZ=UTC node backend/tests/check-meme-oracles.mjs

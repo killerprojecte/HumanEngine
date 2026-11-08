@@ -2,6 +2,22 @@ import { Worker } from 'node:worker_threads'
 import { createInterface } from 'node:readline'
 import { randomUUID } from 'node:crypto'
 const plugins = new Map()
+const adapterRequests = new Map()
+const settleAdapterRequest = (key, response) => {
+  const request = adapterRequests.get(key)
+  if (!request) return
+  adapterRequests.delete(key)
+  request.port.postMessage(response)
+  const state = new Int32Array(request.state)
+  Atomics.store(state, 0, 1)
+  Atomics.notify(state, 0)
+  request.port.close()
+}
+const cancelAdapterRequests = (plugin, invocationId) => {
+  for (const [key, request] of adapterRequests)
+    if (request.plugin === plugin && (!invocationId || request.invocationId === invocationId))
+      settleAdapterRequest(key, { failed: true, error: 'plugin_disabled' })
+}
 let workerSource = ''
 let modelProtocolSDK = ''
 let modelProtocolModuleURLs = []
@@ -48,7 +64,10 @@ const request = (plugin, message) =>
     plugin.worker.once('exit', onExit)
     plugin.worker.postMessage(message)
   })
-for await (const line of createInterface({ input: process.stdin, crlfDelay: Infinity })) {
+for await (const line of createInterface({
+  input: process.stdin,
+  crlfDelay: Infinity,
+})) {
   let message
   try {
     message = JSON.parse(line)
@@ -63,6 +82,10 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
         modelProtocolSDK = message.modelProtocolSDK
         modelProtocolModuleURLs = message.modelProtocolModuleURLs
         send({ id: message.id, result: true })
+        return
+      }
+      if (message.op === 'adapter_response') {
+        settleAdapterRequest(message.plugin + '/' + message.requestId, message)
         return
       }
       if (message.op === 'status') {
@@ -94,6 +117,20 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
         worker.stdout.pipe(process.stderr)
         worker.stderr.pipe(process.stderr)
         worker.on('message', (event) => {
+          if (event.event === 'adapter_rpc') {
+            const key = message.plugin + '/' + event.requestId
+            adapterRequests.set(key, { ...event, plugin: message.plugin })
+            // Cleanup is allowed after closing; all other native callbacks are fenced.
+            if (plugin.closing && event.operation !== 'remove') {
+              settleAdapterRequest(key, {
+                failed: true,
+                error: 'plugin_disabled',
+              })
+            } else {
+              const { port, state, ...payload } = event
+              send({ ...payload, plugin: message.plugin })
+            }
+          }
           if (event.event === 'log')
             process.stderr.write(
               JSON.stringify({
@@ -105,9 +142,15 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
               }) + '\n',
             )
         })
-        const plugin = { worker, closing: false, exited: false, requests: new Map() }
+        const plugin = {
+          worker,
+          closing: false,
+          exited: false,
+          requests: new Map(),
+        }
         worker.once('exit', () => {
           plugin.exited = true
+          cancelAdapterRequests(message.plugin)
           if (plugins.get(message.plugin) === plugin) plugins.delete(message.plugin)
           send({ event: 'worker_exit', plugin: message.plugin })
         })
@@ -123,20 +166,35 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
           })
           send({
             id: message.id,
-            result: { manifest: ready.manifest, registrations: ready.registrations },
+            result: {
+              manifest: ready.manifest,
+              registrations: ready.registrations,
+            },
           })
         } catch (error) {
-          plugins.delete(message.plugin)
-          await worker.terminate()
+          // Once disable/terminate owns the worker, startup failure must not
+          // race its disposal acknowledgement with a second termination. The
+          // source startup path can report its failure before a concurrently
+          // waiting dispose request has posted the shared cleanup result.
+          if (!plugin.closing) {
+            plugin.closing = true
+            if (plugins.get(message.plugin) === plugin) plugins.delete(message.plugin)
+            cancelAdapterRequests(message.plugin)
+            await worker.terminate()
+          }
           throw error
         }
         return
       }
       const plugin = plugins.get(message.plugin)
       if (message.op === 'cancel_invoke') {
+        cancelAdapterRequests(message.plugin, message.invocationId)
         plugin?.requests.get(message.invocationId)?.(Error('plugin_call_cancelled'))
         if (plugin && !plugin.exited)
-          plugin.worker.postMessage({ op: 'cancel_invoke', invocationId: message.invocationId })
+          plugin.worker.postMessage({
+            op: 'cancel_invoke',
+            invocationId: message.invocationId,
+          })
         // Acknowledge control admission without waiting on user callback code.
         send({ id: message.id, result: true })
         return
@@ -149,6 +207,7 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
       if (message.op === 'terminate') {
         if (plugin) {
           plugin.closing = true
+          cancelAdapterRequests(message.plugin)
           plugins.delete(message.plugin)
           await plugin.worker.terminate()
         }
@@ -161,8 +220,12 @@ for await (const line of createInterface({ input: process.stdin, crlfDelay: Infi
           return
         }
         plugin.closing = true
+        cancelAdapterRequests(message.plugin)
         try {
-          const disposal = await request(plugin, { id: message.id, op: 'dispose' })
+          const disposal = await request(plugin, {
+            id: message.id,
+            op: 'dispose',
+          })
           for (const error of disposal.errors ?? [])
             process.stderr.write(
               JSON.stringify({

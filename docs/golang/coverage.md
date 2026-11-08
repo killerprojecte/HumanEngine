@@ -383,3 +383,19 @@ Experience owner race checks and vet passed locally. Source regeneration checks
 are part of the differential CI target. Exact-commit full CI remains the acceptance
 gate after publication. The command remains an explicit read-only preview until
 the full production application and remaining Engine graph are composed.
+
+## Native V1 adapter host bridge
+
+The lazy V1 host now supports actual source-derived adapter registration and
+send/history/getMessage/status behavior, synchronous reverse callbacks, precise
+invocation cancellation and lease-scoped background ingress. Failed installation
+owns transport cleanup before native registration, and concurrent disable has a
+single termination owner. Unknown sends are not replayed. Legacy V1 readImage
+omission remains unchanged.
+
+All V1 race tests, modelservice race tests, vet and actual-source adapter/lifecycle
+checks passed on the final private revision. Independent real-host reproductions
+confirmed the repaired cancellation and failed-install disposal paths. Integrated
+HEAD CI still supplies whole-plugin/WASM/source-free acceptance. This host bridge
+is not the complete application plugin manager or runtime assembly; deployment
+SDK aliases and remaining model-router work remain explicit outstanding scope.

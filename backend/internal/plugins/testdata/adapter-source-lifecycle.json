@@ -1,0 +1,16 @@
+{
+  "sourceSHA256": "02c38bed5d0065397f815b999666fdde504806377561bb61f9d115b47bf022c9",
+  "cancelledSend": {
+    "status": "unknown",
+    "detail": "request_cancelled"
+  },
+  "nextSend": {
+    "status": "sent"
+  },
+  "sends": 2,
+  "historyCancellation": "plugin_disabled",
+  "backgroundIngress": 1,
+  "disposeTrace": [
+    "adapter.dispose"
+  ]
+}

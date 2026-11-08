@@ -23,6 +23,12 @@ var nodeConfigSource string
 //go:embed v1-worker.mjs
 var nodeWorkerSource string
 
+//go:embed v1-adapter-sdk.mjs
+var nodeAdapterSDK string
+
+//go:embed v1-adapters.mjs
+var nodeAdapterSource string
+
 //go:embed v1-model-protocol-sdk.mjs
 var nodeModelProtocolSDK string
 
@@ -30,13 +36,18 @@ var nodeModelProtocolSDK string
 var nodeModelErrorClassifier string
 
 type nodeReply struct {
-	ID              string           `json:"id"`
-	Result          json.RawMessage  `json:"result"`
-	Failed          bool             `json:"failed"`
-	Error           string           `json:"error"`
-	Event           string           `json:"event"`
-	Plugin          string           `json:"plugin"`
-	ProtocolFailure *protocolFailure `json:"protocolFailure"`
+	ID              string            `json:"id"`
+	Result          json.RawMessage   `json:"result"`
+	Failed          bool              `json:"failed"`
+	Error           string            `json:"error"`
+	Event           string            `json:"event"`
+	Plugin          string            `json:"plugin"`
+	ProtocolFailure *protocolFailure  `json:"protocolFailure"`
+	RequestID       string            `json:"requestId"`
+	AdapterID       string            `json:"adapterId"`
+	Operation       string            `json:"operation"`
+	Args            []json.RawMessage `json:"args"`
+	InvocationID    string            `json:"invocationId"`
 }
 type nodeProcess struct {
 	cmd        *exec.Cmd
@@ -60,6 +71,10 @@ type nodeLease struct {
 	generation        uint64
 	registrationOrder uint64
 	protocols         []ModelProtocolMetadata
+	adapters          []AdapterMetadata
+	adapterCalls      map[string]adapterCall
+	adapterContext    context.Context
+	adapterCancel     context.CancelFunc
 	handles           map[string]string
 	modelCompletions  map[string]bool
 	turnStops         map[string]func() bool
@@ -75,6 +90,7 @@ type V1Host struct {
 	node                    string
 	diagnostics             io.Writer
 	closed                  bool
+	adapterServices         AdapterServices
 	modelProtocolModuleURLs []string
 }
 
@@ -87,12 +103,14 @@ func NewV1Host(node string, diagnostics io.Writer) *V1Host {
 // No basename/path inference or runtime repository dependency is introduced.
 type V1HostOptions struct {
 	ModelProtocolModuleURLs []string
+	AdapterServices         AdapterServices
 }
 
 // NewV1HostWithOptions retains lazy startup even with explicit SDK aliases.
 // The original constructor remains valid and installs no deployment aliases.
 func NewV1HostWithOptions(node string, diagnostics io.Writer, options V1HostOptions) (*V1Host, error) {
 	h := NewV1Host(node, diagnostics)
+	h.adapterServices = options.AdapterServices
 	for _, value := range options.ModelProtocolModuleURLs {
 		parsed, err := url.Parse(value)
 		if err != nil || !parsed.IsAbs() || parsed.Scheme == "" || parsed.User != nil {
@@ -115,7 +133,7 @@ func (h *V1Host) PID() int {
 		return h.process.cmd.Process.Pid
 	}
 }
-func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorkerExit func(*nodeProcess, string), moduleURLs []string) (*nodeProcess, error) {
+func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorkerExit func(*nodeProcess, string), onAdapterRPC func(*nodeProcess, nodeReply), moduleURLs []string) (*nodeProcess, error) {
 	cmd := exec.Command(node, "--input-type=module", "--eval", nodeHostSource)
 	cmd.Stderr = diagnostics
 	input, err := cmd.StdinPipe()
@@ -139,6 +157,10 @@ func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorker
 			}
 			var reply nodeReply
 			if json.Unmarshal(line, &reply) != nil {
+				continue
+			}
+			if reply.Event == "adapter_rpc" {
+				go onAdapterRPC(p, reply)
 				continue
 			}
 			if reply.Event == "worker_exit" {
@@ -168,7 +190,7 @@ func startNode(ctx context.Context, node string, diagnostics io.Writer, onWorker
 		p.write.Unlock()
 	}()
 	go p.writeLoop()
-	if _, err = p.call(ctx, map[string]any{"op": "initialize", "source": nodeConfigSource + "\n" + nodeModelErrorClassifier + "\n" + nodeWorkerSource, "modelProtocolSDK": nodeModelProtocolSDK, "modelProtocolModuleURLs": moduleURLs}); err != nil {
+	if _, err = p.call(ctx, map[string]any{"op": "initialize", "source": nodeConfigSource + "\n" + nodeModelErrorClassifier + "\n" + nodeAdapterSDK + "\n" + nodeAdapterSource + "\n" + nodeWorkerSource, "modelProtocolSDK": nodeModelProtocolSDK, "modelProtocolModuleURLs": moduleURLs}); err != nil {
 		input.Close()
 		<-p.done
 		return nil, err
@@ -328,7 +350,7 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 		return nil, errors.New("plugin_already_loaded")
 	}
 	if h.process == nil {
-		h.process, err = startNode(ctx, h.node, h.diagnostics, h.workerExited, h.modelProtocolModuleURLs)
+		h.process, err = startNode(ctx, h.node, h.diagnostics, h.workerExited, h.adapterRPC, h.modelProtocolModuleURLs)
 		if err != nil {
 			h.lifecycle.Unlock()
 			return nil, err
@@ -336,6 +358,8 @@ func (h *V1Host) Enable(ctx context.Context, id, path string, config map[string]
 	}
 	h.sequence++
 	lease := &nodeLease{key: fmt.Sprintf("%s:%d", id, h.sequence), process: h.process, generation: h.sequence, done: make(chan struct{}), handles: map[string]string{}, modelCompletions: map[string]bool{}, turnStops: map[string]func() bool{}}
+	lease.adapterContext, lease.adapterCancel = context.WithCancel(context.Background())
+	lease.adapterCalls = map[string]adapterCall{}
 	h.enabled[id] = lease
 	// Queue lifecycle admission before making the lease visible to Disable.
 	pending, err := lease.process.begin(map[string]any{"op": "enable", "plugin": lease.key, "pluginId": id, "path": path, "config": json.RawMessage(encodedConfig)})
@@ -388,7 +412,14 @@ func (h *V1Host) callLease(ctx context.Context, id string, expected *nodeLease, 
 	h.lifecycle.Lock()
 	leaseForHandle := h.enabled[id]
 	isCompletion := leaseForHandle != nil && leaseForHandle.modelCompletions[handle]
+	isAdapter := leaseForHandle != nil && leaseForHandle.handles[handle] == "adapterMethod"
 	h.lifecycle.Unlock()
+	if isAdapter {
+		return nil, errors.New("typed_adapter_operation_required")
+	}
+	if err := adapterReentry(ctx, leaseForHandle); err != nil {
+		return nil, err
+	}
 	if isCompletion {
 		return nil, errTypedModelCompletionRequired
 	}
@@ -417,6 +448,7 @@ func (h *V1Host) callLease(ctx context.Context, id string, expected *nodeLease, 
 		h.lifecycle.Unlock()
 		return nil, err
 	}
+	lease.adapterCalls[pending.id] = newAdapterCall(ctx, lease, nil)
 	if (lease.handles[handle] == "sendHook" || lease.handles[handle] == "modelMethod") && ctx.Done() != nil {
 		// A hook's context lasts for the turn, not merely its callback. Preserve its
 		// cancellation link until the turn ends or the plugin is unloaded.
@@ -428,6 +460,7 @@ func (h *V1Host) callLease(ctx context.Context, id string, expected *nodeLease, 
 		})
 	}
 	h.lifecycle.Unlock()
+	defer h.endAdapterCall(lease, pending.id)
 	result, err := pending.wait(ctx)
 	if ctx.Err() != nil {
 		_, cancelErr := lease.process.call(context.Background(), map[string]any{"op": "cancel_invoke", "plugin": lease.key, "invocationId": pending.id})
@@ -468,6 +501,7 @@ func (h *V1Host) disableLease(ctx context.Context, id string, lease *nodeLease) 
 		return h.waitLease(ctx, lease)
 	}
 	lease.closing = true
+	lease.adapterCancel()
 	for _, stop := range lease.turnStops {
 		stop()
 	}
@@ -479,6 +513,7 @@ func (h *V1Host) disableLease(ctx context.Context, id string, lease *nodeLease) 
 		_, terminateErr := lease.process.call(context.Background(), map[string]any{"op": "terminate", "plugin": lease.key})
 		err = errors.Join(err, terminateErr)
 	}
+	h.stopAdapters(lease)
 	h.lifecycle.Lock()
 	processLeases := 0
 	for _, item := range h.enabled {
@@ -540,6 +575,7 @@ func (h *V1Host) workerExited(process *nodeProcess, key string) {
 	for id, lease := range h.enabled {
 		if lease.process == process && lease.key == key {
 			lease.dead = true
+			lease.adapterCancel()
 			lease.ready = false
 			lease.protocols = nil
 			for _, stop := range lease.turnStops {

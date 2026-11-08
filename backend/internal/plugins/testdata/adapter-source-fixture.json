@@ -1,0 +1,160 @@
+{
+  "scene": {
+    "id": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118",
+    "adapterId": "adapter-fixture:transport",
+    "accountId": "synthetic-account",
+    "kind": "group",
+    "platformSceneId": "synthetic-room"
+  },
+  "message": {
+    "id": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118:89db7039db8da58d2c0f577fe12f4afb9a558d91bb2759a0bf242fac7e167fc5",
+    "sceneId": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118",
+    "senderId": "synthetic-user",
+    "sentAt": "2026-01-01T00:00:00Z",
+    "receivedAt": "2026-01-01T00:00:00Z",
+    "origin": "live",
+    "status": "available",
+    "parts": [
+      {
+        "type": "text",
+        "text": "synthetic"
+      }
+    ],
+    "ignored": "omit"
+  },
+  "received": [
+    {
+      "id": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118:89db7039db8da58d2c0f577fe12f4afb9a558d91bb2759a0bf242fac7e167fc5",
+      "sceneId": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118",
+      "senderId": "synthetic-user",
+      "sentAt": "2026-01-01T00:00:00Z",
+      "receivedAt": "2026-01-01T00:00:00Z",
+      "origin": "live",
+      "status": "available",
+      "parts": [
+        {
+          "type": "text",
+          "text": "synthetic-message"
+        }
+      ]
+    }
+  ],
+  "status": "connected",
+  "invalid": [
+    "invalid_adapter_scene",
+    "adapter_scene_mismatch",
+    "adapter_bot_flag_required",
+    "adapter_ingress_requires_live_origin",
+    "invalid_adapter_message",
+    "adapter_message_scope_mismatch"
+  ],
+  "media": {
+    "file": "synthetic:synthetic-asset",
+    "type": "image/png"
+  },
+  "edit": {
+    "status": "edited",
+    "bodyCoverage": "unavailable",
+    "ref": {
+      "eventId": "synthetic-edit",
+      "revision": 2,
+      "deletionEpoch": 0
+    },
+    "previousRef": {
+      "eventId": "synthetic-event",
+      "revision": 1,
+      "deletionEpoch": 0
+    }
+  },
+  "readImage": "undefined",
+  "sends": {
+    "ok": {
+      "status": "sent",
+      "messageId": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118:c60a8e6a5e4c35f3a2be5b8dcd5173a2582ccd0c62b163d6ca805da6fecca6ca",
+      "detail": "send_failed"
+    },
+    "throw": {
+      "status": "unknown",
+      "detail": "delivery_unknown"
+    },
+    "invalid": {
+      "status": "unknown",
+      "detail": "invalid_send_receipt"
+    },
+    "private-detail": {
+      "status": "sent",
+      "messageId": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118:c60a8e6a5e4c35f3a2be5b8dcd5173a2582ccd0c62b163d6ca805da6fecca6ca"
+    }
+  },
+  "history": {
+    "coverage": "complete",
+    "items": [
+      {
+        "id": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118:89db7039db8da58d2c0f577fe12f4afb9a558d91bb2759a0bf242fac7e167fc5",
+        "sceneId": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118",
+        "senderId": "synthetic-user",
+        "sentAt": "2026-01-01T00:00:00Z",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "origin": "history",
+        "status": "available",
+        "parts": [
+          {
+            "type": "text",
+            "text": "synthetic-message"
+          }
+        ]
+      },
+      {
+        "id": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118:d9298a10d1b0735837dc4bd85dac641b0f3cef27a47e5d53a54f2f3f5b2fcffa",
+        "sceneId": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118",
+        "senderId": "synthetic-user",
+        "sentAt": "2026-01-01T00:00:00Z",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "origin": "history",
+        "status": "available",
+        "parts": [
+          {
+            "type": "text",
+            "text": "other"
+          }
+        ]
+      }
+    ],
+    "cursor": null
+  },
+  "getMessage": {
+    "coverage": "complete",
+    "items": [
+      {
+        "id": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118:89db7039db8da58d2c0f577fe12f4afb9a558d91bb2759a0bf242fac7e167fc5",
+        "sceneId": "adapter-fixture:transport:9fa2a145bbc860f6de5c728a0b90dd8a67afe93d53bbe414c1d1c8162f707118",
+        "senderId": "synthetic-user",
+        "sentAt": "2026-01-01T00:00:00Z",
+        "receivedAt": "2026-01-01T00:00:00Z",
+        "origin": "history",
+        "status": "available",
+        "parts": [
+          {
+            "type": "text",
+            "text": "synthetic-message"
+          }
+        ]
+      }
+    ]
+  },
+  "recalled": true,
+  "afterRecall": {
+    "coverage": "complete",
+    "items": []
+  },
+  "trace": {
+    "trace": [
+      "setup.complete",
+      "factory",
+      "start",
+      "adapter.dispose",
+      "setup.dispose"
+    ],
+    "sends": 4
+  }
+}

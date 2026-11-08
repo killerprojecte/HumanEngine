@@ -12,4 +12,6 @@ const char *he_error(void);
 int he_inspect(const void *,size_t,he_metadata *);
 int he_render(const void *,size_t,int,int,int,void **,size_t *,char **);
 void he_free(void *);
+int he_meme_metadata(const void *,size_t,he_metadata *,char **);
+int he_meme_render(const void *,size_t,int,int,void **,size_t *,char **);
 #endif

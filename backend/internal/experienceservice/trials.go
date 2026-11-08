@@ -47,7 +47,7 @@ func contains(xs []string, s string) bool {
 	}
 	return false
 }
-func validID(s string) bool        { n, e := jsjson.UTF16Len(s); return s != "" && e == nil && n <= 512 }
+func validID(s string) bool        { n, e := jsjson.CodePointCount(s); return s != "" && e == nil && n <= 512 }
 func safe(n int64, min int64) bool { return n >= min && n <= 9007199254740991 }
 func validHash(s string) bool {
 	if len(s) != 64 {

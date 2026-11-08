@@ -57,3 +57,37 @@ This owner checkpoint does not implement the Experience runtime-hints caller
 chain or its REST routes. Those are separate active integration work. The default
 command remains the read-only preview. Full exact-commit aggregate CI for this
 new owner is pending publication; targeted success is not full robot parity.
+
+## Live Meme owner and native image operations (2026-11-08)
+
+The native owner now implements recognition, intake, analysis, thumbnail,
+administration, search, feedback, references and recall. Pixel work, provider
+requests and unlink run outside the SQLite authority writer. Hash recognition
+uses indexed candidates rather than decoding the entire collection; per-asset
+serialization entries are reclaimed after the last owner/waiter.
+
+Coalesced observations have explicit supervised operation lifetimes. One
+consumer ending its request cannot expire another consumer's task. Cancellation
+is rechecked after waiting for the final writer, and cancelled analysis cannot
+publish tags or privacy/sharing flags. Split durable deletion preserves intent,
+ACK gaps, callback failure and commit-failure ticket consumption semantics.
+
+Local validation passed the complete memeservice, imagecodec and recovery race
+packages and their vet checks. The first recovery run lacked the isolated tree's
+TypeScript dependency mount; its two source-oracle failures were preserved, and
+the entire package passed after mounting the existing pinned source/dependencies.
+Image validation includes 21 exact Sharp metadata/frame/thumbnail cases, all 52
+existing compressImage cases and the real 40-million-pixel boundary fixtures.
+Synthetic source traces cover tags/concepts, actual service operations and seven
+split-durable failure/retry sequences. No real user database or paid provider was
+used. This checkpoint still requires exact-commit aggregate CI acceptance.
+
+The owner does not complete Meme REST or production Engine media/model exposure
+composition. Observe task creation and asynchronous deletion require an explicit
+root operation capability supplied by those callers; neither silently mints one
+inside a transaction. The executable remains read-only-preview. Native binary
+redistribution licensing and full application startup remain separate gates.
+
+A related Experience identifier correction follows the pinned Zod validator's
+Unicode-code-point length, including astral and lone-surrogate fixtures. Explicit
+JavaScript string-length validation in other source paths remains UTF-16 based.

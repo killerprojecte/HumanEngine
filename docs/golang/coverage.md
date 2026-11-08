@@ -352,3 +352,13 @@ authorizer, with attached-database denial regression coverage. Full aggregate
 and native ICU acceptance for this manual slice remains pending exact-commit CI.
 Delete/recall privacy closure and runtime/HTTP mutation integration remain separate
 uncompleted work.
+
+## Native Meme owner checkpoint
+
+`memeservice` supplies live owner behavior and `imagecodec` supplies real metadata,
+frame PNG and thumbnail WebP operations. Full native local race checks cover the
+owner, existing compression and recovery; actual-source generators are wired into
+`differential` and `native-image-check`. REST/runtime media and model-read/exposure
+composition remain unfinished and are not replaced with permissive callbacks.
+Explicit root/task operation capabilities preserve split durable deletion and
+shared analysis lifetimes without a global writer counter or new admission cap.

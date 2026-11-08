@@ -76,6 +76,7 @@ FN(int,vips_flip,(VipsImage*,VipsImage**,int,...));
 FN(int,vips_colourspace,(VipsImage*,VipsImage**,int,...));
 FN(int,vips_icc_transform,(VipsImage*,VipsImage**,const char*,...));
 FN(int,vips_pngsave_buffer,(VipsImage*,void**,size_t*,...)); FN(int,vips_jpegsave_buffer,(VipsImage*,void**,size_t*,...));
+FN(int,vips_webpsave_buffer,(VipsImage*,void**,size_t*,...));
 FN(void,g_object_unref,(void*)); FN(void,g_free,(void*));
 static char init_error[256];
 #define LOAD(n) do { *(void **)(&n)=dlsym(lib,#n); if(!n){snprintf(init_error,sizeof(init_error),"missing public ABI symbol: %s",#n);dlclose(lib);return -1;} } while(0)
@@ -84,7 +85,7 @@ int he_init(const char *path) {
  void *lib=dlopen(path,RTLD_NOW|RTLD_LOCAL); if(!lib){snprintf(init_error,sizeof(init_error),"%s",dlerror());return -1;}
  LOAD(vips_init); LOAD(vips_cache_set_max); LOAD(vips_cache_set_max_mem); LOAD(vips_cache_set_max_files); LOAD(g_object_set_data_full); LOAD(vips_error_buffer); LOAD(vips_error_buffer_copy); LOAD(vips_thread_shutdown); LOAD(vips_concurrency_set); LOAD(vips_error_clear); LOAD(vips_foreign_find_load_buffer); LOAD(vips_image_new_from_buffer); LOAD(vips_jpegload_buffer);
  LOAD(vips_image_get_width); LOAD(vips_image_get_height); LOAD(vips_image_get_orientation); LOAD(vips_image_hasalpha); LOAD(vips_image_get_int); LOAD(vips_image_get_typeof); LOAD(vips_image_get_format); LOAD(vips_image_get_interpretation);
- LOAD(vips_image_get_bands); LOAD(vips_image_copy_memory); LOAD(vips_image_new_matrixv); LOAD(vips_image_set_double); LOAD(vips_extract_band); LOAD(vips_hist_find); LOAD(vips_hist_entropy); LOAD(vips_conv); LOAD(vips_deviate); LOAD(vips_hist_find_ndim); LOAD(vips_max); LOAD(vips_stats); LOAD(vips_resize); LOAD(vips_premultiply); LOAD(vips_unpremultiply); LOAD(vips_cast); LOAD(vips_rot); LOAD(vips_flip); LOAD(vips_colourspace); LOAD(vips_icc_transform); LOAD(vips_pngsave_buffer); LOAD(vips_jpegsave_buffer); LOAD(g_object_unref); LOAD(g_free);
+ LOAD(vips_image_get_bands); LOAD(vips_image_copy_memory); LOAD(vips_image_new_matrixv); LOAD(vips_image_set_double); LOAD(vips_extract_band); LOAD(vips_hist_find); LOAD(vips_hist_entropy); LOAD(vips_conv); LOAD(vips_deviate); LOAD(vips_hist_find_ndim); LOAD(vips_max); LOAD(vips_stats); LOAD(vips_resize); LOAD(vips_premultiply); LOAD(vips_unpremultiply); LOAD(vips_cast); LOAD(vips_rot); LOAD(vips_flip); LOAD(vips_colourspace); LOAD(vips_icc_transform); LOAD(vips_webpsave_buffer); LOAD(vips_pngsave_buffer); LOAD(vips_jpegsave_buffer); LOAD(g_object_unref); LOAD(g_free);
  int rc=vips_init("humanengine-imagecodec");
  if(rc){snprintf(init_error,sizeof(init_error),"%s",vips_error_buffer());dlclose(lib);return rc;}
  // Actual sharp/dist/utility.cjs cache(true), not an additional admission cap.
@@ -194,4 +195,73 @@ int he_render(const void *data,size_t n,int w,int h,int q,void **out,size_t *len
  int rc=render_image(data,n,w,h,q,out,len);*error=rc?vips_error_buffer_copy():NULL;
  if(rc&&*out){g_free(*out);*out=NULL;*len=0;}
  if(!rc)vips_error_clear();vips_thread_shutdown();return rc;
+}
+
+// Meme intake uses sharp.metadata(), not stats(): do not force pixel decode.
+int he_meme_metadata(const void *data,size_t n,he_metadata *m,char **error){
+ int rc=-1;const char *fmt=format(data,n);VipsImage *im=NULL;
+ if(fmt){im=open_image(data,n,fmt,1,1);if(im){
+  m->width=vips_image_get_width(im);m->height=vips_image_get_height(im);
+  m->pages=field(im,"n-pages",1);m->page_height=field(im,"page-height",m->height);
+  m->orientation=vips_image_get_orientation(im);m->alpha=vips_image_hasalpha(im);strcpy(m->format,fmt);
+  if(m->width>0&&m->height>0&&(uint64_t)m->width*m->height<=20000000)rc=0;
+ }}
+ if(im)g_object_unref(im);*error=rc?vips_error_buffer_copy():NULL;
+ if(!rc)vips_error_clear();vips_thread_shutdown();return rc;
+}
+
+
+// Independent Meme page loader: analysis samples temporal pages and deliberately
+// does NOT autorotate; thumbnail uses only page zero and autorotates later.
+static VipsImage *open_meme_image(const void *data,size_t n,const char *fmt,int shrink,double scale,int page){
+ if(strcmp(fmt,"gif")&&strcmp(fmt,"webp"))return open_image(data,n,fmt,shrink,scale);
+ void *owned=(void*)data;retain_input(owned);VipsImage *im;
+ if(!strcmp(fmt,"gif"))im=vips_image_new_from_buffer(owned,n,"","access",1,"fail_on",3,"n",1,"page",page,NULL);
+ else im=vips_image_new_from_buffer(owned,n,"","access",1,"fail_on",3,"n",1,"page",page,"scale",scale,NULL);
+ if(im)g_object_set_data_full(im,"humanengine-owned-input",owned,he_source_free);else he_source_free(owned);return im;
+}
+static int meme_render_image(const void *data,size_t n,int page,int thumbnail,void **out,size_t *out_len) {
+ int width=thumbnail?320:512,height=width;
+ const char *fmt=format(data,n);if(!fmt)return -1;
+ VipsImage *im=open_meme_image(data,n,fmt,1,1,page);if(!im)return -1;
+ int orientation=thumbnail?vips_image_get_orientation(im):0,w=vips_image_get_width(im),h=vips_image_get_height(im);
+ if(orientation>=5){int t=width;width=height;height=t;}
+ if(w<=0||h<=0||(uint64_t)w*h>20000000)goto fail;
+ double shrink=fmax(1,fmax((double)w/width,(double)h/height));
+ // ResolveShrink clamps each axis before selecting common decoder reduction.
+ shrink=fmin(fmin(shrink,w),fmin(shrink,h));
+ int jpeg_shrink=shrink>=8?8:shrink>=4?4:shrink>=2?2:1;
+ if(jpeg_shrink>1&&(int)shrink==jpeg_shrink)jpeg_shrink/=2;
+ if((!strcmp(fmt,"jpeg")&&jpeg_shrink>1)||(!strcmp(fmt,"webp")&&shrink>1)){
+  g_object_unref(im);im=open_meme_image(data,n,fmt,jpeg_shrink,!strcmp(fmt,"webp")?1/shrink:1,page);if(!im)return -1;
+ }
+ w=vips_image_get_width(im);h=vips_image_get_height(im);
+ shrink=fmax(1,fmax((double)w/width,(double)h/height));
+ double hs=fmin(shrink,w),vs=fmin(shrink,h);
+ int interp=vips_image_get_interpretation(im);
+ const char *processing_profile=interp==25?"p3":"srgb";
+ if(vips_image_get_typeof(im,"icc-profile-data")&&interp!=21&&interp!=26){
+  VipsImage *next=NULL;
+  if(!vips_icc_transform(im,&next,processing_profile,"embedded",1,"depth",(interp==25||interp==26)?16:8,"intent",0,NULL)){g_object_unref(im);im=next;}else{if(next)g_object_unref(next);vips_error_clear();}
+ }else if(interp==15){STEP(vips_icc_transform(im,&next,processing_profile,"input_profile","cmyk","intent",0,NULL));}
+ int band_format=vips_image_get_format(im),premul=vips_image_hasalpha(im)&&(hs!=1||vs!=1);
+ if(premul){STEP(vips_premultiply(im,&next,NULL));STEP(vips_cast(im,&next,band_format,NULL));}
+ if(hs!=1||vs!=1){STEP(vips_resize(im,&next,1/hs,"vscale",1/vs,"kernel",5,NULL));}
+ int angle=orientation==6||orientation==5?1:orientation==3||orientation==4?2:orientation==8||orientation==7?3:0;
+ if(angle){VipsImage *memory=vips_image_copy_memory(im);if(!memory)goto fail;g_object_unref(im);im=memory;STEP(vips_rot(im,&next,angle,NULL));}
+ if(orientation==2||orientation==4||orientation==5||orientation==7){STEP(vips_flip(im,&next,0,NULL));}
+ if(premul){STEP(vips_unpremultiply(im,&next,NULL));STEP(vips_cast(im,&next,band_format,NULL));}
+ interp=vips_image_get_interpretation(im);
+ if(interp==25||interp==26){STEP(vips_cast(im,&next,2,NULL));}
+ if(interp!=22){STEP(vips_colourspace(im,&next,22,"source_space",interp,NULL));}
+ int rc= thumbnail ? vips_webpsave_buffer(im,out,out_len,"keep",0,"Q",75,"lossless",0,"near_lossless",0,"smart_subsample",0,"smart_deblock",0,"preset",0,"effort",4,"min_size",0,"mixed",0,"exact",0,"alpha_q",100,NULL)
+ :vips_pngsave_buffer(im,out,out_len,"keep",0,"compression",6,"filter",8,"interlace",0,"palette",0,"Q",100,"effort",7,"bitdepth",8,"dither",1.0,NULL);
+ g_object_unref(im);return rc;
+ fail:g_object_unref(im);return -1;
+}
+
+
+int he_meme_render(const void *data,size_t n,int page,int thumbnail,void **out,size_t *len,char **error){
+ int rc=meme_render_image(data,n,page,thumbnail,out,len);*error=rc?vips_error_buffer_copy():NULL;
+ if(rc&&*out){g_free(*out);*out=NULL;*len=0;}if(!rc)vips_error_clear();vips_thread_shutdown();return rc;
 }

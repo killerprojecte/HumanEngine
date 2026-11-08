@@ -41,6 +41,11 @@ func (a *Authority) withWriteSession(ctx context.Context, main *sql.DB, fn func(
 	if fn == nil {
 		return errors.New("recovery_write_invalid")
 	}
+	releaseOperation, err := a.enterOperation(ctx, main)
+	if err != nil {
+		return err
+	}
+	defer releaseOperation()
 	conn, err := main.Conn(ctx)
 	if err != nil {
 		return err
@@ -76,6 +81,9 @@ func (s *WriteSession) check() error {
 	}
 	if s.current != s {
 		return errors.New("recovery_session_scope_inactive")
+	}
+	if err := s.authority.checkOperation(s.ctx, s.main); err != nil {
+		return err
 	}
 	if err := s.ctx.Err(); err != nil {
 		s.fatal = err

@@ -83,11 +83,11 @@ func TestSourceReferenceNumbersCannotBeTruncated(t *testing.T) {
 		}
 	}
 }
-func TestTrialIdentifiersCountUTF16NotWTF8Bytes(t *testing.T) {
+func TestTrialIdentifiersMatchZodCodePoints(t *testing.T) {
 	o := loadReferenceOracle(t)
 	for _, item := range o.IDs {
 		if got := validID(item.ID); got != item.Accepted {
-			n, _ := jsjson.UTF16Len(item.ID)
+			n, _ := jsjson.CodePointCount(item.ID)
 			t.Fatalf("length %d got %t want %t", n, got, item.Accepted)
 		}
 		var trial Trial

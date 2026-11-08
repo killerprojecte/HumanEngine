@@ -214,5 +214,42 @@ This is not the complete write command: reconciliation, proposal persistence,
 graph admission and historical requalification are still being composed. The
 source evidence APIs accept normalized trusted internal inputs, not arbitrary
 public API objects. The initial focused run found a wrong new test expectation;
-the corrected three-package race and vet rerun passed. Full aggregate and bundle
-acceptance for this candidate has not yet run.
+the corrected three-package race and vet rerun passed. The exact published
+Stage27 checkpoint subsequently passed complete CI, including the aggregate,
+WASM, source-free bundle and pinned native ICU checks.
+
+### Synchronous proposal reconciliation
+
+The owner-bound reconciliation policy adds 95 actual TypeScript/SQLite cases
+for rejection ordering, stored fingerprint tombstones, merge/correction scope,
+subject witnesses and missing/null distinctions. Focused race and vet passed for
+reconciliation and assertions. Native tests cover savepoint ownership/rollback,
+expired publication and transaction readers, SQL failures, readiness propagation,
+and early rejection before malformed stored JSON is parsed.
+
+This decision policy performs no writes. It is not the full proposal command or
+graph admission. Its parity scope is typed inputs and valid assertion/proof
+records plus enumerated legacy date coercions, not arbitrary corrupt JSON or
+JavaScript object ToPrimitive behavior. Complete aggregate acceptance for this
+new slice is still pending.
+
+### Inner assertion proposal writes
+
+The inner writer composes real child transactions, admission, reconciliation,
+repository writes, lifecycle refresh and sanitization. Actual TypeScript fixtures
+contain nine scenarios and 47 traces. Go replays 41 proposal and three history
+operations against their recorded prestate, returns/errors and SQL state. Three
+external owner boundaries are explicitly setup rather than native lock/delete/
+recall implementations. Sequential core traces are additionally replayed. The
+fixture enforces 23 source/generator/lock hashes and pinned runtime metadata.
+
+Focused race/vet passed for assertionproposal, memoryservice and assertions.
+Concrete MemoryService tests verify SQL-failure rollback, revision bookkeeping,
+FTS/vector effects and real eligibility intent/head ACK. A superseded parent can
+retain a historically supported active child which is no longer currently
+applicable; this is preserved. Separate explicit source-unavailability setup
+exercises actual dependent purge and durable eligibility acknowledgement.
+
+These checks do not complete the outer typed knowledge/relation/commitment
+proposal command or the missing lock/delete/recall facade operations. Full
+aggregate/bundle/native-ICU acceptance of this new slice remains pending CI.

@@ -683,3 +683,17 @@ original trusted context available for the later graph write. Historical parent
 privacy is stricter than current OR applicability: recalling any source retained
 in a captured historical record invalidates that exact binding. No implicit
 latest-reference substitution is performed.
+
+### Inner assertion writer
+
+The private MemoryService assertion adapter opens a real nested revision child
+and composes trusted source admission, synchronous reconciliation, repository
+mutations and existing lifecycle owners. Exact corroboration may add a proof;
+semantic merging preserves the existing record identity and metadata. Returning
+to a prior statement allocates a new UUID and retains the old historical row.
+Correction errors roll back vectors, records and revision bookkeeping together.
+
+The adapter is intentionally private until typed graph admission and the outer
+proposal transaction are complete. The public bot/HTTP write path is not silently
+routed through this partial composition. Historical support retention is distinct
+from current applicability and from actual privacy withdrawal.

@@ -772,3 +772,36 @@ commit CI validation. This checkpoint does not claim the unrun local tail passed
 Offline quarantined recovered-history adapters, application-wide runtime/REST
 composition and production startup remain unfinished. The explicit runtime recall
 binding is exercised by integration tests but is not yet wired into the command.
+
+## Stage35: native installation owner and genuine vector distribution
+
+The `installation` package now opens a real writable SQLite installation with
+independent recovery authority enrollment, source Store migrations and automatic
+eligibility baseline before returning the owner. Enrollment reserves the main
+transaction before creating the independent authority and retains authority after
+later failures. Existing legacy installations need explicit enrollment; startup
+does not repair mismatched heads or silently reconcile durable ACK gaps.
+
+The `bundled_sqlite_vec` profile distributes the pinned official Linux/amd64 glibc
+sqlite-vec 0.1.9 binary, with hash-checked private extraction and reachable runtime
+license/provenance files. Every replacement physical connection loads the genuine
+extension, foreign keys, WAL and usage functions. Closing an owner removes only
+its own extraction. There is no Node lookup, runtime download or fake vector table.
+Other targets fail explicitly. TMPDIR must permit loading shared libraries.
+
+`make installation-bundle-check` covers extraction, real vector operations,
+physical connection replacement, restart and a source-free executable proof.
+`make native-installation-check` requires pinned ICU and executes named-zone usage
+cases rather than accepting skipped coverage. Default builds support UTC/fixed
+zones; named-zone behavior must not use host timezone data as a fallback.
+Actual TypeScript source oracles cover five migration/baseline scenarios and six
+usage-time inputs. The first recovered-environment three-package race passed;
+final-tree warm race/vet, source-free runtime and both source-oracle checks also
+passed. The exact commit's full CI, including mandatory native ICU, remains pending. No lost-environment execution result is inherited.
+
+This is an installation owner, not completed production command/HTTP/Engine
+composition. Its single writer pool is not the future independent HTTP query
+pool. Provider completion, offline recovered-history composition, application
+startup wiring and remaining authority/publication performance work are still
+open. Long-history audit cost and slow-client publication contention are not
+claimed solved by this checkpoint.

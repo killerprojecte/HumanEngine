@@ -14,6 +14,8 @@ build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
 differential: build
+	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/installation/testdata/oracle.mts --check
+	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/installation/testdata/usage-oracle.mts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-manual-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-privacy-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/internal/identityprivacy/testdata/generate-source-oracle.mjs --check
@@ -128,3 +130,13 @@ test-sqlite-profile:
 # Real guarded SQLite FTS operations without Node, compiler or source directory.
 test-projection-source-free:
 	./tests/projection-source-free.sh
+
+.PHONY: installation-bundle-check native-installation-check
+installation-bundle-check:
+	$(PYTHON) scripts/prepare-sqlite-vec.py --check
+	go test -race -tags sqlite_fts5,bundled_sqlite_vec ./internal/vectorasset ./internal/installation
+	sh tests/installation-source-free.sh
+
+native-installation-check: native-icu-build
+	. "$(ICU_WORK_DIR)/env.sh" && HUMANENGINE_TEST_REQUIRE_ICU=1 go test -race -tags sqlite_fts5,bundled_sqlite_vec,humanengine_icu ./internal/installation ./internal/vectorasset
+	. "$(ICU_WORK_DIR)/env.sh" && HUMANENGINE_EXTRA_BUILD_TAGS=humanengine_icu sh tests/installation-source-free.sh

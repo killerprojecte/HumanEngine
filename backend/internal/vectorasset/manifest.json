@@ -1,0 +1,14 @@
+{
+  "version": "0.1.9",
+  "target": "linux/amd64",
+  "package": "sqlite-vec-linux-x64",
+  "packageVersion": "0.1.9",
+  "npmResolved": "https://registry.npmjs.org/sqlite-vec-linux-x64/-/sqlite-vec-linux-x64-0.1.9.tgz",
+  "npmIntegrity": "sha512-w3tCH8xK2finW8fQJ/m8uqKodXUZ9KAuAar2UIhz4BHILfpE0WM/MTGCRfa7RjYbrYim5Luk3guvMOGI7T7JQA==",
+  "binary": "data/linux-amd64/vec0.so",
+  "binarySize": 159816,
+  "binarySHA256": "5923730861b86c707cca5602b5f91092f9e52a46706dbc6e269fd4bb9c4498e8",
+  "upstreamLicenseExpression": "MIT OR Apache",
+  "redistributionLicense": "MIT",
+  "licenseSource": "https://github.com/asg017/sqlite-vec/blob/v0.1.9/LICENSE-MIT"
+}

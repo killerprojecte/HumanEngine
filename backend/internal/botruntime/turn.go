@@ -49,6 +49,8 @@ func (r *Runtime) execute(t *turn) {
 			if t.context.root.Aborted() {
 				t.result.Status = "cancelled"
 				t.result.Reason = "context_cancelled"
+			} else if t.context.Mode == "real" {
+				r.emitPluginEvent(obj("type", "runtime.error", "version", float64(1), "sceneId", t.context.Scene.ID, "turnId", t.context.TurnID, "code", "turn_failed"))
 			}
 		}
 		r.finish(t, issues)

@@ -116,6 +116,10 @@ type ModelFunc func(context.Context, ModelRequest, func(Completion, error))
 func (f ModelFunc) Start(c context.Context, r ModelRequest, s func(Completion, error)) { f(c, r, s) }
 
 type Extension struct {
+	RuntimeEvent func(*Object)
+	// CaptureToolResultGuards snapshots extension-owned result validity, not turn lifetime.
+	CaptureToolResultGuards func(*TurnContext) []*ToolResultGuard
+
 	// SentSequencers reserve only controlled bookkeeping alongside ACK publication.
 	SentSequencers        []*SentSequencer
 	SegmentSentSequencers []*SegmentSentSequencer
@@ -187,6 +191,7 @@ type TurnHandle struct {
 func (h *TurnHandle) Wait() TurnResult { <-h.Done; return *h.result }
 
 type Runtime struct {
+	pluginTyping                  *typingRegistration
 	observer                      atomic.Pointer[func(Event)]
 	work                          quiescence.Group
 	sequence                      atomic.Uint64
@@ -198,7 +203,7 @@ type Runtime struct {
 	adapters                      sync.Map   // string -> *Adapter, immutable registration identity
 	extensionMu                   sync.RWMutex
 	extensions                    []*Extension
-	hooks                         []Hook
+	hooks                         []registeredHook
 	cacheMu                       sync.Mutex
 	windows                       promptcache.Windows
 	boundaries                    promptcache.Boundaries
@@ -462,12 +467,40 @@ func (r *Runtime) AddExtension(e *Extension) func() {
 		})
 	}
 }
-func (r *Runtime) AddHook(h Hook) {
+
+// AddHook preserves the permanent-registration API for existing owners.
+func (r *Runtime) AddHook(h Hook) { r.RegisterHook(h) }
+
+type registeredHook struct {
+	Hook
+	identity *byte
+}
+
+// RegisterHook returns an idempotent removal capability for this exact
+// registration, not its display ID. A later registration with the same ID is
+// independent. Already admitted callbacks retain their plugin generation guard.
+func (r *Runtime) RegisterHook(h Hook) func() {
+	identity := new(byte)
 	r.extensionMu.Lock()
-	defer r.extensionMu.Unlock()
-	r.hooks = append(r.hooks, h)
+	r.hooks = append(r.hooks, registeredHook{Hook: h, identity: identity})
 	for i := len(r.hooks) - 1; i > 0 && r.hooks[i].Priority < r.hooks[i-1].Priority; i-- {
 		r.hooks[i], r.hooks[i-1] = r.hooks[i-1], r.hooks[i]
+	}
+	r.extensionMu.Unlock()
+	var once sync.Once
+	return func() {
+		once.Do(func() {
+			r.extensionMu.Lock()
+			defer r.extensionMu.Unlock()
+			for i, entry := range r.hooks {
+				if entry.identity == identity {
+					copy(r.hooks[i:], r.hooks[i+1:])
+					r.hooks[len(r.hooks)-1] = registeredHook{}
+					r.hooks = r.hooks[:len(r.hooks)-1]
+					break
+				}
+			}
+		})
 	}
 }
 

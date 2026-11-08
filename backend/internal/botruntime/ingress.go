@@ -144,6 +144,7 @@ func (r *Runtime) accept(s *sceneState, m *Object, schedule, received bool) (str
 	s.mu.Unlock()
 	if scene.Kind != "simulation" {
 		r.trace(Event{SceneID: scene.ID, Stage: "ingress", Status: "completed", Reason: "message_received"})
+		r.emitPluginEvent(obj("type", "message.received", "version", float64(1), "scene", sceneEventValue(scene), "message", m))
 	}
 	if get(m, "senderId") == "bot" {
 		return "", nil

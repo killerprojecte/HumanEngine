@@ -89,6 +89,8 @@ func (s *single) Next(context.Context) ([]byte, error) {
 // must be concurrency-safe when callers perform concurrent cache operations.
 type Validation func() (bool, error)
 type Owner struct {
+	// Retained is a native-only immutable adoption capability. It is never serialized.
+	Retained     any
 	Scope        string
 	SceneID      string
 	PluginID     string

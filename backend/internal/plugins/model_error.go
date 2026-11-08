@@ -19,6 +19,10 @@ type nodeProtocolFailure struct{ protocol *protocolFailure }
 
 func (*nodeProtocolFailure) Error() string { return "model_protocol_failure" }
 func nodeReplyError(reply nodeReply) error {
+	if reply.ConfigurationFailure {
+		return &V1ConfigurationError{}
+	}
+
 	if reply.ProtocolFailure != nil {
 		return &nodeProtocolFailure{protocol: reply.ProtocolFailure}
 	}
@@ -56,3 +60,8 @@ func ClassifyProtocolFailure(err error) (ProtocolFailureClassification, bool) {
 	}
 	return result, true
 }
+
+// V1ConfigurationError marks a failure of validation before setup, not plugin text.
+type V1ConfigurationError struct{}
+
+func (*V1ConfigurationError) Error() string { return "invalid_plugin_configuration" }

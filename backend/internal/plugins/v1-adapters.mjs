@@ -12,6 +12,7 @@ const adapterRPC = (
   operation,
   args,
   invocationId = adapterInvocation.getStore()?.id,
+  activation = adapterInvocation.getStore()?.activation ?? activationGeneration,
 ) => {
   const { port1, port2 } = new MessageChannel()
   const state = new Int32Array(new SharedArrayBuffer(4))
@@ -19,6 +20,7 @@ const adapterRPC = (
   parentPort.postMessage(
     {
       event: 'adapter_rpc',
+      activation,
       requestId,
       adapterId,
       operation,
@@ -46,21 +48,24 @@ const adapterRPC = (
 }
 const installV1Adapters = () => {
   const starts = []
+  const owner = activationSerial, signal = controller.signal, generation = activationGeneration
+  const guard = () => { if (owner !== activationSerial || signal.aborted || closing) throw Error("plugin_unloaded") }
   for (const { name, factory } of adapterDefinitions) {
     if (closing) throw Error('plugin_unloaded')
     const id = workerData.id + ':' + name
+    const ownedRPC = (id,operation,args) => { guard(); return adapterRPC(id,operation,args,undefined,generation) }
     let installed
     const ownedHandles = new Set()
     const remove = () => {
       const adapter = adapterInstances.get(id)
-      if (!adapter) return
+      if (!adapter || owner !== activationSerial) return
       adapterInstances.delete(id)
       for (const handle of ownedHandles) callbacks.delete(handle)
       for (let i = registrations.length - 1; i >= 0; i--)
         if (ownedHandles.has(registrations[i].handle)) registrations.splice(i, 1)
       // Cleanup is lease-owned, never tied to the invocation that failed.
       try {
-        adapterRPC(id, 'remove', [], null)
+        adapterRPC(id, 'remove', [], null, generation)
       } finally {
         adapter.dispose()
       }
@@ -77,6 +82,7 @@ const installV1Adapters = () => {
         }),
       {
         addAdapter(adapterId, adapter) {
+          guard()
           // Ownership starts when source gives us its wrapper, before any
           // fallible native install or handle registration. If installAdapter
           // throws before returning, this fallback still disposes exactly once.
@@ -98,29 +104,29 @@ const installV1Adapters = () => {
             () => adapter.status,
           )
           ownedHandles.add(handles.status)
-          adapterRPC(adapterId, 'install', [handles], null)
+          adapterRPC(adapterId, 'install', [handles], null, generation)
           ownedHandles.add(register('adapter', { name, handles }))
         },
         removeAdapter: remove,
         ingest(message, scene) {
-          adapterRPC(id, 'receive', [scene, message])
+          ownedRPC(id, 'receive', [scene, message])
         },
         edit(message, scene, change) {
-          return adapterRPC(id, 'edit', [scene, message, change])
+          return ownedRPC(id, 'edit', [scene, message, change])
         },
         recall(sceneId, messageId) {
-          adapterRPC(id, 'recall', [sceneId, messageId])
+          ownedRPC(id, 'recall', [sceneId, messageId])
         },
       },
       {
         recalled(sceneId, messageId) {
-          return adapterRPC(id, 'isRecalled', [sceneId, messageId])
+          return ownedRPC(id, 'isRecalled', [sceneId, messageId])
         },
       },
-      controller.signal,
+      signal,
       {
         media(assetId, sceneId) {
-          return adapterRPC(id, 'media', [assetId, sceneId])
+          return ownedRPC(id, 'media', [assetId, sceneId])
         },
       },
     )

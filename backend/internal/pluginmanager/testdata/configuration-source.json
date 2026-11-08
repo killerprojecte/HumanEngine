@@ -1,0 +1,17 @@
+{
+  "trace": [
+    "validate:1",
+    "validate:2",
+    "validate:3",
+    "validate:4",
+    "prepare:4",
+    "validate:5",
+    "prepare:5",
+    "validate:6"
+  ],
+  "config": {
+    "who": "b",
+    "count": 5
+  },
+  "action": 6
+}

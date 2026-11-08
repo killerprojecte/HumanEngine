@@ -22,6 +22,7 @@ let workerSource = ''
 let modelProtocolSDK = ''
 let modelProtocolModuleURLs = []
 const protocolFailures = new WeakMap()
+const configurationFailures = new WeakSet()
 const failureMessage = (error) => {
   try {
     if (typeof error === 'string' && error) return error
@@ -44,6 +45,7 @@ const request = (plugin, message) =>
       if (reply.failed) {
         const failure = Error(failureMessage(reply.error))
         if (reply.protocolFailure) protocolFailures.set(failure, reply.protocolFailure)
+        if (reply.configurationFailure) configurationFailures.add(failure)
         reject(failure)
       } else resolve(reply.result)
     }
@@ -84,7 +86,12 @@ for await (const line of createInterface({
         send({ id: message.id, result: true })
         return
       }
-      if (message.op === 'adapter_response') {
+      if (message.op === 'tool_response' || message.op === 'tool_stream_abort') {
+ const plugin = plugins.get(message.plugin)
+ if (plugin && !plugin.exited) plugin.worker.postMessage(message)
+ return
+ }
+ if (message.op === 'adapter_response') {
         settleAdapterRequest(message.plugin + '/' + message.requestId, message)
         return
       }
@@ -100,14 +107,17 @@ for await (const line of createInterface({
       }
       if (message.op === 'enable') {
         if (plugins.has(message.plugin)) throw Error('plugin_already_loaded')
-        const requestId = message.requestId ?? randomUUID()
+        const requestId = message.requestId || randomUUID()
         const worker = new Worker(workerSource, {
           eval: true,
           workerData: {
             id: message.pluginId,
+            activation: message.activation,
             path: message.path,
             config: message.config,
             requestId,
+            deferAdapterStart: message.deferAdapterStart === true,
+            managementOnly: message.managementOnly === true,
             modelProtocolSDK,
             modelProtocolModuleURLs,
           },
@@ -117,7 +127,12 @@ for await (const line of createInterface({
         worker.stdout.pipe(process.stderr)
         worker.stderr.pipe(process.stderr)
         worker.on('message', (event) => {
-          if (event.event === 'adapter_rpc') {
+          if(event.event==='module_ready')send({event:'module_ready',plugin:message.plugin})
+          if (event.event === 'tool_rpc') {
+ if (plugin.closing) plugin.worker.postMessage({op:'tool_response',requestId:event.requestId,failed:true,error:'plugin_disabled'})
+ else send({...event,plugin:message.plugin})
+ }
+ if (event.event === 'adapter_rpc') {
             const key = message.plugin + '/' + event.requestId
             adapterRequests.set(key, { ...event, plugin: message.plugin })
             // Cleanup is allowed after closing; all other native callbacks are fenced.
@@ -144,7 +159,8 @@ for await (const line of createInterface({
         })
         const plugin = {
           worker,
-          closing: false,
+          activation: 0,
+          closing: message.managementOnly === true,
           exited: false,
           requests: new Map(),
         }
@@ -159,7 +175,7 @@ for await (const line of createInterface({
           const ready = await new Promise((resolve, reject) => {
             worker.on('message', (m) => {
               if (m.ready) resolve(m)
-              if (m.startup && m.failed) reject(Error(failureMessage(m.error)))
+              if (m.startup && m.failed) {const error=Error(failureMessage(m.error));if(m.configurationFailure)configurationFailures.add(error);reject(error)}
             })
             worker.once('error', reject)
             worker.once('exit', () => reject(Error('plugin_worker_exited')))
@@ -176,7 +192,7 @@ for await (const line of createInterface({
           // race its disposal acknowledgement with a second termination. The
           // source startup path can report its failure before a concurrently
           // waiting dispose request has posted the shared cleanup result.
-          if (!plugin.closing) {
+          if (!plugin.closing && !message.deferAdapterStart) {
             plugin.closing = true
             if (plugins.get(message.plugin) === plugin) plugins.delete(message.plugin)
             cancelAdapterRequests(message.plugin)
@@ -214,7 +230,7 @@ for await (const line of createInterface({
         send({ id: message.id, result: true })
         return
       }
-      if (message.op === 'disable') {
+      if (message.op === 'disable' || message.op === 'retire') {
         if (!plugin) {
           send({ id: message.id, result: true })
           return
@@ -225,6 +241,7 @@ for await (const line of createInterface({
           const disposal = await request(plugin, {
             id: message.id,
             op: 'dispose',
+            keepConfigurations: message.op === 'retire',
           })
           for (const error of disposal.errors ?? [])
             process.stderr.write(
@@ -237,8 +254,10 @@ for await (const line of createInterface({
               }) + '\n',
             )
         } finally {
-          plugins.delete(message.plugin)
-          await plugin.worker.terminate()
+          if (message.op !== 'retire') {
+            plugins.delete(message.plugin)
+            await plugin.worker.terminate()
+          }
         }
         send({ id: message.id, result: true })
         return
@@ -251,7 +270,15 @@ for await (const line of createInterface({
         process.stdin.destroy()
         return
       }
-      if (!plugin || plugin.closing) throw Error('plugin_not_loaded')
+      if(message.op==='reactivate'){
+       if(!plugin||!plugin.closing)throw Error('plugin_module_not_quiescent')
+       const activation=++plugin.activation
+       plugin.closing=false
+       message.requestId ||= randomUUID()
+       try{send({id:message.id,result:await request(plugin,message)})}catch(error){if(plugin.activation===activation)plugin.closing=true;throw error}
+       return
+      }
+      if (!plugin || (plugin.closing && !(message.op === 'inspect_plugin' && (['configuration_validate','configuration_prepare','configuration_release'].includes(message.input?.operation)||(message.input?.operation==='configuration_validate_first'&&message.input.currentModule===true))))) throw Error('plugin_not_loaded')
       send({ id: message.id, result: await request(plugin, message) })
     } catch (error) {
       send({
@@ -259,6 +286,7 @@ for await (const line of createInterface({
         failed: true,
         error: failureMessage(error),
         protocolFailure: protocolFailures.get(error),
+ configurationFailure:configurationFailures.has(error),
       })
     }
   })()

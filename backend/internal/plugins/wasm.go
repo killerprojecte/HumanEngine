@@ -140,11 +140,33 @@ func (h *WASMHost) Loaded(id string) bool {
 		return false
 	}
 }
-func (h *WASMHost) Call(ctx context.Context, id string, input []byte) (output []byte, resultErr error) {
+
+// BindCall captures an instance capability, not a movable plugin ID.
+// A retained callback cannot invoke or cancel a replacement guest.
+func (h *WASMHost) BindCall(id string) (func(context.Context, []byte) ([]byte, error), error) {
 	h.mu.Lock()
 	instance := h.instances[id]
+	valid := !h.closed && instance != nil && instance.stopped.Err() == nil
 	h.mu.Unlock()
-	if instance == nil {
+	if !valid {
+		return nil, ErrNotLoaded
+	}
+	return func(ctx context.Context, input []byte) ([]byte, error) {
+		return h.callInstance(ctx, id, instance, input)
+	}, nil
+}
+func (h *WASMHost) Call(ctx context.Context, id string, input []byte) ([]byte, error) {
+	return h.callInstance(ctx, id, nil, input)
+}
+func (h *WASMHost) callInstance(ctx context.Context, id string, expected *wasmInstance, input []byte) (output []byte, resultErr error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	h.mu.Lock()
+	instance := h.instances[id]
+	valid := !h.closed && instance != nil && (expected == nil || expected == instance)
+	h.mu.Unlock()
+	if !valid {
 		return nil, ErrNotLoaded
 	}
 	select {
@@ -165,6 +187,9 @@ func (h *WASMHost) Call(ctx context.Context, id string, input []byte) (output []
 	case <-instance.calls:
 	}
 	defer func() { instance.calls <- struct{}{} }()
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if instance.stopped.Err() != nil || instance.module.IsClosed() {
 		return nil, ErrNotLoaded
 	}

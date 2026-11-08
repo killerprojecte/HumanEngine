@@ -1,0 +1,49 @@
+[
+  {
+    "ordering": "enable-then-configure",
+    "trace": [
+      "validate:1",
+      "validate:2",
+      "prepare:2",
+      "validate:3",
+      "setup:3"
+    ],
+    "outcomes": [
+      {
+        "status": "rejected",
+        "code": "plugin_disabled"
+      },
+      {
+        "status": "fulfilled"
+      }
+    ],
+    "config": {
+      "who": "configured",
+      "count": 2
+    },
+    "action": 3
+  },
+  {
+    "ordering": "configure-then-enable",
+    "trace": [
+      "validate:1",
+      "validate:2",
+      "prepare:2",
+      "validate:3",
+      "setup:3"
+    ],
+    "outcomes": [
+      {
+        "status": "fulfilled"
+      },
+      {
+        "status": "fulfilled"
+      }
+    ],
+    "config": {
+      "who": "configured",
+      "count": 2
+    },
+    "action": 3
+  }
+]

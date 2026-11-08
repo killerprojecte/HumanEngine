@@ -70,21 +70,26 @@ const failureMessage = (error) => {
   }
   return 'plugin_failure'
 }
-const controller = new AbortController(),
-  cleanups = [],
+let controller = new AbortController()
+let activationSerial = 0
+const cleanups = [],
   callbacks = new Map(),
   invocations = new Map(),
   pendingContinuations = new Map(),
   continuations = new Map(),
   registrations = [],
   protocols = []
+let setupConfigurationFailed = false
+let activationGeneration=workerData.activation
+let activePlugin
 let sequence = 0,
   closing = false,
   disposing
-const dispose = (reason) => {
+const dispose = (reason, keepConfigurations = false) => {
   if (disposing) return disposing
   closing = true
   callbacks.clear()
+  if (!keepConfigurations) pluginConfigurationOperations.clear()
   pendingContinuations.clear()
   continuations.clear()
   // Publish the promise before abort listeners resume setup. Both paths share it.
@@ -118,8 +123,72 @@ const register = (kind, definition, handler, receiver) => {
   registrations.push({ ...metadata, kind, handle })
   return handle
 }
+const nativeToolRequests = new Map()
+let nativeToolSequence = 0
+const toolRPC = (invocationId, signal, operation, args) => new Promise((resolve,reject) => {
+ if(signal.aborted || closing) { reject(Error('plugin_disabled')); return }
+ // Fail non-JSON payloads in this invocation, never in the shared control host.
+ const wireArgs = JSON.parse(JSON.stringify(args))
+ const requestId = `tool:${++nativeToolSequence}`
+ const cancel = () => { nativeToolRequests.delete(requestId); reject(Error('plugin_disabled')) }
+ const settle = (reply) => { signal.removeEventListener('abort',cancel); reply.failed ? reject(Error(reply.error)) : resolve(reply.result) }
+ nativeToolRequests.set(requestId,settle)
+ signal.addEventListener('abort',cancel,{once:true})
+ parentPort.postMessage({event:'tool_rpc',activation:activationGeneration,requestId,invocationId,operation,args:wireArgs})
+})
+const toolStreams = new Map()
+const cacheToolResult = async (invocationId, signal, source, options = {}) => {
+ const token = `stream:${++nativeToolSequence}`
+ const controller = new AbortController()
+ const lifetime = AbortSignal.any([signal,controller.signal])
+ toolStreams.set(token,controller)
+ let iterator, completed = false
+ try {
+  await toolRPC(invocationId,lifetime,'cache_start',[token,{...options,encoding:options.encoding ?? (typeof source === 'string' ? 'utf8' : 'base64')}])
+  const chunks = typeof source === 'string' || source instanceof Uint8Array ? [typeof source === 'string' ? Buffer.from(source) : source] : source
+  iterator = Symbol.asyncIterator in chunks ? chunks[Symbol.asyncIterator]() : chunks[Symbol.iterator]()
+  for (;;) {
+   const item = await new Promise((resolve,reject) => {
+    const abort = () => reject(Error('tool_result_cancelled'))
+    lifetime.addEventListener('abort',abort,{once:true})
+    if(lifetime.aborted) {lifetime.removeEventListener('abort',abort);abort();return}
+    Promise.resolve().then(()=>{lifetime.throwIfAborted();return iterator.next()}).then(resolve,reject).finally(()=>lifetime.removeEventListener('abort',abort)).catch(()=>{})
+   })
+   if(item.done) {completed=true;break}
+   if(!(item.value instanceof Uint8Array)) throw Error('invalid_tool_result_chunk')
+   await toolRPC(invocationId,lifetime,'cache_chunk',[token,Buffer.from(item.value).toString('base64')])
+  }
+  return await toolRPC(invocationId,lifetime,'cache_finish',[token])
+ } finally {
+  toolStreams.delete(token)
+  if(!completed) {
+   try {if(source && typeof source === 'object' && typeof source.destroy === 'function') source.destroy()} catch {}
+   try {void Promise.resolve(iterator?.return?.()).catch(()=>{})} catch {}
+   try {void toolRPC(invocationId,signal,'cache_abort',[token]).catch(()=>{})} catch {}
+  }
+ }
+}
+let pendingAdapterStarts = null
+const startRegisteredAdapters = async () => {
+ if (!pendingAdapterStarts) throw Error('plugin_adapters_already_started')
+ const starts = pendingAdapterStarts
+ const owner = activationSerial, signal = controller.signal
+ pendingAdapterStarts = null
+ for (const start of starts) {
+  if (closing || owner !== activationSerial || signal.aborted) throw Error('plugin_unloaded')
+  await untilAbort(start(), AbortSignal.any([signal, AbortSignal.timeout(30000)]))
+  if (closing || owner !== activationSerial || signal.aborted) throw Error('plugin_unloaded')
+ }
+}
 parentPort.on('message', async (message) => {
   try {
+    if (message.op === 'tool_stream_abort') {toolStreams.get(message.stream)?.abort('tool_result_cancelled');return}
+    if (message.op === 'tool_response') {
+      const settle = nativeToolRequests.get(message.requestId)
+      nativeToolRequests.delete(message.requestId)
+      settle?.(message)
+      return
+    }
     if (message.op === 'cancel_invoke') {
       invocations.get(message.invocationId)?.abort('caller_cancelled')
       invocations.delete(message.invocationId)
@@ -142,14 +211,31 @@ parentPort.on('message', async (message) => {
       return
     }
     if (message.op === 'dispose') {
-      const errors = await dispose('plugin_disabled')
+      const errors = await dispose('plugin_disabled',message.keepConfigurations === true)
       parentPort.postMessage({
         id: message.id,
         result: { disposed: true, errors },
       })
       return
     }
-    if (closing) throw Error('plugin_unloaded')
+    if(message.op==='reactivate'){
+     if(!closing||pluginConfigurationOperations.size)throw Error('plugin_module_not_quiescent')
+     const result=await activateModule(message.config,message.requestId,true,message.activation)
+     parentPort.postMessage({id:message.id,result})
+     return
+    }
+    if (closing && !(message.op === 'inspect_plugin' && ((['configuration_validate','configuration_prepare','configuration_release'].includes(message.input?.operation) && pluginConfigurationOperations.has(message.input.token)) || (message.input?.operation==='configuration_validate_first'&&message.input.currentModule===true)))) throw Error('plugin_unloaded')
+    if (message.op === 'abort_plugin') {controller.abort('plugin_reconfigured');parentPort.postMessage({id:message.id,result:true});return}
+    if (message.op === 'start_adapters') {
+      await startRegisteredAdapters()
+      if (closing || controller.signal.aborted) throw Error('plugin_unloaded')
+      parentPort.postMessage({id:message.id,result:true})
+      return
+    }
+    if (message.op === 'inspect_plugin') {
+      parentPort.postMessage({id:message.id,result:inspectPluginConfiguration(activePlugin,message.input)})
+      return
+    }
     if (message.op === 'claim_continuation') {
       const pending = pendingContinuations.get(message.invocationId)
       if (!pending || pending.modelId !== message.modelId || pending.handle !== message.handle)
@@ -187,6 +273,7 @@ parentPort.on('message', async (message) => {
           dependencies: new Set(context.dependencies ?? []),
           validations: [],
           signal,
+          ...(callback.kind === 'tool' && message.toolServices ? {send: (input) => toolRPC(message.id, signal, 'send', [input]),cacheResult:(source,options)=>cacheToolResult(message.id,signal,source,options)} : {}),
         }
       }
       if (callback.kind === 'adapterMethod') {
@@ -213,12 +300,13 @@ parentPort.on('message', async (message) => {
         }
         args[0] = freeze(args[0])
       }
+      if (callback.kind === 'tool' && message.toolServices) validateConfig(args[0], callback.receiver.inputSchema)
       let result
       try {
         // AsyncLocalStorage follows source-owned awaits, including history's
         // normalization/tombstone callbacks, without contaminating another call
         // or transport ingress scheduled outside this invocation.
-        result = await adapterInvocation.run({ id: message.id }, () =>
+        result = await adapterInvocation.run({ id: message.id, activation: activationGeneration }, () =>
           Reflect.apply(callback.handler, callback.receiver, args),
         )
       } catch (error) {
@@ -243,6 +331,7 @@ parentPort.on('message', async (message) => {
         })
         return
       }
+      if (callback.kind === 'tool' && message.toolServices && callback.receiver.outputSchema) validateConfig(result,callback.receiver.outputSchema)
       // The source send wrapper owns settlement and returns an authoritative
       // receipt even when its transport synchronously aborts while settling.
       if (signal.aborted && !(callback.kind === 'adapterMethod' && callback.operation === 'send'))
@@ -292,30 +381,46 @@ parentPort.on('message', async (message) => {
       id: message.id,
       failed: true,
       error: failureMessage(error),
+      configurationFailure: message.op === 'reactivate' && setupConfigurationFailed,
     })
   }
 })
 
-try {
-  const loaded = await import(pathToFileURL(workerData.path).href)
-  const plugin = loaded.default ?? loaded.plugin
-  if (!plugin?.manifest || typeof plugin.setup !== 'function') throw Error('invalid_plugin_module')
-  if (plugin.manifest.id !== workerData.id) throw Error('plugin_identity_mismatch')
-  if (!/^[a-z0-9-]+$/.test(plugin.manifest.id)) throw Error('invalid_plugin_id')
-  const config = workerData.config
+async function activateModule(config,requestId,deferAdapterStart,generation=workerData.activation){
+ activationGeneration=generation
+ const plugin=activePlugin
+ const activation=++activationSerial
+ controller=new AbortController()
+ const setupController=controller
+ closing=false;disposing=undefined;setupConfigurationFailed=false
+ cleanups.length=0;callbacks.clear();registrations.length=0;protocols.length=0
+ adapterDefinitions.length=0;adapterInstances.clear()
+ pendingContinuations.clear();continuations.clear()
+ try {
   // Like the legacy manager, normalization validates but does not replace stored config.
   // Its separate store reads also isolate in-place validator mutations from setup.
   const validationConfig = structuredClone(config)
+  try {
   const normalized = plugin.validateConfiguration?.(validationConfig)
   validateConfig(normalized ?? validationConfig, plugin.manifest.configSchema)
+  } catch (error) {setupConfigurationFailed = true;throw error}
   const context = {
-    requestId: workerData.requestId,
+    requestId,
     config,
-    signal: controller.signal,
-    registerTool: (tool) => register('tool', tool, tool.execute),
+    signal: setupController.signal,
+    registerTool: (tool) => {
+      if (!tool.name.startsWith(`${workerData.id}.`) || registrations.some(r => r.kind === 'tool' && r.name === tool.name)) throw Error('invalid_plugin_tool')
+      return register('tool', tool, tool.execute)
+    },
     beforeSend: (hook) => register('sendHook', hook, hook.handler),
-    registerAdminPage: (page) => register('page', page),
-    registerAdminAction: (name, handler) => register('action', { name }, handler),
+    registerAdminPage: (page) => {
+      if (!/^[a-z0-9-]+$/.test(page.id) || !page.entry.startsWith(`/plugins/${workerData.id}/`) || page.entry.includes('..') || !/^\/[a-zA-Z0-9/_\-.]+$/.test(page.entry)) throw Error('invalid_admin_page')
+      return register('page', page)
+    },
+    registerAdminAction: (name, handler) => {
+      if (!/^[a-z0-9-]+$/.test(name)) throw Error('invalid_admin_action')
+      return register('action', { name }, handler)
+    },
     on: (type, handler) => register('event', { type }, handler),
     onDispose: (fn) => {
       if (!closing) cleanups.push(fn)
@@ -359,7 +464,19 @@ try {
       adapterDefinitions.push({ name, factory })
     },
   }
-  await plugin.setup(context)
+  const contextGuard=()=>{if(closing||activationSerial!==activation||setupController.signal.aborted)throw Error('plugin_unloaded')}
+  for(const name of ['registerTool','beforeSend','registerAdminPage','registerAdminAction','on','registerModelProtocol','registerAdapter']){
+   const original=context[name]
+   context[name]=(...args)=>{contextGuard();return original(...args)}
+  }
+  const onDispose=context.onDispose
+  context.onDispose=(fn)=>{
+   if(activationSerial!==activation||setupController.signal.aborted){
+    void Promise.resolve().then(fn).catch(()=>parentPort.postMessage({event:'lifecycle',code:'late_dispose_failed',requestId}))
+   }else onDispose(fn)
+  }
+  await untilAbort(Promise.resolve().then(()=>{contextGuard();return plugin.setup(context)}),setupController.signal)
+  contextGuard()
   if (closing) throw Error('plugin_unloaded')
   // The legacy manager validates and snapshots adapters only after setup resolves.
   for (const { name, label, protocol } of protocols) {
@@ -384,21 +501,27 @@ try {
         )
     register('modelProtocol', { name, label, handles })
   }
-  const adapterStarts = installV1Adapters()
-  for (const start of adapterStarts) {
-    await untilAbort(start(), AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]))
-    if (closing) throw Error('plugin_unloaded')
-  }
-  parentPort.postMessage({
-    ready: true,
-    manifest: { ...plugin.manifest, apiVersion: 1 },
-    registrations,
-  })
-} catch (error) {
-  await dispose('plugin_setup_failed')
-  parentPort.postMessage({
-    startup: true,
-    failed: true,
-    error: failureMessage(error),
-  })
+  pendingAdapterStarts = installV1Adapters()
+  if (!deferAdapterStart) await startRegisteredAdapters()
+
+  return {manifest:{...plugin.manifest,apiVersion:1},registrations}
+ }catch(error){
+  if(activationSerial===activation)await dispose('plugin_setup_failed',true)
+  throw error
+ }
+}
+try {
+ const loaded=await import(pathToFileURL(workerData.path).href)
+ activePlugin=loaded.default??loaded.plugin
+ if(!activePlugin?.manifest||typeof activePlugin.setup!=='function')throw Error('invalid_plugin_module')
+ if(activePlugin.manifest.id!==workerData.id)throw Error('plugin_identity_mismatch')
+ if(!/^[a-z0-9-]+$/.test(activePlugin.manifest.id))throw Error('invalid_plugin_id')
+ parentPort.postMessage({event:'module_ready'})
+ let result
+ if(workerData.managementOnly){closing=true;result={manifest:{...activePlugin.manifest,apiVersion:1},registrations:[]}}
+ else result=await activateModule(workerData.config,workerData.requestId,workerData.deferAdapterStart)
+ parentPort.postMessage({ready:true,...result})
+}catch(error){
+ await dispose('plugin_setup_failed',workerData.deferAdapterStart === true)
+ parentPort.postMessage({startup:true,configurationFailure:setupConfigurationFailed,failed:true,error:failureMessage(error)})
 }

@@ -66,7 +66,7 @@ func (h *V1Host) RegisteredAdapters() []AdapterMetadata {
 	}
 	leases := []*nodeLease{}
 	for _, lease := range h.enabled {
-		if !lease.closing && protocolProcessLive(lease) {
+		if !lease.closing && lease.adapterContext.Err() == nil && protocolProcessLive(lease) {
 			leases = append(leases, lease)
 		}
 	}
@@ -199,7 +199,7 @@ func (h *V1Host) adapterService(process *nodeProcess, r nodeReply) (any, error) 
 	h.lifecycle.Lock()
 	var lease *nodeLease
 	for _, entry := range h.enabled {
-		if entry.process == process && entry.key == r.Plugin {
+		if entry.process == process && entry.key == r.Plugin && entry.generation == r.Activation {
 			lease = entry
 			break
 		}
@@ -208,6 +208,18 @@ func (h *V1Host) adapterService(process *nodeProcess, r nodeReply) (any, error) 
 		h.lifecycle.Unlock()
 		return nil, ErrNotLoaded
 	}
+	// Removal after sealing is acknowledged without touching native owners;
+	// stopAdapters performs the exact-generation cleanup synchronously.
+	if lease.closing && r.Operation == "remove" {
+		h.lifecycle.Unlock()
+		return nil, nil
+	}
+	finish, admitted := lease.adapterWork.Start()
+	if !admitted {
+		h.lifecycle.Unlock()
+		return nil, ErrNotLoaded
+	}
+	defer finish()
 	var meta AdapterMetadata
 	found := false
 	for _, entry := range lease.adapters {

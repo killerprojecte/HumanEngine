@@ -1,0 +1,613 @@
+[
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {},
+    "preserved": {
+      "token": "secret"
+    },
+    "redacted": {},
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {
+      "token": null
+    },
+    "preserved": {
+      "token": "secret"
+    },
+    "redacted": {},
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {
+      "token": ""
+    },
+    "preserved": {
+      "token": ""
+    },
+    "redacted": {},
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {
+      "nested": {}
+    },
+    "preserved": {
+      "nested": {
+        "token": "nested-secret"
+      },
+      "token": "secret"
+    },
+    "redacted": {
+      "nested": {}
+    },
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {
+      "nested": null
+    },
+    "preserved": {
+      "nested": null,
+      "token": "secret"
+    },
+    "redacted": {
+      "nested": null
+    },
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {
+      "array": [
+        null,
+        "",
+        null
+      ]
+    },
+    "preserved": {
+      "array": [
+        "a",
+        "",
+        null
+      ],
+      "token": "secret"
+    },
+    "redacted": {
+      "array": [
+        null,
+        null,
+        null
+      ]
+    },
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {
+      "ordinary": "\ud800"
+    },
+    "preserved": {
+      "ordinary": "\ud800",
+      "token": "secret"
+    },
+    "redacted": {
+      "ordinary": "\ud800"
+    },
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true,
+          "default": "hidden"
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    },
+    "previous": {
+      "token": "secret",
+      "nested": {
+        "token": "nested-secret"
+      },
+      "array": [
+        "a",
+        "b"
+      ],
+      "ordinary": "old"
+    },
+    "input": {
+      "array": []
+    },
+    "preserved": {
+      "array": [],
+      "token": "secret"
+    },
+    "redacted": {
+      "array": []
+    },
+    "publicSchema": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "secret": true
+        },
+        "nested": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "secret": true
+            }
+          }
+        },
+        "array": {
+          "type": "array",
+          "items": {
+            "secret": true
+          }
+        },
+        "ordinary": {
+          "type": "string"
+        }
+      }
+    }
+  }
+]

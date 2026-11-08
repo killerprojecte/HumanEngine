@@ -229,7 +229,7 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 		}
 	}()
 	r.extensionMu.RLock()
-	hooks := append([]Hook{}, r.hooks...)
+	hooks := append([]registeredHook{}, r.hooks...)
 	r.extensionMu.RUnlock()
 	for _, hook := range hooks {
 		if valid, err := r.eligible(c); err != nil {
@@ -336,7 +336,7 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 		}()
 		return future
 	}}
-	typing := r.services.TypingDelay
+	typing := r.typingDelay()
 	if c.Mode == "simulation" {
 		typing = nil
 	}
@@ -346,6 +346,9 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 			return observed, failure
 		}
 		appendReceipt(receipt)
+		if receipt.Status == dispatch.Sent && c.Mode == "real" {
+			r.emitPluginEvent(obj("type", "message.sent", "version", float64(1), "scene", sceneEventValue(c.Scene), "turnId", c.TurnID, "segment", segmentsValue([]dispatch.Segment{segment})[0], "result", receiptsValue([]dispatch.Receipt{receipt})[0]))
+		}
 		s := t.state
 		var reservations []*SentReservation
 		var mediaReservations []*SegmentSentReservation

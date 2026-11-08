@@ -337,6 +337,13 @@ func TestV1AdapterDisableDuringNativeInstallOwnsCleanup(t *testing.T) {
 		t.Run(map[bool]string{false: "cooperative", true: "late-reply"}[late], func(t *testing.T) {
 			path, trace := installReviewPlugin(t, "install-cancelled", false, false)
 			entered, release, stopped := make(chan context.Context, 1), make(chan struct{}), make(chan struct{}, 2)
+			defer func() {
+				select {
+				case <-release:
+				default:
+					close(release)
+				}
+			}()
 			var h *V1Host
 			var lease *nodeLease
 			services := AdapterServices{Installed: func(ctx context.Context, _ AdapterMetadata) error {
@@ -356,7 +363,14 @@ func TestV1AdapterDisableDuringNativeInstallOwnsCleanup(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
-			defer h.Close(context.Background())
+			defer func() {
+				select {
+				case <-release:
+				default:
+					close(release)
+				}
+				h.Close(context.Background())
+			}()
 			enabled := make(chan error, 1)
 			go func() {
 				_, e := h.Enable(context.Background(), "install-cancelled", path, map[string]any{})
@@ -365,7 +379,25 @@ func TestV1AdapterDisableDuringNativeInstallOwnsCleanup(t *testing.T) {
 			native := awaitRPC(t, entered)
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			if e = h.Disable(ctx, "install-cancelled"); e != nil {
+			disabled := make(chan error, 1)
+			go func() { disabled <- h.Disable(ctx, "install-cancelled") }()
+			select {
+			case <-native.Done():
+			case <-ctx.Done():
+				t.Fatal("native install not cancelled")
+			}
+			if late {
+				select {
+				case e := <-disabled:
+					t.Fatal("Disable returned before physical Installed callback", e)
+				default:
+				}
+				if len(stopped) != 0 {
+					t.Fatal("stopped before pending native install returned")
+				}
+				close(release)
+			}
+			if e = awaitRPC(t, disabled); e != nil {
 				t.Fatal(e)
 			}
 			if native.Err() != context.Canceled {
@@ -379,12 +411,6 @@ func TestV1AdapterDisableDuringNativeInstallOwnsCleanup(t *testing.T) {
 				t.Fatal(string(b), e)
 			}
 			assertRetiredInstall(t, h, lease)
-			if late {
-				if len(stopped) != 0 {
-					t.Fatal("stopped before pending native install returned")
-				}
-				close(release)
-			}
 			awaitRPC(t, stopped)
 			if len(stopped) != 0 {
 				t.Fatal("duplicate native stop")

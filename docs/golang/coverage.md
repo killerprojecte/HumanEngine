@@ -252,4 +252,20 @@ exercises actual dependent purge and durable eligibility acknowledgement.
 
 These checks do not complete the outer typed knowledge/relation/commitment
 proposal command or the missing lock/delete/recall facade operations. Full
-aggregate/bundle/native-ICU acceptance of this new slice remains pending CI.
+aggregate/bundle/native-ICU acceptance of the inner assertion slice passed on
+remote commit abaa489e1d6fd84510e8d182c080826fcdc00376 (run 42444906014).
+
+### Knowledge graph admission
+
+68 actual TypeScript admission oracle cases cover planning, source-backed spans,
+exposure, conflict and duplicate handling, enabled/simulation gates and advancing
+clock ordering. The generator enforces its pinned runtime, UTC and source hashes.
+Synthetic seeded edge IDs cannot collide with generated IDs.
+
+Focused race tests and vet passed for knowledgeadmission, knowledge and
+commitments. Native tests exercise real owner composition, source availability,
+privacy, second-insert outer/nested rollback and trigger-induced transaction loss.
+The loss test observes the original rollback error and sql.ErrTxDone afterward;
+no staged or accidental autocommit write survives. These are functional checks,
+not isolated performance benchmarks. Full aggregate and bundle/native-ICU checks
+for this graph admission slice remain pending exact-commit CI.

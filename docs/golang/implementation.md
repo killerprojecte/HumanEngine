@@ -697,3 +697,19 @@ The adapter is intentionally private until typed graph admission and the outer
 proposal transaction are complete. The public bot/HTTP write path is not silently
 routed through this partial composition. Historical support retention is distinct
 from current applicability and from actual privacy withdrawal.
+
+### Knowledge graph admission composition
+
+`knowledgeadmission.AdmitInAssertionScope` borrows one active assertion child,
+constructs current assertion, commitment and trusted source readers from that
+same owner, and plans the complete graph batch before inserting it. Original
+trusted context and exact backing references are retained. Exposure, endpoint,
+proof, conflict, duplicate and existing auto-admission policy checks follow source
+ordering, including advancing clocks and UTF-16 span precedence.
+
+Source-caught planning errors remain indexed rejection results. Final storage
+writes propagate errors for outer rollback. A native transaction-loss latch
+prevents later accidental autocommit even when a planning failure was caught.
+Disabled and simulation paths check transaction ownership without constructing
+unused readers. This is an internal composition boundary, not the complete
+public proposal facade or production bot delivery path.

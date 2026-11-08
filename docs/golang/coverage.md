@@ -199,3 +199,20 @@ revoked by that subloan. Native tests exercise both publication and write owners
 Production scheduler/source subscriptions, full proposal and graph admission,
 requalification, final model-context construction and HTTP/runtime wiring remain
 unfinished. These domain checks do not establish a complete bot migration.
+
+### Trusted source admission (candidate)
+
+The next additive slice supplies strict proposal normalization, typed declaration
+preparation, trusted source evidence and subject attribution, concrete assertion
+authority admission, and knowledge source spans. Its 75 actual-source cases bind
+the generator and 20 source/runtime dependency hashes. Native tests use real
+revision checkpoints and exact parent references, not a permissive parent hook.
+The corrected recall cases distinguish surviving current OR provenance from an
+unavailable historical revision whose recorded source was recalled.
+
+This is not the complete write command: reconciliation, proposal persistence,
+graph admission and historical requalification are still being composed. The
+source evidence APIs accept normalized trusted internal inputs, not arbitrary
+public API objects. The initial focused run found a wrong new test expectation;
+the corrected three-package race and vet rerun passed. Full aggregate and bundle
+acceptance for this candidate has not yet run.

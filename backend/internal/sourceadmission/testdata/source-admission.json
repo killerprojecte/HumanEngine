@@ -1,0 +1,478 @@
+{
+  "node": "v24.22.1",
+  "timezone": "UTC",
+  "sources": {
+    "src/memory/write/source-admission.ts": "f7c775d7202660d7260a5915332993d6fbc871a48b6a7e7e1bafa5eba7f1ee74",
+    "src/memory/write/subject-attribution.ts": "d3cec07452a8529f12011a6c827bb3969da3f25109e6461b68f53f6903ad30bc",
+    "src/memory/knowledge/admission.ts": "8e643e8752ceef9b4c29c610dc107bf87c43815314cf4872569f577fdbeefa08",
+    "src/memory/knowledge/facade.ts": "fd21a4b59c6eb3de4359c8ab5524cfecb6b8fe69e406edcd996b0a1ca334926d",
+    "src/memory/knowledge/service.ts": "1ef4a9389557c9dbb90af6ace3421b2e8c5015f44d0c8156ea1acdd59ec3c389",
+    "src/memory/knowledge/qualification.ts": "98c464762fa12268dc4c36be47760cdb165184f90268ba84d99430a2138a84a5",
+    "src/memory/knowledge/contracts.ts": "db1e46e78512e50944bca63d0982919bd1e3055826ed13479533149887cff059",
+    "src/memory/learning/contracts.ts": "e0b9f09ed64a09bc33b095bab10b1ce208960c1a6ca22a8b1bc446bed9dce48b",
+    "src/memory/learning/source-evidence.ts": "7b1a764f081ddb298e4ae601979981375207705241748994d8a6c3c660027ebd",
+    "src/memory/domain/proofs.ts": "7750cf6113c5d61713ab408c43744ee5c74d0a5fadb9eb85902264773f160708",
+    "src/memory/domain/events.ts": "0fb9fee44f86ba46d78dee632e053ebfb20227056f63c993262279ff4e24f288",
+    "src/memory/domain/record-values.ts": "d2022164f6fa4d36f4a8993b87f784c6f959a69c48270ec1da4786a3ee375dfc",
+    "src/memory/read/assertion-authority.ts": "8dfb7c1fd0d34945e8b8c3c0db18469e63e8b169c3f3fd2bb577067edbbf3ecc",
+    "src/memory/read/domain-source-events.ts": "503191095057564078f5fc2ba337de6682e5798ee6cbf9904547f96d1422e273",
+    "src/memory/read/bound-parents.ts": "b572bc9953365057e5cbb728638ed0a4adf0316a84b1ffd9e127dd1e8a01aa78",
+    "src/memory/read/proof-parents.ts": "73fbf447426320027d2ff2c6c1a52cc356de839f4dc7d6f924ae70060bd976bb",
+    "src/memory/read/provenance.ts": "398a6eadd56d274e0c7ebca33dc09487d055f8ea6c78e27b1052f9078782ac3f",
+    "src/memory/read/applicability.ts": "ea853d23623ce79118856fde2e93e85578187927d19db746e15cd6940c4eb8c4",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4",
+    "backend/tests/generate-source-admission-fixtures.mjs": "2485a08a06d8843a3190b54b6419cd1f16f7c903e0535ded42c4b92fe400de34"
+  },
+  "cases": [
+    {
+      "op": "prepare",
+      "name": "declaration-source-only",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}],\"exposedKnowledgeEntities\":[{\"entityId\":\"e\",\"backingRef\":{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}],\"exposedKnowledgeEntities\":[{\"entityId\":\"e\",\"backingRef\":{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}}]},\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "declaration-contextual",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}],\"exposedKnowledgeEntities\":[{\"entityId\":\"e\",\"backingRef\":{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[],\"dependencyParentReferences\":[],\"exposedKnowledgeEntities\":[{\"entityId\":\"e\",\"backingRef\":{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}}],\"internalDeclaration\":\"knowledge_declaration\"},\"candidate\":{\"content\":\"Model-extracted structured knowledge declaration; reference 5d4c7c3066035b6ec766c074ca14939932424e18b312eef501a91df1c36aba1c. Not independently verified.\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "declaration-undefined",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}],\"exposedKnowledgeEntities\":[{\"entityId\":\"e\",\"backingRef\":{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}],\"exposedKnowledgeEntities\":[{\"entityId\":\"e\",\"backingRef\":{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}}]},\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "empty",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_proposal_invalid\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "many",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_proposal_invalid\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "mixed",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}],\"commitment\":{}}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_mixed_write_denied\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "relations",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}],\"relations\":[{}]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_mixed_write_denied\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "merge",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}],\"mergeIntoId\":\"x\"}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_mixed_write_denied\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "supersede",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}],\"supersedesId\":\"x\"}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_mixed_write_denied\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "reported",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"quoted\"}]}]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_stance_mismatch\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "qualified",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"reported\"}]}],\"epistemicKind\":\"reported\"}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"reported\"}]}],\"epistemicKind\":\"reported\"}}"
+    },
+    {
+      "op": "prepare",
+      "name": "unknown",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}],\"extra\":true}]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_proposal_invalid\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "astralLimit",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[],\"dependencyParentReferences\":[],\"internalDeclaration\":\"knowledge_declaration\"},\"candidate\":{\"content\":\"Model-extracted structured knowledge declaration; reference d7a789b8e5648db83fba45abcc819081a2db5089c9d78cfd096566d994ca04b2. Not independently verified.\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "reorder",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}],\"conditions\":[],\"temporalScope\":\"current\",\"modality\":\"asserted\",\"polarity\":\"positive\",\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"predicate\":\"uses_tool\",\"registryVersion\":1}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[],\"dependencyParentReferences\":[],\"internalDeclaration\":\"knowledge_declaration\"},\"candidate\":{\"content\":\"Model-extracted structured knowledge declaration; reference d9db893dbc7597db9e7135e8cf1fc9d12deb658692860b315b6db0f2af08789e. Not independently verified.\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "badProperty",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}],\"property\":\"count\"}]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_proposal_invalid\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "backward",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}],\"validFrom\":\"2026-02-02T00:00:00Z\",\"validUntil\":\"2026-02-01T00:00:00Z\"}]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_proposal_invalid\"}"
+    },
+    {
+      "op": "prepare",
+      "name": "literal",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"has_property\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"literal\",\"valueType\":\"number\",\"value\":4,\"unit\":null},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}],\"property\":\"count\"}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[],\"dependencyParentReferences\":[],\"internalDeclaration\":\"knowledge_declaration\"},\"candidate\":{\"content\":\"Model-extracted structured knowledge declaration; reference 1fee547a6d4094bd0a6c965897ab1335395dd053e28b1cdf27f03b8e44ccce06. Not independently verified.\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"has_property\",\"property\":\"count\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"literal\",\"valueType\":\"number\",\"value\":4,\"unit\":null},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "existing",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"existing\",\"entityId\":\"e\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[],\"dependencyParentReferences\":[],\"internalDeclaration\":\"knowledge_declaration\"},\"candidate\":{\"content\":\"Model-extracted structured knowledge declaration; reference 0ce5b3f5262786d2c3d5a23302bdbdfc719f54ff7007eef6cd6de96fbd92cfdc. Not independently verified.\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"existing\",\"entityId\":\"e\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "endBeforeStart",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":9,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":true,\"context\":{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[],\"dependencyParentReferences\":[],\"internalDeclaration\":\"knowledge_declaration\"},\"candidate\":{\"content\":\"Model-extracted structured knowledge declaration; reference 585477f5a331a33b339ee50cd56d9f978c033512576fcd6179739da88435d978. Not independently verified.\",\"kind\":\"claim\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":9,\"end\":1,\"stance\":\"self\"}]}]}}"
+    },
+    {
+      "op": "prepare",
+      "name": "wrongRange",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"knowledge\":[{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":4096,\"start\":0,\"end\":1,\"stance\":\"self\"}]}]}]",
+      "expected": "{\"ok\":false,\"reason\":\"knowledge_proposal_invalid\"}"
+    },
+    {
+      "op": "subject",
+      "name": "self",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]}"
+    },
+    {
+      "op": "subject",
+      "name": "legacy",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"personId\":\"p\"}]",
+      "expected": "{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"legacy_sender\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]}"
+    },
+    {
+      "op": "subject",
+      "name": "unresolved",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"unresolved\"}}]",
+      "expected": "{\"ok\":true,\"kind\":\"claim\",\"witness\":{\"kind\":\"unresolved\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]}"
+    },
+    {
+      "op": "subject",
+      "name": "mentioned",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"mentioned\",\"sourceMessageId\":\"m\",\"personId\":\"q\",\"mentionPartIndex\":2}}]",
+      "expected": "{\"ok\":true,\"personId\":\"q\",\"kind\":\"claim\",\"epistemicKind\":\"reported\",\"witness\":{\"kind\":\"mentioned\",\"personId\":\"q\",\"sourceMessageId\":\"m\",\"mentionPartIndex\":2},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]}"
+    },
+    {
+      "op": "subject",
+      "name": "mentionWrong",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"mentioned\",\"sourceMessageId\":\"m\",\"personId\":\"q\",\"mentionPartIndex\":0}}]",
+      "expected": "{\"ok\":false,\"reason\":\"subject_mention_not_witnessed\"}"
+    },
+    {
+      "op": "subject",
+      "name": "mismatch",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"q\"}]",
+      "expected": "{\"ok\":false,\"reason\":\"subject_person_mismatch\"}"
+    },
+    {
+      "op": "subject",
+      "name": "noSource",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"ok\":false,\"reason\":\"invalid_source_evidence\"}"
+    },
+    {
+      "op": "subject",
+      "name": "badTime",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"occurredAt\":\"2026-02-30T00:00:00Z\"}]",
+      "expected": "{\"ok\":false,\"reason\":\"invalid_subject_time\"}"
+    },
+    {
+      "op": "subject",
+      "name": "offset",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"occurredAt\":\"2026-02-28T00:00:00+23:59\"}]",
+      "expected": "{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]}"
+    },
+    {
+      "op": "subject",
+      "name": "sourceNotCited",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"other\"}}]",
+      "expected": "{\"ok\":false,\"reason\":\"subject_source_not_cited\"}"
+    },
+    {
+      "op": "subject",
+      "name": "invalidSubject",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"other\"}}]",
+      "expected": "{\"ok\":false,\"reason\":\"invalid_subject\"}"
+    },
+    {
+      "op": "subject",
+      "name": "simulation",
+      "args": "[{\"sceneId\":\"s\",\"simulation\":true,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"ok\":false,\"reason\":\"simulation_does_not_learn\"}"
+    },
+    {
+      "op": "evidence",
+      "name": "live",
+      "args": "[[{\"origin\":\"live\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"p\",\"status\":\"available\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sourceEventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}],[]]",
+      "expected": "[{\"origin\":\"live\",\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"other\"},{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"other\"}],\"sourceText\":\"A😀\\nB\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false},{\"partIndex\":4,\"userId\":\"bot\",\"isBot\":true}],\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}]"
+    },
+    {
+      "op": "evidence",
+      "name": "nonlive",
+      "args": "[[{\"origin\":\"history\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"p\",\"status\":\"available\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sourceEventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}],[]]",
+      "expected": "[]"
+    },
+    {
+      "op": "evidence",
+      "name": "bot",
+      "args": "[[{\"origin\":\"live\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"bot\",\"status\":\"available\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sourceEventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}],[]]",
+      "expected": "[{\"origin\":\"live\",\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"bot\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"other\"},{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"other\"}],\"sourceText\":\"A😀\\nB\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"available\":true,\"isBot\":true,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false},{\"partIndex\":4,\"userId\":\"bot\",\"isBot\":true}],\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}]"
+    },
+    {
+      "op": "evidence",
+      "name": "limited",
+      "args": "[[{\"origin\":\"live\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"p\",\"status\":\"available\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sourceEventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\",\"sourceEventRegistrationLimited\":true}],[]]",
+      "expected": "[{\"origin\":\"live\",\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"other\"},{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"other\"}],\"sourceText\":\"A😀\\nB\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"available\":false,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false},{\"partIndex\":4,\"userId\":\"bot\",\"isBot\":true}],\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}]"
+    },
+    {
+      "op": "evidence",
+      "name": "unavailable",
+      "args": "[[{\"origin\":\"live\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"p\",\"status\":\"recalled\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sourceEventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}],[]]",
+      "expected": "[{\"origin\":\"live\",\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"other\"},{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"other\"}],\"sourceText\":\"A😀\\nB\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"available\":false,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false},{\"partIndex\":4,\"userId\":\"bot\",\"isBot\":true}],\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}]"
+    },
+    {
+      "op": "evidence",
+      "name": "invalidClock",
+      "args": "[[{\"origin\":\"live\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"p\",\"status\":\"available\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sourceEventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"sentAt\":\"2026-03-02\",\"receivedAt\":\"invalid\"}],[]]",
+      "expected": "[{\"origin\":\"live\",\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"other\"},{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"other\"}],\"sourceText\":\"A😀\\nB\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false},{\"partIndex\":4,\"userId\":\"bot\",\"isBot\":true}]}]"
+    },
+    {
+      "op": "evidence",
+      "name": "noRef",
+      "args": "[[{\"origin\":\"live\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"p\",\"status\":\"available\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}],[]]",
+      "expected": "[{\"origin\":\"live\",\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"other\"},{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"other\"}],\"sourceText\":\"A😀\\nB\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false},{\"partIndex\":4,\"userId\":\"bot\",\"isBot\":true}],\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}]"
+    },
+    {
+      "op": "evidence",
+      "name": "recalled",
+      "args": "[[{\"origin\":\"live\",\"sceneId\":\"s\",\"id\":\"m\",\"senderId\":\"p\",\"status\":\"available\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"image\",\"url\":\"not persisted\"},{\"type\":\"mention\",\"userId\":\"q\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"mention\",\"userId\":\"bot\"}],\"sourceEventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}],[\"m\"]]",
+      "expected": "[{\"origin\":\"live\",\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"parts\":[{\"type\":\"text\",\"text\":\"A😀\"},{\"type\":\"other\"},{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"B\"},{\"type\":\"other\"}],\"sourceText\":\"A😀\\nB\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0},\"available\":false,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false},{\"partIndex\":4,\"userId\":\"bot\",\"isBot\":true}],\"sentAt\":\"2026-02-30T10:00:00Z\",\"receivedAt\":\"2026-03-02T10:00:00+00:00\"}]"
+    },
+    {
+      "op": "admit",
+      "name": "legacy",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"accepted\",\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"p\"},\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"proof\":{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[],\"subjectWitness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"attribution\":{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"parents\":[]}"
+    },
+    {
+      "op": "admit",
+      "name": "registered",
+      "args": "[{\"enabled\":true,\"registered\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"accepted\",\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"p\"},\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"proof\":{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[],\"subjectWitness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"attribution\":{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"parents\":[]}"
+    },
+    {
+      "op": "admit",
+      "name": "edited",
+      "args": "[{\"enabled\":true,\"registered\":true,\"edited\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"source_event_changed\"}"
+    },
+    {
+      "op": "admit",
+      "name": "registered-ref",
+      "args": "[{\"enabled\":true,\"registered\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"accepted\",\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"p\"},\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"proof\":{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}],\"parents\":[],\"parentReferences\":[],\"subjectWitness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"attribution\":{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"parents\":[]}"
+    },
+    {
+      "op": "admit",
+      "name": "stale-ref",
+      "args": "[{\"enabled\":true,\"registered\":true,\"edited\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"source_event_changed\"}"
+    },
+    {
+      "op": "admit",
+      "name": "disabled",
+      "args": "[{\"enabled\":false},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"learning_disabled\"}"
+    },
+    {
+      "op": "admit",
+      "name": "recall",
+      "args": "[{\"enabled\":true,\"recalled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"invalid_source_evidence\"}"
+    },
+    {
+      "op": "admit",
+      "name": "missing",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"missing_source_evidence\"}"
+    },
+    {
+      "op": "admit",
+      "name": "foreign",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"other\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"invalid_source_evidence\"}"
+    },
+    {
+      "op": "admit",
+      "name": "simulation",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":true,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"simulation_does_not_learn\"}"
+    },
+    {
+      "op": "admit",
+      "name": "no-provenance",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"invalid_memory_dependencies\"}"
+    },
+    {
+      "op": "admit",
+      "name": "contextual-missing",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"invalid_memory_dependencies\"}"
+    },
+    {
+      "op": "admit",
+      "name": "contextual-empty",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"accepted\",\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"p\"},\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"proof\":{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[],\"subjectWitness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"attribution\":{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"parents\":[]}"
+    },
+    {
+      "op": "admit",
+      "name": "duplicate",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"},{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"accepted\",\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"},{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"p\"},\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"proof\":{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[],\"subjectWitness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"},{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"attribution\":{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"},{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"parents\":[]}"
+    },
+    {
+      "op": "admit",
+      "name": "unavailable",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":false,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"invalid_source_evidence\"}"
+    },
+    {
+      "op": "admit",
+      "name": "bot",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":true,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"invalid_source_evidence\"}"
+    },
+    {
+      "op": "admit",
+      "name": "custom-bot",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"botUserId\":\"p\"},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"invalid_source_evidence\"}"
+    },
+    {
+      "op": "admit",
+      "name": "subject-mismatch",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"q\"}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"subject_person_mismatch\"}"
+    },
+    {
+      "op": "admit",
+      "name": "forged-ref",
+      "args": "[{\"enabled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"accepted\",\"candidate\":{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"},\"personId\":\"p\"},\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"proof\":{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[],\"subjectWitness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"attribution\":{\"ok\":true,\"personId\":\"p\",\"kind\":\"fact\",\"witness\":{\"kind\":\"self\",\"personId\":\"p\",\"sourceMessageId\":\"m\"},\"sourceObservations\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},\"parents\":[]}"
+    },
+    {
+      "op": "admit",
+      "name": "wrong-identity",
+      "args": "[{\"enabled\":true,\"registered\":true,\"foreignIdentity\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"status\":\"rejected\",\"reason\":\"source_event_changed\"}"
+    },
+    {
+      "op": "spans",
+      "name": "astral",
+      "args": "[{},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"spans\":[{\"source\":{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"},\"rootId\":\"225437a1e92f5c0db95c941c32b451ed13e6c524d411833dffd8207d4a3da55a\",\"partIndex\":1,\"start\":1,\"end\":3,\"spanHash\":\"7a0c50b92434b015545fe93ab723db2d4b2cdd14a441405624a9ce8be29f1d5a\",\"stance\":\"self\"}]}"
+    },
+    {
+      "op": "spans",
+      "name": "split-start",
+      "args": "[{},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":2,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_span_surrogate_boundary\"}"
+    },
+    {
+      "op": "spans",
+      "name": "split-end",
+      "args": "[{},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":2,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_span_surrogate_boundary\"}"
+    },
+    {
+      "op": "spans",
+      "name": "nontext",
+      "args": "[{},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":0,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_span_unavailable\"}"
+    },
+    {
+      "op": "spans",
+      "name": "no-proof",
+      "args": "[{},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[]]",
+      "expected": "{\"error\":\"knowledge_span_unavailable\"}"
+    },
+    {
+      "op": "spans",
+      "name": "wrong-sender",
+      "args": "[{},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"q\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_stance_sender_mismatch\"}"
+    },
+    {
+      "op": "spans",
+      "name": "registered-no-ref",
+      "args": "[{\"registered\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_span_unavailable\"}"
+    },
+    {
+      "op": "spans",
+      "name": "registered-ref",
+      "args": "[{\"registered\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}],\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}]}]]",
+      "expected": "{\"spans\":[{\"source\":{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}},\"rootId\":\"225437a1e92f5c0db95c941c32b451ed13e6c524d411833dffd8207d4a3da55a\",\"partIndex\":1,\"start\":1,\"end\":3,\"spanHash\":\"7a0c50b92434b015545fe93ab723db2d4b2cdd14a441405624a9ce8be29f1d5a\",\"stance\":\"self\"}]}"
+    },
+    {
+      "op": "spans",
+      "name": "registered-wrong-proof",
+      "args": "[{\"registered\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}],\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_span_unavailable\"}"
+    },
+    {
+      "op": "spans",
+      "name": "edited-ref",
+      "args": "[{\"registered\":true,\"edited\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}],\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"eventRef\":{\"eventId\":\"source-event\",\"revision\":1,\"deletionEpoch\":0}}]}]]",
+      "expected": "{\"error\":\"knowledge_span_unavailable\"}"
+    },
+    {
+      "op": "spans",
+      "name": "recalled",
+      "args": "[{\"recalled\":true},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":3,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_span_unavailable\"}"
+    },
+    {
+      "op": "spans",
+      "name": "empty-range",
+      "args": "[{},{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"source-only\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\",\"parts\":[{\"type\":\"other\"},{\"type\":\"text\",\"text\":\"A😀B\"}]}]},{\"registryVersion\":1,\"predicate\":\"uses_tool\",\"subject\":{\"kind\":\"self\",\"personId\":\"p\"},\"object\":{\"kind\":\"new\",\"entityKind\":\"tool\",\"title\":\"Synthetic tool\"},\"polarity\":\"positive\",\"modality\":\"asserted\",\"temporalScope\":\"current\",\"conditions\":[],\"sourceSpans\":[{\"messageId\":\"m\",\"partIndex\":1,\"start\":1,\"end\":1,\"stance\":\"self\"}]},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}]}]]",
+      "expected": "{\"error\":\"knowledge_span_unavailable\"}"
+    },
+    {
+      "op": "parent-recall",
+      "name": "recalled-0",
+      "args": "[[],{\"id\":\"parent\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"fact\",\"content\":\"Synthetic parent\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-a\",\"senderId\":\"p\"},{\"sceneId\":\"s\",\"messageId\":\"parent-b\",\"senderId\":\"p\"}],\"importance\":\"medium\",\"confidence\":0.7,\"learnedAt\":\"2026-01-01T00:00:00Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-a\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[]},{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-b\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[]}],{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"validParent\":true,\"currentApplicable\":true,\"bound\":true,\"admission\":\"accepted\"}"
+    },
+    {
+      "op": "parent-recall",
+      "name": "recalled-1",
+      "args": "[[\"parent-a\"],{\"id\":\"parent\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"fact\",\"content\":\"Synthetic parent\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-a\",\"senderId\":\"p\"},{\"sceneId\":\"s\",\"messageId\":\"parent-b\",\"senderId\":\"p\"}],\"importance\":\"medium\",\"confidence\":0.7,\"learnedAt\":\"2026-01-01T00:00:00Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-a\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[]},{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-b\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[]}],{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"validParent\":true,\"currentApplicable\":true,\"bound\":false,\"admission\":\"invalid_memory_dependencies\"}"
+    },
+    {
+      "op": "parent-recall",
+      "name": "recalled-2",
+      "args": "[[\"parent-a\",\"parent-b\"],{\"id\":\"parent\",\"scope\":{\"kind\":\"scene\",\"sceneId\":\"s\",\"personId\":\"p\"},\"kind\":\"fact\",\"content\":\"Synthetic parent\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-a\",\"senderId\":\"p\"},{\"sceneId\":\"s\",\"messageId\":\"parent-b\",\"senderId\":\"p\"}],\"importance\":\"medium\",\"confidence\":0.7,\"learnedAt\":\"2026-01-01T00:00:00Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"learned\",\"lineageStatus\":\"verified\"},[{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-a\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[]},{\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"parent-b\",\"senderId\":\"p\"}],\"parents\":[],\"parentReferences\":[]}],{\"sceneId\":\"s\",\"simulation\":false,\"provenance\":\"contextual\",\"sourceEvidence\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\",\"available\":true,\"isBot\":false,\"mentions\":[{\"partIndex\":2,\"userId\":\"q\",\"isBot\":false}],\"sentAt\":\"2026-02-28T10:00:00Z\",\"receivedAt\":\"2026-02-28T10:00:01+00:00\"}],\"dependencyMemoryIds\":[\"parent\"],\"dependencyParentReferences\":[{\"id\":\"parent\",\"version\":1,\"deletionEpoch\":0}]},{\"content\":\"Synthetic fact\",\"kind\":\"fact\",\"sources\":[{\"sceneId\":\"s\",\"messageId\":\"m\",\"senderId\":\"p\"}],\"subject\":{\"kind\":\"self\",\"sourceMessageId\":\"m\"}}]",
+      "expected": "{\"validParent\":false,\"currentApplicable\":false,\"bound\":false,\"admission\":\"invalid_memory_dependencies\"}"
+    }
+  ]
+}

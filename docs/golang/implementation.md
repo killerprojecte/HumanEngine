@@ -666,3 +666,20 @@ proposal/reconciliation, revision checkpoint, graph admission and historical
 requalification together. A graph semantic rejection may preserve the saved backing
 assertion; a storage exception must roll back the complete enclosing transaction.
 Neither model delivery nor production HTTP write parity is claimed here.
+
+### Trusted source admission boundary
+
+`sourceadmission.New` borrows an actual assertion Reader and constructs its
+authority from that same owner. Source identity, edit and recall checks therefore
+share a transaction rather than acquiring another owner or using a latest-preview
+fallback. The knowledge facade retains its stricter event-reference requirement;
+ordinary source admission still permits an identity-matched registered event with
+no explicit reference before edits, as the source does.
+
+Knowledge spans preserve original part indexes and UTF-16 end-exclusive offsets,
+reject surrogate splits, and persist digests and offsets rather than source text.
+Declaration preparation clears ordinary parent dependencies while keeping the
+original trusted context available for the later graph write. Historical parent
+privacy is stricter than current OR applicability: recalling any source retained
+in a captured historical record invalidates that exact binding. No implicit
+latest-reference substitution is performed.

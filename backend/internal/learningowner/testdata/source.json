@@ -1,0 +1,4125 @@
+{
+  "sources": {
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/learning-policy.ts": "a301d970878a1ebf6708a4795b04839ed6805f4bec0d7bd4b0862b69a37f61e7",
+    "src/memory/write/subject-attribution.ts": "d3cec07452a8529f12011a6c827bb3969da3f25109e6461b68f53f6903ad30bc",
+    "backend/tests/generate-learning-owner-fixtures.ts": "ff02e0a8033a4e7cc464a8b1c25d2cc9ee09752f1142c70f18f33ed321ad1e63"
+  },
+  "pronouns": [
+    {
+      "name": "none",
+      "content": "Synthetic parser uses UTF-8.",
+      "authors": [],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "unicode-hypothetical",
+      "content": "She likes tools.",
+      "authors": [
+        "ſuppose. I am a woman."
+      ],
+      "literals": [],
+      "expected": false
+    },
+    {
+      "name": "unicode-no-boundary",
+      "content": "She likes tools.",
+      "authors": [
+        "Kif. I am a woman."
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "new-letter-quote",
+      "content": "She likes tools.",
+      "authors": [
+        "Ᲊ'prefix. I am a woman.'"
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "unsupported",
+      "content": "She likes tools.",
+      "authors": [],
+      "literals": [],
+      "expected": false
+    },
+    {
+      "name": "female",
+      "content": "She likes tools.",
+      "authors": [
+        "I am a woman"
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "male",
+      "content": "He likes tools.",
+      "authors": [
+        "I am a man"
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "other-family",
+      "content": "He likes tools.",
+      "authors": [
+        "I am a woman"
+      ],
+      "literals": [],
+      "expected": false
+    },
+    {
+      "name": "literal",
+      "content": "If she likes tools, she may join.",
+      "authors": [],
+      "literals": [
+        "If she likes tools, she may join."
+      ],
+      "expected": true
+    },
+    {
+      "name": "not-substring",
+      "content": "She likes tools.",
+      "authors": [],
+      "literals": [
+        "If she likes tools."
+      ],
+      "expected": false
+    },
+    {
+      "name": "quoted",
+      "content": "She likes tools.",
+      "authors": [
+        "\"I am a woman\""
+      ],
+      "literals": [],
+      "expected": false
+    },
+    {
+      "name": "hypothetical",
+      "content": "She likes tools.",
+      "authors": [
+        "Perhaps I am a woman"
+      ],
+      "literals": [],
+      "expected": false
+    },
+    {
+      "name": "chinese",
+      "content": "她喜歡工具。",
+      "authors": [
+        "本人是一位女性"
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "plural",
+      "content": "他们喜歡工具。",
+      "authors": [],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "nonpersonal",
+      "content": "他山之石可以攻玉。",
+      "authors": [],
+      "literals": [],
+      "expected": false
+    },
+    {
+      "name": "declaration",
+      "content": "She likes tools.",
+      "authors": [
+        "My pronouns are she/her"
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "contraction",
+      "content": "She's a programmer.",
+      "authors": [
+        "my pronouns are she/her"
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "fenced",
+      "content": "She likes tools.",
+      "authors": [
+        "```I am a woman```"
+      ],
+      "literals": [],
+      "expected": false
+    },
+    {
+      "name": "two-families",
+      "content": "He and she like tools.",
+      "authors": [
+        "I am a woman",
+        "I am a man"
+      ],
+      "literals": [],
+      "expected": true
+    },
+    {
+      "name": "literal-space",
+      "content": "She  likes\n tools.",
+      "authors": [],
+      "literals": [
+        "She likes tools."
+      ],
+      "expected": true
+    },
+    {
+      "name": "NEL-not-space",
+      "content": "Shelikes tools.",
+      "authors": [],
+      "literals": [
+        "She likes tools."
+      ],
+      "expected": false
+    }
+  ],
+  "cases": [
+    {
+      "name": "metadata",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [
+          {
+            "memory": {
+              "id": "m11",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 11.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m10",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 10.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m9",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 9.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m8",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 8.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          }
+        ],
+        "coverage": "capped",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "semantic-reservation",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [
+          {
+            "memory": {
+              "id": "m11",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 11.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m10",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 10.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 0.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 1.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          }
+        ],
+        "coverage": "capped",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "personal",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ],
+          "personId": "p"
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [
+          {
+            "memory": {
+              "id": "m11",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "content": "Synthetic register 11.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m10",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "content": "Synthetic register 10.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m9",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "content": "Synthetic register 9.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m8",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p"
+              },
+              "content": "Synthetic register 8.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          }
+        ],
+        "coverage": "capped",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "foreign-person",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ],
+          "personId": "other"
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [],
+        "coverage": "complete",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "history",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "history",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [],
+        "coverage": "complete",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "recalled",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": true,
+      "enabled": true,
+      "expected": {
+        "targets": [],
+        "coverage": "complete",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "disabled",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": false,
+      "expected": {
+        "targets": [],
+        "coverage": "complete",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "simulation",
+      "input": {
+        "sceneId": "s",
+        "simulation": true,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [],
+        "coverage": "complete",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "candidate-cap",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 1,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 2,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 3,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 4,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 5,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 6,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 7,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 8,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic alpha beta token.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 4.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 5.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 6.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 7.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 8.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 9.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 10.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic register 11.",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [
+          {
+            "memory": {
+              "id": "m11",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 11.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "memory": {
+              "id": "m10",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 10.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "memory": {
+              "id": "m9",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 9.",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          {
+            "memory": {
+              "id": "m8",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic register 8.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          }
+        ],
+        "coverage": "capped",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "group-cap",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source",
+            "senderId": "p",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic code4 code5",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 1,
+          "kind": "claim",
+          "content": "Synthetic code6 code7",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 2,
+          "kind": "claim",
+          "content": "Synthetic code8 code9",
+          "sourceMessageIds": [
+            "source"
+          ]
+        },
+        {
+          "candidateIndex": 3,
+          "kind": "claim",
+          "content": "Synthetic code10 code11",
+          "sourceMessageIds": [
+            "source"
+          ]
+        }
+      ],
+      "semantic": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code0",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code1",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code2",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code3",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code4",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code5",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code6",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code7",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "rows": [
+        {
+          "id": "m0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code0",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code1",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code2",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code3",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code4",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code5",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code6",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code7",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code8",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code9",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code10",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "m11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s"
+          },
+          "content": "Synthetic code11",
+          "kind": "claim",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "shared",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "content": "Synthetic alpha shared.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [
+          {
+            "memory": {
+              "id": "m5",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code5",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m4",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code4",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "m0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code0",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "memory": {
+              "id": "m1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code1",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "memory": {
+              "id": "m7",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code7",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              1
+            ]
+          },
+          {
+            "memory": {
+              "id": "m6",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code6",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              1
+            ]
+          },
+          {
+            "memory": {
+              "id": "m9",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code9",
+              "kind": "claim",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              2
+            ]
+          },
+          {
+            "memory": {
+              "id": "m8",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s"
+              },
+              "content": "Synthetic code8",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              2
+            ]
+          }
+        ],
+        "coverage": "capped",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    },
+    {
+      "name": "target-cap",
+      "input": {
+        "sceneId": "s",
+        "simulation": false,
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "source0",
+            "senderId": "p0",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          },
+          {
+            "sceneId": "s",
+            "messageId": "source1",
+            "senderId": "p1",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          },
+          {
+            "sceneId": "s",
+            "messageId": "source2",
+            "senderId": "p2",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          },
+          {
+            "sceneId": "s",
+            "messageId": "source3",
+            "senderId": "p3",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          },
+          {
+            "sceneId": "s",
+            "messageId": "source4",
+            "senderId": "p4",
+            "origin": "live",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "candidateIndex": 0,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source0"
+          ],
+          "personId": "p0"
+        },
+        {
+          "candidateIndex": 1,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source1"
+          ],
+          "personId": "p1"
+        },
+        {
+          "candidateIndex": 2,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source2"
+          ],
+          "personId": "p2"
+        },
+        {
+          "candidateIndex": 3,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source3"
+          ],
+          "personId": "p3"
+        },
+        {
+          "candidateIndex": 4,
+          "kind": "claim",
+          "content": "Synthetic alpha beta token.",
+          "sourceMessageIds": [
+            "source4"
+          ],
+          "personId": "p4"
+        }
+      ],
+      "semantic": [],
+      "rows": [
+        {
+          "id": "person0-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p0"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person0-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p0"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person0-2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p0"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person0-3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p0"
+          },
+          "content": "Synthetic register 3.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person1-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p1"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person1-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p1"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person1-2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p1"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person1-3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p1"
+          },
+          "content": "Synthetic register 3.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person2-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p2"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person2-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p2"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person2-2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p2"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person2-3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p2"
+          },
+          "content": "Synthetic register 3.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person3-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p3"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person3-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p3"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person3-2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p3"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person3-3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p3"
+          },
+          "content": "Synthetic register 3.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person4-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p4"
+          },
+          "content": "Synthetic register 0.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person4-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p4"
+          },
+          "content": "Synthetic register 1.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person4-2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p4"
+          },
+          "content": "Synthetic register 2.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        },
+        {
+          "id": "person4-3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p4"
+          },
+          "content": "Synthetic register 3.",
+          "kind": "fact",
+          "status": "active",
+          "origin": "manual",
+          "confidence": 0.7,
+          "importance": 0.5,
+          "sources": [],
+          "learnedAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "recalled": false,
+      "enabled": true,
+      "expected": {
+        "targets": [
+          {
+            "memory": {
+              "id": "person0-3",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p0"
+              },
+              "content": "Synthetic register 3.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "person0-2",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p0"
+              },
+              "content": "Synthetic register 2.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "person0-1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p0"
+              },
+              "content": "Synthetic register 1.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "person0-0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p0"
+              },
+              "content": "Synthetic register 0.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              0
+            ]
+          },
+          {
+            "memory": {
+              "id": "person1-3",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p1"
+              },
+              "content": "Synthetic register 3.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              1
+            ]
+          },
+          {
+            "memory": {
+              "id": "person1-2",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p1"
+              },
+              "content": "Synthetic register 2.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              1
+            ]
+          },
+          {
+            "memory": {
+              "id": "person1-1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p1"
+              },
+              "content": "Synthetic register 1.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              1
+            ]
+          },
+          {
+            "memory": {
+              "id": "person1-0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p1"
+              },
+              "content": "Synthetic register 0.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              1
+            ]
+          },
+          {
+            "memory": {
+              "id": "person2-3",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p2"
+              },
+              "content": "Synthetic register 3.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              2
+            ]
+          },
+          {
+            "memory": {
+              "id": "person2-2",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p2"
+              },
+              "content": "Synthetic register 2.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              2
+            ]
+          },
+          {
+            "memory": {
+              "id": "person2-1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p2"
+              },
+              "content": "Synthetic register 1.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              2
+            ]
+          },
+          {
+            "memory": {
+              "id": "person2-0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p2"
+              },
+              "content": "Synthetic register 0.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              2
+            ]
+          },
+          {
+            "memory": {
+              "id": "person3-3",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p3"
+              },
+              "content": "Synthetic register 3.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              3
+            ]
+          },
+          {
+            "memory": {
+              "id": "person3-2",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p3"
+              },
+              "content": "Synthetic register 2.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              3
+            ]
+          },
+          {
+            "memory": {
+              "id": "person3-1",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p3"
+              },
+              "content": "Synthetic register 1.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              3
+            ]
+          },
+          {
+            "memory": {
+              "id": "person3-0",
+              "scope": {
+                "kind": "scene",
+                "sceneId": "s",
+                "personId": "p3"
+              },
+              "content": "Synthetic register 0.",
+              "kind": "fact",
+              "status": "active",
+              "origin": "manual",
+              "confidence": 0.7,
+              "importance": 0.5,
+              "sources": [],
+              "learnedAt": "2026-01-01T00:00:00.000Z"
+            },
+            "candidateIndexes": [
+              3
+            ]
+          }
+        ],
+        "coverage": "capped",
+        "limits": {
+          "perCandidate": 4,
+          "perGroup": 8,
+          "total": 16,
+          "semantic": 8
+        }
+      }
+    }
+  ]
+}

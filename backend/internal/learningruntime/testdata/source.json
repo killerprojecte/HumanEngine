@@ -1,0 +1,3471 @@
+{
+  "sources": {
+    "src/memory/learning/coordinator.ts": "e46de76098a7f44e772595d50c3e522d9a33c6eadefe07b890486d0a63e63915",
+    "src/memory/learning/admission.ts": "224c2f2ef18b420e21453a6be908d7efd60c9b6a23ae8c90a875cfa7d8ba8461",
+    "src/memory/learning/batch-runner.ts": "106b27f546ec96c7228b458939b764e7eefcf32b93c2f641ed518784da3db96d",
+    "src/memory/learning/persistence.ts": "045e25ed265504282b98059efe76f707358d090cae81d75548cc073fab06196d",
+    "src/memory/learning/extraction.ts": "ef93091c05374f5007311bacd35e7e3a08596456532ac85b81dce7a86dd738f2",
+    "src/memory/learning/repair.ts": "97399ee921c5096b04a9a7d61e0bf4ea5a7fa931d908dc7e7c462fa36546d526",
+    "src/memory/learning/reconciliation.ts": "d73310d9f261dffbc6fa01113dac61cc3b3fe990eb4d3fc8adf91450b43d584a"
+  },
+  "cases": [
+    {
+      "plan": {
+        "name": "quiet-maxwait",
+        "phases": [
+          "empty"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "tick",
+            5
+          ],
+          [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "tick",
+            15
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            5
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              15
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            15
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 2,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "completed",
+          "reason": "no_learning_candidates",
+          "nextStep": "next_learning_batch",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "retry",
+        "phases": [
+          "retryable",
+          "empty"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "tick",
+            14
+          ],
+          [
+            "tick",
+            15
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 1,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 1,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [
+            [
+              "s",
+              2,
+              15,
+              [
+                "a"
+              ]
+            ]
+          ],
+          "due": [
+            [
+              "s",
+              15
+            ]
+          ],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            14
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 1,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 1,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [
+            [
+              "s",
+              2,
+              15,
+              [
+                "a"
+              ]
+            ]
+          ],
+          "due": [
+            [
+              "s",
+              15
+            ]
+          ],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            15
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 1,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 1,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            },
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "failed",
+          "reason": "provider_request_failed",
+          "nextStep": "retry_scheduled",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0,
+            "retryDelayMs": 5
+          }
+        },
+        {
+          "status": "completed",
+          "reason": "no_learning_candidates",
+          "nextStep": "next_learning_batch",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 2,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "manual-retry",
+        "phases": [
+          "failure",
+          "empty"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "retry"
+          ],
+          [
+            "tick",
+            39
+          ],
+          [
+            "tick",
+            40
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 1,
+            "failures": [
+              {
+                "id": "failure",
+                "sceneId": "s",
+                "attempt": 1,
+                "messageCount": 1,
+                "partial": false,
+                "canRetry": true,
+                "createdAt": "clock"
+              }
+            ],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "retry"
+          ],
+          "result": {
+            "ok": true
+          },
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              40
+            ]
+          ],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            39
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              40
+            ]
+          ],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            40
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 1,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            },
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "failed",
+          "reason": "provider_request_failed",
+          "nextStep": "manual_retry",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0,
+            "unconfirmedCandidateCount": 0
+          }
+        },
+        {
+          "status": "completed",
+          "reason": "no_learning_candidates",
+          "nextStep": "next_learning_batch",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "discard",
+        "phases": [
+          "failure"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "discard"
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 1,
+            "failures": [
+              {
+                "id": "failure",
+                "sceneId": "s",
+                "attempt": 1,
+                "messageCount": 1,
+                "partial": false,
+                "canRetry": true,
+                "createdAt": "clock"
+              }
+            ],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "discard"
+          ],
+          "result": {
+            "ok": true
+          },
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "failed",
+          "reason": "provider_request_failed",
+          "nextStep": "manual_retry",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0,
+            "unconfirmedCandidateCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "recall-edit-survivors",
+        "phases": [
+          "hold",
+          "empty"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "recall",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "a",
+            "replacement"
+          ],
+          [
+            "release"
+          ],
+          [
+            "tick",
+            40
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "recall",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a",
+            "replacement"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 3,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "release"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 3,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "b",
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              40
+            ]
+          ],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            40
+          ],
+          "result": null,
+          "status": {
+            "accepted": 3,
+            "completed": 2,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            },
+            {
+              "scene": "s",
+              "ids": [
+                "b",
+                "a"
+              ],
+              "texts": [
+                "synthetic",
+                "replacement"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "cancelled",
+          "reason": "request_cancelled",
+          "nextStep": "stop",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0,
+            "unconfirmedCandidateCount": 0
+          }
+        },
+        {
+          "status": "completed",
+          "reason": "no_learning_candidates",
+          "nextStep": "next_learning_batch",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "off-on-no-revival",
+        "phases": [
+          "hold",
+          "empty"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "recall",
+            "s",
+            "a"
+          ],
+          [
+            "cancel",
+            "s"
+          ],
+          [
+            "enqueue",
+            "s",
+            "c"
+          ],
+          [
+            "release"
+          ],
+          [
+            "tick",
+            20
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "recall",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "cancel",
+            "s"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "c"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 3,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "c"
+              ]
+            ]
+          ],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "release"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 3,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "c"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              20
+            ]
+          ],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            20
+          ],
+          "result": null,
+          "status": {
+            "accepted": 3,
+            "completed": 1,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            },
+            {
+              "scene": "s",
+              "ids": [
+                "c"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "cancelled",
+          "reason": "request_cancelled",
+          "nextStep": "stop",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0,
+            "unconfirmedCandidateCount": 0
+          }
+        },
+        {
+          "status": "completed",
+          "reason": "no_learning_candidates",
+          "nextStep": "next_learning_batch",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "partial-unknown-zero-saved",
+        "phases": [
+          "partial"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "retry"
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [
+              {
+                "id": "failure",
+                "sceneId": "s",
+                "attempt": 1,
+                "messageCount": 1,
+                "partial": true,
+                "canRetry": false,
+                "createdAt": "clock"
+              }
+            ],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            },
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 1"
+            }
+          ]
+        },
+        {
+          "step": [
+            "retry"
+          ],
+          "result": {
+            "ok": false
+          },
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 1,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [
+              {
+                "id": "failure",
+                "sceneId": "s",
+                "attempt": 1,
+                "messageCount": 1,
+                "partial": true,
+                "canRetry": false,
+                "createdAt": "clock"
+              }
+            ],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            },
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 1"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "status": "partial",
+          "reason": "partial_commit_no_replay",
+          "nextStep": "inspect_partial_learning",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 2,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 1,
+            "unconfirmedCandidateCount": 1
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "ignored-before-cancel",
+        "phases": [
+          "ignored-cancel"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "tick",
+            40
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            }
+          ]
+        },
+        {
+          "step": [
+            "tick",
+            40
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "status": "cancelled",
+          "reason": "request_cancelled",
+          "nextStep": "stop",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 2,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 1,
+            "unconfirmedCandidateCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "saved-before-cancel",
+        "phases": [
+          "saved-cancel"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "tick",
+            40
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            }
+          ]
+        },
+        {
+          "step": [
+            "tick",
+            40
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "status": "partial",
+          "reason": "partial_commit_no_replay",
+          "nextStep": "inspect_partial_learning",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 2,
+            "savedCount": 1,
+            "rejectedCount": 0,
+            "ignoredCount": 0,
+            "unconfirmedCandidateCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "rejected-before-cancel",
+        "phases": [
+          "rejected-cancel"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "tick",
+            40
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            }
+          ]
+        },
+        {
+          "step": [
+            "tick",
+            40
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": [
+            {
+              "scene": "s",
+              "content": "Synthetic durable value 0"
+            }
+          ]
+        }
+      ],
+      "events": [
+        {
+          "status": "cancelled",
+          "reason": "request_cancelled",
+          "nextStep": "stop",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 2,
+            "savedCount": 0,
+            "rejectedCount": 1,
+            "ignoredCount": 0,
+            "unconfirmedCandidateCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "foreground-fairness",
+        "busy": true,
+        "phases": [
+          "empty",
+          "empty"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "b",
+            "x"
+          ],
+          [
+            "enqueue",
+            "a",
+            "y"
+          ],
+          [
+            "tick",
+            999
+          ],
+          [
+            "tick",
+            1000
+          ],
+          [
+            "tick",
+            2000
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "b",
+            "x"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "b",
+              [
+                "x"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "b",
+              1000
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "a",
+            "y"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "a",
+              [
+                "y"
+              ]
+            ],
+            [
+              "b",
+              [
+                "x"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "a",
+              1000
+            ],
+            [
+              "b",
+              1000
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            999
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "a",
+              [
+                "y"
+              ]
+            ],
+            [
+              "b",
+              [
+                "x"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "a",
+              1000
+            ],
+            [
+              "b",
+              1000
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            1000
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 1,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "b",
+              [
+                "x"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "b",
+              2000
+            ]
+          ],
+          "started": [
+            {
+              "scene": "a",
+              "ids": [
+                "y"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            2000
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 2,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "a",
+              "ids": [
+                "y"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            },
+            {
+              "scene": "b",
+              "ids": [
+                "x"
+              ],
+              "texts": [
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "completed",
+          "reason": "no_learning_candidates",
+          "nextStep": "next_learning_batch",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0
+          }
+        },
+        {
+          "status": "completed",
+          "reason": "no_learning_candidates",
+          "nextStep": "next_learning_batch",
+          "counts": {
+            "inputCount": 1,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "plan": {
+        "name": "capacity",
+        "capacity": 2,
+        "phases": [
+          "hold"
+        ],
+        "steps": [
+          [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          [
+            "enqueue",
+            "s",
+            "c"
+          ],
+          [
+            "tick",
+            10
+          ],
+          [
+            "recall",
+            "s",
+            "a"
+          ],
+          [
+            "enqueue",
+            "s",
+            "a",
+            "replacement"
+          ],
+          [
+            "release"
+          ]
+        ]
+      },
+      "trace": [
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 1,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "b"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 0,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "c"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 1,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 2,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              10
+            ]
+          ],
+          "started": [],
+          "writes": []
+        },
+        {
+          "step": [
+            "tick",
+            10
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 1,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "recall",
+            "s",
+            "a"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 1,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "enqueue",
+            "s",
+            "a",
+            "replacement"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 2,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 0,
+            "retrying": 0,
+            "active": 2
+          },
+          "queued": [
+            [
+              "s",
+              []
+            ]
+          ],
+          "active": [
+            [
+              "s",
+              [
+                "a",
+                "b"
+              ]
+            ]
+          ],
+          "survivors": [
+            [
+              "s",
+              [
+                "b"
+              ]
+            ]
+          ],
+          "retries": [],
+          "due": [],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        },
+        {
+          "step": [
+            "release"
+          ],
+          "result": null,
+          "status": {
+            "accepted": 2,
+            "completed": 0,
+            "failed": 0,
+            "overflow": 2,
+            "retried": 0,
+            "paused": 0,
+            "failures": [],
+            "queued": 1,
+            "retrying": 0,
+            "active": 0
+          },
+          "queued": [
+            [
+              "s",
+              [
+                "b"
+              ]
+            ]
+          ],
+          "active": [],
+          "survivors": [],
+          "retries": [],
+          "due": [
+            [
+              "s",
+              40
+            ]
+          ],
+          "started": [
+            {
+              "scene": "s",
+              "ids": [
+                "a",
+                "b"
+              ],
+              "texts": [
+                "synthetic",
+                "synthetic"
+              ],
+              "priority": 1,
+              "budget": 1
+            }
+          ],
+          "writes": []
+        }
+      ],
+      "events": [
+        {
+          "status": "cancelled",
+          "reason": "request_cancelled",
+          "nextStep": "stop",
+          "counts": {
+            "inputCount": 2,
+            "attempt": 1,
+            "candidateCount": 0,
+            "savedCount": 0,
+            "rejectedCount": 0,
+            "ignoredCount": 0,
+            "unconfirmedCandidateCount": 0
+          }
+        }
+      ]
+    }
+  ]
+}

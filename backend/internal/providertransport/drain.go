@@ -26,8 +26,15 @@ func (m *NativeModels) asyncInvocation(invoke modelservice.Invocation) modelserv
 			settle(nil, safe("native_models_closed"))
 			return
 		}
+		physicalDone, physicalAccepted := physicalChild(ctx)
+		if !physicalAccepted {
+			done()
+			settle(nil, safe("provider_scope_closed"))
+			return
+		}
 		go func() {
 			defer done()
+			defer physicalDone()
 			defer func() {
 				if recover() != nil {
 					settle(nil, safe("provider_request_failed"))

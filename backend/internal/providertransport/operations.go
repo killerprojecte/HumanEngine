@@ -89,6 +89,9 @@ func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inp
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if e := checkModelRead(ctx); e != nil {
+		return nil, e
+	}
 	if m.Policy == nil || m.Client == nil {
 		return nil, safe("native_provider_composition_required")
 	}
@@ -124,6 +127,10 @@ func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inp
 		}
 		batch := pending[offset:end]
 		value, e := m.Policy.RunProviderOperation(ctx, model.ProviderID, model.ID, "embedding", m.asyncInvocation(func(ctx context.Context, a modelservice.Attempt, done func(any, error)) {
+			if e := checkModelRead(ctx); e != nil {
+				done(nil, e)
+				return
+			}
 			if !modelservice.IsBuiltin(provider.Protocol) {
 				raw, e := m.customOperation(ctx, a, "embeddings", batch)
 				if e != nil {

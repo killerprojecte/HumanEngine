@@ -54,6 +54,12 @@ differential: build
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-purge-fixtures.ts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-runtime-fixtures.ts --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-semantic-owner-fixtures.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-learning-runtime-fixtures.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-learning-batch-contract-fixtures.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-learning-batch-stage-fixtures.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-learning-owner-fixtures.ts --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-learning-search-index-fixtures.ts --check
+	cd .. && node backend/tests/generate-learning-unicode-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-workspace-resolve-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-list-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-experience-view-fixtures.mjs --check

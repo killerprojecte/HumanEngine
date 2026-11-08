@@ -156,6 +156,11 @@ type outcome struct {
 // context messages: the caller supplies HasImages from the expanded prompt and
 // ToolNames from the exact tools passed to the response validator.
 func (p *Policy) Run(ctx context.Context, request Request, invoke Invocation) (any, error) {
+	scopeDone, scopeAccepted := quiescence.ContextChild(ctx)
+	if !scopeAccepted {
+		return nil, errors.New("model_policy_scope_closed")
+	}
+	defer scopeDone()
 	doneWork, ok := p.work.Start()
 	if !ok {
 		return nil, errors.New("model_policy_closed")
@@ -191,8 +196,10 @@ func (p *Policy) Run(ctx context.Context, request Request, invoke Invocation) (a
 	})
 	defer deadline.Close()
 	finishRunner, _ := p.work.Child()
+	scopeRunner, _ := quiescence.ContextChild(ctx)
 	go func() {
 		defer finishRunner()
+		defer scopeRunner()
 		value, err := p.run(deadline.Context, request, invoke)
 		deadline.mu.Lock()
 		defer deadline.mu.Unlock()

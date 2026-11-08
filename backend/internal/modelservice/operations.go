@@ -1,12 +1,20 @@
 package modelservice
 
-import "context"
+import (
+	"context"
+	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
+)
 
 // RunProviderOperation executes an explicitly selected provider operation. Unlike
 // completion routing, embeddings do not require a text capability and model lists
 // do not require a model. Native model listing bypasses the model scheduler, as
 // the source does. Custom listing uses the shared scheduler and cancellation race.
 func (p *Policy) RunProviderOperation(ctx context.Context, providerID, modelID, role string, invoke Invocation) (any, error) {
+	scopeDone, scopeAccepted := quiescence.ContextChild(ctx)
+	if !scopeAccepted {
+		return nil, NewError("model_policy_scope_closed", nil, false)
+	}
+	defer scopeDone()
 	doneWork, ok := p.work.Start()
 	if !ok {
 		return nil, NewError("model_policy_closed", nil, false)

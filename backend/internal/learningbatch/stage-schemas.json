@@ -1,0 +1,50 @@
+{
+  "learning.repair": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "candidateIndex": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 7
+      },
+      "content": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 10000
+      }
+    },
+    "required": [
+      "candidateIndex",
+      "content"
+    ],
+    "additionalProperties": false
+  },
+  "learning.reconcile": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "candidateIndex": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 7
+      },
+      "targetId": {
+        "type": "string"
+      },
+      "action": {
+        "type": "string",
+        "enum": [
+          "merge",
+          "supersede"
+        ]
+      }
+    },
+    "required": [
+      "candidateIndex",
+      "targetId",
+      "action"
+    ],
+    "additionalProperties": false
+  }
+}

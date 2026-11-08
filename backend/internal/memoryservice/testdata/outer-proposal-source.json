@@ -1,0 +1,5241 @@
+{
+  "scope": "Actual outer source with observed inner writer/domain ports; native transactions require separate integration tests.",
+  "sources": {
+    "src/memory/write/proposal-command.ts": "dd3daff6804739bb4988f406d8091cd80dbb3abe2c542b6080937c27ed169336",
+    "src/memory/knowledge/admission.ts": "8e643e8752ceef9b4c29c610dc107bf87c43815314cf4872569f577fdbeefa08",
+    "src/memory/domain/record-values.ts": "d2022164f6fa4d36f4a8993b87f784c6f959a69c48270ec1da4786a3ee375dfc",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4",
+    "backend/tests/generate-outer-proposal-fixtures.mjs": "e8955817176e16a9ce84215fc7d6d6068b2861a26af6cf83cdc75ae0eadd48a1"
+  },
+  "cases": [
+    {
+      "name": "typed-marker",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "empty-source-text",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": " ﻿\n",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_literal_self_source_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "non-js-whitespace",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "utf16-exact-limit",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "utf16-over-limit",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀x",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_literal_self_source_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "no-source",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_literal_self_source_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "two-sources",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          },
+          {
+            "sceneId": "s",
+            "messageId": "other",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_literal_self_source_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "non-explicit",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "inferred",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_explicit_declaration_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "bot-then-valid",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": true,
+            "sourceText": "WRONG",
+            "eventRef": {
+              "revision": 1
+            }
+          },
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": true,
+                "sourceText": "WRONG",
+                "eventRef": {
+                  "revision": 1
+                }
+              },
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": true,
+                "sourceText": "WRONG",
+                "eventRef": {
+                  "revision": 1
+                }
+              },
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "unavailable-then-valid",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": false,
+            "isBot": false,
+            "sourceText": "WRONG",
+            "eventRef": {
+              "revision": 1
+            }
+          },
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": false,
+                "isBot": false,
+                "sourceText": "WRONG",
+                "eventRef": {
+                  "revision": 1
+                }
+              },
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": false,
+                "isBot": false,
+                "sourceText": "WRONG",
+                "eventRef": {
+                  "revision": 1
+                }
+              },
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "first-valid-empty",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "",
+            "eventRef": {
+              "revision": 1
+            }
+          },
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_literal_self_source_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "wrong-subject",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "other",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_literal_self_source_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "wrong-subject-source",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "other"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_literal_self_source_required"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "mixed-relation",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        },
+        "relations": [
+          {}
+        ]
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_mixed_write_denied"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "mixed-correction",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        },
+        "supersedesId": "old"
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_mixed_write_denied"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "mixed-merge",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        },
+        "mergeIntoId": "old"
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_mixed_write_denied"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "unset-plan-kind",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {}
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (undefined); reference 2e6463da7f245c7ae1f718acba4099881c343ee693f2b2845ab25d0402303c8e. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {}
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "null-plan-kind",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": null
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (null); reference eaddc25a04a9cd7916c5c5f2fefc58c5c72e2b62c41d15899831128ae63def89. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": null
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": null
+          }
+        ]
+      ]
+    },
+    {
+      "name": "clear-times",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        },
+        "occurredAt": "old",
+        "validFrom": "old",
+        "validUntil": "old"
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "no-event-ref",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan."
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan."
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference 9113af9596fcce9790b759a185bd31e46bdbfe59522e4ba5241268df72744ed2. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan."
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "inner-reject",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "innerStatus": "rejected",
+      "result": {
+        "status": "rejected",
+        "reason": "synthetic_inner_rejected"
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "command-reject",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "commandReject": true,
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "rejected",
+          "reason": "synthetic_rejected"
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "command-throw",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "commandThrow": true,
+      "error": "synthetic_command_write_failure",
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ordinary-only",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": []
+          },
+          {
+            "content": "Synthetic statement",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "relation-only",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "relations": [
+          {
+            "type": "synthetic"
+          }
+        ]
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "relations": {
+          "created": [],
+          "rejected": []
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": []
+          },
+          {
+            "content": "Synthetic statement",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "relations": [
+              {
+                "type": "synthetic"
+              }
+            ]
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "relations",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": []
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          [
+            {
+              "type": "synthetic"
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "empty-knowledge",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        },
+        "knowledge": []
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            },
+            "knowledge": []
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "invalid-knowledge-before-commitment",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        },
+        "knowledge": [
+          {}
+        ]
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "knowledge_proposal_invalid"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "knowledge-contextual",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "knowledge": [
+          {
+            "registryVersion": 1,
+            "predicate": "prefers_topic",
+            "subject": {
+              "kind": "self",
+              "personId": "p"
+            },
+            "object": {
+              "kind": "new",
+              "entityKind": "topic",
+              "title": "tools"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "sourceSpans": [
+              {
+                "messageId": "m",
+                "partIndex": 0,
+                "start": 0,
+                "end": 1,
+                "stance": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "knowledge": {
+          "created": [],
+          "rejected": []
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": "knowledge_declaration"
+          },
+          {
+            "content": "Model-extracted structured knowledge declaration; reference 79fc09537795cb64a4163edc0a2741012d56414ab16fc051f151c01575f0aa7a. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "knowledge": [
+              {
+                "registryVersion": 1,
+                "predicate": "prefers_topic",
+                "subject": {
+                  "kind": "self",
+                  "personId": "p"
+                },
+                "object": {
+                  "kind": "new",
+                  "entityKind": "topic",
+                  "title": "tools"
+                },
+                "polarity": "positive",
+                "modality": "asserted",
+                "temporalScope": "current",
+                "conditions": [],
+                "sourceSpans": [
+                  {
+                    "messageId": "m",
+                    "partIndex": 0,
+                    "start": 0,
+                    "end": 1,
+                    "stance": "self"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "knowledge",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedEntities": [],
+            "exposedEdges": [],
+            "exposedAssertions": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          [
+            {
+              "registryVersion": 1,
+              "predicate": "prefers_topic",
+              "subject": {
+                "kind": "self",
+                "personId": "p"
+              },
+              "object": {
+                "kind": "new",
+                "entityKind": "topic",
+                "title": "tools"
+              },
+              "polarity": "positive",
+              "modality": "asserted",
+              "temporalScope": "current",
+              "conditions": [],
+              "sourceSpans": [
+                {
+                  "messageId": "m",
+                  "partIndex": 0,
+                  "start": 0,
+                  "end": 1,
+                  "stance": "self"
+                }
+              ]
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "knowledge-source-only",
+      "context": {
+        "sceneId": "s",
+        "provenance": "source-only",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "knowledge": [
+          {
+            "registryVersion": 1,
+            "predicate": "prefers_topic",
+            "subject": {
+              "kind": "self",
+              "personId": "p"
+            },
+            "object": {
+              "kind": "new",
+              "entityKind": "topic",
+              "title": "tools"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "sourceSpans": [
+              {
+                "messageId": "m",
+                "partIndex": 0,
+                "start": 0,
+                "end": 1,
+                "stance": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "knowledge": {
+          "created": [],
+          "rejected": []
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": []
+          },
+          {
+            "content": "Synthetic statement",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "knowledge": [
+              {
+                "registryVersion": 1,
+                "predicate": "prefers_topic",
+                "subject": {
+                  "kind": "self",
+                  "personId": "p"
+                },
+                "object": {
+                  "kind": "new",
+                  "entityKind": "topic",
+                  "title": "tools"
+                },
+                "polarity": "positive",
+                "modality": "asserted",
+                "temporalScope": "current",
+                "conditions": [],
+                "sourceSpans": [
+                  {
+                    "messageId": "m",
+                    "partIndex": 0,
+                    "start": 0,
+                    "end": 1,
+                    "stance": "self"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "knowledge",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedEntities": [],
+            "exposedEdges": [],
+            "exposedAssertions": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          [
+            {
+              "registryVersion": 1,
+              "predicate": "prefers_topic",
+              "subject": {
+                "kind": "self",
+                "personId": "p"
+              },
+              "object": {
+                "kind": "new",
+                "entityKind": "topic",
+                "title": "tools"
+              },
+              "polarity": "positive",
+              "modality": "asserted",
+              "temporalScope": "current",
+              "conditions": [],
+              "sourceSpans": [
+                {
+                  "messageId": "m",
+                  "partIndex": 0,
+                  "start": 0,
+                  "end": 1,
+                  "stance": "self"
+                }
+              ]
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "knowledge-mixed-commitment",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        },
+        "knowledge": [
+          {
+            "registryVersion": 1,
+            "predicate": "prefers_topic",
+            "subject": {
+              "kind": "self",
+              "personId": "p"
+            },
+            "object": {
+              "kind": "new",
+              "entityKind": "topic",
+              "title": "tools"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "sourceSpans": [
+              {
+                "messageId": "m",
+                "partIndex": 0,
+                "start": 0,
+                "end": 1,
+                "stance": "self"
+              }
+            ]
+          }
+        ]
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "knowledge_mixed_write_denied"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "knowledge-mixed-relation",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "knowledge": [
+          {
+            "registryVersion": 1,
+            "predicate": "prefers_topic",
+            "subject": {
+              "kind": "self",
+              "personId": "p"
+            },
+            "object": {
+              "kind": "new",
+              "entityKind": "topic",
+              "title": "tools"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "sourceSpans": [
+              {
+                "messageId": "m",
+                "partIndex": 0,
+                "start": 0,
+                "end": 1,
+                "stance": "self"
+              }
+            ]
+          }
+        ],
+        "relations": [
+          {}
+        ]
+      },
+      "result": {
+        "status": "rejected",
+        "reason": "knowledge_mixed_write_denied"
+      },
+      "calls": [
+        [
+          "transaction"
+        ]
+      ]
+    },
+    {
+      "name": "default-provenance",
+      "context": {
+        "sceneId": "s",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "provenance": "source-only",
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "provenance": "source-only",
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "null-provenance",
+      "context": {
+        "sceneId": "s",
+        "provenance": null,
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "empty-provenance",
+      "context": {
+        "sceneId": "s",
+        "provenance": "",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "exposedRefs": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ]
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "absent-exposure",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "commitment": {
+          "kind": "propose",
+          "plan": {
+            "title": "Synthetic plan"
+          }
+        }
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        },
+        "commitment": {
+          "status": "saved",
+          "item": {
+            "ref": {
+              "id": "plan",
+              "version": 1
+            }
+          }
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "source-only",
+            "dependencyMemoryIds": [],
+            "dependencyParentReferences": [],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": [],
+            "internalDeclaration": true
+          },
+          {
+            "content": "Model-extracted plan declaration (propose); reference bccdc4afc7f4bd1ea6e2132274b83a4a5b173009ae94e9b32a7c6c6e8cecf97d. Not independently verified.",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "commitment": {
+              "kind": "propose",
+              "plan": {
+                "title": "Synthetic plan"
+              }
+            }
+          }
+        ],
+        [
+          "checkpoint"
+        ],
+        [
+          "state",
+          "backing"
+        ],
+        [
+          "commitment",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": []
+          },
+          {
+            "id": "backing",
+            "version": 7,
+            "deletionEpoch": 3
+          },
+          {
+            "kind": "propose",
+            "plan": {
+              "title": "Synthetic plan"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "empty-relations",
+      "context": {
+        "sceneId": "s",
+        "provenance": "contextual",
+        "dependencyMemoryIds": [
+          "old"
+        ],
+        "dependencyParentReferences": [
+          {
+            "id": "old",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        ],
+        "sourceEvidence": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p",
+            "available": true,
+            "isBot": false,
+            "sourceText": "Synthetic plan.",
+            "eventRef": {
+              "revision": 1
+            }
+          }
+        ],
+        "exposedCommitments": [
+          {
+            "id": "plan",
+            "version": 2
+          }
+        ],
+        "exposedKnowledgeEntities": [],
+        "exposedKnowledgeEdges": []
+      },
+      "candidate": {
+        "content": "Synthetic statement",
+        "kind": "claim",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "m",
+            "senderId": "p"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "m"
+        },
+        "relations": []
+      },
+      "result": {
+        "status": "saved",
+        "memory": {
+          "id": "backing"
+        }
+      },
+      "calls": [
+        [
+          "transaction"
+        ],
+        [
+          "assertion",
+          {
+            "sceneId": "s",
+            "provenance": "contextual",
+            "dependencyMemoryIds": [
+              "old"
+            ],
+            "dependencyParentReferences": [
+              {
+                "id": "old",
+                "version": 2,
+                "deletionEpoch": 0
+              }
+            ],
+            "sourceEvidence": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p",
+                "available": true,
+                "isBot": false,
+                "sourceText": "Synthetic plan.",
+                "eventRef": {
+                  "revision": 1
+                }
+              }
+            ],
+            "exposedCommitments": [
+              {
+                "id": "plan",
+                "version": 2
+              }
+            ],
+            "exposedKnowledgeEntities": [],
+            "exposedKnowledgeEdges": []
+          },
+          {
+            "content": "Synthetic statement",
+            "kind": "claim",
+            "epistemicKind": "explicit",
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "m",
+                "senderId": "p"
+              }
+            ],
+            "subject": {
+              "kind": "self",
+              "sourceMessageId": "m"
+            },
+            "relations": []
+          }
+        ]
+      ]
+    }
+  ]
+}

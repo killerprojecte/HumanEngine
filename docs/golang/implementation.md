@@ -723,3 +723,13 @@ writing is not substituted. Workspace changes preserve source invalidation and
 batching. No new admission cap is introduced. A caught ordinary SQL ABORT can
 leave the exact source-defined prefix for its caller to commit; native transaction
 loss instead permanently invalidates that owner, preventing accidental autocommit.
+
+### Complete proposal transaction composition
+
+`MemoryService.Propose` now owns the actual outer revision transaction, nested
+assertion write, explicit checkpoint and exact post-checkpoint reference. It
+admits relations, commitments and knowledge in source order with the original
+trusted context, not the rewritten declaration context. JSON serialization keeps
+the complete ordered memory and branch objects. Runtime settings are supplied
+at invocation, not captured while queueing. This completes the internal proposal
+command, not robot/provider or REST mutation wiring.

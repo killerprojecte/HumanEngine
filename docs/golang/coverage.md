@@ -287,3 +287,19 @@ The first integration run exposed duplicate synthetic backing fingerprints;
 only fixture content was corrected, preserving the production uniqueness rule.
 Full aggregate/native-ICU acceptance for this command slice remains pending CI.
 The outer proposal facade and robot/REST integration are still incomplete.
+
+### Outer proposal command
+
+36 actual-source orchestration cases inspect declaration preparation, branch
+ordering and exact forwarded context; their inner writers are explicit test
+ports. Separate real-owner tests cover every branch, exact and stale exposure,
+original knowledge parent references, corroboration checkpoint versions, saved
+backing with semantic rejection, nested JSON bodies, graph ABORT/ROLLBACK and
+commitment tail intent without ACK. Four focused packages passed race/vet.
+
+The initial integration run exposed three incorrect test expectations, corrected
+against source: malformed commitment commands throw; ordinary relation replacement
+does not create an authority intent; workspace checkpointing legitimately reads
+commitment settings. Graph admission adds no extra such read. Production semantics
+were not changed to satisfy those initial assertions. Complete aggregate/native
+acceptance for this outer composition remains pending exact-commit CI.

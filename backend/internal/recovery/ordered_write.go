@@ -15,9 +15,12 @@ import (
 // Apply has exactly the same restrictions as WritePlan.Apply. A failure prevents
 // every later step, while preserving already committed authority intent.
 type OrderedWriteStep struct {
-	BeforeIntent func() error
-	Intents      []Revocation
-	Apply        func(*MainMutation) error
+	// EnsureSecurityState admits only the fixed source security-state schema,
+	// after key preparation and before this step appends any durable intent.
+	EnsureSecurityState bool
+	BeforeIntent        func() error
+	Intents             []Revocation
+	Apply               func(*MainMutation) error
 }
 type OrderedWritePlan struct {
 	MinimumReader int
@@ -132,6 +135,11 @@ func (a *Authority) executeOrderedWrite(ctx context.Context, main *sql.DB, prepa
 		}
 		if step.BeforeIntent != nil {
 			if err = step.BeforeIntent(); err != nil {
+				return head, err
+			}
+		}
+		if step.EnsureSecurityState {
+			if err = ensureSecurityStateSchema(ctx, conn); err != nil {
 				return head, err
 			}
 		}

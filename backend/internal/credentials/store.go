@@ -13,7 +13,7 @@ import (
 )
 
 var ErrInvalidSecret = errors.New("invalid_secret")
-var ErrSecuritySchemaUnsupported = errors.New("secret_security_schema_unsupported")
+var ErrSecuritySchemaUnsupported = recovery.ErrSecuritySchemaUnsupported
 
 // Mutation accepts only the source JSON-data mutation boundary. A nil pointer
 // means omitted/null; Value must be a canonical jsjson string for action set.

@@ -147,8 +147,7 @@ func (s *Store) SaveModels(ctx context.Context, input *jsjson.Object, mutations 
 			if e != nil {
 				return recovery.OrderedWritePlan{}, e
 			}
-			schemaError := requireSecretSecuritySchema(read)
-			step := recovery.OrderedWriteStep{Intents: []recovery.Revocation{recovery.SecurityState{Revision: rev}}, BeforeIntent: func() error {
+			step := recovery.OrderedWriteStep{EnsureSecurityState: true, Intents: []recovery.Revocation{recovery.SecurityState{Revision: rev}}, BeforeIntent: func() error {
 				if !clear {
 					if action != "set" {
 						return ErrInvalidSecret
@@ -167,7 +166,7 @@ func (s *Store) SaveModels(ctx context.Context, input *jsjson.Object, mutations 
 						return e
 					}
 				}
-				return schemaError
+				return nil
 			}, Apply: func(tx *recovery.MainMutation) error {
 				if e := setRevision(tx, rev); e != nil {
 					return e
@@ -203,9 +202,8 @@ func (s *Store) SaveModels(ctx context.Context, input *jsjson.Object, mutations 
 			if e != nil {
 				return recovery.OrderedWritePlan{}, e
 			}
-			schemaError := requireSecretSecuritySchema(read)
+			last.EnsureSecurityState = true
 			last.Intents = []recovery.Revocation{recovery.SecurityState{Revision: rev}}
-			last.BeforeIntent = func() error { return schemaError }
 			write := last.Apply
 			last.Apply = func(tx *recovery.MainMutation) error {
 				if e := setRevision(tx, rev); e != nil {

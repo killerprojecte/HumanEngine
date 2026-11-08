@@ -713,3 +713,13 @@ prevents later accidental autocommit even when a planning failure was caught.
 Disabled and simulation paths check transaction ownership without constructing
 unused readers. This is an internal composition boundary, not the complete
 public proposal facade or production bot delivery path.
+
+### Normal commitment commands
+
+`commitmentadmission.AdmitInAssertionScope` keeps actual assertion, commitment and
+working-set owners on one active child. Normal writes retain projected temporal
+states and use the existing durable mutation journal; privacy-only null-state
+writing is not substituted. Workspace changes preserve source invalidation and
+batching. No new admission cap is introduced. A caught ordinary SQL ABORT can
+leave the exact source-defined prefix for its caller to commit; native transaction
+loss instead permanently invalidates that owner, preventing accidental autocommit.

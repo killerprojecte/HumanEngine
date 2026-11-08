@@ -269,3 +269,21 @@ The loss test observes the original rollback error and sql.ErrTxDone afterward;
 no staged or accidental autocommit write survives. These are functional checks,
 not isolated performance benchmarks. Full aggregate and bundle/native-ICU checks
 for this graph admission slice remain pending exact-commit CI.
+
+### Commitment command writes
+
+Normal propose/amend/confirm/complete/cancel commands now have concrete same-child
+assertion and working-set composition. The command `complete` produces lifecycle
+`done`. Exact exposure, first trusted evidence matching, sender fallback, typed
+intent ordering and projected temporal states follow the source.
+
+Actual-source fixtures cover 16 operations, two caught ordinary ABORT phases,
+five existing-policy scenarios and 40+1 dependency batching. Native integration
+reads temporal history with real historical authority and tests 41 distinct
+backings without truncation. Real RAISE(ROLLBACK) tests verify subsequent command
+and SQL ownership loss, no autocommit, retained intent and unchanged ACK.
+Focused race/vet passed for commitments, commitmentadmission and memoryservice.
+The first integration run exposed duplicate synthetic backing fingerprints;
+only fixture content was corrected, preserving the production uniqueness rule.
+Full aggregate/native-ICU acceptance for this command slice remains pending CI.
+The outer proposal facade and robot/REST integration are still incomplete.

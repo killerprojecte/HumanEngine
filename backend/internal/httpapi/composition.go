@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
+	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
@@ -41,6 +42,33 @@ func NewWithHabits(main *sql.DB, authority *recovery.Authority, habits *habitser
 	s, e := New(main, authority, token, logs)
 	if e != nil {
 		return nil, e
+	}
+	s.habits = habits
+	return s, nil
+}
+
+// NewWithExperience explicitly enables native experience routes. New and Open
+// remain readonly previews. The owner must share the exact writer and pool.
+func NewWithExperience(main *sql.DB, authority *recovery.Authority, experience *experienceservice.Service, token string, logs *observability.Logger) (*Server, error) {
+	if !experience.OwnedBy(main, authority) {
+		return nil, errors.New("http_experience_dependencies_invalid")
+	}
+	s, e := New(main, authority, token, logs)
+	if e != nil {
+		return nil, e
+	}
+	s.experience = experience
+	return s, nil
+}
+
+// NewWithMemoryAdministration composes both completed route families explicitly.
+func NewWithMemoryAdministration(main *sql.DB, authority *recovery.Authority, habits *habitservice.Service, experience *experienceservice.Service, token string, logs *observability.Logger) (*Server, error) {
+	s, e := NewWithExperience(main, authority, experience, token, logs)
+	if e != nil {
+		return nil, e
+	}
+	if habits == nil || !habits.OwnedBy(main, authority) {
+		return nil, errors.New("http_habit_dependencies_invalid")
 	}
 	s.habits = habits
 	return s, nil

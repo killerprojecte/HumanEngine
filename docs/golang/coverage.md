@@ -362,3 +362,24 @@ owner, existing compression and recovery; actual-source generators are wired int
 composition remain unfinished and are not replaced with permissive callbacks.
 Explicit root/task operation capabilities preserve split durable deletion and
 shared analysis lifetimes without a global writer counter or new admission cap.
+
+## Native Experience administration
+
+Explicit candidate constructors now compose the Experience owner and real runtime
+against one database and authority, alongside Habit administration. The four route
+families retain authentication, body/query parsing, code-point schema limits,
+allowlisted projections, conflict responses and final publication checks. Slow
+request bodies and response drains do not own the authority writer.
+
+A query witness records only the actual reads and arguments needed by the result;
+it is not a full database census. Raw stored JSON presence is retained separately
+from typed mechanical validation so expiry can commit before an invalid response
+projection is rejected, exactly as in the source. Whole receipt null/primitive/
+array values preserve recovery qualification material without becoming valid
+mechanical receipts.
+
+The 232-case actual-source route matrix, focused four-package race checks, whole
+Experience owner race checks and vet passed locally. Source regeneration checks
+are part of the differential CI target. Exact-commit full CI remains the acceptance
+gate after publication. The command remains an explicit read-only preview until
+the full production application and remaining Engine graph are composed.

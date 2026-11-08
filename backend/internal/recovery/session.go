@@ -25,13 +25,14 @@ type WriteSession struct {
 // All nested capabilities share the root lock, context and fatal native state.
 // Only the innermost callback may use its capability until it returns.
 type writeSessionState struct {
-	mu        sync.Mutex
-	authority *Authority
-	main      *sql.DB
-	conn      *sql.Conn
-	ctx       context.Context
-	fatal     error
-	current   *WriteSession
+	mu          sync.Mutex
+	authority   *Authority
+	main        *sql.DB
+	conn        *sql.Conn
+	ctx         context.Context
+	fatal       error
+	current     *WriteSession
+	readCapture *[]readWitnessQuery
 }
 
 func (a *Authority) WithWriteSession(ctx context.Context, main *sql.DB, fn func(*WriteSession) error) error {
@@ -112,6 +113,9 @@ func (s *WriteSession) Query(query string, args ...any) (*SessionRows, error) {
 	defer s.mu.Unlock()
 	if err := s.check(); err != nil {
 		return nil, err
+	}
+	if e := s.captureRead(query, args); e != nil {
+		return nil, e
 	}
 	r, e := s.conn.QueryContext(s.ctx, query, args...)
 	if e != nil {

@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 	"strconv"
@@ -191,19 +192,20 @@ func expired(at string, now int64) bool { t := timestamp(at); return t != invali
 func (c *call) save(old, next Policy) Policy {
 	next.Version = old.Version + 1
 	next.Hash = CandidateHash(next)
+	next = applyPolicyPresentationPatch(next, "status", "version")
 	if contains([]string{"active", "suspended", "retired"}, next.Status) {
 		supports, counters := []any{}, []any{}
 		for _, id := range next.SupportIDs {
-			supports = append(supports, c.outcome(id))
+			supports = append(supports, recoveryRecordMaterial(c.outcome(id)))
 		}
 		for _, id := range next.CounterexampleIDs {
-			counters = append(counters, c.outcome(id))
+			counters = append(counters, recoveryRecordMaterial(c.outcome(id)))
 		}
 		v := map[string]any{"id": next.ID, "sceneId": next.SceneID, "hash": next.Hash, "supports": supports, "counterexamples": counters}
 		if next.ValidationID == "" {
 			v["validation"] = nil
-		} else if r := c.receipt(next.ValidationID); r != nil {
-			v["validation"] = r
+		} else if r, present := c.receiptRecord(next.ValidationID); present {
+			v["validation"] = rawRecoveryRecord(r)
 		}
 		event := recovery.ExperienceState{SceneID: next.SceneID, ID: next.ID, QualificationHash: qualification(v, c.owner.ports.Compare), Version: next.Version, Status: next.Status, Reason: next.Reason}
 		if next.ValidationID != "" {
@@ -344,7 +346,7 @@ func (c *call) validate(ctx Context, id string, version int64) Policy {
 	if !contains([]string{"candidate", "suspended"}, p.Status) || !c.supported(p, true) || expired(p.ExpiresAt, c.now()) || len(p.CounterexampleIDs) > 0 {
 		fail("experience_validation_ineligible")
 	}
-	copy := *decode[Policy](encoded(p))
+	copy := clonePolicy(p)
 	receipt := take(c.owner.ports.Validate(copy))
 	if !ValidMechanicalReceipt(p, receipt) {
 		fail("experience_validation_failed")
@@ -370,8 +372,9 @@ func (c *call) review(ctx Context, id string, version int64, status, basis strin
 		if basis == "explicit_preference" && (!c.learning(ctx) || !c.flags().AutoActivate || !c.flags().Hints || p.Action != "conclusion_before_detail") {
 			fail("experience_activation_ineligible")
 		}
-		r := c.receipt(p.ValidationID)
-		if p.Status != "validated" || r == nil || r.CandidateVersion != p.Version-1 || r.CandidateHash != p.Hash || !c.supported(p, true) || expired(p.ExpiresAt, c.now()) {
+		raw, present := c.receiptRecord(p.ValidationID)
+		r, object := raw.(*jsjson.Object)
+		if p.Status != "validated" || !present || !object || getValue(r, "candidateVersion") != float64(p.Version-1) || getValue(r, "candidateHash") != p.Hash || !c.supported(p, true) || expired(p.ExpiresAt, c.now()) {
 			fail("experience_activation_ineligible")
 		}
 	}
@@ -380,6 +383,7 @@ func (c *call) review(ctx Context, id string, version int64, status, basis strin
 	next.Status = status
 	if status == "active" {
 		next.ActivationBasis = basis
+		next = applyPolicyPresentationPatch(next, "activationBasis")
 		next.Reason = "experimental_mechanical_hint"
 	} else {
 		next.Reason = "review_" + status

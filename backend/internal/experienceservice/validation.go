@@ -173,7 +173,7 @@ func ValidateExperiencePolicy(c Policy) Receipt {
 		templates = append(templates, []any{a, actionTemplates[a]})
 	}
 	validID := func(s string) bool { n, e := jsjson.UTF16Len(s); return e == nil && n > 0 && n <= 512 }
-	fail("candidate_shape", !c.unknownFields && validID(c.ID) && c.Version >= 1 && c.Version <= maxSafeVersion && validID(c.SceneID) && member(c.Status, "candidate", "validated", "active", "suspended", "retired") && (c.ActivationBasis == "" || member(c.ActivationBasis, "explicit_preference", "administrator_review")))
+	fail("candidate_shape", !c.unknownFields && validID(c.ID) && c.Version >= 1 && c.Version <= maxSafeVersion && validID(c.SceneID) && member(c.Status, "candidate", "validated", "active", "suspended", "retired") && validActivationMaterial(c))
 	fail("exact_semantic_hash", c.Hash == CandidateHash(c))
 	fail("action_condition_whitelist", IsExperienceActionCondition(c.Action, c.Condition))
 	fail("support_lineage", stringsValid(c.SupportIDs, true) && stringsValid(c.GenerationRoots, true) && stringsValid(c.GenerationFamilies, true))

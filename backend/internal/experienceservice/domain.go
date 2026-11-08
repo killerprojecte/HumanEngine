@@ -15,6 +15,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/profileidentity"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 )
 
@@ -50,7 +51,8 @@ type Feedback struct {
 	ObservedAt  string     `json:"observedAt"`
 }
 type Outcome struct {
-	extraFields *jsjson.Object
+	presentation *presentationMaterial
+	extraFields  *jsjson.Object
 	Feedback
 	ID            string `json:"id"`
 	Version       int64  `json:"version"`
@@ -65,6 +67,7 @@ type Condition struct {
 	raw      *jsjson.Object
 }
 type Policy struct {
+	presentation       *presentationMaterial
 	extraFields        *jsjson.Object
 	ID                 string    `json:"id"`
 	Version            int64     `json:"version"`
@@ -85,6 +88,7 @@ type Policy struct {
 	unknownFields      bool
 }
 type Receipt struct {
+	presentation       *presentationMaterial
 	extraFields        *jsjson.Object
 	CandidateID        string   `json:"candidateId"`
 	CandidateVersion   int64    `json:"candidateVersion"`
@@ -198,7 +202,13 @@ func (c *Condition) UnmarshalJSON(b []byte) error {
 }
 func getValue(o *jsjson.Object, k string) any { v, _ := o.Get(k); return v }
 func CandidateHash(c Policy) string {
-	return digestValue(object("sceneId", c.SceneID, "action", c.Action, "condition", c.Condition.value(), "supportIds", sortedValues(c.SupportIDs), "counterexampleIds", sortedValues(c.CounterexampleIDs), "generationRoots", sortedValues(c.GenerationRoots), "generationFamilies", sortedValues(c.GenerationFamilies), "createdAt", c.CreatedAt, "expiresAt", c.ExpiresAt))
+	o := object("sceneId", c.SceneID, "action", c.Action, "condition", c.Condition.value(), "supportIds", sortedValues(c.SupportIDs), "counterexampleIds", sortedValues(c.CounterexampleIDs), "generationRoots", sortedValues(c.GenerationRoots), "generationFamilies", sortedValues(c.GenerationFamilies))
+	for _, key := range []string{"createdAt", "expiresAt"} {
+		if v, ok := policyScalarMaterial(c, key); ok {
+			check(o.Set(key, cloneReferenceValue(v)))
+		}
+	}
+	return digestValue(o)
 }
 
 var timezoneSuffix = regexp.MustCompile(`(?:Z|[+-]\d\d:\d\d)$`)
@@ -569,6 +579,25 @@ func decodeDomain(v any, d reflect.Value) error {
 			}
 			value, has := o.Get(name)
 			if has {
+				// Date.parse consumes scalar JSON values through JavaScript string coercion;
+				// preserve their actual JSON material for hash/persistence/schema projection.
+				if _, policy := d.Addr().Interface().(*Policy); policy {
+					if name == "createdAt" || name == "expiresAt" {
+						switch value.(type) {
+						case nil, bool, float64:
+							text, e := profileidentity.StringValue(value)
+							if e != nil {
+								return e
+							}
+							d.Field(i).SetString(text)
+							continue
+						}
+					}
+					if name == "activationBasis" && (value == nil || value == false) {
+						d.Field(i).SetString("")
+						continue
+					}
+				}
 				if f.Name == "EventRef" || f.Name == "SourceEventRef" {
 					// Presence and arbitrary JSON material are independent of typed
 					// authority. Null is present; malformed values never get coerced.
@@ -592,6 +621,7 @@ func decodeDomain(v any, d reflect.Value) error {
 			}
 		}
 		setDomainExtras(d.Addr().Interface(), extra)
+		retainPresentation(d.Addr().Interface(), o)
 	default:
 		return fmt.Errorf("unsupported experience domain decode: %s", d.Type())
 	}

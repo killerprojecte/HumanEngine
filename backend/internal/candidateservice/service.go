@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/httpapi"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
@@ -16,6 +18,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/scenestore"
 	"github.com/killerprojecte/HumanEngine/backend/internal/settingsstore"
+	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
 )
 
@@ -24,32 +27,33 @@ var ErrClosed = errors.New("candidate_service_closed")
 // Service owns its database and authority. Neither store nor handler can close
 // them independently. The caller owns listeners and the optional logger.
 type Service struct {
-	mu        sync.Mutex
-	drained   *sync.Cond
-	active    int
-	closeDone chan struct{}
-	closed    bool
-	closeErr  error
-	main      *sql.DB
-	authority *recovery.Authority
-	http      *httpapi.Server
-	settings  settingsstore.Store
-	scenes    scenestore.Store
+	mu         sync.Mutex
+	drained    *sync.Cond
+	active     int
+	closeDone  chan struct{}
+	closed     bool
+	closeErr   error
+	main       *sql.DB
+	authority  *recovery.Authority
+	http       *httpapi.Server
+	experience *experienceservice.Service
+	settings   settingsstore.Store
+	scenes     scenestore.Store
 }
 
 // Open opens an already enrolled installation without changing its schemas or
 // repairing ACK gaps. As in the preview, actual publication verifies authority.
 func Open(ctx context.Context, database, token string, logs *observability.Logger) (*Service, error) {
-	return open(ctx, database, token, logs, false)
+	return open(ctx, database, token, logs, false, nil)
 }
 
 // OpenWithHabits initializes concrete habit storage and enables its actual admin
 // routes. Unlike Open it may initialize that domain schema, but never enrolls or
 // reconciles an installation or replays learning.
 func OpenWithHabits(ctx context.Context, database, token string, logs *observability.Logger) (*Service, error) {
-	return open(ctx, database, token, logs, true)
+	return open(ctx, database, token, logs, true, nil)
 }
-func open(ctx context.Context, database, token string, logs *observability.Logger, withHabits bool) (*Service, error) {
+func open(ctx context.Context, database, token string, logs *observability.Logger, withHabits bool, experienceOptions *NativeExperienceOptions) (*Service, error) {
 	main, err := storage.OpenExisting(database, true)
 	if err != nil {
 		return nil, err
@@ -70,23 +74,71 @@ func open(ctx context.Context, database, token string, logs *observability.Logge
 	if err != nil {
 		return fail(err)
 	}
-	var handler *httpapi.Server
-	if withHabits {
-		var habits *habitservice.Service
-		habits, err = habitservice.New(ctx, main, authority, habitservice.Options{})
-		if err == nil {
-			handler, err = httpapi.NewWithHabits(main, authority, habits, token, logs)
+	runtimeAccepted := false
+	var abortOnce sync.Once
+	abortRuntime := func() {}
+	defer func() {
+		if !runtimeAccepted {
+			abortRuntime()
 		}
-	} else {
-		handler, err = httpapi.New(main, authority, token, logs)
+	}()
+	var handler *httpapi.Server
+	var habits *habitservice.Service
+	var experience *experienceservice.Service
+	if withHabits {
+		habits, err = habitservice.New(ctx, main, authority, habitservice.Options{})
 	}
+	if err == nil && experienceOptions != nil {
+		var ports experienceservice.Ports
+		if experienceOptions.BuildRuntime == nil || experienceOptions.Compare == nil || experienceOptions.AbortRuntime == nil {
+			err = errors.New("candidate_experience_native_dependencies_required")
+		} else {
+			var sources *sourceevents.Store
+			var runtimeAuthority *sourceevents.RuntimeAuthority
+			var runtime *botruntime.Runtime
+			sources, err = sourceevents.New(main, authority, sourceevents.Options{})
+			if err == nil {
+				runtimeAuthority, err = sourceevents.NewRuntimeAuthority(sources)
+			}
+			if err == nil {
+				runtime, err = experienceOptions.BuildRuntime(runtimeAuthority)
+				if runtime != nil {
+					abortRuntime = func() { abortOnce.Do(func() { experienceOptions.AbortRuntime(runtime) }) }
+				}
+			}
+			if err == nil && !runtime.UsesAuthority(runtimeAuthority) {
+				err = errors.New("candidate_experience_runtime_owner_mismatch")
+			}
+			if err == nil {
+				ports, err = experienceservice.NativeRuntimePorts(runtime, sources, experienceOptions.Compare)
+			}
+			if err == nil {
+				experience, err = experienceservice.New(ctx, main, authority, ports)
+			}
+		}
+	}
+	if err == nil {
+		switch {
+		case experience != nil && habits != nil:
+			handler, err = httpapi.NewWithMemoryAdministration(main, authority, habits, experience, token, logs)
+		case experience != nil:
+			handler, err = httpapi.NewWithExperience(main, authority, experience, token, logs)
+		case habits != nil:
+			handler, err = httpapi.NewWithHabits(main, authority, habits, token, logs)
+		default:
+			handler, err = httpapi.New(main, authority, token, logs)
+		}
+	}
+
 	if err != nil {
+		abortRuntime()
 		return fail(errors.Join(err, authority.Close()))
 	}
-	s := &Service{main: main, authority: authority, http: handler, closeDone: make(chan struct{}),
+	s := &Service{main: main, authority: authority, http: handler, experience: experience, closeDone: make(chan struct{}),
 		settings: settingsstore.Store{Main: main, Authority: authority},
 		scenes:   scenestore.Store{Main: main, Authority: authority}}
 	s.drained = sync.NewCond(&s.mu)
+	runtimeAccepted = true
 	return s, nil
 }
 

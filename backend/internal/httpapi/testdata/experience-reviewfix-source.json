@@ -1,0 +1,2882 @@
+{
+  "normalization": "Only generated requestId is replaced; event payload bytes are unchanged. Head/gate hashes are recomputed with the fixed synthetic native-fixture instance ID, starting from the asserted empty source chain.",
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/memory/interfaces/experience-routes.ts": "5c796b730e792fae97520750186d6a759c9f551e15b4bf918fad8e18d797e8f5",
+    "src/memory/experience/service.ts": "73ebaf775105d2791bc67bd0b998c5cca203b76ae9d084cff9326d6ed4c05bf5",
+    "src/memory/experience/store.ts": "86c7df00982edf0d52b8acb854bf97f266dbcfda30e59314219014580d5730f8",
+    "src/memory/experience/promotion.ts": "5a568eadc5e55051407b99bf30208b921e2d23067bdd4bbc20e6d1757095e049",
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "node_modules/zod/v4/core/checks.js": "bc42543274218aa7ef72192b3218d2a4a399e53df8de240a04d9ff275096f563",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "cases": [
+    {
+      "name": "validate-basis-",
+      "target": "policy",
+      "key": "activationBasis",
+      "value": "",
+      "clean": true,
+      "operation": "validate",
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-08T00:00:00.000Z",
+          "activationBasis": ""
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "tier": "mechanical_only",
+          "ruleVersion": "experience-mechanical-v2",
+          "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+          "datasetVersion": "experience-fixed-behavior-holdout-v2",
+          "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "heldoutRoots": [
+            "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "heldoutFamilies": [
+            "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "checks": [
+            "candidate_shape",
+            "exact_semantic_hash",
+            "action_condition_whitelist",
+            "support_lineage",
+            "holdout_root_disjoint",
+            "holdout_family_disjoint",
+            "bounded_expiry",
+            "no_counterexamples",
+            "fixed_protocol_holdouts",
+            "fixed_operation_behavior_holdouts",
+            "fixed_non_authoritative_templates"
+          ],
+          "failures": [],
+          "passed": true
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 409,
+          "text": "{\"error\":\"Experience changed or is not eligible; refresh before reviewing\"}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 0,
+          "policy": {
+            "id": "p",
+            "version": 1,
+            "hash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "status": "candidate",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+            ],
+            "generationFamilies": [
+              "family"
+            ],
+            "createdAt": "2099-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-08T00:00:00.000Z",
+            "activationBasis": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "validate-basis-null",
+      "target": "policy",
+      "key": "activationBasis",
+      "value": null,
+      "clean": true,
+      "operation": "validate",
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-08T00:00:00.000Z",
+          "activationBasis": null
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "tier": "mechanical_only",
+          "ruleVersion": "experience-mechanical-v2",
+          "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+          "datasetVersion": "experience-fixed-behavior-holdout-v2",
+          "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "heldoutRoots": [
+            "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "heldoutFamilies": [
+            "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "checks": [
+            "candidate_shape",
+            "exact_semantic_hash",
+            "action_condition_whitelist",
+            "support_lineage",
+            "holdout_root_disjoint",
+            "holdout_family_disjoint",
+            "bounded_expiry",
+            "no_counterexamples",
+            "fixed_protocol_holdouts",
+            "fixed_operation_behavior_holdouts",
+            "fixed_non_authoritative_templates"
+          ],
+          "failures": [],
+          "passed": true
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 409,
+          "text": "{\"error\":\"Experience changed or is not eligible; refresh before reviewing\"}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 0,
+          "policy": {
+            "id": "p",
+            "version": 1,
+            "hash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "status": "candidate",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+            ],
+            "generationFamilies": [
+              "family"
+            ],
+            "createdAt": "2099-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-08T00:00:00.000Z",
+            "activationBasis": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "validate-basis-false",
+      "target": "policy",
+      "key": "activationBasis",
+      "value": false,
+      "clean": true,
+      "operation": "validate",
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-08T00:00:00.000Z",
+          "activationBasis": false
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "tier": "mechanical_only",
+          "ruleVersion": "experience-mechanical-v2",
+          "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+          "datasetVersion": "experience-fixed-behavior-holdout-v2",
+          "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "heldoutRoots": [
+            "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "heldoutFamilies": [
+            "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "checks": [
+            "candidate_shape",
+            "exact_semantic_hash",
+            "action_condition_whitelist",
+            "support_lineage",
+            "holdout_root_disjoint",
+            "holdout_family_disjoint",
+            "bounded_expiry",
+            "no_counterexamples",
+            "fixed_protocol_holdouts",
+            "fixed_operation_behavior_holdouts",
+            "fixed_non_authoritative_templates"
+          ],
+          "failures": [],
+          "passed": true
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 409,
+          "text": "{\"error\":\"Experience changed or is not eligible; refresh before reviewing\"}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 0,
+          "policy": {
+            "id": "p",
+            "version": 1,
+            "hash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "status": "candidate",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+            ],
+            "generationFamilies": [
+              "family"
+            ],
+            "createdAt": "2099-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-08T00:00:00.000Z",
+            "activationBasis": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "validate-date-2099",
+      "target": "policy",
+      "key": "createdAt",
+      "value": 2099,
+      "clean": true,
+      "operation": "validate",
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "a2631f747b9b1e0f10bd6f38932beb9c77838b68468df99257d7273498c39c52",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "createdAt": 2099,
+          "expiresAt": "2099-01-08T00:00:00.000Z"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "tier": "mechanical_only",
+          "ruleVersion": "experience-mechanical-v2",
+          "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+          "datasetVersion": "experience-fixed-behavior-holdout-v2",
+          "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "heldoutRoots": [
+            "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "heldoutFamilies": [
+            "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "checks": [
+            "candidate_shape",
+            "exact_semantic_hash",
+            "action_condition_whitelist",
+            "support_lineage",
+            "holdout_root_disjoint",
+            "holdout_family_disjoint",
+            "bounded_expiry",
+            "no_counterexamples",
+            "fixed_protocol_holdouts",
+            "fixed_operation_behavior_holdouts",
+            "fixed_non_authoritative_templates"
+          ],
+          "failures": [],
+          "passed": true
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 200,
+          "text": "{\"ok\":true}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "a2631f747b9b1e0f10bd6f38932beb9c77838b68468df99257d7273498c39c52",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "status": "validated",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+            ],
+            "generationFamilies": [
+              "family"
+            ],
+            "createdAt": 2099,
+            "expiresAt": "2099-01-08T00:00:00.000Z",
+            "validationId": "synthetic-reviewfix-receipt",
+            "reason": "mechanical_only"
+          }
+        }
+      ]
+    },
+    {
+      "name": "validate-date-null",
+      "target": "policy",
+      "key": "createdAt",
+      "value": null,
+      "clean": true,
+      "operation": "validate",
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "ca57103e38ddd1b3737b0834ae310b70ffce66fc45ec242ccf96a5a9df56703b",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "createdAt": null,
+          "expiresAt": "2099-01-08T00:00:00.000Z"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "tier": "mechanical_only",
+          "ruleVersion": "experience-mechanical-v2",
+          "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+          "datasetVersion": "experience-fixed-behavior-holdout-v2",
+          "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "heldoutRoots": [
+            "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "heldoutFamilies": [
+            "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "checks": [
+            "candidate_shape",
+            "exact_semantic_hash",
+            "action_condition_whitelist",
+            "support_lineage",
+            "holdout_root_disjoint",
+            "holdout_family_disjoint",
+            "bounded_expiry",
+            "no_counterexamples",
+            "fixed_protocol_holdouts",
+            "fixed_operation_behavior_holdouts",
+            "fixed_non_authoritative_templates"
+          ],
+          "failures": [],
+          "passed": true
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 409,
+          "text": "{\"error\":\"Experience changed or is not eligible; refresh before reviewing\"}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 0,
+          "policy": {
+            "id": "p",
+            "version": 1,
+            "hash": "ca57103e38ddd1b3737b0834ae310b70ffce66fc45ec242ccf96a5a9df56703b",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "status": "candidate",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+            ],
+            "generationFamilies": [
+              "family"
+            ],
+            "createdAt": null,
+            "expiresAt": "2099-01-08T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "validate-date-false",
+      "target": "policy",
+      "key": "createdAt",
+      "value": false,
+      "clean": true,
+      "operation": "validate",
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "94c1f0e9ff82c08eee517275a4298c65c6ac3e11278b299ab7f845ab139237b9",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "createdAt": false,
+          "expiresAt": "2099-01-08T00:00:00.000Z"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "d9033f25bcd6cfcd4b3b1ad6f5ea8e42a9343857c2210b18ac552ec0bcfb1c32",
+          "tier": "mechanical_only",
+          "ruleVersion": "experience-mechanical-v2",
+          "ruleHash": "8fb0e2c076e52a2c297a147d300a5aafb646b194d2af0fb424e060450b3fa29a",
+          "datasetVersion": "experience-fixed-behavior-holdout-v2",
+          "datasetHash": "aefc04974db0715bfe5c7ea731333d75d421ff5cbbe745fd6d618e0b500d16b1",
+          "generationRoots": [
+            "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+          ],
+          "generationFamilies": [
+            "family"
+          ],
+          "heldoutRoots": [
+            "holdout-root:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "holdout-root:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "holdout-root:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "holdout-root:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "holdout-root:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "holdout-root:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "holdout-root:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "holdout-root:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "holdout-root:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "holdout-root:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "holdout-root:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "holdout-root:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "holdout-root:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "holdout-root:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "holdout-root:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "holdout-root:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "holdout-root:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "holdout-root:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "holdout-root:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "holdout-root:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "holdout-root:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "heldoutFamilies": [
+            "engineering-family:a7208807f421914479d1cefeb559a088341f12d070b41345fa5062e5ff7b5d4c",
+            "engineering-family:c4bf5f31d4226b0bab76dc41a76536a7e2d6f1d60665e00aa6b4239874f1c3f3",
+            "engineering-family:7a1273b94ba26e3d6bd46c195a9c472c43e24ff407a1261fdd435c1f6da80483",
+            "engineering-family:8d79f38e06fe461a40e4d11e192c05c85a34909d77d518b7873dcbcdc5a94d65",
+            "engineering-family:c0fefc8d9f28786b734e749b9341a4a967d8a2fd5bbf647141e106ffd96af601",
+            "engineering-family:211fbe7d87a86219937a40581e51e0259e707a3256cb5f002e2f93a8d98c4ccf",
+            "engineering-family:c8fb00d07b3b23fe19ad153c65d8bf357fd7eb257c8731602a96dd16d72e67d1",
+            "engineering-family:6073ac9a6f50cf78411efb0b469741511b029b3d41424a977825a7e642d0d3dd",
+            "engineering-family:59f1fa50079dc6e9f14015523b7a40e737859e030a9fbb4d55e31a8f48bbcd10",
+            "engineering-family:2ec460b4d7b78a3e781f8ce270b9907fbe9217a2a72eb6f2334708307e5e4b76",
+            "engineering-family:1b4171b63db3dfb45b8bb6282dfd35ec07ac3d6573f1a1d53103a25bf7712f11",
+            "engineering-family:268039df7ad8c2d07eef6944e8df186ec8b6605d5e87eb18b7567a82b89a40a5",
+            "engineering-family:829c5e2ecaa72bbf76812073238d7e543cc893d409742a315f36de3ecc3394ff",
+            "engineering-family:e763798f3141a613ae73ca021be6bb8fc64e9ef38b5e732b6320c3933c0e95b7",
+            "engineering-family:9c895780d165ea51df6e514ef3245a10217112b14c418bbedfda9e10a28bb52c",
+            "engineering-family:12f227f4fb5dbe791522b05ee2bade1e2db2571954c5e9b51ab83ce16f09cfef",
+            "engineering-family:66262dc597654dc7da229bb4b101f16e055d6f87ae5461ac062e2978365e1e97",
+            "engineering-family:47f7627074c56f47de5b2b37a59fdf7ab9811d85e67694c0e2293298ff10aad2",
+            "engineering-family:89b92c29acfe0b1321fe39927e7b64572fa64f626982a3d192dad209bec9eed1",
+            "engineering-family:aa5e6cc962d6d09ffbcca32c650b870efdbe6fc5782ad593fb3f68bd0a11d00b",
+            "engineering-family:22ccc326117a9bc15bc97f8ba03656acfa3a89f6b0a94ddeaef13dd9e95a3983"
+          ],
+          "checks": [
+            "candidate_shape",
+            "exact_semantic_hash",
+            "action_condition_whitelist",
+            "support_lineage",
+            "holdout_root_disjoint",
+            "holdout_family_disjoint",
+            "bounded_expiry",
+            "no_counterexamples",
+            "fixed_protocol_holdouts",
+            "fixed_operation_behavior_holdouts",
+            "fixed_non_authoritative_templates"
+          ],
+          "failures": [],
+          "passed": true
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 409,
+          "text": "{\"error\":\"Experience changed or is not eligible; refresh before reviewing\"}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 0,
+          "policy": {
+            "id": "p",
+            "version": 1,
+            "hash": "94c1f0e9ff82c08eee517275a4298c65c6ac3e11278b299ab7f845ab139237b9",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice"
+            },
+            "status": "candidate",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "609a723198683800af98f5905d06bcf0ff0d06d5d1bb72d88c902e2903f6281f"
+            ],
+            "generationFamilies": [
+              "family"
+            ],
+            "createdAt": false,
+            "expiresAt": "2099-01-08T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-passed-expiry",
+      "target": "receipt",
+      "key": "passed",
+      "value": null,
+      "operation": "expiry",
+      "expiry": true,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "active",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "1970-01-02T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": null,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"bcc8c826ab1756467b0f4d48c03abf05c1fe08133a2511788131e0c982095889\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"support_or_expiry_invalid\"}"
+          ],
+          "normalizedHeadHash": "cae15699f1f933d390db08164a86f1d3a35caf830d4b8b9bccaf4b20694fa569",
+          "normalizedGateHash": "cae15699f1f933d390db08164a86f1d3a35caf830d4b8b9bccaf4b20694fa569",
+          "status": 503,
+          "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "3d88d717aba7714ce8ee2cff8fc0023e2fb9e435e3fd9d7527c0ed5f724f362b",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "1970-01-02T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "support_or_expiry_invalid"
+          }
+        },
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"bcc8c826ab1756467b0f4d48c03abf05c1fe08133a2511788131e0c982095889\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"support_or_expiry_invalid\"}"
+          ],
+          "normalizedHeadHash": "cae15699f1f933d390db08164a86f1d3a35caf830d4b8b9bccaf4b20694fa569",
+          "normalizedGateHash": "cae15699f1f933d390db08164a86f1d3a35caf830d4b8b9bccaf4b20694fa569",
+          "status": 503,
+          "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "3d88d717aba7714ce8ee2cff8fc0023e2fb9e435e3fd9d7527c0ed5f724f362b",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "1970-01-02T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "support_or_expiry_invalid"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-passed-suspended",
+      "target": "receipt",
+      "key": "passed",
+      "value": null,
+      "operation": "suspended",
+      "expiry": false,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": null,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"c4c1e0a798475a80f74629fb5e3360287582db4a1ba1a04b5f1868130cdbbfad\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"review_suspended\"}"
+          ],
+          "normalizedHeadHash": "c0bfc50d4433107773dd6ac32b2402ad74c735304d3bb17482530f2f3bfc08d2",
+          "normalizedGateHash": "c0bfc50d4433107773dd6ac32b2402ad74c735304d3bb17482530f2f3bfc08d2",
+          "status": 200,
+          "text": "{\"ok\":true}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "7d8c2ca141179a054355c58ab87afd2a07fe99276806da112a5b8add48a07ae9",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "review_suspended"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-passed-retired",
+      "target": "receipt",
+      "key": "passed",
+      "value": null,
+      "operation": "retired",
+      "expiry": false,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": null,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"c4c1e0a798475a80f74629fb5e3360287582db4a1ba1a04b5f1868130cdbbfad\",\"version\":2,\"status\":\"retired\",\"validationId\":\"receipt\",\"reason\":\"review_retired\"}"
+          ],
+          "normalizedHeadHash": "c0b756c94934d57d37a077af4d3b30ad36d38a73c68df2ca3d6a978f6a17b76a",
+          "normalizedGateHash": "c0b756c94934d57d37a077af4d3b30ad36d38a73c68df2ca3d6a978f6a17b76a",
+          "status": 200,
+          "text": "{\"ok\":true}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "7d8c2ca141179a054355c58ab87afd2a07fe99276806da112a5b8add48a07ae9",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "retired",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "review_retired"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-tier-expiry",
+      "target": "receipt",
+      "key": "tier",
+      "value": false,
+      "operation": "expiry",
+      "expiry": true,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "active",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "1970-01-02T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": false,
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"ecc954eb52a052e48cddf5c65ee72dff3ee30dd287224b49de34154e0a1f30d9\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"support_or_expiry_invalid\"}"
+          ],
+          "normalizedHeadHash": "90002a8a8e1e6d87f723aad10d63bec97b32b96ac368185f034d14bc1cc98b13",
+          "normalizedGateHash": "90002a8a8e1e6d87f723aad10d63bec97b32b96ac368185f034d14bc1cc98b13",
+          "status": 503,
+          "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "3d88d717aba7714ce8ee2cff8fc0023e2fb9e435e3fd9d7527c0ed5f724f362b",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "1970-01-02T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "support_or_expiry_invalid"
+          }
+        },
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"ecc954eb52a052e48cddf5c65ee72dff3ee30dd287224b49de34154e0a1f30d9\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"support_or_expiry_invalid\"}"
+          ],
+          "normalizedHeadHash": "90002a8a8e1e6d87f723aad10d63bec97b32b96ac368185f034d14bc1cc98b13",
+          "normalizedGateHash": "90002a8a8e1e6d87f723aad10d63bec97b32b96ac368185f034d14bc1cc98b13",
+          "status": 503,
+          "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "3d88d717aba7714ce8ee2cff8fc0023e2fb9e435e3fd9d7527c0ed5f724f362b",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "1970-01-02T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "support_or_expiry_invalid"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-tier-suspended",
+      "target": "receipt",
+      "key": "tier",
+      "value": false,
+      "operation": "suspended",
+      "expiry": false,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": false,
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"6a14afd3627c6a6dbb0393b65383d90412d1f88a7d04791074a89b755c503d2f\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"review_suspended\"}"
+          ],
+          "normalizedHeadHash": "e956d4af2f4b7e8bdb23254316f2b911f3be0221454073fb496f76391a00175f",
+          "normalizedGateHash": "e956d4af2f4b7e8bdb23254316f2b911f3be0221454073fb496f76391a00175f",
+          "status": 200,
+          "text": "{\"ok\":true}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "7d8c2ca141179a054355c58ab87afd2a07fe99276806da112a5b8add48a07ae9",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "review_suspended"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-tier-retired",
+      "target": "receipt",
+      "key": "tier",
+      "value": false,
+      "operation": "retired",
+      "expiry": false,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": false,
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"6a14afd3627c6a6dbb0393b65383d90412d1f88a7d04791074a89b755c503d2f\",\"version\":2,\"status\":\"retired\",\"validationId\":\"receipt\",\"reason\":\"review_retired\"}"
+          ],
+          "normalizedHeadHash": "989e0f6fcdc2adaed7d578acc391f80157daf3a726102932abbd137d6139301b",
+          "normalizedGateHash": "989e0f6fcdc2adaed7d578acc391f80157daf3a726102932abbd137d6139301b",
+          "status": 200,
+          "text": "{\"ok\":true}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "7d8c2ca141179a054355c58ab87afd2a07fe99276806da112a5b8add48a07ae9",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "retired",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "review_retired"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-checks-expiry",
+      "target": "receipt",
+      "key": "checks",
+      "value": false,
+      "operation": "expiry",
+      "expiry": true,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "active",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "1970-01-02T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": false,
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"7ee6c5bc3de65254475521ea0b293d3f055a3b47b4e181107ad31ee92a500b27\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"support_or_expiry_invalid\"}"
+          ],
+          "normalizedHeadHash": "d87ad36da6f15c5a4370a8dcdbb2fdb5b91ab161a2b46eab5973f004a4edb317",
+          "normalizedGateHash": "d87ad36da6f15c5a4370a8dcdbb2fdb5b91ab161a2b46eab5973f004a4edb317",
+          "status": 503,
+          "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "3d88d717aba7714ce8ee2cff8fc0023e2fb9e435e3fd9d7527c0ed5f724f362b",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "1970-01-02T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "support_or_expiry_invalid"
+          }
+        },
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"7ee6c5bc3de65254475521ea0b293d3f055a3b47b4e181107ad31ee92a500b27\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"support_or_expiry_invalid\"}"
+          ],
+          "normalizedHeadHash": "d87ad36da6f15c5a4370a8dcdbb2fdb5b91ab161a2b46eab5973f004a4edb317",
+          "normalizedGateHash": "d87ad36da6f15c5a4370a8dcdbb2fdb5b91ab161a2b46eab5973f004a4edb317",
+          "status": 503,
+          "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "3d88d717aba7714ce8ee2cff8fc0023e2fb9e435e3fd9d7527c0ed5f724f362b",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "1970-01-02T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "support_or_expiry_invalid"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-checks-suspended",
+      "target": "receipt",
+      "key": "checks",
+      "value": false,
+      "operation": "suspended",
+      "expiry": false,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": false,
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"7971ff43000ab694fffcd0a1c6b01833d0280b30099dab7cfded36b909493590\",\"version\":2,\"status\":\"suspended\",\"validationId\":\"receipt\",\"reason\":\"review_suspended\"}"
+          ],
+          "normalizedHeadHash": "4df8cc90390217c891e8d28a13bafe11aaeb2154218f63913e30ebd80bbc54e8",
+          "normalizedGateHash": "4df8cc90390217c891e8d28a13bafe11aaeb2154218f63913e30ebd80bbc54e8",
+          "status": 200,
+          "text": "{\"ok\":true}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "7d8c2ca141179a054355c58ab87afd2a07fe99276806da112a5b8add48a07ae9",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "suspended",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "review_suspended"
+          }
+        }
+      ]
+    },
+    {
+      "name": "receipt-checks-retired",
+      "target": "receipt",
+      "key": "checks",
+      "value": false,
+      "operation": "retired",
+      "expiry": false,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "person_question",
+            "personId": "alice",
+            "hidden": "private-condition"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": false,
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "  A\u0000‮⁦lice  "
+        }
+      },
+      "responses": [
+        {
+          "events": [
+            "{\"schemaVersion\":1,\"kind\":\"experience_state\",\"sceneId\":\"s\",\"id\":\"p\",\"qualificationHash\":\"7971ff43000ab694fffcd0a1c6b01833d0280b30099dab7cfded36b909493590\",\"version\":2,\"status\":\"retired\",\"validationId\":\"receipt\",\"reason\":\"review_retired\"}"
+          ],
+          "normalizedHeadHash": "6d912b44f7d6eaee1e19607c3a70725bb50d3863aa7f3fd874df23b7d6c6bb60",
+          "normalizedGateHash": "6d912b44f7d6eaee1e19607c3a70725bb50d3863aa7f3fd874df23b7d6c6bb60",
+          "status": 200,
+          "text": "{\"ok\":true}",
+          "headDelta": 1,
+          "gateDelta": 1,
+          "updates": 1,
+          "policy": {
+            "id": "p",
+            "version": 2,
+            "hash": "7d8c2ca141179a054355c58ab87afd2a07fe99276806da112a5b8add48a07ae9",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "person_question",
+              "personId": "alice",
+              "hidden": "private-condition"
+            },
+            "status": "retired",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy",
+            "reason": "review_retired"
+          }
+        }
+      ]
+    },
+    {
+      "name": "plan-person-named",
+      "target": "policy",
+      "key": "condition",
+      "value": {
+        "kind": "plan_question",
+        "personId": "alice"
+      },
+      "identity": {
+        "senderDisplayName": "Alice"
+      },
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "plan_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": {
+          "senderDisplayName": "Alice"
+        }
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 200,
+          "text": "{\"sceneId\":\"s\",\"enabled\":true,\"items\":[{\"id\":\"p\",\"version\":1,\"action\":\"exact_person_before_semantic\",\"condition\":{\"kind\":\"plan_question\"},\"personName\":\"Alice\",\"trialEligible\":false,\"status\":\"candidate\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"expiresAt\":\"2099-01-01T00:00:00.000Z\",\"expired\":false,\"sources\":[{\"messageId\":\"instruction\",\"senderId\":\"alice\",\"senderName\":\"Alice\",\"observedAt\":\"2026-01-01T00:00:00.000Z\",\"code\":\"request_exact_person_lookup\"}],\"validation\":{\"tier\":\"mechanical_only\",\"checks\":[\"synthetic\"],\"failures\":[],\"passed\":true},\"uses\":{\"exposed\":0,\"applied\":0,\"declined\":0}}],\"coverage\":\"complete\"}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 0,
+          "policy": {
+            "id": "p",
+            "version": 1,
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "plan_question",
+              "personId": "alice"
+            },
+            "status": "candidate",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "plan-person-null",
+      "target": "policy",
+      "key": "condition",
+      "value": {
+        "kind": "plan_question",
+        "personId": "alice"
+      },
+      "identity": null,
+      "noTrial": true,
+      "initial": {
+        "policy": {
+          "id": "p",
+          "version": 1,
+          "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sceneId": "s",
+          "action": "exact_person_before_semantic",
+          "condition": {
+            "kind": "plan_question",
+            "personId": "alice"
+          },
+          "status": "candidate",
+          "supportIds": [
+            "outcome"
+          ],
+          "counterexampleIds": [],
+          "generationRoots": [
+            "private-root"
+          ],
+          "generationFamilies": [
+            "private-family"
+          ],
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-01T00:00:00.000Z",
+          "validationId": "receipt",
+          "secret": "private-policy"
+        },
+        "outcome": {
+          "id": "outcome",
+          "version": 1,
+          "sceneId": "s",
+          "rootId": "root",
+          "rootFamily": "family",
+          "source": {
+            "messageId": "instruction",
+            "senderId": "alice",
+            "secret": "private-source"
+          },
+          "target": {
+            "messageId": "reply"
+          },
+          "code": "request_exact_person_lookup",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "secret": "private-outcome"
+        },
+        "receipt": {
+          "candidateId": "p",
+          "candidateVersion": 1,
+          "candidateHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "tier": "mechanical_only",
+          "checks": [
+            "synthetic"
+          ],
+          "failures": [],
+          "passed": true,
+          "secret": "private-receipt"
+        },
+        "trial": {
+          "schemaVersion": 1,
+          "policyId": "p",
+          "sceneId": "s",
+          "version": 1,
+          "policyVersion": 1,
+          "evidencePolicyVersion": 1,
+          "policyHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "requesterId": "alice",
+          "settingsRevision": 0,
+          "phase": "trial",
+          "createdAt": "2099-01-01T00:00:00.000Z",
+          "expiresAt": "2099-01-07T00:00:00.000Z",
+          "instruction": {
+            "id": "outcome",
+            "version": 1
+          },
+          "validationId": "receipt",
+          "positives": [
+            {
+              "outcomeId": "private-positive",
+              "outcomeVersion": 1,
+              "sourceRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "targetRoot": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "turnId": "private-turn"
+            }
+          ],
+          "reason": "explicit_instruction_trial"
+        },
+        "identity": null
+      },
+      "responses": [
+        {
+          "events": [],
+          "normalizedHeadHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "normalizedGateHash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "status": 503,
+          "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+          "headDelta": 0,
+          "gateDelta": 0,
+          "updates": 0,
+          "policy": {
+            "id": "p",
+            "version": 1,
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "sceneId": "s",
+            "action": "exact_person_before_semantic",
+            "condition": {
+              "kind": "plan_question",
+              "personId": "alice"
+            },
+            "status": "candidate",
+            "supportIds": [
+              "outcome"
+            ],
+            "counterexampleIds": [],
+            "generationRoots": [
+              "private-root"
+            ],
+            "generationFamilies": [
+              "private-family"
+            ],
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "expiresAt": "2099-01-01T00:00:00.000Z",
+            "validationId": "receipt",
+            "secret": "private-policy"
+          }
+        }
+      ]
+    }
+  ]
+}

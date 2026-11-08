@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
+	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
@@ -22,13 +23,14 @@ import (
 )
 
 type Server struct {
-	habits    *habitservice.Service
-	main      *sql.DB
-	authority *recovery.Authority
-	schemas   *contract.Schemas
-	token     string
-	logs      *observability.Logger
-	owned     *ownership
+	experience *experienceservice.Service
+	habits     *habitservice.Service
+	main       *sql.DB
+	authority  *recovery.Authority
+	schemas    *contract.Schemas
+	token      string
+	logs       *observability.Logger
+	owned      *ownership
 }
 
 func Open(ctx context.Context, database, token string, logs *observability.Logger) (*Server, error) {
@@ -87,13 +89,28 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	authenticationError := func(status int, message string) {
+		if s.experience != nil && experiencePath(habitRoutingPath(r)) {
+			if r.Method == "HEAD" {
+				w.WriteHeader(status)
+			} else {
+				habitError(w, status, message, "")
+			}
+			return
+		}
+		respondError(w, status, message)
+	}
 	supplied := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	if s.token == "" {
-		respondError(w, 503, "Set HUMANENGINE_ADMIN_TOKEN on the server before using the API")
+		authenticationError(503, "Set HUMANENGINE_ADMIN_TOKEN on the server before using the API")
 		return
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
-		respondError(w, 401, "Authentication required")
+		authenticationError(401, "Authentication required")
+		return
+	}
+	if s.experience != nil && experiencePath(habitRoutingPath(r)) {
+		s.serveExperience(w, r, available, id)
 		return
 	}
 	if s.habits != nil && habitPath(habitRoutingPath(r)) {

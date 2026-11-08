@@ -101,6 +101,7 @@ func (c *call) collect(p Policy, o Outcome) Policy {
 	op := "collect"
 	if promote {
 		nextPolicy.Version++
+		nextPolicy = applyPolicyPresentationPatch(nextPolicy, "version")
 		next.Phase = "promoted"
 		next.Reason = "user_reported_helpfulness"
 		op = "promote"

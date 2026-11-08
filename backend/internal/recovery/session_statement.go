@@ -15,6 +15,7 @@ type SessionStatement struct {
 	owner  *WriteSession
 	stmt   *sql.Stmt
 	closed bool
+	query  string
 	rows   map[*SessionRows]struct{}
 }
 
@@ -34,7 +35,7 @@ func (s *WriteSession) PrepareQuery(query string) (*SessionStatement, error) {
 		}
 		return nil, err
 	}
-	h := &SessionStatement{owner: s, stmt: stmt, rows: make(map[*SessionRows]struct{})}
+	h := &SessionStatement{owner: s, stmt: stmt, query: query, rows: make(map[*SessionRows]struct{})}
 	if s.statements == nil {
 		s.statements = make(map[*SessionStatement]struct{})
 	}
@@ -51,6 +52,9 @@ func (h *SessionStatement) Query(args ...any) (*SessionRows, error) {
 	}
 	if h.closed {
 		return nil, sql.ErrTxDone
+	}
+	if e := s.captureRead(h.query, args); e != nil {
+		return nil, e
 	}
 	r, err := h.stmt.QueryContext(s.ctx, args...)
 	if err != nil {

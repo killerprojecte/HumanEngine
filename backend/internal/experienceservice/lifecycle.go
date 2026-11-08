@@ -64,6 +64,7 @@ func (s *Service) RevokeSource(ctx context.Context, scene, message string) error
 }
 
 type AdminPolicy struct {
+	presentation *adminPresentation
 	Policy
 	Expired       bool             `json:"expired"`
 	Trial         *Trial           `json:"trial,omitempty"`
@@ -90,7 +91,22 @@ func (s *Service) AdminList(ctx context.Context, scope Context, options ListOpti
 				}
 			}
 			if p.ValidationID != "" {
-				item.Validation = c.receipt(p.ValidationID)
+				raw, present := c.receiptRecord(p.ValidationID)
+				if present {
+					// Presentation and recovery consume source JSON without requiring
+					// mechanical receipt validity before the owner commits.
+					_ = guarded(func() { item.Validation = decode[Receipt](take(jsjson.Stringify(raw))) })
+					item.presentation = captureAdminPresentation(item)
+					item.presentation.validationPresent = true
+					if object, ok := raw.(*jsjson.Object); ok {
+						item.presentation.validation = selectedPresentation("receipt", object)
+					} else {
+						item.presentation.validation = cloneReferenceValue(raw)
+					}
+				}
+			}
+			if item.presentation == nil {
+				item.presentation = captureAdminPresentation(item)
 			}
 			out.Items = append(out.Items, item)
 		}

@@ -103,10 +103,10 @@ func (s store) putOutcome(o Outcome) {
 }
 func (s store) putPolicy(p Policy, expected *int64) {
 	if expected == nil {
-		s.exec("INSERT INTO memory_experience_policies VALUES(?,?,?,?)", p.ID, p.SceneID, p.Version, encoded(p))
+		s.exec("INSERT INTO memory_experience_policies VALUES(?,?,?,?)", p.ID, p.SceneID, p.Version, policyStorageJSON(p))
 		return
 	}
-	r := s.exec("UPDATE memory_experience_policies SET version=?,value=? WHERE id=? AND version=?", p.Version, encoded(p), p.ID, *expected)
+	r := s.exec("UPDATE memory_experience_policies SET version=?,value=? WHERE id=? AND version=?", p.Version, policyStorageJSON(p), p.ID, *expected)
 	if take(r.RowsAffected()) != 1 {
 		fail("experience_version_conflict")
 	}

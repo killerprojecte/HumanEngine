@@ -35,6 +35,8 @@ connection restart and successful repeat.
 
 Private targeted tests and independent code review passed before integration.
 The integrated source regeneration and all twelve affected-package race/vet
-checks passed. Full-project and native-ICU exact-head CI acceptance are still
-pending for this checkpoint. These tests do
+checks passed. Full-project race/vet, source regeneration, WASM/bundle and
+native-ICU acceptance then passed for exact commit
+`ce59b8227c1813331fb4c903572f97bf176977aa` in
+[CI 42456985346](https://github.com/killerprojecte/HumanEngine/actions/runs/42456985346). These tests do
 not establish universal parity or whole-application readiness.

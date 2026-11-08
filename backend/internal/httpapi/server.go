@@ -102,21 +102,20 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		respondError(w, 503, "Request unavailable; outcome may be unknown. Do not automatically retry writes.")
 		return
 	}
-	emitted := false
-	err := s.authority.Publish(r.Context(), s.main, func(conn *sql.Conn) ([]byte, error) { return s.projection(r.Context(), conn, r.URL.Path) }, func(body []byte) error {
-		emitted = true
-		w.WriteHeader(http.StatusOK)
-		if r.Method == "HEAD" {
-			return nil
-		}
-		_, err := w.Write(body)
-		return err
-	})
+	response := newPublicationResponse(w.Header(), r.Method == "HEAD")
+	err := s.publishResponse(r.Context(), r.URL.Path, response)
+	// Enqueue is the publication point, just as ServerResponse.end(body) is in
+	// the TypeScript host. Cleanup failure cannot undo an accepted response.
+	// All transport methods, including WriteHeader, run after Publish releases
+	// both SQLite snapshots, the main pool connection, and the authority mutex.
+	if response.accepted {
+		err = errors.Join(err, response.drain(r.Context(), w))
+	}
 	if err != nil {
 		if s.logs != nil {
-			_ = s.logs.Emit(observability.Event{Level: "error", Module: "http", Code: "publication.failed", Message: err.Error(), RequestID: id, Fields: map[string]any{"path": r.URL.Path, "responseStarted": emitted}})
+			_ = s.logs.Emit(observability.Event{Level: "error", Module: "http", Code: "publication.failed", Message: err.Error(), RequestID: id, Fields: map[string]any{"path": r.URL.Path, "responseStarted": response.started, "responseQueued": response.accepted}})
 		}
-		if !emitted {
+		if !response.accepted && r.Context().Err() == nil {
 			respondError(w, 503, "Request unavailable; outcome may be unknown. Do not automatically retry writes.")
 		}
 	}

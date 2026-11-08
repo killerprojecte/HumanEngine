@@ -99,7 +99,10 @@ func (a *Authority) Close() error {
 func (a *Authority) Scans() uint64 { a.mu.Lock(); defer a.mu.Unlock(); return a.scans }
 
 // Publish reserves authority before main's WAL snapshot and retains it through
-// output enqueueing. It never calls a bot owner or waits for a main acknowledgement.
+// output enqueueing. emit must accept owned output synchronously, never drain a
+// socket or wait for another worker. A successful emit is irrevocable even if
+// later rollback fails; the returned error must not be used to replay output.
+// It never calls a bot owner or waits for a main acknowledgement.
 func (a *Authority) Publish(ctx context.Context, main *sql.DB, read func(*sql.Conn) ([]byte, error), emit func([]byte) error) (err error) {
 	// A pool checkout is not a SQLite snapshot. Do it before authority so a
 	// bounded shared pool cannot form a main-connection/authority-mutex cycle.
@@ -154,6 +157,29 @@ func (a *Authority) Publish(ctx context.Context, main *sql.DB, read func(*sql.Co
 	}
 	bytes, err := read(conn)
 	if err != nil {
+		return err
+	}
+	// The authority reservation still excludes every writer. The main view is
+	// the same WAL snapshot used for the projection, not a fresh latest-state
+	// read (a later WAL commit is allowed). Final validation mirrors the TS
+	// host's observed-head/gate check immediately before its output enqueue.
+	for _, owned := range []*sql.Conn{a.conn, conn} {
+		active, stateErr := transactionActive(owned)
+		if stateErr != nil {
+			return stateErr
+		}
+		if !active {
+			return errors.New("recovery_publication_snapshot_lost")
+		}
+	}
+	finalGate, err := ReadGate(ctx, conn)
+	if err != nil {
+		return err
+	}
+	if finalGate != gate || finalGate.Head != head {
+		return errors.New("recovery_authority_head_changed")
+	}
+	if err = ctx.Err(); err != nil {
 		return err
 	}
 	return emit(bytes)

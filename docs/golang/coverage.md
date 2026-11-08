@@ -16,7 +16,8 @@ including real offline habit/media/experience/trial owners and final verified
 main ACK/readiness. It replaces the older global-reconciliation gaps below at
 the package level; production boot and HTTP/runtime composition remain open.
 Source regeneration, targeted private tests and twelve affected-package
-integrated race/vet checks passed. Full-project exact-head CI remains pending. The native image codec
+integrated race/vet checks passed, followed by complete exact-head default and
+native-ICU CI acceptance recorded in the acceptance document. The native image codec
 remains a private candidate, not part of this integration.
 
 ## Implemented candidate modules
@@ -109,9 +110,11 @@ The tests prove specific work/ownership properties, not universal performance:
   This does not remove the cost of explicit full-history requests or proof graphs.
 - First-open verification remains linear in history size. Main SQL mutations,
   JSON parsing/serialization and large payloads still have their inherent costs.
-- Publication currently holds the authority reservation through response emission,
-  preserving the existing contract. Slow-client contention and full runtime
-  composition still need explicit evaluation; this has not been declared solved.
+- Configuration publication now accepts an immutable request-private response
+  under authority and releases the reservation before network drain. Real TCP
+  tests cover slow clients, concurrent writer/withdrawal and subsequent rejection.
+  This does not eliminate projection construction or long writer callback costs
+  under the coordinator, nor establish full runtime isolation.
 - Tool-result invalidation indexes plugin and scene/dependency ownership, so an
   unrelated owner's cache does not require a whole-cache scan. Stream capture uses
   one non-prefetching iterator pump per active write, not a goroutine per chunk.

@@ -42,7 +42,16 @@ func fixtureServer(t *testing.T) (*Server, *sql.DB, *sql.DB, recovery.Gate) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(root, "main.sqlite")
+	// Use the same independent main/authority layout required by production
+	// writers; authority may not be nested inside the main database directory.
+	dataPath := filepath.Join(root, "live")
+	if err := os.Mkdir(dataPath, 0700); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dataPath, "main.sqlite")
+	if _, err := recovery.AuthorityPath(path, authorityPath); err != nil {
+		t.Fatal("invalid fixture authority layout", err)
+	}
 	main, err := sql.Open("sqlite3", path)
 	if err != nil {
 		t.Fatal(err)

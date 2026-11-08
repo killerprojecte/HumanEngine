@@ -11,6 +11,8 @@ are wired together.
 - Native provider transport and durable budget ownership: `a430c54fc1be2b768c21677ae80ed4bf95f89c84`, [CI 42452719077](https://github.com/killerprojecte/HumanEngine/actions/runs/42452719077), success.
 - Quarantined recovered-history lifecycle: `069ca838dc93b8cc3e62fc4b278a8fd34d1b61fd`, [CI 42453854997](https://github.com/killerprojecte/HumanEngine/actions/runs/42453854997), success.
 
+- Whole quarantined reconciliation and real offline domain owners: `ce59b8227c1813331fb4c903572f97bf176977aa`, [CI 42456985346](https://github.com/killerprojecte/HumanEngine/actions/runs/42456985346), success.
+
 These runs include the default full race/vet, actual TypeScript source fixture
 regeneration, builtin WASM/bundle checks, SQLite-profile and source-free proofs,
 and the pinned native ICU full test/vet/source-free combination. The native

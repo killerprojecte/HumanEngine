@@ -1,0 +1,2824 @@
+{
+  "fixed": "2026-10-28T12:00:00.000Z",
+  "hashes": {
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/memory/read/state-exposure.ts": "cdcdf47ff2f3b3fa6995b192491a8fbcaacfc4b0ba86fc175480ef40f28ac0ba",
+    "src/memory/read/commitment-exposure.ts": "e29367108fc2af3115c08f69a6080009ca8df2295393a0dc173d7bad135e859b",
+    "src/memory/commitments/service.ts": "d5c0b4f2483c66967f5af3799aefdacea2451b133e4741fa74a9534533f195de",
+    "src/memory/commitments/transitions.ts": "824e1520ca601c76d3d36b9bef1d9188f1dddb2de017b8a47f94c2678ac5facb",
+    "src/memory/read/assertion-authority.ts": "8dfb7c1fd0d34945e8b8c3c0db18469e63e8b169c3f3fd2bb577067edbbf3ecc",
+    "backend/tests/generate-commitment-exposure.mjs": "fb6c35952b748813b98c790f771701c857635d2020c956fae86260fea824deae"
+  },
+  "outcomes": [
+    {
+      "name": "whole_receipts_and_current_refs",
+      "records": [
+        {
+          "id": "proposal-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-0",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-0",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-1",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-1",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        }
+      ],
+      "proofs": [
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-0",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-0"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-1"
+            }
+          }
+        ]
+      ],
+      "heads": [
+        {
+          "id": "plan-0",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-1",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        }
+      ],
+      "revisions": [
+        {
+          "ref": {
+            "id": "plan-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 0",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-0",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-0"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 1",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-1",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-1"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      ],
+      "value": {
+        "values": [
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic plan 1",
+                "participantIds": [
+                  "p"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": []
+              },
+              "recordedAt": "2026-10-28T12:00:00.000Z",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [
+                {
+                  "backing": {
+                    "id": "proposal-1",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+                  "proofs": [
+                    {
+                      "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]",
+                      "sources": [
+                        {
+                          "sceneId": "s",
+                          "messageId": "proposal-1",
+                          "senderId": "p"
+                        }
+                      ],
+                      "parents": [],
+                      "parentReferences": [],
+                      "subjectWitness": {
+                        "kind": "self",
+                        "personId": "p",
+                        "sourceMessageId": "proposal-1"
+                      }
+                    }
+                  ],
+                  "kind": "proposal"
+                }
+              ],
+              "requiredProposalGroups": []
+            }
+          },
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic plan 0",
+                "participantIds": [
+                  "p"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": []
+              },
+              "recordedAt": "2026-10-28T12:00:00.000Z",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [
+                {
+                  "backing": {
+                    "id": "proposal-0",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+                  "proofs": [
+                    {
+                      "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]",
+                      "sources": [
+                        {
+                          "sceneId": "s",
+                          "messageId": "proposal-0",
+                          "senderId": "p"
+                        }
+                      ],
+                      "parents": [],
+                      "parentReferences": [],
+                      "subjectWitness": {
+                        "kind": "self",
+                        "personId": "p",
+                        "sourceMessageId": "proposal-0"
+                      }
+                    }
+                  ],
+                  "kind": "proposal"
+                }
+              ],
+              "requiredProposalGroups": []
+            }
+          }
+        ],
+        "preparedRefs": [],
+        "forged": 0,
+        "partial": 0,
+        "reversed": 0,
+        "foreign": 0,
+        "delivered": 2,
+        "repeat": 2,
+        "refs": [
+          {
+            "id": "plan-1",
+            "version": 1,
+            "deletionEpoch": 0,
+            "mutationVersion": 1
+          },
+          {
+            "id": "plan-0",
+            "version": 1,
+            "deletionEpoch": 0,
+            "mutationVersion": 1
+          }
+        ],
+        "dependencies": [
+          "proposal-1",
+          "proposal-0"
+        ],
+        "valid": true,
+        "simulation": 0
+      }
+    },
+    {
+      "name": "recall_invalidates_original_projection",
+      "records": [
+        {
+          "id": "proposal-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-0",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-0",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-1",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-1",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        }
+      ],
+      "proofs": [
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-0",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-0"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-1"
+            }
+          }
+        ]
+      ],
+      "heads": [
+        {
+          "id": "plan-0",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-1",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        }
+      ],
+      "revisions": [
+        {
+          "ref": {
+            "id": "plan-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 0",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-0",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-0"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 1",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-1",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-1"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      ],
+      "value": {
+        "guard": false,
+        "present": true,
+        "refs": [],
+        "stale": 0,
+        "next": [
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic plan 1",
+                "participantIds": [
+                  "p"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": []
+              },
+              "recordedAt": "2026-10-28T12:00:00.000Z",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [
+                {
+                  "backing": {
+                    "id": "proposal-1",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+                  "proofs": [
+                    {
+                      "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]",
+                      "sources": [
+                        {
+                          "sceneId": "s",
+                          "messageId": "proposal-1",
+                          "senderId": "p"
+                        }
+                      ],
+                      "parents": [],
+                      "parentReferences": [],
+                      "subjectWitness": {
+                        "kind": "self",
+                        "personId": "p",
+                        "sourceMessageId": "proposal-1"
+                      }
+                    }
+                  ],
+                  "kind": "proposal"
+                }
+              ],
+              "requiredProposalGroups": []
+            }
+          },
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [],
+              "requiredProposalGroups": []
+            }
+          }
+        ],
+        "turnValid": false
+      }
+    },
+    {
+      "name": "answer_flag_and_head_mutation_revoke",
+      "records": [
+        {
+          "id": "proposal-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-0",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-0",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-1",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-1",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        }
+      ],
+      "proofs": [
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-0",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-0"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-1"
+            }
+          }
+        ]
+      ],
+      "heads": [
+        {
+          "id": "plan-0",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-1",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        }
+      ],
+      "revisions": [
+        {
+          "ref": {
+            "id": "plan-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 0",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-0",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-0"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 1",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-1",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-1"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      ],
+      "value": {
+        "mutationValid": false,
+        "guard": false,
+        "present": true,
+        "query": [],
+        "refs": [],
+        "turnValid": false
+      }
+    },
+    {
+      "name": "source_default_filters_and_empty",
+      "records": [
+        {
+          "id": "proposal-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-0",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-0",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-1",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-1",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        }
+      ],
+      "proofs": [
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-0",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-0"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-1"
+            }
+          }
+        ]
+      ],
+      "heads": [
+        {
+          "id": "plan-0",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-1",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        }
+      ],
+      "revisions": [
+        {
+          "ref": {
+            "id": "plan-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 0",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-0",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-0"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 1",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-1",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-1"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      ],
+      "value": {
+        "other": [],
+        "terminal": [],
+        "all": [
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic plan 1",
+                "participantIds": [
+                  "p"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": []
+              },
+              "recordedAt": "2026-10-28T12:00:00.000Z",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [
+                {
+                  "backing": {
+                    "id": "proposal-1",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+                  "proofs": [
+                    {
+                      "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]",
+                      "sources": [
+                        {
+                          "sceneId": "s",
+                          "messageId": "proposal-1",
+                          "senderId": "p"
+                        }
+                      ],
+                      "parents": [],
+                      "parentReferences": [],
+                      "subjectWitness": {
+                        "kind": "self",
+                        "personId": "p",
+                        "sourceMessageId": "proposal-1"
+                      }
+                    }
+                  ],
+                  "kind": "proposal"
+                }
+              ],
+              "requiredProposalGroups": []
+            }
+          },
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic plan 0",
+                "participantIds": [
+                  "p"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": []
+              },
+              "recordedAt": "2026-10-28T12:00:00.000Z",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [
+                {
+                  "backing": {
+                    "id": "proposal-0",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+                  "proofs": [
+                    {
+                      "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]",
+                      "sources": [
+                        {
+                          "sceneId": "s",
+                          "messageId": "proposal-0",
+                          "senderId": "p"
+                        }
+                      ],
+                      "parents": [],
+                      "parentReferences": [],
+                      "subjectWitness": {
+                        "kind": "self",
+                        "personId": "p",
+                        "sourceMessageId": "proposal-0"
+                      }
+                    }
+                  ],
+                  "kind": "proposal"
+                }
+              ],
+              "requiredProposalGroups": []
+            }
+          }
+        ],
+        "ownUndefined": [
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic plan 1",
+                "participantIds": [
+                  "p"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": []
+              },
+              "recordedAt": "2026-10-28T12:00:00.000Z",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [
+                {
+                  "backing": {
+                    "id": "proposal-1",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+                  "proofs": [
+                    {
+                      "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]",
+                      "sources": [
+                        {
+                          "sceneId": "s",
+                          "messageId": "proposal-1",
+                          "senderId": "p"
+                        }
+                      ],
+                      "parents": [],
+                      "parentReferences": [],
+                      "subjectWitness": {
+                        "kind": "self",
+                        "personId": "p",
+                        "sourceMessageId": "proposal-1"
+                      }
+                    }
+                  ],
+                  "kind": "proposal"
+                }
+              ],
+              "requiredProposalGroups": []
+            }
+          },
+          {
+            "stateKind": "commitment",
+            "view": {
+              "ref": {
+                "id": "plan-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "mutationVersion": 1,
+              "sceneId": "s",
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic plan 0",
+                "participantIds": [
+                  "p"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": []
+              },
+              "recordedAt": "2026-10-28T12:00:00.000Z",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "changed": false,
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "p"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": [],
+              "evidence": [
+                {
+                  "backing": {
+                    "id": "proposal-0",
+                    "version": 1,
+                    "deletionEpoch": 0
+                  },
+                  "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+                  "proofs": [
+                    {
+                      "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]",
+                      "sources": [
+                        {
+                          "sceneId": "s",
+                          "messageId": "proposal-0",
+                          "senderId": "p"
+                        }
+                      ],
+                      "parents": [],
+                      "parentReferences": [],
+                      "subjectWitness": {
+                        "kind": "self",
+                        "personId": "p",
+                        "sourceMessageId": "proposal-0"
+                      }
+                    }
+                  ],
+                  "kind": "proposal"
+                }
+              ],
+              "requiredProposalGroups": []
+            }
+          }
+        ],
+        "invalid": {
+          "error": "commitment_read_lifecycle"
+        }
+      }
+    },
+    {
+      "name": "complete_page_required_at_source_limit",
+      "records": [
+        {
+          "id": "proposal-0",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-0",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-0",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-1",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-1",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-1",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-2",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-2",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-3",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-3",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-3",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-4",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-4",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-4",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-5",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-5",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-5",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-6",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-6",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-6",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-7",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-7",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-7",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-8",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-8",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-8",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-9",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-9",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-9",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-10",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-10",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-11",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-11",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-11",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        },
+        {
+          "id": "proposal-12",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "s",
+            "personId": "p"
+          },
+          "content": "Synthetic proposal-12",
+          "kind": "fact",
+          "epistemicKind": "explicit",
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proposal-12",
+              "senderId": "p"
+            }
+          ],
+          "importance": "low",
+          "confidence": 0.5,
+          "learnedAt": "2026-10-28T12:00:00.000Z",
+          "status": "active",
+          "locked": false,
+          "origin": "learned",
+          "lineageStatus": "verified"
+        }
+      ],
+      "proofs": [
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-0",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-0"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-1",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-1"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-2",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-2"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-3",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-3"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-4",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-4"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-5",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-5"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-6",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-6"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-7",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-7"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-8",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-8"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-9",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-9"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-10",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-10"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-11",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-11"
+            }
+          }
+        ],
+        [
+          {
+            "sources": [
+              {
+                "sceneId": "s",
+                "messageId": "proposal-12",
+                "senderId": "p"
+              }
+            ],
+            "parents": [],
+            "parentReferences": [],
+            "subjectWitness": {
+              "kind": "self",
+              "personId": "p",
+              "sourceMessageId": "proposal-12"
+            }
+          }
+        ]
+      ],
+      "heads": [
+        {
+          "id": "plan-0",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-1",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-2",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-3",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-4",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-5",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-6",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-7",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-8",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-9",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-10",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-11",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        },
+        {
+          "id": "plan-12",
+          "sceneId": "s",
+          "latestVersion": 1,
+          "activeVersion": null,
+          "everActivatedVersion": null,
+          "everTerminal": null,
+          "deletionEpoch": 0,
+          "mutationVersion": 1,
+          "deleted": false
+        }
+      ],
+      "revisions": [
+        {
+          "ref": {
+            "id": "plan-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 0",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-0",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "156b14d1f719e5e9a1a2ac5e393ee14a7ad21b1138f6ac151a9b71a4538895dd",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-0",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-0"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-0\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-0\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 1",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-1",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "be3778f07312c74625176f5809ffec9953bc3aa0f2edd63ad8e5d4013e4d78f4",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-1",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-1"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-1\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-1\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 2",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-2",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "5ceaf8f2262ef20c1586fc04327dde159eb9268754902f63a8cdd18d02506af7",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-2",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-2"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-2\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-2\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 3",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-3",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "24f22acdb2c9ad1c9029c5ed1654499c0601365dbda77648da3e8d1c8b7c8e57",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-3",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-3"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-3\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-3\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 4",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-4",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "d85d33efdfa2808fbe32a899cb0760992922d5c145ffa61f32f671f8423d6e94",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-4",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-4"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-4\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-4\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-5",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 5",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-5",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "e52d5f021adde0136233afcfef4a2a2a09ca24e0c90a5cabccb8db2a94a1fe0c",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-5",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-5"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-5\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-5\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-6",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 6",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-6",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "921ecd36458755a9cb0c5f3853d45619ab3a5740e6394647a27ac1bef7fc8041",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-6",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-6"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-6\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-6\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-7",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 7",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-7",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "d79b8d85de2381390bbd1cdc3b3a3a01ccd53a9abf3cfdf3c03bf1ecbd8911ad",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-7",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-7"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-7\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-7\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-8",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 8",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-8",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "000c4193c8b3d4c1a0374a61dd4e86f4effce40f54b35db0a3a529aecc24b22e",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-8",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-8"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-8\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-8\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-9",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 9",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-9",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "44cce53f8c29dd911bb781faa82ab59ce972c09a01eec4fe08454e4afde1a3fd",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-9",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-9"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-9\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-9\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-10",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 10",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-10",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "341de7690eab3e9803ffd4c89d9e4c634a1d78fd30d2f957543c80222b71efe2",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-10",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-10"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-10\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-10\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-11",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 11",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-11",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "d73a6dc9215d247e95e08a35061a8e793ceb7db6c9a619d5dd4fb4f6edc673cd",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-11",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-11"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-11\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-11\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        },
+        {
+          "ref": {
+            "id": "plan-12",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "sceneId": "s",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic plan 12",
+            "participantIds": [
+              "p"
+            ],
+            "temporalScope": "future",
+            "polarity": "positive",
+            "modality": "asserted",
+            "conditions": []
+          },
+          "recordedAt": "2026-10-28T12:00:00.000Z",
+          "evidence": [
+            {
+              "backing": {
+                "id": "proposal-12",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "backingFingerprint": "bcbe18a41052259a76f39e698d5b4405b103193bdcd1ac870a0aed0c617697d9",
+              "proofs": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proposal-12",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "parentReferences": [],
+                  "subjectWitness": {
+                    "kind": "self",
+                    "personId": "p",
+                    "sourceMessageId": "proposal-12"
+                  },
+                  "proofId": "[[[\"s\",\"proposal-12\",\"p\"]],[],[],null,[\"self\",\"p\",\"proposal-12\",null]]"
+                }
+              ],
+              "kind": "proposal"
+            }
+          ],
+          "requiredProposalGroups": []
+        }
+      ],
+      "value": {
+        "error": "commitment_query_limited"
+      }
+    }
+  ]
+}

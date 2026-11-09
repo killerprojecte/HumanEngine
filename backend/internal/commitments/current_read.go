@@ -139,6 +139,7 @@ type ReadOptions struct {
 }
 
 type ReadService struct {
+	historical func(Context, Reference) (*Assertion, error)
 	sourceHead func(string, string) (*Object, error)
 	reader     *Reader
 	current    func(Context, Reference) (*Assertion, error)
@@ -163,7 +164,9 @@ func newReadService(reader *Reader, assertionsReader *assertions.Reader, enabled
 	if err != nil {
 		return nil, err
 	}
-	return &ReadService{reader: reader, enabled: enabled, sourceHead: func(scene, message string) (*Object, error) {
+	return &ReadService{reader: reader, enabled: enabled, historical: func(ctx Context, ref Reference) (*Assertion, error) {
+		return authority.HistoricalAssertion(assertionauthority.Context{SceneID: ctx.SceneID, Simulation: ctx.Simulation}, ref)
+	}, sourceHead: func(scene, message string) (*Object, error) {
 		events, err := assertionsReader.AuthoritySourceEvents()
 		if err != nil {
 			return nil, err

@@ -43,7 +43,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	sent := make(chan map[string]any, 8)
 	closed := make(chan struct{}, 8)
 	var writes sync.Mutex
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer synthetic" {
 			http.Error(w, "synthetic credential missing", 401)
 			return
@@ -86,6 +86,9 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 			}
 		}
 	}))
+	seedWire := &snowSeedWireListener{Listener: server.Listener, written: make(chan []byte, 1)}
+	server.Listener = seedWire
+	server.Start()
 	defer server.Close()
 	application, e := Open(ctx, options)
 	if e != nil {
@@ -186,41 +189,84 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
-	ingress(1)
-	var saved *jsjson.Object
-	for saved == nil {
-		for _, v := range appRequest(t, application, http.MethodGet, "/api/scenes", nil).([]any) {
-			if field(v, "id") == sceneID {
-				saved = v.(*jsjson.Object)
-			}
-		}
-		if saved == nil {
+	// Freeze the seed after retention publication but before scheduling. The old
+	// Snapshot-only gate is already true here, although ingress has not returned.
+	seedEntered, seedRelease := make(chan struct{}), make(chan struct{})
+	var seedOnce sync.Once
+	releaseSeed := func() { seedOnce.Do(func() { close(seedRelease) }) }
+	defer releaseSeed()
+	application.Engine.Runtime.AddExtension(&botruntime.Extension{Received: func(message *jsjson.Object, scene botruntime.Scene) error {
+		if scene.ID == sceneID && field(message, "id") == snow.MessageID(sceneID, "1") {
+			close(seedEntered)
 			select {
+			case <-seedRelease:
 			case <-ctx.Done():
-				t.Fatal("actual Snow ingress absent", ctx.Err())
-			case <-time.After(time.Millisecond):
+				return ctx.Err()
 			}
 		}
+		return nil
+	}})
+	ingress(1)
+	select {
+	case <-seedEntered:
+	case <-ctx.Done():
+		t.Fatal("actual Snow seed did not reach Runtime Received", ctx.Err())
 	}
-	// Scene discovery precedes Runtime ingress. Wait for the seed to be retained
-	// while participation is still disabled, before admitting the reply turn.
-	for {
+	assertSeedIdle := func() {
+		t.Helper()
 		snapshot, err := application.Engine.Runtime.Snapshot(sceneID)
-		if err != nil && err.Error() != "scene_missing" {
+		if err != nil {
 			t.Fatal(err)
 		}
-		seedRetained := false
-		for _, message := range snapshot.Messages {
-			seedRetained = seedRetained || field(message, "id") == snow.MessageID(sceneID, "1")
+		if len(snapshot.Messages) != 1 || field(snapshot.Messages[0], "id") != snow.MessageID(sceneID, "1") || snapshot.Active != 0 || snapshot.Pending != 0 || snapshot.Waiting != 0 {
+			t.Fatal("seed must be retained without a reply turn", snapshot)
 		}
-		if seedRetained && snapshot.Active == 0 && snapshot.Pending == 0 && snapshot.Waiting == 0 {
-			break
+	}
+	assertSeedIdle()
+	// Ping is sent after the seed on this same connection. Snow's sole reader
+	// returns from Receiver.Receive (including Runtime.IngestScene) before its
+	// next Read can process the control frame. The peer's existing Read loop
+	// consumes the Pong; no production completion hook or timing delay is needed.
+	seedWire.armed.Store(true)
+	seedBarrier := make(chan error, 1)
+	go func() { seedBarrier <- socket.Ping(ctx) }()
+	select {
+	case frame := <-seedWire.written:
+		if len(frame) < 3 || frame[0] != 0x89 || int(frame[1]) != len(frame)-2 {
+			t.Fatalf("expected the actual unmasked Ping control frame, got %x", frame)
 		}
-		select {
-		case <-ctx.Done():
-			t.Fatal("seed ingress did not settle before enabling participation", ctx.Err())
-		case <-time.After(time.Millisecond):
+	case <-ctx.Done():
+		t.Fatal("seed barrier Ping was not written", ctx.Err())
+	}
+	select {
+	case err := <-seedBarrier:
+		t.Fatal("Ping completed before held seed ingress returned", err)
+	default:
+	}
+	releaseSeed()
+	select {
+	case err := <-seedBarrier:
+		if err != nil {
+			t.Fatal("seed ingress completion barrier", err)
 		}
+	case <-ctx.Done():
+		t.Fatal("seed ingress completion barrier", ctx.Err())
+	}
+	assertSeedIdle()
+	t.Log("stage: held seed false-idle gate rejected; actual Ping/Pong joined disabled ingress")
+	select {
+	case unexpected := <-sent:
+		t.Fatal("disabled seed dispatched before participation was enabled", unexpected)
+	default:
+	}
+	var saved *jsjson.Object
+	for _, v := range appRequest(t, application, http.MethodGet, "/api/scenes", nil).([]any) {
+		if field(v, "id") == sceneID {
+			saved = v.(*jsjson.Object)
+		}
+	}
+	if saved == nil {
+		t.Fatal("completed Snow ingress did not persist its scene")
 	}
 	_ = saved.Set("participationEnabled", true)
 	_ = saved.Set("learningEnabled", true)

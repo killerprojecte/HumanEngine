@@ -23,7 +23,7 @@ plugin-source-check:
 contextual-source-check:
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-contextual-learning-fixtures.ts --check
 
-differential: build plugin-source-check contextual-source-check
+differential: build plugin-source-check contextual-source-check runtime-producer-source-check
 	cd .. && node --import tsx scripts/vision-oracle.ts --check
 	cd .. && node --import tsx scripts/vision-errors.mjs --check
 	cd .. && node --import tsx backend/internal/credentials/testdata/model-read-source.mjs --check
@@ -208,3 +208,9 @@ habit-numeric-check:
 	@out=$$(mktemp -d) && trap 'rm -rf "$$out"' EXIT && \
 	  node tests/generate-js-pow-fixtures.mjs --host-output "$$out/pow.json" && \
 	  HE_POW_ORACLE="$$out/pow.json" go test -race -tags sqlite_fts5 ./internal/jsnumber
+
+.PHONY: runtime-producer-source-check
+# Extracted source contracts with synthetic fixtures; no Engine startup.
+runtime-producer-source-check:
+	cd .. && node backend/scripts/media-owner-source-oracle.mjs
+	cd .. && node backend/scripts/proactive-owner-source-oracle.mjs

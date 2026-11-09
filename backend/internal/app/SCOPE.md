@@ -65,8 +65,9 @@ This is not a claim of complete TypeScript Engine compatibility.
 - Remaining source model tools, complete prompt/manual-rule composition and all
   exposure domains are not all wired. Relation, workspace, knowledge and semantic
   exposure guards are not implied by the composed memory, identity, commitment
-  and historical guards. Contextual `learning.propose` is not yet a model
-  tool in this graph. Complete Experience model-facing tools are also outstanding.
+  and historical guards. Contextual `learning.propose` is now a model
+  tool in this bounded graph, without those remaining exposure domains. Complete
+  Experience model-facing tools are also outstanding.
 - Source-wide recall preparation ordering (including every memory/habit domain),
   proactive scene timer binding and complete global Engine startup hooks remain.
 - Four real built-in WASM artifacts are built and required by the native test
@@ -97,3 +98,22 @@ three-file repair passed source/Identity race/vet (51529) and was published sepa
 These results belong to those exact frozen inputs. A new assembly on the latest
 public plugin-directory layout requires its own merged compile/native graph check.
 Package test durations are not HTTP latency or migration performance benchmarks.
+
+## Contextual learning tool composition (bounded application graph)
+
+The application advertises the source learning.propose definition with its eight
+graph/commitment/knowledge flag combinations and delegates execution to the existing
+contextual proposal owner. Actual memory exposures and model-read/current-commitment
+guards use the current queue writer, without retaining a write session. Historical,
+identity and current freeform-learning rejection paths preserve source semantics.
+Learning-only scene revocation cancels queued learning while participation-enabled
+replies remain allowed; participation revocation is a separate runtime policy.
+
+Native focused evidence covers real model selection, queued foreground admission,
+ordinary proposal persistence, history/identity/current refusal, and queued learning
+revocation with physical idle and zero revoked rows. This is not full learning parity:
+semantic/workspace/relation/knowledge exposure domains are not composed or advertised.
+Pending recall, changed-scope, typed commitment learning and concurrent-writer races
+are not established by this fixture. No synthetic native replacement of guest logic
+is introduced. A writable launcher, installation packaging/configuration and OS-signal
+stop lifecycle remain separate work; --read-only-preview and HTTP 101 are unchanged.

@@ -1,0 +1,4542 @@
+{
+  "sourceSHA256": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+  "definitions": [
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is disabled. Do not propose relations or infer graph endpoints; ordinary sourced memory extraction remains available. Plan tracking is disabled; do not include commitment commands. Structured knowledge extraction is disabled; do not include knowledge proposals, source spans or guessed entities.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is enabled as an optional part of the same memory proposal; never make an extra model call just to populate it. Propose at most three participates_in relations only when the cited source explicitly supports the complete assertion. personId must be the current validated self/mentioned subject. New targets must be concrete plans or events from these sources; titles are labels, never identity keys or merge authority. Existing targets require an exact entity reference actually exposed in this contextual turn; source-only extraction must not use existing targets. Preserve negative polarity, all conditions, uncertainty and explicit validity/event times; unknown time stays omitted. Always provide modality asserted or possible and temporalScope current, past, future or unspecified. Possible participation is possible, never a positive current assertion. Preserve past participation with temporalScope past even when its exact date is unknown; omit exact timestamps rather than inventing them. Unknown temporal applicability is unspecified, not current. Do not erase these qualifiers to seek automatic admission: only asserted/current can be considered for the separate low-risk admission policy, and even accepted does not mean verified truth. Reported statements remain candidate claims, not verified truth. Do not assume automatic acceptance or invent graph endpoints. Plan tracking is disabled; do not include commitment commands. Structured knowledge extraction is disabled; do not include knowledge proposals, source spans or guessed entities.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "relations": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "predicate": {
+                  "type": "string",
+                  "const": "participates_in"
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "personId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "target": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "predicate",
+                "modality",
+                "temporalScope",
+                "personId",
+                "target",
+                "polarity",
+                "conditions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is disabled. Do not propose relations or infer graph endpoints; ordinary sourced memory extraction remains available. Plan tracking is enabled as an optional part of this same sourced memory proposal. Use exactly one explicit self-declaration source with ephemeral text, subject.kind self and epistemicKind explicit; reported/hypothetical/unclear declarations must not become confirmations. The server stores a typed internal declaration marker, not your expanded content or raw chat. Preserve complete participants, polarity, modality, conditions, and temporalScope; unknown time stays omitted, never guess a date. A source-only proposal may propose a new plan, never identify an old plan by title. Confirm, amend, complete or cancel requires the exact plan reference actually delivered in this contextual turn and an explicit statement by the corresponding participant; one person cannot confirm for others. An amended proposal does not replace the old confirmed arrangement until all required people independently confirm that same terms version. Completion/cancellation is self-reported, not externally verified. Do not treat jokes, reported speech, silence, message delivery or a WAIT as confirmation, and never schedule reminders or send messages from this field. Structured knowledge extraction is disabled; do not include knowledge proposals, source spans or guessed entities.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "commitment": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "propose"
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "amend"
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "confirm",
+                      "complete",
+                      "cancel"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is enabled as an optional part of the same memory proposal; never make an extra model call just to populate it. Propose at most three participates_in relations only when the cited source explicitly supports the complete assertion. personId must be the current validated self/mentioned subject. New targets must be concrete plans or events from these sources; titles are labels, never identity keys or merge authority. Existing targets require an exact entity reference actually exposed in this contextual turn; source-only extraction must not use existing targets. Preserve negative polarity, all conditions, uncertainty and explicit validity/event times; unknown time stays omitted. Always provide modality asserted or possible and temporalScope current, past, future or unspecified. Possible participation is possible, never a positive current assertion. Preserve past participation with temporalScope past even when its exact date is unknown; omit exact timestamps rather than inventing them. Unknown temporal applicability is unspecified, not current. Do not erase these qualifiers to seek automatic admission: only asserted/current can be considered for the separate low-risk admission policy, and even accepted does not mean verified truth. Reported statements remain candidate claims, not verified truth. Do not assume automatic acceptance or invent graph endpoints. Plan tracking is enabled as an optional part of this same sourced memory proposal. Use exactly one explicit self-declaration source with ephemeral text, subject.kind self and epistemicKind explicit; reported/hypothetical/unclear declarations must not become confirmations. The server stores a typed internal declaration marker, not your expanded content or raw chat. Preserve complete participants, polarity, modality, conditions, and temporalScope; unknown time stays omitted, never guess a date. A source-only proposal may propose a new plan, never identify an old plan by title. Confirm, amend, complete or cancel requires the exact plan reference actually delivered in this contextual turn and an explicit statement by the corresponding participant; one person cannot confirm for others. An amended proposal does not replace the old confirmed arrangement until all required people independently confirm that same terms version. Completion/cancellation is self-reported, not externally verified. Do not treat jokes, reported speech, silence, message delivery or a WAIT as confirmation, and never schedule reminders or send messages from this field. Structured knowledge extraction is disabled; do not include knowledge proposals, source spans or guessed entities.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "relations": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "predicate": {
+                  "type": "string",
+                  "const": "participates_in"
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "personId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "target": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "predicate",
+                "modality",
+                "temporalScope",
+                "personId",
+                "target",
+                "polarity",
+                "conditions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "commitment": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "propose"
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "amend"
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "confirm",
+                      "complete",
+                      "cancel"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is disabled. Do not propose relations or infer graph endpoints; ordinary sourced memory extraction remains available. Plan tracking is disabled; do not include commitment commands. Structured knowledge is enabled as optional knowledge in the same scene-scoped candidate, at most three proposals; never call a model solely to fill it. Use registryVersion 1 and only registered predicates. Preserve polarity, modality, temporalScope, conditions and supported validity; unknown times/units remain unknown, not invented. subjects of kind self identify the actual cited speaker, never a third-party quoted person. Reported or quoted spans must retain their stance and require a claim with epistemicKind reported, inferred or hypothesis; they cannot become explicit self-facts. Use asserted stance for a direct non-person declaration, not self. For concepts/tasks/tools/topics/organizations, new entity titles are labels, not identity: never merge same-title entities or guess an existing entity ID. Source-only extraction may use self or new subjects and new or typed literal objects, never existing endpoints or old memory. Each sourceSpans entry locates the exact original textParts item by messageId and partIndex; start/end are JavaScript UTF-16 code-unit offsets, end exclusive. Do not use offsets in joined text, Unicode code-point counts, normalized whitespace or paraphrases. Non-text parts still occupy original part indices. A valid span only proves where text occurs, not that its meaning supports your predicate or that the claim is true. Use has_property with exactly one registered property version/count/duration/enabled for supported typed literal values; do not invent property names. Use literal text, number with explicit unit or null for unknown unit, or boolean only when the registered predicate permits it. depends_on connects concept/task entities only, not arbitrary literals. Never combine knowledge with publicTechnicalDomain: structured claims remain scene-private and are not public-review material. Knowledge does not upgrade old relations or commitment confirmations. Do not treat a queued or proposed structure as saved or accepted. Registered endpoint kinds: {\"participates_in\":{\"subjects\":[\"person\"],\"objects\":[\"plan\",\"event\"]},\"prefers_topic\":{\"subjects\":[\"person\"],\"objects\":[\"topic\",\"literal:text\"]},\"uses_tool\":{\"subjects\":[\"person\"],\"objects\":[\"tool\",\"literal:text\"]},\"member_of\":{\"subjects\":[\"person\"],\"objects\":[\"organization\"]},\"part_of\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"depends_on\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"has_property\":{\"subjects\":[\"tool\",\"concept\",\"task\"],\"objects\":[\"literal:text\",\"literal:number\",\"literal:boolean\"]}}",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "knowledge": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registryVersion": {
+                  "type": "number",
+                  "const": 1
+                },
+                "predicate": {
+                  "type": "string",
+                  "enum": [
+                    "participates_in",
+                    "prefers_topic",
+                    "uses_tool",
+                    "member_of",
+                    "part_of",
+                    "depends_on",
+                    "has_property"
+                  ]
+                },
+                "property": {
+                  "type": "string",
+                  "enum": [
+                    "version",
+                    "count",
+                    "duration",
+                    "enabled"
+                  ]
+                },
+                "subject": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "self"
+                        },
+                        "personId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "personId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "object": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "text"
+                            },
+                            "value": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "number"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value",
+                            "unit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "boolean"
+                            },
+                            "value": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "sourceSpans": {
+                  "minItems": 1,
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "messageId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "partIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4095
+                      },
+                      "start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "end": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1000000
+                      },
+                      "stance": {
+                        "type": "string",
+                        "enum": [
+                          "self",
+                          "asserted",
+                          "reported",
+                          "quoted"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "messageId",
+                      "partIndex",
+                      "start",
+                      "end",
+                      "stance"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "registryVersion",
+                "predicate",
+                "subject",
+                "object",
+                "polarity",
+                "modality",
+                "temporalScope",
+                "conditions",
+                "sourceSpans"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is enabled as an optional part of the same memory proposal; never make an extra model call just to populate it. Propose at most three participates_in relations only when the cited source explicitly supports the complete assertion. personId must be the current validated self/mentioned subject. New targets must be concrete plans or events from these sources; titles are labels, never identity keys or merge authority. Existing targets require an exact entity reference actually exposed in this contextual turn; source-only extraction must not use existing targets. Preserve negative polarity, all conditions, uncertainty and explicit validity/event times; unknown time stays omitted. Always provide modality asserted or possible and temporalScope current, past, future or unspecified. Possible participation is possible, never a positive current assertion. Preserve past participation with temporalScope past even when its exact date is unknown; omit exact timestamps rather than inventing them. Unknown temporal applicability is unspecified, not current. Do not erase these qualifiers to seek automatic admission: only asserted/current can be considered for the separate low-risk admission policy, and even accepted does not mean verified truth. Reported statements remain candidate claims, not verified truth. Do not assume automatic acceptance or invent graph endpoints. Plan tracking is disabled; do not include commitment commands. Structured knowledge is enabled as optional knowledge in the same scene-scoped candidate, at most three proposals; never call a model solely to fill it. Use registryVersion 1 and only registered predicates. Preserve polarity, modality, temporalScope, conditions and supported validity; unknown times/units remain unknown, not invented. subjects of kind self identify the actual cited speaker, never a third-party quoted person. Reported or quoted spans must retain their stance and require a claim with epistemicKind reported, inferred or hypothesis; they cannot become explicit self-facts. Use asserted stance for a direct non-person declaration, not self. For concepts/tasks/tools/topics/organizations, new entity titles are labels, not identity: never merge same-title entities or guess an existing entity ID. Source-only extraction may use self or new subjects and new or typed literal objects, never existing endpoints or old memory. Each sourceSpans entry locates the exact original textParts item by messageId and partIndex; start/end are JavaScript UTF-16 code-unit offsets, end exclusive. Do not use offsets in joined text, Unicode code-point counts, normalized whitespace or paraphrases. Non-text parts still occupy original part indices. A valid span only proves where text occurs, not that its meaning supports your predicate or that the claim is true. Use has_property with exactly one registered property version/count/duration/enabled for supported typed literal values; do not invent property names. Use literal text, number with explicit unit or null for unknown unit, or boolean only when the registered predicate permits it. depends_on connects concept/task entities only, not arbitrary literals. Never combine knowledge with publicTechnicalDomain: structured claims remain scene-private and are not public-review material. Knowledge does not upgrade old relations or commitment confirmations. Do not treat a queued or proposed structure as saved or accepted. Registered endpoint kinds: {\"participates_in\":{\"subjects\":[\"person\"],\"objects\":[\"plan\",\"event\"]},\"prefers_topic\":{\"subjects\":[\"person\"],\"objects\":[\"topic\",\"literal:text\"]},\"uses_tool\":{\"subjects\":[\"person\"],\"objects\":[\"tool\",\"literal:text\"]},\"member_of\":{\"subjects\":[\"person\"],\"objects\":[\"organization\"]},\"part_of\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"depends_on\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"has_property\":{\"subjects\":[\"tool\",\"concept\",\"task\"],\"objects\":[\"literal:text\",\"literal:number\",\"literal:boolean\"]}}",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "relations": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "predicate": {
+                  "type": "string",
+                  "const": "participates_in"
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "personId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "target": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "predicate",
+                "modality",
+                "temporalScope",
+                "personId",
+                "target",
+                "polarity",
+                "conditions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "knowledge": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registryVersion": {
+                  "type": "number",
+                  "const": 1
+                },
+                "predicate": {
+                  "type": "string",
+                  "enum": [
+                    "participates_in",
+                    "prefers_topic",
+                    "uses_tool",
+                    "member_of",
+                    "part_of",
+                    "depends_on",
+                    "has_property"
+                  ]
+                },
+                "property": {
+                  "type": "string",
+                  "enum": [
+                    "version",
+                    "count",
+                    "duration",
+                    "enabled"
+                  ]
+                },
+                "subject": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "self"
+                        },
+                        "personId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "personId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "object": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "text"
+                            },
+                            "value": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "number"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value",
+                            "unit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "boolean"
+                            },
+                            "value": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "sourceSpans": {
+                  "minItems": 1,
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "messageId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "partIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4095
+                      },
+                      "start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "end": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1000000
+                      },
+                      "stance": {
+                        "type": "string",
+                        "enum": [
+                          "self",
+                          "asserted",
+                          "reported",
+                          "quoted"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "messageId",
+                      "partIndex",
+                      "start",
+                      "end",
+                      "stance"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "registryVersion",
+                "predicate",
+                "subject",
+                "object",
+                "polarity",
+                "modality",
+                "temporalScope",
+                "conditions",
+                "sourceSpans"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is disabled. Do not propose relations or infer graph endpoints; ordinary sourced memory extraction remains available. Plan tracking is enabled as an optional part of this same sourced memory proposal. Use exactly one explicit self-declaration source with ephemeral text, subject.kind self and epistemicKind explicit; reported/hypothetical/unclear declarations must not become confirmations. The server stores a typed internal declaration marker, not your expanded content or raw chat. Preserve complete participants, polarity, modality, conditions, and temporalScope; unknown time stays omitted, never guess a date. A source-only proposal may propose a new plan, never identify an old plan by title. Confirm, amend, complete or cancel requires the exact plan reference actually delivered in this contextual turn and an explicit statement by the corresponding participant; one person cannot confirm for others. An amended proposal does not replace the old confirmed arrangement until all required people independently confirm that same terms version. Completion/cancellation is self-reported, not externally verified. Do not treat jokes, reported speech, silence, message delivery or a WAIT as confirmation, and never schedule reminders or send messages from this field. Structured knowledge is enabled as optional knowledge in the same scene-scoped candidate, at most three proposals; never call a model solely to fill it. Use registryVersion 1 and only registered predicates. Preserve polarity, modality, temporalScope, conditions and supported validity; unknown times/units remain unknown, not invented. subjects of kind self identify the actual cited speaker, never a third-party quoted person. Reported or quoted spans must retain their stance and require a claim with epistemicKind reported, inferred or hypothesis; they cannot become explicit self-facts. Use asserted stance for a direct non-person declaration, not self. For concepts/tasks/tools/topics/organizations, new entity titles are labels, not identity: never merge same-title entities or guess an existing entity ID. Source-only extraction may use self or new subjects and new or typed literal objects, never existing endpoints or old memory. Each sourceSpans entry locates the exact original textParts item by messageId and partIndex; start/end are JavaScript UTF-16 code-unit offsets, end exclusive. Do not use offsets in joined text, Unicode code-point counts, normalized whitespace or paraphrases. Non-text parts still occupy original part indices. A valid span only proves where text occurs, not that its meaning supports your predicate or that the claim is true. Use has_property with exactly one registered property version/count/duration/enabled for supported typed literal values; do not invent property names. Use literal text, number with explicit unit or null for unknown unit, or boolean only when the registered predicate permits it. depends_on connects concept/task entities only, not arbitrary literals. Never combine knowledge with publicTechnicalDomain: structured claims remain scene-private and are not public-review material. Knowledge does not upgrade old relations or commitment confirmations. Do not treat a queued or proposed structure as saved or accepted. Registered endpoint kinds: {\"participates_in\":{\"subjects\":[\"person\"],\"objects\":[\"plan\",\"event\"]},\"prefers_topic\":{\"subjects\":[\"person\"],\"objects\":[\"topic\",\"literal:text\"]},\"uses_tool\":{\"subjects\":[\"person\"],\"objects\":[\"tool\",\"literal:text\"]},\"member_of\":{\"subjects\":[\"person\"],\"objects\":[\"organization\"]},\"part_of\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"depends_on\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"has_property\":{\"subjects\":[\"tool\",\"concept\",\"task\"],\"objects\":[\"literal:text\",\"literal:number\",\"literal:boolean\"]}}",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "knowledge": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registryVersion": {
+                  "type": "number",
+                  "const": 1
+                },
+                "predicate": {
+                  "type": "string",
+                  "enum": [
+                    "participates_in",
+                    "prefers_topic",
+                    "uses_tool",
+                    "member_of",
+                    "part_of",
+                    "depends_on",
+                    "has_property"
+                  ]
+                },
+                "property": {
+                  "type": "string",
+                  "enum": [
+                    "version",
+                    "count",
+                    "duration",
+                    "enabled"
+                  ]
+                },
+                "subject": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "self"
+                        },
+                        "personId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "personId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "object": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "text"
+                            },
+                            "value": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "number"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value",
+                            "unit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "boolean"
+                            },
+                            "value": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "sourceSpans": {
+                  "minItems": 1,
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "messageId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "partIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4095
+                      },
+                      "start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "end": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1000000
+                      },
+                      "stance": {
+                        "type": "string",
+                        "enum": [
+                          "self",
+                          "asserted",
+                          "reported",
+                          "quoted"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "messageId",
+                      "partIndex",
+                      "start",
+                      "end",
+                      "stance"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "registryVersion",
+                "predicate",
+                "subject",
+                "object",
+                "polarity",
+                "modality",
+                "temporalScope",
+                "conditions",
+                "sourceSpans"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "commitment": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "propose"
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "amend"
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "confirm",
+                      "complete",
+                      "cancel"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "learning.propose",
+      "description": "Enqueue scene-scoped learning supported by currently available nonbot sources. queued is not saved: processing happens independently after foreground work. Simulation never saves learning. Specify subject self only for an actual cited self-statement, mentioned only with the exact canonical personId and zero-based original message parts index, or unresolved without a personId. Nicknames, quotes, jokes and hypotheses do not establish a self-fact; third-party reports remain claims. Never infer personality or gender. Unknown event/validity times must stay omitted; observedAt and source snapshots are server-owned. Relation extraction is enabled as an optional part of the same memory proposal; never make an extra model call just to populate it. Propose at most three participates_in relations only when the cited source explicitly supports the complete assertion. personId must be the current validated self/mentioned subject. New targets must be concrete plans or events from these sources; titles are labels, never identity keys or merge authority. Existing targets require an exact entity reference actually exposed in this contextual turn; source-only extraction must not use existing targets. Preserve negative polarity, all conditions, uncertainty and explicit validity/event times; unknown time stays omitted. Always provide modality asserted or possible and temporalScope current, past, future or unspecified. Possible participation is possible, never a positive current assertion. Preserve past participation with temporalScope past even when its exact date is unknown; omit exact timestamps rather than inventing them. Unknown temporal applicability is unspecified, not current. Do not erase these qualifiers to seek automatic admission: only asserted/current can be considered for the separate low-risk admission policy, and even accepted does not mean verified truth. Reported statements remain candidate claims, not verified truth. Do not assume automatic acceptance or invent graph endpoints. Plan tracking is enabled as an optional part of this same sourced memory proposal. Use exactly one explicit self-declaration source with ephemeral text, subject.kind self and epistemicKind explicit; reported/hypothetical/unclear declarations must not become confirmations. The server stores a typed internal declaration marker, not your expanded content or raw chat. Preserve complete participants, polarity, modality, conditions, and temporalScope; unknown time stays omitted, never guess a date. A source-only proposal may propose a new plan, never identify an old plan by title. Confirm, amend, complete or cancel requires the exact plan reference actually delivered in this contextual turn and an explicit statement by the corresponding participant; one person cannot confirm for others. An amended proposal does not replace the old confirmed arrangement until all required people independently confirm that same terms version. Completion/cancellation is self-reported, not externally verified. Do not treat jokes, reported speech, silence, message delivery or a WAIT as confirmation, and never schedule reminders or send messages from this field. Structured knowledge is enabled as optional knowledge in the same scene-scoped candidate, at most three proposals; never call a model solely to fill it. Use registryVersion 1 and only registered predicates. Preserve polarity, modality, temporalScope, conditions and supported validity; unknown times/units remain unknown, not invented. subjects of kind self identify the actual cited speaker, never a third-party quoted person. Reported or quoted spans must retain their stance and require a claim with epistemicKind reported, inferred or hypothesis; they cannot become explicit self-facts. Use asserted stance for a direct non-person declaration, not self. For concepts/tasks/tools/topics/organizations, new entity titles are labels, not identity: never merge same-title entities or guess an existing entity ID. Source-only extraction may use self or new subjects and new or typed literal objects, never existing endpoints or old memory. Each sourceSpans entry locates the exact original textParts item by messageId and partIndex; start/end are JavaScript UTF-16 code-unit offsets, end exclusive. Do not use offsets in joined text, Unicode code-point counts, normalized whitespace or paraphrases. Non-text parts still occupy original part indices. A valid span only proves where text occurs, not that its meaning supports your predicate or that the claim is true. Use has_property with exactly one registered property version/count/duration/enabled for supported typed literal values; do not invent property names. Use literal text, number with explicit unit or null for unknown unit, or boolean only when the registered predicate permits it. depends_on connects concept/task entities only, not arbitrary literals. Never combine knowledge with publicTechnicalDomain: structured claims remain scene-private and are not public-review material. Knowledge does not upgrade old relations or commitment confirmations. Do not treat a queued or proposed structure as saved or accepted. Registered endpoint kinds: {\"participates_in\":{\"subjects\":[\"person\"],\"objects\":[\"plan\",\"event\"]},\"prefers_topic\":{\"subjects\":[\"person\"],\"objects\":[\"topic\",\"literal:text\"]},\"uses_tool\":{\"subjects\":[\"person\"],\"objects\":[\"tool\",\"literal:text\"]},\"member_of\":{\"subjects\":[\"person\"],\"objects\":[\"organization\"]},\"part_of\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"depends_on\":{\"subjects\":[\"concept\",\"task\"],\"objects\":[\"concept\",\"task\"]},\"has_property\":{\"subjects\":[\"tool\",\"concept\",\"task\"],\"objects\":[\"literal:text\",\"literal:number\",\"literal:boolean\"]}}",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "fact",
+              "claim",
+              "term",
+              "experience",
+              "summary"
+            ]
+          },
+          "personId": {
+            "type": "string"
+          },
+          "subject": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "self"
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sourceMessageId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "mentioned"
+                  },
+                  "personId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sourceMessageId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mentionPartIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "personId",
+                  "sourceMessageId",
+                  "mentionPartIndex"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "unresolved"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "relations": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "predicate": {
+                  "type": "string",
+                  "const": "participates_in"
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "personId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                },
+                "target": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "predicate",
+                "modality",
+                "temporalScope",
+                "personId",
+                "target",
+                "polarity",
+                "conditions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "knowledge": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registryVersion": {
+                  "type": "number",
+                  "const": 1
+                },
+                "predicate": {
+                  "type": "string",
+                  "enum": [
+                    "participates_in",
+                    "prefers_topic",
+                    "uses_tool",
+                    "member_of",
+                    "part_of",
+                    "depends_on",
+                    "has_property"
+                  ]
+                },
+                "property": {
+                  "type": "string",
+                  "enum": [
+                    "version",
+                    "count",
+                    "duration",
+                    "enabled"
+                  ]
+                },
+                "subject": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "self"
+                        },
+                        "personId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "personId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "object": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "new"
+                        },
+                        "entityKind": {
+                          "type": "string",
+                          "enum": [
+                            "plan",
+                            "event",
+                            "topic",
+                            "tool",
+                            "organization",
+                            "concept",
+                            "task"
+                          ]
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityKind",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "existing"
+                        },
+                        "entityId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "entityId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "text"
+                            },
+                            "value": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "number"
+                            },
+                            "value": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value",
+                            "unit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "literal"
+                            },
+                            "valueType": {
+                              "type": "string",
+                              "const": "boolean"
+                            },
+                            "value": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "valueType",
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "polarity": {
+                  "type": "string",
+                  "enum": [
+                    "positive",
+                    "negative"
+                  ]
+                },
+                "modality": {
+                  "type": "string",
+                  "enum": [
+                    "asserted",
+                    "possible"
+                  ]
+                },
+                "temporalScope": {
+                  "type": "string",
+                  "enum": [
+                    "current",
+                    "past",
+                    "future",
+                    "unspecified"
+                  ]
+                },
+                "conditions": {
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "validFrom": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "validUntil": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "sourceSpans": {
+                  "minItems": 1,
+                  "maxItems": 8,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "messageId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "partIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4095
+                      },
+                      "start": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      "end": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1000000
+                      },
+                      "stance": {
+                        "type": "string",
+                        "enum": [
+                          "self",
+                          "asserted",
+                          "reported",
+                          "quoted"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "messageId",
+                      "partIndex",
+                      "start",
+                      "end",
+                      "stance"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "registryVersion",
+                "predicate",
+                "subject",
+                "object",
+                "polarity",
+                "modality",
+                "temporalScope",
+                "conditions",
+                "sourceSpans"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "commitment": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "propose"
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "amend"
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "terms": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "plan"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "participantIds": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        }
+                      },
+                      "temporalScope": {
+                        "type": "string",
+                        "enum": [
+                          "current",
+                          "past",
+                          "future",
+                          "unspecified"
+                        ]
+                      },
+                      "polarity": {
+                        "type": "string",
+                        "enum": [
+                          "positive",
+                          "negative"
+                        ]
+                      },
+                      "modality": {
+                        "type": "string",
+                        "enum": [
+                          "asserted",
+                          "possible"
+                        ]
+                      },
+                      "conditions": {
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "timeQualification": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validFrom": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "validUntil": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "title",
+                      "participantIds",
+                      "temporalScope",
+                      "polarity",
+                      "modality",
+                      "conditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target",
+                  "terms"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "confirm",
+                      "complete",
+                      "cancel"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "version": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "deletionEpoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "deletionEpoch"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "target"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "epistemicKind": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "reported",
+              "observed",
+              "inferred",
+              "hypothesis"
+            ]
+          },
+          "sourceMessageIds": {
+            "minItems": 1,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "importance": {
+            "default": "medium",
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "confidence": {
+            "default": 0.5,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "supersedesId": {
+            "type": "string"
+          },
+          "mergeIntoId": {
+            "type": "string"
+          },
+          "publicTechnicalDomain": {
+            "type": "string",
+            "enum": [
+              "http",
+              "json",
+              "unicode",
+              "git",
+              "sql",
+              "javascript",
+              "typescript",
+              "python",
+              "linux"
+            ]
+          },
+          "occurredAt": {
+            "type": "string"
+          },
+          "validUntil": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "kind",
+          "sourceMessageIds",
+          "importance",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "outcomes": [
+    {
+      "scenario": "ordinary",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity",
+        "validate",
+        "identity",
+        "workspace",
+        "historical",
+        "commitment-history",
+        "timeline",
+        "memories",
+        "current",
+        "submit"
+      ],
+      "result": {
+        "status": "queued",
+        "input": {
+          "content": "synthetic"
+        },
+        "capabilities": [
+          [],
+          [],
+          null,
+          [],
+          null,
+          null,
+          [],
+          null,
+          []
+        ]
+      }
+    },
+    {
+      "scenario": "semantic",
+      "trace": [
+        "gate",
+        "semantic"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "semantic_read_not_learning_authority"
+      }
+    },
+    {
+      "scenario": "identity",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "identity_read_not_learning_authority"
+      }
+    },
+    {
+      "scenario": "aborted",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "context_ineligible"
+      }
+    },
+    {
+      "scenario": "invalid",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity",
+        "validate"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "context_ineligible"
+      }
+    },
+    {
+      "scenario": "workspace",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity",
+        "validate",
+        "identity",
+        "workspace"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "workspace_read_not_learning_authority"
+      }
+    },
+    {
+      "scenario": "historical",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity",
+        "validate",
+        "identity",
+        "workspace",
+        "historical"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "historical_read_not_learning_authority"
+      }
+    },
+    {
+      "scenario": "commitment-history",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity",
+        "validate",
+        "identity",
+        "workspace",
+        "historical",
+        "commitment-history"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "historical_read_not_learning_authority"
+      }
+    },
+    {
+      "scenario": "timeline",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity",
+        "validate",
+        "identity",
+        "workspace",
+        "historical",
+        "commitment-history",
+        "timeline"
+      ],
+      "result": {
+        "status": "rejected",
+        "reason": "historical_read_not_learning_authority"
+      }
+    },
+    {
+      "scenario": "current",
+      "trace": [
+        "gate",
+        "semantic",
+        "identity",
+        "validate",
+        "identity",
+        "workspace",
+        "historical",
+        "commitment-history",
+        "timeline",
+        "memories",
+        "current",
+        "submit"
+      ],
+      "result": {
+        "status": "queued",
+        "input": {
+          "content": "synthetic"
+        },
+        "capabilities": [
+          [],
+          [],
+          null,
+          [],
+          "current",
+          null,
+          [],
+          null,
+          []
+        ]
+      }
+    }
+  ],
+  "runtimeSHA256": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+  "sceneChanges": [
+    {
+      "learningEnabled": true,
+      "participationEnabled": true,
+      "trace": [
+        "semantic-configure"
+      ]
+    },
+    {
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "trace": [
+        "reply-cancel:s",
+        "semantic-configure"
+      ]
+    },
+    {
+      "learningEnabled": false,
+      "participationEnabled": true,
+      "trace": [
+        "experience:s",
+        "semantic-configure",
+        "learning-cancel:s",
+        "semantic-cancel:s",
+        "contextual-cancel:s"
+      ]
+    },
+    {
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "trace": [
+        "experience:s",
+        "reply-cancel:s",
+        "semantic-configure",
+        "learning-cancel:s",
+        "semantic-cancel:s",
+        "contextual-cancel:s"
+      ]
+    }
+  ]
+}

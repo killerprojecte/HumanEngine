@@ -190,6 +190,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err = app.composeIdentityMemory(owners); err != nil {
 		return app, err
 	}
+	app.registerContextualTool(memory)
 	app.registerStateMemoryTools(memory)
 	effects, err := NewNativeSettingsEffects(memory.projections, memory.workspace, app.Maintenance, app, app.Diagnostics, options.Logs)
 	if err != nil {

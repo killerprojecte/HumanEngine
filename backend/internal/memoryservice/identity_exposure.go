@@ -154,7 +154,7 @@ func (p *identityExposurePort) current(reads botruntime.ReadAuthority, c Context
 		if err := scope.CheckBinding(p.memory.main, p.memory.authority); err != nil {
 			return err
 		}
-		return p.memory.withReader(reads, func(r *assertions.Reader) error {
+		return p.memory.withScopeReader(scope, func(r *assertions.Reader) error {
 			scene, err := r.Scene(c.SceneID)
 			if err != nil {
 				return err

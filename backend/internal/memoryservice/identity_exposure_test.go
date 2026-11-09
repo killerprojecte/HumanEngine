@@ -15,6 +15,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelread"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
+	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 )
 
 // Pair two genuine identity queries to exercise shared StateExposure's whole-
@@ -106,6 +107,29 @@ func TestIdentityExposureActualSourceOracle(t *testing.T) {
 			switch test.Name {
 			case "identity_exact_scope_and_receipts":
 				values := query(c, "p")
+				// Runtime eligibility supplies an unbound authority, unlike writer-scoped
+				// cache validation. One connection exposes accidental nested publication.
+				f.main.SetMaxOpenConns(1)
+				unbound, err := sourceevents.NewRuntimeAuthority(f.events)
+				exposureMust(t, err)
+				type validation struct {
+					valid bool
+					err   error
+				}
+				finished := make(chan validation, 1)
+				go func() {
+					valid, err := identity.port.ValidScoped(unbound, exposureContext(c), values)
+					finished <- validation{valid, err}
+				}()
+				select {
+				case result := <-finished:
+					exposureMust(t, result.err)
+					if !result.valid {
+						t.Fatal("unbound identity validation rejected actual receipt")
+					}
+				case <-time.After(2 * time.Second):
+					t.Fatal("unbound identity validation reopened the single-connection publication")
+				}
 				noneBefore := identity.CaptureGuard(c) == nil
 				forged := make([]any, len(values))
 				for i, v := range values {

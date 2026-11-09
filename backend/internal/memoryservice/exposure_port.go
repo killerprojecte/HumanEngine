@@ -48,22 +48,27 @@ func (p *ExposurePort) Capture(ctx context.Context, c Context, records []*Object
 }
 func (p *ExposurePort) withReader(reads botruntime.ReadAuthority, fn func(*assertions.Reader) error) error {
 	return p.sources.UseRuntimeReadScope(reads, func(scope sourceevents.RuntimeReadScope) error {
-		check := func() error { return scope.CheckBinding(p.main, p.authority) }
-		if e := check(); e != nil {
-			return e
-		}
-		r, e := p.memory.d.Assertions.BorrowReader(check, func(q string, args ...any) (assertions.Rows, error) { return scope.Query(q, args...) }, func(q string) (assertions.PreparedRead, error) {
-			statement, e := scope.PrepareAssertionRead(q)
-			if e != nil {
-				return nil, e
-			}
-			return exposureStatement{statement}, nil
-		})
-		if e != nil {
-			return e
-		}
-		return fn(r)
+		return p.withScopeReader(scope, fn)
 	})
+}
+
+// withScopeReader borrows the already admitted scope without reopening publication.
+func (p *ExposurePort) withScopeReader(scope sourceevents.RuntimeReadScope, fn func(*assertions.Reader) error) error {
+	check := func() error { return scope.CheckBinding(p.main, p.authority) }
+	if e := check(); e != nil {
+		return e
+	}
+	r, e := p.memory.d.Assertions.BorrowReader(check, func(q string, args ...any) (assertions.Rows, error) { return scope.Query(q, args...) }, func(q string) (assertions.PreparedRead, error) {
+		statement, e := scope.PrepareAssertionRead(q)
+		if e != nil {
+			return nil, e
+		}
+		return exposureStatement{statement}, nil
+	})
+	if e != nil {
+		return e
+	}
+	return fn(r)
 }
 
 type exposureStatement struct {

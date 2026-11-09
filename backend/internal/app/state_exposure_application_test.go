@@ -32,8 +32,25 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	if err = os.WriteFile(filepath.Join(options.PluginRoot, "application.mjs"), fixture, 0600); err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
-	defer cancel()
+	// Five bounded phases: setup, two completed model turns, held send/revocation,
+	// and recall/restart. Each retains the original 45s wait allowance.
+	phases := newStateExposurePhases(context.Background(), 45*time.Second, 5)
+	defer phases.Close()
+	if err = phases.Start("setup"); err != nil {
+		t.Fatal(err)
+	}
+	ctx := phases.root // Stable owner and callback lifetime, cancelled on any phase timeout.
+	nextPhase := func(name string) {
+		t.Logf("state exposure phase %q elapsed=%s", phases.name, time.Since(phases.started))
+		if err := phases.Start(name); err != nil {
+			t.Fatal(err)
+		}
+	}
+	defer func() {
+		if err := phases.Err(); err != nil {
+			t.Log(err)
+		}
+	}()
 	app, err := Open(ctx, options)
 	if err != nil {
 		if app != nil {
@@ -75,7 +92,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	if app.Bridge.Host.PID() != 0 {
 		t.Fatal("registration left idle process")
 	}
-	settings := appRequest(t, app, http.MethodGet, "/api/settings", nil)
+	settings := stateExposureRequest(t, phases.current, app, http.MethodGet, "/api/settings", nil)
 	raw, err := jsjson.Marshal(settings)
 	if err != nil {
 		t.Fatal(err)
@@ -94,19 +111,19 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	input["promptContextWindowEnabled"] = false
 	input["debounceMs"] = float64(0)
 	input["groupTurnCooldownMs"] = float64(0)
-	appRequest(t, app, http.MethodPut, "/api/settings", input)
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/settings", input)
 	models := json.RawMessage(`{"providers":[{"id":"p","name":"Synthetic","protocol":"state:deterministic","baseUrl":"https://synthetic.invalid","retryCount":0,"timeoutMs":10000}],"models":[{"id":"m","displayName":"Synthetic","providerId":"p","apiModelName":"synthetic","capabilities":["text","tools"]}],"routes":[{"role":"planner","orderedModelIds":["m"],"timeoutMs":10000},{"role":"replyer","orderedModelIds":["m"],"timeoutMs":10000}]}`)
-	appRequest(t, app, http.MethodPut, "/api/models", models)
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/models", models)
 	marker := filepath.Join(options.PluginRoot, "received.marker")
 	arrived, resume := filepath.Join(options.PluginRoot, "planner.arrived"), filepath.Join(options.PluginRoot, "planner.resume")
 	t.Cleanup(func() { _ = os.WriteFile(resume, []byte("resume"), 0600) })
-	appRequest(t, app, http.MethodPut, "/api/plugins/state/config", map[string]any{"memoryMode": true, "timestamp": time.Now().UTC().Format(time.RFC3339Nano), "receivedMarker": marker, "plannerArrived": arrived, "plannerResume": resume})
-	appRequest(t, app, http.MethodPut, "/api/plugins/state/enabled", map[string]any{"enabled": true})
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/plugins/state/config", map[string]any{"memoryMode": true, "timestamp": time.Now().UTC().Format(time.RFC3339Nano), "receivedMarker": marker, "plannerArrived": arrived, "plannerResume": resume})
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/plugins/state/enabled", map[string]any{"enabled": true})
 	// Source ingress defaults to participation disabled. Enable the discovered
 	// scene through the actual administration boundary before new platform input.
-	inspectedScene := appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
+	inspectedScene := stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
 	sceneID := field(field(inspectedScene, "scene"), "id").(string)
-	scenes := appRequest(t, app, http.MethodGet, "/api/scenes", nil).([]any)
+	scenes := stateExposureRequest(t, phases.current, app, http.MethodGet, "/api/scenes", nil).([]any)
 	var savedScene *jsjson.Object
 	for _, v := range scenes {
 		if field(v, "id") == sceneID {
@@ -136,22 +153,22 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	}
 	select {
 	case <-mediaEntered:
-	case <-ctx.Done():
-		t.Fatal(ctx.Err())
+	case <-phases.current.Done():
+		t.Fatal(phases.Err())
 	}
 	savedScene.Set("learningEnabled", false)
 	pausedBody, err := jsjson.Marshal(savedScene)
 	if err != nil {
 		t.Fatal(err)
 	}
-	paused := appRequest(t, app, http.MethodPut, "/api/scenes/"+url.PathEscape(sceneID), json.RawMessage(pausedBody))
+	paused := stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/scenes/"+url.PathEscape(sceneID), json.RawMessage(pausedBody))
 	if field(paused, "learningEnabled") != false {
 		t.Fatalf("pause response: %#v", paused)
 	}
 	select {
 	case <-mediaCancelled:
-	case <-ctx.Done():
-		t.Fatal(ctx.Err())
+	case <-phases.current.Done():
+		t.Fatal(phases.Err())
 	}
 	select {
 	case <-mediaTask.Done():
@@ -159,7 +176,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	default:
 	}
 	releaseMedia()
-	if err = mediaTask.Wait(ctx); err != nil {
+	if err = mediaTask.Wait(phases.current); err != nil {
 		t.Fatal(err)
 	}
 	savedScene.Set("participationEnabled", true)
@@ -168,14 +185,14 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	appRequest(t, app, http.MethodPut, "/api/scenes/"+url.PathEscape(sceneID), json.RawMessage(sceneBody))
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/scenes/"+url.PathEscape(sceneID), json.RawMessage(sceneBody))
 	var evidence []any
 	initialSource := field(inspectedScene, "source").(string)
 	initialSnapshot, err := app.Engine.Runtime.Snapshot(sceneID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = app.Engine.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error {
+	err = app.Engine.Sources.WithRuntimeReads(phases.current, func(reads botruntime.ReadAuthority) error {
 		message, e := app.Engine.Runtime.PreviewMessage(sceneID, initialSource, reads)
 		if e != nil {
 			return e
@@ -192,7 +209,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	candidate := memoryToolObject("content", "Prefers concise replies.", "kind", "fact", "epistemicKind", "explicit", "sources", []any{memoryToolObject("sceneId", sceneID, "messageId", initialSource, "senderId", "synthetic-user")}, "subject", memoryToolObject("kind", "self", "sourceMessageId", initialSource))
 	// A commitment proposal intentionally stores an internal declaration. Seed
 	// ordinary person memory separately through the real outer proposal API.
-	ordinary, err := app.Semantic.Memory.Propose(ctx, proposal, candidate.Clone(), memoryservice.ProposalOptions{})
+	ordinary, err := app.Semantic.Memory.Propose(phases.current, proposal, candidate.Clone(), memoryservice.ProposalOptions{})
 	if err != nil || ordinary.Status != "saved" {
 		t.Fatalf("ordinary memory seed: %+v %v", ordinary, err)
 	}
@@ -200,7 +217,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		t.Fatal("ordinary seed became a declaration")
 	}
 	candidate.Set("commitment", memoryToolObject("kind", "propose", "terms", memoryToolObject("kind", "plan", "title", "Synthetic plan", "participantIds", []any{"synthetic-user"}, "temporalScope", "future", "polarity", "positive", "modality", "asserted", "conditions", []any{})))
-	savedMemory, err := app.Semantic.Memory.Propose(ctx, proposal, candidate, memoryservice.ProposalOptions{})
+	savedMemory, err := app.Semantic.Memory.Propose(phases.current, proposal, candidate, memoryservice.ProposalOptions{})
 	if err != nil || savedMemory.Status != "saved" {
 		t.Fatalf("real memory seed: %+v %v", savedMemory, err)
 	}
@@ -220,7 +237,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		selectedMemory <- len(app.MemoryExposure.ReadExposed(c))
 		return nil
 	}})
-	experienceView := appRequest(t, app, http.MethodGet, "/api/memory-experience?sceneId="+url.QueryEscape(sceneID), nil)
+	experienceView := stateExposureRequest(t, phases.current, app, http.MethodGet, "/api/memory-experience?sceneId="+url.QueryEscape(sceneID), nil)
 	if field(experienceView, "sceneId") != sceneID {
 		t.Fatal("Experience response bound to wrong scene", experienceView)
 	}
@@ -228,27 +245,28 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		t.Fatal("missing actual Experience items", experienceView)
 	}
 
-	appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/new-source", map[string]any{})
+	nextPhase("first model turn")
+	stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/new-source", map[string]any{})
 	for {
 		if _, e := os.Stat(arrived); e == nil {
 			break
 		}
 		select {
-		case <-ctx.Done():
+		case <-phases.current.Done():
 			t.Fatal("planner did not enter captured router")
 		case <-time.After(time.Millisecond):
 		}
 	}
 	// HTTP commit happens while the existing turn owns its original router.
 	updated := json.RawMessage(strings.ReplaceAll(string(models), `"m"`, `"m2"`))
-	appRequest(t, app, http.MethodPut, "/api/models", updated)
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/models", updated)
 	if err = os.WriteFile(resume, []byte("resume"), 0600); err != nil {
 		t.Fatal(err)
 	}
 
 	var inspected any
 	for {
-		inspected = appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
+		inspected = stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
 		sent, _ := field(inspected, "sent").([]any)
 		if len(sent) == 1 {
 			break
@@ -256,7 +274,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		select {
 		case failure := <-turnFailures:
 			t.Fatalf("synthetic actual turn failure: %+v; inspect=%v", failure, inspected)
-		case <-ctx.Done():
+		case <-phases.current.Done():
 			t.Fatal("native send not completed", inspected)
 		case <-time.After(time.Millisecond):
 		}
@@ -266,8 +284,8 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		if count < 1 {
 			t.Fatal("memory tool did not deliver selected original record")
 		}
-	case <-ctx.Done():
-		t.Fatal(ctx.Err())
+	case <-phases.current.Done():
+		t.Fatal(phases.Err())
 	}
 	for _, name := range []string{"memory.commitments", "memory.commitmentHistory", "memory.commitmentTimeline", "memory.history"} {
 		found := false
@@ -290,19 +308,20 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	}
 	for app.Engine.Runtime.ActiveTasks() != 0 {
 		select {
-		case <-ctx.Done():
+		case <-phases.current.Done():
 			t.Fatal("first turn did not finish")
 		case <-time.After(time.Millisecond):
 		}
 	}
-	appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/new-source", map[string]any{})
+	nextPhase("second model turn")
+	stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/new-source", map[string]any{})
 	for {
-		inspected = appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
+		inspected = stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
 		if len(field(inspected, "sent").([]any)) == 2 {
 			break
 		}
 		select {
-		case <-ctx.Done():
+		case <-phases.current.Done():
 			t.Fatal("new turn did not send", inspected)
 		case <-time.After(time.Millisecond):
 		}
@@ -329,8 +348,8 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	}
 	for app.Engine.Runtime.ActiveTasks() != 0 {
 		select {
-		case <-ctx.Done():
-			t.Fatal(ctx.Err())
+		case <-phases.current.Done():
+			t.Fatal(phases.Err())
 		case <-time.After(time.Millisecond):
 		}
 	}
@@ -340,7 +359,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		t.Fatal("missing current guard")
 	}
 	// A committed real HTTP settings change must invalidate cached state.
-	err = app.Engine.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error {
+	err = app.Engine.Sources.WithRuntimeReads(phases.current, func(reads botruntime.ReadAuthority) error {
 		ok, e := guard.Check(reads)
 		if e != nil {
 			return e
@@ -357,8 +376,9 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	// selected, then withdraw answer permission before its beforeTransmit check.
 	beforeArrived, beforeResume := filepath.Join(options.PluginRoot, "state-send.arrived"), filepath.Join(options.PluginRoot, "state-send.resume")
 	t.Cleanup(func() { _ = os.WriteFile(beforeResume, []byte("resume"), 0600) })
-	appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/hold-send", map[string]any{"arrived": beforeArrived, "resume": beforeResume})
-	appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/new-source", map[string]any{})
+	stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/hold-send", map[string]any{"arrived": beforeArrived, "resume": beforeResume})
+	nextPhase("pending send and revocation")
+	stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/new-source", map[string]any{})
 	for {
 		if _, e := os.Stat(beforeArrived); e == nil {
 			break
@@ -366,33 +386,33 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		select {
 		case failure := <-turnFailures:
 			t.Fatalf("pending turn failed before send boundary: %v", failure)
-		case <-ctx.Done():
+		case <-phases.current.Done():
 			t.Fatal("pending send did not reach boundary")
 		case <-time.After(time.Millisecond):
 		}
 	}
-	pending := appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
+	pending := stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
 	if len(field(pending, "sent").([]any)) != 2 || field(pending, "sendAttempts") != float64(3) {
 		t.Fatal("pending send was not physically held", pending)
 	}
 	input["memoryCommitmentsAnswerEnabled"] = false
-	appRequest(t, app, http.MethodPut, "/api/settings", input)
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/settings", input)
 	if err = os.WriteFile(beforeResume, []byte("resume"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	for app.Engine.Runtime.ActiveTasks() != 0 {
 		select {
-		case <-ctx.Done():
+		case <-phases.current.Done():
 			t.Fatal("revoked turn did not physically finish")
 		case <-time.After(time.Millisecond):
 		}
 	}
-	revoked := appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
+	revoked := stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
 	if len(field(revoked, "sent").([]any)) != 2 || field(revoked, "sendAttempts") != float64(3) {
 		t.Fatal("revoked pending native send transmitted", revoked)
 	}
 
-	err = app.Engine.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error {
+	err = app.Engine.Sources.WithRuntimeReads(phases.current, func(reads botruntime.ReadAuthority) error {
 		ok, e := guard.Check(reads)
 		if e != nil {
 			return e
@@ -405,18 +425,19 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	calls := appRequest(t, app, http.MethodGet, "/api/model-calls", nil)
+	nextPhase("recall disable restart and shutdown")
+	calls := stateExposureRequest(t, phases.current, app, http.MethodGet, "/api/model-calls", nil)
 	// Query exposes actual metadata rows from the newly PUT model configuration.
 	encoded, _ := jsjson.Marshal(calls)
 	if !strings.Contains(string(encoded), `"modelId":"m"`) {
 		t.Fatal("model calls not bound", string(encoded))
 	}
-	appRequest(t, app, http.MethodGet, "/api/diagnostics", nil)
+	stateExposureRequest(t, phases.current, app, http.MethodGet, "/api/diagnostics", nil)
 	sourceID, _ := field(inspected, "source").(string)
 	if sourceID == "" {
 		t.Fatal("missing actual source ID")
 	}
-	if err = app.Engine.Runtime.Recall(ctx, sceneID, sourceID); err != nil {
+	if err = app.Engine.Runtime.Recall(phases.current, sceneID, sourceID); err != nil {
 		t.Fatal(err)
 	}
 	// Independent read of the committed native tombstone proves the Experience
@@ -426,7 +447,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	var tombstones int
-	err = witness.QueryRowContext(ctx, "SELECT count(*) FROM memory_experience_tombstones WHERE key=?", experienceservice.SourceKey(sceneID, sourceID)).Scan(&tombstones)
+	err = witness.QueryRowContext(phases.current, "SELECT count(*) FROM memory_experience_tombstones WHERE key=?", experienceservice.SourceKey(sceneID, sourceID)).Scan(&tombstones)
 	closeErr := witness.Close()
 	if err != nil || closeErr != nil || tombstones != 1 {
 		t.Fatalf("Experience recall not committed: %d %v %v", tombstones, err, closeErr)
@@ -436,10 +457,10 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	if historicalGuard == nil {
 		t.Fatal("missing historical guard")
 	}
-	if err = app.Engine.Runtime.Recall(ctx, sceneID, initialSource); err != nil {
+	if err = app.Engine.Runtime.Recall(phases.current, sceneID, initialSource); err != nil {
 		t.Fatal(err)
 	}
-	err = app.Engine.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error {
+	err = app.Engine.Sources.WithRuntimeReads(phases.current, func(reads botruntime.ReadAuthority) error {
 		ok, e := historicalGuard.Check(reads)
 		if e != nil {
 			return e
@@ -453,7 +474,7 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = app.Shutdown(ctx); err != nil {
+	if err = app.Shutdown(phases.current); err != nil {
 		t.Fatal(err)
 	}
 	if app.Bridge.Host.PID() != 0 {
@@ -466,12 +487,12 @@ func TestInstalledApplicationStateExposureReceiptsAndRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	inspected = appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
+	inspected = stateExposureRequest(t, phases.current, app, http.MethodPost, "/api/plugins/state/actions/inspect", map[string]any{})
 	if field(inspected, "modelCalls") != float64(0) || len(field(inspected, "sent").([]any)) != 0 {
 		t.Fatal("startup replayed persisted message", inspected)
 	}
-	appRequest(t, app, http.MethodPut, "/api/plugins/state/enabled", map[string]any{"enabled": false})
-	if err = app.Shutdown(ctx); err != nil {
+	stateExposureRequest(t, phases.current, app, http.MethodPut, "/api/plugins/state/enabled", map[string]any{"enabled": false})
+	if err = app.Shutdown(phases.current); err != nil {
 		t.Fatal(err)
 	}
 }

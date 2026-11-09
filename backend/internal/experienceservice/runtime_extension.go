@@ -294,10 +294,26 @@ func (r *RuntimeHints) ComposeExtension(base botruntime.Extension, g RuntimeGate
 		}
 		return delivered, nil
 	}
+	return r.composeLifecycle(base, ext, binding), binding, nil
+}
+
+// ComposeLifecycle attaches real feedback and sent-association owners without
+// granting model-tool authority. ComposeExtension uses this same implementation
+// after installing its required policy-gated tools.
+func (r *RuntimeHints) ComposeLifecycle(base botruntime.Extension, report func(string, error)) (*botruntime.Extension, *RuntimeBinding, error) {
+	if report == nil {
+		return nil, nil, errors.New("experience_runtime_report_required")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	binding := &RuntimeBinding{ctx: ctx, cancel: cancel, report: report}
+	return r.composeLifecycle(base, base, binding), binding, nil
+}
+
+func (r *RuntimeHints) composeLifecycle(base, ext botruntime.Extension, binding *RuntimeBinding) *botruntime.Extension {
 	sequence := botruntime.NewSentSequencer(binding.ctx, func(scene botruntime.Scene, turn, target string) {
 		binding.runSafely(func() {
 			if e := r.sentContext(binding.ctx, scene.ID, turn, target); e != nil {
-				g.Report("experience_use_unavailable", e)
+				binding.report("experience_use_unavailable", e)
 			}
 		})
 	})
@@ -309,7 +325,7 @@ func (r *RuntimeHints) ComposeExtension(base botruntime.Extension, g RuntimeGate
 		}
 		if prop(m, "sourceEventRegistrationLimited") != true {
 			if e := r.Received(m); e != nil {
-				g.Report("experience_feedback_unavailable", e)
+				binding.report("experience_feedback_unavailable", e)
 			}
 		}
 		if base.Received != nil {
@@ -332,5 +348,5 @@ func (r *RuntimeHints) ComposeExtension(base botruntime.Extension, g RuntimeGate
 			base.SceneChanged(scene)
 		}
 	}
-	return &ext, binding, nil
+	return &ext
 }

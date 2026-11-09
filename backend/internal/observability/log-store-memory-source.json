@@ -1,0 +1,3699 @@
+{
+  "provenance": "Actual Store AST member bodies and actual formatters; explicit synthetic lease status/result inputs. No worker/fd proof.",
+  "sourceHashes": {
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/diagnostics/format.ts": "00cd263739736dcf00a6dfe70f82b1260bde41c46c104ebdd6c9238f982528ea",
+    "src/model-roles.ts": "d7014ef6614cc315df94c5773e54e5c990195ac98c2e7064833616a31412ab83",
+    "src/diagnostics/log-writer.ts": "e39bdbc29f063267991b38ec8a36e903dbd12388e2d1cb803915ede65dac8060",
+    "src/diagnostics/catalogs/zh-CN.json": "2e29588debad6aa244f53fe4545c21b5d9bed9d283bb8bdec71ee3f2ae55a563",
+    "src/diagnostics/catalogs/presentation-zh-CN.json": "da1830f33c44468aa979151c2648aeeb2e5bfbdd08274f0c7014267ebb17d838",
+    "src/diagnostics/catalogs/errors-zh-CN.json": "a95b3a26b1698e4358efd540763682e9359b574617e0be184e6473d58d30aa0f"
+  },
+  "sliceHash": "4450bb9f4e7cb86625ef8157a63638501aaa8e73de733c92887300e67d4454aa",
+  "boundaryInputSHA256": "41017ff90f0ee7475e54d40a760853202ee48f75b81ace6757652d04f6a31e80",
+  "fixedID": "11111111-1111-4111-8111-111111111111",
+  "fixedAt": "2026-11-09T00:00:00.123Z",
+  "cases": [
+    {
+      "name": "unused-store-is-lazy",
+      "spec": {
+        "name": "unused-store-is-lazy",
+        "path": ":memory:",
+        "steps": [
+          {
+            "kind": "status",
+            "name": "unused"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          },
+          {
+            "kind": "syncClose"
+          }
+        ]
+      },
+      "directory": null,
+      "operations": [
+        "clear-diagnostics",
+        "close-authority",
+        "close-db"
+      ],
+      "captures": [],
+      "checkpoints": [
+        {
+          "name": "unused",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 0,
+              "retainedBytes": 0,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 2,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "text": "[]"
+          },
+          "rowBytes": []
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 0,
+              "retainedBytes": 0,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 2,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "text": "[]"
+          },
+          "rowBytes": []
+        }
+      ],
+      "results": [
+        []
+      ],
+      "serializationCalls": []
+    },
+    {
+      "name": "lazy-file-default-directory",
+      "spec": {
+        "name": "lazy-file-default-directory",
+        "path": "/synthetic/data/main.sqlite",
+        "steps": [
+          {
+            "kind": "status",
+            "name": "unused"
+          },
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          },
+          {
+            "kind": "syncClose"
+          }
+        ]
+      },
+      "directory": "/synthetic/data/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout",
+        "sync-file:5000",
+        "sync-stdout:5000",
+        "clear-diagnostics",
+        "close-authority",
+        "close-db"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "unused",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 0,
+              "retainedBytes": 0,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 2,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "text": "[]"
+          },
+          "rowBytes": []
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "environment-db-and-directory",
+      "spec": {
+        "name": "environment-db-and-directory",
+        "env": {
+          "HUMANENGINE_DB": "/env/db.sqlite",
+          "HUMANENGINE_LOG_DIR": "/custom/logs"
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/custom/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "memory-ignores-log-directory",
+      "spec": {
+        "name": "memory-ignores-log-directory",
+        "path": ":memory:",
+        "env": {
+          "HUMANENGINE_LOG_DIR": "/ignored"
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": null,
+      "operations": [
+        "acquire-stdout",
+        "enqueue-stdout",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "empty-environment-uses-defaults",
+      "spec": {
+        "name": "empty-environment-uses-defaults",
+        "env": {
+          "HUMANENGINE_DB": "",
+          "HUMANENGINE_LOG_DIR": ""
+        },
+        "steps": [
+          {
+            "kind": "status",
+            "name": "unused"
+          },
+          {
+            "kind": "close"
+          }
+        ]
+      },
+      "directory": "data/logs",
+      "operations": [],
+      "captures": [],
+      "checkpoints": [
+        {
+          "name": "unused",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 0,
+              "retainedBytes": 0,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 2,
+            "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "text": "[]"
+          },
+          "rowBytes": []
+        }
+      ],
+      "results": [
+        []
+      ],
+      "serializationCalls": []
+    },
+    {
+      "name": "exact-readable-dual-sink",
+      "spec": {
+        "name": "exact-readable-dual-sink",
+        "path": "/synthetic/db.sqlite",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "warn",
+            "fields": {
+              "batchId": "b",
+              "counts": {
+                "sentSegments": 2
+              },
+              "role": "thinker",
+              "traceId": "t",
+              "turnId": "u"
+            }
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": true,
+          "bytes": 491,
+          "sha256": "870bf65b73ed14b1aa9f3afafda0bd27529fb3ce13c67f5fa21c9c6022899a2a",
+          "text": "2026-11-09T00:00:00.123Z WARN [追踪=t 回合=u 学习批次=b] synthetic · ordinary；用途=Replyer — 按计划组织回复；确认发送成功分段数=2 | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"batchId\":\"b\",\"counts\":{\"sentSegments\":2},\"role\":\"replyer\",\"traceId\":\"t\",\"turnId\":\"u\",\"message\":\"synthetic · ordinary；用途=Replyer — 按计划组织回复；确认发送成功分段数=2\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": true,
+          "bytes": 327,
+          "sha256": "0d74230bd40bb53a360351dbd681425da0a41ca37078bb7632dcc216dde001eb",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"batchId\":\"b\",\"counts\":{\"sentSegments\":2},\"role\":\"replyer\",\"traceId\":\"t\",\"turnId\":\"u\",\"message\":\"synthetic · ordinary；用途=Replyer — 按计划组织回复；确认发送成功分段数=2\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 327,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 328,
+            "sha256": "3c47c2dac2d671134275a1b47f761b9c150a24acdf93b70c488c0d61d2f0633f",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"batchId\":\"b\",\"counts\":{\"sentSegments\":2},\"role\":\"replyer\",\"traceId\":\"t\",\"turnId\":\"u\",\"message\":\"synthetic · ordinary；用途=Replyer — 按计划组织回复；确认发送成功分段数=2\"}]"
+          },
+          "rowBytes": [
+            327
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "context-overrides-and-original-info-priority",
+      "spec": {
+        "name": "context-overrides-and-original-info-priority",
+        "path": "/synthetic/db.sqlite",
+        "flow": {
+          "requestId": "r",
+          "traceId": "flow",
+          "stage": "prepare"
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {
+              "at": "overridden",
+              "code": "custom-code",
+              "level": "error",
+              "message": "discarded",
+              "module": "custom-module",
+              "traceId": "context"
+            }
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 702,
+          "sha256": "a0345c40190d24162f154c3c80488cabdc3fbff729f2d1d741976c253d08da18",
+          "text": "overridden ERROR [追踪=context] custom-module · custom-code；根因: 未捕获底层原因 [cause_not_captured]；异常类型=UnknownError；阶段=prepare；处理建议: 该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。 | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"overridden\",\"level\":\"error\",\"module\":\"custom-module\",\"code\":\"custom-code\",\"requestId\":\"r\",\"traceId\":\"context\",\"stage\":\"prepare\",\"message\":\"custom-module · custom-code；根因: 未捕获底层原因 [cause_not_captured]；异常类型=UnknownError；阶段=prepare；处理建议: 该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 429,
+          "sha256": "f4805b5722426e996332a30241f93c3bfcaf222b2ca9eb5c97c0b794bc884e85",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"overridden\",\"level\":\"error\",\"module\":\"custom-module\",\"code\":\"custom-code\",\"requestId\":\"r\",\"traceId\":\"context\",\"stage\":\"prepare\",\"message\":\"custom-module · custom-code；根因: 未捕获底层原因 [cause_not_captured]；异常类型=UnknownError；阶段=prepare；处理建议: 该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 429,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 430,
+            "sha256": "e38a5ae8d070a7b9aed9d9789ce825c6246493fe4508ee2a6784712432d6fb65",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"overridden\",\"level\":\"error\",\"module\":\"custom-module\",\"code\":\"custom-code\",\"requestId\":\"r\",\"traceId\":\"context\",\"stage\":\"prepare\",\"message\":\"custom-module · custom-code；根因: 未捕获底层原因 [cause_not_captured]；异常类型=UnknownError；阶段=prepare；处理建议: 该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。\"}]"
+          },
+          "rowBytes": [
+            429
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "original-warn-priority-with-info-row",
+      "spec": {
+        "name": "original-warn-priority-with-info-row",
+        "path": ":memory:",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "warn",
+            "fields": {
+              "level": "info"
+            }
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": null,
+      "operations": [
+        "acquire-stdout",
+        "enqueue-stdout",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": true,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "unicode-full-uppercase-prefix",
+      "spec": {
+        "name": "unicode-full-uppercase-prefix",
+        "path": ":memory:",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {
+              "level": "straße",
+              "traceId": [
+                "汉",
+                "🙂"
+              ],
+              "turnId": false,
+              "batchId": 42
+            }
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": null,
+      "operations": [
+        "acquire-stdout",
+        "enqueue-stdout",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 313,
+          "sha256": "fb3dee3e6f080a59f4ab085d37c2022e6bb21215cdaecaee7a52f26d747e99d8",
+          "text": "2026-11-09T00:00:00.123Z STRASSE [追踪=汉,🙂 学习批次=42] synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"straße\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"batchId\":42,\"traceId\":[\"汉\",\"🙂\"],\"turnId\":false,\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 222,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 223,
+            "sha256": "7380d4ac3ad854d98bc1f6ca9132ce84b26e48921fed3c34195515e810e29f64",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"straße\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"batchId\":42,\"traceId\":[\"汉\",\"🙂\"],\"turnId\":false,\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            222
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "non-string-level-is-admission-failure",
+      "spec": {
+        "name": "non-string-level-is-admission-failure",
+        "path": "/synthetic/db.sqlite",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {
+              "level": 7
+            }
+          },
+          {
+            "kind": "status",
+            "name": "failed"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [],
+      "checkpoints": [
+        {
+          "name": "failed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 435,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 437,
+            "sha256": "620186a552c668fce3a75f611da7b4ddbd9ef97b817d90109950cd6b950fe881",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":7,\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            161,
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 435,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 437,
+            "sha256": "620186a552c668fce3a75f611da7b4ddbd9ef97b817d90109950cd6b950fe881",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":7,\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            161,
+            274
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "nonfinite-and-surrogate",
+      "spec": {
+        "name": "nonfinite-and-surrogate",
+        "path": ":memory:",
+        "special": "numbers",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": null,
+      "operations": [
+        "acquire-stdout",
+        "enqueue-stdout",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 300,
+          "sha256": "9fb29cdd22f4064fb854aa860a5edd2f384d17eef1b6c9d1509b8be7728f3b8f",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"nan\":null,\"negativeInfinity\":null,\"positiveInfinity\":null,\"surrogate\":\"\\ud800\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 246,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 247,
+            "sha256": "98ae685d65d9481022ee1eed6e074346c005ed0ba99d7d8409a693179022c7d9",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"nan\":null,\"negativeInfinity\":null,\"positiveInfinity\":null,\"surrogate\":\"\\ud800\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            246
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "serialization-once-for-both-sinks",
+      "spec": {
+        "name": "serialization-once-for-both-sinks",
+        "path": "/synthetic/db.sqlite",
+        "special": "toJSON",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 244,
+          "sha256": "ab063282f957d99fe36e38bc3e381c9bd9df8c92a192dec29eda97e81b01872f",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"custom\":{\"owned\":true},\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 190,
+          "sha256": "b87a2285347abdff8c1e1c6268ff21aad61fdaded79aea35ef9822ff2f3003bb",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"custom\":{\"owned\":true},\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 190,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 191,
+            "sha256": "f0ebea98ead614a09d4dbdb0aa717e50b39ac06203f3d06a891c74f3fd5b0cb6",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"custom\":{\"owned\":true},\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            190
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        1
+      ]
+    },
+    {
+      "name": "unserializable-bigint-before-acquire",
+      "spec": {
+        "name": "unserializable-bigint-before-acquire",
+        "path": "/synthetic/db.sqlite",
+        "special": "bigint",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "failed"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [],
+      "captures": [],
+      "checkpoints": [
+        {
+          "name": "failed",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 1,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 274,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 276,
+            "sha256": "633c29252378aee30a36e20db3e5ccb02ad78b7e7926ea0fb9adf6617b85c018",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"}]"
+          },
+          "rowBytes": [
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 1,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 274,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 276,
+            "sha256": "633c29252378aee30a36e20db3e5ccb02ad78b7e7926ea0fb9adf6617b85c018",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"}]"
+          },
+          "rowBytes": [
+            274
+          ]
+        }
+      ],
+      "results": [
+        []
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "unserializable-cycle-before-acquire",
+      "spec": {
+        "name": "unserializable-cycle-before-acquire",
+        "path": "/synthetic/db.sqlite",
+        "special": "cycle",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "failed"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [],
+      "captures": [],
+      "checkpoints": [
+        {
+          "name": "failed",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 1,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 274,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 276,
+            "sha256": "633c29252378aee30a36e20db3e5ccb02ad78b7e7926ea0fb9adf6617b85c018",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"}]"
+          },
+          "rowBytes": [
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": false,
+            "unserializableRecords": 1,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 274,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 276,
+            "sha256": "633c29252378aee30a36e20db3e5ccb02ad78b7e7926ea0fb9adf6617b85c018",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"}]"
+          },
+          "rowBytes": [
+            274
+          ]
+        }
+      ],
+      "results": [
+        []
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "file-acquire-failure-keeps-stdout-without-enqueue",
+      "spec": {
+        "name": "file-acquire-failure-keeps-stdout-without-enqueue",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "file": {
+            "acquireThrow": true
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "failed"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "close-stdout"
+      ],
+      "captures": [],
+      "checkpoints": [
+        {
+          "name": "failed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "738f186ceecf8a44a6f6cb51cbac86d70602ca2670678a6e0f1a9df70951634f",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "738f186ceecf8a44a6f6cb51cbac86d70602ca2670678a6e0f1a9df70951634f",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "stdout-acquire-failure-skips-file",
+      "spec": {
+        "name": "stdout-acquire-failure-skips-file",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "stdout": {
+            "acquireThrow": true
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "failed"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout"
+      ],
+      "captures": [],
+      "checkpoints": [
+        {
+          "name": "failed",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "738f186ceecf8a44a6f6cb51cbac86d70602ca2670678a6e0f1a9df70951634f",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": null,
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "738f186ceecf8a44a6f6cb51cbac86d70602ca2670678a6e0f1a9df70951634f",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        }
+      ],
+      "results": [
+        []
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "file-enqueue-failure-keeps-stdout-admission",
+      "spec": {
+        "name": "file-enqueue-failure-keeps-stdout-admission",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "file": {
+            "enqueueThrow": true
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "failed"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "failed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "738f186ceecf8a44a6f6cb51cbac86d70602ca2670678a6e0f1a9df70951634f",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": true,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "738f186ceecf8a44a6f6cb51cbac86d70602ca2670678a6e0f1a9df70951634f",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "false-enqueue-is-not-initialization-failure",
+      "spec": {
+        "name": "false-enqueue-is-not-initialization-failure",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "stdout": {
+            "reject": true
+          },
+          "file": {
+            "reject": true
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "admitted"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "admitted",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "closed-retention-and-sticky-shutdown",
+      "spec": {
+        "name": "closed-retention-and-sticky-shutdown",
+        "path": ":memory:",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "emit",
+            "level": "warn",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "late"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "reclosed"
+          }
+        ]
+      },
+      "directory": null,
+      "operations": [
+        "acquire-stdout",
+        "enqueue-stdout",
+        "close-stdout",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "late",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 1,
+            "memory": {
+              "retainedRecords": 3,
+              "retainedBytes": 606,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 608,
+            "sha256": "7aaa54d54c89a51333634363a8fd2f8ed9ccbe651bc154a3ba8b5a5beea066da",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            166,
+            274
+          ]
+        },
+        {
+          "name": "reclosed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 1,
+            "memory": {
+              "retainedRecords": 3,
+              "retainedBytes": 606,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 608,
+            "sha256": "7aaa54d54c89a51333634363a8fd2f8ed9ccbe651bc154a3ba8b5a5beea066da",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            166,
+            274
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ],
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "notice-throttled-minute-and-not-recursive",
+      "spec": {
+        "name": "notice-throttled-minute-and-not-recursive",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "stdout": {
+            "degraded": [
+              3,
+              1
+            ]
+          },
+          "file": {
+            "degraded": [
+              2,
+              4
+            ]
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "first"
+          },
+          {
+            "kind": "advance",
+            "millis": 59999
+          },
+          {
+            "kind": "status",
+            "name": "before-minute"
+          },
+          {
+            "kind": "advance",
+            "millis": 1
+          },
+          {
+            "kind": "status",
+            "name": "at-minute"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "first",
+          "status": {
+            "file": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 2,
+              "rejectedBytes": 0,
+              "failedRecords": 4,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": "sink_failed"
+            },
+            "stdout": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 3,
+              "rejectedBytes": 0,
+              "failedRecords": 1,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": "sink_failed"
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "05fd82cb6d425db90bd88f42b0e4d113b1bdd1fa419f368ba9c3917d34c8dcd9",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":5,\"failedRecords\":5},\"message\":\"logging · log_delivery_degraded；rejectedRecords=5；failedRecords=5\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        },
+        {
+          "name": "before-minute",
+          "status": {
+            "file": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 2,
+              "rejectedBytes": 0,
+              "failedRecords": 4,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": "sink_failed"
+            },
+            "stdout": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 3,
+              "rejectedBytes": 0,
+              "failedRecords": 1,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": "sink_failed"
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 2,
+              "retainedBytes": 440,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 442,
+            "sha256": "05fd82cb6d425db90bd88f42b0e4d113b1bdd1fa419f368ba9c3917d34c8dcd9",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":5,\"failedRecords\":5},\"message\":\"logging · log_delivery_degraded；rejectedRecords=5；failedRecords=5\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274
+          ]
+        },
+        {
+          "name": "at-minute",
+          "status": {
+            "file": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 2,
+              "rejectedBytes": 0,
+              "failedRecords": 4,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": "sink_failed"
+            },
+            "stdout": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 3,
+              "rejectedBytes": 0,
+              "failedRecords": 1,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": "sink_failed"
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 3,
+              "retainedBytes": 714,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 717,
+            "sha256": "0e4cdb9254f149b82fd47eba569ac6ad5db24e27abe2585204a377db722435e3",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:01:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":5,\"failedRecords\":5},\"message\":\"logging · log_delivery_degraded；rejectedRecords=5；failedRecords=5\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":5,\"failedRecords\":5},\"message\":\"logging · log_delivery_degraded；rejectedRecords=5；failedRecords=5\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274,
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 2,
+              "rejectedBytes": 0,
+              "failedRecords": 4,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": "sink_failed"
+            },
+            "stdout": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 3,
+              "rejectedBytes": 0,
+              "failedRecords": 1,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": "sink_failed"
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 3,
+              "retainedBytes": 714,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 717,
+            "sha256": "0e4cdb9254f149b82fd47eba569ac6ad5db24e27abe2585204a377db722435e3",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:01:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":5,\"failedRecords\":5},\"message\":\"logging · log_delivery_degraded；rejectedRecords=5；failedRecords=5\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":5,\"failedRecords\":5},\"message\":\"logging · log_delivery_degraded；rejectedRecords=5；failedRecords=5\"},{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166,
+            274,
+            274
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 2,
+              "rejectedBytes": 0,
+              "failedRecords": 4,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": "sink_failed"
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "degraded",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 3,
+              "rejectedBytes": 0,
+              "failedRecords": 1,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": "sink_failed"
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "oversized-retention-alone-does-not-fail-close",
+      "spec": {
+        "name": "oversized-retention-alone-does-not-fail-close",
+        "path": ":memory:",
+        "special": "oversized",
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "status",
+            "name": "oversized"
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": null,
+      "operations": [
+        "acquire-stdout",
+        "enqueue-stdout",
+        "close-stdout"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 4194535,
+          "sha256": "8655581fe9c226fbc78dc6b9a722643e5559cfe450061aa675898b0e12417e7d"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "oversized",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": false,
+            "shutdownComplete": null,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 274,
+              "evictedRecords": 0,
+              "oversizedRecords": 1,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 276,
+            "sha256": "633c29252378aee30a36e20db3e5ccb02ad78b7e7926ea0fb9adf6617b85c018",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"}]"
+          },
+          "rowBytes": [
+            274
+          ]
+        },
+        {
+          "name": "closed",
+          "status": {
+            "file": null,
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 274,
+              "evictedRecords": 0,
+              "oversizedRecords": 1,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 276,
+            "sha256": "633c29252378aee30a36e20db3e5ccb02ad78b7e7926ea0fb9adf6617b85c018",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"warn\",\"module\":\"logging\",\"code\":\"log_delivery_degraded\",\"counts\":{\"rejectedRecords\":0,\"failedRecords\":0},\"message\":\"logging · log_delivery_degraded；rejectedRecords=0；failedRecords=0\"}]"
+          },
+          "rowBytes": [
+            274
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "sync-close-shared-deadline-and-cleanup",
+      "spec": {
+        "name": "sync-close-shared-deadline-and-cleanup",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "file": {
+            "syncAdvance": 3000
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "syncClose"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "sync-file:5000",
+        "sync-stdout:2000",
+        "clear-diagnostics",
+        "close-authority",
+        "close-db"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": true,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "sync-close-error-does-not-skip-stdout-or-db",
+      "spec": {
+        "name": "sync-close-error-does-not-skip-stdout-or-db",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "file": {
+            "syncAdvance": 6000,
+            "syncThrow": true
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "syncClose"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "sync-file:5000",
+        "sync-stdout:0",
+        "clear-diagnostics",
+        "close-authority",
+        "close-db"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "incomplete-close-remains-sticky",
+      "spec": {
+        "name": "incomplete-close-remains-sticky",
+        "path": "/synthetic/db.sqlite",
+        "behavior": {
+          "file": {
+            "incomplete": true
+          }
+        },
+        "steps": [
+          {
+            "kind": "emit",
+            "level": "info",
+            "fields": {}
+          },
+          {
+            "kind": "close"
+          },
+          {
+            "kind": "status",
+            "name": "closed"
+          },
+          {
+            "kind": "syncClose"
+          },
+          {
+            "kind": "status",
+            "name": "after-sync"
+          }
+        ]
+      },
+      "directory": "/synthetic/logs",
+      "operations": [
+        "acquire-stdout",
+        "acquire-file",
+        "enqueue-stdout",
+        "enqueue-file",
+        "close-file",
+        "close-stdout",
+        "sync-file:5000",
+        "sync-stdout:5000",
+        "clear-diagnostics",
+        "close-authority",
+        "close-db"
+      ],
+      "captures": [
+        {
+          "sink": "stdout",
+          "priority": false,
+          "bytes": 220,
+          "sha256": "276cdb14228c25e615d5ac0fbd6fbdca196de60eede80912b3e58a038b34ed73",
+          "text": "2026-11-09T00:00:00.123Z INFO synthetic · ordinary | {\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        },
+        {
+          "sink": "file",
+          "priority": false,
+          "bytes": 166,
+          "sha256": "cb8d735bedf899bd8d280f8231b4cdbb0982cc91cf9f2e0c9859e5ee690026be",
+          "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n"
+        }
+      ],
+      "checkpoints": [
+        {
+          "name": "closed",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        },
+        {
+          "name": "after-sync",
+          "status": {
+            "file": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            },
+            "stdout": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            },
+            "initializationFailed": false,
+            "unserializableRecords": 0,
+            "closed": true,
+            "shutdownComplete": false,
+            "closedRejectedRecords": 0,
+            "memory": {
+              "retainedRecords": 1,
+              "retainedBytes": 166,
+              "evictedRecords": 0,
+              "oversizedRecords": 0,
+              "maxBytes": 4194304,
+              "maxRecords": 500
+            }
+          },
+          "retained": {
+            "bytes": 167,
+            "sha256": "4828c8733726f6591cd3fc3025d093c15904c4b8af60c528a638ad63e8013fec",
+            "text": "[{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}]"
+          },
+          "rowBytes": [
+            166
+          ]
+        }
+      ],
+      "results": [
+        [
+          {
+            "complete": false,
+            "durable": true,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 4194304,
+              "maxPendingRecords": 1024,
+              "lastFailure": null
+            }
+          },
+          {
+            "complete": true,
+            "durable": false,
+            "throughAcceptedRecords": 0,
+            "flushedAcceptedRecords": 0,
+            "status": {
+              "state": "ready",
+              "backpressured": false,
+              "acceptedRecords": 0,
+              "writtenRecords": 0,
+              "rejectedRecords": 0,
+              "rejectedBytes": 0,
+              "failedRecords": 0,
+              "unconfirmedRecords": 0,
+              "pendingRecords": 0,
+              "pendingBytes": 0,
+              "maxPendingBytes": 1048576,
+              "maxPendingRecords": 256,
+              "lastFailure": null
+            }
+          }
+        ]
+      ],
+      "serializationCalls": [
+        0
+      ]
+    },
+    {
+      "name": "allsettled-file-fails-other-held",
+      "operations": [
+        "file-begin",
+        "stdout-begin",
+        "stdout-end",
+        "store-reject"
+      ],
+      "shutdownComplete": false
+    },
+    {
+      "name": "allsettled-stdout-fails-other-held",
+      "operations": [
+        "file-begin",
+        "stdout-begin",
+        "file-end",
+        "store-reject"
+      ],
+      "shutdownComplete": false
+    }
+  ]
+}

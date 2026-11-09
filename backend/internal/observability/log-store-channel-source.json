@@ -1,0 +1,554 @@
+{
+  "provenance": "Unmodified seven interaction objects extracted from actual Store + memoryChannels + Hono source oracle, original Node session34409 exit0. Hono routes deliberately excluded, not yet bound.",
+  "originalFixtureSHA256": "fc659f1726b856ffad01d66f8d9c2fb43150d5a4bfb4b406749379f067059dd5",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a",
+    "src/diagnostics/log-writer.ts": "e39bdbc29f063267991b38ec8a36e903dbd12388e2d1cb803915ede65dac8060",
+    "src/diagnostics/format.ts": "00cd263739736dcf00a6dfe70f82b1260bde41c46c104ebdd6c9238f982528ea",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "src/server/owner-runtime.ts": "487dfac404523542fb3644f4bd69c8c0d6b129683b701c64d8df66aab7d775ab"
+  },
+  "interactions": [
+    {
+      "name": "unused-store-is-lazy-and-clean-close-is-noop",
+      "before": {
+        "file": null,
+        "stdout": null,
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": false,
+        "shutdownComplete": null,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 0,
+          "retainedBytes": 0,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      },
+      "result": [],
+      "after": {
+        "file": null,
+        "stdout": null,
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": true,
+        "shutdownComplete": true,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 0,
+          "retainedBytes": 0,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      }
+    },
+    {
+      "name": "priority-original-info",
+      "before": {
+        "file": null,
+        "stdout": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 7,
+          "writtenRecords": 0,
+          "rejectedRecords": 1,
+          "rejectedBytes": 604,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 7,
+          "pendingBytes": 7,
+          "maxPendingBytes": 1024,
+          "maxPendingRecords": 8,
+          "lastFailure": "queue_full"
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": false,
+        "shutdownComplete": null,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 2,
+          "retainedBytes": 632,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      },
+      "result": [
+        {
+          "complete": false,
+          "durable": false,
+          "throughAcceptedRecords": 7,
+          "flushedAcceptedRecords": 7,
+          "status": {
+            "state": "degraded",
+            "backpressured": false,
+            "acceptedRecords": 7,
+            "writtenRecords": 7,
+            "rejectedRecords": 1,
+            "rejectedBytes": 604,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1024,
+            "maxPendingRecords": 8,
+            "lastFailure": "queue_full"
+          }
+        }
+      ],
+      "after": {
+        "file": null,
+        "stdout": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 7,
+          "writtenRecords": 7,
+          "rejectedRecords": 1,
+          "rejectedBytes": 604,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1024,
+          "maxPendingRecords": 8,
+          "lastFailure": "queue_full"
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": true,
+        "shutdownComplete": false,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 2,
+          "retainedBytes": 632,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      }
+    },
+    {
+      "name": "priority-original-warn",
+      "before": {
+        "file": null,
+        "stdout": {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 8,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 8,
+          "pendingBytes": 227,
+          "maxPendingBytes": 1024,
+          "maxPendingRecords": 8,
+          "lastFailure": null
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": false,
+        "shutdownComplete": null,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 1,
+          "retainedBytes": 166,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      },
+      "result": [
+        {
+          "complete": true,
+          "durable": false,
+          "throughAcceptedRecords": 8,
+          "flushedAcceptedRecords": 8,
+          "status": {
+            "state": "closed",
+            "backpressured": false,
+            "acceptedRecords": 8,
+            "writtenRecords": 8,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1024,
+            "maxPendingRecords": 8,
+            "lastFailure": null
+          }
+        }
+      ],
+      "after": {
+        "file": null,
+        "stdout": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 8,
+          "writtenRecords": 8,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1024,
+          "maxPendingRecords": 8,
+          "lastFailure": null
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": true,
+        "shutdownComplete": true,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 1,
+          "retainedBytes": 166,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      }
+    },
+    {
+      "name": "late-log-retained-and-rechecked-shutdown",
+      "firstClose": [
+        {
+          "complete": true,
+          "durable": false,
+          "throughAcceptedRecords": 1,
+          "flushedAcceptedRecords": 1,
+          "status": {
+            "state": "closed",
+            "backpressured": false,
+            "acceptedRecords": 1,
+            "writtenRecords": 1,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1048576,
+            "maxPendingRecords": 256,
+            "lastFailure": null
+          }
+        }
+      ],
+      "afterLateLog": {
+        "file": null,
+        "stdout": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": true,
+        "shutdownComplete": true,
+        "closedRejectedRecords": 1,
+        "memory": {
+          "retainedRecords": 3,
+          "retainedBytes": 612,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      },
+      "secondClose": [
+        {
+          "complete": true,
+          "durable": false,
+          "throughAcceptedRecords": 1,
+          "flushedAcceptedRecords": 1,
+          "status": {
+            "state": "closed",
+            "backpressured": false,
+            "acceptedRecords": 1,
+            "writtenRecords": 1,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1048576,
+            "maxPendingRecords": 256,
+            "lastFailure": null
+          }
+        }
+      ],
+      "after": {
+        "file": null,
+        "stdout": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 0,
+        "closed": true,
+        "shutdownComplete": false,
+        "closedRejectedRecords": 1,
+        "memory": {
+          "retainedRecords": 3,
+          "retainedBytes": 612,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      }
+    },
+    {
+      "name": "unserializable-is-not-admitted",
+      "before": {
+        "file": null,
+        "stdout": {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 0,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 1,
+        "closed": false,
+        "shutdownComplete": null,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 1,
+          "retainedBytes": 274,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      },
+      "result": [
+        {
+          "complete": true,
+          "durable": false,
+          "throughAcceptedRecords": 0,
+          "flushedAcceptedRecords": 0,
+          "status": {
+            "state": "closed",
+            "backpressured": false,
+            "acceptedRecords": 0,
+            "writtenRecords": 0,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1048576,
+            "maxPendingRecords": 256,
+            "lastFailure": null
+          }
+        }
+      ],
+      "after": {
+        "file": null,
+        "stdout": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 0,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "initializationFailed": false,
+        "unserializableRecords": 1,
+        "closed": true,
+        "shutdownComplete": false,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 1,
+          "retainedBytes": 274,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      }
+    },
+    {
+      "name": "initialization-failure-does-not-undo-stdout",
+      "before": {
+        "file": {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 0,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "stdout": {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 1,
+          "pendingBytes": 259,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "initializationFailed": true,
+        "unserializableRecords": 0,
+        "closed": false,
+        "shutdownComplete": null,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 2,
+          "retainedBytes": 466,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      },
+      "result": [
+        {
+          "complete": true,
+          "durable": false,
+          "throughAcceptedRecords": 1,
+          "flushedAcceptedRecords": 1,
+          "status": {
+            "state": "closed",
+            "backpressured": false,
+            "acceptedRecords": 1,
+            "writtenRecords": 1,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1048576,
+            "maxPendingRecords": 256,
+            "lastFailure": null
+          }
+        }
+      ],
+      "after": {
+        "file": {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 0,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "stdout": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        "initializationFailed": true,
+        "unserializableRecords": 0,
+        "closed": true,
+        "shutdownComplete": false,
+        "closedRejectedRecords": 0,
+        "memory": {
+          "retainedRecords": 2,
+          "retainedBytes": 466,
+          "evictedRecords": 0,
+          "oversizedRecords": 0,
+          "maxBytes": 4194304,
+          "maxRecords": 500
+        }
+      }
+    },
+    {
+      "name": "close-allsettled-drains-other-sink-before-error",
+      "events": [
+        "file-start",
+        "stdout-reject",
+        "file-end",
+        "store-reject"
+      ],
+      "shutdownComplete": false
+    }
+  ]
+}

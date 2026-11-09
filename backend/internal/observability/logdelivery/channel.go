@@ -269,7 +269,30 @@ func (c *Channel) resultLocked(target int64) FlushResult {
 // Its wait continuation is independent of caller cancellation, just as the
 // source async operation continues independently of a detached consumer.
 // Waiters are per flush, never per record or polling interval.
-func (c *Channel) Flush(ctx context.Context, timeout time.Duration, closeSink bool) (FlushResult, error) {
+type channelFlush struct {
+	channel *Channel
+	target  int64
+	done    chan struct{}
+	result  FlushResult
+}
+
+func (op *channelFlush) wait(ctx context.Context) (FlushResult, error) {
+	select {
+	case <-op.done:
+		return op.result, nil
+	default:
+	}
+	select {
+	case <-op.done:
+		return op.result, nil
+	case <-ctx.Done():
+		return op.channel.result(op.target), ctx.Err()
+	}
+}
+
+// beginFlush performs the same synchronous admission as Flush, but exposes its
+// independently owned wait continuation to a two-sink all-settled composition.
+func (c *Channel) beginFlush(timeout time.Duration, closeSink bool) *channelFlush {
 	deadline := time.Now().Add(timeout)
 	c.mu.Lock()
 	target := c.accepted
@@ -284,17 +307,17 @@ func (c *Channel) Flush(ctx context.Context, timeout time.Duration, closeSink bo
 		default:
 		}
 	}
+	op := &channelFlush{channel: c, target: target, done: make(chan struct{})}
 	if finished {
-		return c.result(target), nil
+		op.result = c.result(target)
+		close(op.done)
+	} else {
+		go func() { op.result = c.flushUntil(target, deadline, closeSink, pending, owns); close(op.done) }()
 	}
-	result := make(chan FlushResult, 1)
-	go func() { result <- c.flushUntil(target, deadline, closeSink, pending, owns) }()
-	select {
-	case r := <-result:
-		return r, nil
-	case <-ctx.Done():
-		return c.result(target), ctx.Err()
-	}
+	return op
+}
+func (c *Channel) Flush(ctx context.Context, timeout time.Duration, closeSink bool) (FlushResult, error) {
+	return c.beginFlush(timeout, closeSink).wait(ctx)
 }
 func (c *Channel) nextBarrierLocked(target int64, closeSink bool) (*control, bool, bool) {
 	if c.abandoned {

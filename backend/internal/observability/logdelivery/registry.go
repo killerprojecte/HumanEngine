@@ -2,6 +2,7 @@ package logdelivery
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -29,6 +30,7 @@ type Lease struct {
 	registry                *Registry
 	owner                   *owner
 	released                bool
+	wasLastRelease          bool
 	retired                 *Channel
 	previous                *Status
 	rejected, rejectedBytes int64
@@ -185,6 +187,7 @@ func (l *Lease) releaseLocked() (channel *Channel, last bool) {
 		l.previous = l.owner.previous
 		l.owner.references--
 		last = l.owner.references == 0
+		l.wasLastRelease = last
 		// Fence admission before another acquire can observe this retiring owner.
 		if last {
 			l.retired.mu.Lock()
@@ -194,25 +197,57 @@ func (l *Lease) releaseLocked() (channel *Channel, last bool) {
 	}
 	return l.retired, last
 }
-func (l *Lease) CloseWithTimeout(ctx context.Context, timeout time.Duration) (FlushResult, error) {
+
+// CloseOperation is one initiated source close, independent of a caller's wait.
+// BeginClose performs release/barrier admission synchronously; Wait may detach
+// on cancellation without altering the logical deadline or physical ownership.
+type CloseOperation struct {
+	lease  *Lease
+	flush  *channelFlush
+	done   chan struct{}
+	result FlushResult
+}
+
+func (op *CloseOperation) Wait(ctx context.Context) (FlushResult, error) {
+	select {
+	case <-op.done:
+		return op.result, nil
+	default:
+	}
+	select {
+	case <-op.done:
+		return op.result, nil
+	case <-ctx.Done():
+		return op.lease.decorate(op.flush.channel.result(op.flush.target)), ctx.Err()
+	}
+}
+func (l *Lease) BeginClose(timeout time.Duration) *CloseOperation {
 	r := l.registry
 	r.mu.Lock()
 	channel, last := l.releaseLocked()
 	r.mu.Unlock()
-	return l.finishClose(ctx, timeout, channel, last)
+	return l.beginReleased(channel, last, timeout)
 }
-func (l *Lease) finishClose(ctx context.Context, timeout time.Duration, channel *Channel, last bool) (FlushResult, error) {
-	result, err := channel.Flush(ctx, timeout, last)
+func (l *Lease) beginReleased(channel *Channel, last bool, timeout time.Duration) *CloseOperation {
+	flush := channel.beginFlush(timeout, last)
+	op := &CloseOperation{lease: l, flush: flush, done: make(chan struct{})}
+	go func() { result, _ := flush.wait(context.Background()); op.result = l.decorate(result); close(op.done) }()
+	return op
+}
+func (l *Lease) CloseWithTimeout(ctx context.Context, timeout time.Duration) (FlushResult, error) {
+	return l.BeginClose(timeout).Wait(ctx)
+}
+func (l *Lease) decorate(result FlushResult) FlushResult {
 	r := l.registry
 	r.mu.Lock()
+	defer r.mu.Unlock()
 	if l.owner.references == 0 && l.owner.channel.Closed() && r.owners[l.owner.key] == l.owner {
 		delete(r.owners, l.owner.key)
 	}
 	result.Status = l.statusLocked()
 	result.Complete = result.Complete && result.Status.LastFailure == nil
 	result.Durable = result.Durable && result.Status.LastFailure == nil
-	r.mu.Unlock()
-	return result, err
+	return result
 }
 
 // CloseSync is the synchronous Store.close adaptation. Repeated calls return
@@ -226,6 +261,39 @@ func (l *Lease) CloseSync(timeout time.Duration) *FlushResult {
 	}
 	channel, last := l.releaseLocked()
 	r.mu.Unlock()
-	result, _ := l.finishClose(context.Background(), timeout, channel, last)
+	result, _ := l.beginReleased(channel, last, timeout).Wait(context.Background())
 	return &result
+}
+
+// ErrLeaseNotReleased is a native lifecycle misuse, never a source status token.
+var ErrLeaseNotReleased = errors.New("log_lease_not_released")
+
+// WaitPhysicalRelease joins only the physical tail this lease was responsible
+// for closing. A nonlast release must never wait for another Store's lifetime.
+// The decision and retired channel are captured on the FIRST release, not from
+// current references/status, and cancellation does not change ownership.
+// Call after the logical Close operation has settled.
+func (l *Lease) WaitPhysicalRelease(ctx context.Context) error {
+	r := l.registry
+	r.mu.Lock()
+	if !l.released {
+		r.mu.Unlock()
+		return ErrLeaseNotReleased
+	}
+	last, channel := l.wasLastRelease, l.retired
+	r.mu.Unlock()
+	if !last {
+		return nil
+	}
+	select {
+	case <-channel.Done():
+		return nil
+	default:
+	}
+	select {
+	case <-channel.Done():
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }

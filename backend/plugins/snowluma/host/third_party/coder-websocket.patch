@@ -1,0 +1,331 @@
+--- a/close.go
++++ b/close.go
+@@ -9,6 +9,7 @@
+ 	"fmt"
+ 	"net"
+ 	"time"
++	"unicode/utf8"
+ 
+ 	"github.com/coder/websocket/internal/errd"
+ )
+@@ -85,8 +86,8 @@
+ 
+ // Close performs the WebSocket close handshake with the given status code and reason.
+ //
+-// It will write a WebSocket close frame with a timeout of 5s and then wait 5s for
+-// the peer to send a close frame.
++// Client connections share the source ws 30-second whole-handshake deadline.
++// Server connections retain the upstream five-second write and read budgets.
+ // All data messages received from the peer during the close handshake will be discarded.
+ //
+ // The connection can only be closed once. Additional calls to Close
+@@ -133,6 +134,10 @@
+ 	defer errd.Wrap(&err, "failed to immediately close WebSocket")
+ 
+ 	if c.casClosing() {
++		// Source adapter disposal terminates even an in-progress close handshake.
++		if c.client {
++			_ = c.close()
++		}
+ 		err = c.waitGoroutines()
+ 		if err != nil {
+ 			return err
+@@ -153,6 +158,28 @@
+ 	}
+ 	return err
+ }
++
++// Client close uses the source ws whole-handshake budget, not two fresh timers.
++func (c *Conn) closeContext() (context.Context, context.CancelFunc) {
++	if !c.client {
++		return context.WithTimeout(context.Background(), 5*time.Second)
++	}
++	c.clientCloseOnce.Do(func() { c.clientCloseDeadline = time.Now().Add(30 * time.Second) })
++	return context.WithDeadline(context.Background(), c.clientCloseDeadline)
++}
++
++// FinishProtocolClose completes a protocol-error close already written by Reader.
++// The owner can interrupt it with CloseNow during adapter disposal.
++func (c *Conn) FinishProtocolClose() bool {
++	code := c.protocolCloseCode.Load()
++	if !c.client || code == 0 {
++		return false
++	}
++	_ = c.Close(StatusCode(code), "")
++	return true
++}
++
++var errInvalidCloseText = errors.New("invalid UTF-8 close payload")
+ 
+ func (c *Conn) closeHandshake(code StatusCode, reason string) error {
+ 	err := c.writeClose(code, reason)
+@@ -182,7 +209,7 @@
+ 		}
+ 	}
+ 
+-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
++	ctx, cancel := c.closeContext()
+ 	defer cancel()
+ 
+ 	err = c.writeControl(ctx, opClose, p)
+@@ -196,8 +223,10 @@
+ }
+ 
+ func (c *Conn) waitCloseHandshake() error {
+-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
++	ctx, cancel := c.closeContext()
+ 	defer cancel()
++	c.setupReadTimeout(ctx)
++	defer c.clearReadTimeout()
+ 
+ 	err := c.readMu.lock(ctx)
+ 	if err != nil {
+@@ -271,6 +300,10 @@
+ 		return CloseError{}, fmt.Errorf("invalid status code %v", ce.Code)
+ 	}
+ 
++	if !utf8.ValidString(ce.Reason) {
++		return CloseError{}, errInvalidCloseText
++	}
++
+ 	return ce, nil
+ }
+ 
+--- a/compress.go
++++ b/compress.go
+@@ -57,12 +57,17 @@
+ }
+ 
+ type compressionOptions struct {
++	// -1 offers an unspecified client window; 8..15 is the accepted response.
++	clientMaxWindowBits     int
+ 	clientNoContextTakeover bool
+ 	serverNoContextTakeover bool
+ }
+ 
+ func (copts *compressionOptions) String() string {
+ 	s := "permessage-deflate"
++	if copts.clientMaxWindowBits == -1 {
++		s += "; client_max_window_bits"
++	}
+ 	if copts.clientNoContextTakeover {
+ 		s += "; client_no_context_takeover"
+ 	}
+@@ -148,6 +153,20 @@
+ }
+ 
+ var flateWriterPool sync.Pool
++var huffmanWriterPool sync.Pool
++
++// A Huffman-only stream has no distance references and therefore satisfies
++// every negotiated DEFLATE window, without misrepresenting a 32KiB encoder.
++func getHuffmanWriter(w io.Writer) *flate.Writer {
++	fw, ok := huffmanWriterPool.Get().(*flate.Writer)
++	if !ok {
++		fw, _ = flate.NewWriter(w, flate.HuffmanOnly)
++		return fw
++	}
++	fw.Reset(w)
++	return fw
++}
++func putHuffmanWriter(w *flate.Writer) { huffmanWriterPool.Put(w) }
+ 
+ func getFlateWriter(w io.Writer) *flate.Writer {
+ 	fw, ok := flateWriterPool.Get().(*flate.Writer)
+--- a/conn.go
++++ b/conn.go
+@@ -12,6 +12,7 @@
+ 	"strconv"
+ 	"sync"
+ 	"sync/atomic"
++	"time"
+ )
+ 
+ // MessageType represents the type of a WebSocket message.
+@@ -41,7 +42,10 @@
+ // This applies to context expirations as well unfortunately.
+ // See https://github.com/nhooyr/websocket/issues/242#issuecomment-633182220
+ type Conn struct {
+-	noCopy noCopy
++	clientCloseOnce     sync.Once
++	clientCloseDeadline time.Time
++	protocolCloseCode   atomic.Int32
++	noCopy              noCopy
+ 
+ 	subprotocol    string
+ 	rwc            io.ReadWriteCloser
+--- a/dial.go
++++ b/dial.go
+@@ -4,17 +4,17 @@
+ 
+ import (
+ 	"bufio"
+-	"bytes"
+ 	"context"
+ 	"crypto/rand"
+ 	"encoding/base64"
+ 	"fmt"
+ 	"io"
++	"math"
+ 	"net/http"
+ 	"net/url"
++	"strconv"
+ 	"strings"
+ 	"sync"
+-	"time"
+ 
+ 	"github.com/coder/websocket/internal/errd"
+ )
+@@ -138,6 +138,7 @@
+ 	var copts *compressionOptions
+ 	if opts.CompressionMode != CompressionDisabled {
+ 		copts = opts.CompressionMode.opts()
++		copts.clientMaxWindowBits = -1
+ 	}
+ 
+ 	resp, err := handshakeRequest(ctx, urls, opts, copts, secWebSocketKey)
+@@ -148,17 +149,8 @@
+ 	resp.Body = nil
+ 	defer func() {
+ 		if err != nil {
+-			// We read a bit of the body for easier debugging.
+-			r := io.LimitReader(respBody, 1024)
+-
+-			timer := time.AfterFunc(time.Second*3, func() {
+-				respBody.Close()
+-			})
+-			defer timer.Stop()
+-
+-			b, _ := io.ReadAll(r)
+ 			respBody.Close()
+-			resp.Body = io.NopCloser(bytes.NewReader(b))
++			resp.Body = http.NoBody
+ 		}
+ 	}()
+ 
+@@ -296,7 +288,13 @@
+ 	_copts := *copts
+ 	copts = &_copts
+ 
++	seen := map[string]bool{}
+ 	for _, p := range ext.params {
++		name, _, _ := strings.Cut(p, "=")
++		if seen[name] {
++			return nil, fmt.Errorf("duplicate permessage-deflate parameter: %q", name)
++		}
++		seen[name] = true
+ 		switch p {
+ 		case "client_no_context_takeover":
+ 			copts.clientNoContextTakeover = true
+@@ -305,8 +303,16 @@
+ 			copts.serverNoContextTakeover = true
+ 			continue
+ 		}
+-		if strings.HasPrefix(p, "server_max_window_bits=") {
+-			// We can't adjust the deflate window, but decoding with a larger window is acceptable.
++		if strings.HasPrefix(p, "client_max_window_bits=") || strings.HasPrefix(p, "server_max_window_bits=") {
++			_, raw, _ := strings.Cut(p, "=")
++			bits, ok := windowBits(raw)
++			if !ok {
++				return nil, fmt.Errorf("invalid permessage-deflate window: %q", p)
++			}
++			if name == "client_max_window_bits" {
++				copts.clientMaxWindowBits = bits
++			}
++			// A larger decoder window accepts every valid server window.
+ 			continue
+ 		}
+ 
+@@ -345,3 +351,27 @@
+ func putBufioWriter(bw *bufio.Writer) {
+ 	bufioWriterPool.Put(bw)
+ }
++
++// Node ws normalizes extension values with Number(), then checks integer 8..15.
++func windowBits(raw string) (int, bool) {
++	var n float64
++	var err error
++	if len(raw) > 2 && raw[0] == '0' && strings.ContainsAny(raw[1:2], "xXbBoO") {
++		base := 16
++		switch raw[1] {
++		case 'b', 'B':
++			base = 2
++		case 'o', 'O':
++			base = 8
++		}
++		value, e := strconv.ParseUint(raw[2:], base, 64)
++		err = e
++		n = float64(value)
++	} else {
++		n, err = strconv.ParseFloat(raw, 64)
++	}
++	if err != nil || math.IsNaN(n) || math.IsInf(n, 0) || n < 8 || n > 15 || math.Trunc(n) != n {
++		return 0, false
++	}
++	return int(n), true
++}
+--- a/read.go
++++ b/read.go
+@@ -342,7 +342,11 @@
+ 	ce, err := parseClosePayload(b)
+ 	if err != nil {
+ 		err = fmt.Errorf("received invalid close payload: %w", err)
+-		c.writeError(StatusProtocolError, err)
++		code := StatusProtocolError
++		if errors.Is(err, errInvalidCloseText) {
++			code = StatusInvalidFramePayloadData
++		}
++		c.writeError(code, err)
+ 		return err
+ 	}
+ 
+--- a/write.go
++++ b/write.go
+@@ -72,6 +72,10 @@
+ 	return mw
+ }
+ 
++func (mw *msgWriter) smallClientWindow() bool {
++	return mw.c.client && mw.c.copts != nil && mw.c.copts.clientMaxWindowBits >= 8 && mw.c.copts.clientMaxWindowBits < 15
++}
++
+ func (mw *msgWriter) ensureFlate() {
+ 	if mw.trimWriter == nil {
+ 		mw.trimWriter = &trimLastFourBytesWriter{
+@@ -80,7 +84,11 @@
+ 	}
+ 
+ 	if mw.flateWriter == nil {
+-		mw.flateWriter = getFlateWriter(mw.trimWriter)
++		if mw.smallClientWindow() {
++			mw.flateWriter = getHuffmanWriter(mw.trimWriter)
++		} else {
++			mw.flateWriter = getFlateWriter(mw.trimWriter)
++		}
+ 	}
+ 	mw.flate = true
+ }
+@@ -132,7 +140,11 @@
+ 
+ func (mw *msgWriter) putFlateWriter() {
+ 	if mw.flateWriter != nil {
+-		putFlateWriter(mw.flateWriter)
++		if mw.smallClientWindow() {
++			putHuffmanWriter(mw.flateWriter)
++		} else {
++			putFlateWriter(mw.flateWriter)
++		}
+ 		mw.flateWriter = nil
+ 	}
+ }
+@@ -426,5 +438,10 @@
+ }
+ 
+ func (c *Conn) writeError(code StatusCode, err error) {
++	if c.client {
++		c.protocolCloseCode.CompareAndSwap(0, int32(code))
++		c.writeClose(code, "")
++		return
++	}
+ 	c.writeClose(code, err.Error())
+ }

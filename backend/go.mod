@@ -16,3 +16,7 @@ require (
 	github.com/bits-and-blooms/bitset v1.20.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 )
+
+require github.com/coder/websocket v1.8.15
+
+replace github.com/coder/websocket => ./plugins/snowluma/host/third_party/coder-websocket

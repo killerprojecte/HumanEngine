@@ -1,0 +1,1246 @@
+[
+  {
+    "name": "text",
+    "scenario": {
+      "name": "text"
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "name": "empty",
+    "scenario": {
+      "name": "empty",
+      "parts": []
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": []
+      },
+      "aborted": false
+    },
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "empty_message"
+    }
+  },
+  {
+    "name": "unknown-part",
+    "scenario": {
+      "name": "unknown-part",
+      "parts": [
+        {
+          "type": "unsupported"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "unsupported"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported_message_part"
+    }
+  },
+  {
+    "name": "cancel-before",
+    "scenario": {
+      "name": "cancel-before",
+      "cancel": true
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": true
+    },
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "cancelled",
+      "detail": "cancelled_before_send"
+    }
+  },
+  {
+    "name": "mention-all",
+    "scenario": {
+      "name": "mention-all",
+      "parts": [
+        {
+          "type": "mention",
+          "userId": "all"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "mention",
+            "userId": "all"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "at",
+              "data": {
+                "qq": "all"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "name": "bad-mention",
+    "scenario": {
+      "name": "bad-mention",
+      "parts": [
+        {
+          "type": "mention",
+          "userId": "ob:u:broken"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "mention",
+            "userId": "ob:u:broken"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "invalid_identifier"
+    }
+  },
+  {
+    "name": "managed",
+    "scenario": {
+      "name": "managed",
+      "parts": [
+        {
+          "type": "media",
+          "assetId": "managed"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "managed"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "resolve_source",
+        "assetId": "managed",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      },
+      {
+        "kind": "before_transmit"
+      },
+      {
+        "kind": "validate"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "file": ""
+              }
+            }
+          ]
+        },
+        "sources": [
+          {
+            "index": 0,
+            "path": "/synthetic/fixture",
+            "bytes": 3,
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "name": "fallback",
+    "scenario": {
+      "name": "fallback",
+      "parts": [
+        {
+          "type": "media",
+          "assetId": "fallback"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "fallback"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "resolve_source",
+        "assetId": "fallback",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      },
+      {
+        "kind": "resolve_media",
+        "assetId": "fallback",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      },
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "file": "https://example.invalid/image"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "name": "fallback-array-type",
+    "scenario": {
+      "name": "fallback-array-type",
+      "parts": [
+        {
+          "type": "media",
+          "assetId": "fallback-array"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "fallback-array"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "resolve_source",
+        "assetId": "fallback-array",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      },
+      {
+        "kind": "resolve_media",
+        "assetId": "fallback-array",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      },
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": [
+                "image"
+              ],
+              "data": {
+                "file": "https://example.invalid/image"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "name": "source-array-type",
+    "scenario": {
+      "name": "source-array-type",
+      "parts": [
+        {
+          "type": "media",
+          "assetId": "source-array"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "source-array"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "resolve_source",
+        "assetId": "source-array",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      }
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "media_scope_or_type_unsupported"
+    }
+  },
+  {
+    "name": "source-before-bad-part",
+    "scenario": {
+      "name": "source-before-bad-part",
+      "parts": [
+        {
+          "type": "media",
+          "assetId": "managed"
+        },
+        {
+          "type": "unsupported"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "managed"
+          },
+          {
+            "type": "unsupported"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "resolve_source",
+        "assetId": "managed",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      }
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported_message_part"
+    }
+  },
+  {
+    "name": "bad-part-before-source",
+    "scenario": {
+      "name": "bad-part-before-source",
+      "parts": [
+        {
+          "type": "unsupported"
+        },
+        {
+          "type": "media",
+          "assetId": "managed"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "unsupported"
+          },
+          {
+            "type": "media",
+            "assetId": "managed"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported_message_part"
+    }
+  },
+  {
+    "name": "missing-media",
+    "scenario": {
+      "name": "missing-media",
+      "parts": [
+        {
+          "type": "media",
+          "assetId": "missing"
+        }
+      ]
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "missing"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "resolve_source",
+        "assetId": "missing",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      },
+      {
+        "kind": "resolve_media",
+        "assetId": "missing",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      }
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "invalid_identifier"
+    }
+  },
+  {
+    "name": "source-validation-fails",
+    "scenario": {
+      "name": "source-validation-fails",
+      "parts": [
+        {
+          "type": "media",
+          "assetId": "managed"
+        }
+      ],
+      "failValidation": true
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "managed"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "resolve_source",
+        "assetId": "managed",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+      },
+      {
+        "kind": "before_transmit"
+      },
+      {
+        "kind": "validate"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "image",
+              "data": {
+                "file": ""
+              }
+            }
+          ]
+        },
+        "sources": [
+          {
+            "index": 0,
+            "path": "/synthetic/fixture",
+            "bytes": 3,
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "failed",
+      "detail": "send_failed"
+    }
+  },
+  {
+    "name": "before-transmit-fails",
+    "scenario": {
+      "name": "before-transmit-fails",
+      "failBefore": true
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "failed",
+      "detail": "send_failed"
+    }
+  },
+  {
+    "name": "missing-receipt",
+    "scenario": {
+      "name": "missing-receipt",
+      "response": {}
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "unknown",
+      "detail": "missing_send_receipt"
+    }
+  },
+  {
+    "name": "invalid-response",
+    "scenario": {
+      "name": "invalid-response",
+      "response": null
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "unknown",
+      "detail": "invalid_payload"
+    }
+  },
+  {
+    "name": "failed-action",
+    "scenario": {
+      "name": "failed-action",
+      "actionError": {
+        "code": "unsupported",
+        "transmitted": false
+      }
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported"
+    }
+  },
+  {
+    "name": "unknown-action",
+    "scenario": {
+      "name": "unknown-action",
+      "actionError": {
+        "code": "connection_closed",
+        "transmitted": true
+      }
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "unknown",
+      "detail": "connection_closed"
+    }
+  },
+  {
+    "name": "ordinary-action-error",
+    "scenario": {
+      "name": "ordinary-action-error",
+      "ordinaryError": true
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "failed",
+      "detail": "send_failed"
+    }
+  },
+  {
+    "name": "reply",
+    "scenario": {
+      "name": "reply"
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ],
+        "replyToId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:InByZXZpb3VzIg"
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "reply",
+              "data": {
+                "id": "previous"
+              }
+            },
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "name": "cross-scene-reply",
+    "scenario": {
+      "name": "cross-scene-reply",
+      "reply": "other:m:abc"
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ],
+        "replyToId": "other:m:abc"
+      },
+      "aborted": false
+    },
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "message_scope_mismatch"
+    }
+  },
+  {
+    "name": "private",
+    "scenario": {
+      "name": "private",
+      "private": true
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjk5Il0",
+        "kind": "private",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [
+      {
+        "kind": "before_transmit"
+      }
+    ],
+    "requests": [
+      {
+        "name": "send_private_msg",
+        "params": {
+          "user_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        },
+        "sources": []
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjk5Il0:m:IjExIg"
+    }
+  },
+  {
+    "name": "cross-account-scene",
+    "scenario": {
+      "name": "cross-account-scene",
+      "crossAccount": true
+    },
+    "input": {
+      "operation": "send_begin",
+      "adapter": "snowluma",
+      "account": "42",
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "43",
+        "platformSceneId": "99"
+      },
+      "segment": {
+        "parts": [
+          {
+            "type": "text",
+            "text": "hello"
+          }
+        ]
+      },
+      "aborted": false
+    },
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "scene_scope_mismatch"
+    }
+  }
+]

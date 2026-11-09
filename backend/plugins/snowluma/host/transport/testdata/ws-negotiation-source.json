@@ -1,0 +1,92 @@
+[
+  {
+    "extension": "permessage-deflate; client_max_window_bits=8",
+    "accepted": true,
+    "sourceCode": "request_timeout"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=9",
+    "accepted": true,
+    "sourceCode": "request_timeout"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=15",
+    "accepted": true,
+    "sourceCode": "request_timeout"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=0x9",
+    "accepted": true,
+    "sourceCode": "request_timeout"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=9.0",
+    "accepted": true,
+    "sourceCode": "request_timeout"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=9e0",
+    "accepted": true,
+    "sourceCode": "request_timeout"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=7",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=16",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=9.5",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=foo",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; client_max_window_bits=9; client_max_window_bits=9",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; server_max_window_bits=9",
+    "accepted": true,
+    "sourceCode": "request_timeout"
+  },
+  {
+    "extension": "permessage-deflate; server_max_window_bits=foo",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; server_max_window_bits=16",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; server_no_context_takeover; server_no_context_takeover",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; unknown_parameter=9",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  },
+  {
+    "extension": "permessage-deflate; client_no_context_takeover=true",
+    "accepted": false,
+    "sourceCode": "connection_failed"
+  }
+]

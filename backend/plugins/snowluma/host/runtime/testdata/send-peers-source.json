@@ -1,0 +1,504 @@
+[
+  {
+    "mode": "http",
+    "scenario": "sent",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "fallback",
+    "trace": [
+      "source",
+      "media",
+      "before"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "https://example.invalid/synthetic.png"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "resolver-throws",
+    "trace": [
+      "source"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "send_failed"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "missing-receipt",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "unknown",
+      "detail": "missing_send_receipt"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "reject",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "source-revoked",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "http_request_failed"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "missing-validator",
+    "trace": [
+      "source",
+      "before"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "http_request_failed"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "missing-validator-bad-part",
+    "trace": [
+      "source"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported_message_part"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "cancel-before",
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "cancelled",
+      "detail": "cancelled_before_send"
+    }
+  },
+  {
+    "mode": "http",
+    "scenario": "cancel-after-transmit",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "unknown",
+      "detail": "request_cancelled"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "sent",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "fallback",
+    "trace": [
+      "source",
+      "media",
+      "before"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "https://example.invalid/synthetic.png"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "resolver-throws",
+    "trace": [
+      "source"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "send_failed"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "missing-receipt",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "unknown",
+      "detail": "missing_send_receipt"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "reject",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "source-revoked",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "socket_send_failed"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "missing-validator",
+    "trace": [
+      "source",
+      "before"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "socket_send_failed"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "missing-validator-bad-part",
+    "trace": [
+      "source"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "unsupported_message_part"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "cancel-before",
+    "trace": [],
+    "requests": [],
+    "receipt": {
+      "status": "cancelled",
+      "detail": "cancelled_before_send"
+    }
+  },
+  {
+    "mode": "ws",
+    "scenario": "cancel-after-transmit",
+    "trace": [
+      "source",
+      "before",
+      "validate"
+    ],
+    "requests": [
+      {
+        "group_id": "99",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          },
+          {
+            "type": "image",
+            "data": {
+              "file": "base64://AAEC/f7/"
+            }
+          },
+          {
+            "type": "text",
+            "data": {
+              "text": "tail"
+            }
+          }
+        ]
+      }
+    ],
+    "receipt": {
+      "status": "unknown",
+      "detail": "request_cancelled"
+    }
+  }
+]

@@ -1,0 +1,189 @@
+{
+  "actions": [
+    {
+      "action": "ok",
+      "value": {
+        "answer": 1
+      }
+    },
+    {
+      "action": "large-request",
+      "value": {
+        "length": 65536,
+        "sha256": "d8b2af1c85cdb4588e978aed5875e12cbfd20f68009823cf914b40cf41d8e4ce",
+        "compressed": true
+      }
+    },
+    {
+      "action": "failed",
+      "error": "platform_action_failed",
+      "transmitted": false
+    },
+    {
+      "action": "unsupported",
+      "error": "unsupported",
+      "transmitted": false
+    },
+    {
+      "action": "invalid",
+      "error": "invalid_action_parameters",
+      "transmitted": false
+    },
+    {
+      "action": "string-code",
+      "error": "platform_action_failed",
+      "transmitted": false
+    },
+    {
+      "action": "compressed",
+      "value": {
+        "length": 17408
+      }
+    },
+    {
+      "action": "compressed",
+      "value": {
+        "length": 17408
+      }
+    },
+    {
+      "action": "hold",
+      "error": "request_timeout",
+      "transmitted": true
+    },
+    {
+      "action": "cancel-before",
+      "error": "request_cancelled",
+      "transmitted": false
+    },
+    {
+      "action": "disconnect",
+      "error": "connection_closed",
+      "transmitted": true
+    }
+  ],
+  "statuses": [
+    "connecting",
+    "connected",
+    "disconnected",
+    "connecting",
+    "connected"
+  ],
+  "messages": [
+    [
+      {
+        "type": "text",
+        "text": "�"
+      }
+    ]
+  ],
+  "connections": [
+    {
+      "authorization": "Bearer synthetic-token",
+      "origin": null,
+      "compression": true
+    },
+    {
+      "authorization": "Bearer synthetic-token",
+      "origin": null,
+      "compression": true
+    }
+  ],
+  "requests": [
+    {
+      "action": "get_login_info",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "ok",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "large-request",
+      "params": {
+        "length": 65536,
+        "sha256": "d8b2af1c85cdb4588e978aed5875e12cbfd20f68009823cf914b40cf41d8e4ce"
+      },
+      "echo": true
+    },
+    {
+      "action": "failed",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "unsupported",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "invalid",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "string-code",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "compressed",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "compressed",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "hold",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "binary-event",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "disconnect",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "get_login_info",
+      "params": {},
+      "echo": true
+    },
+    {
+      "action": "inspect",
+      "params": {},
+      "echo": true
+    }
+  ],
+  "wireCases": [
+    {
+      "action": "invalid-utf8",
+      "error": "connection_closed",
+      "transmitted": true,
+      "errors": [
+        "websocket_error"
+      ],
+      "closeCode": 1007,
+      "closeReason": ""
+    },
+    {
+      "action": "over-limit",
+      "error": "connection_closed",
+      "transmitted": true,
+      "errors": [
+        "websocket_error"
+      ],
+      "closeCode": 1009,
+      "closeReason": ""
+    }
+  ]
+}

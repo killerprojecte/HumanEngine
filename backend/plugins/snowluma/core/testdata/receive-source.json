@@ -1,0 +1,1088 @@
+[
+  {
+    "name": "live-message",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [
+      {
+        "kind": "message",
+        "message": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+          "senderPlatformId": "7",
+          "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+          "sentAt": "2023-11-14T22:13:20.000Z",
+          "receivedAt": "2026-10-18T04:05:06.007Z",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "text",
+              "text": "hello"
+            }
+          ],
+          "status": "available"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "kind": "group",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "99",
+          "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+        }
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "sent-message",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message_sent",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [
+      {
+        "kind": "message",
+        "message": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+          "senderPlatformId": "7",
+          "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+          "sentAt": "2023-11-14T22:13:20.000Z",
+          "receivedAt": "2026-10-18T04:05:06.007Z",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "text",
+              "text": "hello"
+            }
+          ],
+          "status": "available"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "kind": "group",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "99",
+          "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+        }
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "not-ready",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": false,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [],
+    "remembered": []
+  },
+  {
+    "name": "disposed",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": true,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [],
+    "remembered": []
+  },
+  {
+    "name": "wrong-account",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 43,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [],
+    "remembered": []
+  },
+  {
+    "name": "missing-account",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [],
+    "remembered": []
+  },
+  {
+    "name": "invalid-account",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": {},
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [
+      {
+        "kind": "error",
+        "code": "invalid_event_or_callback_failed"
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "unknown-post",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "request",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [],
+    "remembered": []
+  },
+  {
+    "name": "group-recall",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "notice",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "notice_type": "group_recall"
+      }
+    },
+    "trace": [
+      {
+        "kind": "recall",
+        "recall": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+          "occurredAt": "2023-11-14T22:13:20.000Z"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "kind": "group",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "99"
+        }
+      }
+    ],
+    "remembered": [
+      "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg"
+    ]
+  },
+  {
+    "name": "friend-recall",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "notice",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "notice_type": "friend_recall"
+      }
+    },
+    "trace": [
+      {
+        "kind": "recall",
+        "recall": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ",
+          "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ:m:IjEwIg",
+          "occurredAt": "2023-11-14T22:13:20.000Z"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ",
+          "kind": "private",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "7"
+        }
+      }
+    ],
+    "remembered": [
+      "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ:m:IjEwIg"
+    ]
+  },
+  {
+    "name": "array-recall",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "notice",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "notice_type": [
+          "group_recall"
+        ]
+      }
+    },
+    "trace": [
+      {
+        "kind": "recall",
+        "recall": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ",
+          "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ:m:IjEwIg",
+          "occurredAt": "2023-11-14T22:13:20.000Z"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ",
+          "kind": "private",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "7"
+        }
+      }
+    ],
+    "remembered": [
+      "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ:m:IjEwIg"
+    ]
+  },
+  {
+    "name": "recall-invalid-time",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "notice",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": null,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "notice_type": "group_recall"
+      }
+    },
+    "trace": [
+      {
+        "kind": "error",
+        "code": "invalid_event_or_callback_failed"
+      }
+    ],
+    "remembered": [
+      "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg"
+    ]
+  },
+  {
+    "name": "recall-no-callback-invalid-time",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": false,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "notice",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": null,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "notice_type": "group_recall"
+      }
+    },
+    "trace": [],
+    "remembered": [
+      "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg"
+    ]
+  },
+  {
+    "name": "recall-callback-throws",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "notice",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "notice_type": "group_recall"
+      }
+    },
+    "trace": [
+      {
+        "kind": "recall",
+        "recall": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+          "occurredAt": "2023-11-14T22:13:20.000Z"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "kind": "group",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "99"
+        }
+      },
+      {
+        "kind": "error",
+        "code": "invalid_event_or_callback_failed"
+      }
+    ],
+    "remembered": [
+      "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg"
+    ]
+  },
+  {
+    "name": "message-callback-throws",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    },
+    "trace": [
+      {
+        "kind": "message",
+        "message": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+          "senderPlatformId": "7",
+          "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+          "sentAt": "2023-11-14T22:13:20.000Z",
+          "receivedAt": "2026-10-18T04:05:06.007Z",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "text",
+              "text": "hello"
+            }
+          ],
+          "status": "available"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "kind": "group",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "99",
+          "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+        }
+      },
+      {
+        "kind": "error",
+        "code": "invalid_event_or_callback_failed"
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "known-echo-before-ready",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": false,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "ok",
+        "retcode": 0,
+        "data": {
+          "answer": 1
+        }
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response",
+        "data": {
+          "answer": 1
+        }
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "unknown-echo-continues-event",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": false,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "missing"
+      }
+    },
+    "trace": [
+      {
+        "kind": "message",
+        "message": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+          "senderPlatformId": "7",
+          "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+          "sentAt": "2023-11-14T22:13:20.000Z",
+          "receivedAt": "2026-10-18T04:05:06.007Z",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "text",
+              "text": "hello"
+            }
+          ],
+          "status": "available"
+        },
+        "scene": {
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "kind": "group",
+          "adapterId": "snowluma",
+          "accountId": "42",
+          "platformSceneId": "99",
+          "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+        }
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "echo-failed-number-1404",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "failed",
+        "retcode": 1404
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response_error",
+        "code": "unsupported",
+        "transmitted": false
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "echo-failed-number-1400",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "failed",
+        "retcode": 1400
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response_error",
+        "code": "invalid_action_parameters",
+        "transmitted": false
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "echo-failed-number-1",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "failed",
+        "retcode": 1
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response_error",
+        "code": "platform_action_failed",
+        "transmitted": false
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "echo-failed-number-0",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "failed",
+        "retcode": 0
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response_error",
+        "code": "platform_action_failed",
+        "transmitted": false
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "echo-failed-string-0",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "failed",
+        "retcode": "0"
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response_error",
+        "code": "platform_action_failed",
+        "transmitted": false
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "echo-ok-numeric",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "ok",
+        "retcode": 0,
+        "data": null
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response",
+        "data": null
+      }
+    ],
+    "remembered": []
+  },
+  {
+    "name": "echo-ok-string",
+    "input": {
+      "operation": "receive",
+      "adapter": "snowluma",
+      "account": "42",
+      "ready": true,
+      "disposed": false,
+      "knownEcho": true,
+      "recallCallback": true,
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "event": {
+        "self_id": 42,
+        "post_type": "message",
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "hello"
+            }
+          }
+        ],
+        "echo": "pending",
+        "status": "ok",
+        "retcode": "0"
+      }
+    },
+    "trace": [
+      {
+        "kind": "cleanup"
+      },
+      {
+        "kind": "response_error",
+        "code": "platform_action_failed",
+        "transmitted": false
+      }
+    ],
+    "remembered": []
+  }
+]

@@ -1,0 +1,2199 @@
+[
+  {
+    "name": "text",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "cq-mention-reply",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": "a[CQ:at,qq=all][CQ:reply,id=3]b&#91;"
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "a"
+          },
+          {
+            "type": "mention",
+            "userId": "all"
+          },
+          {
+            "type": "text",
+            "text": "b["
+          }
+        ],
+        "status": "available",
+        "replyToId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjMi"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "private-incoming",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "private",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjciXQ",
+        "kind": "private",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "7",
+        "displayName": "Sender",
+        "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100"
+      }
+    }
+  },
+  {
+    "name": "private-outgoing",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "private",
+        "group_id": 99,
+        "user_id": 42,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ],
+        "target_id": 8
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjgiXQ:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjgiXQ",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNDIiXQ",
+        "senderPlatformId": "42",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=42&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwicHJpdmF0ZSIsIjgiXQ",
+        "kind": "private",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "8",
+        "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=8&s=100"
+      }
+    }
+  },
+  {
+    "name": "private-temporary",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "private",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ],
+        "sub_type": "group"
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "temporary_private_session_unsupported",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "account-mismatch",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 43,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "account_mismatch",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "null-account",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": null,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_identifier",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "missing-account-history",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "history",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "history",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "sender-fallback",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "user_id": "8",
+          "card": " Card ",
+          "nickname": "Nick"
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiOCJd",
+        "senderPlatformId": "8",
+        "senderDisplayName": "Card",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=8&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "invalid-sender-object",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": [],
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_payload",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "missing-message-format",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group "
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "unsupported",
+            "description": "Configure OneBot array message format"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "invalid-segment",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          null
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_payload",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "invalid-data",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": null
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_payload",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "recalled-before-parts",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          null
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": true
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [],
+        "status": "recalled"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "expected-scene-mismatch",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false,
+      "expected": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCIxMDAiXQ",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "100"
+      }
+    },
+    "expected": {
+      "error": "scene_mismatch",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-scene-coercion",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "group"
+        ],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "scene_scope_mismatch",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "nested-array-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          [
+            "group"
+          ]
+        ],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "scene_scope_mismatch",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-private-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "private"
+        ],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ],
+        "sub_type": "group"
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "scene_scope_mismatch",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-scene-invalid-message-id",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "group"
+        ],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": null,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_identifier",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-scene-invalid-sender",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "group"
+        ],
+        "group_id": 99,
+        "user_id": {},
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_identifier",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-scene-self-invalid-target",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "group"
+        ],
+        "group_id": 99,
+        "user_id": 42,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ],
+        "target_id": null
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_identifier",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-scene-expected-mismatch",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "group"
+        ],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false,
+      "expected": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      }
+    },
+    "expected": {
+      "error": "scene_mismatch",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-scene-recalled",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "group"
+        ],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": true
+    },
+    "expected": {
+      "error": "scene_scope_mismatch",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-empty-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "unsupported_scene_type",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "array-double-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": [
+          "group",
+          "private"
+        ],
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "unsupported_scene_type",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "object-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": {
+          "toString": "group"
+        },
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "Cannot convert object to primitive value",
+      "oneBot": false
+    }
+  },
+  {
+    "name": "null-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": null,
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "unsupported_scene_type",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "boolean-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": true,
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "unsupported_scene_type",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "numeric-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": 1,
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "unsupported_scene_type",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "invalid-scene",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "channel",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "unsupported_scene_type",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "unsafe-numeric-id",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 9007199254740992,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_identifier",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "lone-id",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": "\ud800",
+        "message_id": "\udfff",
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:Ilx1ZGZmZiI",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiXHVkODAwIl0",
+        "senderPlatformId": "\ud800",
+        "senderDisplayName": "Sender",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "label-units",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "card": "‮ A\u0000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx😀"
+        },
+        "group_name": "⁦ G⁩",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Axxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx😀",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "G",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "image-metadata",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "image",
+            "data": {
+              "url": "https://example.invalid/a",
+              "file_id": "f",
+              "summary": " untrusted\u0001 ",
+              "sub_type": 2,
+              "emoji_id": "1"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "media",
+            "mediaType": "image/unknown",
+            "assetId": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZXhhbXBsZS5pbnZhbGlkL2EiLCJmaWxlSWQiOiJmIn0"
+          },
+          {
+            "type": "unsupported",
+            "description": "Untrusted platform image metadata: {\"kind\":\"mface\",\"summary\":\"untrusted\",\"subtype\":\"2\"}"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "image-unavailable",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "image",
+            "data": {
+              "file": 12
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "unsupported",
+            "description": "Image unavailable: image has no usable media reference"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "inline-image",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "image",
+            "data": {
+              "base64": "YWJj",
+              "file": "stored"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "media",
+            "mediaType": "image/unknown",
+            "assetId": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL1lXSmoiLCJmaWxlSWQiOiJzdG9yZWQifQ"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "sticker-label",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "sticker",
+            "data": {
+              "file_id": "abc",
+              "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx😀"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "media",
+            "mediaType": "image/unknown",
+            "assetId": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImFiYyJ9"
+          },
+          {
+            "type": "unsupported",
+            "description": "Untrusted platform image metadata: {\"kind\":\"sticker\",\"summary\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\ud83d\"}"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "faces",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "face",
+            "data": {
+              "id": 12,
+              "name": "Smile"
+            }
+          },
+          {
+            "type": "face",
+            "data": {
+              "id": [
+                "13"
+              ]
+            }
+          },
+          {
+            "type": "face",
+            "data": {
+              "id": "123456789"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "unsupported",
+            "description": "Native QQ face metadata (untrusted): {\"id\":\"12\",\"label\":\"Smile\"}"
+          },
+          {
+            "type": "unsupported",
+            "description": "Native QQ face metadata (untrusted): {\"id\":\"13\",\"meaning\":\"unavailable\"}"
+          },
+          {
+            "type": "unsupported",
+            "description": "Native QQ face metadata (untrusted): {\"meaning\":\"unavailable\"}"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "audio-video",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "record",
+            "data": {
+              "url": "record-url",
+              "file_id": ""
+            }
+          },
+          {
+            "type": "video",
+            "data": {
+              "base64": ""
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "media",
+            "assetId": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6InJlY29yZCIsImZpbGUiOiJyZWNvcmQtdXJsIiwiZmlsZUlkIjoiIn0",
+            "mediaType": "audio/unknown"
+          },
+          {
+            "type": "media",
+            "assetId": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6InZpZGVvIiwiZmlsZSI6ImJhc2U2NDovLyJ9",
+            "mediaType": "video/unknown"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "unknown-segments",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 1700000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": 12
+            }
+          },
+          {
+            "type": [
+              "image"
+            ],
+            "data": {
+              "file": "asset"
+            }
+          },
+          {
+            "data": {}
+          },
+          {
+            "type": {},
+            "data": {}
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "2023-11-14T22:13:20.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "unsupported",
+            "description": "OneBot segment: text"
+          },
+          {
+            "type": "media",
+            "mediaType": "image/unknown",
+            "assetId": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImFzc2V0In0"
+          },
+          {
+            "type": "unsupported",
+            "description": "OneBot segment: undefined"
+          },
+          {
+            "type": "unsupported",
+            "description": "OneBot segment: [object Object]"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "minimum-date",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": -8640000000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "-271821-04-20T00:00:00.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "maximum-date",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 8640000000000,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "+275760-09-13T00:00:00.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "fractional-date",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": -0.0005,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "message": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEwIg",
+        "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+        "senderPlatformId": "7",
+        "senderDisplayName": "Sender",
+        "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+        "sentAt": "1970-01-01T00:00:00.000Z",
+        "receivedAt": "2026-10-18T04:05:06.007Z",
+        "origin": "live",
+        "parts": [
+          {
+            "type": "text",
+            "text": "Hello"
+          }
+        ],
+        "status": "available"
+      },
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99",
+        "displayName": "Group",
+        "avatarUrl": "https://p.qlogo.cn/gh/99/99/100"
+      }
+    }
+  },
+  {
+    "name": "invalid-date",
+    "input": {
+      "operation": "normalize",
+      "adapter": "snowluma",
+      "account": "42",
+      "event": {
+        "self_id": 42,
+        "message_type": "group",
+        "group_id": 99,
+        "user_id": 7,
+        "message_id": 10,
+        "time": 8640000000001,
+        "sender": {
+          "nickname": " Sender "
+        },
+        "group_name": " Group ",
+        "message": [
+          {
+            "type": "text",
+            "data": {
+              "text": "Hello"
+            }
+          }
+        ]
+      },
+      "origin": "live",
+      "receivedAt": "2026-10-18T04:05:06.007Z",
+      "recalled": false
+    },
+    "expected": {
+      "error": "invalid_timestamp",
+      "oneBot": true
+    }
+  },
+  {
+    "name": "cq-44",
+    "input": {
+      "operation": "parse_cq",
+      "text": "[CQ:text,__proto__=ignored,text=actual]"
+    },
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "actual"
+        }
+      }
+    ]
+  },
+  {
+    "name": "cq-45",
+    "input": {
+      "operation": "parse_cq",
+      "text": "prefix[CQ:bad[CQ:at,qq=all]tail"
+    },
+    "expected": [
+      {
+        "type": "text",
+        "data": {
+          "text": "prefix[CQ:bad"
+        }
+      },
+      {
+        "type": "at",
+        "data": {
+          "qq": "all"
+        }
+      },
+      {
+        "type": "text",
+        "data": {
+          "text": "tail"
+        }
+      }
+    ]
+  },
+  {
+    "name": "cq-46",
+    "input": {
+      "operation": "parse_cq",
+      "text": "[CQ:image,file=a&#44;b]&amp;"
+    },
+    "expected": [
+      {
+        "type": "image",
+        "data": {
+          "file": "a,b"
+        }
+      },
+      {
+        "type": "text",
+        "data": {
+          "text": "&"
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "upstream": "https://github.com/coder/websocket",
+  "version": "v1.8.15",
+  "commit": "9c8faadccd1b679e811a79ce506f8a10237251ad",
+  "zip_sum": "h1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=",
+  "patch_sha256": "af1038eaf19c6aec464a7b4dd53eff3fef615e8d1c264dc999818a566077d9f1",
+  "scope": "Fixed official coder/websocket v1.8.15 client compatibility patch: small-window negotiation/Huffman-only encoding; client close frame codes/empty reasons; shared 30s close deadline; physical CloseNow interrupt during closing; immediate failed-handshake response closure without debug-body wait. Server behavior remains upstream. New aggregate patch not yet Go validated; compression ratio/throughput not claimed equal.",
+  "changed_files": [
+    "close.go",
+    "compress.go",
+    "conn.go",
+    "dial.go",
+    "read.go",
+    "write.go"
+  ],
+  "license_sha256": "cc0975a5f6305145bdd7b41ce9479632fdac3870e6ac4281f28017f18c767c4e"
+}

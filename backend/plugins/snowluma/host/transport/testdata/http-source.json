@@ -1,0 +1,106 @@
+{
+  "actions": [
+    {
+      "name": "ok",
+      "raw": "{\"status\":\"ok\",\"retcode\":0,\"data\":{\"value\":7}}",
+      "value": {
+        "value": 7
+      }
+    },
+    {
+      "name": "unsupported",
+      "raw": "{\"status\":\"failed\",\"retcode\":1404}",
+      "error": "unsupported",
+      "transmitted": false
+    },
+    {
+      "name": "parameters",
+      "raw": "{\"status\":\"failed\",\"retcode\":1400}",
+      "error": "invalid_action_parameters",
+      "transmitted": false
+    },
+    {
+      "name": "platform",
+      "raw": "{\"status\":\"failed\",\"retcode\":12}",
+      "error": "platform_action_failed",
+      "transmitted": false
+    },
+    {
+      "name": "invalid-status",
+      "raw": "{\"status\":\"other\",\"retcode\":12}",
+      "error": "invalid_http_response",
+      "transmitted": true
+    },
+    {
+      "name": "invalid-code",
+      "raw": "{\"status\":\"failed\",\"retcode\":0}",
+      "error": "invalid_http_response",
+      "transmitted": true
+    },
+    {
+      "name": "missing-code",
+      "raw": "{\"status\":\"ok\"}",
+      "error": "invalid_http_response",
+      "transmitted": true
+    },
+    {
+      "name": "array",
+      "raw": "[]",
+      "error": "invalid_http_response",
+      "transmitted": true
+    },
+    {
+      "name": "invalid-json",
+      "raw": "{",
+      "error": "invalid_http_response",
+      "transmitted": true
+    }
+  ],
+  "eventCases": [
+    {
+      "name": "valid",
+      "raw": "{\"self_id\":42,\"post_type\":\"meta_event\"}",
+      "status": 204
+    },
+    {
+      "name": "other-account",
+      "raw": "{\"self_id\":43}",
+      "status": 403
+    },
+    {
+      "name": "invalid-account",
+      "raw": "{\"self_id\":{}}",
+      "status": 400
+    },
+    {
+      "name": "array",
+      "raw": "[]",
+      "status": 400
+    },
+    {
+      "name": "invalid-json",
+      "raw": "{",
+      "status": 400
+    },
+    {
+      "name": "bad-signature",
+      "raw": "{\"self_id\":42}",
+      "badSignature": true,
+      "status": 401
+    },
+    {
+      "name": "other-header-account",
+      "raw": "{\"self_id\":42}",
+      "headerAccount": "43",
+      "status": 401
+    }
+  ],
+  "events": [
+    "{\"self_id\":42,\"post_type\":\"meta_event\"}"
+  ],
+  "requestAuthentication": true,
+  "statuses": [
+    "connecting",
+    "connected"
+  ]
+}

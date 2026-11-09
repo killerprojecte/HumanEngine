@@ -1,0 +1,13 @@
+{
+  "frame": {
+    "code": 1007,
+    "reason": ""
+  },
+  "configuredCloseTimeout": 30000,
+  "openBeforeDispose": true,
+  "closedAfterDispose": true,
+  "action": {
+    "error": "request_cancelled",
+    "transmitted": true
+  }
+}

@@ -4,6 +4,7 @@ package snowluma
 import (
 	"encoding/base64"
 	"encoding/json"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsoncompat"
 	resources "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma"
 	"strings"
@@ -50,7 +51,7 @@ func ParseCQ(value string) []Segment {
 				data := map[string]any{}
 				for _, pair := range strings.Split(window[typeEnd:], ",")[1:] {
 					equal := strings.IndexByte(pair, '=')
-					if equal > 0 {
+					if equal > 0 && pair[:equal] != "__proto__" {
 						data[pair[:equal]] = unescape(pair[equal+1:])
 					}
 				}
@@ -86,6 +87,24 @@ func UserID(adapter, account, platform string) string {
 	return "ob:u:" + encoded(adapter, account, platform)
 }
 func Invoke(input []byte) any {
+	if parsed, err := jsjson.Parse(string(input)); err == nil {
+		if object, ok := parsed.(*jsjson.Object); ok {
+			operation, _ := object.Get("operation")
+			if operation == "send_validate" || operation == "send_begin" || operation == "send_source" || operation == "send_media" || operation == "send_result" {
+				return SendDecision(object)
+			}
+			if operation == "receive" {
+				return ReceiveDecision(object)
+			}
+			if operation == "normalize" || operation == "identify_message" {
+				return NormalizationDecision(object)
+			}
+			if name, ok := operation.(string); ok && (name == "http_event" || name == "http_response" || name == "http_login") {
+				return HTTPDecision(name, object)
+			}
+		}
+	}
+
 	var in struct{ Operation, Text, Adapter, Account, Kind, Peer, Scene, Platform string }
 	if json.Unmarshal(input, &in) != nil {
 		return map[string]any{"error": "invalid_plugin_input"}

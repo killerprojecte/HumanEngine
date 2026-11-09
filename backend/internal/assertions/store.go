@@ -58,6 +58,12 @@ func New(main *sql.DB, authority *recovery.Authority, options Options) (*Store, 
 	return &Store{main: main, authority: authority, options: options}, nil
 }
 
+// OwnedBy identifies a live root store, never a borrowed writer or maintenance
+// capability. Administrative composition must retain this exact owner.
+func (s *Store) OwnedBy(main *sql.DB, authority *recovery.Authority) bool {
+	return s != nil && main != nil && authority != nil && s.main == main && s.authority == authority && s.session == nil && s.maintenance == nil && s.bindingError == nil
+}
+
 // WithSession borrows an existing transaction. It does not start one or alter its
 // commit semantics. Methods reject an expired or differently-owned capability.
 func (s *Store) WithSession(session *recovery.WriteSession) *Store {

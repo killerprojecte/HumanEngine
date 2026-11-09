@@ -1,0 +1,1649 @@
+{
+  "node": "v24.22.1",
+  "timezone": "UTC",
+  "sourceHashes": {
+    "src/admin.ts": "1c0075c91a98be05189c36c347f16bcd3f285d8ebc2afb50c2b6af7628a5969c",
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/diagnostics/errors.ts": "57ffd77577d48c946f7df32d81d55c67617a9235e74607b956411c822e3b0955",
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/memory/lifecycle/assertion-lifecycle.ts": "2edacdbee1fe9531b95d54fe8c219ccacbfd2361ebb5a7956cb21582124eeab7",
+    "src/memory/write/manual-commands.ts": "4bdd8acce621786ff88187517edefc6fe3f524d43796d61dd260e9cb384cd304",
+    "src/memory/write/revision-coordinator.ts": "751d74fc03dece31760ccbe371d175879a571f4fa7eebf1a9dacb538cabf3f35",
+    "node_modules/hono/dist/utils/url.js": "dfee0733103e376ecc92370d0faf70e4d202adcaa59d151021bce4f2c6319f65",
+    "node_modules/hono/dist/validator/validator.js": "baa0dc87b51af8d3c7a34a246a68068d19e58ec6f5695823e3b621114e5b7fe0",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "schemas": {
+    "memories": "CREATE TABLE memories (\n        id TEXT PRIMARY KEY, scope_key TEXT NOT NULL, person_id TEXT,\n        content TEXT NOT NULL, fingerprint TEXT NOT NULL UNIQUE, value TEXT NOT NULL\n      )",
+    "memory_sources": "CREATE TABLE memory_sources (\n        memory_id TEXT NOT NULL REFERENCES memories(id) ON DELETE CASCADE,\n        scene_id TEXT NOT NULL, message_id TEXT NOT NULL, sender_id TEXT NOT NULL,\n        PRIMARY KEY(memory_id,scene_id,message_id)\n      )",
+    "memory_deleted": "CREATE TABLE memory_deleted (fingerprint TEXT PRIMARY KEY, deleted_at TEXT NOT NULL)",
+    "memory_supports": "CREATE TABLE memory_supports (\n        memory_id TEXT PRIMARY KEY REFERENCES memories(id) ON DELETE CASCADE,\n        value TEXT NOT NULL\n      )",
+    "memory_assertion_state": "CREATE TABLE memory_assertion_state (\n        assertion_id TEXT PRIMARY KEY, version INTEGER NOT NULL,\n        deletion_epoch INTEGER NOT NULL, deleted INTEGER NOT NULL\n      )",
+    "memory_assertion_revisions": "CREATE TABLE memory_assertion_revisions (\n        assertion_id TEXT NOT NULL REFERENCES memory_assertion_state(assertion_id),\n        version INTEGER NOT NULL, scope_key TEXT NOT NULL, recorded_at TEXT,\n        idempotency_key TEXT, payload_hash TEXT, value TEXT,\n        PRIMARY KEY(assertion_id,version), UNIQUE(assertion_id,idempotency_key)\n      )",
+    "memory_assertion_revision_sources": "CREATE TABLE memory_assertion_revision_sources (\n        assertion_id TEXT NOT NULL, version INTEGER NOT NULL,\n        scene_id TEXT NOT NULL, message_id TEXT NOT NULL,\n        PRIMARY KEY(assertion_id,version,scene_id,message_id),\n        FOREIGN KEY(assertion_id,version) REFERENCES memory_assertion_revisions(assertion_id,version) ON DELETE CASCADE\n      )",
+    "memory_assertion_revision_parents": "CREATE TABLE memory_assertion_revision_parents (\n        assertion_id TEXT NOT NULL, version INTEGER NOT NULL, parent_id TEXT NOT NULL,\n        PRIMARY KEY(assertion_id,version,parent_id),\n        FOREIGN KEY(assertion_id,version) REFERENCES memory_assertion_revisions(assertion_id,version) ON DELETE CASCADE\n      )",
+    "memory_command_receipts": "CREATE TABLE memory_command_receipts (\n      command_key TEXT PRIMARY KEY, assertion_id TEXT NOT NULL,\n      payload_hash TEXT NOT NULL, deletion_epoch INTEGER NOT NULL,\n      result_version INTEGER NOT NULL, created_at TEXT NOT NULL\n    )"
+  },
+  "cases": [
+    {
+      "name": "existing",
+      "path": "/api/memories/m",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "missing",
+      "path": "/api/memories/absent",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":false}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "repeated",
+      "path": "/api/memories/m",
+      "repeat": true,
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":false}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "ignored-query-body",
+      "path": "/api/memories/m?sceneId=wrong&expectedVersion=-1&x=1&x=2",
+      "body": "{",
+      "contentType": "text/plain",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "ignored-json-body",
+      "path": "/api/memories/m",
+      "body": "{\"confirmed\":false,\"id\":\"wrong\"}",
+      "contentType": "application/json",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "encoded-prefix",
+      "path": "/api/memor%69es/m",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "encoded-id",
+      "path": "/api/memories/%6d",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "unicode",
+      "id": "記憶😀",
+      "path": "/api/memories/%E8%A8%98%E6%86%B6%F0%9F%98%80",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "記憶😀",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"記憶😀\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "記憶😀",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "記憶😀",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "f3c46fa56d5b940bd5b3bd2383b83077e2af3a07427730bff61904adbe13a6d7",
+            "value": "{\"assertionId\":\"記憶😀\",\"version\":1,\"record\":{\"id\":\"記憶😀\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "slash",
+      "id": "a/b",
+      "path": "/api/memories/a%2Fb",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "a/b",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"a/b\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "a/b",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "a/b",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "e144b16179729809b866f2c9e9ac79addc58016f686d4d4af581ba61e1628266",
+            "value": "{\"assertionId\":\"a/b\",\"version\":1,\"record\":{\"id\":\"a/b\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "percent",
+      "id": "%2F",
+      "path": "/api/memories/%252F",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "%2F",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"%2F\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "%2F",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "%2F",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "012ee0ea1ac3dbe4df1620d6dd80f03909c58c105a524fcdfe7489cf8d5fd926",
+            "value": "{\"assertionId\":\"%2F\",\"version\":1,\"record\":{\"id\":\"%2F\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "plus",
+      "id": "a+b",
+      "path": "/api/memories/a+b",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "a+b",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"a+b\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "a+b",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "a+b",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "dd5a72fdaab00866d795c68624ff957f7e648180cd10217d49374ae739e2e977",
+            "value": "{\"assertionId\":\"a+b\",\"version\":1,\"record\":{\"id\":\"a+b\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "question",
+      "id": "a?b",
+      "path": "/api/memories/a%3Fb",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "a?b",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"a?b\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "a?b",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "a?b",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "aa522c84b77ecc9b0d874379cb4417268acb58f92793f916f5ea8a5ec48cd636",
+            "value": "{\"assertionId\":\"a?b\",\"version\":1,\"record\":{\"id\":\"a?b\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "invalid-utf8",
+      "id": "%FF",
+      "path": "/api/memories/%FF",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "%FF",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"%FF\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "%FF",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "%FF",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "8cc0475fac5ece55b599e57911f5e93409b5d1095a0794ff4095ca96816d7e59",
+            "value": "{\"assertionId\":\"%FF\",\"version\":1,\"record\":{\"id\":\"%FF\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "long-id",
+      "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "path": "/api/memories/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "20b34f09fd4d45c79468e8f4ee9262b8c627faf6ff2feb5383c1f95135bddbb6",
+            "value": "{\"assertionId\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"version\":1,\"record\":{\"id\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "missing-long-id",
+      "path": "/api/memories/zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":false}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "reserved-page-id",
+      "id": "page",
+      "path": "/api/memories/page",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "page",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"page\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "page",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "page",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "bfb15cf0af5583a27780046be457c3ba1b45700d4ec3e972b7dd864ce67a4246",
+            "value": "{\"assertionId\":\"page\",\"version\":1,\"record\":{\"id\":\"page\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "wrong-method-GET",
+      "method": "GET",
+      "path": "/api/memories/m",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "wrong-method-HEAD",
+      "method": "HEAD",
+      "path": "/api/memories/m",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "wrong-method-POST",
+      "method": "POST",
+      "path": "/api/memories/m",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "wrong-method-PUT",
+      "method": "PUT",
+      "path": "/api/memories/m",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "wrong-method-OPTIONS",
+      "method": "OPTIONS",
+      "path": "/api/memories/m",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "no-id",
+      "path": "/api/memories",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "empty-id",
+      "path": "/api/memories/",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "trailing-slash",
+      "path": "/api/memories/m/",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "extra-segment",
+      "path": "/api/memories/m/extra",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 404,
+      "text": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "missing-auth",
+      "path": "/api/memories/m",
+      "authorization": null,
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": "",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "wrong-auth",
+      "path": "/api/memories/m",
+      "authorization": "Bearer wrong",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": "",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "raw-token",
+      "path": "/api/memories/m",
+      "authorization": "synthetic-token",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 200,
+      "text": "{\"ok\":true}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "no-server-token",
+      "path": "/api/memories/m",
+      "serverToken": "",
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 503,
+      "text": "{\"error\":\"Set HUMANENGINE_ADMIN_TOKEN on the server before using the API\"}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": "",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "corrupt-record",
+      "path": "/api/memories/m",
+      "corrupt": true,
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "unready",
+      "path": "/api/memories/m",
+      "unready": true,
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": "",
+        "x-request-id": "<request-id>"
+      }
+    },
+    {
+      "name": "unready-unknown-path",
+      "path": "/api/memories/m/extra",
+      "unready": true,
+      "method": "DELETE",
+      "before": {
+        "memories": [
+          {
+            "id": "m",
+            "scope_key": "shared:public",
+            "person_id": null,
+            "content": "Synthetic deletion fixture.",
+            "fingerprint": "b946ea8519c8d1cfa9d5133c8f86406fb4f0efeec080c8d30c55a65ba09ee78e",
+            "value": "{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"}"
+          }
+        ],
+        "memory_sources": [],
+        "memory_supports": [],
+        "memory_deleted": [],
+        "memory_assertion_state": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "deletion_epoch": 0,
+            "deleted": 0
+          }
+        ],
+        "memory_assertion_revisions": [
+          {
+            "assertion_id": "m",
+            "version": 1,
+            "scope_key": "shared:public",
+            "recorded_at": "2026-10-28T12:00:00.000Z",
+            "idempotency_key": "commit:0:1",
+            "payload_hash": "44bb3afd8646cb508de2b998cb4923124b289a581ac629db46dcc025c110d06f",
+            "value": "{\"assertionId\":\"m\",\"version\":1,\"record\":{\"id\":\"m\",\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic deletion fixture.\",\"kind\":\"fact\",\"sources\":[],\"importance\":\"medium\",\"confidence\":1,\"learnedAt\":\"2026-10-28T12:00:00.000Z\",\"status\":\"active\",\"locked\":false,\"origin\":\"manual\"},\"supports\":[],\"recordedAt\":\"2026-10-28T12:00:00.000Z\",\"validFrom\":null,\"validTo\":null,\"event\":{\"kind\":\"admin_assertion\",\"actorId\":null,\"legacyImport\":false}}"
+          }
+        ],
+        "memory_assertion_revision_sources": [],
+        "memory_assertion_revision_parents": [],
+        "memory_command_receipts": []
+      },
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": "",
+        "x-request-id": "<request-id>"
+      }
+    }
+  ]
+}

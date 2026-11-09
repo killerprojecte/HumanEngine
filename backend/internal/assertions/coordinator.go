@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
 type CoordinatorOptions struct {
@@ -51,18 +52,43 @@ func (c *Coordinator) bind(store *Store, tracking *revisionTracking) *RevisionTx
 	return tx
 }
 func (c *Coordinator) Transaction(ctx context.Context, fn func(*RevisionTxn) error) error {
+	return c.transaction(ctx, fn, nil)
+}
+
+// TransactionWithReadWitness preserves the ordinary revision transaction,
+// including final revision/eligibility flushes and post-commit callbacks. The
+// witness covers the resulting reads of the whole atomic owner operation; it
+// never captures only an intermediate pre-flush state or replays the mutation.
+func (c *Coordinator) TransactionWithReadWitness(ctx context.Context, fn func(*RevisionTxn) error) (*recovery.ReadWitness, error) {
+	if c == nil || c.store == nil || !c.store.OwnedBy(c.store.main, c.store.authority) {
+		return nil, errors.New("assertion_witness_requires_root")
+	}
+	var witness *recovery.ReadWitness
+	err := c.transaction(ctx, fn, &witness)
+	return witness, err
+}
+
+func (c *Coordinator) transaction(ctx context.Context, fn func(*RevisionTxn) error, witness **recovery.ReadWitness) error {
 	if fn == nil {
 		return errors.New("assertion_transaction_callback_required")
 	}
 	err := c.store.Transaction(ctx, func(store *Store) error {
-		tx := c.bind(store, newTracking())
-		if e := fn(tx); e != nil {
-			return e
+		run := func() error {
+			tx := c.bind(store, newTracking())
+			if e := fn(tx); e != nil {
+				return e
+			}
+			if e := tx.flush(); e != nil {
+				return e
+			}
+			return tx.flushEligibility()
 		}
-		if e := tx.flush(); e != nil {
-			return e
+		if witness == nil {
+			return run()
 		}
-		return tx.flushEligibility()
+		var e error
+		*witness, e = store.session.CaptureReadWitness(run)
+		return e
 	})
 	if err == nil && c.options.AfterCommit != nil {
 		return c.options.AfterCommit()

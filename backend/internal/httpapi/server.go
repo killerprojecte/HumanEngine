@@ -15,6 +15,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelcalls"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
@@ -28,6 +29,7 @@ import (
 )
 
 type Server struct {
+	memoryDelete        *memoryservice.Service
 	retainedPublisher   *recovery.ReadPublisher
 	runtimeStatus       *runtimeStatusOwner
 	usage               *usageview.Store
@@ -99,6 +101,14 @@ func (s *Server) ServeUnavailable(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available bool) {
 	id := r.Header.Get("X-Request-ID")
+	if s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r)) {
+		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
+		b := make([]byte, 16)
+		_, _ = rand.Read(b)
+		b[6] = (b[6] & 0x0f) | 0x40
+		b[8] = (b[8] & 0x3f) | 0x80
+		id = fmt.Sprintf("%x-%x-%x-%x-%x", b[:4], b[4:6], b[6:8], b[8:10], b[10:])
+	}
 	if id == "" {
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -116,7 +126,19 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
+	if s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r)) {
+		w.Header().Del("Cache-Control")
+		w.Header().Del("X-Content-Type-Options")
+	}
 	authenticationError := func(status int, message string) {
+		if s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r)) {
+			if r.Method == "HEAD" {
+				w.WriteHeader(status)
+			} else {
+				habitError(w, status, message, "")
+			}
+			return
+		}
 		if (s.retainedPublisher != nil && retainedLogsPath(habitRoutingPath(r))) || (s.runtimeStatus != nil && statusPath(habitRoutingPath(r))) || (s.usage != nil && usagePath(habitRoutingPath(r))) || (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
@@ -202,6 +224,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if s.experience != nil && experiencePath(habitRoutingPath(r)) {
 		s.serveExperience(w, r, available, id)
+		return
+	}
+	if s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r)) && !memoryDeleteUnmigrated(r) {
+		s.serveMemoryDelete(w, r, available, id)
 		return
 	}
 	if s.habits != nil && habitPath(habitRoutingPath(r)) {

@@ -9,6 +9,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
@@ -82,5 +83,15 @@ func (s *Server) WithMemes(engine *memeengine.Service) error {
 		return errors.New("http_meme_dependencies_invalid")
 	}
 	s.memes = engine
+	return nil
+}
+
+// WithMemoryDelete enables only assertion deletion on the existing full privacy
+// owner. It does not enable memory listing, manual writes, or model admission.
+func (s *Server) WithMemoryDelete(memory *memoryservice.Service) error {
+	if s == nil || !memory.OwnedBy(s.main, s.authority) {
+		return errors.New("http_memory_delete_dependencies_invalid")
+	}
+	s.memoryDelete = memory
 	return nil
 }

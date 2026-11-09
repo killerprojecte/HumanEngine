@@ -7,6 +7,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/mediatasks"
 	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/runtime"
 	"net/http"
+	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
@@ -261,6 +262,9 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error { return app.HTTP.WithDiagnostics(app.Diagnostics, app.readPublisher) },
 		func() error { return app.HTTP.WithModelCalls(calls, app.readPublisher) },
 		func() error { return app.HTTP.WithProviderReads(app.models, app.readPublisher) },
+		func() error {
+			return app.HTTP.WithRuntimeStatus(app.Engine.Runtime, sched, app.readPublisher, owners.VectorVersion, time.Now())
+		},
 		func() error {
 			return app.HTTP.WithUsage(&usageview.Store{Main: owners.Main, Dates: owners.Dates}, app.readPublisher)
 		},

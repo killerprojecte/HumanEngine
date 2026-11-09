@@ -46,13 +46,19 @@ func InstallPrepared(ctx context.Context, host *plugins.WASMHost, guestID string
 	if !ok {
 		return nil, errors.New("invalid_guest_startup_config")
 	}
+	status := newInstallationStatus()
 	var receive func(context.Context, string) error
 	callbacks := transport.HTTPCallbacks{Receive: func(ctx context.Context, raw string) error {
 		if receive == nil {
 			return errors.New("snowluma_receiver_not_installed")
 		}
 		return receive(ctx, raw)
-	}, Status: ports.Status, Error: ports.Error}
+	}, Status: func(value string) {
+		status.observe(value)
+		if ports.Status != nil {
+			ports.Status(value)
+		}
+	}, Error: ports.Error}
 	var http *transport.HTTP
 	var ws *transport.WS
 	var err error
@@ -68,7 +74,9 @@ func InstallPrepared(ctx context.Context, host *plugins.WASMHost, guestID string
 	if err != nil {
 		return nil, err
 	}
-	sender, err := NewSender(host, guestID, "snowluma", str(config, "accountId"), ports.Sender, http, ws)
+	senderPorts := ports.Sender
+	senderPorts.status = status
+	sender, err := NewSender(host, guestID, "snowluma", str(config, "accountId"), senderPorts, http, ws)
 	if err != nil {
 		if http != nil {
 			_ = http.CloseAndWait(context.Background())

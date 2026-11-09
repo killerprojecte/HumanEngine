@@ -127,6 +127,28 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 			t.Fatal("idle temporary Snow policy guest remains loaded")
 		}
 	}
+	assertSnowStatus := func(want string) {
+		t.Helper()
+		statuses, err := application.Engine.Runtime.AdapterStatuses(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		wire := appRequest(t, application, http.MethodGet, "/api/status", nil)
+		adapters, ok := field(wire, "adapters").([]any)
+		if !ok {
+			t.Fatal("status adapters is not an array", wire)
+		}
+		if want == "" {
+			if len(statuses) != 0 || len(adapters) != 0 {
+				t.Fatal("retired adapter retained", statuses, adapters)
+			}
+			return
+		}
+		if len(statuses) != 1 || statuses[0].ID != "snowluma" || statuses[0].Status != want || len(adapters) != 1 || field(adapters[0], "id") != "snowluma" || field(adapters[0], "status") != want {
+			t.Fatal("actual installed status mismatch", statuses, adapters, want)
+		}
+	}
+	assertSnowStatus("")
 	assertPolicyUnloaded()
 	settings := appRequest(t, application, http.MethodGet, "/api/settings", nil).(*jsjson.Object)
 	_ = settings.Set("sourceEventRevisionsEnabled", true)
@@ -145,6 +167,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	assertPolicyUnloaded()
 	t.Log("stage: beginning actual Snow runtime activation")
 	snowAdmin("/api/plugins/snowluma/enabled", map[string]any{"enabled": true})
+	assertSnowStatus("connected")
 	assertPolicyUnloaded()
 	var socket *websocket.Conn
 	select {
@@ -322,6 +345,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	// replacement is installed, and the stored token survives omitted secret input.
 	t.Log("stage: beginning hot configuration with physical runtime retirement")
 	snowAdmin("/api/plugins/snowluma/config", map[string]any{"transport": "websocket", "url": endpoint, "accountId": "42"})
+	assertSnowStatus("connected")
 	select {
 	case <-closed:
 	case <-ctx.Done():
@@ -334,6 +358,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		t.Fatal("replacement generation missing")
 	}
 	snowAdmin("/api/plugins/snowluma/enabled", map[string]any{"enabled": false})
+	assertSnowStatus("")
 	assertPolicyUnloaded()
 	if application.WASM.Loaded("snowluma") {
 		t.Fatal("disabled Snow runtime guest remains loaded")

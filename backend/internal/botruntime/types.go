@@ -156,6 +156,8 @@ type HookResult struct {
 	Segments []dispatch.Segment
 }
 type Adapter struct {
+	// Status reads this registration, never a replacement with the same ID.
+	Status     func(context.Context) (string, error)
 	Transport  *dispatch.Adapter
 	BotUserID  string
 	History    func(context.Context, Scene, int, func(*Object, error))
@@ -206,10 +208,10 @@ type Runtime struct {
 	sequence                      atomic.Uint64
 	services                      Services
 	settings                      atomic.Pointer[Settings]
-	lifecycleMu                   sync.Mutex // only registration/owner publication and close transition
-	transports                    sync.Map   // string -> *sceneRegistration, metadata without runtime state
-	scenes                        sync.Map   // string -> *sceneState, never held over external work
-	adapters                      sync.Map   // string -> *Adapter, immutable registration identity
+	lifecycleMu                   sync.Mutex      // only registration/owner publication and close transition
+	transports                    sync.Map        // string -> *sceneRegistration, metadata without runtime state
+	scenes                        sync.Map        // string -> *sceneState, never held over external work
+	adapters                      adapterRegistry // ordered, immutable registration identity
 	extensionMu                   sync.RWMutex
 	extensions                    []*Extension
 	hooks                         []registeredHook

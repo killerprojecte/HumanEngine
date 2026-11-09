@@ -28,6 +28,7 @@ import (
 )
 
 type Server struct {
+	runtimeStatus       *runtimeStatusOwner
 	usage               *usageview.Store
 	usagePublisher      *recovery.ReadPublisher
 	providerReads       *providertransport.NativeModels
@@ -106,7 +107,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	if (s.usage != nil && usagePath(habitRoutingPath(r))) || (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
+	if (s.runtimeStatus != nil && statusPath(habitRoutingPath(r))) || (s.usage != nil && usagePath(habitRoutingPath(r))) || (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
@@ -115,7 +116,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if (s.usage != nil && usagePath(habitRoutingPath(r))) || (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
+		if (s.runtimeStatus != nil && statusPath(habitRoutingPath(r))) || (s.usage != nil && usagePath(habitRoutingPath(r))) || (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -156,6 +157,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
 		authenticationError(401, "Authentication required")
+		return
+	}
+	if s.runtimeStatus != nil && statusPath(habitRoutingPath(r)) {
+		s.serveRuntimeStatus(w, r, available, id)
 		return
 	}
 	if s.usage != nil && usagePath(habitRoutingPath(r)) {

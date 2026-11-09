@@ -55,6 +55,9 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 	}
 	entry := &Registration{owner: r, sender: s}
 	adapter := &botruntime.Adapter{BotUserID: str(identity, "userId"), Dispose: s.Dispose}
+	if s.status != nil {
+		adapter.Status = s.status.read
+	}
 	adapter.Transport = dispatch.AbortContainedAdapter(&dispatch.Adapter{Send: func(scene dispatch.SceneRef, segment dispatch.Segment, signal *dispatch.Signal, before func() error) *dispatch.Future[dispatch.Receipt] {
 		result := dispatch.NewFuture[dispatch.Receipt]()
 		go func() {

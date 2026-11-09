@@ -20,6 +20,7 @@ type Source struct {
 	Retain   func() (func(), error)
 }
 type Ports struct {
+	status        *installationStatus
 	ReadOriginal  func(context.Context, string, string) (*jsjson.Object, error)
 	Life          context.Context
 	Current       func() bool
@@ -27,6 +28,7 @@ type Ports struct {
 	ResolveMedia  func(context.Context, any, *jsjson.Object) (*jsjson.Object, error)
 }
 type Sender struct {
+	status           *installationStatus
 	queries          *Queries
 	adapter, account string
 	ports            Ports
@@ -56,7 +58,7 @@ func NewSender(host *plugins.WASMHost, guestID, adapter, account string, ports P
 		return nil, err
 	}
 	life, cancel := context.WithCancel(ports.Life)
-	s := &Sender{adapter: adapter, account: account, ports: ports, guest: guest, encoder: encoder, http: http, ws: ws, life: life, cancel: cancel, closed: make(chan struct{})}
+	s := &Sender{status: ports.status, adapter: adapter, account: account, ports: ports, guest: guest, encoder: encoder, http: http, ws: ws, life: life, cancel: cancel, closed: make(chan struct{})}
 	if s.ports.ResolveSource == nil && s.ports.ReadOriginal != nil {
 		s.ports.ResolveSource = s.resolveOriginal
 	}
@@ -239,6 +241,9 @@ func (s *Sender) Dispose() {
 		s.cancel()
 		s.work.Seal()
 		s.encoder.Dispose()
+		if s.status != nil {
+			s.status.dispose()
+		}
 		go func() {
 			var err error
 			if s.http != nil {

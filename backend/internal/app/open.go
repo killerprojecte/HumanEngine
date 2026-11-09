@@ -28,6 +28,7 @@ import (
 )
 
 type Owners struct {
+	VectorVersion    string
 	Main             *sql.DB
 	Authority        *recovery.Authority
 	Assertions       *assertions.Store
@@ -135,7 +136,7 @@ func Open(ctx context.Context, o Options) (_ *Application, err error) {
 	if err != nil {
 		return nil, err
 	}
-	owners := Owners{db, a, st, sources, runtimeAuthority, memes, habits, installationOwner.Secrets, &providertransport.BudgetService{DB: db, Ledger: ledger}, codec, dates, collator.Compare}
+	owners := Owners{installationOwner.VectorVersion, db, a, st, sources, runtimeAuthority, memes, habits, installationOwner.Secrets, &providertransport.BudgetService{DB: db, Ledger: ledger}, codec, dates, collator.Compare}
 	transferred = true
 	return assemble(ctx, owners, o, collator, func() error { return errors.Join(collator.Close(), installationOwner.Close()) })
 }

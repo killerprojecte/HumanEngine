@@ -45,17 +45,20 @@ type queued struct {
 	human []byte
 }
 type Logger struct {
-	inFlight            int
-	inFlightBytes       int64
-	mu                  sync.Mutex
-	wake                *sync.Cond
-	queue               []queued
-	queuedBytes         int64
-	closing             bool
-	done                chan struct{}
-	jsonSink, humanSink io.Writer
-	written, failed     uint64
-	lastError           string
+	closedRejections, unserializable, failedSinkRecords uint64
+	noticeAt                                            time.Time
+	retained                                            retainedLogs
+	inFlight                                            int
+	inFlightBytes                                       int64
+	mu                                                  sync.Mutex
+	wake                                                *sync.Cond
+	queue                                               []queued
+	queuedBytes                                         int64
+	closing                                             bool
+	done                                                chan struct{}
+	jsonSink, humanSink                                 io.Writer
+	written, failed                                     uint64
+	lastError                                           string
 }
 
 func New(jsonSink, humanSink io.Writer) *Logger {
@@ -88,6 +91,7 @@ func (l *Logger) Emit(e Event) error {
 	if len(e.Fields) != 0 {
 		fields, err = json.Marshal(e.Fields)
 		if err != nil {
+			l.encodingFailed()
 			return fmt.Errorf("encode diagnostic %s: %w", e.Code, err)
 		}
 	}
@@ -97,7 +101,13 @@ func (l *Logger) Emit(e Event) error {
 		Fields json.RawMessage `json:"fields,omitempty"`
 	}{Event: e, Fields: fields})
 	if err != nil {
+		l.encodingFailed()
 		return fmt.Errorf("encode diagnostic %s: %w", e.Code, err)
+	}
+	retained, retainedLevel, err := retainedProjection(e, fields)
+	if err != nil {
+		l.encodingFailed()
+		return fmt.Errorf("encode retained diagnostic %s: %w", e.Code, err)
 	}
 	entry := queued{json: append(data, '\n')}
 	if l.humanSink != nil {
@@ -105,17 +115,22 @@ func (l *Logger) Emit(e Event) error {
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	l.retained.add(retained, retainedLevel)
 	if l.closing {
+		l.closedRejections++
+		l.noticeLocked(time.Now())
 		return ErrClosed
 	}
 	l.queue = append(l.queue, entry)
 	l.queuedBytes += int64(len(entry.json) + len(entry.human))
 	l.wake.Signal()
+	l.noticeLocked(time.Now())
 	return nil
 }
 func (l *Logger) Status() Status {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	l.noticeLocked(time.Now())
 	return Status{InFlight: l.inFlight, InFlightBytes: l.inFlightBytes, Queued: len(l.queue), QueuedBytes: l.queuedBytes, Written: l.written, Failed: l.failed, Closed: l.closing, LastError: l.lastError}
 }
 func (l *Logger) Close(ctx context.Context) error {
@@ -155,13 +170,22 @@ func (l *Logger) run() {
 		l.mu.Unlock()
 		for _, e := range batch {
 			var err error
+			var sinkFailures uint64
 			if l.jsonSink != nil {
 				err = writeAll(l.jsonSink, e.json)
+				if err != nil {
+					sinkFailures++
+				}
 			}
 			if l.humanSink != nil {
-				err = errors.Join(err, writeAll(l.humanSink, e.human))
+				humanErr := writeAll(l.humanSink, e.human)
+				if humanErr != nil {
+					sinkFailures++
+				}
+				err = errors.Join(err, humanErr)
 			}
 			l.mu.Lock()
+			l.failedSinkRecords += sinkFailures
 			l.inFlight--
 			l.inFlightBytes -= int64(len(e.json) + len(e.human))
 			if err != nil {

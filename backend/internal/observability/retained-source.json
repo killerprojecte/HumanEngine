@@ -1,0 +1,675 @@
+{
+  "hashes": {
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/diagnostics/format.ts": "00cd263739736dcf00a6dfe70f82b1260bde41c46c104ebdd6c9238f982528ea",
+    "src/model-roles.ts": "d7014ef6614cc315df94c5773e54e5c990195ac98c2e7064833616a31412ab83",
+    "src/diagnostics/catalogs/zh-CN.json": "2e29588debad6aa244f53fe4545c21b5d9bed9d283bb8bdec71ee3f2ae55a563",
+    "src/diagnostics/catalogs/presentation-zh-CN.json": "da1830f33c44468aa979151c2648aeeb2e5bfbdd08274f0c7014267ebb17d838",
+    "src/diagnostics/catalogs/errors-zh-CN.json": "a95b3a26b1698e4358efd540763682e9359b574617e0be184e6473d58d30aa0f"
+  },
+  "cases": [
+    {
+      "name": "plain",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {}
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n",
+      "bytes": 166,
+      "level": "info"
+    },
+    {
+      "name": "inherited-catalog-labels",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "nextStep": "valueOf",
+          "outputKind": "__proto__",
+          "reason": "hasOwnProperty",
+          "role": "__proto__",
+          "stage": "constructor",
+          "status": "toString"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"stage\":\"constructor\",\"nextStep\":\"valueOf\",\"outputKind\":\"__proto__\",\"reason\":\"hasOwnProperty\",\"role\":\"__proto__\",\"status\":\"toString\",\"message\":\"function toString() { [native code] }: function Object() { [native code] }；用途=[object Object]；原因: function hasOwnProperty() { [native code] }；输出类型=[object Object]；下一步: function valueOf() { [native code] }\"}\n",
+      "bytes": 512,
+      "level": "info"
+    },
+    {
+      "name": "inherited-error-key",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "adviceCode": "__proto__",
+          "errorCode": "constructor"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"adviceCode\":\"__proto__\",\"errorCode\":\"constructor\",\"message\":\"synthetic · ordinary；根因: undefined [constructor]；处理建议: undefined\"}\n",
+      "bytes": 277,
+      "level": "info"
+    },
+    {
+      "name": "multibyte-and-html",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "label": "café",
+          "payload": "中文🙂<&>  "
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"label\":\"café\",\"payload\":\"中文🙂<&>  \",\"message\":\"synthetic · ordinary\"}\n",
+      "bytes": 214,
+      "level": "info"
+    },
+    {
+      "name": "source-message-overwrites",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "message": "caller-sink-only",
+        "fields": {
+          "message": "ignored context message"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary\"}\n",
+      "bytes": 166,
+      "level": "info"
+    },
+    {
+      "name": "context-overwrites-base",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "traceId": "flow-trace",
+        "stage": "flow-stage",
+        "fields": {
+          "at": "override-at",
+          "code": "override-code",
+          "durationMs": 0,
+          "id": "override",
+          "level": "error",
+          "module": "override-module",
+          "stage": "dispatch",
+          "traceId": "context-trace"
+        }
+      },
+      "text": "{\"id\":\"override\",\"at\":\"override-at\",\"level\":\"error\",\"module\":\"override-module\",\"code\":\"override-code\",\"traceId\":\"context-trace\",\"stage\":\"dispatch\",\"durationMs\":0,\"message\":\"override-module · override-code；耗时=0ms；根因: 未捕获底层原因 [cause_not_captured]；异常类型=UnknownError；阶段=dispatch；处理建议: 该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。\"}\n",
+      "bytes": 430,
+      "level": "error"
+    },
+    {
+      "name": "all-context",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "requestId": "r",
+        "traceId": "t",
+        "sceneId": "s",
+        "turnId": "u",
+        "stage": "prepare",
+        "durationMs": 2.5,
+        "fields": {
+          "apiModel": "api",
+          "counts": {
+            "2": 2,
+            "10": 10,
+            "a": 1,
+            "sentSegments": 2
+          },
+          "mode": "simulation",
+          "modelId": "m",
+          "nextStep": "unmapped_next",
+          "outputKind": "text",
+          "providerId": "p",
+          "reason": "unmapped_reason",
+          "role": "thinker",
+          "status": "completed",
+          "toolName": "tool"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"traceId\":\"t\",\"stage\":\"prepare\",\"requestId\":\"r\",\"sceneId\":\"s\",\"turnId\":\"u\",\"durationMs\":2.5,\"apiModel\":\"api\",\"counts\":{\"2\":2,\"10\":10,\"a\":1,\"sentSegments\":2},\"mode\":\"simulation\",\"modelId\":\"m\",\"nextStep\":\"unmapped_next\",\"outputKind\":\"text\",\"providerId\":\"p\",\"reason\":\"unmapped_reason\",\"role\":\"replyer\",\"status\":\"completed\",\"toolName\":\"tool\",\"message\":\"完成: prepare；用途=Replyer — 按计划组织回复；模型=api；提供商=p；工具=tool；原因: 未映射状态 (unmapped_reason)；2=2；10=10；a=1；模拟完成分段数=2；输出类型=文字；耗时=2.5ms；下一步: unmapped_next\"}\n",
+      "bytes": 736,
+      "level": "info"
+    },
+    {
+      "name": "failure-without-cause",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "error",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {}
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"error\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"message\":\"synthetic · ordinary；根因: 未捕获底层原因 [cause_not_captured]；异常类型=UnknownError；处理建议: 该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。\"}\n",
+      "bytes": 358,
+      "level": "error"
+    },
+    {
+      "name": "failed-status",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "status": "failed"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"status\":\"failed\",\"message\":\"synthetic · ordinary；根因: 未捕获底层原因 [cause_not_captured]；异常类型=UnknownError；处理建议: 该边界没有保留原始故障；检查相邻追踪事件并反馈缺失的捕获位置。\"}\n",
+      "bytes": 375,
+      "level": "info"
+    },
+    {
+      "name": "root-cause",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "apiModel": "api",
+          "errorContext": {
+            "modelId": "flow-model",
+            "operation": "request",
+            "providerId": "flow-provider",
+            "role": "replyer",
+            "stage": "model"
+          },
+          "rootCause": {
+            "adviceCode": "unknown_advice",
+            "errorCode": "provider_http_429",
+            "errorContext": {
+              "attempt": 2,
+              "maxAttempts": 3,
+              "remainingCandidates": 0,
+              "retryable": false,
+              "stageBudgetMs": 80,
+              "timeoutMs": 0
+            },
+            "errorMessage": "synthetic detail",
+            "errorType": "TypeError",
+            "httpStatus": 429,
+            "systemCode": "ELOCAL"
+          }
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"apiModel\":\"api\",\"errorContext\":{\"modelId\":\"flow-model\",\"operation\":\"request\",\"providerId\":\"flow-provider\",\"role\":\"replyer\",\"stage\":\"model\"},\"rootCause\":{\"adviceCode\":\"unknown_advice\",\"errorCode\":\"provider_http_429\",\"errorContext\":{\"attempt\":2,\"maxAttempts\":3,\"remainingCandidates\":0,\"retryable\":false,\"stageBudgetMs\":80,\"timeoutMs\":0},\"errorMessage\":\"synthetic detail\",\"errorType\":\"TypeError\",\"httpStatus\":429,\"systemCode\":\"ELOCAL\"},\"message\":\"synthetic · ordinary；模型=api；根因: 提供商触发限流或额度限制 [provider_http_429]；异常类型=TypeError；脱敏技术说明: synthetic detail；HTTP=429；系统码=ELOCAL；操作=request；阶段=呼叫模型；用途=Replyer — 按计划组织回复；模型=api；提供商=flow-provider；尝试=2；最多尝试=3；阶段总时间预算=80ms；超时上限=0ms；剩余候选=0；允许按策略重试=否；处理建议: 查看脱敏技术说明、异常类型与堆栈，并携带这些诊断及追踪 ID 反馈问题。\"}\n",
+      "bytes": 1133,
+      "level": "info"
+    },
+    {
+      "name": "root-overrides-context",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "errorCode": "outer",
+          "errorContext": {
+            "operation": "outer",
+            "role": "vision",
+            "stage": "outer"
+          },
+          "rootCause": {
+            "errorCode": "provider_http_503",
+            "errorContext": {
+              "apiModel": "inner-model",
+              "operation": "inner",
+              "retryable": true,
+              "role": "embedding",
+              "stage": null
+            }
+          }
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"errorCode\":\"outer\",\"errorContext\":{\"operation\":\"outer\",\"role\":\"vision\",\"stage\":\"outer\"},\"rootCause\":{\"errorCode\":\"provider_http_503\",\"errorContext\":{\"apiModel\":\"inner-model\",\"operation\":\"inner\",\"retryable\":true,\"role\":\"embedding\",\"stage\":null}},\"message\":\"synthetic · ordinary；根因: 提供商服务返回服务器错误 [provider_http_503]；操作=inner；用途=记忆向量；模型=inner-model；允许按策略重试=是；处理建议: 检查提供商服务状态和备用模型配置；仅按现有策略重试。\"}\n",
+      "bytes": 660,
+      "level": "info"
+    },
+    {
+      "name": "technical-is-code",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "errorCode": "provider_http_401",
+          "errorMessage": "provider_http_401"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"errorCode\":\"provider_http_401\",\"errorMessage\":\"provider_http_401\",\"message\":\"synthetic · ordinary；根因: 提供商拒绝认证 [provider_http_401]；处理建议: 检查已保存的 API 密钥、凭据权限和提供商端点；不要用未修改的凭据重复请求。\"}\n",
+      "bytes": 409,
+      "level": "info"
+    },
+    {
+      "name": "technical-is-summary",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "errorCode": "unknown",
+          "errorMessage": "synthetic"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"errorCode\":\"unknown\",\"errorMessage\":\"synthetic\",\"message\":\"synthetic · ordinary；根因: 未分类的运行错误 [unknown]；脱敏技术说明: synthetic；处理建议: 查看脱敏技术说明、异常类型与堆栈，并携带这些诊断及追踪 ID 反馈问题。\"}\n",
+      "bytes": 409,
+      "level": "info"
+    },
+    {
+      "name": "reason-http",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "httpStatus": 0,
+          "reason": "provider_http_502",
+          "systemCode": "ELOCAL"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"httpStatus\":0,\"reason\":\"provider_http_502\",\"systemCode\":\"ELOCAL\",\"message\":\"synthetic · ordinary；原因: 提供商服务返回服务器错误；系统码=ELOCAL；HTTP=0\"}\n",
+      "bytes": 307,
+      "level": "info"
+    },
+    {
+      "name": "known-labels",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "counts": {
+            "inputTokens": 10,
+            "outputTokens": 4
+          },
+          "nextStep": "done",
+          "reason": "no_action",
+          "role": "planner",
+          "stage": "reply",
+          "status": "sent"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"stage\":\"reply\",\"counts\":{\"inputTokens\":10,\"outputTokens\":4},\"nextStep\":\"done\",\"reason\":\"no_action\",\"role\":\"planner\",\"status\":\"sent\",\"message\":\"sent: reply；用途=规划、检索及复杂推理；原因: 未映射状态 (no_action)；输入 tokens=10；输出 tokens=4；下一步: done\"}\n",
+      "bytes": 422,
+      "level": "info"
+    },
+    {
+      "name": "null-presence",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "durationMs": null,
+          "httpStatus": null,
+          "rootCause": {
+            "errorContext": {
+              "attempt": null,
+              "maxAttempts": null,
+              "remainingCandidates": null,
+              "retryable": null,
+              "stageBudgetMs": null,
+              "timeoutMs": null
+            },
+            "httpStatus": null
+          }
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"durationMs\":null,\"httpStatus\":null,\"rootCause\":{\"errorContext\":{\"attempt\":null,\"maxAttempts\":null,\"remainingCandidates\":null,\"retryable\":null,\"stageBudgetMs\":null,\"timeoutMs\":null},\"httpStatus\":null},\"message\":\"synthetic · ordinary；耗时=nullms；根因: 未分类的运行错误；HTTP=null；尝试=null；最多尝试=null；阶段总时间预算=nullms；超时上限=nullms；剩余候选=null；允许按策略重试=否；处理建议: 查看脱敏技术说明、异常类型与堆栈，并携带这些诊断及追踪 ID 反馈问题。\"}\n",
+      "bytes": 682,
+      "level": "info"
+    },
+    {
+      "name": "explicit-false-root",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "error",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "httpStatus": 204,
+          "rootCause": false,
+          "systemCode": "ELOCAL"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"error\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"httpStatus\":204,\"rootCause\":false,\"systemCode\":\"ELOCAL\",\"message\":\"synthetic · ordinary；系统码=ELOCAL；HTTP=204\"}\n",
+      "bytes": 254,
+      "level": "error"
+    },
+    {
+      "name": "empty-api-nullish",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "apiModel": "",
+          "counts": {
+            "bool": true,
+            "nullable": null,
+            "number": 0
+          },
+          "modelId": "m",
+          "role": "custom"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"apiModel\":\"\",\"counts\":{\"bool\":true,\"nullable\":null,\"number\":0},\"modelId\":\"m\",\"role\":\"custom\",\"message\":\"synthetic · ordinary；用途=custom；模型=；bool=true；nullable=null；number=0\"}\n",
+      "bytes": 325,
+      "level": "info"
+    },
+    {
+      "name": "null-api-nullish",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "apiModel": null,
+          "modelId": "m",
+          "reason": "provider_http_418"
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"apiModel\":null,\"modelId\":\"m\",\"reason\":\"provider_http_418\",\"message\":\"synthetic · ordinary；模型=m；原因: 提供商返回 HTTP 418\"}\n",
+      "bytes": 271,
+      "level": "info"
+    },
+    {
+      "name": "integer-key-order",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "counts": {
+            "0": 0,
+            "2": 2,
+            "4294967294": 3,
+            "01": 1,
+            "4294967295": 4
+          }
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"counts\":{\"0\":0,\"2\":2,\"4294967294\":3,\"01\":1,\"4294967295\":4},\"message\":\"synthetic · ordinary；0=0；2=2；4294967294=3；01=1；4294967295=4\"}\n",
+      "bytes": 275,
+      "level": "info"
+    },
+    {
+      "name": "nested-json",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "info",
+        "module": "synthetic",
+        "code": "ordinary",
+        "fields": {
+          "metadata": {
+            "arr": [
+              null,
+              false,
+              1e+21,
+              "\ud800"
+            ],
+            "html": "<tag>"
+          }
+        }
+      },
+      "text": "{\"id\":\"11111111-1111-4111-8111-111111111111\",\"at\":\"2026-11-09T00:00:00.123Z\",\"level\":\"info\",\"module\":\"synthetic\",\"code\":\"ordinary\",\"metadata\":{\"arr\":[null,false,1e+21,\"\\ud800\"],\"html\":\"<tag>\"},\"message\":\"synthetic · ordinary\"}\n",
+      "bytes": 228,
+      "level": "info"
+    }
+  ],
+  "interactions": [
+    {
+      "name": "500-real-errors",
+      "records": 500,
+      "bytes": 664500,
+      "recentErrors": 500,
+      "evicted": 0,
+      "oversized": 0,
+      "notices": 0
+    },
+    {
+      "name": "closed-row-and-notice-evict-two-errors",
+      "records": 500,
+      "bytes": 662278,
+      "recentErrors": 498,
+      "evicted": 2,
+      "oversized": 0,
+      "notices": 1
+    },
+    {
+      "name": "oversized-throttled-notice",
+      "records": 500,
+      "bytes": 662278,
+      "recentErrors": 498,
+      "evicted": 2,
+      "oversized": 1,
+      "notices": 1
+    },
+    {
+      "name": "notice-after-minute",
+      "records": 500,
+      "bytes": 660056,
+      "recentErrors": 496,
+      "evicted": 4,
+      "oversized": 1,
+      "notices": 2
+    }
+  ],
+  "boundaries": [
+    {
+      "name": "exact-byte-limit",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "error",
+        "module": "synthetic",
+        "code": "boundary",
+        "fields": {
+          "extra": ""
+        }
+      },
+      "fillBytes": 4193935,
+      "follow": false,
+      "result": {
+        "records": 1,
+        "bytes": 4194304,
+        "recentErrors": 1,
+        "evicted": 0,
+        "oversized": 0,
+        "notices": 0,
+        "enqueued": 1
+      }
+    },
+    {
+      "name": "one-byte-over",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "error",
+        "module": "synthetic",
+        "code": "boundary",
+        "fields": {
+          "extra": ""
+        }
+      },
+      "fillBytes": 4193936,
+      "follow": false,
+      "result": {
+        "records": 1,
+        "bytes": 274,
+        "recentErrors": 0,
+        "evicted": 0,
+        "oversized": 1,
+        "notices": 1,
+        "enqueued": 1
+      }
+    },
+    {
+      "name": "exact-then-small-evicts",
+      "event": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "at": "2026-11-09T00:00:00.123Z",
+        "level": "error",
+        "module": "synthetic",
+        "code": "boundary",
+        "fields": {
+          "extra": ""
+        }
+      },
+      "fillBytes": 4193935,
+      "follow": true,
+      "result": {
+        "records": 1,
+        "bytes": 160,
+        "recentErrors": 0,
+        "evicted": 1,
+        "oversized": 0,
+        "notices": 0,
+        "enqueued": 2
+      }
+    }
+  ],
+  "sinkFailure": {
+    "before": {
+      "records": 1,
+      "bytes": 364
+    },
+    "sinkEnqueues": 2,
+    "after": {
+      "records": 2,
+      "bytes": 638,
+      "recentErrors": 1,
+      "noticeCounts": {
+        "rejectedRecords": 0,
+        "failedRecords": 2
+      }
+    },
+    "afterEnqueues": 2
+  },
+  "conversions": [
+    {
+      "name": "undefined",
+      "truthy": false,
+      "text": "undefined"
+    },
+    {
+      "name": "null",
+      "truthy": false,
+      "text": "null"
+    },
+    {
+      "name": "empty",
+      "truthy": false,
+      "text": ""
+    },
+    {
+      "name": "text",
+      "truthy": true,
+      "text": "中文🙂"
+    },
+    {
+      "name": "true",
+      "truthy": true,
+      "text": "true"
+    },
+    {
+      "name": "false",
+      "truthy": false,
+      "text": "false"
+    },
+    {
+      "name": "zero",
+      "truthy": false,
+      "text": "0"
+    },
+    {
+      "name": "negative-zero",
+      "truthy": false,
+      "text": "0"
+    },
+    {
+      "name": "finite",
+      "truthy": true,
+      "text": "1.25"
+    },
+    {
+      "name": "nan",
+      "truthy": false,
+      "text": "NaN"
+    },
+    {
+      "name": "positive-infinity",
+      "truthy": true,
+      "text": "Infinity"
+    },
+    {
+      "name": "negative-infinity",
+      "truthy": true,
+      "text": "-Infinity"
+    },
+    {
+      "name": "object",
+      "truthy": true,
+      "text": "[object Object]"
+    },
+    {
+      "name": "array",
+      "truthy": true,
+      "text": ",,x,false"
+    },
+    {
+      "name": "native-function",
+      "truthy": true,
+      "text": "function Object() { [native code] }"
+    }
+  ]
+}

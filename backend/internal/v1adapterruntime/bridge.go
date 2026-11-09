@@ -72,7 +72,10 @@ func (b *Bridge) install(ctx context.Context, meta plugins.AdapterMetadata) erro
 	}
 	life, cancel := context.WithCancel(ctx)
 	entry := &registration{generation: meta.Generation, cancel: cancel}
-	adapter := &botruntime.Adapter{Dispose: cancel}
+	status := &adapterStatusOwner{cancel: cancel, read: func(ctx context.Context) (string, error) {
+		return b.Host.AdapterStatus(ctx, meta.ID, meta.Generation)
+	}}
+	adapter := &botruntime.Adapter{Dispose: status.dispose, Status: status.status}
 	adapter.Transport = dispatch.AbortContainedAdapter(&dispatch.Adapter{Send: func(scene dispatch.SceneRef, segment dispatch.Segment, signal *dispatch.Signal, before func() error) *dispatch.Future[dispatch.Receipt] {
 		result := dispatch.NewFuture[dispatch.Receipt]()
 		go func() {

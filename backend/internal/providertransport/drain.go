@@ -12,6 +12,9 @@ func (m *NativeModels) CloseAndWait(ctx context.Context) error {
 	if err := m.requests.Wait(ctx); err != nil {
 		return err
 	}
+	if err := m.drainRouters(ctx); err != nil {
+		return err
+	}
 	if m.Policy != nil {
 		if err := m.Policy.Drain(ctx); err != nil {
 			return err

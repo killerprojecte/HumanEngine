@@ -71,7 +71,7 @@ func (r *Runtime) finish(t *turn, issues int) {
 	}
 	t.result.Counts = counts
 	t.result.Receipts = receipts
-	r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: "turn", Status: t.result.Status, Reason: t.result.Reason, Counts: counts})
+	r.trace(Event{SceneID: c.Scene.ID, TurnID: c.TurnID, Stage: "turn", Status: t.result.Status, Reason: t.result.Reason, Counts: counts, FailureCode: runtimeFailureCode(t.result.Err), Cause: t.result.Err})
 	if err := r.cleanupTurn(t); err != nil {
 		t.result.CleanupErr = err
 		if t.result.Err == nil {

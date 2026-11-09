@@ -25,6 +25,10 @@ import (
 
 type Object = jsjson.Object
 type Dependencies struct {
+	// ManagedSceneChanges leaves scene cancellation to an application that owns
+	// the source-ordered Experience, runtime, semantic and learning effects.
+	ManagedSceneChanges bool
+
 	Main       *sql.DB
 	Authority  *recovery.Authority
 	Assertions *assertions.Store
@@ -93,7 +97,11 @@ func New(d Dependencies) (*Runtime, error) {
 	if e != nil {
 		return nil, e
 	}
-	return &Runtime{owner, runner, coordinator, d.Foreground.AddExtension(coordinator.Extension())}, nil
+	extension := coordinator.Extension()
+	if d.ManagedSceneChanges {
+		extension.SceneChanged = nil
+	}
+	return &Runtime{owner, runner, coordinator, d.Foreground.AddExtension(extension)}, nil
 }
 func (r *Runtime) CloseAndWait(ctx context.Context) error {
 	r.Owner.closed.Store(true)

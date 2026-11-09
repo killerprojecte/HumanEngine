@@ -1,0 +1,16 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/model-protocols.ts": "95e45d005e786fcd2ef957354ffe7608cb5d827bc7e16cca5344a7905b193222",
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/runtime/prompt-context-window.ts": "d89993a2657b77a1091c5d5ff5e971e3664f292aa6692a750b2fd0797eb95056",
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025"
+  },
+  "cases": [
+    "m:fresh",
+    "m:continued",
+    "m:fresh",
+    "m2:fresh"
+  ]
+}

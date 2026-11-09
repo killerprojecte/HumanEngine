@@ -17,9 +17,13 @@ type RuntimeModels struct {
 	Read   *modelread.RuntimePolicy
 }
 type continuationState struct {
-	mu       sync.Mutex
-	closed   bool
-	messages map[*Object]*providertransport.Message
+	mu            sync.Mutex
+	routerOnce    sync.Once
+	router        *providertransport.NativeModels
+	releaseRouter func()
+	routerError   error
+	closed        bool
+	messages      map[*Object]*providertransport.Message
 }
 
 func (s *continuationState) ReleaseTurnState() error {
@@ -31,10 +35,15 @@ func (s *continuationState) ReleaseTurnState() error {
 	s.closed = true
 	messages := s.messages
 	s.messages = nil
+	releaseRouter := s.releaseRouter
+	s.releaseRouter = nil
 	s.mu.Unlock()
 	var failures []error
 	for _, message := range messages {
 		failures = append(failures, message.Release())
+	}
+	if releaseRouter != nil {
+		releaseRouter()
 	}
 	return errors.Join(failures...)
 }
@@ -91,6 +100,10 @@ func (m *RuntimeModels) Start(ctx context.Context, r botruntime.ModelRequest, se
 	state := &continuationState{messages: map[*Object]*providertransport.Message{}}
 	if r.Turn != nil {
 		state = r.Turn.OwnedExtensionState(m, func() any { return state }).(*continuationState)
+		if err := m.BeginTurn(ctx, r.Turn); err != nil {
+			settle(botruntime.Completion{}, err)
+			return
+		}
 		ctx = providertransport.WithModelReadGuard(ctx, func(c context.Context) error {
 			if !m.Read.ValidContext(c, r.Turn) {
 				return errors.New("memory_read_revoked")
@@ -119,13 +132,17 @@ func (m *RuntimeModels) Start(ctx context.Context, r botruntime.ModelRequest, se
 			messages[i] = &providertransport.Message{Visible: plain(message).(map[string]any)}
 		}
 	}
+	native := state.router
+	if native == nil {
+		native = m.Native
+	}
 	state.mu.Unlock()
 	tools := make([]map[string]any, len(r.Tools))
 	for i, t := range r.Tools {
 		tools[i] = plain(t).(map[string]any)
 	}
 	go func() {
-		result, e := m.Native.Complete(ctx, providertransport.CompletionRequest{Role: r.Role, Messages: messages, Tools: tools, FirstContent: r.FirstContent})
+		result, e := native.Complete(ctx, providertransport.CompletionRequest{Role: r.Role, Messages: messages, Tools: tools, FirstContent: r.FirstContent})
 		if e != nil {
 			settle(botruntime.Completion{}, e)
 			return
@@ -160,4 +177,31 @@ func (m *RuntimeModels) Start(ctx context.Context, r botruntime.ModelRequest, se
 		}
 		settle(botruntime.Completion{Completion: replyplan.Completion{ToolCalls: calls, Assistant: assistant}, Text: result.Text}, nil)
 	}()
+}
+
+func (m *RuntimeModels) BeginTurn(ctx context.Context, turn *botruntime.TurnContext) error {
+	if m.Native == nil || turn == nil {
+		return errors.New("native_model_turn_dependencies_required")
+	}
+	state := turn.OwnedExtensionState(m, func() any { return &continuationState{messages: map[*Object]*providertransport.Message{}} }).(*continuationState)
+	state.routerOnce.Do(func() {
+		router, release, err := m.Native.AcquireRouter(ctx)
+		state.mu.Lock()
+		if state.closed {
+			state.routerError = errors.New("turn_finished")
+			state.mu.Unlock()
+			if release != nil {
+				release()
+			}
+			return
+		}
+		state.router, state.releaseRouter, state.routerError = router, release, err
+		state.mu.Unlock()
+	})
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	if state.closed {
+		return errors.New("turn_finished")
+	}
+	return state.routerError
 }

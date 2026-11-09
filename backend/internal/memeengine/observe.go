@@ -242,8 +242,13 @@ func (s *Service) ObserveImageRoot(ctx context.Context, message *Object, assetID
 		return nil, e
 	}
 	var models *providertransport.NativeModels
-	if s.Models.Policy.HasConfiguredRoute("vision") {
-		models = s.Models
+	router, releaseRouter, e := s.Models.AcquireRouter(ctx)
+	if e != nil {
+		return nil, e
+	}
+	defer releaseRouter()
+	if router.Policy.HasConfiguredRoute("vision") {
+		models = router
 	}
 	ctx = providertransport.WithModelReadGuard(ctx, func(c context.Context) error { return s.Read.Assert(c, ticket) })
 	result, err = s.Memes.ObserveBytes(ctx, c, b, source, models, s.Codec, memeservice.ObserveOptions{Admit: &sticker, Selection: &memeservice.SelectionContext{Persona: persona, Preferences: fields("expression", expression), SourceContextKnown: true, SourceContext: messages}})

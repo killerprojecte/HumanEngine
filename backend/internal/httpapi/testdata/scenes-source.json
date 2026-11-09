@@ -1,0 +1,167 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a",
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/memory/recovery/security-state.ts": "ca341983f12f39f96f72f51544cc8d7c05d8c40e03b8fc8d2e2ef1d10c3016d8"
+  },
+  "cases": [
+    {
+      "name": "enable",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{\"name\":\"Synthetic scene\",\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "headers": {
+        "Authorization": "Bearer synthetic-scenes-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 200,
+      "text": "{\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"name\":\"Synthetic scene\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "rows": [
+        {
+          "id": "synthetic-scene",
+          "value": "{\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"name\":\"Synthetic scene\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{\"name\":\"Synthetic scene\",\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"participationEnabled\":true,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+      "headers": {
+        "Authorization": "Bearer synthetic-scenes-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 200,
+      "text": "{\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"name\":\"Synthetic scene\",\"participationEnabled\":true,\"learningEnabled\":false,\"proactiveEnabled\":false}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "rows": [
+        {
+          "id": "synthetic-scene",
+          "value": "{\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"name\":\"Synthetic scene\",\"participationEnabled\":true,\"learningEnabled\":false,\"proactiveEnabled\":false}"
+        }
+      ]
+    },
+    {
+      "name": "defaults",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\"}",
+      "headers": {
+        "Authorization": "Bearer synthetic-scenes-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "rows": []
+    },
+    {
+      "name": "mismatch",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{\"name\":\"Synthetic scene\",\"id\":\"other\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "headers": {
+        "Authorization": "Bearer synthetic-scenes-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 400,
+      "text": "{\"error\":\"Scene ID mismatch\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "rows": []
+    },
+    {
+      "name": "invalid",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{\"name\":\"Synthetic scene\",\"id\":\"synthetic-scene\",\"kind\":\"invalid\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "headers": {
+        "Authorization": "Bearer synthetic-scenes-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "rows": []
+    },
+    {
+      "name": "unauthorized",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{\"name\":\"Synthetic scene\",\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "headers": {
+        "Authorization": "Bearer wrong",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      },
+      "rows": []
+    },
+    {
+      "name": "malformed",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{",
+      "headers": {
+        "Authorization": "Bearer synthetic-scenes-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "rows": []
+    },
+    {
+      "name": "wrong-content-type",
+      "path": "/api/scenes/synthetic-scene",
+      "body": "{\"name\":\"Synthetic scene\",\"id\":\"synthetic-scene\",\"kind\":\"group\",\"adapterId\":\"synthetic\",\"accountId\":\"a\",\"platformSceneId\":\"s\",\"participationEnabled\":true,\"learningEnabled\":true,\"proactiveEnabled\":false}",
+      "headers": {
+        "Authorization": "Bearer synthetic-scenes-token",
+        "Content-Type": "text/plain",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "rows": []
+    }
+  ]
+}

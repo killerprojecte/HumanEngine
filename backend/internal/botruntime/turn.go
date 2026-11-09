@@ -58,6 +58,11 @@ func (r *Runtime) execute(t *turn) {
 	err = r.pipeline(t, &issues)
 }
 func (r *Runtime) pipeline(t *turn, issues *int) error {
+	if owner, ok := r.services.Models.(TurnModelOwner); ok {
+		if err := owner.BeginTurn(t.context.root, t.context); err != nil {
+			return err
+		}
+	}
 	f := new(turnFrame)
 	defer func() {
 		for i := len(f.stages) - 1; i >= 0; i-- {

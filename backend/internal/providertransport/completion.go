@@ -16,6 +16,7 @@ import (
 // V1 opaque continuations remain owned by the plugin host, not this struct.
 type Message struct {
 	continuation *plugins.ContinuationRef
+	router       *NativeModels
 
 	Visible map[string]any
 	owner   *Message
@@ -37,6 +38,8 @@ type CompletionRequest struct {
 	Tools        []map[string]any
 }
 type NativeModels struct {
+	Router            RouterFactory
+	routers           routerOwners
 	Diagnostics       DiagnosticSink
 	Calls             ModelCallSink
 	requests          quiescence.Group
@@ -63,6 +66,14 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 	}
 	if e := checkModelRead(ctx); e != nil {
 		return nil, e
+	}
+	if m.Router != nil {
+		router, release, err := m.operationRouter(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+		return router.Complete(ctx, request)
 	}
 	if m.Policy == nil || m.Client == nil {
 		return nil, errors.New("native_provider_composition_required")
@@ -148,7 +159,7 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 			input := []any{}
 			for _, row := range expanded {
 				owner := owners[uintptr(reflect.ValueOf(row).UnsafePointer())]
-				if row["role"] != "tool" && owner != nil && owner.owner == owner && owner.modelID == model.ID {
+				if row["role"] != "tool" && owner != nil && owner.owner == owner && owner.router == m && owner.modelID == model.ID {
 					input = append(input, owner.output...)
 					continue
 				}
@@ -232,6 +243,7 @@ func (m *NativeModels) nativeCompletion(r Request, modelID string, wireNames map
 		assistant := &Message{Visible: map[string]any{"role": "assistant", "content": text, "toolCalls": calls}}
 		if r.Provider.Protocol == "openai-responses" {
 			assistant.owner = assistant
+			assistant.router = m
 			assistant.modelID = modelID
 			assistant.output, _ = result["output"].([]any)
 		}

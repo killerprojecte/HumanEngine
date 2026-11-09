@@ -87,7 +87,7 @@ func (m *NativeModels) completeV1(ctx context.Context, a modelservice.Attempt, r
 	for i := len(request.Messages) - 1; i >= 0; i-- {
 		msg := request.Messages[i]
 		if msg.Visible["role"] == "assistant" {
-			if msg.owner == msg && msg.modelID == a.Candidate.Model.ID {
+			if msg.owner == msg && msg.router == m && msg.modelID == a.Candidate.Model.ID {
 				previous = msg.continuation
 			}
 			break
@@ -134,6 +134,7 @@ func (m *NativeModels) completeV1(ctx context.Context, a modelservice.Attempt, r
 	usage, _ := parsed["usage"].(map[string]any)
 	assistant := &Message{Visible: map[string]any{"role": "assistant", "content": text, "toolCalls": calls}, modelID: a.Candidate.Model.ID, continuation: result.Continuation()}
 	assistant.owner = assistant
+	assistant.router = m
 	completion := &Completion{Text: text, ToolCalls: calls, Usage: usage, ModelID: a.Candidate.Model.ID, Assistant: assistant}
 	secrets := []string{}
 	if credential != "" {

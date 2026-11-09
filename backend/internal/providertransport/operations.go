@@ -30,6 +30,14 @@ func (m *NativeModels) ListModels(ctx context.Context, providerID string) ([]str
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if m.Router != nil {
+		router, release, err := m.operationRouter(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+		return router.ListModels(ctx, providerID)
+	}
 	if m.Policy == nil || m.Client == nil {
 		return nil, safe("native_provider_composition_required")
 	}
@@ -91,6 +99,14 @@ func (m *NativeModels) Embeddings(ctx context.Context, model EmbeddingModel, inp
 	}
 	if e := checkModelRead(ctx); e != nil {
 		return nil, e
+	}
+	if m.Router != nil {
+		router, release, err := m.operationRouter(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+		return router.Embeddings(ctx, model, inputs)
 	}
 	if m.Policy == nil || m.Client == nil {
 		return nil, safe("native_provider_composition_required")

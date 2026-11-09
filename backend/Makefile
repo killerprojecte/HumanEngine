@@ -51,6 +51,9 @@ differential: build plugin-source-check contextual-source-check runtime-producer
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-experience-runtime-fixtures.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-diagnostics-http.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-modelcalls-http.mjs --check
+	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-router-lifetime.mjs --check
+	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-scenes-http.mjs --check
+	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-experience-planner.mjs --check
 	cd .. && TZ=UTC node backend/tests/check-meme-oracles.mjs
 	cd .. && TZ=UTC node backend/tests/check-experience-oracles.mjs
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-offline-lifecycle-fixtures.mjs --check
@@ -169,9 +172,9 @@ native-icu-builder-test:
 native-icu-build: native-icu-builder-test $(ICU_ARCHIVE)
 	$(PYTHON) native/icu/build.py --archive "$(ICU_ARCHIVE)" --work-dir "$(ICU_WORK_DIR)"
 
-native-icu-test: native-icu-build
-	. "$(ICU_WORK_DIR)/env.sh" && REQUIRE_ICU=1 go test -race -tags sqlite_fts5,humanengine_icu ./...
-	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags sqlite_fts5,humanengine_icu ./...
+native-icu-test: native-icu-build wasm
+	. "$(ICU_WORK_DIR)/env.sh" && REQUIRE_ICU=1 go test -race -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
+	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
 
 native-icu-source-free: native-icu-build
 	mkdir -p "$(ICU_PROOF_ROOT)"

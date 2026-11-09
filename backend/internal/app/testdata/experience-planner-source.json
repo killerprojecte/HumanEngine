@@ -1,0 +1,79 @@
+{
+  "sourceHash": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+  "policySourceHash": "82da719b296faefb9cc6386c70d7b6f344e3c5577da75acce03b8e12d7ec23f8",
+  "cases": [
+    {
+      "name": "simulation",
+      "calls": [],
+      "result": null,
+      "error": null
+    },
+    {
+      "name": "disabled",
+      "calls": [
+        "allowed"
+      ],
+      "result": null,
+      "error": null
+    },
+    {
+      "name": "empty",
+      "calls": [
+        "allowed",
+        "capture",
+        "planner",
+        "assert"
+      ],
+      "result": null,
+      "error": null
+    },
+    {
+      "name": "capture-disabled",
+      "calls": [
+        "allowed",
+        "capture",
+        "planner",
+        "assert"
+      ],
+      "result": null,
+      "error": "memory_read_revoked"
+    },
+    {
+      "name": "selected",
+      "calls": [
+        "allowed",
+        "capture",
+        "planner",
+        "assert",
+        "begin"
+      ],
+      "result": {
+        "experienceHints": []
+      },
+      "error": null
+    },
+    {
+      "name": "assert-failure",
+      "calls": [
+        "allowed",
+        "capture",
+        "planner",
+        "assert"
+      ],
+      "result": null,
+      "error": "memory_read_revoked"
+    },
+    {
+      "name": "begin-failure",
+      "calls": [
+        "allowed",
+        "capture",
+        "planner",
+        "assert",
+        "begin"
+      ],
+      "result": null,
+      "error": "memory_read_revoked"
+    }
+  ]
+}

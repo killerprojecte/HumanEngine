@@ -26,6 +26,7 @@ import (
 )
 
 type Server struct {
+	sceneConfiguration  *sceneConfigurationOwner
 	plugins             *pluginmanager.Manager
 	modelCalls          *modelcalls.Store
 	modelCallsPublisher *recovery.ReadPublisher
@@ -103,7 +104,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if s.configuration != nil && configurationPath(habitRoutingPath(r)) {
+	if (s.configuration != nil && configurationPath(habitRoutingPath(r))) || (s.sceneConfiguration != nil && sceneConfigurationPath(habitRoutingPath(r))) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
@@ -116,7 +117,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if s.configuration != nil && configurationPath(habitRoutingPath(r)) {
+		if (s.configuration != nil && configurationPath(habitRoutingPath(r))) || (s.sceneConfiguration != nil && sceneConfigurationPath(habitRoutingPath(r))) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -149,6 +150,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
 		authenticationError(401, "Authentication required")
+		return
+	}
+	if s.sceneConfiguration != nil && sceneConfigurationPath(habitRoutingPath(r)) {
+		s.serveSceneConfiguration(w, r, available, id)
 		return
 	}
 	if s.plugins != nil && pluginPath(habitRoutingPath(r)) {

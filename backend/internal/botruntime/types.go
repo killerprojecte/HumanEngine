@@ -172,6 +172,11 @@ type Services struct {
 	PromptBreakpoints func(role string) bool
 }
 type Event struct {
+	// FailureCode is a closed, non-sensitive diagnostic category. Cause is for
+	// trusted in-process observers only and is never a plugin event/JSON field.
+	FailureCode string
+	Cause       error `json:"-"`
+
 	Level, Module, Code                              string
 	SceneID, TurnID, Stage, Status, Reason, ToolName string
 	Counts                                           map[string]int

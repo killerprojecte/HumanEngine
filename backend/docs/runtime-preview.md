@@ -62,8 +62,26 @@ The focused command tests use a real subprocess and ephemeral TCP listener. A
 SIGTERM. The process must remain alive until that body is completed, commit the
 write, emit its real owner-drained receipt, and reopen the same installation on
 restart. Additional tests cover failed bind/preflight without enrollment and
-mode conflicts/default refusal. These tests require the real native profile;
-they do not skip missing dependencies or replace the graph with a health stub.
+mode conflicts/default refusal. The three dependency-free bind, authority and
+mode/refusal checks remain in the ordinary `sqlite_fts5` profile. Real startup,
+HTTP authentication, native dependency failures and cross-process ownership live
+in a separate Linux `sqlite_fts5,humanengine_icu,bundled_wasm` test file. Those
+native tests fail on missing dependencies; they never skip or use a health stub.
+
+`make test` first checks the ordinary launcher profile with native fixture paths
+unset, then runs the full ordinary race suite and vet. `make native-icu-test`
+requires `native-runtime-preview-test` before the full native race suite and vet.
+The explicit launcher gates verify exact test names, successful completion and
+zero skips: four ordinary top-level tests (including the process helper), eight
+native top-level tests, and both native dependency-failure subtests. Removing a
+native build tag or accidentally selecting no tests cannot produce a green gate.
+
+CI installs Node 24.22.1 and lockfile dependencies with `npm ci`; the native target
+builds the exact ICU provider and builtin WASM first. It sets `HE_SOURCE_ROOT` to
+the checkout root and `HE_IMAGE_LIBRARY`/`HUMANENGINE_VIPS_LIBRARY` to the pinned
+libvips path. The tests use that root's pinned sqlite-vec shared object and resolve
+real Node from PATH. Startup verifies the actual image and vector assets rather
+than accepting their path presence as proof.
 
 ## Writer ownership acceptance
 
@@ -72,6 +90,14 @@ writer lease. Its retained ownership is released only after physical application
 drain; existing read-only opens remain readers. The focused suite includes a
 strict different-port, same-database/authority subprocess acceptance test and
 checks the first application remains usable after rejection. Socket bind
-rejection alone is not this protection. The combined launcher suite still needs
-execution before this entry can be considered validated; standalone owner test
-results are not a substitute for launcher integration results.
+rejection alone is not this protection.
+
+Focused Linux native acceptance passed before the original runtime-preview
+publication (`164906b957b78f7596c69b4b1312307d133b2871`): all eight command tests,
+three application drain/failure/lease tests, and the installation's concurrent
+read-only readers, duplicate writer rejection and reopen test completed under the
+race detector with no skips. The preceding unchanged owner suite also passed
+11 installation and 137 recovery tests. This is scoped integration evidence,
+not a claim that the complete migration or all CI profiles passed. The original
+ordinary CI failure exposed the mixed test profiles corrected above; the profile
+wiring itself still requires fresh ordinary and native CI validation.

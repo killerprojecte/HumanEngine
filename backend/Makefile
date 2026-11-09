@@ -7,7 +7,7 @@ ICU_ARCHIVE ?= $(ICU_WORK_DIR)/node-v24.22.1.tar.xz
 ICU_PROOF_ROOT ?= $(ICU_WORK_DIR)/source-free
 PYTHON ?= python3
 
-test:
+test: test-runtime-preview-profile
 	go test -race -tags sqlite_fts5 ./...
 	go vet -tags sqlite_fts5 ./...
 
@@ -172,8 +172,13 @@ native-icu-builder-test:
 native-icu-build: native-icu-builder-test $(ICU_ARCHIVE)
 	$(PYTHON) native/icu/build.py --archive "$(ICU_ARCHIVE)" --work-dir "$(ICU_WORK_DIR)"
 
-native-icu-test: native-icu-build wasm
-	. "$(ICU_WORK_DIR)/env.sh" && REQUIRE_ICU=1 go test -race -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
+# The explicit launcher gate verifies exact execution, not just a green package
+# with native acceptance accidentally absent. Both native invocations use the
+# checkout and lockfile-installed dependencies provided by the CI job's npm ci.
+NATIVE_TEST_ENV = REQUIRE_ICU=1 HE_SOURCE_ROOT="$(abspath ..)" HE_IMAGE_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)"
+
+native-icu-test: native-runtime-preview-test
+	. "$(ICU_WORK_DIR)/env.sh" && $(NATIVE_TEST_ENV) go test -race -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
 	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
 
 native-icu-source-free: native-icu-build
@@ -235,3 +240,18 @@ builtin-source-check:
 	cd .. && TZ=UTC node --import tsx backend/plugins/typing-delay/check-source.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/plugins/web-read/check-source.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/plugins/web-search/check-source.mjs --check
+
+.PHONY: test-runtime-preview-profile native-runtime-preview-test
+# Keep dependency-free refusal/bind/authority checks in the ordinary profile.
+# Unset native fixture paths so a developer's shell cannot mask a profile leak.
+test-runtime-preview-profile:
+	@set -eu; log=$$(mktemp); trap 'rm -f "$$log"' EXIT; status=0; \
+	  env -u HE_SOURCE_ROOT -u HE_IMAGE_LIBRARY -u REQUIRE_ICU go test -json -race -count=1 -tags sqlite_fts5 ./cmd/humanengine -run '^TestRuntimePreview' > "$$log" || status=$$?; \
+	  cat "$$log"; test "$$status" = 0 && $(PYTHON) tests/check-runtime-preview-profile.py default "$$log"
+
+# Native startup checks pinned libvips/sqlite-vec, real ICU and all builtins.
+# Node resolution uses PATH populated by actions/setup-node; no fake executable.
+native-runtime-preview-test: native-icu-build wasm
+	@set -eu; . "$(ICU_WORK_DIR)/env.sh"; log=$$(mktemp); trap 'rm -f "$$log"' EXIT; status=0; \
+	  $(NATIVE_TEST_ENV) go test -json -race -count=1 -tags sqlite_fts5,humanengine_icu,bundled_wasm ./cmd/humanengine -run '^TestRuntimePreview' > "$$log" || status=$$?; \
+	  cat "$$log"; test "$$status" = 0 && $(PYTHON) tests/check-runtime-preview-profile.py native "$$log"

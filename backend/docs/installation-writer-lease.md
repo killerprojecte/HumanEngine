@@ -61,12 +61,21 @@ Read-only preview and concurrent read-only stores do not acquire writer leases.
 Bundled vector extraction is private temporary preparation, not an installation
 write, and remains cleaned on failed OpenBundled startup.
 
-## Required validation before publication
+## Focused acceptance and ongoing validation
 
-Run the frozen installation subprocess, path alias, no-side-effect, early/late
-startup failure, read-only coexistence, clean reopen, process crash, and actual
-application failed-drain tests under the native FTS5/ICU profile. Then combine with
-the separately frozen writable-launcher candidate and run its real different-port,
-same-database second-writer negative test. Do not infer publication readiness from
-static inspection, or from a socket-address conflict. The launcher overlay is not
-part of this owner change.
+Before the original runtime-preview publication
+(`164906b957b78f7596c69b4b1312307d133b2871`), the native FTS5/ICU owner suite
+passed 11 installation and 137 recovery tests plus three actual application
+failure/drain/lease tests under the race detector with no skips. Coverage included
+subprocess exclusion, path aliases, rejected-gate side effects, startup failure,
+concurrent read-only stores, clean reopen, process crash and held application
+drain. The combined eight-test command suite also passed the real different-port,
+same-database second-writer rejection and confirmed the first runtime remained
+usable. Socket-address conflict was not used as ownership evidence.
+
+Keep these boundaries required when changing ownership or launch code. The
+Makefile's native-icu-test target now requires an exact-test/no-skip launcher gate
+with real native assets; its profile wiring needs fresh CI validation. Ordinary
+profile checks do not replace native launcher integration. Neither this focused
+acceptance nor cooperative ownership establishes full API parity or production
+readiness.

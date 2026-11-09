@@ -46,7 +46,7 @@ func (s *Store) ReadWorkingSetEpisode(ctx context.Context, scope *workingset.Sco
 			}
 			return current.AssertReady()
 		}
-		storage := &scopeStorage{scope: scope, check: check}
+		storage := &scopeStorage{query: scope.Query, check: check}
 		r := &Reader{storage: storage, ready: check, dates: options.Authority.DateParser, now: options.Authority.NowMillis,
 			enabled: func(Context) (bool, error) {
 				if e := check(); e != nil {

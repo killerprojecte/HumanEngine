@@ -37,7 +37,7 @@ func (s *Store) ReadWorkingSetCurrent(ctx context.Context, scope *workingset.Sco
 // scopeStorage is deliberately not Store.WithSession: native read-only scopes
 // stay read-only. Store.Rows and all mutation methods still require write ownership.
 type scopeStorage struct {
-	scope *workingset.Scope
+	query func(string, ...any) (workingset.Rows, error)
 	check func() error
 }
 
@@ -45,7 +45,7 @@ func (s *scopeStorage) exists() (exists bool, err error) {
 	if err = s.check(); err != nil {
 		return
 	}
-	rows, err := s.scope.Query("SELECT 1 FROM sqlite_master WHERE name='memory_knowledge_edges' AND type='table'")
+	rows, err := s.query("SELECT 1 FROM sqlite_master WHERE name='memory_knowledge_edges' AND type='table'")
 	if err != nil {
 		return
 	}
@@ -59,7 +59,7 @@ func (s *scopeStorage) readRows(q string, args ...any) (out []*Object, err error
 	if err = s.check(); err != nil {
 		return
 	}
-	rows, err := s.scope.Query(q, bind(args)...)
+	rows, err := s.query(q, bind(args)...)
 	if err != nil {
 		return
 	}

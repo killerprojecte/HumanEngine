@@ -80,7 +80,7 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 	if a.IdentityExposure.CaptureGuard(c) != nil {
 		return reject("identity_read_not_learning_authority")
 	}
-	// Semantic/workspace/knowledge exposures are not composed here. No
+	// Semantic/workspace exposures are not composed here. No
 	// synthetic exposure guard or implied learning capability replaces those owners.
 	if a.StateExposures.historical.CaptureGuard(c) != nil || a.StateExposures.history.CaptureGuard(c) != nil || a.StateExposures.timeline.CaptureGuard(c) != nil {
 		return reject("historical_read_not_learning_authority")
@@ -126,6 +126,26 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 		}
 		submission.Read = &contextuallearning.ReadGuard{Identity: identity, Valid: a.contextualGuard(check)}
 	}
+	knowledgeEntities, err := a.KnowledgeExposure.ReadEntities(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+	for _, raw := range knowledgeEntities {
+		entity := raw.(*jsjson.Object)
+		ref := contextualField(entity, "backingRef").(*jsjson.Object)
+		submission.KnowledgeEntities = append(submission.KnowledgeEntities, contextuallearning.EntitySnapshot{EntityID: contextualField(entity, "entityId").(string), BackingRef: contextualParentRef(ref)})
+	}
+	if guard := a.KnowledgeExposure.CaptureGuard(c); guard != nil {
+		submission.KnowledgeValid = a.contextualGuard(guard.Check)
+	}
+	knowledgeEdges, err := a.KnowledgeExposure.ReadEdges(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+	for _, raw := range knowledgeEdges {
+		edge := raw.(*jsjson.Object)
+		submission.KnowledgeEdges = append(submission.KnowledgeEdges, contextuallearning.KnowledgeEdgeSnapshot{ID: contextualField(edge, "id").(string), Version: int64(contextualField(edge, "version").(float64)), Backing: contextualParentRef(contextualField(edge, "backing").(*jsjson.Object))})
+	}
 	result, err := a.Contextual.Submit(ctx, submission)
 	if err != nil {
 		return nil, err
@@ -141,3 +161,7 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 }
 
 func contextualField(o *jsjson.Object, k string) any { v, _ := o.Get(k); return v }
+
+func contextualParentRef(ref *jsjson.Object) contextuallearning.ParentReference {
+	return contextuallearning.ParentReference{ID: contextualField(ref, "id").(string), Version: int64(contextualField(ref, "version").(float64)), DeletionEpoch: int64(contextualField(ref, "deletionEpoch").(float64))}
+}

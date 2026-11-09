@@ -42,6 +42,7 @@ type Application struct {
 	IdentityExposure    *memoryservice.IdentityExposure
 	MemoryExposure      *memoryservice.ModelMemoryExposure
 	RelationExposure    *memoryservice.RelationExposure
+	KnowledgeExposure   *memoryservice.KnowledgeExposure
 	WorkspaceSelections *memoryservice.WorkspaceSelectionTracker
 	Contextual          *contextuallearning.Proposals
 	MediaTasks          *mediatasks.Owner
@@ -195,9 +196,13 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err = app.composeStateMemory(owners); err != nil {
 		return app, err
 	}
+	if err = app.composeKnowledgeMemory(owners); err != nil {
+		return app, err
+	}
 	if err = app.composeIdentityMemory(owners); err != nil {
 		return app, err
 	}
+	app.registerKnowledgeCapture()
 	app.registerContextualTool(memory)
 	app.registerStateMemoryTools(memory)
 	app.registerRelationTool(memory)

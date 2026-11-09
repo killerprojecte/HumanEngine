@@ -10,6 +10,16 @@ import (
 // PersonalizationAllowedScoped reuses the caller's publication/write child.
 // This checks current permission; exact ticket-revision guards remain separate.
 func (p *RuntimePolicy) PersonalizationAllowedScoped(reads botruntime.ReadAuthority, sceneID string) (allowed bool, err error) {
+	return p.permissionAllowedScoped(reads, sceneID, true)
+}
+
+// AllowedScoped checks the current non-personal model-read permission using the
+// exact supplied read capability, including uncommitted writer state.
+func (p *RuntimePolicy) AllowedScoped(reads botruntime.ReadAuthority, sceneID string) (bool, error) {
+	return p.permissionAllowedScoped(reads, sceneID, false)
+}
+
+func (p *RuntimePolicy) permissionAllowedScoped(reads botruntime.ReadAuthority, sceneID string, requirePersonal bool) (allowed bool, err error) {
 	err = p.sources.UseRuntimeReadScope(reads, func(scope sourceevents.RuntimeReadScope) error {
 		if e := scope.CheckBinding(p.main, p.authority); e != nil {
 			return e
@@ -35,7 +45,7 @@ func (p *RuntimePolicy) PersonalizationAllowedScoped(reads botruntime.ReadAuthor
 			return e
 		}
 		enabled, _, personal, e := sceneState(scene)
-		allowed = e == nil && enabled && personal
+		allowed = e == nil && enabled && (!requirePersonal || personal)
 		return e
 	})
 	return

@@ -63,7 +63,7 @@ This is not a claim of complete TypeScript Engine compatibility.
   option must define installation/configuration inputs without changing read-only
   preview semantics or silently selecting this graph as the default backend.
 - Remaining source model tools, complete prompt/manual-rule composition and all
-  exposure domains are not all wired. Workspace, knowledge and semantic
+  exposure domains are not all wired. Workspace and semantic
   exposure guards are not implied by the composed memory, identity, commitment
   and historical guards. Contextual `learning.propose` is now a model
   tool in this bounded graph, without those remaining exposure domains. Complete
@@ -112,7 +112,8 @@ replies remain allowed; participation revocation is a separate runtime policy.
 Native focused evidence covers real model selection, queued foreground admission,
 ordinary proposal persistence, history/identity/current refusal, and queued learning
 revocation with physical idle and zero revoked rows. This is not full learning parity:
-semantic/workspace/knowledge exposure domains are not composed or advertised.
+semantic/workspace exposure domains remain uncomposed. Knowledge composition and its
+separate focused evidence are described below.
 Pending recall, changed-scope, typed commitment learning and concurrent-writer races
 are not established by this fixture. No synthetic native replacement of guest logic
 is introduced. A writable launcher, installation packaging/configuration and OS-signal
@@ -130,7 +131,7 @@ commitment state, matching source order.
 
 The relation fixture exercises real proposal admission, model selection, contextual
 existing-entity reuse and SQL persistence; this does not establish semantic, workspace
-or knowledge exposure parity. Native platform coverage and the separate writable
+exposure parity; knowledge has its own bounded integration below. Native platform coverage and the separate writable
 launcher remain outside this batch.
 
 ## SnowLuma builtin installation candidate
@@ -160,3 +161,32 @@ immediate RSS reclamation. Disk compilation-cache optimization requires a separa
 owner/lifetime review and actual cold/warm measurements. Increasing the test's
 setup budget does not resolve this production cost. The command entry point is
 unchanged and does not activate a default server.
+
+
+## Qualified knowledge graph composition
+
+`memory.knowledge` uses the existing real knowledge Query/Discover owner inside the
+exact runtime read authority, including the current writer for queued learning.
+Its unconditional advertisement, description and schema come from the actual source.
+Whole original receipts bind a detached prior-delivery chain; entity and edge authority
+comes from delivered graphs, never model-supplied backing identifiers. Personalization,
+current knowledge flags, exact memory-anchor guards and policy revision are checked
+without opening another publication or retaining a live session. Capture follows
+identity (workspace remains uncomposed), while advertisement precedes identity.
+
+Focused native evidence exercises a real source-only Memory.Propose seed, real model
+person-anchor query and whole state selection, typed existing-entity contextual learning,
+and SQL-confirmed canonical declaration/edge persistence. Model aliases are restored
+by the actual runtime before association with original source IDs. Learning-only
+revocation permits the reply but cancels queued learning. Knowledge-answer revocation
+at the physical beforeTransmit boundary suppresses sending and leaves the complete
+memory/edge set unchanged; owner queues physically drain. No model prose is stored
+as a substitute ordinary personal fact.
+
+The real-owner tests additionally cover original/copy/foreign-turn receipts, delivered
+entity anchors, expired/foreign read authority, same-writer uncommitted flag checks and
+rollback. Source-side oracles cover fourteen receipt scenarios, but this does not claim
+all have native counterparts: native reentry/out-of-order coverage and native-model
+memory-anchor/Discover coverage remain separate gaps. Semantic/workspace tools, full
+platform validation, writable launcher/installation packaging and OS-signal stop
+integration remain outside this batch. HTTP 101 and --read-only-preview are unchanged.

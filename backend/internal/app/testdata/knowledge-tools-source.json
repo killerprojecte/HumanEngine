@@ -1,0 +1,377 @@
+{
+  "engineSHA256": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+  "definition": {
+    "name": "memory.knowledge",
+    "description": "Read a bounded qualified knowledge graph in this scene. Keep negative, possible, conditional and temporal claims and complete conflict groups. Accepted is index admission, not truth. Paths are discovery only, never transitive facts. Entity anchors require a prior whole delivered graph receipt. Use this whole state receipt; contextual learning from it must use typed knowledge declarations, never copy graph prose into free-form memories.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "anchor": {
+          "anyOf": [
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "person"
+                    },
+                    "personId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "personId"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "entity"
+                    },
+                    "entityId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 512
+                    },
+                    "backingRef": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 512
+                        },
+                        "version": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "deletionEpoch": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "deletionEpoch"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "entityId",
+                    "backingRef"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "const": "memory"
+                },
+                "memoryId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "required": [
+                "kind",
+                "memoryId"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "predicates": {
+          "minItems": 1,
+          "maxItems": 7,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "participates_in",
+              "prefers_topic",
+              "uses_tool",
+              "member_of",
+              "part_of",
+              "depends_on",
+              "has_property"
+            ]
+          }
+        },
+        "depth": {
+          "anyOf": [
+            {
+              "type": "number",
+              "const": 1
+            },
+            {
+              "type": "number",
+              "const": 2
+            }
+          ]
+        }
+      },
+      "required": [
+        "anchor",
+        "predicates",
+        "depth"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "queryCases": [
+    {
+      "input": {
+        "anchor": {
+          "kind": "person",
+          "personId": "p"
+        },
+        "depth": 1
+      },
+      "success": false,
+      "issues": [
+        {
+          "expected": "array",
+          "code": "invalid_type",
+          "path": [
+            "predicates"
+          ],
+          "message": "Invalid input: expected array, received undefined"
+        }
+      ]
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "entity",
+          "entityId": "e",
+          "backingRef": {
+            "id": "r",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "depth": 2
+      },
+      "success": false,
+      "issues": [
+        {
+          "expected": "array",
+          "code": "invalid_type",
+          "path": [
+            "predicates"
+          ],
+          "message": "Invalid input: expected array, received undefined"
+        }
+      ]
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "memory",
+          "memoryId": "r"
+        },
+        "depth": 1
+      },
+      "success": false,
+      "issues": [
+        {
+          "expected": "array",
+          "code": "invalid_type",
+          "path": [
+            "predicates"
+          ],
+          "message": "Invalid input: expected array, received undefined"
+        }
+      ]
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "person",
+          "personId": "p"
+        },
+        "depth": 1,
+        "predicates": [
+          "uses_tool"
+        ]
+      },
+      "success": true,
+      "data": {
+        "anchor": {
+          "kind": "person",
+          "personId": "p"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 1
+      }
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "entity",
+          "entityId": "e",
+          "backingRef": {
+            "id": "r",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "depth": 2,
+        "predicates": [
+          "uses_tool"
+        ]
+      },
+      "success": true,
+      "data": {
+        "anchor": {
+          "kind": "entity",
+          "entityId": "e",
+          "backingRef": {
+            "id": "r",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      }
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "memory",
+          "memoryId": "r"
+        },
+        "depth": 1,
+        "predicates": [
+          "uses_tool"
+        ]
+      },
+      "success": true,
+      "data": {
+        "anchor": {
+          "kind": "memory",
+          "memoryId": "r"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 1
+      }
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "person",
+          "personId": "p"
+        },
+        "depth": 3,
+        "predicates": [
+          "uses_tool"
+        ]
+      },
+      "success": false,
+      "issues": [
+        {
+          "code": "invalid_union",
+          "errors": [
+            [
+              {
+                "code": "invalid_value",
+                "values": [
+                  1
+                ],
+                "path": [],
+                "message": "Invalid input: expected 1"
+              }
+            ],
+            [
+              {
+                "code": "invalid_value",
+                "values": [
+                  2
+                ],
+                "path": [],
+                "message": "Invalid input: expected 2"
+              }
+            ]
+          ],
+          "path": [
+            "depth"
+          ],
+          "message": "Invalid input"
+        }
+      ]
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "person",
+          "personId": "p"
+        },
+        "depth": 1,
+        "predicates": []
+      },
+      "success": false,
+      "issues": [
+        {
+          "origin": "array",
+          "code": "too_small",
+          "minimum": 1,
+          "inclusive": true,
+          "path": [
+            "predicates"
+          ],
+          "message": "Too small: expected array to have >=1 items"
+        }
+      ]
+    },
+    {
+      "input": {
+        "anchor": {
+          "kind": "person",
+          "personId": "p"
+        },
+        "depth": 1,
+        "predicates": [
+          "uses_tool"
+        ],
+        "unexpected": true
+      },
+      "success": false,
+      "issues": [
+        {
+          "code": "unrecognized_keys",
+          "keys": [
+            "unexpected"
+          ],
+          "path": [],
+          "message": "Unrecognized key: \"unexpected\""
+        }
+      ]
+    }
+  ]
+}

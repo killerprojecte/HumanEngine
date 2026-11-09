@@ -49,3 +49,26 @@ func (l *Logger) Retention() RetentionStatus {
 	}
 	return result
 }
+
+// RetainedJSON returns an owned, newest-first snapshot of the retained Log
+// projection. It does not read sinks or generate notices: Store.logs.toReversed()
+// is a pure retained read, unlike Store.loggingStatus.
+func (l *Logger) RetainedJSON() []byte {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	result := make([]byte, 0, l.retained.bytes+len(l.retained.rows)+2)
+	result = append(result, '[')
+	for i := len(l.retained.rows) - 1; i >= 0; i-- {
+		if i != len(l.retained.rows)-1 {
+			result = append(result, ',')
+		}
+		data := l.retained.rows[i].json
+		// Ordinary retained records include the sink newline for byte accounting;
+		// source-only degraded notices do not.
+		if len(data) > 0 && data[len(data)-1] == '\n' {
+			data = data[:len(data)-1]
+		}
+		result = append(result, data...)
+	}
+	return append(result, ']')
+}

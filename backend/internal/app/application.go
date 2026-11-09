@@ -268,6 +268,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	}
 	for _, bind := range []func() error{
 		func() error { return app.HTTP.WithMemes(app.Engine) },
+		func() error { return app.HTTP.WithRetainedLogs(app.readPublisher) },
 		func() error { return app.HTTP.WithDiagnostics(app.Diagnostics, app.readPublisher) },
 		func() error { return app.HTTP.WithModelCalls(calls, app.readPublisher) },
 		func() error { return app.HTTP.WithProviderReads(app.models, app.readPublisher) },

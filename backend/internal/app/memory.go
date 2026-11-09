@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"sync/atomic"
 	"time"
 
@@ -93,6 +95,9 @@ func (a *Application) composeMemory(ctx context.Context, o Owners, settings map[
 			err = o.Authority.Publish(context.Background(), o.Main, func(*sql.Conn) ([]byte, error) { enabled = workspaceEnabled(); return nil, nil }, func([]byte) error { return nil })
 			return
 		},
+		EnabledInSession: func(session *recovery.WriteSession) (bool, error) {
+			return maintenanceEnabledInSession(o, session, workspaceEnabled)
+		},
 		DrainOneBatch: func() (bool, error) { return maintenanceBatch(context.Background(), o, workspace, workspaceEnabled) },
 		Failed: func() {
 			emit(a.options.Logs, observability.Event{Level: "info", Module: "memory", Code: "working_set_maintenance_unavailable", Message: "Working-set maintenance unavailable"})
@@ -155,4 +160,18 @@ func maintenanceBatch(ctx context.Context, o Owners, workspace *workingset.Servi
 		return false, err
 	}
 	return pending, nil
+}
+
+// The capability is borrowed for this call only, never stored by maintenance.
+func maintenanceEnabledInSession(o Owners, session *recovery.WriteSession, enabled func() bool) (bool, error) {
+	if session == nil {
+		return false, errors.New("maintenance_session_required")
+	}
+	if err := session.CheckBinding(o.Authority, o.Main); err != nil {
+		return false, err
+	}
+	if err := session.AssertReady(); err != nil {
+		return false, err
+	}
+	return enabled(), nil
 }

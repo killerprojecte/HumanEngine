@@ -83,7 +83,7 @@ func (s *Service) Propose(ctx context.Context, input, candidate *Object, options
 				if e != nil {
 					return commitments.CommandResult{}, e
 				}
-				return commitmentadmission.AdmitInAssertionScope(ctx, s.d.Commitments, tx.Store, s.d.WorkingSet, commitmentadmission.Options{Authority: s.d.Authority, Enabled: enabled, ID: options.CommitmentID, Dirty: s.d.Dirty}, in, ref, command)
+				return commitmentadmission.AdmitInAssertionScope(ctx, s.d.Commitments, tx.Store, s.d.WorkingSet, commitmentadmission.Options{Authority: s.d.Authority, Enabled: enabled, ID: options.CommitmentID, Dirty: s.d.Dirty, DirtyInSession: s.d.DirtyInSession}, in, ref, command)
 			},
 			knowledge: func(in, ref *Object, proposals []any) (knowledge.AdmissionResult, error) {
 				// Knowledge borrows only CurrentAssertion from the commitment read owner.

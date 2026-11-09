@@ -71,6 +71,7 @@ func NewSemanticRuntime(d SemanticRuntimeDependencies) (*SemanticRuntime, error)
 	close(r.drained)
 	d.Memory.Notifications = r
 	d.Memory.Dirty = d.Maintenance.Notify
+	d.Memory.DirtyInSession = d.Maintenance.NotifyInSession
 	d.Memory.Log = func(level, category, message string) {
 		_ = d.Logs.Emit(observability.Event{Level: level, Module: category, Code: message, Message: message})
 	}
@@ -448,7 +449,7 @@ func (r *SemanticRuntime) sourceChanged(store *sourceevents.Store, m sourceevent
 			return e
 		}
 		if result.Queued > 0 {
-			r.Memory.d.Dirty()
+			r.Memory.notifyDirty(ws)
 		}
 		for _, ref := range refs {
 			if e = r.NotifyInSession(ws, m.Identity.SceneID, ref, "source_qualification_changed"); e != nil {

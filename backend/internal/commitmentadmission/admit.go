@@ -16,10 +16,11 @@ import (
 
 type Object = jsjson.Object
 type Options struct {
-	Authority assertionauthority.Options
-	Enabled   bool
-	ID        func() (string, error)
-	Dirty     func()
+	Authority      assertionauthority.Options
+	Enabled        bool
+	ID             func() (string, error)
+	Dirty          func()
+	DirtyInSession func(*recovery.WriteSession)
 }
 
 func get(v any, k string) any {
@@ -141,7 +142,9 @@ func AdmitInAssertionScope(ctx context.Context, plans *commitments.Store, active
 							return e
 						}
 					}
-					if options.Dirty != nil {
+					if options.DirtyInSession != nil {
+						options.DirtyInSession(owner)
+					} else if options.Dirty != nil {
 						options.Dirty()
 					}
 					return nil

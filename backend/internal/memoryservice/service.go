@@ -50,6 +50,8 @@ type Dependencies struct {
 	// Dirty must notify the existing workspace maintenance scheduler, not run it
 	// within the current write child. No startup enumeration or polling is added.
 	Dirty func()
+	// DirtyInSession preserves synchronous readiness checks in the active writer.
+	DirtyInSession func(*recovery.WriteSession)
 	// Log is the actual runtime logging adapter. Projection failure after a
 	// successful commit is diagnostic only; never return it as a write failure.
 	Log                func(level, category, message string)
@@ -193,7 +195,7 @@ func (s *Service) committed(st *assertions.Store, id string, version, epoch int6
 	if e := st.WithWriteSession(func(ws *recovery.WriteSession) error {
 		result, e := s.mutations(ws).Committed(workingset.Context{SceneID: scene}, []workingset.Reference{{Kind: "assertion", ID: id, Version: float64(version), DeletionEpoch: float64(epoch)}})
 		if e == nil && result.Queued > 0 {
-			s.d.Dirty()
+			s.notifyDirty(ws)
 		}
 		return e
 	}); e != nil {
@@ -404,5 +406,13 @@ func deepEqual(a, b any) bool {
 		return ok && ((math.IsNaN(x) && math.IsNaN(y)) || x == y && (x != 0 || math.Signbit(x) == math.Signbit(y)))
 	default:
 		return reflect.DeepEqual(a, b)
+	}
+}
+
+func (s *Service) notifyDirty(session *recovery.WriteSession) {
+	if s.d.DirtyInSession != nil {
+		s.d.DirtyInSession(session)
+	} else {
+		s.d.Dirty()
 	}
 }

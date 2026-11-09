@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"sync"
 	"time"
 )
@@ -23,9 +24,11 @@ func (systemScheduler) Schedule(d time.Duration, fn func()) CancelTimer {
 func (t systemTimer) Cancel() { t.timer.Stop() }
 
 type MaintenancePorts struct {
-	Enabled       func() (bool, error)
-	DrainOneBatch func() (bool, error)
-	Failed        func()
+	Enabled func() (bool, error)
+	// EnabledInSession borrows only this synchronous notification's capability.
+	EnabledInSession func(*recovery.WriteSession) (bool, error)
+	DrainOneBatch    func() (bool, error)
+	Failed           func()
 }
 
 // Maintenance has one notification-driven timer, no periodic scan or startup
@@ -83,8 +86,11 @@ func (m *Maintenance) Start() {
 	m.mu.Unlock()
 	m.Notify()
 }
-func (m *Maintenance) Notify() { m.notify(nil) }
-func (m *Maintenance) notify(lifecycle *uint64) {
+func (m *Maintenance) Notify() { m.notify(nil, nil) }
+
+// NotifyInSession never retains the capability in the scheduled timer.
+func (m *Maintenance) NotifyInSession(session *recovery.WriteSession) { m.notify(nil, session) }
+func (m *Maintenance) notify(lifecycle *uint64, session *recovery.WriteSession) {
 	done, ok := m.work.Start()
 	if !ok {
 		return
@@ -97,7 +103,13 @@ func (m *Maintenance) notify(lifecycle *uint64) {
 	}
 	generation := m.generation
 	m.mu.Unlock()
-	yes, e := m.ports.Enabled()
+	var yes bool
+	var e error
+	if session != nil && m.ports.EnabledInSession != nil {
+		yes, e = m.ports.EnabledInSession(session)
+	} else {
+		yes, e = m.ports.Enabled()
+	}
 	if e != nil {
 		m.failed()
 		return
@@ -161,7 +173,7 @@ func (m *Maintenance) tick(generation uint64) {
 	continueDrain := more && m.started && lifecycle == m.lifecycle
 	m.mu.Unlock()
 	if continueDrain {
-		m.notify(&lifecycle)
+		m.notify(&lifecycle, nil)
 	}
 }
 

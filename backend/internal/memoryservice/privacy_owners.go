@@ -88,7 +88,7 @@ func (s *Service) privacyOwner(ctx context.Context, tx *assertions.RevisionTxn) 
 					return e
 				}
 			}
-			s.d.Dirty()
+			s.notifyDirty(ws)
 			return nil
 		})
 	}})

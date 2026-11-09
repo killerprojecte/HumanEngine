@@ -310,6 +310,10 @@ func (m *Manager) executeTool(ctx context.Context, id string, i *item, revision 
 	return m.finalizeToolResult(combined, id, tool, parsed, turn)
 }
 func (m *Manager) finalizeToolResult(combined context.Context, id string, tool *jsjson.Object, parsed any, turn *botruntime.TurnContext) (any, error) {
+	return m.finalizeToolResultForGeneration(combined, id, tool, parsed, turn, nil)
+}
+
+func (m *Manager) finalizeToolResultForGeneration(combined context.Context, id string, tool *jsjson.Object, parsed any, turn *botruntime.TurnContext, generation *toolresults.Generation) (any, error) {
 	canonical, err := jsjson.Stringify(parsed)
 	if err != nil {
 		return nil, err
@@ -321,7 +325,9 @@ func (m *Manager) finalizeToolResult(combined context.Context, id string, tool *
 		if explicit {
 			options.PreviewBytes = &preview
 		}
-		view, err := m.cache.Store(combined, toolresults.Text(canonical), m.owner(turn, id), options)
+		owner := m.owner(turn, id)
+		owner.Generation = generation
+		view, err := m.cache.Store(combined, toolresults.Text(canonical), owner, options)
 		if err != nil {
 			return nil, err
 		}

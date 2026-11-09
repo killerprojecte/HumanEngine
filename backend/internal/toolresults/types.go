@@ -89,6 +89,8 @@ func (s *single) Next(context.Context) ([]byte, error) {
 // must be concurrency-safe when callers perform concurrent cache operations.
 type Validation func() (bool, error)
 type Owner struct {
+	// Generation is native-only and opt-in; legacy owners retain their old contract.
+	Generation *Generation `json:"-"`
 	// Retained is a native-only immutable adoption capability. It is never serialized.
 	Retained     any
 	Scope        string
@@ -104,13 +106,16 @@ func (o Owner) clone() Owner {
 	return o
 }
 func (o Owner) validate() (bool, error) {
+	if !o.generationCurrent() {
+		return false, nil
+	}
 	for _, check := range o.Validations {
 		valid, err := check()
 		if err != nil || !valid {
 			return valid, err
 		}
 	}
-	return true, nil
+	return o.generationCurrent(), nil
 }
 
 type Options struct {

@@ -244,6 +244,11 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		builtins = []string{"typing-delay", "snowluma"}
 	}
 	for _, id := range builtins {
+		if id == "web-read" {
+			if err = app.bindWebRead(ctx); err != nil {
+				return app, err
+			}
+		}
 		if id == "snowluma" {
 			if err = app.bindSnowLuma(ctx, owners); err != nil {
 				return app, err

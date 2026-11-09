@@ -239,14 +239,18 @@ func (c *Cache) Store(ctx context.Context, source Source, owner Owner, options O
 	l := &lease{owner: owner, cancel: cancel}
 	c.mu.Lock()
 	closed := c.closed
-	if !closed {
+	revoked := !owner.generationCurrent()
+	if !closed && !revoked {
 		c.addWriteLocked(l)
 		c.pending.Add(1)
 	}
 	c.mu.Unlock()
-	if closed {
+	if closed || revoked {
 		cancel()
 		destroy(source)
+		if revoked && !closed {
+			return Result{}, ErrCancelled
+		}
 		return Result{}, ErrCacheClosed
 	}
 	stop := context.AfterFunc(c.ctx, cancel)
@@ -451,7 +455,10 @@ func (c *Cache) write(ctx context.Context, source Source, owner Owner, options O
 		c.mu.Unlock()
 		return Result{}, ErrInvalidated
 	}
-	if c.closed || ctx.Err() != nil {
+	// An old generation can arrive after InvalidatePlugin scanned its current
+	// writes. Test the original lifecycle under the same publication lock, so
+	// delayed AfterFunc propagation cannot admit or publish a late cache entry.
+	if c.closed || ctx.Err() != nil || !owner.generationCurrent() {
 		c.mu.Unlock()
 		return Result{}, ErrCancelled
 	}
@@ -556,7 +563,7 @@ func (c *Cache) Read(ctx context.Context, input ReadInput, scope string, adopt f
 		return Result{}, err
 	}
 	c.mu.Lock()
-	present := c.entries[input.ResultID] == e
+	present := c.entries[input.ResultID] == e && e.owner.generationCurrent()
 	c.mu.Unlock()
 	if !valid || !present {
 		return Result{}, ErrInvalidated

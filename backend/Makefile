@@ -1,4 +1,4 @@
-.PHONY: plugin-source-check
+.PHONY: plugin-source-check contextual-source-check
 .PHONY: test build differential wasm bundle test-bundle test-sqlite-profile test-projection-source-free native-icu-fetch native-icu-builder-test native-icu-build native-icu-test native-icu-source-free
 
 # Native ICU is opt-in: default build/startup and the TypeScript image are unchanged.
@@ -20,7 +20,10 @@ plugin-source-check:
 	cd .. && node --experimental-transform-types backend/internal/pluginmanager/generate-enablement-source.mjs --check
 	cd .. && node --experimental-transform-types backend/internal/pluginmanager/generate-async-configuration-source.mjs --check
 
-differential: build plugin-source-check
+contextual-source-check:
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-contextual-learning-fixtures.ts --check
+
+differential: build plugin-source-check contextual-source-check
 	cd .. && node --import tsx scripts/vision-oracle.ts --check
 	cd .. && node --import tsx scripts/vision-errors.mjs --check
 	cd .. && node --import tsx backend/internal/credentials/testdata/model-read-source.mjs --check

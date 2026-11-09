@@ -1,0 +1,630 @@
+{
+  "sources": {
+    "src/memory/learning/contextual-queue.ts": "46a8cc90a72db7b2425c68b137d7e91f750d1b0c1f6a7fd2af633f75d091ab4f",
+    "src/memory/learning/contextual-proposals.ts": "d03b4e53e2280844682c9c7df20c8b802932fa212bc2e61aa8dc3087bff632c6",
+    "src/memory/learning/contracts.ts": "e0b9f09ed64a09bc33b095bab10b1ce208960c1a6ca22a8b1bc446bed9dce48b",
+    "src/runtime/source-events.ts": "c6a1919fcf42e3fd92b69bf7fa28dbf570d4571636449c3d2b1c91ce9bfb045e",
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025"
+  },
+  "queues": [
+    {
+      "mode": "completed",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "duplicate": {
+        "status": "duplicate",
+        "jobId": "contextual-learning-1"
+      },
+      "events": [
+        {
+          "jobId": "contextual-learning-1",
+          "status": "queued"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "running"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "completed"
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 1,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "failed",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "duplicate": {
+        "status": "duplicate",
+        "jobId": "contextual-learning-1"
+      },
+      "events": [
+        {
+          "jobId": "contextual-learning-1",
+          "status": "queued"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "running"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "failed"
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 0,
+        "failed": 1,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "discarded",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "duplicate": {
+        "status": "duplicate",
+        "jobId": "contextual-learning-1"
+      },
+      "events": [
+        {
+          "jobId": "contextual-learning-1",
+          "status": "queued"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "running"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "discarded"
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 1,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "committed",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "duplicate": {
+        "status": "duplicate",
+        "jobId": "contextual-learning-1"
+      },
+      "events": [
+        {
+          "jobId": "contextual-learning-1",
+          "status": "queued"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "running"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "completed",
+          "committed": true
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 1,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "cancelled",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "duplicate": {
+        "status": "duplicate",
+        "jobId": "contextual-learning-1"
+      },
+      "events": [
+        {
+          "jobId": "contextual-learning-1",
+          "status": "queued"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "running"
+        },
+        {
+          "jobId": "contextual-learning-1",
+          "status": "cancelled",
+          "committed": true
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 1,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    }
+  ],
+  "proposals": [
+    {
+      "mode": "basic",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "key": "f3ccbb0a77757612467aa1f046ea2385a0ff1abbd8f69496bfdb12c0d4dd35f8",
+      "writes": [
+        {
+          "scene": "s",
+          "candidate": {
+            "content": "Synthetic durable fact",
+            "kind": "fact",
+            "sourceMessageIds": [
+              "a"
+            ],
+            "importance": "medium",
+            "confidence": 0.5
+          },
+          "evidence": [
+            {
+              "id": "a",
+              "sceneId": "s",
+              "senderId": "person",
+              "origin": "live",
+              "status": "available",
+              "sentAt": "2026-01-01T00:00:00.000Z",
+              "receivedAt": "2026-01-01T00:00:00.000Z",
+              "parts": [
+                {
+                  "type": "text",
+                  "text": "Synthetic durable fact"
+                }
+              ]
+            }
+          ],
+          "parents": [],
+          "entities": [],
+          "commitments": [],
+          "knowledge": [],
+          "edges": [],
+          "priority": 1,
+          "budget": 1
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 1,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "simulation",
+      "result": {
+        "status": "rejected",
+        "reason": "simulation_does_not_learn"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "cancelled",
+      "result": {
+        "status": "rejected",
+        "reason": "request_cancelled"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "disabled",
+      "result": {
+        "status": "rejected",
+        "reason": "learning_disabled"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "missing-source",
+      "result": {
+        "status": "rejected",
+        "reason": "invalid"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "preview-registered",
+      "result": {
+        "status": "rejected",
+        "reason": "source_snapshot_unavailable"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "preview-ref-registered-error",
+      "result": {
+        "status": "rejected",
+        "reason": "source_snapshot_unavailable"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "registration-limited",
+      "result": {
+        "status": "rejected",
+        "reason": "source_event_registration_limited"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "entity-missing",
+      "result": {
+        "status": "rejected",
+        "reason": "entity_authority_unavailable"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "entity-invalid",
+      "result": {
+        "status": "rejected",
+        "reason": "invalid"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "parent-invalid",
+      "result": {
+        "status": "rejected",
+        "reason": "invalid"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "read-invalid",
+      "result": {
+        "status": "rejected",
+        "reason": "invalid"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "knowledge-freeform",
+      "result": {
+        "status": "rejected",
+        "reason": "knowledge_state_not_freeform_learning_authority"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "commitment-freeform",
+      "result": {
+        "status": "rejected",
+        "reason": "commitment_state_not_freeform_learning_authority"
+      },
+      "key": null,
+      "writes": [],
+      "stats": {
+        "accepted": 0,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "immutable",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "key": "2c779b9b33dd7f7d7912efc59f02361c735aed2dbd3604fc109f47a1b30a6dd3",
+      "writes": [
+        {
+          "scene": "s",
+          "candidate": {
+            "content": "Synthetic durable fact",
+            "kind": "fact",
+            "sourceMessageIds": [
+              "a"
+            ],
+            "importance": "medium",
+            "confidence": 0.5
+          },
+          "evidence": [
+            {
+              "id": "a",
+              "sceneId": "s",
+              "senderId": "person",
+              "origin": "live",
+              "status": "available",
+              "sentAt": "2026-01-01T00:00:00.000Z",
+              "receivedAt": "2026-01-01T00:00:00.000Z",
+              "parts": [
+                {
+                  "type": "text",
+                  "text": "Synthetic durable fact"
+                }
+              ]
+            }
+          ],
+          "parents": [
+            {
+              "id": "parent",
+              "version": 1,
+              "deletionEpoch": 0
+            }
+          ],
+          "entities": [],
+          "commitments": [],
+          "knowledge": [],
+          "edges": [],
+          "priority": 1,
+          "budget": 1
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 1,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "own-write",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "key": "54fd9566abbb4a8cf39674a9ec7ca5397299ca82c89fba2cf373923ad52185ba",
+      "writes": [
+        {
+          "scene": "s",
+          "candidate": {
+            "content": "Synthetic durable fact",
+            "kind": "fact",
+            "sourceMessageIds": [
+              "a"
+            ],
+            "importance": "medium",
+            "confidence": 0.5
+          },
+          "evidence": [
+            {
+              "id": "a",
+              "sceneId": "s",
+              "senderId": "person",
+              "origin": "live",
+              "status": "available",
+              "sentAt": "2026-01-01T00:00:00.000Z",
+              "receivedAt": "2026-01-01T00:00:00.000Z",
+              "parts": [
+                {
+                  "type": "text",
+                  "text": "Synthetic durable fact"
+                }
+              ]
+            }
+          ],
+          "parents": [],
+          "entities": [],
+          "commitments": [],
+          "knowledge": [],
+          "edges": [],
+          "priority": 1,
+          "budget": 1
+        }
+      ],
+      "stats": {
+        "accepted": 1,
+        "completed": 1,
+        "failed": 0,
+        "discarded": 0,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    },
+    {
+      "mode": "source-changed",
+      "result": {
+        "status": "queued",
+        "jobId": "contextual-learning-1"
+      },
+      "key": "f3ccbb0a77757612467aa1f046ea2385a0ff1abbd8f69496bfdb12c0d4dd35f8",
+      "writes": [],
+      "stats": {
+        "accepted": 1,
+        "completed": 0,
+        "failed": 0,
+        "discarded": 1,
+        "cancelled": 0,
+        "queued": 0,
+        "running": 0,
+        "disposed": false
+      }
+    }
+  ]
+}

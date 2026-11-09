@@ -73,6 +73,9 @@ func native(v any) any {
 	}
 }
 func (s *schemas) parse(v *Object, name string) (*Object, error) {
+	return s.parseCandidate(v, name, true)
+}
+func (s *schemas) parseCandidate(v *Object, name string, sourceOnly bool) (*Object, error) {
 	if v == nil {
 		return nil, errors.New("invalid_candidate")
 	}
@@ -100,7 +103,7 @@ func (s *schemas) parse(v *Object, name string) (*Object, error) {
 			return nil, errors.New("invalid_candidate")
 		}
 		for _, k := range knowledge {
-			if get(get(k, "subject"), "kind") == "existing" || get(get(k, "object"), "kind") == "existing" {
+			if sourceOnly && (get(get(k, "subject"), "kind") == "existing" || get(get(k, "object"), "kind") == "existing") {
 				return nil, errors.New("invalid_candidate")
 			}
 			for _, span := range arr(get(k, "sourceSpans")) {

@@ -132,3 +132,31 @@ The relation fixture exercises real proposal admission, model selection, context
 existing-entity reuse and SQL persistence; this does not establish semantic, workspace
 or knowledge exposure parity. Native platform coverage and the separate writable
 launcher remain outside this batch.
+
+## SnowLuma builtin installation candidate
+
+The explicit native application graph now registers SnowLuma alongside typing-delay.
+Registration does not enable a fresh builtin: credentials/configuration and the
+existing Manager enablement state remain authoritative. Snow configuration,
+startup credential selection, profile/history/receive decisions, media selection
+and four-field original validation, send ordering and receipts execute in its
+bound WASM guest. Native installation supplies transport, credentials, original
+file IO and existing Engine authority owners. Disable/reconfigure logically
+revoke the exact generation and physically drain its IO before WASM retirement.
+
+The r9 app integration (session 24752) exercised real Runtime text/media dispatch,
+committed receipts, original admission/removal, hot configuration, policy/runtime
+unload and physical close. The same app test and linked-artifact hash/manifest test
+also passed in a bwrap mount-isolated directory without application source or an
+external WASM file. This proves the specified Snow installation path with explicit
+Node/ICU/libvips/sqlite-vec runtime dependencies; it is not full CLI/container or
+HTTP installation acceptance. The exact fresh-public composition passed its focused race/native application,
+linked artifact, reproducible recipe, vet and frozen-input checks. Adapter status API wiring remains a separate batch.
+
+Cold compilation is a known unresolved performance cost: configuration took
+about 83–85s, enable 53–55s and hot configuration 56–58s. Disable completed in
+milliseconds, with no policy/runtime guest retained. API closure does not claim
+immediate RSS reclamation. Disk compilation-cache optimization requires a separate
+owner/lifetime review and actual cold/warm measurements. Increasing the test's
+setup budget does not resolve this production cost. The command entry point is
+unchanged and does not activate a default server.

@@ -90,6 +90,33 @@ func Invoke(input []byte) any {
 	if parsed, err := jsjson.Parse(string(input)); err == nil {
 		if object, ok := parsed.(*jsjson.Object); ok {
 			operation, _ := object.Get("operation")
+			if operation == "recalled_lookup" {
+				return RecalledLookupDecision(object)
+			}
+			if operation == "history_begin" || operation == "message_begin" || operation == "message_recalled" || operation == "history_response" || operation == "history_normalized" || operation == "history_sorted" {
+				return HistoryDecision(object)
+			}
+			if operation == "profiles_observe" || operation == "profiles_complete" || operation == "profiles_dispose" {
+				return ProfileDecision(object)
+			}
+			if operation == "ingress_begin" || operation == "ingress_recalled" || operation == "ingress_callback" {
+				return IngressDecision(object)
+			}
+			if operation == "configuration_secrets" || operation == "configuration_secret_present" {
+				return ConfiguredSecretsDecision(object)
+			}
+			if operation == "configuration_validate" {
+				return ValidateConfigurationDecision(object)
+			}
+			if operation == "configuration_begin" || operation == "configuration_applied" {
+				return ConfigurationDecision(object)
+			}
+			if operation == "startup_begin" || operation == "startup_secret" || operation == "startup_environment" {
+				return StartupDecision(object)
+			}
+			if operation == "engine_source_select" || operation == "engine_source_value" || operation == "engine_source_validate" {
+				return OriginalDecision(object)
+			}
 			if operation == "send_validate" || operation == "send_begin" || operation == "send_source" || operation == "send_media" || operation == "send_result" {
 				return SendDecision(object)
 			}

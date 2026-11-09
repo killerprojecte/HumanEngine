@@ -64,7 +64,20 @@ func credentialPreparation(id string, input, previous *jsjson.Object) (*jsjson.O
 }
 
 func (m *Manager) writeBuiltinConfiguration(ctx context.Context, id string, value, previous *jsjson.Object) error {
-	config, changes := credentialPreparation(id, value, previous)
+	m.mu.Lock()
+	policy, bound := m.builtinPolicies[id]
+	m.mu.Unlock()
+	var config *jsjson.Object
+	var changes []credentials.Change
+	var prepareErr error
+	if bound {
+		config, changes, prepareErr = policy.Prepare(ctx, value, previous)
+		if prepareErr != nil {
+			return prepareErr
+		}
+	} else {
+		config, changes = credentialPreparation(id, value, previous)
+	}
 	raw, err := jsjson.Stringify(config)
 	if err != nil {
 		return err
@@ -78,6 +91,9 @@ func (m *Manager) writeBuiltinConfiguration(ctx context.Context, id string, valu
 			return errors.New("plugin_credential_owner_missing")
 		}
 		_, err = m.credentials.ApplyWith(ctx, changes, apply)
+		if err != nil && bound && policy.CredentialFailure != nil {
+			err = policy.CredentialFailure(ctx, err)
+		}
 	} else {
 		_, err = m.authority.Write(ctx, m.main, nil, 1, apply)
 	}

@@ -1,0 +1,1293 @@
+[
+  {
+    "name": "prepare-ws-retains-http",
+    "scenario": {
+      "name": "prepare-ws-retains-http",
+      "kind": "prepare",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "eventPort": 777,
+        "eventToken": "discard",
+        "clearEventToken": true,
+        "token": "new"
+      },
+      "previous": {
+        "eventPort": 123,
+        "eventPath": "/prior",
+        "eventCredentialEnv": "SNOW_EVENT"
+      }
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      }
+    ],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventPort": 123,
+      "eventPath": "/prior",
+      "eventCredentialEnv": "SNOW_EVENT"
+    }
+  },
+  {
+    "name": "prepare-http-both",
+    "scenario": {
+      "name": "prepare-http-both",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "eventPort": 123,
+        "token": "new",
+        "eventToken": "next"
+      }
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      },
+      {
+        "kind": "apply",
+        "key": "eventToken",
+        "action": "set",
+        "value": "next"
+      }
+    ],
+    "result": {
+      "transport": "http",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventPort": 123
+    }
+  },
+  {
+    "name": "prepare-clear-before-set",
+    "scenario": {
+      "name": "prepare-clear-before-set",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "eventPort": 123,
+        "token": "new",
+        "clearToken": true,
+        "credentialEnv": "OLD",
+        "eventToken": "next"
+      }
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "clear"
+      },
+      {
+        "kind": "apply",
+        "key": "eventToken",
+        "action": "set",
+        "value": "next"
+      }
+    ],
+    "result": {
+      "transport": "http",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventPort": 123
+    }
+  },
+  {
+    "name": "prepare-empty",
+    "scenario": {
+      "name": "prepare-empty",
+      "kind": "prepare",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": ""
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42"
+    }
+  },
+  {
+    "name": "prepare-unknown-retained",
+    "scenario": {
+      "name": "prepare-unknown-retained",
+      "kind": "prepare",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "extra": 7
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "extra": 7
+    }
+  },
+  {
+    "name": "prepare-error-secret_key_unavailable",
+    "scenario": {
+      "name": "prepare-error-secret_key_unavailable",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "new",
+        "eventToken": "next",
+        "eventPort": 123
+      },
+      "fail": "token",
+      "error": "secret_key_unavailable"
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      }
+    ],
+    "error": {
+      "code": "secret_key_unavailable"
+    }
+  },
+  {
+    "name": "prepare-error-secret_key_missing",
+    "scenario": {
+      "name": "prepare-error-secret_key_missing",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "new",
+        "eventToken": "next",
+        "eventPort": 123
+      },
+      "fail": "token",
+      "error": "secret_key_missing"
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      }
+    ],
+    "error": {
+      "code": "secret_key_missing"
+    }
+  },
+  {
+    "name": "prepare-error-secret_key_permissions",
+    "scenario": {
+      "name": "prepare-error-secret_key_permissions",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "new",
+        "eventToken": "next",
+        "eventPort": 123
+      },
+      "fail": "token",
+      "error": "secret_key_permissions"
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      }
+    ],
+    "error": {
+      "code": "secret_key_permissions"
+    }
+  },
+  {
+    "name": "prepare-error-secret_key_invalid",
+    "scenario": {
+      "name": "prepare-error-secret_key_invalid",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "new",
+        "eventToken": "next",
+        "eventPort": 123
+      },
+      "fail": "token",
+      "error": "secret_key_invalid"
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      }
+    ],
+    "error": {
+      "code": "secret_key_invalid"
+    }
+  },
+  {
+    "name": "prepare-error-secret_decryption_failed",
+    "scenario": {
+      "name": "prepare-error-secret_decryption_failed",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "new",
+        "eventToken": "next",
+        "eventPort": 123
+      },
+      "fail": "token",
+      "error": "secret_decryption_failed"
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      }
+    ],
+    "error": {
+      "code": "secret_decryption_failed"
+    }
+  },
+  {
+    "name": "prepare-error-private_failure",
+    "scenario": {
+      "name": "prepare-error-private_failure",
+      "kind": "prepare",
+      "config": {
+        "transport": "http",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "new",
+        "eventToken": "next",
+        "eventPort": 123
+      },
+      "fail": "token",
+      "error": "private_failure"
+    },
+    "trace": [
+      {
+        "kind": "apply",
+        "key": "token",
+        "action": "set",
+        "value": "new"
+      }
+    ],
+    "error": {
+      "code": "plugin_setup_failed"
+    }
+  },
+  {
+    "name": "setup-token-absent",
+    "scenario": {
+      "name": "setup-token-absent",
+      "kind": "setup",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      },
+      "secrets": {}
+    },
+    "parsed": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      }
+    ],
+    "error": {
+      "code": "credential_not_configured"
+    }
+  },
+  {
+    "name": "setup-empty-does-not-fallback",
+    "scenario": {
+      "name": "setup-empty-does-not-fallback",
+      "kind": "setup",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "credentialEnv": "SNOW_TEST_TOKEN"
+      },
+      "secrets": {
+        "token": ""
+      },
+      "env": {
+        "SNOW_TEST_TOKEN": "fallback"
+      }
+    },
+    "parsed": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "credentialEnv": "SNOW_TEST_TOKEN",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      }
+    ],
+    "error": {
+      "code": "credential_not_configured"
+    }
+  },
+  {
+    "name": "setup-fallback",
+    "scenario": {
+      "name": "setup-fallback",
+      "kind": "setup",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "credentialEnv": "SNOW_TEST_TOKEN"
+      },
+      "secrets": {},
+      "env": {
+        "SNOW_TEST_TOKEN": "fallback"
+      }
+    },
+    "parsed": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "credentialEnv": "SNOW_TEST_TOKEN",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      },
+      {
+        "kind": "get",
+        "key": "eventToken"
+      },
+      {
+        "kind": "onDispose"
+      },
+      {
+        "kind": "remove"
+      },
+      {
+        "kind": "stopped"
+      }
+    ],
+    "error": {
+      "code": "plugin_disabled"
+    }
+  },
+  {
+    "name": "setup-stored",
+    "scenario": {
+      "name": "setup-stored",
+      "kind": "setup",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      },
+      "secrets": {
+        "token": "stored",
+        "eventToken": "event"
+      }
+    },
+    "parsed": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      },
+      {
+        "kind": "get",
+        "key": "eventToken"
+      },
+      {
+        "kind": "onDispose"
+      },
+      {
+        "kind": "remove"
+      },
+      {
+        "kind": "stopped"
+      }
+    ],
+    "error": {
+      "code": "plugin_disabled"
+    }
+  },
+  {
+    "name": "setup-http-event-missing",
+    "scenario": {
+      "name": "setup-http-event-missing",
+      "kind": "setup",
+      "config": {
+        "transport": "http",
+        "url": "http://127.0.0.1:1",
+        "accountId": "42",
+        "eventPort": 123
+      },
+      "secrets": {
+        "token": "stored"
+      }
+    },
+    "parsed": {
+      "transport": "http",
+      "url": "http://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPort": 123,
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      },
+      {
+        "kind": "get",
+        "key": "eventToken"
+      }
+    ],
+    "error": {
+      "code": "event_credential_not_configured"
+    }
+  },
+  {
+    "name": "setup-ws-still-reads-event",
+    "scenario": {
+      "name": "setup-ws-still-reads-event",
+      "kind": "setup",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      },
+      "secrets": {
+        "token": "stored"
+      },
+      "fail": "eventToken",
+      "error": "secret_key_missing"
+    },
+    "parsed": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      },
+      {
+        "kind": "get",
+        "key": "eventToken"
+      }
+    ],
+    "error": {
+      "code": "secret_key_missing"
+    }
+  },
+  {
+    "name": "setup-secret-error",
+    "scenario": {
+      "name": "setup-secret-error",
+      "kind": "setup",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      },
+      "fail": "token",
+      "error": "private_failure"
+    },
+    "parsed": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      }
+    ],
+    "error": {
+      "code": "plugin_setup_failed"
+    }
+  },
+  {
+    "name": "setup-event-fallback",
+    "scenario": {
+      "name": "setup-event-fallback",
+      "kind": "setup",
+      "config": {
+        "transport": "http",
+        "url": "http://127.0.0.1:1",
+        "accountId": "42",
+        "eventPort": 123,
+        "eventCredentialEnv": "SNOW_TEST_EVENT"
+      },
+      "secrets": {
+        "token": "stored"
+      },
+      "env": {
+        "SNOW_TEST_EVENT": "event"
+      }
+    },
+    "parsed": {
+      "transport": "http",
+      "url": "http://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPort": 123,
+      "eventPath": "/onebot/events",
+      "eventCredentialEnv": "SNOW_TEST_EVENT"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      },
+      {
+        "kind": "get",
+        "key": "eventToken"
+      },
+      {
+        "kind": "onDispose"
+      },
+      {
+        "kind": "remove"
+      },
+      {
+        "kind": "stopped"
+      }
+    ],
+    "error": {
+      "code": "plugin_disabled"
+    }
+  },
+  {
+    "name": "setup-abort-after-credentials",
+    "scenario": {
+      "name": "setup-abort-after-credentials",
+      "kind": "setup",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      },
+      "secrets": {
+        "token": "stored"
+      }
+    },
+    "parsed": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    },
+    "trace": [
+      {
+        "kind": "get",
+        "key": "token"
+      },
+      {
+        "kind": "get",
+        "key": "eventToken"
+      },
+      {
+        "kind": "onDispose"
+      },
+      {
+        "kind": "remove"
+      },
+      {
+        "kind": "stopped"
+      }
+    ],
+    "error": {
+      "code": "plugin_disabled"
+    }
+  },
+  {
+    "name": "validate-valid",
+    "scenario": {
+      "name": "validate-valid",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    }
+  },
+  {
+    "name": "validate-legacy",
+    "scenario": {
+      "name": "validate-legacy",
+      "kind": "validate",
+      "config": {
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    }
+  },
+  {
+    "name": "validate-http",
+    "scenario": {
+      "name": "validate-http",
+      "kind": "validate",
+      "config": {
+        "transport": "http",
+        "url": "http://localhost",
+        "accountId": "42",
+        "eventPort": 123
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "http",
+      "url": "http://localhost",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPort": 123,
+      "eventPath": "/onebot/events"
+    }
+  },
+  {
+    "name": "validate-unknown",
+    "scenario": {
+      "name": "validate-unknown",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "extra": 1
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "configuration",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-empty",
+    "scenario": {
+      "name": "validate-empty",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "",
+        "accountId": ""
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "accountId",
+          "reason": "required"
+        },
+        {
+          "field": "url",
+          "reason": "required"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-types",
+    "scenario": {
+      "name": "validate-types",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": 7,
+        "accountId": null
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "accountId",
+          "reason": "required"
+        },
+        {
+          "field": "url",
+          "reason": "required"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-scheme",
+    "scenario": {
+      "name": "validate-scheme",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "http://localhost",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "url",
+          "reason": "websocket_scheme_required"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-credentials",
+    "scenario": {
+      "name": "validate-credentials",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://user:pass@localhost",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "url",
+          "reason": "url_credentials_forbidden"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-query",
+    "scenario": {
+      "name": "validate-query",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://localhost?x=1",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "url",
+          "reason": "url_query_forbidden"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-hash",
+    "scenario": {
+      "name": "validate-hash",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://localhost#x",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "url",
+          "reason": "url_fragment_forbidden"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-whitespace",
+    "scenario": {
+      "name": "validate-whitespace",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": " ws://localhost ",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "url",
+          "reason": "websocket_scheme_required"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-invalidhost",
+    "scenario": {
+      "name": "validate-invalidhost",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://[broken",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "url",
+          "reason": "invalid_url"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-enum",
+    "scenario": {
+      "name": "validate-enum",
+      "kind": "validate",
+      "config": {
+        "transport": null,
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "transport",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-wsIgnored",
+    "scenario": {
+      "name": "validate-wsIgnored",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "eventPort": "bad",
+        "eventHost": 7,
+        "eventToken": 3,
+        "eventPath": 3
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    }
+  },
+  {
+    "name": "validate-conflict",
+    "scenario": {
+      "name": "validate-conflict",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "x",
+        "clearToken": true
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "token",
+          "reason": "conflicting_credential_change"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-tokenType",
+    "scenario": {
+      "name": "validate-tokenType",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": 7
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "token",
+          "reason": "invalid_type"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-tokenBlank",
+    "scenario": {
+      "name": "validate-tokenBlank",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": " ﻿ "
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "token",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-tokenLong",
+    "scenario": {
+      "name": "validate-tokenLong",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "token",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-badBoolean",
+    "scenario": {
+      "name": "validate-badBoolean",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "clearToken": 7
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "clearToken",
+          "reason": "invalid_type"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-env",
+    "scenario": {
+      "name": "validate-env",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "credentialEnv": "bad-env"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "credentialEnv",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-envEmpty",
+    "scenario": {
+      "name": "validate-envEmpty",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "42",
+        "credentialEnv": ""
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "credentialEnv",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-portMissing",
+    "scenario": {
+      "name": "validate-portMissing",
+      "kind": "validate",
+      "config": {
+        "transport": "http",
+        "url": "http://localhost",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "eventPort",
+          "reason": "required"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-portFraction",
+    "scenario": {
+      "name": "validate-portFraction",
+      "kind": "validate",
+      "config": {
+        "transport": "http",
+        "url": "http://localhost",
+        "accountId": "42",
+        "eventPort": 1.5
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "eventPort",
+          "reason": "invalid_port"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-eventBad",
+    "scenario": {
+      "name": "validate-eventBad",
+      "kind": "validate",
+      "config": {
+        "transport": "http",
+        "url": "http://localhost",
+        "accountId": "42",
+        "eventPort": 1,
+        "eventHost": "localhost",
+        "eventPath": "//bad"
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "eventPath",
+          "reason": "invalid_event_path"
+        },
+        {
+          "field": "eventHost",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-eventConflict",
+    "scenario": {
+      "name": "validate-eventConflict",
+      "kind": "validate",
+      "config": {
+        "transport": "http",
+        "url": "http://localhost",
+        "accountId": "42",
+        "eventPort": 1,
+        "eventToken": "x",
+        "clearEventToken": true
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "eventToken",
+          "reason": "conflicting_credential_change"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-unknownAndBadURL",
+    "scenario": {
+      "name": "validate-unknownAndBadURL",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://bad host",
+        "accountId": "42",
+        "extra": 1
+      }
+    },
+    "trace": [],
+    "error": {
+      "issues": [
+        {
+          "field": "url",
+          "reason": "invalid_url"
+        },
+        {
+          "field": "configuration",
+          "reason": "invalid_value"
+        }
+      ]
+    }
+  },
+  {
+    "name": "validate-emptyQueryHash",
+    "scenario": {
+      "name": "validate-emptyQueryHash",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://localhost?#",
+        "accountId": "42"
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://localhost?#",
+      "accountId": "42",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    }
+  },
+  {
+    "name": "validate-utf16Account",
+    "scenario": {
+      "name": "validate-utf16Account",
+      "kind": "validate",
+      "config": {
+        "transport": "websocket",
+        "url": "ws://127.0.0.1:1",
+        "accountId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+      }
+    },
+    "trace": [],
+    "result": {
+      "transport": "websocket",
+      "url": "ws://127.0.0.1:1",
+      "accountId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+      "eventHost": "127.0.0.1",
+      "eventPath": "/onebot/events"
+    }
+  }
+]

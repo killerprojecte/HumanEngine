@@ -148,7 +148,7 @@ wasm:
 	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/typing-delay/dist/typing-delay.wasm ./plugins/typing-delay/wasm
 	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/web-read/dist/web-read.wasm ./plugins/web-read/wasm
 	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/web-search/dist/web-search.wasm ./plugins/web-search/wasm
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/snowluma/dist/snowluma.wasm ./plugins/snowluma/wasm
+	sh plugins/snowluma/build-artifact-v1.sh
 
 bundle: wasm
 	go build -trimpath -tags sqlite_fts5,bundled_wasm -o bin/humanengine ./cmd/humanengine

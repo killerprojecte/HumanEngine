@@ -95,6 +95,14 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 		}()
 		return result
 	}})
+	if s.queries != nil {
+		adapter.History = func(ctx context.Context, scene botruntime.Scene, limit int, complete func(*jsjson.Object, error)) {
+			s.queries.Run(ctx, scene, obj("limit", float64(limit)), false, complete)
+		}
+		adapter.GetMessage = func(ctx context.Context, scene botruntime.Scene, id string, complete func(*jsjson.Object, error)) {
+			s.queries.Run(ctx, scene, obj("messageId", id), true, complete)
+		}
+	}
 	entry.adapter = adapter
 	r.mu.Lock()
 	defer r.mu.Unlock()

@@ -1,0 +1,1765 @@
+[
+  {
+    "name": "success-cache-expire",
+    "throwUpdate": false,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 0,
+          "value": {
+            "group_id": "1",
+            "group_name": "Group"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 1,
+          "value": {
+            "user_id": "11",
+            "nickname": "User"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42"
+              },
+              "sender": {
+                "id": "user1",
+                "platformId": "11",
+                "displayName": "User",
+                "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=11&s=100"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42",
+            "displayName": "Group"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available",
+            "senderDisplayName": "User"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42"
+              },
+              "sender": {
+                "id": "user1",
+                "platformId": "11",
+                "displayName": "User",
+                "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=11&s=100"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "clock",
+          "now": 1800001
+        },
+        "now": 1800001,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42"
+              },
+              "sender": {
+                "id": "user1",
+                "platformId": "11",
+                "displayName": "User",
+                "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=11&s=100"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 1800001,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42",
+            "displayName": "Group"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available",
+            "senderDisplayName": "User"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42"
+              },
+              "sender": {
+                "id": "user1",
+                "platformId": "11",
+                "displayName": "User",
+                "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=11&s=100"
+              }
+            }
+          },
+          {
+            "kind": "action",
+            "index": 2,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 3,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "stale-completion",
+    "throwUpdate": false,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 1,
+          "sceneName": "New scene",
+          "senderName": "New user"
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42",
+            "displayName": "New scene"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available",
+            "senderDisplayName": "New user"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42",
+            "displayName": "New scene"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available",
+            "senderDisplayName": "New user"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 0,
+          "value": {
+            "group_id": 1,
+            "group_name": "Old scene"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 1,
+          "value": {
+            "user_id": 11,
+            "nickname": "Old user"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "failed-negative-cache",
+    "throwUpdate": false,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 0,
+          "failed": true
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "failure"
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 1,
+          "value": null
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "failure"
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "failure"
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "clock",
+          "now": 300001
+        },
+        "now": 300001,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "failure"
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 300001,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "failure"
+          },
+          {
+            "kind": "action",
+            "index": 2,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 3,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "pending-source-four",
+    "throwUpdate": false,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 2
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene2",
+            "kind": "group",
+            "platformSceneId": "2",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message2",
+            "senderId": "user2",
+            "senderPlatformId": "12",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene2",
+            "kind": "group",
+            "platformSceneId": "2",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message2",
+            "senderId": "user2",
+            "senderPlatformId": "12",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 2,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "2"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 3,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "12"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 3
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene3",
+            "kind": "group",
+            "platformSceneId": "3",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message3",
+            "senderId": "user3",
+            "senderPlatformId": "13",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene3",
+            "kind": "group",
+            "platformSceneId": "3",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message3",
+            "senderId": "user3",
+            "senderPlatformId": "13",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 2,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "2"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 3,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "12"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 0,
+          "value": {
+            "group_id": "wrong",
+            "group_name": "Wrong"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 2,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "2"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 3,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "12"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 3
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene3",
+            "kind": "group",
+            "platformSceneId": "3",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message3",
+            "senderId": "user3",
+            "senderPlatformId": "13",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene3",
+            "kind": "group",
+            "platformSceneId": "3",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message3",
+            "senderId": "user3",
+            "senderPlatformId": "13",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 2,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "2"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 3,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "12"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 4,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "3"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "disposed-pending",
+    "throwUpdate": false,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "dispose"
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 0,
+          "value": {
+            "group_id": 1,
+            "group_name": "Late"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 1,
+          "failed": true
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "observe",
+          "n": 2
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene2",
+            "kind": "group",
+            "platformSceneId": "2",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message2",
+            "senderId": "user2",
+            "senderPlatformId": "12",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene2",
+            "kind": "group",
+            "platformSceneId": "2",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message2",
+            "senderId": "user2",
+            "senderPlatformId": "12",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "recalled-ignored",
+    "throwUpdate": false,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1,
+          "status": "recalled"
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "recalled"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "recalled"
+          }
+        },
+        "trace": []
+      }
+    ]
+  },
+  {
+    "name": "display-name-rules",
+    "throwUpdate": false,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 0,
+          "value": {
+            "group_id": 1,
+            "group_name": "\u0000‮  Group  "
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 1,
+          "value": {
+            "user_id": 11,
+            "nickname": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42"
+              },
+              "sender": {
+                "id": "user1",
+                "platformId": "11",
+                "displayName": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=11&s=100"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "profile-callback-throws",
+    "throwUpdate": true,
+    "steps": [
+      {
+        "step": {
+          "op": "observe",
+          "n": 1
+        },
+        "now": 0,
+        "input": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "result": {
+          "scene": {
+            "id": "scene1",
+            "kind": "group",
+            "platformSceneId": "1",
+            "adapterId": "snowluma",
+            "accountId": "42"
+          },
+          "message": {
+            "id": "message1",
+            "senderId": "user1",
+            "senderPlatformId": "11",
+            "status": "available"
+          }
+        },
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 0,
+          "value": {
+            "group_id": 1,
+            "group_name": "Group"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "step": {
+          "op": "complete",
+          "index": 1,
+          "value": {
+            "user_id": 11,
+            "nickname": "User"
+          }
+        },
+        "now": 0,
+        "trace": [
+          {
+            "kind": "action",
+            "index": 0,
+            "action": "get_group_info",
+            "params": {
+              "group_id": "1"
+            }
+          },
+          {
+            "kind": "action",
+            "index": 1,
+            "action": "get_stranger_info",
+            "params": {
+              "user_id": "11"
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42",
+                "displayName": "Group"
+              }
+            }
+          },
+          {
+            "kind": "profile",
+            "profile": {
+              "scene": {
+                "id": "scene1",
+                "kind": "group",
+                "platformSceneId": "1",
+                "adapterId": "snowluma",
+                "accountId": "42"
+              },
+              "sender": {
+                "id": "user1",
+                "platformId": "11",
+                "displayName": "User",
+                "avatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=11&s=100"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

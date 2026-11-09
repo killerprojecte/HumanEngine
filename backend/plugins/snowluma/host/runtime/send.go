@@ -20,12 +20,14 @@ type Source struct {
 	Retain   func() (func(), error)
 }
 type Ports struct {
+	ReadOriginal  func(context.Context, string, string) (*jsjson.Object, error)
 	Life          context.Context
 	Current       func() bool
 	ResolveSource func(context.Context, any, *jsjson.Object) (*Source, error)
 	ResolveMedia  func(context.Context, any, *jsjson.Object) (*jsjson.Object, error)
 }
 type Sender struct {
+	queries          *Queries
 	adapter, account string
 	ports            Ports
 	guest            func(context.Context, []byte) ([]byte, error)
@@ -55,6 +57,9 @@ func NewSender(host *plugins.WASMHost, guestID, adapter, account string, ports P
 	}
 	life, cancel := context.WithCancel(ports.Life)
 	s := &Sender{adapter: adapter, account: account, ports: ports, guest: guest, encoder: encoder, http: http, ws: ws, life: life, cancel: cancel, closed: make(chan struct{})}
+	if s.ports.ResolveSource == nil && s.ports.ReadOriginal != nil {
+		s.ports.ResolveSource = s.resolveOriginal
+	}
 	s.detach = context.AfterFunc(ports.Life, s.Dispose)
 	if ports.Life.Err() != nil {
 		s.Dispose()
@@ -257,4 +262,13 @@ func (s *Sender) CloseAndWait(ctx context.Context) error {
 	case <-s.closed:
 		return s.closeErr
 	}
+}
+
+// optionalState encodes an absent continuation as JSON null, not a typed nil
+// Object (which jsjson intentionally rejects). Guest owns all state defaults.
+func optionalState(value *jsjson.Object) any {
+	if value == nil {
+		return nil
+	}
+	return value
 }

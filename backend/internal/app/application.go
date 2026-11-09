@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contextuallearning"
 	"github.com/killerprojecte/HumanEngine/backend/internal/mediatasks"
+	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/runtime"
 	"net/http"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
@@ -36,6 +37,7 @@ import (
 // exposure domains and builtins are recorded in SCOPE.md, not replaced by stubs.
 // Consumers use Application as HTTP handler, never bypass its admission barrier.
 type Application struct {
+	snowRegistry        *snow.Registry
 	StateExposures      *stateExposureOwners
 	IdentityExposure    *memoryservice.IdentityExposure
 	MemoryExposure      *memoryservice.ModelMemoryExposure
@@ -229,9 +231,14 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	}
 	builtins := options.Builtins
 	if builtins == nil {
-		builtins = []string{"typing-delay"}
+		builtins = []string{"typing-delay", "snowluma"}
 	}
 	for _, id := range builtins {
+		if id == "snowluma" {
+			if err = app.bindSnowLuma(ctx, owners); err != nil {
+				return app, err
+			}
+		}
 		if err = app.Plugins.RegisterBuiltin(id); err != nil {
 			return app, err
 		}

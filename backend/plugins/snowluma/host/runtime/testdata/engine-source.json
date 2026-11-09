@@ -1,0 +1,229 @@
+[
+  {
+    "scenario": "sent",
+    "trace": [
+      "add",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "before",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "remove"
+    ],
+    "requests": [
+      {
+        "action": "send_group_msg",
+        "params": {
+          "group_id": "99",
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            },
+            {
+              "type": "image",
+              "data": {
+                "file": "base64://AAEC/f7/"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "receipt": {
+      "status": "sent",
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjExIg"
+    }
+  },
+  {
+    "scenario": "not-managed",
+    "trace": [
+      "add",
+      "remove"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "invalid_identifier"
+    }
+  },
+  {
+    "scenario": "original-error",
+    "trace": [
+      "add",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "remove"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "send_failed"
+    }
+  },
+  {
+    "scenario": "path-changed",
+    "trace": [
+      "add",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "before",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "remove"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "socket_send_failed"
+    }
+  },
+  {
+    "scenario": "hash-changed",
+    "trace": [
+      "add",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "before",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "remove"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "socket_send_failed"
+    }
+  },
+  {
+    "scenario": "bytes-changed",
+    "trace": [
+      "add",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "before",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "remove"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "socket_send_failed"
+    }
+  },
+  {
+    "scenario": "contentType-changed",
+    "trace": [
+      "add",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "before",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "remove"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "socket_send_failed"
+    }
+  },
+  {
+    "scenario": "deleted-before-wire",
+    "trace": [
+      "add",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "before",
+      {
+        "kind": "original",
+        "context": {
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "simulation": false
+        },
+        "id": "3f2d1552cdc7483f40dd720c80b900225dfecfd5cae7cd168d79ab6ee5959885"
+      },
+      "remove"
+    ],
+    "requests": [],
+    "receipt": {
+      "status": "failed",
+      "detail": "socket_send_failed"
+    }
+  }
+]

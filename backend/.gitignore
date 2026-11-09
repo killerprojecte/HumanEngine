@@ -1,2 +1,5 @@
 /bin/
 /plugins/*/dist/*.wasm
+
+# Reviewed Snow release artifact is distributed with its hash and recipe.
+!/plugins/snowluma/dist/snowluma.wasm

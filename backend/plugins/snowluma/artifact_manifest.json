@@ -1,0 +1,24 @@
+{
+  "recipe_version": 1,
+  "artifact": "dist/snowluma.wasm",
+  "sha256": "15c22c08cc5ab8d205c2fa23f660fae5bbada9202fce81ed3e254ab19c69743e",
+  "bytes": 6572260,
+  "format": "WASI preview1 reactor",
+  "go_version": "go1.27.3",
+  "goos": "wasip1",
+  "goarch": "wasm",
+  "cgo_enabled": false,
+  "build_arguments": [
+    "-trimpath",
+    "-buildvcs=false",
+    "-buildmode=c-shared",
+    "-ldflags=-s -w"
+  ],
+  "input_manifest": "artifact_inputs.sha256",
+  "input_manifest_sha256": "d644d21af367467694b5a844b4fe6d9999d4df7db3ea79d37f8ac59db0224ff6",
+  "source_input_count": 27,
+  "recipe": "build-artifact-v1.sh",
+  "recipe_sha256": "d66a4cb6c3b6ccec2d8a4a18d58630e2585981bdfcbec67d6ca2af36a3c49382",
+  "link_contract": "artifact_bundled.go embeds dist/snowluma.wasm only with bundled_wasm; verify linked bytes against this SHA",
+  "evidence": "Exact artifact passed isolated WASM policy/manifest and complete native Application install/text/media/hot-config/disable test. Fresh composition/reproduction has a separate gate; this is not full CLI or HTTP acceptance."
+}

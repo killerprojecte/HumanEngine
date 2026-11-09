@@ -33,11 +33,14 @@ type item struct {
 	cancel             context.CancelFunc
 	tail               chan struct{}
 	cleanups           []func()
+	physicalCleanups   []func(context.Context) error
 	pages              []any
 	actions            map[string]string
 	failure, requestID string
 }
 type Manager struct {
+	builtinPolicies    map[string]BuiltinPolicy
+	builtinFactories   map[string]BuiltinRuntimeFactory
 	removeHostObserver func()
 	credentials        *credentials.Store
 	wasm               *plugins.WASMHost
@@ -203,7 +206,7 @@ func (m *Manager) inspect(ctx context.Context, id string, i *item, operation str
 		return plugins.Inspection{}, err
 	}
 	if i.builtin {
-		return m.inspectBuiltin(i, operation, incoming, previous, requestID)
+		return m.inspectBuiltin(ctx, i, operation, incoming, previous, requestID)
 	}
 	request := plugins.InspectionRequest{Operation: operation, ID: id, Path: i.path, Config: raw, Previous: old}
 	m.mu.Lock()
@@ -533,6 +536,7 @@ func (m *Manager) cleanup(id string, i *item) error {
 	i.enabled = false
 	i.cancel()
 	cleanups := i.cleanups
+	physicalCleanups := append([]func(context.Context) error(nil), i.physicalCleanups...)
 	i.cleanups = nil
 	i.pages = []any{}
 	i.actions = map[string]string{}
@@ -541,6 +545,16 @@ func (m *Manager) cleanup(id string, i *item) error {
 	for index := len(cleanups) - 1; index >= 0; index-- {
 		cleanups[index]()
 	}
+	var drainErr error
+	for index := len(physicalCleanups) - 1; index >= 0; index-- {
+		drainErr = errors.Join(drainErr, physicalCleanups[index](context.Background()))
+	}
+	if drainErr != nil {
+		return drainErr
+	}
+	m.mu.Lock()
+	i.physicalCleanups = nil
+	m.mu.Unlock()
 	if i.builtin {
 		return m.wasm.Disable(context.Background(), id)
 	}

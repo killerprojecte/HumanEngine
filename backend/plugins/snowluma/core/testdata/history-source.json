@@ -1,0 +1,1572 @@
+{
+  "cases": [
+    {
+      "name": "history-sort-deduplicate",
+      "kind": "history",
+      "scenario": {
+        "name": "history-sort-deduplicate",
+        "kind": "history",
+        "input": {
+          "limit": 2
+        },
+        "data": {
+          "messages": [
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 2,
+              "time": 1700000002,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 1,
+              "time": 1700000000,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 2,
+              "time": 1700000003,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "replacement"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 3,
+              "time": 1700000001,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 2
+      },
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjMi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 2,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjMi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "2023-11-14T22:13:21.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          },
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "2023-11-14T22:13:23.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "replacement"
+              }
+            ],
+            "status": "available"
+          }
+        ],
+        "coverage": "partial",
+        "nextCursor": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+        "reason": "platform_history_window"
+      }
+    },
+    {
+      "name": "history-cursor",
+      "kind": "history",
+      "scenario": {
+        "name": "history-cursor",
+        "kind": "history",
+        "input": {
+          "limit": 2
+        },
+        "cursor": "1",
+        "data": {
+          "messages": [
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 1,
+              "time": 1700000000,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 2,
+              "time": 1700000001,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 2,
+        "cursor": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+      },
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 3,
+            "reverse_order": true,
+            "message_id": "1"
+          }
+        }
+      ],
+      "result": {
+        "items": [
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "2023-11-14T22:13:21.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          }
+        ],
+        "coverage": "partial",
+        "nextCursor": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi",
+        "reason": "platform_history_window"
+      }
+    },
+    {
+      "name": "history-recalled-oldest",
+      "kind": "history",
+      "scenario": {
+        "name": "history-recalled-oldest",
+        "kind": "history",
+        "input": {
+          "limit": 2
+        },
+        "recalled": [
+          "1"
+        ],
+        "data": {
+          "messages": [
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 1,
+              "time": 1700000000,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 2,
+              "time": 1700000001,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [
+        "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+      ],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 2
+      },
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 2,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "2023-11-14T22:13:21.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          }
+        ],
+        "coverage": "partial",
+        "nextCursor": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+        "reason": "platform_history_window"
+      }
+    },
+    {
+      "name": "history-empty",
+      "kind": "history",
+      "scenario": {
+        "name": "history-empty",
+        "kind": "history",
+        "input": {
+          "limit": 3
+        },
+        "data": {
+          "messages": []
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 3
+      },
+      "trace": [],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 3,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [],
+        "coverage": "partial",
+        "reason": "history_exhausted_or_unavailable"
+      }
+    },
+    {
+      "name": "history-invalid-response",
+      "kind": "history",
+      "scenario": {
+        "name": "history-invalid-response",
+        "kind": "history",
+        "input": {
+          "limit": 3
+        },
+        "data": {
+          "messages": null
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 3
+      },
+      "trace": [],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 3,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "invalid_history_response"
+      }
+    },
+    {
+      "name": "history-zero-limit",
+      "kind": "history",
+      "scenario": {
+        "name": "history-zero-limit",
+        "kind": "history",
+        "input": {
+          "limit": 0
+        },
+        "data": {
+          "messages": [
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 1,
+              "time": 1700000000,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 2,
+              "time": 1700000001,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 0
+      },
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 1,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "2023-11-14T22:13:21.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          }
+        ],
+        "coverage": "partial",
+        "nextCursor": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+        "reason": "platform_history_window"
+      }
+    },
+    {
+      "name": "history-string-infinity",
+      "kind": "history",
+      "scenario": {
+        "name": "history-string-infinity",
+        "kind": "history",
+        "input": {
+          "limit": "Infinity"
+        },
+        "data": {
+          "messages": []
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": "Infinity"
+      },
+      "trace": [],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 100,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [],
+        "coverage": "partial",
+        "reason": "history_exhausted_or_unavailable"
+      }
+    },
+    {
+      "name": "history-missing-limit",
+      "kind": "history",
+      "scenario": {
+        "name": "history-missing-limit",
+        "kind": "history",
+        "input": {},
+        "data": {
+          "messages": []
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {},
+      "trace": [],
+      "requests": [],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "invalid_history_limit"
+      }
+    },
+    {
+      "name": "history-invalid-limit",
+      "kind": "history",
+      "scenario": {
+        "name": "history-invalid-limit",
+        "kind": "history",
+        "input": {
+          "limit": "not-number"
+        },
+        "data": {
+          "messages": []
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": "not-number"
+      },
+      "trace": [],
+      "requests": [],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "invalid_history_limit"
+      }
+    },
+    {
+      "name": "history-extended-dates",
+      "kind": "history",
+      "scenario": {
+        "name": "history-extended-dates",
+        "kind": "history",
+        "input": {
+          "limit": 5
+        },
+        "data": {
+          "messages": [
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 1,
+              "time": -62167219200,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 2,
+              "time": 253402300800,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 3,
+              "time": -62198755200,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            },
+            {
+              "self_id": 42,
+              "post_type": "message",
+              "message_type": "group",
+              "group_id": 99,
+              "user_id": 7,
+              "message_id": 4,
+              "time": 0,
+              "message": [
+                {
+                  "type": "text",
+                  "data": {
+                    "text": "hello"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 5
+      },
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjMi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjQi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 5,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjMi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "-000001-01-01T00:00:00.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          },
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "+010000-01-01T00:00:00.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          },
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "0000-01-01T00:00:00.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          },
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjQi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "1970-01-01T00:00:00.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          }
+        ],
+        "coverage": "partial",
+        "nextCursor": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjMi",
+        "reason": "platform_history_window"
+      }
+    },
+    {
+      "name": "history-failed-action",
+      "kind": "history",
+      "scenario": {
+        "name": "history-failed-action",
+        "kind": "history",
+        "input": {
+          "limit": 3
+        },
+        "failed": true,
+        "data": null
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {
+        "limit": 3
+      },
+      "trace": [],
+      "requests": [
+        {
+          "action": "get_group_msg_history",
+          "params": {
+            "group_id": "99",
+            "count": 3,
+            "reverse_order": true
+          }
+        }
+      ],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "unsupported"
+      }
+    },
+    {
+      "name": "message-sent",
+      "kind": "message",
+      "scenario": {
+        "name": "message-sent",
+        "kind": "message",
+        "id": "1",
+        "data": {
+          "self_id": 42,
+          "post_type": "message",
+          "message_type": "group",
+          "group_id": 99,
+          "user_id": 7,
+          "message_id": 1,
+          "time": 1700000000,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {},
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_msg",
+          "params": {
+            "message_id": "1"
+          }
+        }
+      ],
+      "result": {
+        "items": [
+          {
+            "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+            "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+            "senderId": "ob:u:WyJzbm93bHVtYSIsIjQyIiwiNyJd",
+            "senderPlatformId": "7",
+            "senderAvatarUrl": "https://q1.qlogo.cn/g?b=qq&nk=7&s=100",
+            "sentAt": "2023-11-14T22:13:20.000Z",
+            "receivedAt": "2026-01-01T00:00:00.000Z",
+            "origin": "history",
+            "parts": [
+              {
+                "type": "text",
+                "text": "hello"
+              }
+            ],
+            "status": "available"
+          }
+        ],
+        "coverage": "complete"
+      }
+    },
+    {
+      "name": "message-recalled",
+      "kind": "message",
+      "scenario": {
+        "name": "message-recalled",
+        "kind": "message",
+        "id": "1",
+        "recalled": [
+          "1"
+        ],
+        "data": {
+          "self_id": 42,
+          "post_type": "message",
+          "message_type": "group",
+          "group_id": 99,
+          "user_id": 7,
+          "message_id": 1,
+          "time": 1700000000,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [
+        "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+      ],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {},
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        }
+      ],
+      "requests": [],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "recalled"
+      }
+    },
+    {
+      "name": "message-recall-before-platform-scope",
+      "kind": "message",
+      "scenario": {
+        "name": "message-recall-before-platform-scope",
+        "kind": "message",
+        "id": "bad",
+        "rawId": "wrong-scope",
+        "recalledRaw": [
+          "wrong-scope"
+        ],
+        "data": {
+          "self_id": 42,
+          "post_type": "message",
+          "message_type": "group",
+          "group_id": 99,
+          "user_id": 7,
+          "message_id": 1,
+          "time": 1700000000,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [
+        "wrong-scope"
+      ],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {},
+      "messageId": "wrong-scope",
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "wrong-scope"
+        }
+      ],
+      "requests": [],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "recalled"
+      }
+    },
+    {
+      "name": "message-mismatch",
+      "kind": "message",
+      "scenario": {
+        "name": "message-mismatch",
+        "kind": "message",
+        "id": "1",
+        "data": {
+          "self_id": 42,
+          "post_type": "message",
+          "message_type": "group",
+          "group_id": 99,
+          "user_id": 7,
+          "message_id": 2,
+          "time": 1700000000,
+          "message": [
+            {
+              "type": "text",
+              "data": {
+                "text": "hello"
+              }
+            }
+          ]
+        }
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {},
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        },
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjIi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_msg",
+          "params": {
+            "message_id": "1"
+          }
+        }
+      ],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "message_id_mismatch"
+      }
+    },
+    {
+      "name": "message-invalid",
+      "kind": "message",
+      "scenario": {
+        "name": "message-invalid",
+        "kind": "message",
+        "id": "1",
+        "data": null
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {},
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_msg",
+          "params": {
+            "message_id": "1"
+          }
+        }
+      ],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "invalid_payload"
+      }
+    },
+    {
+      "name": "message-failed-action",
+      "kind": "message",
+      "scenario": {
+        "name": "message-failed-action",
+        "kind": "message",
+        "id": "1",
+        "failed": true,
+        "data": null
+      },
+      "recalledMessageIds": [],
+      "scene": {
+        "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+        "kind": "group",
+        "adapterId": "snowluma",
+        "accountId": "42",
+        "platformSceneId": "99"
+      },
+      "input": {},
+      "messageId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi",
+      "trace": [
+        {
+          "kind": "recalled",
+          "sceneId": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd",
+          "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd:m:IjEi"
+        }
+      ],
+      "requests": [
+        {
+          "action": "get_msg",
+          "params": {
+            "message_id": "1"
+          }
+        }
+      ],
+      "result": {
+        "items": [],
+        "coverage": "unavailable",
+        "reason": "unsupported"
+      }
+    }
+  ],
+  "comparisons": [
+    [
+      "2023-11-14T22:13:22.000Z",
+      "2023-11-14T22:13:22.000Z",
+      0
+    ],
+    [
+      "2023-11-14T22:13:22.000Z",
+      "2023-11-14T22:13:20.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:22.000Z",
+      "2023-11-14T22:13:23.000Z",
+      -1
+    ],
+    [
+      "2023-11-14T22:13:22.000Z",
+      "2023-11-14T22:13:21.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:22.000Z",
+      "0000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:22.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:22.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:22.000Z",
+      "1970-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "2023-11-14T22:13:22.000Z",
+      -1
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "2023-11-14T22:13:20.000Z",
+      0
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "2023-11-14T22:13:23.000Z",
+      -1
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "2023-11-14T22:13:21.000Z",
+      -1
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "0000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:20.000Z",
+      "1970-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "2023-11-14T22:13:22.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "2023-11-14T22:13:20.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "2023-11-14T22:13:23.000Z",
+      0
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "2023-11-14T22:13:21.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "0000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:23.000Z",
+      "1970-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "2023-11-14T22:13:22.000Z",
+      -1
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "2023-11-14T22:13:20.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "2023-11-14T22:13:23.000Z",
+      -1
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "2023-11-14T22:13:21.000Z",
+      0
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "0000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "2023-11-14T22:13:21.000Z",
+      "1970-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:22.000Z",
+      -1
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:20.000Z",
+      -1
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:23.000Z",
+      -1
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:21.000Z",
+      -1
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "0000-01-01T00:00:00.000Z",
+      0
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "0000-01-01T00:00:00.000Z",
+      "1970-01-01T00:00:00.000Z",
+      -1
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:22.000Z",
+      -1
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:20.000Z",
+      -1
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:23.000Z",
+      -1
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:21.000Z",
+      -1
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "0000-01-01T00:00:00.000Z",
+      -1
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      0
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "+010000-01-01T00:00:00.000Z",
+      "1970-01-01T00:00:00.000Z",
+      -1
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:22.000Z",
+      -1
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:20.000Z",
+      -1
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:23.000Z",
+      -1
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:21.000Z",
+      -1
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "0000-01-01T00:00:00.000Z",
+      -1
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      -1
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      0
+    ],
+    [
+      "-000001-01-01T00:00:00.000Z",
+      "1970-01-01T00:00:00.000Z",
+      -1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:22.000Z",
+      -1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:20.000Z",
+      -1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:23.000Z",
+      -1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "2023-11-14T22:13:21.000Z",
+      -1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "0000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "+010000-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "-000001-01-01T00:00:00.000Z",
+      1
+    ],
+    [
+      "1970-01-01T00:00:00.000Z",
+      "1970-01-01T00:00:00.000Z",
+      0
+    ]
+  ]
+}

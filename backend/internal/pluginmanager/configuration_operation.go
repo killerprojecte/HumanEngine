@@ -17,12 +17,12 @@ type configurationSession struct {
 // second validator's newly preserved object is passed to prepare.
 func (m *Manager) beginConfiguration(ctx context.Context, id string, i *item, input, previous *jsjson.Object, requestID string) (*configurationSession, error) {
 	if i.builtin {
-		if _, err := m.inspectBuiltin(i, "validate", input, previous, requestID); err != nil {
+		if _, err := m.inspectBuiltin(ctx, i, "validate", input, previous, requestID); err != nil {
 			return nil, err
 		}
 		var value any
 		return &configurationSession{validate: func(previous *jsjson.Object) error {
-			result, err := m.inspectBuiltin(i, "validate", input, previous, requestID)
+			result, err := m.inspectBuiltin(ctx, i, "validate", input, previous, requestID)
 			if err != nil {
 				return err
 			}

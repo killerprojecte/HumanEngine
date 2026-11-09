@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http/httptest"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
+	"github.com/killerprojecte/HumanEngine/backend/internal/nodeicu"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/usageview"
 )
@@ -91,6 +93,29 @@ func TestUsageActualSourceHTTP(t *testing.T) {
 			r.Header.Set("Authorization", "Bearer "+token)
 			w := httptest.NewRecorder()
 			s.ServeHTTP(w, r)
+			// These source-success cases require pinned ICU calendar parts.
+			// The default binary deliberately cannot substitute host tzdata.
+			if !usageHTTPNativeICU && (c.Name == "dst-hour" || c.Name == "quarter-hour") {
+				if c.Status != 200 || c.Text == "[]" {
+					t.Fatal("named-zone fixture must retain its real source-success oracle")
+				}
+				query := honoQueryValues(r.URL.RawQuery)
+				err := publisher.Publish(context.Background(), func(conn *sql.Conn) ([]byte, error) {
+					var bucket string
+					err := conn.QueryRowContext(context.Background(), "SELECT usage_bucket(?, ?, ?)", "2026-11-01T06:15:00.000Z", query.Get("timeZone"), query.Get("bucket")).Scan(&bucket)
+					return nil, err
+				}, func([]byte) error { t.Fatal("unavailable bucket must not publish"); return nil })
+				if err == nil || !strings.Contains(err.Error(), nodeicu.ErrUnavailable.Error()) {
+					t.Fatalf("expected actual SQLite ICU-unavailable error, got %v", err)
+				}
+				assertUsageICUUnavailable(t, w, false)
+				head := r.Clone(context.Background())
+				head.Method = "HEAD"
+				headResult := httptest.NewRecorder()
+				s.ServeHTTP(headResult, head)
+				assertUsageICUUnavailable(t, headResult, true)
+				return
+			}
 			if w.Code != c.Status || w.Body.String() != c.Text {
 				t.Fatalf("got %d %s; source %d %s", w.Code, w.Body.String(), c.Status, c.Text)
 			}
@@ -128,5 +153,31 @@ func TestUsageActualSourceHTTP(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// assertUsageICUUnavailable checks the unavailable build contract, not source parity.
+func assertUsageICUUnavailable(t *testing.T, w *httptest.ResponseRecorder, head bool) {
+	t.Helper()
+	if w.Code != 503 {
+		t.Fatalf("unavailable ICU status = %d, body %s", w.Code, w.Body.String())
+	}
+	for _, key := range []string{"X-Usage-Incomplete", "X-Usage-Planner-Incomplete"} {
+		if w.Header().Get(key) != "" {
+			t.Fatalf("partial success header %s", key)
+		}
+	}
+	if head {
+		if w.Body.Len() != 0 {
+			t.Fatal("HEAD unavailable response has body")
+		}
+		return
+	}
+	var body map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if len(body) != 2 || body["error"] != "Request failed; inspect server diagnostics" || body["requestId"] == "" {
+		t.Fatalf("unexpected unavailable response: %s", w.Body.String())
 	}
 }

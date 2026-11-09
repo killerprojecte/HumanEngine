@@ -1,0 +1,10 @@
+{
+  "name": "memory.summaries",
+  "description": "Read bounded source-backed semantic views with every original declaration. Summaries are attributed compression, not verified truth. Possible duplicates are not merged; grouped declarations do not prove a shared real event. Keep hypothesis, expiry, review-needed and all source conditions. Select the entire state receipt, never replace originals with generated prose. Reading these views cannot authorize derived learning.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  }
+}

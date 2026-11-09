@@ -67,6 +67,9 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 	reject := func(reason string) (any, error) { return memoryToolObject("status", "rejected", "reason", reason), nil }
 	// learning.propose itself is not a gateModelTool memory read. The source's
 	// early identity guard precedes abort/validation checks.
+	if a.SemanticExposure.CaptureGuard(c) != nil {
+		return reject("semantic_read_not_learning_authority")
+	}
 	if a.IdentityExposure.CaptureGuard(c) != nil {
 		return reject("identity_read_not_learning_authority")
 	}
@@ -80,7 +83,7 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 	if a.IdentityExposure.CaptureGuard(c) != nil {
 		return reject("identity_read_not_learning_authority")
 	}
-	// Semantic/workspace exposures are not composed here. No
+	// Workspace exposure is not composed here. No
 	// synthetic exposure guard or implied learning capability replaces those owners.
 	if a.StateExposures.historical.CaptureGuard(c) != nil || a.StateExposures.history.CaptureGuard(c) != nil || a.StateExposures.timeline.CaptureGuard(c) != nil {
 		return reject("historical_read_not_learning_authority")

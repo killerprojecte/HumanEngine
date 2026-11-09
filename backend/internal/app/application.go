@@ -56,6 +56,7 @@ type Application struct {
 	Bridge              *v1adapterruntime.Bridge
 	WASM                *plugins.WASMHost
 	Diagnostics         *Diagnostics
+	SemanticExposure    *memoryservice.SemanticExposure
 	Semantic            *memoryservice.SemanticRuntime
 	Learning            *learningowner.Runtime
 	Maintenance         *workingset.Maintenance
@@ -205,6 +206,9 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	}
 	app.registerKnowledgeCapture()
 	app.registerContextualTool(memory)
+	if err = app.composeSemanticMemory(owners, memory); err != nil {
+		return app, err
+	}
 	app.registerStateMemoryTools(memory)
 	app.registerRelationTool(memory)
 	effects, err := NewNativeSettingsEffects(memory.projections, memory.workspace, app.Maintenance, app, app.Diagnostics, options.Logs)

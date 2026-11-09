@@ -1,0 +1,144 @@
+{
+  "source": "src/plugins/builtin/snowluma/outbound.ts",
+  "cases": [
+    {
+      "size": 1,
+      "hash": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wireHash": "94c91c923bd69064a811eeb0c09572d8a5a96ed7594434aeb11a3e427b5e627d",
+      "wireLength": 84
+    },
+    {
+      "size": 2,
+      "hash": "b413f47d13ee2fe6c845b2ee141af81de858df4ec549a58b7970bb96645bc8d2",
+      "wireHash": "d58e206ea3bd006554fd57a4d80a585c9b7e94b83ea7f4c26b7b56dd0ae74a93",
+      "wireLength": 84
+    },
+    {
+      "size": 3,
+      "hash": "ae4b3280e56e2faf83f414a6e3dabe9d5fbe18976544c05fed121accb85b53fc",
+      "wireHash": "386c69c6a479f6cb725317d8a571e8df63c37c37397959072f4a5e0871310033",
+      "wireLength": 84
+    },
+    {
+      "size": 49151,
+      "hash": "5421dbc3cb8a3493804cfb92d0ec9a3d65b56325c450e6031aaa351bf5a48960",
+      "wireHash": "419ae54b31c9f6ad0a216548b0babad1ea9869ce049ec17171648dbdce4b788b",
+      "wireLength": 65616
+    },
+    {
+      "size": 49152,
+      "hash": "664d1e34fe80e8713fefa2b9c30df7d7877bbffd850411ffda14f54bd1ce847c",
+      "wireHash": "0caa5f22259b80efee2fc01f83103dd14968937443bc9ad0c0ab51395d22c185",
+      "wireLength": 65616
+    },
+    {
+      "size": 49153,
+      "hash": "20c61a40632e315a836a16167d41e646abdd4b2392625515df571dcd43284c02",
+      "wireHash": "5e556e0dfc4db4566de6d2bae47eb496d1e1ab90180178d6ed1116c31afcaeb6",
+      "wireLength": 65620
+    },
+    {
+      "size": 65536,
+      "hash": "4b640d85ab3ba30fd02c9fc9db4a8928f416322ad27022ea58a65aaee68a4df2",
+      "wireHash": "22481cc02d362cb11a822ded6e5b19adb5b42079cf83b03513320d3e5d0cc7a6",
+      "wireLength": 87464
+    },
+    {
+      "name": "empty-sources-string-1",
+      "params": "x",
+      "textLength": 1,
+      "wireHash": "71e18f4ee77cb75ac51bdb62dfc2c30b766cf1cd9d96c55bbc9bb07e169aefd8",
+      "wireLength": 25
+    },
+    {
+      "name": "empty-sources-string-12000",
+      "params": "x",
+      "textLength": 12000,
+      "wireHash": "9cfbc980d97e45ee73db134437ded20037318f249f781f860b3a6a48b5a1d72a",
+      "wireLength": 12024
+    },
+    {
+      "name": "empty-sources-boolean-1",
+      "params": true,
+      "textLength": 1,
+      "wireHash": "66ec5e5a19f2d1732991ad0f1481e5552d726ee6b7a6895493a2eeee70854e9b",
+      "wireLength": 26
+    },
+    {
+      "name": "empty-sources-boolean-12000",
+      "params": true,
+      "textLength": 12000,
+      "wireHash": "061a2681d1e1ef2c674cfac685ff6d711cab0e72c1d5b72d975595a92165e2e7",
+      "wireLength": 12025
+    },
+    {
+      "name": "empty-sources-number-1",
+      "params": 42,
+      "textLength": 1,
+      "wireHash": "cd694d8261445a90169ea73be60dd3cc1c3cab4d4bf5e1437ae3efd5b04c66cf",
+      "wireLength": 24
+    },
+    {
+      "name": "empty-sources-number-12000",
+      "params": 42,
+      "textLength": 12000,
+      "wireHash": "b3dece8816e6dd7ef584de528f7d6a67abae502c0667dbd2995ea24abe061b21",
+      "wireLength": 12023
+    },
+    {
+      "name": "empty-sources-array-1",
+      "params": [
+        "x"
+      ],
+      "textLength": 1,
+      "wireHash": "973b25ea49b19362759a2cd994899d98c93cbaea01732513be4ff77d69afbd39",
+      "wireLength": 27
+    },
+    {
+      "name": "empty-sources-array-12000",
+      "params": [
+        "x"
+      ],
+      "textLength": 12000,
+      "wireHash": "240116210d0f08ccae42277f1488d455795a8e1faee615dffd25ec73beb55508",
+      "wireLength": 12026
+    },
+    {
+      "name": "invalid-bytes",
+      "error": "outbound_media_invalid"
+    },
+    {
+      "name": "invalid-hash",
+      "error": "outbound_media_invalid"
+    },
+    {
+      "name": "inline-before-source",
+      "error": "outbound_wire_too_large"
+    },
+    {
+      "name": "many-sources",
+      "error": "outbound_media_too_large"
+    },
+    {
+      "name": "total-source",
+      "error": "outbound_media_too_large"
+    },
+    {
+      "name": "duplicate-index",
+      "error": "outbound_encoding_failed"
+    },
+    {
+      "name": "hash-mismatch",
+      "error": "outbound_encoding_failed"
+    },
+    {
+      "name": "missing-path",
+      "error": "outbound_encoding_failed"
+    }
+  ],
+  "usage": {
+    "jobs": 0,
+    "reservedBytes": 0,
+    "workers": 1
+  }
+}

@@ -1,0 +1,345 @@
+[
+  {
+    "Name": "cgroup-unreadable",
+    "Files": {
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n"
+    },
+    "Want": 0,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-budget-not-minimized-against-host-free",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "50000",
+      "/sys/fs/cgroup/leaf/child/memory.max": "60000",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 49000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-parent-is-not-traversed",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n",
+      "/sys/fs/cgroup/leaf/memory.high": "1",
+      "/sys/fs/cgroup/leaf/memory.max": "1",
+      "/sys/fs/cgroup/leaf/memory.current": "1"
+    },
+    "Want": 4000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-high-limits",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 4000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-max-limits",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "3000",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 2000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-current-exceeds-limit",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "9000"
+    },
+    "Want": 0,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-missing-memory.high",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-missing-memory.max",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-zero-high",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "0",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-both-unlimited",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "max\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "max\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-limit-larger-than-host-total",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "20000000",
+      "/sys/fs/cgroup/leaf/child/memory.max": "30000000",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-limit-equals-host-total",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "10240000",
+      "/sys/fs/cgroup/leaf/child/memory.max": "10240000",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 10239000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-missing-current-is-zero",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n"
+    },
+    "Want": 5000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v2-no-global-fallback",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n",
+      "/sys/fs/cgroup/memory.high": "100",
+      "/sys/fs/cgroup/memory.max": "100"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v1-soft-limit",
+    "Files": {
+      "/proc/self/cgroup": "5:cpu:/other\n4:memory:/leaf\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/memory/leaf/memory.soft_limit_in_bytes": "100",
+      "/sys/fs/cgroup/memory/leaf/memory.limit_in_bytes": "200",
+      "/sys/fs/cgroup/memory/leaf/memory.usage_in_bytes": "10"
+    },
+    "Want": 90,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v1-global-limits-leaf-current",
+    "Files": {
+      "/proc/self/cgroup": "5:cpu:/other\n4:memory:/leaf\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/memory/leaf/memory.soft_limit_in_bytes": "0",
+      "/sys/fs/cgroup/memory/leaf/memory.limit_in_bytes": "200",
+      "/sys/fs/cgroup/memory/leaf/memory.usage_in_bytes": "10",
+      "/sys/fs/cgroup/memory/memory.soft_limit_in_bytes": "80",
+      "/sys/fs/cgroup/memory/memory.limit_in_bytes": "90"
+    },
+    "Want": 70,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v1-zero-current-global-fallback",
+    "Files": {
+      "/proc/self/cgroup": "5:cpu:/other\n4:memory:/leaf\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/memory/leaf/memory.soft_limit_in_bytes": "100",
+      "/sys/fs/cgroup/memory/leaf/memory.limit_in_bytes": "200",
+      "/sys/fs/cgroup/memory/leaf/memory.usage_in_bytes": "0",
+      "/sys/fs/cgroup/memory/memory.usage_in_bytes": "3"
+    },
+    "Want": 97,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v1-exact-memory-controller-match",
+    "Files": {
+      "/proc/self/cgroup": "4:cpu,memory:/leaf\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/memory/leaf/memory.soft_limit_in_bytes": "100",
+      "/sys/fs/cgroup/memory/leaf/memory.limit_in_bytes": "200",
+      "/sys/fs/cgroup/memory/leaf/memory.usage_in_bytes": "10",
+      "/sys/fs/cgroup/memory/memory.soft_limit_in_bytes": "80",
+      "/sys/fs/cgroup/memory/memory.limit_in_bytes": "90",
+      "/sys/fs/cgroup/memory/memory.usage_in_bytes": "3"
+    },
+    "Want": 77,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "v1-linux-unlimited-sentinel",
+    "Files": {
+      "/proc/self/cgroup": "5:cpu:/other\n4:memory:/leaf\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/memory/leaf/memory.soft_limit_in_bytes": "9223372036854771712",
+      "/sys/fs/cgroup/memory/leaf/memory.limit_in_bytes": "9223372036854771712",
+      "/sys/fs/cgroup/memory/leaf/memory.usage_in_bytes": "10"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "memavailable-zero-sysinfo-fallback",
+    "Files": {
+      "/proc/self/cgroup": "0::/\n",
+      "/proc/meminfo": "MemAvailable: 0 kB\n"
+    },
+    "Want": 777,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "meminfo-missing-sysinfo-fallback",
+    "Files": {
+      "/proc/self/cgroup": "0::/\n"
+    },
+    "Want": 777,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "memtotal-missing-sysinfo-fallback",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 4000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "uint64-scans-decimal-prefix",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "5000\n",
+      "/sys/fs/cgroup/leaf/child/memory.max": " +3000trailing",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 2000,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "max-without-newline-is-not-unlimited",
+    "Files": {
+      "/proc/self/cgroup": "0::/leaf/child\n",
+      "/proc/meminfo": "MemAvailable: 10 kB\nMemTotal: 10000 kB\n",
+      "/sys/fs/cgroup/leaf/child/memory.high": "max",
+      "/sys/fs/cgroup/leaf/child/memory.max": "6000\n",
+      "/sys/fs/cgroup/leaf/child/memory.current": "1000\n"
+    },
+    "Want": 10240,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  },
+  {
+    "Name": "meminfo-probe-is-bounded",
+    "Files": {
+      "/proc/self/cgroup": "0::/\n",
+      "/proc/meminfo": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxMemAvailable: 99 kB\n"
+    },
+    "Want": 777,
+    "SysFree": 777,
+    "SysTotal": 20000000,
+    "SysOK": true
+  }
+]

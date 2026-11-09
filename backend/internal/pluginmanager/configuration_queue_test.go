@@ -294,8 +294,36 @@ func TestConfigurationDuringAsyncActivationKeepsModule(t *testing.T) {
 	entered := filepath.Join(root, "entered")
 	release := filepath.Join(root, "release")
 	late := filepath.Join(root, "late")
-	paths, _ := json.Marshal([]string{entered, release, late})
-	source := `import{existsSync,writeFileSync}from'node:fs';const[entered,release,late]=` + string(paths) + `;let count=0;export default{manifest:{id:'queued',capabilities:[],configSchema:{type:'object',additionalProperties:true}},validateConfiguration(){count++},async setup(c){if(c.config.who==='a'){writeFileSync(entered,'yes');await new Promise(resolve=>{const timer=setInterval(()=>{if(existsSync(release)){clearInterval(timer);resolve()}},1)});try{c.registerAdminAction('stale',()=>0);writeFileSync(late,'accepted')}catch(e){writeFileSync(late,e.message)};return}c.registerAdminAction('count',()=>count)}}`
+	pending := late + ".pending"
+	staged := filepath.Join(root, "staged")
+	publish := filepath.Join(root, "publish")
+	paths, _ := json.Marshal([]string{entered, release, late, pending, staged, publish})
+	source := `import{existsSync,writeFileSync,openSync,writeSync,closeSync,renameSync}from'node:fs';
+const[entered,release,late,pending,staged,publish]=` + string(paths) + `;
+const waitFor=path=>new Promise(resolve=>{const timer=setInterval(()=>{if(existsSync(path)){clearInterval(timer);resolve()}},1)});
+let count=0;
+export default{
+ manifest:{id:'queued',capabilities:[],configSchema:{type:'object',additionalProperties:true}},
+ validateConfiguration(){count++},
+ async setup(c){
+  if(c.config.who==='a'){
+   writeFileSync(entered,'yes');
+   await waitFor(release);
+   let result;
+   try{c.registerAdminAction('stale',()=>0);result='accepted'}catch(e){result=e.message}
+   // Hold the create-before-write window open so the observer checks it explicitly.
+   const fd=openSync(pending,'w');
+   writeFileSync(staged,'yes');
+   await waitFor(publish);
+   writeSync(fd,result);
+   closeSync(fd);
+   // The completion path becomes visible only after its full payload is written.
+   renameSync(pending,late);
+   return;
+  }
+  c.registerAdminAction('count',()=>count);
+ }
+}`
 	if err := os.WriteFile(filepath.Join(root, "queued.mjs"), []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -353,6 +381,30 @@ waiting:
 		t.Fatal("lost module counter", value, err)
 	}
 	if err = os.WriteFile(release, []byte("go"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	// A successful ReadFile does not imply a writer has published its payload.
+	// Reproduce the old fixture's empty observation under a gate, not a sleep.
+	stagingTimeout := time.NewTimer(5 * time.Second)
+	defer stagingTimeout.Stop()
+staging:
+	for {
+		select {
+		case <-stagingTimeout.C:
+			t.Fatal("late setup did not stage its result")
+		case <-ticker.C:
+			if _, err := os.Stat(staged); err == nil {
+				break staging
+			}
+		}
+	}
+	if result, err := os.ReadFile(pending); err != nil || len(result) != 0 {
+		t.Fatal("create-before-write window not reproduced", string(result), err)
+	}
+	if result, err := os.ReadFile(late); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("unpublished result became visible", string(result), err)
+	}
+	if err = os.WriteFile(publish, []byte("go"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	timeout := time.NewTimer(5 * time.Second)

@@ -1,0 +1,880 @@
+{
+  "hashes": {
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/memory/read/historical-exposure.ts": "5e902c0bafce555cf4f81d826f76f841be7d7255ae388c9440adb197bd52fe4f",
+    "src/memory/read/assertion-history-query.ts": "3942353ae876c82931fcff0bcb8477780e6a60f9b6003c80e17f5972778636a2",
+    "src/memory/read/assertion-authority.ts": "8dfb7c1fd0d34945e8b8c3c0db18469e63e8b169c3f3fd2bb577067edbbf3ecc",
+    "src/memory/storage/assertion-history.ts": "063e842d326e7e32a4c95b4bb6f0ce9adf749cef5491cc3014903b0ca3c1c00f",
+    "src/memory/read/state-exposure.ts": "cdcdf47ff2f3b3fa6995b192491a8fbcaacfc4b0ba86fc175480ef40f28ac0ba",
+    "backend/tests/generate-historical-exposure.mjs": "ea1a0d61c644d99e50bd011663b177eb161acbb83340967009350730511c5c02"
+  },
+  "fixed": "2026-10-28T12:00:00.000Z",
+  "outcomes": [
+    {
+      "name": "legacy_history_receipts_and_undefined",
+      "record": {
+        "id": "history",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s",
+          "personId": "p"
+        },
+        "kind": "experience",
+        "content": "Synthetic historical fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "proof-source",
+            "senderId": "p"
+          }
+        ],
+        "importance": "low",
+        "confidence": 0.5,
+        "locked": false,
+        "origin": "manual",
+        "lineageStatus": "unverified",
+        "status": "active",
+        "learnedAt": "2000-01-01T00:00:00.000Z"
+      },
+      "proofs": [
+        {
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p"
+            }
+          ],
+          "parents": [],
+          "sourceObservations": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p",
+              "receivedAt": "2025-01-01T00:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "value": {
+        "before": {
+          "version": 0,
+          "deletionEpoch": 0,
+          "deleted": false
+        },
+        "history": {
+          "version": 1,
+          "deletionEpoch": 0,
+          "deleted": false,
+          "revisions": [
+            {
+              "assertionId": "history",
+              "version": 1,
+              "record": {
+                "id": "history",
+                "scope": {
+                  "kind": "scene",
+                  "sceneId": "s",
+                  "personId": "p"
+                },
+                "kind": "experience",
+                "content": "Synthetic historical fact",
+                "sources": [
+                  {
+                    "sceneId": "s",
+                    "messageId": "proof-source",
+                    "senderId": "p"
+                  }
+                ],
+                "importance": "low",
+                "confidence": 0.5,
+                "locked": false,
+                "origin": "manual",
+                "lineageStatus": "unverified",
+                "status": "active",
+                "learnedAt": "2000-01-01T00:00:00.000Z",
+                "observedAt": "2025-01-01T00:00:00.000Z"
+              },
+              "supports": [
+                {
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proof-source",
+                      "senderId": "p"
+                    }
+                  ],
+                  "parents": [],
+                  "sourceObservations": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proof-source",
+                      "senderId": "p",
+                      "receivedAt": "2025-01-01T00:00:00.000Z"
+                    }
+                  ]
+                }
+              ],
+              "recordedAt": "2000-01-01T00:00:00.000Z",
+              "validFrom": null,
+              "validTo": null,
+              "event": {
+                "kind": "admin_assertion",
+                "actorId": null,
+                "legacyImport": true
+              }
+            }
+          ],
+          "coverage": "complete"
+        },
+        "values": [
+          {
+            "kind": "assertion_history",
+            "interpretation": "previously_recorded_not_current_truth",
+            "sourceBodyCoverage": "unavailable",
+            "revisions": [
+              {
+                "assertionId": "history",
+                "version": 1,
+                "record": {
+                  "id": "history",
+                  "scope": {
+                    "kind": "scene",
+                    "sceneId": "s",
+                    "personId": "p"
+                  },
+                  "kind": "experience",
+                  "content": "Synthetic historical fact",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proof-source",
+                      "senderId": "p"
+                    }
+                  ],
+                  "importance": "low",
+                  "confidence": 0.5,
+                  "locked": false,
+                  "origin": "manual",
+                  "lineageStatus": "unverified",
+                  "status": "active",
+                  "learnedAt": "2000-01-01T00:00:00.000Z",
+                  "observedAt": "2025-01-01T00:00:00.000Z"
+                },
+                "supports": [
+                  {
+                    "sources": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p"
+                      }
+                    ],
+                    "parents": [],
+                    "sourceObservations": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p",
+                        "receivedAt": "2025-01-01T00:00:00.000Z"
+                      }
+                    ]
+                  }
+                ],
+                "recordedAt": "2000-01-01T00:00:00.000Z",
+                "validFrom": null,
+                "validTo": null,
+                "event": {
+                  "kind": "admin_assertion",
+                  "actorId": null,
+                  "legacyImport": true
+                },
+                "ref": {
+                  "id": "history",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "validityCoverage": "unknown"
+              }
+            ],
+            "coverage": {
+              "status": "limited",
+              "reasons": [
+                "legacy_import",
+                "legacy_proof_binding_unknown",
+                "valid_time_unknown"
+              ],
+              "returned": 1,
+              "hasMore": false
+            },
+            "anchor": {
+              "id": "history",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "stateKind": "assertion_history",
+            "query": {
+              "memoryId": "history"
+            }
+          }
+        ],
+        "ownAsOf": true,
+        "ownValidAt": true,
+        "forged": 0,
+        "foreign": 0,
+        "selected": 1,
+        "repeat": 1,
+        "valid": true,
+        "dependencies": [
+          "proof-source"
+        ],
+        "simulation": 0
+      }
+    },
+    {
+      "name": "query_limits_time_and_exact_anchor",
+      "record": {
+        "id": "history",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s",
+          "personId": "p"
+        },
+        "kind": "experience",
+        "content": "Synthetic historical fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "proof-source",
+            "senderId": "p"
+          }
+        ],
+        "importance": "low",
+        "confidence": 0.5,
+        "locked": false,
+        "origin": "manual",
+        "lineageStatus": "unverified",
+        "status": "active",
+        "learnedAt": "2000-01-01T00:00:00.000Z"
+      },
+      "proofs": [
+        {
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p"
+            }
+          ],
+          "parents": [],
+          "sourceObservations": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p",
+              "receivedAt": "2025-01-01T00:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "value": {
+        "full": [
+          {
+            "kind": "assertion_history",
+            "interpretation": "previously_recorded_not_current_truth",
+            "sourceBodyCoverage": "unavailable",
+            "revisions": [
+              {
+                "assertionId": "history",
+                "version": 2,
+                "record": {
+                  "id": "history",
+                  "scope": {
+                    "kind": "scene",
+                    "sceneId": "s",
+                    "personId": "p"
+                  },
+                  "kind": "experience",
+                  "content": "Synthetic historical fact",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proof-source",
+                      "senderId": "p"
+                    }
+                  ],
+                  "importance": "low",
+                  "confidence": 0.5,
+                  "locked": true,
+                  "origin": "manual",
+                  "lineageStatus": "unverified",
+                  "status": "active",
+                  "learnedAt": "2000-01-01T00:00:00.000Z",
+                  "observedAt": "2025-01-01T00:00:00.000Z"
+                },
+                "supports": [
+                  {
+                    "sources": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p"
+                      }
+                    ],
+                    "parents": [],
+                    "sourceObservations": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p",
+                        "receivedAt": "2025-01-01T00:00:00.000Z"
+                      }
+                    ]
+                  }
+                ],
+                "recordedAt": "2026-10-28T12:00:00.000Z",
+                "validFrom": null,
+                "validTo": null,
+                "event": {
+                  "kind": "admin_assertion",
+                  "actorId": null,
+                  "legacyImport": false
+                },
+                "ref": {
+                  "id": "history",
+                  "version": 2,
+                  "deletionEpoch": 0
+                },
+                "validityCoverage": "unknown"
+              }
+            ],
+            "coverage": {
+              "status": "limited",
+              "reasons": [
+                "legacy_proof_binding_unknown",
+                "result_limit",
+                "valid_time_unknown"
+              ],
+              "returned": 1,
+              "hasMore": true
+            },
+            "anchor": {
+              "id": "history",
+              "version": 2,
+              "deletionEpoch": 0
+            },
+            "stateKind": "assertion_history",
+            "query": {
+              "memoryId": "history",
+              "limit": 1
+            }
+          }
+        ],
+        "old": [
+          {
+            "kind": "assertion_history",
+            "interpretation": "previously_recorded_not_current_truth",
+            "sourceBodyCoverage": "unavailable",
+            "asOfRecorded": "2000-01-01T00:00:00.000Z",
+            "revisions": [
+              {
+                "assertionId": "history",
+                "version": 1,
+                "record": {
+                  "id": "history",
+                  "scope": {
+                    "kind": "scene",
+                    "sceneId": "s",
+                    "personId": "p"
+                  },
+                  "kind": "experience",
+                  "content": "Synthetic historical fact",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proof-source",
+                      "senderId": "p"
+                    }
+                  ],
+                  "importance": "low",
+                  "confidence": 0.5,
+                  "locked": false,
+                  "origin": "manual",
+                  "lineageStatus": "unverified",
+                  "status": "active",
+                  "learnedAt": "2000-01-01T00:00:00.000Z",
+                  "observedAt": "2025-01-01T00:00:00.000Z"
+                },
+                "supports": [
+                  {
+                    "sources": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p"
+                      }
+                    ],
+                    "parents": [],
+                    "sourceObservations": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p",
+                        "receivedAt": "2025-01-01T00:00:00.000Z"
+                      }
+                    ]
+                  }
+                ],
+                "recordedAt": "2000-01-01T00:00:00.000Z",
+                "validFrom": null,
+                "validTo": null,
+                "event": {
+                  "kind": "admin_assertion",
+                  "actorId": null,
+                  "legacyImport": true
+                },
+                "ref": {
+                  "id": "history",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "validityCoverage": "unknown"
+              }
+            ],
+            "coverage": {
+              "status": "limited",
+              "reasons": [
+                "legacy_import",
+                "legacy_proof_binding_unknown",
+                "valid_time_unknown"
+              ],
+              "returned": 1,
+              "hasMore": false
+            },
+            "anchor": {
+              "id": "history",
+              "version": 2,
+              "deletionEpoch": 0
+            },
+            "stateKind": "assertion_history",
+            "query": {
+              "memoryId": "history",
+              "asOfRecorded": "2000-01-01T00:00:00.000Z"
+            }
+          }
+        ],
+        "errors": [
+          "memory_history_query_invalid",
+          "memory_history_query_invalid",
+          "memory_history_query_invalid",
+          "memory_history_query_invalid",
+          "memory_history_anchor_changed"
+        ]
+      }
+    },
+    {
+      "name": "revision_and_config_revoke_detached_guard",
+      "record": {
+        "id": "history",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s",
+          "personId": "p"
+        },
+        "kind": "experience",
+        "content": "Synthetic historical fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "proof-source",
+            "senderId": "p"
+          }
+        ],
+        "importance": "low",
+        "confidence": 0.5,
+        "locked": false,
+        "origin": "manual",
+        "lineageStatus": "unverified",
+        "status": "active",
+        "learnedAt": "2000-01-01T00:00:00.000Z"
+      },
+      "proofs": [
+        {
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p"
+            }
+          ],
+          "parents": [],
+          "sourceObservations": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p",
+              "receivedAt": "2025-01-01T00:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "value": {
+        "revisionValid": false,
+        "stale": 0,
+        "guard": false,
+        "stillPresent": true,
+        "disabledQuery": 0,
+        "turnValid": false
+      }
+    },
+    {
+      "name": "recall_changes_retained_privacy",
+      "record": {
+        "id": "history",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s",
+          "personId": "p"
+        },
+        "kind": "experience",
+        "content": "Synthetic historical fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "proof-source",
+            "senderId": "p"
+          }
+        ],
+        "importance": "low",
+        "confidence": 0.5,
+        "locked": false,
+        "origin": "manual",
+        "lineageStatus": "unverified",
+        "status": "active",
+        "learnedAt": "2000-01-01T00:00:00.000Z"
+      },
+      "proofs": [
+        {
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p"
+            }
+          ],
+          "parents": [],
+          "sourceObservations": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p",
+              "receivedAt": "2025-01-01T00:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "value": {
+        "guard": false,
+        "stillPresent": true,
+        "history": {
+          "version": 1,
+          "deletionEpoch": 0,
+          "deleted": false,
+          "revisions": [],
+          "coverage": "complete"
+        },
+        "next": [
+          {
+            "kind": "assertion_history",
+            "interpretation": "previously_recorded_not_current_truth",
+            "sourceBodyCoverage": "unavailable",
+            "revisions": [
+              {
+                "assertionId": "history",
+                "version": 1,
+                "record": {
+                  "id": "history",
+                  "scope": {
+                    "kind": "scene",
+                    "sceneId": "s",
+                    "personId": "p"
+                  },
+                  "kind": "experience",
+                  "content": "Synthetic historical fact",
+                  "sources": [],
+                  "importance": "low",
+                  "confidence": 0.5,
+                  "locked": false,
+                  "origin": "manual",
+                  "lineageStatus": "unverified",
+                  "status": "active",
+                  "learnedAt": "2000-01-01T00:00:00.000Z"
+                },
+                "supports": [],
+                "recordedAt": "2000-01-01T00:00:00.000Z",
+                "validFrom": null,
+                "validTo": null,
+                "event": {
+                  "kind": "admin_assertion",
+                  "actorId": null,
+                  "legacyImport": true
+                },
+                "ref": {
+                  "id": "history",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "validityCoverage": "unknown"
+              }
+            ],
+            "coverage": {
+              "status": "limited",
+              "reasons": [
+                "legacy_import",
+                "valid_time_unknown"
+              ],
+              "returned": 1,
+              "hasMore": false
+            },
+            "anchor": {
+              "id": "history",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "stateKind": "assertion_history",
+            "query": {
+              "memoryId": "history"
+            }
+          }
+        ],
+        "turnValid": false
+      }
+    },
+    {
+      "name": "missing_source_metadata_qualifies_history",
+      "record": {
+        "id": "history",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s",
+          "personId": "p"
+        },
+        "kind": "experience",
+        "content": "Synthetic historical fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "proof-source",
+            "senderId": "p",
+            "eventRef": {
+              "eventId": "missing-source-head",
+              "revision": 1,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "importance": "low",
+        "confidence": 0.5,
+        "locked": false,
+        "origin": "manual",
+        "lineageStatus": "unverified",
+        "status": "active",
+        "learnedAt": "2000-01-01T00:00:00.000Z"
+      },
+      "proofs": [
+        {
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p",
+              "eventRef": {
+                "eventId": "missing-source-head",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            }
+          ],
+          "parents": [],
+          "sourceObservations": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p",
+              "receivedAt": "2025-01-01T00:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "value": {
+        "values": [
+          {
+            "kind": "assertion_history",
+            "interpretation": "previously_recorded_not_current_truth",
+            "sourceBodyCoverage": "unavailable",
+            "revisions": [
+              {
+                "assertionId": "history",
+                "version": 1,
+                "record": {
+                  "id": "history",
+                  "scope": {
+                    "kind": "scene",
+                    "sceneId": "s",
+                    "personId": "p"
+                  },
+                  "kind": "experience",
+                  "content": "Synthetic historical fact",
+                  "sources": [
+                    {
+                      "sceneId": "s",
+                      "messageId": "proof-source",
+                      "senderId": "p",
+                      "eventRef": {
+                        "eventId": "missing-source-head",
+                        "revision": 1,
+                        "deletionEpoch": 0
+                      }
+                    }
+                  ],
+                  "importance": "low",
+                  "confidence": 0.5,
+                  "locked": false,
+                  "origin": "manual",
+                  "lineageStatus": "unverified",
+                  "status": "active",
+                  "learnedAt": "2000-01-01T00:00:00.000Z",
+                  "observedAt": "2025-01-01T00:00:00.000Z"
+                },
+                "supports": [
+                  {
+                    "sources": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p",
+                        "eventRef": {
+                          "eventId": "missing-source-head",
+                          "revision": 1,
+                          "deletionEpoch": 0
+                        }
+                      }
+                    ],
+                    "parents": [],
+                    "sourceObservations": [
+                      {
+                        "sceneId": "s",
+                        "messageId": "proof-source",
+                        "senderId": "p",
+                        "receivedAt": "2025-01-01T00:00:00.000Z"
+                      }
+                    ]
+                  }
+                ],
+                "recordedAt": "2000-01-01T00:00:00.000Z",
+                "validFrom": null,
+                "validTo": null,
+                "event": {
+                  "kind": "admin_assertion",
+                  "actorId": null,
+                  "legacyImport": true
+                },
+                "ref": {
+                  "id": "history",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "validityCoverage": "unknown"
+              }
+            ],
+            "coverage": {
+              "status": "limited",
+              "reasons": [
+                "legacy_import",
+                "source_event_metadata_unavailable",
+                "valid_time_unknown"
+              ],
+              "returned": 1,
+              "hasMore": false
+            },
+            "anchor": {
+              "id": "history",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "stateKind": "assertion_history",
+            "query": {
+              "memoryId": "history"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "bounded_history_and_result_windows",
+      "record": {
+        "id": "history",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "s",
+          "personId": "p"
+        },
+        "kind": "experience",
+        "content": "Synthetic historical fact",
+        "sources": [
+          {
+            "sceneId": "s",
+            "messageId": "proof-source",
+            "senderId": "p"
+          }
+        ],
+        "importance": "low",
+        "confidence": 0.5,
+        "locked": false,
+        "origin": "manual",
+        "lineageStatus": "unverified",
+        "status": "active",
+        "learnedAt": "2000-01-01T00:00:00.000Z"
+      },
+      "proofs": [
+        {
+          "sources": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p"
+            }
+          ],
+          "parents": [],
+          "sourceObservations": [
+            {
+              "sceneId": "s",
+              "messageId": "proof-source",
+              "senderId": "p",
+              "receivedAt": "2025-01-01T00:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "value": {
+        "historyCount": 200,
+        "first": 6,
+        "last": 205,
+        "historyCoverage": "limited",
+        "viewCount": 20,
+        "viewFirst": 186,
+        "viewLast": 205,
+        "coverage": {
+          "status": "limited",
+          "reasons": [
+            "legacy_proof_binding_unknown",
+            "result_limit",
+            "valid_time_unknown"
+          ],
+          "returned": 20,
+          "hasMore": true
+        }
+      }
+    }
+  ]
+}

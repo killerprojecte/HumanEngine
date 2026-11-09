@@ -1,0 +1,1395 @@
+{
+  "sourceHash": "e39bdbc29f063267991b38ec8a36e903dbd12388e2d1cb803915ede65dac8060",
+  "provenance": "actual LogChannel and workerSource; synthetic OS boundaries",
+  "cases": [
+    {
+      "name": "default-limits-and-option-validation",
+      "initial": [
+        {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 0,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 0,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      ],
+      "closed": [
+        {
+          "complete": true,
+          "durable": false,
+          "throughAcceptedRecords": 0,
+          "flushedAcceptedRecords": 0,
+          "status": {
+            "state": "closed",
+            "backpressured": false,
+            "acceptedRecords": 0,
+            "writtenRecords": 0,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1048576,
+            "maxPendingRecords": 256,
+            "lastFailure": null
+          }
+        },
+        {
+          "complete": true,
+          "durable": true,
+          "throughAcceptedRecords": 0,
+          "flushedAcceptedRecords": 0,
+          "status": {
+            "state": "closed",
+            "backpressured": false,
+            "acceptedRecords": 0,
+            "writtenRecords": 0,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 4194304,
+            "maxPendingRecords": 1024,
+            "lastFailure": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "record-reserve-sticky-rejection-whole-fifo",
+      "admission": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        false
+      ],
+      "pending": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 8,
+        "writtenRecords": 0,
+        "rejectedRecords": 2,
+        "rejectedBytes": 1027,
+        "failedRecords": 0,
+        "unconfirmedRecords": 0,
+        "pendingRecords": 8,
+        "pendingBytes": 23,
+        "maxPendingBytes": 1024,
+        "maxPendingRecords": 8,
+        "lastFailure": "record_too_large"
+      },
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 8,
+        "flushedAcceptedRecords": 8,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 8,
+          "writtenRecords": 8,
+          "rejectedRecords": 2,
+          "rejectedBytes": 1027,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1024,
+          "maxPendingRecords": 8,
+          "lastFailure": "record_too_large"
+        }
+      },
+      "bytes": "0\n1\n2\n3\n4\n5\n6\npriority\n"
+    },
+    {
+      "name": "exact-byte-reserve-unicode-empty-and-allocation-failure",
+      "admission": [
+        true,
+        false,
+        true,
+        true,
+        false,
+        true
+      ],
+      "full": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 3,
+        "writtenRecords": 0,
+        "rejectedRecords": 1,
+        "rejectedBytes": 1,
+        "failedRecords": 0,
+        "unconfirmedRecords": 0,
+        "pendingRecords": 3,
+        "pendingBytes": 1024,
+        "maxPendingBytes": 1024,
+        "maxPendingRecords": 8,
+        "lastFailure": "queue_full"
+      },
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 4,
+        "flushedAcceptedRecords": 4,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 4,
+          "writtenRecords": 4,
+          "rejectedRecords": 2,
+          "rejectedBytes": 15,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1024,
+          "maxPendingRecords": 8,
+          "lastFailure": "encode_failed"
+        }
+      },
+      "bytesHex": "f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a80f09f9a807878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878e6bca2e5ad97f09f9a80efbfbd0a"
+    },
+    {
+      "name": "stdout-partial-eagain-retries-only-unwritten-suffix",
+      "during": [
+        {
+          "state": "closed",
+          "backpressured": true,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 1,
+          "pendingBytes": 12,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        {
+          "state": "closed",
+          "backpressured": true,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 1,
+          "pendingBytes": 12,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        },
+        {
+          "state": "closed",
+          "backpressured": true,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 1,
+          "pendingBytes": 12,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        }
+      ],
+      "backoffs": [
+        2,
+        4,
+        2
+      ],
+      "result": {
+        "complete": true,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        }
+      },
+      "bytes": "prefix:🚀\n"
+    },
+    {
+      "name": "ambiguous-partial-error-is-terminal-no-replay",
+      "beforeReject": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 2,
+        "writtenRecords": 0,
+        "rejectedRecords": 0,
+        "rejectedBytes": 0,
+        "failedRecords": 2,
+        "unconfirmedRecords": 0,
+        "pendingRecords": 0,
+        "pendingBytes": 0,
+        "maxPendingBytes": 1048576,
+        "maxPendingRecords": 256,
+        "lastFailure": "sink_write_failed"
+      },
+      "admitted": false,
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 0,
+          "rejectedRecords": 1,
+          "rejectedBytes": 6,
+          "failedRecords": 2,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "sink_failed"
+        }
+      },
+      "operations": [
+        [
+          "write",
+          "<stdout>",
+          0,
+          7
+        ],
+        [
+          "write",
+          "<stdout>",
+          3,
+          4
+        ]
+      ]
+    },
+    {
+      "name": "fsync-failure-does-not-invent-failed-record",
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": "sink_write_failed"
+        }
+      }
+    },
+    {
+      "name": "zero-write-is-terminal",
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 1,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "sink_write_failed"
+        }
+      }
+    },
+    {
+      "name": "file-open-failure-is-sink-failure-not-construction-failure",
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 2,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": "sink_write_failed"
+        }
+      },
+      "operations": [
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ]
+      ]
+    },
+    {
+      "name": "sync-close-drains-existing-batch-and-fsync",
+      "result": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 2,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 2,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "operations": [
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          4
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          4
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/logs/runtime.jsonl"
+        ]
+      ]
+    },
+    {
+      "name": "worker-error-is-unconfirmed-and-sanitized",
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 1,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "worker_failed"
+        }
+      }
+    },
+    {
+      "name": "worker-exit-is-unconfirmed-and-sanitized",
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 1,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "worker_exited"
+        }
+      }
+    },
+    {
+      "name": "stop-during-backpressure-never-replays-written-prefix",
+      "timeoutResult": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 1,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "flush_timeout"
+        }
+      },
+      "after": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 1,
+        "writtenRecords": 0,
+        "rejectedRecords": 0,
+        "rejectedBytes": 0,
+        "failedRecords": 1,
+        "unconfirmedRecords": 0,
+        "pendingRecords": 0,
+        "pendingBytes": 0,
+        "maxPendingBytes": 1048576,
+        "maxPendingRecords": 256,
+        "lastFailure": "flush_timeout"
+      },
+      "bytes": "ab"
+    },
+    {
+      "name": "records-handoff-failure-is-unconfirmed",
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 2,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "enqueue_failed"
+        }
+      },
+      "closedBeforeExit": false
+    },
+    {
+      "name": "flush-handoff-failure-is-unconfirmed",
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 2,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "flush_failed"
+        }
+      },
+      "closedBeforeExit": false
+    },
+    {
+      "name": "concurrent-flush-targets-own-later-admissions",
+      "results": [
+        {
+          "complete": true,
+          "durable": true,
+          "throughAcceptedRecords": 1,
+          "flushedAcceptedRecords": 1,
+          "status": {
+            "state": "ready",
+            "backpressured": false,
+            "acceptedRecords": 2,
+            "writtenRecords": 1,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 1,
+            "pendingBytes": 4,
+            "maxPendingBytes": 4194304,
+            "maxPendingRecords": 1024,
+            "lastFailure": null
+          }
+        },
+        {
+          "complete": true,
+          "durable": true,
+          "throughAcceptedRecords": 2,
+          "flushedAcceptedRecords": 2,
+          "status": {
+            "state": "ready",
+            "backpressured": false,
+            "acceptedRecords": 2,
+            "writtenRecords": 2,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 4194304,
+            "maxPendingRecords": 1024,
+            "lastFailure": null
+          }
+        }
+      ],
+      "close": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 2,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 2,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      }
+    },
+    {
+      "name": "shorter-concurrent-deadline-abandons-unconfirmed",
+      "results": [
+        {
+          "complete": false,
+          "durable": false,
+          "throughAcceptedRecords": 1,
+          "flushedAcceptedRecords": 0,
+          "status": {
+            "state": "degraded",
+            "backpressured": false,
+            "acceptedRecords": 1,
+            "writtenRecords": 0,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 1,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1048576,
+            "maxPendingRecords": 256,
+            "lastFailure": "flush_timeout"
+          }
+        },
+        {
+          "complete": false,
+          "durable": false,
+          "throughAcceptedRecords": 1,
+          "flushedAcceptedRecords": 0,
+          "status": {
+            "state": "degraded",
+            "backpressured": false,
+            "acceptedRecords": 1,
+            "writtenRecords": 0,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 1,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 1048576,
+            "maxPendingRecords": 256,
+            "lastFailure": "flush_timeout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "file-drains-independently-of-held-stdout",
+      "fileResult": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "held": {
+        "state": "ready",
+        "backpressured": false,
+        "acceptedRecords": 1,
+        "writtenRecords": 0,
+        "rejectedRecords": 0,
+        "rejectedBytes": 0,
+        "failedRecords": 0,
+        "unconfirmedRecords": 0,
+        "pendingRecords": 1,
+        "pendingBytes": 5,
+        "maxPendingBytes": 1048576,
+        "maxPendingRecords": 256,
+        "lastFailure": null
+      },
+      "outResult": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 1,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "flush_timeout"
+        }
+      }
+    },
+    {
+      "name": "released-lease-is-local-and-retains-generation-view",
+      "aClosed": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "ready",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "bClosed": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 2,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 2,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "aStatus": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 2,
+        "writtenRecords": 2,
+        "rejectedRecords": 1,
+        "rejectedBytes": 14,
+        "failedRecords": 0,
+        "unconfirmedRecords": 0,
+        "pendingRecords": 0,
+        "pendingBytes": 0,
+        "maxPendingBytes": 4194304,
+        "maxPendingRecords": 1024,
+        "lastFailure": "lease_released"
+      },
+      "repeated": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 2,
+        "flushedAcceptedRecords": 2,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 2,
+          "rejectedRecords": 1,
+          "rejectedBytes": 14,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": "lease_released"
+        }
+      },
+      "workers": 1
+    },
+    {
+      "name": "retiring-owner-blocks-replacement-until-close-ack",
+      "whileClosing": false,
+      "next": true,
+      "firstClose": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 1,
+          "rejectedBytes": 9,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": "sink_closed"
+        }
+      },
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 2,
+          "rejectedRecords": 1,
+          "rejectedBytes": 9,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": "sink_closed"
+        }
+      },
+      "retired": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 1,
+        "writtenRecords": 1,
+        "rejectedRecords": 1,
+        "rejectedBytes": 9,
+        "failedRecords": 0,
+        "unconfirmedRecords": 0,
+        "pendingRecords": 0,
+        "pendingBytes": 0,
+        "maxPendingBytes": 4194304,
+        "maxPendingRecords": 1024,
+        "lastFailure": "sink_closed"
+      },
+      "operations": [
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          4
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          6
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/logs/runtime.jsonl"
+        ]
+      ]
+    },
+    {
+      "name": "unconfirmed-owner-stays-registered-until-exit",
+      "stopped": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 0,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 0,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 1,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": "flush_timeout"
+        }
+      },
+      "result": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 2,
+          "writtenRecords": 1,
+          "rejectedRecords": 1,
+          "rejectedBytes": 8,
+          "failedRecords": 0,
+          "unconfirmedRecords": 1,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": "sink_closed"
+        }
+      },
+      "retired": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 1,
+        "writtenRecords": 0,
+        "rejectedRecords": 1,
+        "rejectedBytes": 8,
+        "failedRecords": 0,
+        "unconfirmedRecords": 1,
+        "pendingRecords": 0,
+        "pendingBytes": 0,
+        "maxPendingBytes": 4194304,
+        "maxPendingRecords": 1024,
+        "lastFailure": "sink_closed"
+      },
+      "workers": 2
+    },
+    {
+      "name": "zero-reference-confirmed-exit-creates-clean-owner",
+      "result": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "retired": {
+        "state": "degraded",
+        "backpressured": false,
+        "acceptedRecords": 1,
+        "writtenRecords": 0,
+        "rejectedRecords": 0,
+        "rejectedBytes": 0,
+        "failedRecords": 0,
+        "unconfirmedRecords": 1,
+        "pendingRecords": 0,
+        "pendingBytes": 0,
+        "maxPendingBytes": 4194304,
+        "maxPendingRecords": 1024,
+        "lastFailure": "flush_timeout"
+      }
+    },
+    {
+      "name": "canonical-existing-parent-shares-not-lexical-path",
+      "result": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "workers": 1,
+      "operations": [
+        [
+          "mkdir",
+          "/real/new"
+        ],
+        [
+          "open",
+          "/real/new/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "write",
+          "/real/new/runtime.jsonl",
+          0,
+          7
+        ],
+        [
+          "fsync",
+          "/real/new/runtime.jsonl"
+        ],
+        [
+          "fsync",
+          "/real/new/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/real/new/runtime.jsonl"
+        ]
+      ]
+    },
+    {
+      "name": "rotation-strict-threshold-and-interrupted-tail",
+      "result": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 3,
+        "flushedAcceptedRecords": 3,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 3,
+          "writtenRecords": 3,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "files": {
+        "/logs/runtime.jsonl.2": "interrupted:",
+        "/logs/runtime.jsonl.1": "123\nx\n",
+        "/logs/runtime.jsonl": "z\n"
+      },
+      "operations": [
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "rename",
+          "/logs/runtime.jsonl",
+          "/logs/runtime.jsonl.1"
+        ],
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          4
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          2
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "rename",
+          "/logs/runtime.jsonl.1",
+          "/logs/runtime.jsonl.2"
+        ],
+        [
+          "rename",
+          "/logs/runtime.jsonl",
+          "/logs/runtime.jsonl.1"
+        ],
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          2
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/logs/runtime.jsonl"
+        ]
+      ]
+    },
+    {
+      "name": "clean-close-then-enqueue-is-degraded",
+      "closed": {
+        "complete": true,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": null
+        }
+      },
+      "again": {
+        "complete": false,
+        "durable": false,
+        "throughAcceptedRecords": 1,
+        "flushedAcceptedRecords": 1,
+        "status": {
+          "state": "degraded",
+          "backpressured": false,
+          "acceptedRecords": 1,
+          "writtenRecords": 1,
+          "rejectedRecords": 1,
+          "rejectedBytes": 3,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 1048576,
+          "maxPendingRecords": 256,
+          "lastFailure": "sink_closed"
+        }
+      }
+    },
+    {
+      "name": "concurrent-flush-resamples-after-wait",
+      "results": [
+        {
+          "complete": true,
+          "durable": true,
+          "throughAcceptedRecords": 1,
+          "flushedAcceptedRecords": 1,
+          "status": {
+            "state": "ready",
+            "backpressured": false,
+            "acceptedRecords": 3,
+            "writtenRecords": 1,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 2,
+            "pendingBytes": 10,
+            "maxPendingBytes": 4194304,
+            "maxPendingRecords": 1024,
+            "lastFailure": null
+          }
+        },
+        {
+          "complete": true,
+          "durable": true,
+          "throughAcceptedRecords": 2,
+          "flushedAcceptedRecords": 3,
+          "status": {
+            "state": "ready",
+            "backpressured": false,
+            "acceptedRecords": 3,
+            "writtenRecords": 3,
+            "rejectedRecords": 0,
+            "rejectedBytes": 0,
+            "failedRecords": 0,
+            "unconfirmedRecords": 0,
+            "pendingRecords": 0,
+            "pendingBytes": 0,
+            "maxPendingBytes": 4194304,
+            "maxPendingRecords": 1024,
+            "lastFailure": null
+          }
+        }
+      ],
+      "close": {
+        "complete": true,
+        "durable": true,
+        "throughAcceptedRecords": 3,
+        "flushedAcceptedRecords": 3,
+        "status": {
+          "state": "closed",
+          "backpressured": false,
+          "acceptedRecords": 3,
+          "writtenRecords": 3,
+          "rejectedRecords": 0,
+          "rejectedBytes": 0,
+          "failedRecords": 0,
+          "unconfirmedRecords": 0,
+          "pendingRecords": 0,
+          "pendingBytes": 0,
+          "maxPendingBytes": 4194304,
+          "maxPendingRecords": 1024,
+          "lastFailure": null
+        }
+      },
+      "operations": [
+        [
+          "mkdir",
+          "/logs"
+        ],
+        [
+          "open",
+          "/logs/runtime.jsonl",
+          "a+",
+          384
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          4
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          4
+        ],
+        [
+          "write",
+          "/logs/runtime.jsonl",
+          0,
+          6
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "fsync",
+          "/logs/runtime.jsonl"
+        ],
+        [
+          "close",
+          "/logs/runtime.jsonl"
+        ]
+      ]
+    }
+  ]
+}

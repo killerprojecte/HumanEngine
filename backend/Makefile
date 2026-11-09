@@ -33,6 +33,7 @@ contextual-source-check:
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-contextual-learning-fixtures.ts --check
 
 differential: build plugin-source-check contextual-source-check runtime-producer-source-check
+	cd .. && TZ=UTC node backend/tests/generate-log-channel-memory.mjs --check
 	cd .. && node --import tsx scripts/vision-oracle.ts --check
 	cd .. && node --import tsx scripts/vision-errors.mjs --check
 	cd .. && node --import tsx backend/internal/credentials/testdata/model-read-source.mjs --check

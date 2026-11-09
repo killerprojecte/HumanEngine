@@ -110,6 +110,10 @@ func Invoke(input []byte) any {
 		return map[string]any{"error": "invalid_plugin_input"}
 	}
 	switch in.Operation {
+	case "networkHeaders", "networkPrepare", "networkChoose", "networkRedirect":
+		return runtimeInvoke(input, in.Operation)
+	case "registrations", "plan", "cachePolicy", "response", "error":
+		return runtimeInvoke(input, in.Operation)
 	case "manifest":
 		return resources.Manifest()
 	case "extract":

@@ -1,0 +1,13 @@
+[
+  {
+    "operation": "error",
+    "status": "unavailable",
+    "activeAfterOutcome": 0
+  },
+  {
+    "operation": "response",
+    "status": "ok",
+    "text": "source text",
+    "activeAfterOutcome": 0
+  }
+]

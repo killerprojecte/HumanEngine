@@ -1,0 +1,22 @@
+[
+  {
+    "name": "late DNS success",
+    "networkError": "media_dns_timeout",
+    "serviceStatus": "unavailable",
+    "activeAfterOutcome": 0,
+    "secondStatus": "invalid_url",
+    "callbacksBeforeRelease": 0,
+    "callbacksAfterRelease": 2,
+    "requestCalls": 0
+  },
+  {
+    "name": "late DNS failure",
+    "networkError": "media_dns_timeout",
+    "serviceStatus": "unavailable",
+    "activeAfterOutcome": 0,
+    "secondStatus": "invalid_url",
+    "callbacksBeforeRelease": 0,
+    "callbacksAfterRelease": 2,
+    "requestCalls": 0
+  }
+]

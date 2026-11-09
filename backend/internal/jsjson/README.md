@@ -17,7 +17,21 @@ preserved string through those callers can still destroy lone-surrogate identity
 - `[]any` for an array;
 - `*Object` for an ordered object.
 
-`Stringify(any)` returns the compact JSON string. `Marshal(any)` returns the same
+`Undefined` is a separate native-only value for JavaScript own-property semantics.
+`Parse` and `ParseBytes` never produce it: JSON null remains `nil`, and a string
+spelling "undefined" remains an ordinary string. It is not represented by an
+empty object, a magic property, or a caller-controlled text marker. `Get`, `Len`,
+`Keys`, `Members`, and `Clone` preserve an explicitly set undefined property;
+removing the property is observably different. Native deep copies preserve its
+zero-field value, and equality distinguishes it from null and a missing member.
+
+`Stringify` omits object members whose value is `Undefined`, while an array
+containing that value emits `null` at that position. For a root `Undefined`,
+`Stringify` and `Marshal` return `ErrUndefinedRoot`, because JavaScript produces
+no JSON text rather than a JSON representation. This does not add support for
+functions, Symbols, sparse-array holes, arbitrary Go structs, or Go maps.
+
+`Stringify(any)` returns the compact JSON string for encodable values. `Marshal(any)` returns the same
 bytes. Encoding does not HTML-escape `<`, `>`, or `&`, does not escape U+2028 or
 U+2029, emits lowercase escapes for lone surrogates, and emits ordinary UTF-8 for
 valid pairs. Its result is always valid UTF-8. It formats binary64 values with

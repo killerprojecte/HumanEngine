@@ -56,6 +56,7 @@ differential: build plugin-source-check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-reconciliation-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-source-admission-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-service-fixtures.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-model-memory-exposure.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/internal/knowledge/testdata/generate-read-oracle.ts --check
 	cd .. && TZ=UTC node --import tsx backend/internal/memoryservice/testdata/generate-episode-oracle.ts --check
 	cd .. && TZ=UTC node --import tsx backend/internal/knowledge/testdata/generate-source-oracle.ts --check
@@ -115,6 +116,7 @@ differential: build plugin-source-check
 	cd .. && node --import tsx backend/internal/recovery/testdata/generate-write-events-node.mjs --check
 	cd .. && node --import tsx backend/internal/recovery/testdata/generate-remaining-write-events-node.mjs --check
 	cd .. && node backend/tests/generate-jsjson-fixtures.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-shared-memory-undefined.mjs --check
 	cd .. && node --import tsx backend/tests/generate-scene-write-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/generate-dispatch-fixtures.mjs --check
 	cd .. && node backend/tests/generate-v1-compat.mjs --check

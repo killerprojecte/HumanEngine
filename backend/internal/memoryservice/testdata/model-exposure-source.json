@@ -1,0 +1,145 @@
+{
+  "hashes": {
+    "src/memory/read/model-exposure.ts": "ea866e045f469a4a9dc003bf3812b63939977fc0ea31cc01c1a533d2aae71a8d",
+    "src/memory/working-set/selection-tracker.ts": "e44def72c8fbd0482d6577528cbdaf7832ed0627e42c94463a89c039ad0c6867",
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/memory/read/memory-workspace.ts": "3761a9b8a9b47ce77fabc8b1f02ad208853b12eeb85dab59a70f8f0e39fc0e97",
+    "backend/tests/generate-model-memory-exposure.mjs": "ad9fca74753adc64be26c1c521a4d6ef33e3a550f7a8b09efa361ce54c3e367b",
+    "package-lock.json": "c91aa97fcae8b66a305958ef5b7df9ff86fcbc2a6df1ec491fb4715de01875c4"
+  },
+  "outcomes": [
+    {
+      "name": "identity_batch_and_exact_revision",
+      "value": {
+        "prepared": 2,
+        "before": [],
+        "forged": 0,
+        "mixed": 0,
+        "foreign": 0,
+        "selected": 1,
+        "exposed": [
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0,
+            "deleted": false
+          }
+        ],
+        "valid": true,
+        "revoked": false,
+        "delivered": 1
+      }
+    },
+    {
+      "name": "stale_sibling_is_atomic",
+      "value": {
+        "selected": 0,
+        "exposed": [],
+        "delivered": 0
+      }
+    },
+    {
+      "name": "callback_mutation_reauthorizes",
+      "value": {
+        "selected": 0,
+        "exposed": [],
+        "valid": false,
+        "delivered": 1
+      }
+    },
+    {
+      "name": "callback_cannot_replace_selected_identity",
+      "value": {
+        "selected": 1,
+        "original": true,
+        "content": "Synthetic",
+        "exposed": [
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0,
+            "deleted": false
+          }
+        ],
+        "delivered": 1
+      }
+    },
+    {
+      "name": "callback_failure_invalidates",
+      "value": {
+        "error": "synthetic_callback",
+        "exposed": [],
+        "valid": false,
+        "delivered": 1
+      }
+    },
+    {
+      "name": "first_exposure_is_immutable",
+      "value": {
+        "selected": 0,
+        "exposed": [
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0,
+            "deleted": false
+          }
+        ],
+        "valid": false,
+        "delivered": 1
+      }
+    },
+    {
+      "name": "duplicate_scores_and_conflicting_bodies",
+      "value": {
+        "conflict": 0,
+        "prepared": 2,
+        "selected": 2,
+        "exposed": [
+          {
+            "id": "a",
+            "version": 1,
+            "deletionEpoch": 0,
+            "deleted": false
+          }
+        ],
+        "delivered": 1
+      }
+    },
+    {
+      "name": "simulation_does_not_capture_real_refs",
+      "value": {
+        "prepared": 0,
+        "selected": 0,
+        "exposed": [],
+        "writes": 0,
+        "delivered": 0
+      }
+    },
+    {
+      "name": "workspace_receipts_use_retained_bodies",
+      "value": {
+        "prepared": 81,
+        "exposed": 81,
+        "rows": [
+          {
+            "id": "a0",
+            "count": 1
+          },
+          {
+            "id": "a40",
+            "count": 1
+          },
+          {
+            "id": "a80",
+            "count": 1
+          }
+        ],
+        "allRows": {
+          "n": 81,
+          "total": 81
+        }
+      }
+    }
+  ]
+}

@@ -18,12 +18,15 @@ var (
 )
 
 // Stringify encodes nil, bool, float64, canonical WTF-8 string, []any, and
-// *Object, recursively. It implements compact JSON.stringify on that data
+// *Object, recursively, plus the dedicated Undefined value. It implements compact JSON.stringify on that data
 // model, including nonfinite numbers becoming null and negative zero becoming
 // 0. Go maps/structs/integers are intentionally unsupported: they cannot imply
 // JS insertion order, property presence, or Number conversion semantics.
 // Cycles are errors; repeated noncyclic references are allowed.
 func Stringify(value any) (string, error) {
+	if IsUndefined(value) {
+		return "", ErrUndefinedRoot
+	}
 	e := encoder{active: make(map[reference]bool)}
 	if err := e.value(value); err != nil {
 		return "", err
@@ -79,6 +82,10 @@ func (e *encoder) value(value any) error {
 			if i > 0 {
 				e.out = append(e.out, ',')
 			}
+			if IsUndefined(item) {
+				e.out = append(e.out, "null"...)
+				continue
+			}
 			if err := e.value(item); err != nil {
 				return err
 			}
@@ -94,10 +101,15 @@ func (e *encoder) value(value any) error {
 		}
 		defer delete(e.active, ref)
 		e.out = append(e.out, '{')
-		for i, member := range v.Members() {
-			if i > 0 {
+		written := false
+		for _, member := range v.Members() {
+			if IsUndefined(member.Value) {
+				continue
+			}
+			if written {
 				e.out = append(e.out, ',')
 			}
+			written = true
 			if err := e.string(member.Key); err != nil {
 				return err
 			}

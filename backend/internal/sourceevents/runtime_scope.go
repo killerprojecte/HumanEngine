@@ -42,6 +42,8 @@ type RuntimeReadScope struct {
 	CheckBinding func(*sql.DB, *recovery.Authority) error
 	Ready        func() error
 	Query        func(string, ...any) (Rows, error)
+	// PrepareAssertionRead accepts only the two fixed assertion support reads.
+	PrepareAssertionRead func(string) (RuntimeReadStatement, error)
 }
 
 // UseRuntimeReadScope verifies the owner before composing another domain's
@@ -66,7 +68,7 @@ func (s *Store) UseRuntimeReadScope(reads botruntime.ReadAuthority, fn func(Runt
 	if fn == nil {
 		return errors.New("runtime_read_callback_required")
 	}
-	return r.read(func(v *View) error {
+	return r.read(func(v *View) (err error) {
 		var active atomic.Bool
 		active.Store(true)
 		defer active.Store(false)
@@ -79,7 +81,30 @@ func (s *Store) UseRuntimeReadScope(reads botruntime.ReadAuthority, fn func(Runt
 			}
 			return v.ready()
 		}
-		scope := RuntimeReadScope{CheckBinding: func(db *sql.DB, a *recovery.Authority) error {
+		var statements []*scopedRuntimeStatement
+		defer func() {
+			for _, statement := range statements {
+				err = errors.Join(err, statement.Close())
+			}
+		}()
+		scope := RuntimeReadScope{PrepareAssertionRead: func(q string) (RuntimeReadStatement, error) {
+			if e := ready(); e != nil {
+				return nil, e
+			}
+			if q != "SELECT value FROM memories WHERE id=?" && q != "SELECT value FROM memory_supports WHERE memory_id=?" {
+				return nil, errors.New("runtime_assertion_statement_unsupported")
+			}
+			if v.prepare == nil {
+				return nil, errors.New("runtime_native_statement_required")
+			}
+			statement, e := v.prepare(q)
+			if e != nil {
+				return nil, e
+			}
+			bound := &scopedRuntimeStatement{statement: statement, ready: ready}
+			statements = append(statements, bound)
+			return bound, nil
+		}, CheckBinding: func(db *sql.DB, a *recovery.Authority) error {
 			if db != r.store.main || a != r.store.authority {
 				return errors.New("runtime_read_scope_foreign")
 			}

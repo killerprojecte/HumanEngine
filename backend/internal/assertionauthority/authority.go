@@ -6,6 +6,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 )
 
@@ -347,7 +348,7 @@ func (a *Authority) Sanitize(memory *Object) (*Object, error) {
 		record := memory.Clone()
 		record.Delete("observedAt")
 		_ = record.Set("sources", []any{})
-		record.Delete("supersedesId")
+		_ = record.Set("supersedesId", jsjson.Undefined)
 		return record, nil
 	}
 	proofs, e := a.currentProofs(memory)

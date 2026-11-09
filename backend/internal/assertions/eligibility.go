@@ -29,8 +29,11 @@ func canonical(v any) (string, error) {
 	case *Object:
 		keys := x.Keys()
 		sort.Slice(keys, func(i, j int) bool { return lessUTF16(keys[i], keys[j]) })
-		parts := make([]string, len(keys))
-		for i, k := range keys {
+		parts := []string{}
+		for _, k := range keys {
+			if jsjson.IsUndefined(get(x, k)) {
+				continue
+			}
 			key, e := jsjson.Stringify(k)
 			if e != nil {
 				return "", e
@@ -39,12 +42,15 @@ func canonical(v any) (string, error) {
 			if e != nil {
 				return "", e
 			}
-			parts[i] = key + ":" + value
+			parts = append(parts, key+":"+value)
 		}
 		return "{" + strings.Join(parts, ",") + "}", nil
 	case []any:
 		parts := make([]string, len(x))
 		for i, v := range x {
+			if jsjson.IsUndefined(v) {
+				continue
+			}
 			s, e := canonical(v)
 			if e != nil {
 				return "", e

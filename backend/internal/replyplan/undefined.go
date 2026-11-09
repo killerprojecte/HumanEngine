@@ -5,9 +5,9 @@ import "github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 // Undefined represents a JS undefined extension result or optional property.
 // nil represents JSON null. JSON serialization omits undefined object fields
 // and emits null for undefined array elements, exactly as JSON.stringify does.
-var Undefined any = undefinedValue{}
+var Undefined any = jsjson.Undefined
 
-type undefinedValue struct{}
+type undefinedValue = jsjson.UndefinedValue
 
 func isUndefined(v any) bool         { _, ok := v.(undefinedValue); return ok }
 func defined(v any, key string) bool { return has(v, key) && !isUndefined(get(v, key)) }

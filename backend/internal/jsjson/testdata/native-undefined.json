@@ -1,0 +1,74 @@
+{
+  "hashes": {
+    "src/memory/read/assertion-authority.ts": "8dfb7c1fd0d34945e8b8c3c0db18469e63e8b169c3f3fd2bb577067edbbf3ecc",
+    "src/memory/read/model-exposure.ts": "ea866e045f469a4a9dc003bf3812b63939977fc0ea31cc01c1a533d2aae71a8d",
+    "src/memory/recovery/eligibility-contract.ts": "f27f53c8e2f8f913d0e5cf2eb61aed300b40c2451a0e6e0b000ea6e024c7c1ef",
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "backend/tests/generate-shared-memory-undefined.mjs": "2a1cc2200f9d7c7b7fd114b8fdb1ebbdf44a6e5c40bfb0e87a963b0affe7c451"
+  },
+  "serialization": {
+    "object": "{\"kept\":null,\"nested\":{\"kept\":true}}",
+    "keys": [
+      "before",
+      "kept",
+      "after",
+      "nested"
+    ],
+    "array": "[null,null,{\"kept\":null,\"nested\":{\"kept\":true}}]",
+    "rootKind": "undefined",
+    "nullValue": "null",
+    "emptyObject": "{}",
+    "parsedNullIsUndefined": false,
+    "parsedStringIsUndefined": false
+  },
+  "record": {
+    "id": "shared",
+    "scope": {
+      "kind": "sharedPublicKnowledge"
+    },
+    "kind": "experience",
+    "content": "Synthetic",
+    "sources": [],
+    "importance": "low",
+    "confidence": 0.5,
+    "locked": false,
+    "origin": "manual",
+    "lineageStatus": "unverified",
+    "status": "active",
+    "learnedAt": "2000-01-01T00:00:00.000Z"
+  },
+  "material": "1a05a9718165fd9952e0fb815b4250336a4a6d1c7dde2beb903a04db2f5d24a0",
+  "outcomes": [
+    {
+      "mode": "real",
+      "raw": 0,
+      "deleted": 0,
+      "nulled": 0,
+      "prepared": 1,
+      "delivered": 1,
+      "ownUndefined": true,
+      "jsonSame": true,
+      "exposed": [
+        {
+          "id": "shared",
+          "version": 1,
+          "deletionEpoch": 0,
+          "deleted": false
+        }
+      ],
+      "simulationWrites": null
+    },
+    {
+      "mode": "simulation",
+      "raw": 0,
+      "deleted": 0,
+      "nulled": 0,
+      "prepared": 1,
+      "delivered": 1,
+      "ownUndefined": true,
+      "jsonSame": true,
+      "exposed": [],
+      "simulationWrites": 0
+    }
+  ]
+}

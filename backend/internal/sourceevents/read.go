@@ -20,6 +20,7 @@ type Rows interface {
 // Read; it is neither a connection nor permission to publish outside that scope.
 type View struct {
 	query         func(string, ...any) (Rows, error)
+	prepare       func(string) (RuntimeReadStatement, error)
 	ready         func() error
 	stable        bool
 	schemaKnown   bool
@@ -29,11 +30,23 @@ type View struct {
 
 func (s *Store) view() *View {
 	if s.maintenance != nil {
-		return &View{ready: s.ready, query: func(q string, args ...any) (Rows, error) {
+		return &View{ready: s.ready, prepare: func(q string) (RuntimeReadStatement, error) {
+			p, e := s.maintenanceTx.PrepareQuery(s.maintenanceContext, q)
+			if e != nil {
+				return nil, e
+			}
+			return &nativeRuntimeStatement{query: func(args ...any) (Rows, error) { return p.Query(bind(args)...) }, close: p.Close}, nil
+		}, query: func(q string, args ...any) (Rows, error) {
 			return s.maintenanceTx.QueryContext(s.maintenanceContext, q, bind(args)...)
 		}}
 	}
-	return &View{ready: s.ready, query: func(q string, args ...any) (Rows, error) { return s.session.Query(q, bind(args)...) }}
+	return &View{ready: s.ready, prepare: func(q string) (RuntimeReadStatement, error) {
+		p, e := s.session.PrepareQuery(q)
+		if e != nil {
+			return nil, e
+		}
+		return &nativeRuntimeStatement{query: func(args ...any) (Rows, error) { return p.Query(bind(args)...) }, close: p.Close}, nil
+	}, query: func(q string, args ...any) (Rows, error) { return s.session.Query(q, bind(args)...) }}
 }
 func (s *Store) Read(ctx context.Context, fn func(*View) error) error {
 	if s.bindingError != nil {
@@ -46,7 +59,16 @@ func (s *Store) Read(ctx context.Context, fn func(*View) error) error {
 		var active atomic.Bool
 		active.Store(true)
 		defer active.Store(false)
-		v := &View{stable: true, ready: func() error {
+		v := &View{stable: true, prepare: func(q string) (RuntimeReadStatement, error) {
+			if !active.Load() {
+				return nil, sql.ErrTxDone
+			}
+			p, e := conn.PrepareContext(ctx, q)
+			if e != nil {
+				return nil, e
+			}
+			return &nativeRuntimeStatement{query: func(args ...any) (Rows, error) { return p.QueryContext(ctx, bind(args)...) }, close: p.Close}, nil
+		}, ready: func() error {
 			if !active.Load() {
 				return sql.ErrTxDone
 			}

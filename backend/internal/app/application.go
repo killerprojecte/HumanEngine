@@ -274,6 +274,12 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error { return app.HTTP.WithMemoryDelete(app.Semantic.Memory) },
 		func() error { return app.HTTP.WithMemes(app.Engine) },
 		func() error { return app.HTTP.WithRetainedLogs(app.readPublisher) },
+		func() error {
+			if _, ok := options.Logs.(*observability.StoreLogger); !ok {
+				return nil // Explicit raw loggers retain the unavailable status route.
+			}
+			return app.HTTP.WithLogStatus(app.readPublisher)
+		},
 		func() error { return app.HTTP.WithDiagnostics(app.Diagnostics, app.readPublisher) },
 		func() error { return app.HTTP.WithModelCalls(calls, app.readPublisher) },
 		func() error { return app.HTTP.WithProviderReads(app.models, app.readPublisher) },

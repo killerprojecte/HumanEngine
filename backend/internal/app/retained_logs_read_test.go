@@ -27,13 +27,13 @@ func TestApplicationRetainedLogsReadActualOwner(t *testing.T) {
 	if !ok || len(rows) == 0 || field(rows[0], "id") != "synthetic-retained" {
 		t.Fatal(result)
 	}
-	// Source owner composition must not silently bind the deferred status route.
+	// Delivery status uses the same default source owner as retained reads.
 	request := httptest.NewRequest(http.MethodGet, "/api/logs/status", nil)
 	request.Header.Set("Authorization", "Bearer synthetic-token")
 	response := httptest.NewRecorder()
 	app.ServeHTTP(response, request)
-	if response.Code != http.StatusServiceUnavailable {
-		t.Fatal("deferred log status route changed", response.Code, response.Body.String())
+	if response.Code != http.StatusOK {
+		t.Fatal("source log status route unavailable", response.Code, response.Body.String())
 	}
 	if app.Bridge.Host.PID() != 0 {
 		t.Fatal("logs read spawned Node without V1 plugins")

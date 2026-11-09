@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-// Delivery status is a separate, not-yet-migrated sink-owner contract. Do not
-// silently manufacture its bounded per-sink counters from the native writer.
+// Delivery status is bound separately, and only to the actual source Store.
+// The raw Logger cannot manufacture its bounded per-sink counters.
 func retainedLogsPath(path string) bool {
 	return (path == "/api/logs" || strings.HasPrefix(path, "/api/logs/")) && path != "/api/logs/status" && !strings.HasPrefix(path, "/api/logs/status/")
 }

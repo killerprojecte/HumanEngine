@@ -1,0 +1,373 @@
+{
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a",
+    "src/diagnostics/log-writer.ts": "e39bdbc29f063267991b38ec8a36e903dbd12388e2d1cb803915ede65dac8060",
+    "src/diagnostics/format.ts": "00cd263739736dcf00a6dfe70f82b1260bde41c46c104ebdd6c9238f982528ea",
+    "src/memory/recovery/ledger.ts": "4c1a5f6cb400f5bbe636962e3bc332802f58998b291d6a5a05eb21685a6c1192",
+    "src/server/owner-runtime.ts": "487dfac404523542fb3644f4bd69c8c0d6b129683b701c64d8df66aab7d775ab"
+  },
+  "cases": [
+    {
+      "name": "ready",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "head",
+      "path": "/api/logs/status",
+      "method": "HEAD",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "query-ignored",
+      "path": "/api/logs/status?clear=true&limit=1",
+      "method": "GET",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "bad-auth",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 401,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "no-auth",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 401,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "head-bad-auth",
+      "path": "/api/logs/status",
+      "method": "HEAD",
+      "status": 401,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "missing-token",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 503,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "head-missing-token",
+      "path": "/api/logs/status",
+      "method": "HEAD",
+      "status": 503,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "post",
+      "path": "/api/logs/status",
+      "method": "POST",
+      "status": 404,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "put",
+      "path": "/api/logs/status",
+      "method": "PUT",
+      "status": 404,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "delete",
+      "path": "/api/logs/status",
+      "method": "DELETE",
+      "status": 404,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "options",
+      "path": "/api/logs/status",
+      "method": "OPTIONS",
+      "status": 404,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "trailing",
+      "path": "/api/logs/status/",
+      "method": "GET",
+      "status": 404,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "child",
+      "path": "/api/logs/status/clear",
+      "method": "GET",
+      "status": 404,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "encoded",
+      "path": "/api/logs/%73tatus",
+      "method": "GET",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "readiness-unavailable",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 503,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": true,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "head-unavailable",
+      "path": "/api/logs/status",
+      "method": "HEAD",
+      "status": 503,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "getter-unavailable",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 503,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": true,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "head-getter-unavailable",
+      "path": "/api/logs/status",
+      "method": "HEAD",
+      "status": 503,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "degraded-notice-on-read",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "degraded-notice-on-head",
+      "path": "/api/logs/status",
+      "method": "HEAD",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "degraded-auth-does-not-read",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 401,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": null,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "closed",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "independent-file-and-stdout",
+      "path": "/api/logs/status",
+      "method": "GET",
+      "status": 200,
+      "requestIdShape": "<uuid-v4>",
+      "callerRequestIdIgnored": true,
+      "errorRequestIdMatchesHeader": null,
+      "serverTiming": "recovery;dur=<duration>, handler;dur=<duration>, total;dur=<duration>",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    }
+  ]
+}

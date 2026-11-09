@@ -8,7 +8,7 @@ Producer and accepted-request shutdown order is unchanged. After all producers p
 
 An explicitly supplied Logs remains borrowed: Shutdown drains the application and releases its installation without closing that foreign logging lifetime. ShutdownAndFlush explicitly closes/joins it. Calling borrowed Shutdown first has already released that installation, so a later ShutdownAndFlush cannot retroactively retain it. The default source-owned path always joins logging first. Nonlast Store leases flush their own target but do not wait for another Store's lifetime.
 
-GET logs and general status retention remain pure reads. `/api/logs/status` remains503. HTTP101, default CLI refusal, Docker, and the read-only preview entry point are unchanged. This is not whole-engine migration acceptance.
+GET logs and general status retention remain pure reads. `/api/logs/status` now binds this actual Store through the existing ReadPublisher; its getter may retain the source degraded notice. Borrowed raw loggers remain503. The status-route batch has separate evidence in `../httpapi/LOG_STATUS.md`; the completed application validation below predates that route binding. HTTP101, default CLI refusal, Docker, and the read-only preview entry point are unchanged. This is not whole-engine migration acceptance.
 
 ## Validation
 

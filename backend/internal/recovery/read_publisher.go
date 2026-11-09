@@ -24,6 +24,12 @@ type ReadPublisher struct {
 }
 
 func NewReadPublisher(ctx context.Context, main *sql.DB, authority *Authority) (*ReadPublisher, error) {
+	return NewReadPublisherWithInitializer(ctx, main, authority, nil)
+}
+
+// NewReadPublisherWithInitializer attaches a pool-private physical connection
+// hook. It does not change publication fences, admission, or writer ownership.
+func NewReadPublisherWithInitializer(ctx context.Context, main *sql.DB, authority *Authority, initialize storage.ConnectionInitializer) (*ReadPublisher, error) {
 	if main == nil || authority == nil {
 		return nil, errors.New("recovery_read_owner_required")
 	}
@@ -49,7 +55,7 @@ func NewReadPublisher(ctx context.Context, main *sql.DB, authority *Authority) (
 	if path == "" {
 		return nil, errors.New("recovery_read_disk_owner_required")
 	}
-	readMain, err := storage.OpenExisting(path, false)
+	readMain, err := storage.OpenExistingInitialized(path, false, initialize)
 	if err != nil {
 		return nil, err
 	}

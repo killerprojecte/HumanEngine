@@ -1,0 +1,1536 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/store.ts": "a181a5f0c2b5362873662f1f33e79055a284322b2cc7fa28cabbaf6bc6b0ac71",
+    "src/usage-time.ts": "028110ad68d44d42daa49c2487aa50aad7638d1099f5bd8fed9f479c346aaa10",
+    "node_modules/hono/dist/utils/url.js": "dfee0733103e376ecc92370d0faf70e4d202adcaa59d151021bce4f2c6319f65"
+  },
+  "schema": "CREATE TABLE model_usage (day TEXT NOT NULL, model_id TEXT NOT NULL, provider_id TEXT NOT NULL, api_model TEXT NOT NULL, role TEXT NOT NULL, calls INTEGER NOT NULL, input_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL, duration_ms REAL NOT NULL, priced_calls INTEGER NOT NULL, estimated_usd REAL NOT NULL, reported_input_tokens INTEGER NOT NULL DEFAULT 0, reported_output_tokens INTEGER NOT NULL DEFAULT 0, reported_usage_calls INTEGER NOT NULL DEFAULT 0, cache_rate_input_tokens INTEGER NOT NULL DEFAULT 0, cache_rate_read_tokens INTEGER NOT NULL DEFAULT 0, cache_rate_known_calls INTEGER NOT NULL DEFAULT 0, ordinary_input_tokens INTEGER NOT NULL DEFAULT 0, cache_read_input_tokens INTEGER NOT NULL DEFAULT 0, cache_write_input_tokens INTEGER NOT NULL DEFAULT 0, cache_write_5m_input_tokens INTEGER NOT NULL DEFAULT 0, cache_write_1h_input_tokens INTEGER NOT NULL DEFAULT 0, cache_write_30m_input_tokens INTEGER NOT NULL DEFAULT 0, cache_write_12h_input_tokens INTEGER NOT NULL DEFAULT 0, cache_known_calls INTEGER NOT NULL DEFAULT 0, cache_read_known_calls INTEGER NOT NULL DEFAULT 0, cache_write_known_calls INTEGER NOT NULL DEFAULT 0, partial_priced_calls INTEGER NOT NULL DEFAULT 0, legacy_calls INTEGER NOT NULL DEFAULT 0, unknown_usage_calls INTEGER NOT NULL DEFAULT 0, ordinary_input_usd REAL NOT NULL DEFAULT 0, output_usd REAL NOT NULL DEFAULT 0, cache_read_usd REAL NOT NULL DEFAULT 0, cache_write_usd REAL NOT NULL DEFAULT 0, legacy_estimated_usd REAL NOT NULL DEFAULT 0, PRIMARY KEY(day,model_id,provider_id,api_model,role));\nCREATE TABLE model_usage_events(\n  day TEXT,\n  model_id TEXT,\n  provider_id TEXT,\n  api_model TEXT,\n  role TEXT,\n  calls INT,\n  input_tokens INT,\n  output_tokens INT,\n  duration_ms REAL,\n  priced_calls INT,\n  estimated_usd REAL,\n  reported_input_tokens INT,\n  reported_output_tokens INT,\n  reported_usage_calls INT,\n  cache_rate_input_tokens INT,\n  cache_rate_read_tokens INT,\n  cache_rate_known_calls INT,\n  ordinary_input_tokens INT,\n  cache_read_input_tokens INT,\n  cache_write_input_tokens INT,\n  cache_write_5m_input_tokens INT,\n  cache_write_1h_input_tokens INT,\n  cache_write_30m_input_tokens INT,\n  cache_write_12h_input_tokens INT,\n  cache_known_calls INT,\n  cache_read_known_calls INT,\n  cache_write_known_calls INT,\n  partial_priced_calls INT,\n  legacy_calls INT,\n  unknown_usage_calls INT,\n  ordinary_input_usd REAL,\n  output_usd REAL,\n  cache_read_usd REAL,\n  cache_write_usd REAL,\n  legacy_estimated_usd REAL,\n  at\n);\nCREATE TABLE model_usage_history(\n  day TEXT,\n  model_id TEXT,\n  provider_id TEXT,\n  api_model TEXT,\n  role TEXT,\n  calls INT,\n  input_tokens INT,\n  output_tokens INT,\n  duration_ms REAL,\n  priced_calls INT,\n  estimated_usd REAL,\n  reported_input_tokens INT,\n  reported_output_tokens INT,\n  reported_usage_calls INT,\n  cache_rate_input_tokens INT,\n  cache_rate_read_tokens INT,\n  cache_rate_known_calls INT,\n  ordinary_input_tokens INT,\n  cache_read_input_tokens INT,\n  cache_write_input_tokens INT,\n  cache_write_5m_input_tokens INT,\n  cache_write_1h_input_tokens INT,\n  cache_write_30m_input_tokens INT,\n  cache_write_12h_input_tokens INT,\n  cache_known_calls INT,\n  cache_read_known_calls INT,\n  cache_write_known_calls INT,\n  partial_priced_calls INT,\n  legacy_calls INT,\n  unknown_usage_calls INT,\n  ordinary_input_usd REAL,\n  output_usd REAL,\n  cache_read_usd REAL,\n  cache_write_usd REAL,\n  legacy_estimated_usd REAL\n);",
+  "seed": {
+    "events": [
+      {
+        "day": "2026-11-01",
+        "model_id": "synthetic",
+        "provider_id": "p",
+        "api_model": "api",
+        "role": "thinker",
+        "calls": 5,
+        "input_tokens": 6,
+        "output_tokens": 7,
+        "duration_ms": 8,
+        "priced_calls": 9,
+        "estimated_usd": 10,
+        "reported_input_tokens": 11,
+        "reported_output_tokens": 12,
+        "reported_usage_calls": 13,
+        "cache_rate_input_tokens": 14,
+        "cache_rate_read_tokens": 15,
+        "cache_rate_known_calls": 16,
+        "ordinary_input_tokens": 17,
+        "cache_read_input_tokens": 18,
+        "cache_write_input_tokens": 19,
+        "cache_write_5m_input_tokens": 20,
+        "cache_write_1h_input_tokens": 21,
+        "cache_write_30m_input_tokens": 22,
+        "cache_write_12h_input_tokens": 23,
+        "cache_known_calls": 24,
+        "cache_read_known_calls": 25,
+        "cache_write_known_calls": 26,
+        "partial_priced_calls": 27,
+        "legacy_calls": 28,
+        "unknown_usage_calls": 29,
+        "ordinary_input_usd": 30,
+        "output_usd": 31,
+        "cache_read_usd": 32,
+        "cache_write_usd": 33,
+        "legacy_estimated_usd": 34,
+        "at": "2026-11-01T05:15:00.000Z"
+      },
+      {
+        "day": "2026-11-01",
+        "model_id": "synthetic",
+        "provider_id": "p",
+        "api_model": "api",
+        "role": "replyer",
+        "calls": 5,
+        "input_tokens": 6,
+        "output_tokens": 7,
+        "duration_ms": 8,
+        "priced_calls": 9,
+        "estimated_usd": 10,
+        "reported_input_tokens": 11,
+        "reported_output_tokens": 12,
+        "reported_usage_calls": 13,
+        "cache_rate_input_tokens": 14,
+        "cache_rate_read_tokens": 15,
+        "cache_rate_known_calls": 16,
+        "ordinary_input_tokens": 17,
+        "cache_read_input_tokens": 18,
+        "cache_write_input_tokens": 19,
+        "cache_write_5m_input_tokens": 20,
+        "cache_write_1h_input_tokens": 21,
+        "cache_write_30m_input_tokens": 22,
+        "cache_write_12h_input_tokens": 23,
+        "cache_known_calls": 24,
+        "cache_read_known_calls": 25,
+        "cache_write_known_calls": 26,
+        "partial_priced_calls": 27,
+        "legacy_calls": 28,
+        "unknown_usage_calls": 29,
+        "ordinary_input_usd": 30,
+        "output_usd": 31,
+        "cache_read_usd": 32,
+        "cache_write_usd": 33,
+        "legacy_estimated_usd": 34,
+        "at": "2026-11-01T06:15:00.000Z"
+      }
+    ],
+    "history": [
+      {
+        "day": "2026-11-01",
+        "model_id": "synthetic",
+        "provider_id": "p",
+        "api_model": "api",
+        "role": "replyer",
+        "calls": 5,
+        "input_tokens": 6,
+        "output_tokens": 7,
+        "duration_ms": 8,
+        "priced_calls": 9,
+        "estimated_usd": 10,
+        "reported_input_tokens": 11,
+        "reported_output_tokens": 12,
+        "reported_usage_calls": 13,
+        "cache_rate_input_tokens": 14,
+        "cache_rate_read_tokens": 15,
+        "cache_rate_known_calls": 16,
+        "ordinary_input_tokens": 17,
+        "cache_read_input_tokens": 18,
+        "cache_write_input_tokens": 19,
+        "cache_write_5m_input_tokens": 20,
+        "cache_write_1h_input_tokens": 21,
+        "cache_write_30m_input_tokens": 22,
+        "cache_write_12h_input_tokens": 23,
+        "cache_known_calls": 24,
+        "cache_read_known_calls": 25,
+        "cache_write_known_calls": 26,
+        "partial_priced_calls": 27,
+        "legacy_calls": 28,
+        "unknown_usage_calls": 29,
+        "ordinary_input_usd": 30,
+        "output_usd": 31,
+        "cache_read_usd": 32,
+        "cache_write_usd": 33,
+        "legacy_estimated_usd": 34
+      },
+      {
+        "day": "2026-11-02",
+        "model_id": "synthetic",
+        "provider_id": "p",
+        "api_model": "api",
+        "role": "planner",
+        "calls": 5,
+        "input_tokens": 6,
+        "output_tokens": 7,
+        "duration_ms": 8,
+        "priced_calls": 9,
+        "estimated_usd": 10,
+        "reported_input_tokens": 11,
+        "reported_output_tokens": 12,
+        "reported_usage_calls": 13,
+        "cache_rate_input_tokens": 14,
+        "cache_rate_read_tokens": 15,
+        "cache_rate_known_calls": 16,
+        "ordinary_input_tokens": 17,
+        "cache_read_input_tokens": 18,
+        "cache_write_input_tokens": 19,
+        "cache_write_5m_input_tokens": 20,
+        "cache_write_1h_input_tokens": 21,
+        "cache_write_30m_input_tokens": 22,
+        "cache_write_12h_input_tokens": 23,
+        "cache_known_calls": 24,
+        "cache_read_known_calls": 25,
+        "cache_write_known_calls": 26,
+        "partial_priced_calls": 27,
+        "legacy_calls": 28,
+        "unknown_usage_calls": 29,
+        "ordinary_input_usd": 30,
+        "output_usd": 31,
+        "cache_read_usd": 32,
+        "cache_write_usd": 33,
+        "legacy_estimated_usd": 34
+      }
+    ],
+    "columns": [
+      "day",
+      "model_id",
+      "provider_id",
+      "api_model",
+      "role",
+      "calls",
+      "input_tokens",
+      "output_tokens",
+      "duration_ms",
+      "priced_calls",
+      "estimated_usd",
+      "reported_input_tokens",
+      "reported_output_tokens",
+      "reported_usage_calls",
+      "cache_rate_input_tokens",
+      "cache_rate_read_tokens",
+      "cache_rate_known_calls",
+      "ordinary_input_tokens",
+      "cache_read_input_tokens",
+      "cache_write_input_tokens",
+      "cache_write_5m_input_tokens",
+      "cache_write_1h_input_tokens",
+      "cache_write_30m_input_tokens",
+      "cache_write_12h_input_tokens",
+      "cache_known_calls",
+      "cache_read_known_calls",
+      "cache_write_known_calls",
+      "partial_priced_calls",
+      "legacy_calls",
+      "unknown_usage_calls",
+      "ordinary_input_usd",
+      "output_usd",
+      "cache_read_usd",
+      "cache_write_usd",
+      "legacy_estimated_usd"
+    ]
+  },
+  "cases": [
+    {
+      "name": "empty",
+      "empty": true,
+      "path": "/api/usage",
+      "method": "GET",
+      "queryValues": {},
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "all",
+      "path": "/api/usage",
+      "method": "GET",
+      "queryValues": {},
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "range",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "hour",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=hour",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=hour",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "hour"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-01T06:00:00Z\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01T05:00:00Z\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "true",
+        "x-usage-planner-incomplete": "true"
+      }
+    },
+    {
+      "name": "explicit-utc",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=UTC",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=UTC",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          "UTC"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "alias-utc",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=Etc%2FGMT",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=Etc%2FGMT",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          "Etc/GMT"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "dst-hour",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=hour&timeZone=America%2FNew_York",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=hour&timeZone=America%2FNew_York",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "hour"
+        ],
+        "timeZone": [
+          "America/New_York"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-01T06:00:00.000Z\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01T05:00:00.000Z\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "true",
+        "x-usage-planner-incomplete": "true"
+      }
+    },
+    {
+      "name": "quarter-hour",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=hour&timeZone=Asia%2FKathmandu",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=hour&timeZone=Asia%2FKathmandu",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "hour"
+        ],
+        "timeZone": [
+          "Asia/Kathmandu"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-01T06:15:00.000Z\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01T05:15:00.000Z\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "true",
+        "x-usage-planner-incomplete": "true"
+      }
+    },
+    {
+      "name": "offset-day",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=%2B05%3A45",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=%2B05%3A45",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          "+05:45"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":10,\"inputTokens\":12,\"outputTokens\":14,\"durationMs\":16,\"pricedCalls\":18,\"estimatedUsd\":20,\"reportedInputTokens\":22,\"reportedOutputTokens\":24,\"reportedUsageCalls\":26,\"cacheRateInputTokens\":28,\"cacheRateReadTokens\":30,\"cacheRateKnownCalls\":32,\"ordinaryInputTokens\":34,\"cacheReadInputTokens\":36,\"cacheWriteInputTokens\":38,\"cacheWrite5mInputTokens\":40,\"cacheWrite1hInputTokens\":42,\"cacheWrite30mInputTokens\":44,\"cacheWrite12hInputTokens\":46,\"cacheKnownCalls\":48,\"cacheReadKnownCalls\":50,\"cacheWriteKnownCalls\":52,\"partialPricedCalls\":54,\"legacyCalls\":56,\"unknownUsageCalls\":58,\"ordinaryInputUsd\":60,\"outputUsd\":62,\"cacheReadUsd\":64,\"cacheWriteUsd\":66,\"legacyEstimatedUsd\":68}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "true",
+        "x-usage-planner-incomplete": "true"
+      }
+    },
+    {
+      "name": "partial-history",
+      "query": "start=2026-11-01T12%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "path": "/api/usage?start=2026-11-01T12%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T12:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "true",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "planner-complete",
+      "query": "start=2026-11-01T12%3A00%3A00Z&end=2026-11-02T00%3A00%3A00Z",
+      "path": "/api/usage?start=2026-11-01T12%3A00%3A00Z&end=2026-11-02T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T12:00:00Z"
+        ],
+        "end": [
+          "2026-11-02T00:00:00Z"
+        ]
+      },
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "true",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "no-overlap",
+      "query": "start=2025-01-01T00%3A00%3A00Z&end=2025-01-02T00%3A00%3A00Z",
+      "path": "/api/usage?start=2025-01-01T00%3A00%3A00Z&end=2025-01-02T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2025-01-01T00:00:00Z"
+        ],
+        "end": [
+          "2025-01-02T00:00:00Z"
+        ]
+      },
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "offset-instant",
+      "query": "start=2026-11-01T01%3A00%3A00%2B01%3A00&end=2026-11-03T01%3A00%3A00%2B01%3A00",
+      "path": "/api/usage?start=2026-11-01T01%3A00%3A00%2B01%3A00&end=2026-11-03T01%3A00%3A00%2B01%3A00",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T01:00:00+01:00"
+        ],
+        "end": [
+          "2026-11-03T01:00:00+01:00"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "unknown",
+      "query": "unknown=x",
+      "path": "/api/usage?unknown=x",
+      "method": "GET",
+      "queryValues": {
+        "unknown": [
+          "x"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "start-only",
+      "query": "start=2026-11-01T00%3A00%3A00Z",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "bucket-only",
+      "query": "bucket=day",
+      "path": "/api/usage?bucket=day",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "day"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "zone-only",
+      "query": "timeZone=UTC",
+      "path": "/api/usage?timeZone=UTC",
+      "method": "GET",
+      "queryValues": {
+        "timeZone": [
+          "UTC"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "empty-zone",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          ""
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "bad-zone",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=No%2FSuch",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=No%2FSuch",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          "No/Such"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "bad-bucket",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=minute",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=minute",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "minute"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "repeated",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day&bucket=hour",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day&bucket=hour",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day",
+          "hour"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "missing-seconds",
+      "query": "start=2026-11-01T00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "path": "/api/usage?start=2026-11-01T00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "bad-leap",
+      "query": "start=2025-02-29T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "path": "/api/usage?start=2025-02-29T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2025-02-29T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "long-fraction",
+      "query": "start=2026-11-01T00%3A00%3A00.000000001Z&end=2026-11-03T00%3A00%3A00Z",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00.000000001Z&end=2026-11-03T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00.000000001Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "year-zero",
+      "query": "start=0000-01-01T00%3A00%3A00Z&end=0001-01-01T00%3A00%3A00Z",
+      "path": "/api/usage?start=0000-01-01T00%3A00%3A00Z&end=0001-01-01T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "0000-01-01T00:00:00Z"
+        ],
+        "end": [
+          "0001-01-01T00:00:00Z"
+        ]
+      },
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "reversed",
+      "query": "start=2026-11-03T00%3A00%3A00Z&end=2026-11-01T00%3A00%3A00Z",
+      "path": "/api/usage?start=2026-11-03T00%3A00%3A00Z&end=2026-11-01T00%3A00%3A00Z",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-01T00:00:00Z"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "head",
+      "method": "HEAD",
+      "path": "/api/usage",
+      "queryValues": {},
+      "status": 200,
+      "text": "",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "auth",
+      "badAuth": true,
+      "path": "/api/usage",
+      "method": "GET",
+      "queryValues": {},
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null,
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "method",
+      "method": "PUT",
+      "path": "/api/usage",
+      "queryValues": {},
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "trailing",
+      "path": "/api/usage/",
+      "method": "GET",
+      "queryValues": {},
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-semicolon-bucket",
+      "query": "bucket=hour;",
+      "path": "/api/usage?bucket=hour;",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "hour;"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-semicolon-unknown",
+      "query": "unknown=x;",
+      "path": "/api/usage?unknown=x;",
+      "method": "GET",
+      "queryValues": {
+        "unknown": [
+          "x;"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-semicolon-key",
+      "query": "bucket;=hour",
+      "path": "/api/usage?bucket;=hour",
+      "method": "GET",
+      "queryValues": {
+        "bucket;": [
+          "hour"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-semicolon-end",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z;",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z;",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z;"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-bad-percent-value",
+      "query": "bucket=%",
+      "path": "/api/usage?bucket=%",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "%"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-bad-percent-known",
+      "query": "bucket=hour%GG",
+      "path": "/api/usage?bucket=hour%GG",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "hour%GG"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-bad-percent-unknown",
+      "query": "unknown=%",
+      "path": "/api/usage?unknown=%",
+      "method": "GET",
+      "queryValues": {
+        "unknown": [
+          "%"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-bad-percent-key",
+      "query": "buck%et=hour",
+      "path": "/api/usage?buck%et=hour",
+      "method": "GET",
+      "queryValues": {
+        "buck%et": [
+          "hour"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-bad-utf8-value",
+      "query": "bucket=%ED%A0%80",
+      "path": "/api/usage?bucket=%ED%A0%80",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "%ED%A0%80"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-bad-utf8-key",
+      "query": "%FFbucket=hour",
+      "path": "/api/usage?%FFbucket=hour",
+      "method": "GET",
+      "queryValues": {
+        "%FFbucket": [
+          "hour"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-mixed-percent-groups",
+      "query": "bucket=%68%6F%75%72%FF",
+      "path": "/api/usage?bucket=%68%6F%75%72%FF",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "%68%6F%75%72%FF"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-valid-name-bad-value",
+      "query": "%62ucket=hour%",
+      "path": "/api/usage?%62ucket=hour%",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "hour%"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-encoded-semicolon",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day%3B",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day%3B",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day;"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-encoded-equals",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day%3Dhour",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day%3Dhour",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day=hour"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-extra-equals",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day=hour",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day=hour",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day=hour"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-plus-space",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=Etc%2FGMT+1",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=Etc%2FGMT+1",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          "Etc/GMT 1"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-plus-offset-escaped",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=%2B05%3A45",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=%2B05%3A45",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          "+05:45"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":10,\"inputTokens\":12,\"outputTokens\":14,\"durationMs\":16,\"pricedCalls\":18,\"estimatedUsd\":20,\"reportedInputTokens\":22,\"reportedOutputTokens\":24,\"reportedUsageCalls\":26,\"cacheRateInputTokens\":28,\"cacheRateReadTokens\":30,\"cacheRateKnownCalls\":32,\"ordinaryInputTokens\":34,\"cacheReadInputTokens\":36,\"cacheWriteInputTokens\":38,\"cacheWrite5mInputTokens\":40,\"cacheWrite1hInputTokens\":42,\"cacheWrite30mInputTokens\":44,\"cacheWrite12hInputTokens\":46,\"cacheKnownCalls\":48,\"cacheReadKnownCalls\":50,\"cacheWriteKnownCalls\":52,\"partialPricedCalls\":54,\"legacyCalls\":56,\"unknownUsageCalls\":58,\"ordinaryInputUsd\":60,\"outputUsd\":62,\"cacheReadUsd\":64,\"cacheWriteUsd\":66,\"legacyEstimatedUsd\":68}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "true",
+        "x-usage-planner-incomplete": "true"
+      }
+    },
+    {
+      "name": "raw-plus-offset-unescaped",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=+05%3A45",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&timeZone=+05%3A45",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "timeZone": [
+          " 05:45"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-encoded-key",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&%62ucket=day",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&%62ucket=day",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-duplicate-encoded-key",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day&%62ucket=hour",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day&%62ucket=hour",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day",
+          "hour"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-duplicate-malformed",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day&bucket=%",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day&bucket=%",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day",
+          "%"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-duplicate-unknown",
+      "query": "unknown=a&unknown=b",
+      "path": "/api/usage?unknown=a&unknown=b",
+      "method": "GET",
+      "queryValues": {
+        "unknown": [
+          "a",
+          "b"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-empty-keys",
+      "query": "&&=ignored&",
+      "path": "/api/usage?&&=ignored&",
+      "method": "GET",
+      "queryValues": {},
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-empty-known",
+      "query": "bucket",
+      "path": "/api/usage?bucket",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          ""
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-encoded-ampersand",
+      "query": "start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day%26bucket%3Dhour",
+      "path": "/api/usage?start=2026-11-01T00%3A00%3A00Z&end=2026-11-03T00%3A00%3A00Z&bucket=day%26bucket%3Dhour",
+      "method": "GET",
+      "queryValues": {
+        "start": [
+          "2026-11-01T00:00:00Z"
+        ],
+        "end": [
+          "2026-11-03T00:00:00Z"
+        ],
+        "bucket": [
+          "day&bucket=hour"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-unknown-valid-percent",
+      "query": "unknown=%E2%82%AC",
+      "path": "/api/usage?unknown=%E2%82%AC",
+      "method": "GET",
+      "queryValues": {
+        "unknown": [
+          "€"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-known-name-plus",
+      "query": "bucket+=hour",
+      "path": "/api/usage?bucket+=hour",
+      "method": "GET",
+      "queryValues": {
+        "bucket ": [
+          "hour"
+        ]
+      },
+      "status": 200,
+      "text": "[{\"day\":\"2026-11-02\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"planner\",\"calls\":5,\"inputTokens\":6,\"outputTokens\":7,\"durationMs\":8,\"pricedCalls\":9,\"estimatedUsd\":10,\"reportedInputTokens\":11,\"reportedOutputTokens\":12,\"reportedUsageCalls\":13,\"cacheRateInputTokens\":14,\"cacheRateReadTokens\":15,\"cacheRateKnownCalls\":16,\"ordinaryInputTokens\":17,\"cacheReadInputTokens\":18,\"cacheWriteInputTokens\":19,\"cacheWrite5mInputTokens\":20,\"cacheWrite1hInputTokens\":21,\"cacheWrite30mInputTokens\":22,\"cacheWrite12hInputTokens\":23,\"cacheKnownCalls\":24,\"cacheReadKnownCalls\":25,\"cacheWriteKnownCalls\":26,\"partialPricedCalls\":27,\"legacyCalls\":28,\"unknownUsageCalls\":29,\"ordinaryInputUsd\":30,\"outputUsd\":31,\"cacheReadUsd\":32,\"cacheWriteUsd\":33,\"legacyEstimatedUsd\":34},{\"day\":\"2026-11-01\",\"modelId\":\"synthetic\",\"providerId\":\"p\",\"apiModelName\":\"api\",\"role\":\"replyer\",\"calls\":15,\"inputTokens\":18,\"outputTokens\":21,\"durationMs\":24,\"pricedCalls\":27,\"estimatedUsd\":30,\"reportedInputTokens\":33,\"reportedOutputTokens\":36,\"reportedUsageCalls\":39,\"cacheRateInputTokens\":42,\"cacheRateReadTokens\":45,\"cacheRateKnownCalls\":48,\"ordinaryInputTokens\":51,\"cacheReadInputTokens\":54,\"cacheWriteInputTokens\":57,\"cacheWrite5mInputTokens\":60,\"cacheWrite1hInputTokens\":63,\"cacheWrite30mInputTokens\":66,\"cacheWrite12hInputTokens\":69,\"cacheKnownCalls\":72,\"cacheReadKnownCalls\":75,\"cacheWriteKnownCalls\":78,\"partialPricedCalls\":81,\"legacyCalls\":84,\"unknownUsageCalls\":87,\"ordinaryInputUsd\":90,\"outputUsd\":93,\"cacheReadUsd\":96,\"cacheWriteUsd\":99,\"legacyEstimatedUsd\":102}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": "false",
+        "x-usage-planner-incomplete": "false"
+      }
+    },
+    {
+      "name": "raw-encoded-nul",
+      "query": "bucket=%00",
+      "path": "/api/usage?bucket=%00",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "\u0000"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-bad-byte-after-valid",
+      "query": "bucket=%68%6F%75%72%FF%20",
+      "path": "/api/usage?bucket=%68%6F%75%72%FF%20",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "%68%6F%75%72%FF%20"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    },
+    {
+      "name": "raw-partial-bad-group",
+      "query": "bucket=%68%6F%75%72%FF!%64%61%79",
+      "path": "/api/usage?bucket=%68%6F%75%72%FF!%64%61%79",
+      "method": "GET",
+      "queryValues": {
+        "bucket": [
+          "%68%6F%75%72%FF!day"
+        ]
+      },
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "x-usage-incomplete": null,
+        "x-usage-planner-incomplete": null
+      }
+    }
+  ]
+}

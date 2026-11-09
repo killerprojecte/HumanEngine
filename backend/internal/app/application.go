@@ -10,6 +10,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/httpapi"
+	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
 	"github.com/killerprojecte/HumanEngine/backend/internal/learningowner"
 	"github.com/killerprojecte/HumanEngine/backend/internal/learningruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
@@ -26,6 +27,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/scheduler"
 	"github.com/killerprojecte/HumanEngine/backend/internal/settingsstore"
 	"github.com/killerprojecte/HumanEngine/backend/internal/topiccollation"
+	"github.com/killerprojecte/HumanEngine/backend/internal/usageview"
 	"github.com/killerprojecte/HumanEngine/backend/internal/v1adapterruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/workingset"
 )
@@ -234,7 +236,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 			return app, err
 		}
 	}
-	app.readPublisher, err = recovery.NewReadPublisher(ctx, owners.Main, owners.Authority)
+	app.readPublisher, err = recovery.NewReadPublisherWithInitializer(ctx, owners.Main, owners.Authority, installation.UsageReadInitializer(owners.Dates))
 	if err != nil {
 		return app, err
 	}
@@ -247,6 +249,9 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error { return app.HTTP.WithDiagnostics(app.Diagnostics, app.readPublisher) },
 		func() error { return app.HTTP.WithModelCalls(calls, app.readPublisher) },
 		func() error { return app.HTTP.WithProviderReads(app.models, app.readPublisher) },
+		func() error {
+			return app.HTTP.WithUsage(&usageview.Store{Main: owners.Main, Dates: owners.Dates}, app.readPublisher)
+		},
 		func() error {
 			return app.HTTP.WithConfiguration(owners.Credentials, &settingsstore.Store{Main: owners.Main, Authority: owners.Authority}, settingsRuntime)
 		},

@@ -18,6 +18,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
@@ -42,6 +43,8 @@ type Owners struct {
 }
 
 type Options struct {
+	// Per-open private constructor injection. Nil preserves the concrete owner path.
+	relationExposurePort                                              func(*Application, Owners) (*memoryservice.ExposurePort, error)
 	Installation                                                      installation.Options
 	ImageLibrary, Locale, MemeDirectory, PluginRoot, Node, AdminToken string
 	// Entries are installed local V1 modules, relative to PluginRoot. Registration

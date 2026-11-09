@@ -80,7 +80,7 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 	if a.IdentityExposure.CaptureGuard(c) != nil {
 		return reject("identity_read_not_learning_authority")
 	}
-	// Semantic/workspace/relation/knowledge exposures are not composed here. No
+	// Semantic/workspace/knowledge exposures are not composed here. No
 	// synthetic exposure guard or implied learning capability replaces those owners.
 	if a.StateExposures.historical.CaptureGuard(c) != nil || a.StateExposures.history.CaptureGuard(c) != nil || a.StateExposures.timeline.CaptureGuard(c) != nil {
 		return reject("historical_read_not_learning_authority")
@@ -95,6 +95,18 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 	}
 	for _, ref := range a.MemoryExposure.ReadExposed(c) {
 		submission.Memories = append(submission.Memories, contextuallearning.MemorySnapshot{ID: ref.ID, Version: ref.Version, DeletionEpoch: ref.DeletionEpoch, Deleted: ref.Deleted})
+	}
+	entities, err := a.RelationExposure.ReadExposedEntities(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+	for _, entity := range entities {
+		backing, _ := entity.Get("backingRef")
+		ref := backing.(*jsjson.Object)
+		submission.Entities = append(submission.Entities, contextuallearning.EntitySnapshot{EntityID: contextualField(entity, "entityId").(string), BackingRef: contextuallearning.ParentReference{ID: contextualField(ref, "id").(string), Version: int64(contextualField(ref, "version").(float64)), DeletionEpoch: int64(contextualField(ref, "deletionEpoch").(float64))}})
+	}
+	if guard := a.RelationExposure.CaptureLearningGuard(c); guard != nil {
+		submission.EntityValid = a.contextualGuard(guard.Check)
 	}
 	refs, err := a.StateExposures.current.ReadExposedRefs(ctx, c)
 	if err != nil {
@@ -127,3 +139,5 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 	}
 	return out, nil
 }
+
+func contextualField(o *jsjson.Object, k string) any { v, _ := o.Get(k); return v }

@@ -63,7 +63,7 @@ This is not a claim of complete TypeScript Engine compatibility.
   option must define installation/configuration inputs without changing read-only
   preview semantics or silently selecting this graph as the default backend.
 - Remaining source model tools, complete prompt/manual-rule composition and all
-  exposure domains are not all wired. Relation, workspace, knowledge and semantic
+  exposure domains are not all wired. Workspace, knowledge and semantic
   exposure guards are not implied by the composed memory, identity, commitment
   and historical guards. Contextual `learning.propose` is now a model
   tool in this bounded graph, without those remaining exposure domains. Complete
@@ -112,8 +112,23 @@ replies remain allowed; participation revocation is a separate runtime policy.
 Native focused evidence covers real model selection, queued foreground admission,
 ordinary proposal persistence, history/identity/current refusal, and queued learning
 revocation with physical idle and zero revoked rows. This is not full learning parity:
-semantic/workspace/relation/knowledge exposure domains are not composed or advertised.
+semantic/workspace/knowledge exposure domains are not composed or advertised.
 Pending recall, changed-scope, typed commitment learning and concurrent-writer races
 are not established by this fixture. No synthetic native replacement of guest logic
 is introduced. A writable launcher, installation packaging/configuration and OS-signal
 stop lifecycle remain separate work; --read-only-preview and HTTP 101 are unchanged.
+
+## Relation receipt and contextual entity composition
+
+The relation model tool now uses the existing qualified relations read owner. Its
+original whole linked-memory group must be delivered before exact backing refs and
+a detached relation guard reach contextual learning. Validation borrows the current
+read or writer authority and checks current graph flags, relation snapshots, complete
+counterclaim groups and temporal applicability. It does not reopen a root publication
+or retain a writer. Advertisement follows historical memory; guard capture precedes
+commitment state, matching source order.
+
+The relation fixture exercises real proposal admission, model selection, contextual
+existing-entity reuse and SQL persistence; this does not establish semantic, workspace
+or knowledge exposure parity. Native platform coverage and the separate writable
+launcher remain outside this batch.

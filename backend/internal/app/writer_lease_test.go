@@ -42,10 +42,10 @@ func TestApplicationWriterLeaseRetainedUntilPhysicalDrain(t *testing.T) {
 	if !errors.Is(err, context.DeadlineExceeded) || a.finalized {
 		t.Fatal("failed physical drain did not retain owner", err)
 	}
-	if options.Logs.Status().Closed {
+	if a.Logger().(*observability.StoreLogger).LoggingStatus().Closed {
 		t.Fatal("failed drain closed the owned logger")
 	}
-	if err = options.Logs.Emit(observability.Event{Level: "info", Module: "test", Code: "writer_lease.retained", Message: "Synthetic retained-owner probe"}); err != nil {
+	if err = a.Logger().Emit(observability.Event{Level: "info", Module: "test", Code: "writer_lease.retained", Message: "Synthetic retained-owner probe"}); err != nil {
 		t.Fatal("logger no longer accepts after failed drain", err)
 	}
 	second, e := installation.Open(context.Background(), options.Installation)
@@ -61,10 +61,10 @@ func TestApplicationWriterLeaseRetainedUntilPhysicalDrain(t *testing.T) {
 	if err = a.ShutdownAndFlush(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	if !options.Logs.Status().Closed {
+	if !a.Logger().(*observability.StoreLogger).LoggingStatus().Closed {
 		t.Fatal("successful shutdown did not close owned logger")
 	}
-	if e = options.Logs.Emit(observability.Event{Level: "info", Module: "test", Code: "writer_lease.closed", Message: "Synthetic closed-logger probe"}); !errors.Is(e, observability.ErrClosed) {
+	if e = a.Logger().Emit(observability.Event{Level: "info", Module: "test", Code: "writer_lease.closed", Message: "Synthetic closed-logger probe"}); !errors.Is(e, observability.ErrClosed) {
 		t.Fatal("logger accepted after successful shutdown", e)
 	}
 	reopened, e := installation.Open(context.Background(), options.Installation)

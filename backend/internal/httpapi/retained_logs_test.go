@@ -18,8 +18,9 @@ import (
 func retainedFixture(t *testing.T) (*Server, *recovery.ReadPublisher) {
 	t.Helper()
 	s, db, a, _, _ := configurationFixture(t)
-	s.logs = observability.New(nil, nil)
-	t.Cleanup(func() { s.logs.Close(context.Background()) })
+	logs := observability.New(nil, nil)
+	s.logs = logs
+	t.Cleanup(func() { logs.Close(context.Background()) })
 	p, err := recovery.NewReadPublisher(context.Background(), db, a)
 	if err != nil {
 		t.Fatal(err)

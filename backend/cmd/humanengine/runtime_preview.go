@@ -19,6 +19,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
+	"github.com/killerprojecte/HumanEngine/backend/internal/observability/logdelivery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
@@ -59,8 +60,9 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 	if err != nil {
 		return err
 	}
-	logs := observability.New(stdout, stderr)
-	options.Logs = logs
+	if stdout != os.Stdout {
+		options.LogRegistry = logdelivery.NewRegistry(stdout)
+	}
 	// Raw plugin stderr is deliberately not forwarded: it may contain credentials.
 	options.Diagnostics = io.Discard
 	options.AdminToken = os.Getenv("HUMANENGINE_ADMIN_TOKEN")
@@ -71,8 +73,9 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 		if application != nil {
 			return errors.Join(errors.New("runtime_preview_open_failed"), application.ShutdownAndFlush(context.Background()))
 		}
-		return errors.Join(errors.New("runtime_preview_open_failed"), logs.Close(context.Background()))
+		return errors.New("runtime_preview_open_failed")
 	}
+	logs := application.Logger()
 	server := &http.Server{Handler: application}
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()

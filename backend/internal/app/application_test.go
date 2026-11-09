@@ -12,7 +12,6 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceadmission"
 	"github.com/killerprojecte/HumanEngine/backend/internal/topiccollation"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -26,7 +25,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
-	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
+	"github.com/killerprojecte/HumanEngine/backend/internal/observability/logdelivery"
 )
 
 type applicationLogBuffer struct {
@@ -92,16 +91,12 @@ func applicationOptions(t *testing.T) Options {
 		t.Fatal("genuine sqlite-vec required", err)
 	}
 	diagnostics := new(applicationLogBuffer)
-	logs := observability.New(diagnostics, io.Discard)
 	t.Cleanup(func() {
-		if err := logs.Close(context.Background()); err != nil {
-			t.Error(err)
-		}
 		if t.Failed() {
 			t.Log("synthetic application diagnostics:", diagnostics.snapshot())
 		}
 	})
-	return Options{Installation: installation.Options{Database: filepath.Join(root, "data/main.sqlite"), AuthorityDirectory: filepath.Join(root, "authority"), VectorExtension: extension, SourceTimezone: "UTC"}, ImageLibrary: os.Getenv("HE_IMAGE_LIBRARY"), Locale: "en-US", PluginRoot: pluginRoot, Node: node, AdminToken: "synthetic-token", Entries: []string{"application.mjs"}, Diagnostics: diagnostics, Logs: logs}
+	return Options{Installation: installation.Options{Database: filepath.Join(root, "data/main.sqlite"), AuthorityDirectory: filepath.Join(root, "authority"), VectorExtension: extension, SourceTimezone: "UTC"}, ImageLibrary: os.Getenv("HE_IMAGE_LIBRARY"), Locale: "en-US", PluginRoot: pluginRoot, Node: node, AdminToken: "synthetic-token", Entries: []string{"application.mjs"}, Diagnostics: diagnostics, LogRegistry: logdelivery.NewRegistry(diagnostics)}
 }
 func appRequest(t *testing.T, app *Application, method, path string, body any) any {
 	t.Helper()

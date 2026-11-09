@@ -44,7 +44,7 @@ type Manager struct {
 	removeHostObserver func()
 	credentials        *credentials.Store
 	wasm               *plugins.WASMHost
-	logs               *observability.Logger
+	logs               observability.Emitter
 	life               context.Context
 	cancel             context.CancelFunc
 	mu                 sync.Mutex
@@ -68,7 +68,7 @@ type Manager struct {
 
 // New borrows the application's exact existing host/runtime/database owners.
 // Close drains this manager's work; the application still owns Bridge.CloseAndWait.
-func New(main *sql.DB, a *recovery.Authority, host *plugins.V1Host, runtime *botruntime.Runtime, node, root string, diagnostics io.Writer, logs ...*observability.Logger) (*Manager, error) {
+func New(main *sql.DB, a *recovery.Authority, host *plugins.V1Host, runtime *botruntime.Runtime, node, root string, diagnostics io.Writer, logs ...observability.Emitter) (*Manager, error) {
 	if main == nil || a == nil || host == nil || runtime == nil || node == "" {
 		return nil, errors.New("plugin_manager_dependencies_required")
 	}

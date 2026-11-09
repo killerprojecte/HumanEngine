@@ -24,7 +24,7 @@ type ownership struct {
 // alive until requests finish and must close them itself, including on failure.
 // It neither enrolls nor reconciles the database. Publish checks the gate on
 // every request, using exactly the same response semantics as the preview.
-func New(main *sql.DB, authority *recovery.Authority, token string, logs *observability.Logger) (*Server, error) {
+func New(main *sql.DB, authority *recovery.Authority, token string, logs observability.RetainedLogger) (*Server, error) {
 	if main == nil || authority == nil {
 		return nil, errors.New("http_dependencies_invalid")
 	}
@@ -37,7 +37,7 @@ func New(main *sql.DB, authority *recovery.Authority, token string, logs *observ
 
 // NewWithHabits explicitly enables the concrete habit routes. The service must
 // belong to this exact database/authority; preview constructors remain unchanged.
-func NewWithHabits(main *sql.DB, authority *recovery.Authority, habits *habitservice.Service, token string, logs *observability.Logger) (*Server, error) {
+func NewWithHabits(main *sql.DB, authority *recovery.Authority, habits *habitservice.Service, token string, logs observability.RetainedLogger) (*Server, error) {
 	if habits == nil || !habits.OwnedBy(main, authority) {
 		return nil, errors.New("http_habit_dependencies_invalid")
 	}
@@ -51,7 +51,7 @@ func NewWithHabits(main *sql.DB, authority *recovery.Authority, habits *habitser
 
 // NewWithExperience explicitly enables native experience routes. New and Open
 // remain readonly previews. The owner must share the exact writer and pool.
-func NewWithExperience(main *sql.DB, authority *recovery.Authority, experience *experienceservice.Service, token string, logs *observability.Logger) (*Server, error) {
+func NewWithExperience(main *sql.DB, authority *recovery.Authority, experience *experienceservice.Service, token string, logs observability.RetainedLogger) (*Server, error) {
 	if !experience.OwnedBy(main, authority) {
 		return nil, errors.New("http_experience_dependencies_invalid")
 	}
@@ -64,7 +64,7 @@ func NewWithExperience(main *sql.DB, authority *recovery.Authority, experience *
 }
 
 // NewWithMemoryAdministration composes both completed route families explicitly.
-func NewWithMemoryAdministration(main *sql.DB, authority *recovery.Authority, habits *habitservice.Service, experience *experienceservice.Service, token string, logs *observability.Logger) (*Server, error) {
+func NewWithMemoryAdministration(main *sql.DB, authority *recovery.Authority, habits *habitservice.Service, experience *experienceservice.Service, token string, logs observability.RetainedLogger) (*Server, error) {
 	s, e := NewWithExperience(main, authority, experience, token, logs)
 	if e != nil {
 		return nil, e

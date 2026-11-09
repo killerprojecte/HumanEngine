@@ -68,6 +68,9 @@ type Application struct {
 	shutdownGate        chan struct{}
 	finalized           bool
 	finalErr            error
+	producersDrained    bool
+	logsFinalized       bool
+	loggingClose        *applicationLogClose
 }
 
 func assemble(ctx context.Context, owners Owners, options Options, collator *topiccollation.Collator, release func() error) (app *Application, err error) {
@@ -77,10 +80,11 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 			// If physical termination cannot be established, return the partial owner
 			// alongside the error. The caller can retry Shutdown; never close its DB early.
 			closeErr := app.Shutdown(context.Background())
-			if closeErr == nil {
+			err = errors.Join(err, closeErr)
+			// A completed logging health failure still permits database cleanup. Never
+			// return an already finalized owner merely because its health is degraded.
+			if app.finalized {
 				app = nil
-			} else {
-				err = errors.Join(err, closeErr)
 			}
 		}
 	}()
@@ -326,17 +330,7 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer done()
 	a.HTTP.ServeHTTP(w, r)
 }
-func (a *Application) Shutdown(ctx context.Context) error {
-	a.requests.Seal()
-	select {
-	case a.shutdownGate <- struct{}{}:
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-	defer func() { <-a.shutdownGate }()
-	if a.finalized {
-		return a.finalErr
-	}
+func (a *Application) drainProducers(ctx context.Context) error {
 	// Stop plugin producers first. Accepted HTTP is then joined before sealing
 	// owner callbacks that a committed settings request can still invoke.
 	stages := []struct {
@@ -432,33 +426,13 @@ func (a *Application) Shutdown(ctx context.Context) error {
 			return err
 		}
 	}
-	if a.releaseInstallation != nil {
-		a.finalErr = a.releaseInstallation()
-	}
-	a.finalized = true
-	emit(a.options.Logs, observability.Event{Level: "info", Module: "app", Code: "app.drained", Message: "Native application owners drained"})
-	// Logger is borrowed by Open; its caller flushes after receiving shutdown's
-	// terminal result. This allows a failed startup to report its final diagnostic.
-	return a.finalErr
+	return nil
 }
-func emit(logs *observability.Logger, event observability.Event) {
+
+func emit(logs observability.Emitter, event observability.Event) {
 	if logs != nil {
 		_ = logs.Emit(event)
 	}
-}
-
-// ShutdownAndFlush is the owning launcher boundary. Shutdown alone deliberately
-// borrows the logger (including when several test/app lifetimes share it). A
-// launcher owning that logger calls this method and receives real flush errors;
-// cancellation never turns incomplete physical shutdown into a successful exit.
-func (a *Application) ShutdownAndFlush(ctx context.Context) error {
-	if err := a.Shutdown(ctx); err != nil {
-		return err
-	}
-	if a.options.Logs != nil {
-		return errors.Join(a.finalErr, a.options.Logs.Close(ctx))
-	}
-	return a.finalErr
 }
 
 func (a *Application) observeRuntime(e botruntime.Event) {

@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
+	"github.com/killerprojecte/HumanEngine/backend/internal/observability/logdelivery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
 )
 
@@ -44,9 +43,7 @@ func TestApplicationUncancelledShutdownReachesHeldHTTPBeforeDatabaseClose(t *tes
 	options := applicationOptions(t)
 	options.Entries = []string{}
 	stages := &stageSink{atHTTP: make(chan struct{})}
-	logs := observability.New(stages, io.Discard)
-	defer logs.Close(context.Background())
-	options.Logs = logs
+	options.LogRegistry = logdelivery.NewRegistry(stages)
 	app, err := Open(context.Background(), options)
 	if err != nil {
 		t.Fatal(err)

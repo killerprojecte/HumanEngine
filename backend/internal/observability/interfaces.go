@@ -19,4 +19,6 @@ type RetainedLogger interface {
 type LogOwner interface {
 	RetainedLogger
 	Close(context.Context) error
+	// Physical ownership is observed separately from logical health/errors.
+	WaitPhysicalClose(context.Context) error
 }

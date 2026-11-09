@@ -50,11 +50,11 @@ type Server struct {
 	authority           *recovery.Authority
 	schemas             *contract.Schemas
 	token               string
-	logs                *observability.Logger
+	logs                observability.RetainedLogger
 	owned               *ownership
 }
 
-func Open(ctx context.Context, database, token string, logs *observability.Logger) (*Server, error) {
+func Open(ctx context.Context, database, token string, logs observability.RetainedLogger) (*Server, error) {
 	schemas, err := contract.SharedSchemas()
 	if err != nil {
 		return nil, err

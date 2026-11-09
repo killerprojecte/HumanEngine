@@ -46,14 +46,19 @@ func runtimeAddress(t *testing.T, logs *commandLog, done <-chan error) string {
 	t.Helper()
 	s := waitRuntimeLog(t, logs, `"code":"server.listening"`, done)
 	for _, line := range strings.Split(s, "\n") {
-		var event struct {
-			Code   string `json:"code"`
-			Fields struct {
-				Address string `json:"address"`
-			} `json:"fields"`
+		prefix, flat, ok := strings.Cut(line, " | ")
+		if !ok {
+			continue
 		}
-		if json.Unmarshal([]byte(line), &event) == nil && event.Code == "server.listening" {
-			return event.Fields.Address
+		var event struct {
+			Code    string `json:"code"`
+			Address string `json:"address"`
+		}
+		if json.Unmarshal([]byte(flat), &event) == nil && event.Code == "server.listening" {
+			if prefix == "" || event.Address == "" {
+				t.Fatal("source listening event lacks prefix/flat address", line)
+			}
+			return event.Address
 		}
 	}
 	t.Fatal("listening event lacks address")

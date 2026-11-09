@@ -23,7 +23,7 @@ func TestApplicationStatusReadsActualOwners(t *testing.T) {
 		t.Fatal(before)
 	}
 	initial := field(before, "recentErrors").(float64)
-	if err = options.Logs.Emit(observability.Event{Level: "error", Code: "synthetic-status-error"}); err != nil {
+	if err = app.Logger().Emit(observability.Event{Level: "error", Code: "synthetic-status-error"}); err != nil {
 		t.Fatal(err)
 	}
 	after := appRequest(t, app, "GET", "/api/status", nil)

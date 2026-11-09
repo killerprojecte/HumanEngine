@@ -38,7 +38,7 @@ type Dependencies struct {
 	Models     *providertransport.NativeModels
 	Read       *modelread.Policy
 	Foreground *botruntime.Runtime
-	Logs       *observability.Logger
+	Logs       observability.Emitter
 	Proposal   memoryservice.ProposalOptions
 	Now        func() time.Time
 	Options    learningruntime.Options

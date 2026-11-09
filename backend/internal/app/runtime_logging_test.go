@@ -5,14 +5,14 @@ import (
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
-	"io"
+	"github.com/killerprojecte/HumanEngine/backend/internal/observability/logdelivery"
 	"strings"
 	"testing"
 )
 
 func TestRuntimeLoggingKeepsSafeFailureCodeAndStage(t *testing.T) {
 	output := new(applicationLogBuffer)
-	logs := observability.New(output, io.Discard)
+	logs := observability.NewStoreLogger(observability.StoreLoggerOptions{Database: ":memory:", Registry: logdelivery.NewRegistry(output)})
 	a := &Application{options: Options{Logs: logs}}
 	a.observeRuntime(botruntime.Event{SceneID: "scene", TurnID: "turn", Stage: "planner", Status: "failed", Reason: "stage_failed", FailureCode: "json_value_type_unsupported", Cause: errors.New("synthetic-sensitive-body")})
 	if err := logs.Close(context.Background()); err != nil {

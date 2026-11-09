@@ -20,6 +20,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
+	"github.com/killerprojecte/HumanEngine/backend/internal/observability/logdelivery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
@@ -57,14 +58,18 @@ type Options struct {
 	HTTP        *http.Client
 	Counter     providertransport.CounterRegistry
 	LookupEnv   func(string) (string, bool)
-	Logs        *observability.Logger
+	Logs        observability.LogOwner
+	// LogRegistry is an optional shared registry for embedding and tests. Nil
+	// uses the process-wide source owners; it is not an opt-in logging mode.
+	LogRegistry *logdelivery.Registry
+	ownsLogs    bool
 }
 
 // Open owns genuine installation enrollment, database and native application
 // lifetimes. No fixture schema, fake provider, synthetic authority or media fetch
 // implementation is selected here. The production command remains preview-only.
 func Open(ctx context.Context, o Options) (_ *Application, err error) {
-	if o.Logs == nil || o.Node == "" || o.PluginRoot == "" {
+	if o.Node == "" || o.PluginRoot == "" {
 		return nil, errors.New("application_dependencies_required")
 	}
 	var installationOwner *installation.Store
@@ -137,6 +142,10 @@ func Open(ctx context.Context, o Options) (_ *Application, err error) {
 		return nil, err
 	}
 	owners := Owners{installationOwner.VectorVersion, db, a, st, sources, runtimeAuthority, memes, habits, installationOwner.Secrets, &providertransport.BudgetService{DB: db, Ledger: ledger}, codec, dates, collator.Compare}
+	if o.Logs == nil {
+		o.Logs = observability.NewStoreLogger(observability.StoreLoggerOptions{Database: o.Installation.Database, Registry: o.LogRegistry, LookupEnv: o.LookupEnv})
+		o.ownsLogs = true
+	}
 	transferred = true
 	return assemble(ctx, owners, o, collator, func() error { return errors.Join(collator.Close(), installationOwner.Close()) })
 }

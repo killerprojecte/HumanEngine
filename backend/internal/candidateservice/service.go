@@ -43,17 +43,17 @@ type Service struct {
 
 // Open opens an already enrolled installation without changing its schemas or
 // repairing ACK gaps. As in the preview, actual publication verifies authority.
-func Open(ctx context.Context, database, token string, logs *observability.Logger) (*Service, error) {
+func Open(ctx context.Context, database, token string, logs observability.RetainedLogger) (*Service, error) {
 	return open(ctx, database, token, logs, false, nil)
 }
 
 // OpenWithHabits initializes concrete habit storage and enables its actual admin
 // routes. Unlike Open it may initialize that domain schema, but never enrolls or
 // reconciles an installation or replays learning.
-func OpenWithHabits(ctx context.Context, database, token string, logs *observability.Logger) (*Service, error) {
+func OpenWithHabits(ctx context.Context, database, token string, logs observability.RetainedLogger) (*Service, error) {
 	return open(ctx, database, token, logs, true, nil)
 }
-func open(ctx context.Context, database, token string, logs *observability.Logger, withHabits bool, experienceOptions *NativeExperienceOptions) (*Service, error) {
+func open(ctx context.Context, database, token string, logs observability.RetainedLogger, withHabits bool, experienceOptions *NativeExperienceOptions) (*Service, error) {
 	main, err := storage.OpenExisting(database, true)
 	if err != nil {
 		return nil, err

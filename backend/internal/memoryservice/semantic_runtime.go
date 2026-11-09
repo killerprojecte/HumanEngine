@@ -25,7 +25,7 @@ type SemanticRuntime struct {
 	main             *sql.DB
 	authority        *recovery.Authority
 	foreground       *botruntime.Runtime
-	logs             *observability.Logger
+	logs             observability.Emitter
 	mu               sync.Mutex
 	closed, draining bool
 	drained          chan struct{}
@@ -44,7 +44,7 @@ type SemanticRuntimeDependencies struct {
 	Models      *providertransport.NativeModels
 	Read        *modelread.Policy
 	Foreground  *botruntime.Runtime
-	Logs        *observability.Logger
+	Logs        observability.Emitter
 	Maintenance *workingset.Maintenance
 	Options     semantic.CoordinatorOptions
 }

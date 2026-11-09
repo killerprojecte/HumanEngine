@@ -23,12 +23,12 @@ type NativeExperienceOptions struct {
 // OpenWithExperience explicitly initializes the native owner and enables all
 // Experience administration routes. Open remains the readonly preview. This is
 // not installation enrollment, reconciliation, or a claim of production boot.
-func OpenWithExperience(ctx context.Context, database, token string, logs *observability.Logger, options NativeExperienceOptions) (*Service, error) {
+func OpenWithExperience(ctx context.Context, database, token string, logs observability.RetainedLogger, options NativeExperienceOptions) (*Service, error) {
 	return open(ctx, database, token, logs, false, &options)
 }
 
 // OpenWithMemoryAdministration composes Habit and Experience against the same
 // owned database/writer. Close drains active calls before closing either owner.
-func OpenWithMemoryAdministration(ctx context.Context, database, token string, logs *observability.Logger, options NativeExperienceOptions) (*Service, error) {
+func OpenWithMemoryAdministration(ctx context.Context, database, token string, logs observability.RetainedLogger, options NativeExperienceOptions) (*Service, error) {
 	return open(ctx, database, token, logs, true, &options)
 }

@@ -21,11 +21,11 @@ type NativeSettingsEffects struct {
 	maintenance *workingset.Maintenance
 	domains     SettingsDomainOwners
 	diagnostics *Diagnostics
-	logs        *observability.Logger
+	logs        observability.Emitter
 	snapshot    *settingsSnapshot
 }
 
-func NewNativeSettingsEffects(p *projections.Coordinator, w *workingset.Service, m *workingset.Maintenance, domains SettingsDomainOwners, diagnostics *Diagnostics, logs *observability.Logger) (*NativeSettingsEffects, error) {
+func NewNativeSettingsEffects(p *projections.Coordinator, w *workingset.Service, m *workingset.Maintenance, domains SettingsDomainOwners, diagnostics *Diagnostics, logs observability.Emitter) (*NativeSettingsEffects, error) {
 	if p == nil || w == nil || m == nil || domains == nil || diagnostics == nil || logs == nil {
 		return nil, errors.New("application_settings_effect_owners_required")
 	}

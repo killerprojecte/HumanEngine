@@ -1,0 +1,914 @@
+{
+  "hashes": {
+    "src/memory/read/model-read-policy.ts": "82da719b296faefb9cc6386c70d7b6f344e3c5577da75acce03b8e12d7ec23f8",
+    "src/memory/read/state-exposure.ts": "cdcdf47ff2f3b3fa6995b192491a8fbcaacfc4b0ba86fc175480ef40f28ac0ba",
+    "src/memory/read/identity-exposure.ts": "6b905b4e7340f1aceff70444088d30f8a2e2322baf5f062ad1ca4be0c13647d2",
+    "src/memory/identities/service.ts": "f48a7b6ad5b96c17cbe9e64f3e11b5b633134d81ddb1458e41e6d56a104b634a",
+    "src/memory/identities/facade.ts": "dc4a3a96fa5284cb90f74dac0168acd497ea7c4966a0e9724fccb23a1eb11fce",
+    "src/memory/identities/storage.ts": "cf51317f5eccc1ed7aa74aba8c4227732362bd26d79d6261f5ecf0d0cbc81e47",
+    "src/memory/identities/contracts.ts": "2188e0667279a0654655e5c9c90ce6744ee9cfc2e9e24b0464f543d6e744abec",
+    "backend/tests/generate-identity-exposure.mjs": "140a4e306acbc5d312914a763fa1ba5398e053db0dc73cd0c3d123bac68f9162"
+  },
+  "records": [
+    {
+      "id": "m-p",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s",
+        "personId": "p"
+      },
+      "kind": "experience",
+      "content": "Synthetic",
+      "sources": [],
+      "importance": "low",
+      "confidence": 0.5,
+      "locked": false,
+      "origin": "manual",
+      "lineageStatus": "unverified",
+      "status": "active",
+      "learnedAt": "2000-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "m-q",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s",
+        "personId": "q"
+      },
+      "kind": "experience",
+      "content": "Synthetic",
+      "sources": [],
+      "importance": "low",
+      "confidence": 0.5,
+      "locked": false,
+      "origin": "manual",
+      "lineageStatus": "unverified",
+      "status": "active",
+      "learnedAt": "2000-01-01T00:00:00.000Z"
+    }
+  ],
+  "outcomes": [
+    {
+      "name": "identity_exact_scope_and_receipts",
+      "registry": {
+        "format": 1,
+        "revision": 5,
+        "edges": [
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ],
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "invisible"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "alias-p",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Synthetic P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "alias-q",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            },
+            "label": "Synthetic Q",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Observed P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "observed-name",
+              "senderId": "p"
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "op-0",
+            "hash": "e0cdc7bfa63466c71618a26c55414559fe5bf85847a77f83028a52bf20eea6e6",
+            "revision": 1
+          },
+          {
+            "id": "op-1",
+            "hash": "8a9ab3839c884d2c2e8ae2840447061f9a845488c274f0dcd4c48198ff8bdf09",
+            "revision": 2
+          },
+          {
+            "id": "op-2",
+            "hash": "f265aeea07ea7182f3c221f6573febad5437f8d069a81024cd0d284ab52897d9",
+            "revision": 3
+          },
+          {
+            "id": "op-3",
+            "hash": "c3e6535eb9b526e63068cbd4e49492eb3ea29c1c7f337f89e795c0054cfb2bd8",
+            "revision": 4
+          },
+          {
+            "id": "op-4",
+            "hash": "83a9a08e678554b34a9bc1fd28a81ec72e14b3611d3cb42d0f6d1a77bbc3cfee",
+            "revision": 5
+          }
+        ]
+      },
+      "value": {
+        "values": [
+          {
+            "stateKind": "identity_view",
+            "page": {
+              "sceneId": "s",
+              "revision": 5,
+              "personId": "p",
+              "coverage": "complete",
+              "interpretation": "administrator_verified_links_not_read_authority_or_personal_facts",
+              "items": [
+                {
+                  "personId": "p",
+                  "aliases": [
+                    {
+                      "label": "Synthetic P",
+                      "validFrom": null,
+                      "validUntil": null,
+                      "sourceKind": "manual"
+                    },
+                    {
+                      "label": "Observed P",
+                      "validFrom": null,
+                      "validUntil": null,
+                      "sourceKind": "observation",
+                      "sourceMessageId": "observed-name"
+                    }
+                  ]
+                },
+                {
+                  "personId": "q",
+                  "aliases": [
+                    {
+                      "label": "Synthetic Q",
+                      "validFrom": null,
+                      "validUntil": null,
+                      "sourceKind": "manual"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "noneBefore": true,
+        "forged": 0,
+        "foreign": 0,
+        "delivered": 1,
+        "repeat": 1,
+        "valid": true,
+        "dependencies": [
+          "observed-name"
+        ],
+        "turnValid": true,
+        "simulation": 0,
+        "invisible": 0
+      }
+    },
+    {
+      "name": "identity_recall_and_detached_guard",
+      "registry": {
+        "format": 1,
+        "revision": 5,
+        "edges": [
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ],
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "invisible"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "alias-p",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Synthetic P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "alias-q",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            },
+            "label": "Synthetic Q",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Observed P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "observed-name",
+              "senderId": "p"
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "op-0",
+            "hash": "e0cdc7bfa63466c71618a26c55414559fe5bf85847a77f83028a52bf20eea6e6",
+            "revision": 1
+          },
+          {
+            "id": "op-1",
+            "hash": "8a9ab3839c884d2c2e8ae2840447061f9a845488c274f0dcd4c48198ff8bdf09",
+            "revision": 2
+          },
+          {
+            "id": "op-2",
+            "hash": "f265aeea07ea7182f3c221f6573febad5437f8d069a81024cd0d284ab52897d9",
+            "revision": 3
+          },
+          {
+            "id": "op-3",
+            "hash": "c3e6535eb9b526e63068cbd4e49492eb3ea29c1c7f337f89e795c0054cfb2bd8",
+            "revision": 4
+          },
+          {
+            "id": "op-4",
+            "hash": "83a9a08e678554b34a9bc1fd28a81ec72e14b3611d3cb42d0f6d1a77bbc3cfee",
+            "revision": 5
+          }
+        ]
+      },
+      "value": {
+        "guard": false,
+        "stillPresent": true,
+        "turnValid": false
+      }
+    },
+    {
+      "name": "identity_policy_revocation",
+      "registry": {
+        "format": 1,
+        "revision": 5,
+        "edges": [
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ],
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "invisible"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "alias-p",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Synthetic P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "alias-q",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            },
+            "label": "Synthetic Q",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Observed P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "observed-name",
+              "senderId": "p"
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "op-0",
+            "hash": "e0cdc7bfa63466c71618a26c55414559fe5bf85847a77f83028a52bf20eea6e6",
+            "revision": 1
+          },
+          {
+            "id": "op-1",
+            "hash": "8a9ab3839c884d2c2e8ae2840447061f9a845488c274f0dcd4c48198ff8bdf09",
+            "revision": 2
+          },
+          {
+            "id": "op-2",
+            "hash": "f265aeea07ea7182f3c221f6573febad5437f8d069a81024cd0d284ab52897d9",
+            "revision": 3
+          },
+          {
+            "id": "op-3",
+            "hash": "c3e6535eb9b526e63068cbd4e49492eb3ea29c1c7f337f89e795c0054cfb2bd8",
+            "revision": 4
+          },
+          {
+            "id": "op-4",
+            "hash": "83a9a08e678554b34a9bc1fd28a81ec72e14b3611d3cb42d0f6d1a77bbc3cfee",
+            "revision": 5
+          }
+        ]
+      },
+      "value": {
+        "guard": false,
+        "stillPresent": true,
+        "query": 0
+      }
+    },
+    {
+      "name": "state_whole_order_callback_once",
+      "registry": {
+        "format": 1,
+        "revision": 5,
+        "edges": [
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ],
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "invisible"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "alias-p",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Synthetic P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "alias-q",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            },
+            "label": "Synthetic Q",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Observed P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "observed-name",
+              "senderId": "p"
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "op-0",
+            "hash": "e0cdc7bfa63466c71618a26c55414559fe5bf85847a77f83028a52bf20eea6e6",
+            "revision": 1
+          },
+          {
+            "id": "op-1",
+            "hash": "8a9ab3839c884d2c2e8ae2840447061f9a845488c274f0dcd4c48198ff8bdf09",
+            "revision": 2
+          },
+          {
+            "id": "op-2",
+            "hash": "f265aeea07ea7182f3c221f6573febad5437f8d069a81024cd0d284ab52897d9",
+            "revision": 3
+          },
+          {
+            "id": "op-3",
+            "hash": "c3e6535eb9b526e63068cbd4e49492eb3ea29c1c7f337f89e795c0054cfb2bd8",
+            "revision": 4
+          },
+          {
+            "id": "op-4",
+            "hash": "83a9a08e678554b34a9bc1fd28a81ec72e14b3611d3cb42d0f6d1a77bbc3cfee",
+            "revision": 5
+          }
+        ]
+      },
+      "value": {
+        "partial": 0,
+        "reordered": 0,
+        "selected": 2,
+        "repeat": 2,
+        "delivered": 1,
+        "read": 2,
+        "dependencies": [
+          "observed-name"
+        ],
+        "turnValid": true
+      }
+    },
+    {
+      "name": "state_callback_failure_sticky",
+      "registry": {
+        "format": 1,
+        "revision": 5,
+        "edges": [
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ],
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "invisible"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "alias-p",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Synthetic P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "alias-q",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            },
+            "label": "Synthetic Q",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Observed P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "observed-name",
+              "senderId": "p"
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "op-0",
+            "hash": "e0cdc7bfa63466c71618a26c55414559fe5bf85847a77f83028a52bf20eea6e6",
+            "revision": 1
+          },
+          {
+            "id": "op-1",
+            "hash": "8a9ab3839c884d2c2e8ae2840447061f9a845488c274f0dcd4c48198ff8bdf09",
+            "revision": 2
+          },
+          {
+            "id": "op-2",
+            "hash": "f265aeea07ea7182f3c221f6573febad5437f8d069a81024cd0d284ab52897d9",
+            "revision": 3
+          },
+          {
+            "id": "op-3",
+            "hash": "c3e6535eb9b526e63068cbd4e49492eb3ea29c1c7f337f89e795c0054cfb2bd8",
+            "revision": 4
+          },
+          {
+            "id": "op-4",
+            "hash": "83a9a08e678554b34a9bc1fd28a81ec72e14b3611d3cb42d0f6d1a77bbc3cfee",
+            "revision": 5
+          }
+        ]
+      },
+      "value": {
+        "error": "synthetic_callback",
+        "read": 0,
+        "hasGuard": false,
+        "turnValid": false
+      }
+    },
+    {
+      "name": "state_callback_reauthorization",
+      "registry": {
+        "format": 1,
+        "revision": 5,
+        "edges": [
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ],
+          [
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "invisible"
+            },
+            {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "alias-p",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Synthetic P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "alias-q",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "q"
+            },
+            "label": "Synthetic Q",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "manual",
+              "administratorId": "admin"
+            },
+            "validFrom": null,
+            "validUntil": null
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "adapter",
+              "accountId": "account",
+              "personId": "p"
+            },
+            "label": "Observed P",
+            "scopeSceneId": "s",
+            "source": {
+              "kind": "observation",
+              "sceneId": "s",
+              "messageId": "observed-name",
+              "senderId": "p"
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ],
+        "operations": [
+          {
+            "id": "op-0",
+            "hash": "e0cdc7bfa63466c71618a26c55414559fe5bf85847a77f83028a52bf20eea6e6",
+            "revision": 1
+          },
+          {
+            "id": "op-1",
+            "hash": "8a9ab3839c884d2c2e8ae2840447061f9a845488c274f0dcd4c48198ff8bdf09",
+            "revision": 2
+          },
+          {
+            "id": "op-2",
+            "hash": "f265aeea07ea7182f3c221f6573febad5437f8d069a81024cd0d284ab52897d9",
+            "revision": 3
+          },
+          {
+            "id": "op-3",
+            "hash": "c3e6535eb9b526e63068cbd4e49492eb3ea29c1c7f337f89e795c0054cfb2bd8",
+            "revision": 4
+          },
+          {
+            "id": "op-4",
+            "hash": "83a9a08e678554b34a9bc1fd28a81ec72e14b3611d3cb42d0f6d1a77bbc3cfee",
+            "revision": 5
+          }
+        ]
+      },
+      "value": {
+        "selected": 0,
+        "delivered": 1,
+        "read": 0,
+        "hasGuard": false,
+        "turnValid": false,
+        "registryAfter": {
+          "format": 1,
+          "revision": 6,
+          "edges": [
+            [
+              {
+                "adapterId": "adapter",
+                "accountId": "account",
+                "personId": "p"
+              },
+              {
+                "adapterId": "adapter",
+                "accountId": "account",
+                "personId": "q"
+              }
+            ],
+            [
+              {
+                "adapterId": "adapter",
+                "accountId": "account",
+                "personId": "invisible"
+              },
+              {
+                "adapterId": "adapter",
+                "accountId": "account",
+                "personId": "q"
+              }
+            ]
+          ],
+          "aliases": [
+            {
+              "id": "alias-q",
+              "endpoint": {
+                "adapterId": "adapter",
+                "accountId": "account",
+                "personId": "q"
+              },
+              "label": "Synthetic Q",
+              "scopeSceneId": "s",
+              "source": {
+                "kind": "manual",
+                "administratorId": "admin"
+              },
+              "validFrom": null,
+              "validUntil": null
+            },
+            {
+              "id": "observed",
+              "endpoint": {
+                "adapterId": "adapter",
+                "accountId": "account",
+                "personId": "p"
+              },
+              "label": "Observed P",
+              "scopeSceneId": "s",
+              "source": {
+                "kind": "observation",
+                "sceneId": "s",
+                "messageId": "observed-name",
+                "senderId": "p"
+              },
+              "validFrom": null,
+              "validUntil": null
+            }
+          ],
+          "operations": [
+            {
+              "id": "op-0",
+              "hash": "e0cdc7bfa63466c71618a26c55414559fe5bf85847a77f83028a52bf20eea6e6",
+              "revision": 1
+            },
+            {
+              "id": "op-1",
+              "hash": "8a9ab3839c884d2c2e8ae2840447061f9a845488c274f0dcd4c48198ff8bdf09",
+              "revision": 2
+            },
+            {
+              "id": "op-2",
+              "hash": "f265aeea07ea7182f3c221f6573febad5437f8d069a81024cd0d284ab52897d9",
+              "revision": 3
+            },
+            {
+              "id": "op-3",
+              "hash": "c3e6535eb9b526e63068cbd4e49492eb3ea29c1c7f337f89e795c0054cfb2bd8",
+              "revision": 4
+            },
+            {
+              "id": "op-4",
+              "hash": "83a9a08e678554b34a9bc1fd28a81ec72e14b3611d3cb42d0f6d1a77bbc3cfee",
+              "revision": 5
+            },
+            {
+              "id": "op-5",
+              "hash": "a2e75b9396c85b85aaa9e1d7b392fcdc2fb5a66cb1be97cf671b04228b0b6b72",
+              "revision": 6
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

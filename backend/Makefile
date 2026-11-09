@@ -59,6 +59,7 @@ differential: build plugin-source-check contextual-source-check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-reconciliation-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-source-admission-fixtures.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-service-fixtures.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-identity-exposure.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-model-memory-exposure.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/internal/knowledge/testdata/generate-read-oracle.ts --check
 	cd .. && TZ=UTC node --import tsx backend/internal/memoryservice/testdata/generate-episode-oracle.ts --check

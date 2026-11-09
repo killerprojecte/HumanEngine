@@ -1,4 +1,4 @@
-// Command humanengine composes the Go server. Preview mode is read-only until parity is complete.
+// Command humanengine offers explicit migration previews; production startup is unchanged.
 package main
 
 import (
@@ -26,9 +26,22 @@ func main() {
 func run() (result error) {
 	database := flag.String("database", "data/humanengine.sqlite", "existing installation database")
 	address := flag.String("listen", "127.0.0.1:3001", "HTTP listen address")
+	runtimePreview := flag.Bool("runtime-preview", false, "run the writable native graph on a test installation; not production parity")
+	runtimeConfig := runtimeFlags(flag.CommandLine)
 	preview := flag.Bool("read-only-preview", false, "run the implemented query slice; not a production bot replacement")
 	inspect := flag.Bool("inspect-builtins", false, "load distributed WASM artifacts and print their manifests without Node or a database")
 	flag.Parse()
+	if *runtimePreview && (*preview || *inspect) {
+		return errors.New("runtime_preview_mode_conflict")
+	}
+	if *runtimePreview {
+		if flag.NArg() != 0 {
+			return errors.New("runtime_preview_unexpected_arguments")
+		}
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		return runRuntimePreview(ctx, *database, *address, *runtimeConfig, os.Stdout, os.Stderr)
+	}
 	if *inspect {
 		return inspectBuiltins()
 	}

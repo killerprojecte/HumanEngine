@@ -211,3 +211,17 @@ func OpenInstallationGate(ctx context.Context, main *sql.DB, database, explicit 
 	}
 	return a, nil
 }
+
+// InstallationAuthorityPath discovers the durable gate authority without writing.
+// The installation owner must hold its database lease while discovering and
+// opening the gate, so NEW enrollment cannot race with another runtime owner.
+func InstallationAuthorityPath(ctx context.Context, main *sql.DB, database, explicit string) (string, error) {
+	g, err := installationGate(ctx, main)
+	if err != nil {
+		return "", err
+	}
+	if g != nil {
+		explicit = g.Authority
+	}
+	return AuthorityPath(database, explicit)
+}

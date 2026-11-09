@@ -16,6 +16,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 )
 
@@ -31,14 +32,29 @@ type Store struct {
 	Secrets       *credentials.Store
 	VectorVersion string
 	vectorAsset   *vectorasset.Asset
+	writerLease   *writerLease
+	closeOnce     sync.Once
+	closeErr      error
 }
 
+// Close is called by the application only after physical owner/request drain.
+// A failed drain must not call this release boundary.
 func (s *Store) Close() error {
-	err := errors.Join(s.Authority.Close(), s.DB.Close())
-	if s.vectorAsset != nil {
-		err = errors.Join(err, s.vectorAsset.Close())
-	}
-	return err
+	s.closeOnce.Do(func() {
+		if s.Authority != nil {
+			s.closeErr = errors.Join(s.closeErr, s.Authority.Close())
+		}
+		if s.DB != nil {
+			s.closeErr = errors.Join(s.closeErr, s.DB.Close())
+		}
+		if s.vectorAsset != nil {
+			s.closeErr = errors.Join(s.closeErr, s.vectorAsset.Close())
+		}
+		if s.writerLease != nil {
+			s.closeErr = errors.Join(s.closeErr, s.writerLease.Close())
+		}
+	})
+	return s.closeErr
 }
 
 type connector struct {
@@ -77,6 +93,16 @@ func open(ctx context.Context, o Options, asset *vectorasset.Asset) (_ *Store, e
 	if err = os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		return nil, err
 	}
+	lease, err := acquireDatabaseLease(path)
+	if err != nil {
+		return nil, err
+	}
+	// Until transfer, all constructed resources close before the lifetime lease.
+	defer func() {
+		if err != nil {
+			err = errors.Join(err, lease.Close())
+		}
+	}()
 	loadVector := func(c *sqlite3.SQLiteConn) error {
 		if asset != nil {
 			return asset.Use(func(path string) error { return c.LoadExtension(path, "sqlite3_vec_init") })
@@ -107,16 +133,23 @@ func open(ctx context.Context, o Options, asset *vectorasset.Asset) (_ *Store, e
 	// One synchronous handle matches source Store ownership and connection state.
 	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)
-	s := &Store{DB: db, vectorAsset: asset}
+	s := &Store{DB: db, vectorAsset: asset, writerLease: lease}
 	defer func() {
 		if err != nil {
 			if s.Authority != nil {
-				s.Authority.Close()
+				err = errors.Join(err, s.Authority.Close())
 			}
-			db.Close()
+			err = errors.Join(err, db.Close())
 		}
 	}()
 	if err = db.PingContext(ctx); err != nil {
+		return nil, err
+	}
+	authorityPath, err := recovery.InstallationAuthorityPath(ctx, db, path, o.AuthorityDirectory)
+	if err != nil {
+		return nil, err
+	}
+	if err = lease.acquireAuthority(authorityPath); err != nil {
 		return nil, err
 	}
 	s.Authority, err = recovery.OpenInstallationGate(ctx, db, path, o.AuthorityDirectory)

@@ -189,20 +189,46 @@ func TestRegisteredRuntimeDispatchPeers(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("actual guest SHA256 %x", sha256.Sum256(artifact))
-	host, err := plugins.NewWASMHost(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer host.Close(context.Background())
-	setup, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancel()
-	if err = host.Enable(setup, "snowluma", artifact); err != nil {
-		t.Fatal(err)
-	}
 	for _, mode := range []string{"http", "ws"} {
-		for _, scenario := range []string{"sent", "replacement", "final-authority", "revoke-after-wire"} {
-			t.Run(mode+"/"+scenario, func(t *testing.T) { registeredDispatchPeer(t, host, mode, scenario) })
-		}
+		t.Run(mode, func(t *testing.T) {
+			// A revoked installation may close its executing guest. Production
+			// drains and unloads that generation before enabling its replacement;
+			// the next transport must not borrow the revoked generation's module.
+			host, err := plugins.NewWASMHost(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				if err := host.Close(context.Background()); err != nil {
+					t.Error(err)
+				}
+			})
+			setup, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+			defer cancel()
+			if err = host.Enable(setup, "snowluma", artifact); err != nil {
+				t.Fatalf("guest setup: %v (setup context: %v)", err, setup.Err())
+			}
+			for _, scenario := range []string{"sent", "replacement", "final-authority", "revoke-after-wire"} {
+				t.Run(scenario, func(t *testing.T) {
+					if !host.Loaded("snowluma") {
+						t.Fatalf("guest retired before %s (setup context: %v)", scenario, setup.Err())
+					}
+					registeredDispatchPeer(t, host, mode, scenario)
+					if scenario == "revoke-after-wire" {
+						// Make permitted revocation deterministic even when cancellation
+						// happens between guest calls rather than during response decoding.
+						if err := host.Disable(context.Background(), "snowluma"); err != nil {
+							t.Fatal(err)
+						}
+						if host.Loaded("snowluma") {
+							t.Fatal("revoked generation remains loaded")
+						}
+					} else if !host.Loaded("snowluma") {
+						t.Fatalf("non-revocation case %s retired guest (setup context: %v)", scenario, setup.Err())
+					}
+				})
+			}
+		})
 	}
 }
 func registeredDispatchPeer(t *testing.T, host *plugins.WASMHost, mode, scenario string) {
@@ -286,7 +312,7 @@ func registeredDispatchPeer(t *testing.T, host *plugins.WASMHost, mode, scenario
 			}
 		}
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("%s connect: %v (peer context: %v, guest loaded: %t)", mode, err, ctx.Err(), host.Loaded("snowluma"))
 		}
 		sender, err := NewSender(host, "snowluma", "snowluma", "42", Ports{Life: ownerLife, Current: gate}, h, w)
 		if err != nil {

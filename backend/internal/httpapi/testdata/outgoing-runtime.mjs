@@ -7,7 +7,7 @@ export default {
     let api, scene, source, disposed = 0, modelCalls = 0
     const sent = [];const resolved=[];let assetId,assetReference;ctx.registerAdminAction('asset',id=>{assetId=id;return true})
     const message = () => ({id:source,sceneId:scene.id,senderId:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:'Please give a short synthetic reply.'}]})
-    ctx.registerAdminAction('sentID',()=>api.messageId(scene,'sent-1'))
+    ctx.registerAdminAction('sent-id',()=>api.messageId(scene,'sent-1'))
     ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,resolved}))
     ctx.registerAdminAction('edit',()=>api.edit({...message(),parts:[{type:'text',text:'Please reply to the edited synthetic request.'}]},scene,{editId:'synthetic-edit-2',order:{kind:'platform_sequence',sequence:2}}))
     ctx.registerAdminAction('recall',()=>{api.recall(scene,source);return api.isRecalled(scene,source)})

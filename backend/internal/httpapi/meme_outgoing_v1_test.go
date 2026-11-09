@@ -245,7 +245,7 @@ func runActualV1ManagedOutgoing(t *testing.T, name string) {
 					t.Fatal(e)
 				}
 				var sentID string
-				if e = json.Unmarshal(call("sentID"), &sentID); e != nil {
+				if e = json.Unmarshal(call("sent-id"), &sentID); e != nil {
 					t.Fatal(e)
 				}
 				messageID := sentID

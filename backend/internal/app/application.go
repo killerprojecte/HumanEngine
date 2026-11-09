@@ -205,6 +205,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err != nil {
 		return app, err
 	}
+	app.models.Host = app.Bridge.Host
 	app.Plugins, err = pluginmanager.New(owners.Main, owners.Authority, app.Bridge.Host, app.Engine.Runtime, options.Node, options.PluginRoot, options.Diagnostics, options.Logs)
 	if err != nil {
 		return app, err
@@ -240,6 +241,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error { return app.HTTP.WithMemes(app.Engine) },
 		func() error { return app.HTTP.WithDiagnostics(app.Diagnostics, app.readPublisher) },
 		func() error { return app.HTTP.WithModelCalls(calls, app.readPublisher) },
+		func() error { return app.HTTP.WithProviderReads(app.models, app.readPublisher) },
 		func() error {
 			return app.HTTP.WithConfiguration(owners.Credentials, &settingsstore.Store{Main: owners.Main, Authority: owners.Authority}, settingsRuntime)
 		},

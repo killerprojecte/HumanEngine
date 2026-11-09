@@ -18,6 +18,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelcalls"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
+	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
 	"net/http"
@@ -26,6 +27,8 @@ import (
 )
 
 type Server struct {
+	providerReads       *providertransport.NativeModels
+	providerPublisher   *recovery.ReadPublisher
 	sceneConfiguration  *sceneConfigurationOwner
 	plugins             *pluginmanager.Manager
 	modelCalls          *modelcalls.Store
@@ -100,7 +103,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	if (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
+	if (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
@@ -109,7 +112,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
+		if (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -150,6 +153,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if subtle.ConstantTimeCompare([]byte(supplied), []byte(s.token)) != 1 {
 		authenticationError(401, "Authentication required")
+		return
+	}
+	if s.providerReads != nil && providerReadPath(habitRoutingPath(r)) {
+		s.serveProviderReads(w, r, available, id)
 		return
 	}
 	if s.sceneConfiguration != nil && sceneConfigurationPath(habitRoutingPath(r)) {

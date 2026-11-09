@@ -1,0 +1,280 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/models.ts": "61293616cd4cd978f44bc80ccfafe8ec95a1254d6e575ddb184bd10fcf91c8ca",
+    "src/model-protocols.ts": "95e45d005e786fcd2ef957354ffe7608cb5d827bc7e16cca5344a7905b193222"
+  },
+  "cases": [
+    {
+      "name": "builtin",
+      "path": "/api/model-protocols",
+      "method": "GET",
+      "status": 200,
+      "text": "[{\"id\":\"openai-chat\",\"label\":\"OpenAI Chat Completions\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]},{\"id\":\"openai-responses\",\"label\":\"OpenAI Responses\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]}]",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "custom",
+      "path": "/api/model-protocols",
+      "custom": true,
+      "method": "GET",
+      "status": 200,
+      "text": "[{\"id\":\"openai-chat\",\"label\":\"OpenAI Chat Completions\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]},{\"id\":\"openai-responses\",\"label\":\"OpenAI Responses\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]},{\"id\":\"fixture:custom\",\"label\":\"Fixture\",\"operations\":[\"complete\",\"listModels\"]}]",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "disabled",
+      "path": "/api/model-protocols",
+      "custom": true,
+      "disabled": true,
+      "method": "GET",
+      "status": 200,
+      "text": "[{\"id\":\"openai-chat\",\"label\":\"OpenAI Chat Completions\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]},{\"id\":\"openai-responses\",\"label\":\"OpenAI Responses\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]}]",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "head",
+      "path": "/api/model-protocols",
+      "method": "HEAD",
+      "status": 200,
+      "text": "",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "auth",
+      "path": "/api/model-protocols",
+      "badAuth": true,
+      "method": "GET",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    },
+    {
+      "name": "method",
+      "path": "/api/model-protocols",
+      "method": "POST",
+      "status": 404,
+      "text": "404 Not Found",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "trailing",
+      "path": "/api/model-protocols/",
+      "method": "GET",
+      "status": 404,
+      "text": "404 Not Found",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "encoded",
+      "path": "/api/model-%70rotocols",
+      "method": "GET",
+      "status": 200,
+      "text": "[{\"id\":\"openai-chat\",\"label\":\"OpenAI Chat Completions\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]},{\"id\":\"openai-responses\",\"label\":\"OpenAI Responses\",\"operations\":[\"complete\",\"embeddings\",\"listModels\"]}]",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "missing",
+      "path": "/api/providers/missing/models",
+      "method": "GET",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "native",
+      "path": "/api/providers/p/models",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"models\":[\"a\",\"z\"]}",
+      "calls": 1,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "native-head",
+      "path": "/api/providers/p/models",
+      "method": "HEAD",
+      "status": 200,
+      "text": "",
+      "calls": 1,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "native-empty",
+      "path": "/api/providers/p/models",
+      "empty": true,
+      "method": "GET",
+      "status": 200,
+      "text": "{\"models\":[]}",
+      "calls": 1,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "native-error",
+      "path": "/api/providers/p/models",
+      "failure": true,
+      "method": "GET",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": 1,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "custom-models",
+      "path": "/api/providers/p/models",
+      "custom": true,
+      "method": "GET",
+      "status": 200,
+      "text": "{\"models\":[\"a\",\"z\"]}",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "custom-disabled",
+      "path": "/api/providers/p/models",
+      "custom": true,
+      "disabled": true,
+      "method": "GET",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "provider-encoded",
+      "path": "/api/providers/%70/models",
+      "method": "GET",
+      "status": 200,
+      "text": "{\"models\":[\"a\",\"z\"]}",
+      "calls": 1,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "provider-slash",
+      "path": "/api/providers/a%2Fb/models",
+      "method": "GET",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "provider-trailing",
+      "path": "/api/providers/p/models/",
+      "method": "GET",
+      "status": 404,
+      "text": "404 Not Found",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "provider-method",
+      "path": "/api/providers/p/models",
+      "method": "POST",
+      "status": 404,
+      "text": "404 Not Found",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "provider-auth",
+      "path": "/api/providers/p/models",
+      "badAuth": true,
+      "method": "GET",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "calls": 0,
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": null,
+        "x-content-type-options": null
+      }
+    }
+  ]
+}

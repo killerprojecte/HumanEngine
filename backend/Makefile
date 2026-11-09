@@ -1,4 +1,4 @@
-.PHONY: plugin-source-check contextual-source-check
+.PHONY: builtin-source-check plugin-source-check plugin-layout-check clean-wasm clean contextual-source-check
 .PHONY: test build differential wasm bundle test-bundle test-sqlite-profile test-projection-source-free native-icu-fetch native-icu-builder-test native-icu-build native-icu-test native-icu-source-free
 
 # Native ICU is opt-in: default build/startup and the TypeScript image are unchanged.
@@ -14,7 +14,16 @@ test:
 build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
-plugin-source-check:
+plugin-layout-check:
+	python3 plugins/check-layout.py
+
+clean: clean-wasm
+	rm -f bin/humanengine
+
+clean-wasm:
+	rm -f plugins/typing-delay/dist/typing-delay.wasm plugins/web-read/dist/web-read.wasm plugins/web-search/dist/web-search.wasm plugins/snowluma/dist/snowluma.wasm
+
+plugin-source-check: plugin-layout-check builtin-source-check
 	cd .. && node --import tsx backend/internal/plugins/generate-configuration-errors.mjs --check
 	cd .. && node --experimental-transform-types backend/internal/pluginmanager/generate-configuration-source.mjs --check
 	cd .. && node --experimental-transform-types backend/internal/pluginmanager/generate-enablement-source.mjs --check
@@ -130,11 +139,11 @@ differential: build plugin-source-check contextual-source-check runtime-producer
 	cd .. && node --import tsx backend/tests/config-differential.mjs backend/bin/humanengine
 
 wasm:
-	mkdir -p internal/plugins/builtins
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o internal/plugins/builtins/typing-delay.wasm ./plugins/typing-delay
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o internal/plugins/builtins/web-read.wasm ./plugins/web-read
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o internal/plugins/builtins/web-search.wasm ./plugins/web-search
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o internal/plugins/builtins/snowluma.wasm ./plugins/snowluma-wasm
+	mkdir -p plugins/typing-delay/dist plugins/web-read/dist plugins/web-search/dist plugins/snowluma/dist
+	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/typing-delay/dist/typing-delay.wasm ./plugins/typing-delay/wasm
+	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/web-read/dist/web-read.wasm ./plugins/web-read/wasm
+	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/web-search/dist/web-search.wasm ./plugins/web-search/wasm
+	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/snowluma/dist/snowluma.wasm ./plugins/snowluma/wasm
 
 bundle: wasm
 	go build -trimpath -tags sqlite_fts5,bundled_wasm -o bin/humanengine ./cmd/humanengine
@@ -215,3 +224,9 @@ habit-numeric-check:
 runtime-producer-source-check:
 	cd .. && node backend/scripts/media-owner-source-oracle.mjs
 	cd .. && node backend/scripts/proactive-owner-source-oracle.mjs
+
+builtin-source-check:
+	cd .. && TZ=UTC node --import tsx backend/plugins/snowluma/check-source.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/plugins/typing-delay/check-source.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/plugins/web-read/check-source.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/plugins/web-search/check-source.mjs --check

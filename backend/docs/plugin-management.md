@@ -85,10 +85,22 @@ builds the four guest artifacts from their sources:
 
     make -C backend wasm
 
-The typing guest source is backend/plugins/typing-delay/main.go with its policy
-in backend/plugins/typingdelay/policy.go. The existing target uses GOOS=wasip1,
+The typing guest source is backend/plugins/typing-delay/wasm/main.go with its policy
+in backend/plugins/typing-delay/core/policy.go. The existing target uses GOOS=wasip1,
 GOARCH=wasm and go build -trimpath -buildmode=c-shared -ldflags='-s -w'.
 The focused guest test adds -buildvcs=false for an independent archive workspace.
 The existing bundled/source-free checks inspect manifest IDs and API version 2,
 not a pinned typing binary hash; make wasm regenerates all four before bundling.
 Those manifest checks alone do not prove the unfinished three runtime compositions.
+
+Builtin source and resources are grouped under backend/plugins/<plugin-id>/.
+Each directory owns its manifest.json, core/ business code and fixtures, wasm/
+entry point, and tagged dist/<plugin-id>.wasm embedding. The metadata package
+only aggregates resources; it does not own manifests or generated binaries.
+SnowLuma-specific native facilities belong under its host/ directory.
+
+Default builds do not require generated dist files. Run make wasm before a
+bundled_wasm build; make clean-wasm removes the four generated artifacts.
+make plugin-layout-check rejects former split directories and stale references.
+
+The typing-delay native timer composition belongs to `plugins/typing-delay/host`. The manager lends its existing work admission, plugin lifetime, exact current-revision predicate, and instance-bound guest call. It still owns registration removal and cleanup. No second work registry is created; turn cancellation interrupts the delay without replacing the plugin lifetime passed into synchronous guest policy.

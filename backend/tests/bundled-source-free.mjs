@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, copyFileSync, chmodSync, rmSync } from 'node:fs'
+import { mkdtempSync, copyFileSync, chmodSync, rmSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
@@ -20,6 +20,7 @@ try {
     ['typing-delay', 'web-read', 'web-search', 'snowluma'],
   )
   assert.ok(plugins.every((p) => p.apiVersion === 2))
+  assert.equal(existsSync(join(root, 'plugins')), false, 'distribution must not require plugin source/dist directories')
   console.log(
     'PASS: standalone Go binary executes all four embedded WASM manifests with no source tree, Node or Go compiler on PATH',
   )

@@ -5,6 +5,8 @@ package plugins
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"io/fs"
 	"testing"
 )
 
@@ -37,5 +39,23 @@ func TestDistributedArtifactsLoadWithoutSources(t *testing.T) {
 		if err = host.Disable(ctx, id); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestUnknownBuiltinArtifactFilesystemError(t *testing.T) {
+	_, err := BuiltinArtifact("missing")
+	var pathError *fs.PathError
+	if !errors.Is(err, fs.ErrNotExist) || !errors.As(err, &pathError) || pathError.Op != "open" || pathError.Path != "builtins/missing.wasm" {
+		t.Fatalf("filesystem error shape changed: %v", err)
+	}
+	first, err := BuiltinArtifact("snowluma")
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := first[0]
+	first[0] ^= 255
+	second, err := BuiltinArtifact("snowluma")
+	if err != nil || second[0] != original {
+		t.Fatal("artifact data was shared with caller", err)
 	}
 }

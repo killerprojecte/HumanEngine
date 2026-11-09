@@ -2,9 +2,6 @@
 
 package plugins
 
-import "embed"
+import "github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
 
-//go:embed builtins/*.wasm
-var bundled embed.FS
-
-func BuiltinArtifact(id string) ([]byte, error) { return bundled.ReadFile("builtins/" + id + ".wasm") }
+func BuiltinArtifact(id string) ([]byte, error) { return metadata.Artifact(id) }

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/clipperhouse/uax29/v2/graphemes"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
+	resources "github.com/killerprojecte/HumanEngine/backend/plugins/typing-delay"
 	"math"
 	"strings"
 )
@@ -70,7 +70,7 @@ func Invoke(input []byte) any {
 	}
 	switch in.Operation {
 	case "manifest":
-		return metadata.Manifest("typing-delay")
+		return resources.Manifest()
 	case "delay":
 		ms, err := Delay(in.Segment, in.Config)
 		if err != nil {

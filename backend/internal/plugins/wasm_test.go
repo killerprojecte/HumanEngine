@@ -18,7 +18,7 @@ import (
 func TestRealBuiltinWASMLoadInvokeUnload(t *testing.T) {
 	ctx := context.Background()
 	artifact := filepath.Join(t.TempDir(), "typing-delay.wasm")
-	build := exec.Command("go", "build", "-buildmode=c-shared", "-o", artifact, "../../plugins/typing-delay")
+	build := exec.Command("go", "build", "-buildvcs=false", "-buildmode=c-shared", "-o", artifact, "../../plugins/typing-delay/wasm")
 	build.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm")
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("WASM build: %v %s", err, out)
@@ -297,12 +297,12 @@ func TestAllBuiltinArtifactsExecutePolicy(t *testing.T) {
 	cases := []struct{ id, path, input, contains string }{
 		{"web-read", "web-read", `{"operation":"extract","html":"<p>Hello</p><script>hidden</script>"}`, `"text":"Hello"`},
 		{"web-search", "web-search", `{"operation":"parse_api","provider":"tavily","body":"{\"results\":[]}"}`, `[]`},
-		{"snowluma", "snowluma-wasm", `{"operation":"parse_cq","text":"[CQ:at,qq=123]"}`, `"type":"at"`},
+		{"snowluma", "snowluma", `{"operation":"parse_cq","text":"[CQ:at,qq=123]"}`, `"type":"at"`},
 	}
 	for _, c := range cases {
 		t.Run(c.id, func(t *testing.T) {
 			artifact := filepath.Join(t.TempDir(), c.id+".wasm")
-			build := exec.Command("go", "build", "-buildmode=c-shared", "-ldflags=-s -w", "-o", artifact, "../../plugins/"+c.path)
+			build := exec.Command("go", "build", "-buildvcs=false", "-buildmode=c-shared", "-ldflags=-s -w", "-o", artifact, "../../plugins/"+c.path+"/wasm")
 			build.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm")
 			if out, err := build.CombinedOutput(); err != nil {
 				t.Fatalf("compile %v: %s", err, out)

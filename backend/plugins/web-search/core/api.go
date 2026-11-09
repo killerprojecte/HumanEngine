@@ -4,7 +4,7 @@ package websearch
 import (
 	"encoding/json"
 	"errors"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
+	resources "github.com/killerprojecte/HumanEngine/backend/plugins/web-search"
 	"golang.org/x/net/idna"
 	"net"
 	"net/url"
@@ -213,7 +213,7 @@ func Invoke(input []byte) any {
 	var err error
 	switch in.Operation {
 	case "manifest":
-		return metadata.Manifest("web-search")
+		return resources.Manifest()
 	case "build_api":
 		value, err = BuildAPI(in.Provider, in.Query, in.Limit, in.Key)
 	case "build_html":

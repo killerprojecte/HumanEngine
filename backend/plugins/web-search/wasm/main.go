@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/killerprojecte/HumanEngine/backend/plugins/abi"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/websearch"
+	"github.com/killerprojecte/HumanEngine/backend/plugins/web-search/core"
 )
 
 //go:wasmexport alloc

@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsoncompat"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
+	resources "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma"
 	"strings"
 )
 
@@ -92,7 +92,7 @@ func Invoke(input []byte) any {
 	}
 	switch in.Operation {
 	case "manifest":
-		return metadata.Manifest("snowluma")
+		return resources.Manifest()
 	case "parse_cq":
 		return ParseCQ(in.Text)
 	case "identifiers":

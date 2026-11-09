@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/killerprojecte/HumanEngine/backend/plugins/abi"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/snowluma"
+	"github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/core"
 )
 
 //go:wasmexport alloc

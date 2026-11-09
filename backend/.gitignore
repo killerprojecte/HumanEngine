@@ -1,2 +1,2 @@
 /bin/
-/internal/plugins/builtins/*.wasm
+/plugins/*/dist/*.wasm

@@ -3,7 +3,7 @@ package webread
 
 import (
 	"encoding/json"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
+	resources "github.com/killerprojecte/HumanEngine/backend/plugins/web-read"
 	"golang.org/x/net/html"
 	"regexp"
 	"strings"
@@ -111,7 +111,7 @@ func Invoke(input []byte) any {
 	}
 	switch in.Operation {
 	case "manifest":
-		return metadata.Manifest("web-read")
+		return resources.Manifest()
 	case "extract":
 		text, err := Extract(in.HTML)
 		if err != nil {

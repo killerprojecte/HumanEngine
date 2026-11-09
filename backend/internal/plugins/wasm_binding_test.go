@@ -12,7 +12,7 @@ import (
 func TestBoundWASMCallCannotEnterOrCancelReplacement(t *testing.T) {
 	ctx := context.Background()
 	path := filepath.Join(t.TempDir(), "typing-delay.wasm")
-	build := exec.Command("go", "build", "-buildvcs=false", "-buildmode=c-shared", "-o", path, "../../plugins/typing-delay")
+	build := exec.Command("go", "build", "-buildvcs=false", "-buildmode=c-shared", "-o", path, "../../plugins/typing-delay/wasm")
 	build.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm")
 	if output, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("real guest build: %v %s", err, output)

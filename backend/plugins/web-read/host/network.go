@@ -26,7 +26,8 @@ import (
 var ErrHTTP101Pending = errors.New("web_read_http101_pending_decision")
 
 // Lookup separates source-visible settlement from actual resolver completion.
-// There is deliberately no DefaultResolver adapter: its singleflight/cgo
+// NewOSResolver supplies a directly joinable libc implementation on supported
+// cgo platforms. DefaultResolver is not an adapter: its singleflight/cgo
 // internals do not expose a joinable completion boundary.
 type DNSResult struct {
 	Addresses []netip.Addr

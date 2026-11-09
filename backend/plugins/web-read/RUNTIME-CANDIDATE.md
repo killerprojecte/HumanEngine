@@ -25,8 +25,11 @@ These checks do not establish full backend/frontend or source-free app parity.
 
 - HTTP 101 behavior remains unresolved. Candidate sentinel behavior is not
   compatible production behavior.
-- A real joinable OS DNS adapter is missing. Controlled Result/Drained ports do
-  not prove cgo or arbitrary resolver internals are joinable.
+- A direct libc DNS adapter is implemented, with Linux runtime validation of
+  native completion, cleanup and source hostname-admission boundaries. It remains
+  opt-in and is not registered with the manager; see [DNS-ADAPTER.md](DNS-ADAPTER.md).
+  Other platform targets are not runtime-validated. Cancellation cannot interrupt
+  an admitted OS lookup, so physical shutdown is not bounded if libc/NSS stalls.
 - Whole-manager registration, owner cache, simulation, finalization, configuration,
   generation/re-enable lifecycle and integration remain unfinished.
 - Actual TLS/SNI and HTTPS downgrade differential coverage, exhaustive charset
@@ -34,3 +37,4 @@ These checks do not establish full backend/frontend or source-free app parity.
 
 Do not interpret this checkpoint as default enablement, completed compatibility,
 or permission to ship the candidate reactor.
+

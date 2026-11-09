@@ -124,15 +124,21 @@ func (r *Runtime) executeTool(t *turn, ctx context.Context, name string, args an
 	if name == "messages.get" || name == "messages.around" || name == "messages.byUser" {
 		return r.read(t, ctx, name, args)
 	}
+	return r.executeExtensionTool(t, ctx, name, args, "")
+}
+func (r *Runtime) executeExtensionTool(t *turn, ctx context.Context, name string, args any, requiredEffect string) (any, error) {
 	for _, e := range r.exts() {
-		for _, tool := range e.Tools {
-			if get(tool, "name") == name {
+		for _, tool := range extensionTools(e, t.context) {
+			if get(tool, "name") == name && (requiredEffect == "" || get(tool, "effect") == requiredEffect) {
 				if e.Execute == nil {
 					return nil, code("tool_unavailable")
 				}
 				return trackedWithin(r, ctx, func(settle func(any, error)) { e.Execute(ctx, name, args, t.context, settle) })
 			}
 		}
+	}
+	if requiredEffect == "send" {
+		return nil, code("dialogue_forbidden_tool")
 	}
 	return nil, code("tool_unavailable")
 }
@@ -142,7 +148,7 @@ func (r *Runtime) promptAuthority(t *turn, tools []*Object) (any, error) {
 func (r *Runtime) promptAuthorityUsing(t *turn, authority ReadAuthority) (any, error) {
 	current := []*Object{}
 	for _, e := range r.exts() {
-		current = append(current, e.Tools...)
+		current = append(current, extensionTools(e, t.context)...)
 	}
 	return authority.PromptAuthority(t.context.Scene, current)
 }

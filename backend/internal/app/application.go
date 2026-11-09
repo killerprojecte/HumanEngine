@@ -34,6 +34,7 @@ import (
 // exposure domains and builtins are recorded in SCOPE.md, not replaced by stubs.
 // Consumers use Application as HTTP handler, never bypass its admission barrier.
 type Application struct {
+	StateExposures      *stateExposureOwners
 	IdentityExposure    *memoryservice.IdentityExposure
 	MemoryExposure      *memoryservice.ModelMemoryExposure
 	WorkspaceSelections *memoryservice.WorkspaceSelectionTracker
@@ -183,9 +184,13 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err = app.composeModelMemory(owners, memory); err != nil {
 		return app, err
 	}
+	if err = app.composeStateMemory(owners); err != nil {
+		return app, err
+	}
 	if err = app.composeIdentityMemory(owners); err != nil {
 		return app, err
 	}
+	app.registerStateMemoryTools(memory)
 	effects, err := NewNativeSettingsEffects(memory.projections, memory.workspace, app.Maintenance, app, app.Diagnostics, options.Logs)
 	if err != nil {
 		return app, err
@@ -421,5 +426,9 @@ func (a *Application) observeRuntime(e botruntime.Event) {
 	if level == "" {
 		level = "info"
 	}
-	emit(a.options.Logs, observability.Event{Level: level, Module: "runtime", Code: "runtime." + e.Stage + "." + e.Status, Message: e.Reason, SceneID: e.SceneID, TurnID: e.TurnID, Stage: e.Stage, Fields: map[string]any{"counts": e.Counts, "tool": e.ToolName, "failureCode": e.FailureCode}})
+	fields := map[string]any{"counts": e.Counts, "tool": e.ToolName, "failureCode": e.FailureCode}
+	if e.ReceiptState != "" {
+		fields["receiptState"] = e.ReceiptState
+	}
+	emit(a.options.Logs, observability.Event{Level: level, Module: "runtime", Code: "runtime." + e.Stage + "." + e.Status, Message: e.Reason, SceneID: e.SceneID, TurnID: e.TurnID, Stage: e.Stage, Fields: fields})
 }

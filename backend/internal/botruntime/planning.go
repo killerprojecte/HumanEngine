@@ -10,8 +10,11 @@ import (
 
 func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 	c, cfg := t.context, t.settings
-	extensions := f.extensions
-	allTools := f.allTools
+	extensions := r.exts()
+	allTools := []*Object{contractTool("messages.send"), contractTool("messages.get"), contractTool("messages.around"), contractTool("messages.byUser")}
+	for _, e := range extensions {
+		allTools = append(allTools, extensionTools(e, c)...)
+	}
 	authority := f.authority
 	admitted := f.admitted
 	window := f.window
@@ -37,9 +40,17 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			deliveries = append(deliveries, tool)
 		}
 	}
+	// Source advertises learning actions from the currently saved scene, not
+	// the scene value captured before the decision provider completed.
+	learningEnabled := false
+	if state := r.state(c.Scene.ID); state != nil {
+		if view := state.view.Load(); view != nil {
+			learningEnabled = view.scene.LearningEnabled
+		}
+	}
 	actions := []*Object{}
 	for _, tool := range replyplan.PlannerActionTools(allTools) {
-		if get(tool, "name") != "learning.propose" || c.Scene.LearningEnabled {
+		if get(tool, "name") != "learning.propose" || learningEnabled {
 			actions = append(actions, tool)
 		}
 	}
@@ -114,9 +125,12 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			settle(out.Completion, e)
 		})
 	}, Deliver: func(name string, value, args any) (any, error) {
-		for _, e := range extensions {
-			if toolNamed(e.Tools, name) != nil && e.Delivered != nil {
-				return e.Delivered(name, value, c, args)
+		for _, e := range r.exts() {
+			if toolNamed(extensionTools(e, c), name) != nil {
+				if e.Delivered != nil {
+					return e.Delivered(name, value, c, args)
+				}
+				return value, nil
 			}
 		}
 		return value, nil
@@ -141,7 +155,7 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 						rows = append(rows, o)
 					}
 				}
-				for _, extension := range extensions {
+				for _, extension := range r.exts() {
 					if extension.DescribeImages != nil {
 						v, err := trackedWithin(r, ctx, func(done func(any, error)) { extension.DescribeImages(ctx, c, rows, done) })
 						if err != nil {
@@ -160,9 +174,33 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 				}
 				imageContext = append(imageContext, observations...)
 			}
+			var event Event
 			if e == nil {
 				grounding.ObserveTool(name, output)
+				// Compute typed outcome first, then read current eligibility in
+				// source operation.finish order. This is diagnostic evaluation,
+				// not a new send authorization or a replacement planner gate.
+				event = toolCompletionOutcome(output)
+				if ctx.Err() != nil {
+					event.Status = "cancelled"
+				} else if valid, checkErr := r.eligible(c); checkErr != nil {
+					e = checkErr
+				} else if !valid {
+					event.Status = "cancelled"
+				}
 			}
+			if e != nil {
+				event = Event{Status: "failed", Reason: "planner_tool_failed"}
+				if ctx.Err() != nil {
+					event.Status = "cancelled"
+				}
+			}
+			event.SceneID = c.Scene.ID
+			event.TurnID = c.TurnID
+			event.Stage = "tool"
+			event.ToolName = name
+			r.trace(event)
+
 			settle(output, e)
 		}()
 	}})

@@ -66,7 +66,7 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 						toolErr = e
 						output = receiptsValue(receipts)
 					} else {
-						output, toolErr = r.executeTool(t, dialogueStage, call.Name, args)
+						output, toolErr = r.executeExtensionTool(t, dialogueStage, call.Name, args, "send")
 					}
 				}
 			}

@@ -1,0 +1,123 @@
+[
+  {
+    "name": "memory.commitments",
+    "description": "Read complete scene-scoped declared plan states. Select the entire receipt via stateEvidenceIds. Proposed changes do not override confirmed terms; incomplete after revocation is not an earlier confirmed plan. Completion is self-reported, not externally verified.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "personId": {
+          "type": "string"
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": [
+            "open",
+            "terminal",
+            "all"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "memory.commitmentTimeline",
+    "description": "Read retained server-recorded declaration-state transitions through an exact current plan actually delivered this turn. Optional asOfRecorded is recording time, never event occurrence. Legacy, pruned or privacy-redacted history is unknown: never fall back to an older confirmed plan. Keep the entire limited receipt and qualifications via stateEvidenceIds. Historical reads cannot authorize learning.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "deletionEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "asOfRecorded": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "deletionEpoch"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "memory.commitmentHistory",
+    "description": "Inspect retained plan versions through an exact plan reference actually delivered by memory.commitments in this turn. Previously recorded declarations are not current truth, raw messages or automatic new-learning authority. Select the whole receipt via stateEvidenceIds; coverage is limited.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "deletionEpoch": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "deletionEpoch"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "memory.history",
+    "description": "Inspect previously recorded revisions of an assertion actually read in this turn; first use memory.search or memory.person. Never upgrade a stale exposure. These are not current truth or replayed original messages. Select the entire receipt via stateEvidenceIds. Historical-reading turns cannot create learning candidates. Unknown/limited coverage is not evidence of absence.",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "memoryId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asOfRecorded": {
+          "type": "string"
+        },
+        "validAt": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        }
+      },
+      "required": [
+        "memoryId"
+      ],
+      "additionalProperties": false
+    }
+  }
+]

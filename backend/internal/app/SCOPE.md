@@ -25,6 +25,23 @@ This is not a claim of complete TypeScript Engine compatibility.
   memory delivery tracking, identity state validation and scoped cached guards.
   Model-read capture is registered once by Meme; memory and identity compose
   with existing hooks rather than replacing them.
+- Four additional model-facing tools: `memory.commitments`,
+  `memory.commitmentTimeline`, `memory.commitmentHistory` and `memory.history`.
+  Exact source descriptions, schemas, settings filters and advertisement order are
+  retained. Guard capture remains current/history/timeline/historical before
+  identity. Historical reads use Begin; commitment reads use GateTool.
+- A genuine installed-application test proposes separate ordinary memory and
+  commitment declarations, delivers original receipts through V1 model queries,
+  and selects all four state tools across two plans within the source four-state
+  limit. A third native send is held before transmission, answer permission is
+  revoked through HTTP, and release produces no additional transmission.
+  Clone/foreign/scope rejection, recall invalidation, restart/no replay and physical
+  shutdown are checked. These are synthetic protocol/platform inputs, not proof of
+  a live third-party platform connection.
+- Dynamic tool getters run at source operation boundaries. Runtime tests cover
+  changing settings and tool availability, concurrent turns, execution-time send
+  effects, first matching delivery ownership, current learning flags and current
+  image extensions. Completion diagnostics do not add a sending authorization gate.
 - Experience lifecycle and planner context gate/capture, actual HTTP administration,
   retained source recall, same-writer invalidation and physical callback drain.
 - The source default `learningEnabled=false` scene update is a normal successful
@@ -46,10 +63,9 @@ This is not a claim of complete TypeScript Engine compatibility.
   option must define installation/configuration inputs without changing read-only
   preview semantics or silently selecting this graph as the default backend.
 - Remaining source model tools, complete prompt/manual-rule composition and all
-  exposure domains are not wired. Public Historical/Commitment owners are separate
-  components until explicitly composed here. Relation, commitment current/history/
-  timeline, historical, workspace, knowledge and semantic exposure guards are not
-  implied by memory/identity guards. Contextual `learning.propose` is not yet a model
+  exposure domains are not all wired. Relation, workspace, knowledge and semantic
+  exposure guards are not implied by the composed memory, identity, commitment
+  and historical guards. Contextual `learning.propose` is not yet a model
   tool in this graph. Complete Experience model-facing tools are also outstanding.
 - Source-wide recall preparation ordering (including every memory/habit domain),
   proactive scene timer binding and complete global Engine startup hooks remain.

@@ -47,16 +47,10 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 		return readErr
 	}
 	extensions := r.exts()
-	allTools := []*Object{contractTool("messages.send"), contractTool("messages.get"), contractTool("messages.around"), contractTool("messages.byUser")}
-	extensionTools := []*Object{}
-	for _, e := range extensions {
-		allTools = append(allTools, e.Tools...)
-		extensionTools = append(extensionTools, e.Tools...)
-	}
 	var authority any
 	var err error
 	if cfg.PromptContextWindowEnabled {
-		authority, err = r.promptAuthority(t, extensionTools)
+		authority, err = r.promptAuthority(t, nil)
 		if err != nil {
 			return err
 		}
@@ -211,8 +205,6 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 	extensionDependencies := c.dependencyIDs()
 	c.setDependencies(extensionDependencies, recent)
 	f.extensions = extensions
-	f.allTools = allTools
-	f.extensionTools = extensionTools
 	f.authority = authority
 	f.admitted = admitted
 	f.window = window

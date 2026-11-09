@@ -124,10 +124,13 @@ type Extension struct {
 	SentSequencers        []*SentSequencer
 	SegmentSentSequencers []*SegmentSentSequencer
 	// Sent runs after retained-row publication, without scene ownership. Queue domain work here.
-	Sent               func(Scene, string, string)
-	Closed             func()
-	SceneChanged       func(Scene)
-	Tools              []*Object
+	Sent         func(Scene, string, string)
+	Closed       func()
+	SceneChanged func(Scene)
+	Tools        []*Object
+	// ToolsForTurn mirrors source dynamic extension.tools getters. It must return
+	// fresh definitions, may read published configuration, and must not perform I/O.
+	ToolsForTurn       func(*TurnContext) []*Object
 	ContextPrompt      func(*TurnContext) (string, error)
 	ContextData        func(*TurnContext) (any, error)
 	PlannerContextData func(*TurnContext, []*Object) (any, error)
@@ -174,8 +177,9 @@ type Services struct {
 type Event struct {
 	// FailureCode is a closed, non-sensitive diagnostic category. Cause is for
 	// trusted in-process observers only and is never a plugin event/JSON field.
-	FailureCode string
-	Cause       error `json:"-"`
+	FailureCode  string
+	ReceiptState string
+	Cause        error `json:"-"`
 
 	Level, Module, Code                              string
 	SceneID, TurnID, Stage, Status, Reason, ToolName string
@@ -510,3 +514,12 @@ func (r *Runtime) RegisterHook(h Hook) func() {
 }
 
 func (c *TurnContext) MemoryExposureDeferred() bool { return c.deferMemoryExposure.Load() }
+
+// extensionTools reads a fresh source-style getter at the existing dispatch or
+// advertisement boundary. Static registrations retain immutable cloned tools.
+func extensionTools(e *Extension, c *TurnContext) []*Object {
+	if e.ToolsForTurn != nil {
+		return e.ToolsForTurn(c)
+	}
+	return e.Tools
+}

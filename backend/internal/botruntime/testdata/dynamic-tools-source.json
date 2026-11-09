@@ -1,0 +1,764 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/runtime.ts": "e5358c1da7f4cdd50a0db14ecd1e419c33b6bd2f91e832ff34a0a720bc806f4a",
+    "src/runtime/reply-plan.ts": "a655db5358c28819ccc8f6b742313ba96efeb8fdfb7a8925ac2acabc3758e18a",
+    "src/diagnostics/runtime-results.ts": "cd413fd135b80a17e97c4b3bab970219b74f8eecf874b4ca659fccb499657bdb"
+  },
+  "outcomes": [
+    {
+      "scenario": "stable",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "revoke-before-execute",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:false"
+      ],
+      "executes": 0,
+      "sends": 0,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "failed",
+          "reason": "planner_tool_failed"
+        }
+      ]
+    },
+    {
+      "scenario": "enable-unadvertised",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:false",
+        "model:planner:false"
+      ],
+      "executes": 0,
+      "sends": 0,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": []
+    },
+    {
+      "scenario": "enable-after-decision",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "cancel-before-execute",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true"
+      ],
+      "executes": 0,
+      "sends": 0,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": []
+    },
+    {
+      "scenario": "recall-before-execute",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true"
+      ],
+      "executes": 0,
+      "sends": 0,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": []
+    },
+    {
+      "scenario": "stable-window",
+      "trace": [
+        "getter:1934/1934/1937/1879:true",
+        "getter:1934/1934/1940/1730/1730/2054:true",
+        "model:planner:false",
+        "getter:1934/1934/1940/1730/1730/2162/1392:true",
+        "getter:2332/2332/1392:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:1934/1934/1940/1730/1730/2436:true",
+        "model:planner:true",
+        "getter:1934/1934/1940/1730/1730/2440:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:1934/1934/1940/1730/1730/2500:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:2445/2444/2380/1392:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:1934/1934/1940/1730/1730/2436:true",
+        "model:planner:true",
+        "getter:1934/1934/1940/1730/1730/2440:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:1934/1934/1940/1730/1730/2549/1392:true",
+        "getter:1934/1934/1940/1730/1730/2605/1392:true",
+        "getter:1934/1934/1940/1730/1730/2762/1392:true",
+        "getter:1934/1934/1940/1730/1730/2765/1392:true",
+        "getter:1934/1934/1940/1730/1730/2826/1392:true",
+        "model:replyer:false",
+        "getter:1934/1934/1940/1730/1730/2833/1392:true",
+        "getter:1934/1934/1940/1730/1730/2840/1392:true",
+        "getter:1934/1934/1940/1730/1730/3666:true",
+        "getter:1934/1934/1940/1730/1730/3666:true",
+        "getter:1934/1934/1940/1730/1730/2707:true",
+        "getter:1934/1934/1940/1730/1730/3666:true",
+        "getter:1934/1934/1940/1730/1730/3788/2853:true",
+        "getter:1934/1934/1940/1730/1730/2880/1392:true",
+        "getter:1934/1934/1940/1730/1730/2925/1392:true"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tool-rejected",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "failed",
+          "reason": "tool_rejected",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "tool-queued",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          },
+          "receiptState": "queued"
+        }
+      ]
+    },
+    {
+      "scenario": "remove-before-deliver",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "model:planner:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "remove-window",
+      "trace": [
+        "getter:1934/1934/1937/1879:true",
+        "getter:1934/1934/1940/1730/1730/2054:true",
+        "model:planner:false",
+        "getter:1934/1934/1940/1730/1730/2162/1392:true",
+        "getter:2332/2332/1392:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:1934/1934/1940/1730/1730/2436:true",
+        "model:planner:true",
+        "getter:1934/1934/1940/1730/1730/2440:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:1934/1934/1940/1730/1730/2434:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute"
+      ],
+      "executes": 1,
+      "sends": 0,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "cancelled",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "duplicate-name-no-hook",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "send-effect-read",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false",
+        "getter:2860/2859/2850/1392:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 0,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "send-effect-action",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false",
+        "getter:2860/2859/2850/1392:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 0,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "enable-learning-after-decision",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "learning-actions:true",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "learning-actions:true",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "disable-learning-after-decision",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "learning-actions:false",
+        "getter:2467/2467/2460/2380:true",
+        "execute",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "learning-actions:false",
+        "model:replyer:false"
+      ],
+      "executes": 1,
+      "sends": 1,
+      "deliveries": 1,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": [
+        {
+          "status": "completed",
+          "reason": "tool_returned",
+          "counts": {
+            "results": 0
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "remove-history-images",
+      "trace": [
+        "model:planner:false",
+        "getter:2332/2332/1392:true",
+        "model:planner:true",
+        "history-entered",
+        "history-returned",
+        "getter:2445/2444/2380/1392:true",
+        "model:planner:true",
+        "model:replyer:false"
+      ],
+      "executes": 0,
+      "sends": 1,
+      "deliveries": 0,
+      "customSends": 0,
+      "imageCalls": 0,
+      "toolEvents": []
+    }
+  ],
+  "typedOutcomes": [
+    {
+      "input": null,
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_returned"
+        }
+      }
+    },
+    {
+      "input": [],
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_returned"
+        }
+      }
+    },
+    {
+      "input": [
+        1,
+        2
+      ],
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 2
+          },
+          "reason": "tool_returned"
+        }
+      }
+    },
+    {
+      "input": {
+        "items": [
+          1,
+          2
+        ]
+      },
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 2
+          },
+          "reason": "tool_returned"
+        }
+      }
+    },
+    {
+      "input": {
+        "results": [
+          1
+        ]
+      },
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 1
+          },
+          "reason": "tool_returned"
+        }
+      }
+    },
+    {
+      "input": {
+        "status": "cancelled"
+      },
+      "result": {
+        "status": "cancelled",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "context_cancelled"
+        }
+      }
+    },
+    {
+      "input": {
+        "status": "rejected"
+      },
+      "result": {
+        "status": "failed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_rejected"
+        }
+      }
+    },
+    {
+      "input": {
+        "status": "unavailable"
+      },
+      "result": {
+        "status": "failed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_rejected"
+        }
+      }
+    },
+    {
+      "input": {
+        "status": "failed"
+      },
+      "result": {
+        "status": "failed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_rejected"
+        }
+      }
+    },
+    {
+      "input": {
+        "error": null
+      },
+      "result": {
+        "status": "failed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_rejected"
+        }
+      }
+    },
+    {
+      "input": {
+        "ok": false
+      },
+      "result": {
+        "status": "failed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_rejected"
+        }
+      }
+    },
+    {
+      "input": {
+        "status": "queued"
+      },
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_returned",
+          "receiptState": "queued"
+        }
+      }
+    },
+    {
+      "input": {
+        "status": "duplicate"
+      },
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "tool_returned",
+          "receiptState": "duplicate"
+        }
+      }
+    },
+    {
+      "input": {
+        "status": "no_results"
+      },
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 0
+          },
+          "reason": "query_no_results"
+        }
+      }
+    },
+    {
+      "input": [
+        {
+          "status": "sent"
+        }
+      ],
+      "result": {
+        "status": "completed",
+        "details": {
+          "counts": {
+            "results": 1,
+            "sentSegments": 1,
+            "failedSegments": 0,
+            "unknownSegments": 0,
+            "cancelledSegments": 0
+          },
+          "reason": "segments_delivered"
+        }
+      }
+    },
+    {
+      "input": [
+        {
+          "status": "sent"
+        },
+        {
+          "status": "unknown"
+        }
+      ],
+      "result": {
+        "status": "partial",
+        "details": {
+          "counts": {
+            "results": 2,
+            "sentSegments": 1,
+            "failedSegments": 0,
+            "unknownSegments": 1,
+            "cancelledSegments": 0
+          },
+          "reason": "delivery_unknown"
+        }
+      }
+    },
+    {
+      "input": [
+        {
+          "status": "failed"
+        }
+      ],
+      "result": {
+        "status": "failed",
+        "details": {
+          "counts": {
+            "results": 1,
+            "sentSegments": 0,
+            "failedSegments": 1,
+            "unknownSegments": 0,
+            "cancelledSegments": 0
+          },
+          "reason": "delivery_failed"
+        }
+      }
+    },
+    {
+      "input": [
+        {
+          "status": "cancelled"
+        }
+      ],
+      "result": {
+        "status": "cancelled",
+        "details": {
+          "counts": {
+            "results": 1,
+            "sentSegments": 0,
+            "failedSegments": 0,
+            "unknownSegments": 0,
+            "cancelledSegments": 1
+          },
+          "reason": "send_cancelled"
+        }
+      }
+    },
+    {
+      "input": [
+        {
+          "status": "sent"
+        },
+        {
+          "status": "cancelled"
+        }
+      ],
+      "result": {
+        "status": "partial",
+        "details": {
+          "counts": {
+            "results": 2,
+            "sentSegments": 1,
+            "failedSegments": 0,
+            "unknownSegments": 0,
+            "cancelledSegments": 1
+          },
+          "reason": "send_cancelled"
+        }
+      }
+    }
+  ]
+}

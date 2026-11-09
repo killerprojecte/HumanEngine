@@ -9,9 +9,11 @@ import (
 )
 
 type thumbnailTask struct {
-	done  chan struct{}
-	bytes []byte
-	err   error
+	// consumers counts attached callers, guarded by Service.mu.
+	consumers int
+	done      chan struct{}
+	bytes     []byte
+	err       error
 }
 type thumbnailEntry struct {
 	id    string
@@ -81,7 +83,13 @@ func (s *Service) Thumbnail(ctx context.Context, id string, codec *imagecodec.Co
 		s.thumbnailTasks[id] = task
 		go s.makeThumbnail(context.WithoutCancel(ctx), a, epoch, codec, task)
 	}
+	task.consumers++
 	s.mu.Unlock()
+	defer func() {
+		s.mu.Lock()
+		task.consumers--
+		s.mu.Unlock()
+	}()
 	<-task.done
 	if task.err != nil {
 		return nil, task.err

@@ -221,7 +221,11 @@ func TestThumbnailQueueDeduplicatesAndDeleteInvalidates(t *testing.T) {
 	waitUntil(t, func() bool {
 		s.mu.Lock()
 		defer s.mu.Unlock()
-		return len(s.thumbnailTasks) == 1 && len(s.thumbnailWaiters) == 1
+		// A queued generator alone does not prove both callers passed their
+		// initial readiness read. Match the source's synchronous attachment
+		// before starting deletion, which deliberately opens a durable gap.
+		task := s.thumbnailTasks[id]
+		return task != nil && task.consumers == 2 && len(s.thumbnailTasks) == 1 && len(s.thumbnailWaiters) == 1
 	})
 	operation, release, e := f.authority.OperationContext(context.Background(), f.main)
 	if e != nil {

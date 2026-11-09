@@ -113,6 +113,35 @@ func (b *RuntimeBinding) Barrier() error {
 	}
 }
 func (b *RuntimeBinding) Close() { b.cancel() }
+
+// CloseAndWait joins physical sent callbacks even when Close has cancelled their
+// owner context. Failed waits retain the service/database for an explicit retry.
+func (b *RuntimeBinding) CloseAndWait(ctx context.Context) error {
+	b.Close()
+	if b.sequence != nil {
+		if err := b.sequence.CloseAndWait(ctx); err != nil {
+			return err
+		}
+	}
+	b.mu.Lock()
+	tail := b.tail
+	b.mu.Unlock()
+	if tail == nil {
+		return nil
+	}
+	select {
+	case <-tail:
+		return nil
+	default:
+	}
+	select {
+	case <-tail:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
 func (b *RuntimeBinding) Flush() {
 	if b.sequence != nil {
 		_ = b.sequence.Barrier()

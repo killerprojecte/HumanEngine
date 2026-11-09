@@ -16,6 +16,7 @@ type SentSequencer struct {
 	tail    chan struct{}
 	queue   []*SentReservation
 	running bool
+	closed  bool
 }
 type SentReservation struct {
 	ready        chan struct{}
@@ -32,7 +33,7 @@ func NewSentSequencer(ctx context.Context, run func(Scene, string, string)) *Sen
 func (s *SentSequencer) reserve(scene Scene, turn, target string) *SentReservation {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.ctx.Err() != nil {
+	if s.closed || s.ctx.Err() != nil {
 		return nil
 	}
 	reservation := &SentReservation{ready: make(chan struct{}), done: make(chan struct{}), scene: scene, turn: turn, target: target}
@@ -98,5 +99,29 @@ func (r *SentReservation) Cancel() {
 	if r != nil {
 		r.canceled.Store(true)
 		r.Release()
+	}
+}
+
+// CloseAndWait seals future reservations and joins their actual callback tail.
+// Owner cancellation can suppress queued work, but cannot stand in for a running
+// callback returning. The caller controls only how long it waits, not ownership.
+func (s *SentSequencer) CloseAndWait(ctx context.Context) error {
+	s.mu.Lock()
+	s.closed = true
+	tail := s.tail
+	s.mu.Unlock()
+	if tail == nil {
+		return nil
+	}
+	select {
+	case <-tail:
+		return nil
+	default:
+	}
+	select {
+	case <-tail:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }

@@ -186,7 +186,17 @@ func (h *WASMHost) callInstance(ctx context.Context, id string, expected *wasmIn
 		return nil, ErrNotLoaded
 	case <-instance.calls:
 	}
-	defer func() { instance.calls <- struct{}{} }()
+	defer func() {
+		// A cancelled call can close its own module. Release physical call
+		// ownership before joining retirement, which also waits on this gate.
+		instance.calls <- struct{}{}
+		if instance.module.IsClosed() {
+			resultErr = errors.Join(resultErr, h.disableInstance(context.Background(), id, instance))
+		}
+		if resultErr != nil {
+			output = nil
+		}
+	}()
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -211,9 +221,6 @@ func (h *WASMHost) callInstance(ctx context.Context, id string, expected *wasmIn
 		resultErr = errors.Join(resultErr, callContext.Err())
 		if instance.stopped.Err() != nil {
 			resultErr = errors.Join(resultErr, ErrNotLoaded)
-		}
-		if instance.module.IsClosed() {
-			resultErr = errors.Join(resultErr, h.disableInstance(context.Background(), id, instance))
 		}
 		if resultErr != nil {
 			output = nil
@@ -254,6 +261,10 @@ func (h *WASMHost) disableInstance(ctx context.Context, id string, instance *was
 		instance.cancel()
 		instance.cancelLoad()
 		<-instance.done
+		// Module.Close alone does not join an imported host function. Keep the
+		// ID and compiled code owned until the active call and all guest cleanup
+		// have physically returned. Stopped queued callers cannot enter again.
+		<-instance.calls
 		if instance.module != nil {
 			instance.unloadErr = instance.module.Close(ctx)
 		}

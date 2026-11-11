@@ -57,7 +57,17 @@ func (h *WASMHost) callInstanceAdmitted(wait, ctx context.Context, id string, ex
 		return nil, ErrNotLoaded
 	case <-instance.calls:
 	}
-	defer func() { instance.calls <- struct{}{} }()
+	defer func() {
+		// Release physical call ownership before joining retirement, which
+		// also waits on this gate when cancellation closes the guest.
+		instance.calls <- struct{}{}
+		if instance.module.IsClosed() {
+			resultErr = errors.Join(resultErr, h.disableInstance(context.Background(), id, instance))
+		}
+		if resultErr != nil {
+			output = nil
+		}
+	}()
 	if err := wait.Err(); err != nil {
 		return nil, err
 	}
@@ -85,9 +95,6 @@ func (h *WASMHost) callInstanceAdmitted(wait, ctx context.Context, id string, ex
 		resultErr = errors.Join(resultErr, callContext.Err())
 		if instance.stopped.Err() != nil {
 			resultErr = errors.Join(resultErr, ErrNotLoaded)
-		}
-		if instance.module.IsClosed() {
-			resultErr = errors.Join(resultErr, h.disableInstance(context.Background(), id, instance))
 		}
 		if resultErr != nil {
 			output = nil

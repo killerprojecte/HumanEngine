@@ -82,9 +82,11 @@ platform ingress or switching production startup.
 
 ## P1: updated runtime semantics, not yet delivered by this baseline
 
-The user requested these changes on 2026-11-17. Any work on the old TypeScript
-server is independent and not evidence they are released or ported to this Go
-baseline. Pin the eventual TS behavior commit when it is actually published.
+The user requested these changes on 2026-11-17. The tested TypeScript reference
+is [04b1817 on the legacy runtime fix branch](https://github.com/killerprojecte/HumanEngine/commit/04b1817af8055d58021c85e94d1f72be914125d6).
+It is not merged into the production branch, deployed, or ported to Go. Use its
+fixtures to define the differential delta rather than treating the old behavior
+as parity. Its separate optional experience-hints path is still bounded to three.
 
 ### P1-A: learning advice on demand, learning work off the reply path
 
@@ -123,7 +125,11 @@ not give a clear positive policy for naturally initiating a relevant meme search
 
 Target: explicitly allow/encourage context-appropriate meme lookup and selection,
 without requiring the user to say “send a meme”, and without forcing a meme into
-every reply. Update source prompts and generated runtime contracts together.
+every reply. Reuse the Planner's bounded read-tool loop: show real candidate IDs
+and meaning, allow query refinement, then pick actual media, independently useful
+text, or no reply. Do not describe an unsent meme as a replacement. An unselected
+candidate becoming unavailable must not block the selected output. Update source
+prompts and generated runtime contracts together.
 Keep asset existence, permissions, source availability and outgoing-media
 validation; never fabricate an asset or infer positive feedback from silence.
 
@@ -142,8 +148,9 @@ messages to `reply.validate`, initializes validity to false, and aborts on missi
 approval, false, or another topic-version change. `replyer.go`/`turn.go` have no
 cross-turn pending-draft owner. This is not the requested cancellation-only model.
 
-Target: once Replyer has a complete outgoing draft, retain it while new ingress
-triggers Planner context refresh. Give the Planner that exact previous draft;
+Target: once Replyer has a complete outgoing draft, retain it. Send directly
+when there is no new same-topic message; only new same-topic ingress triggers
+Planner context refresh. Give the Planner that exact previous draft;
 its decision about that draft is cancellation, not rewriting/re-generating it.
 After a normally completed review round, absence of explicit cancellation starts
 sending the retained draft. Review has an independent Planner budget, not the
@@ -155,7 +162,10 @@ single-send transition before implementation. Temporary state may survive the
 original model generation but must not automatically replay after restart.
 
 Repeated unrelated ingress must not discard or indefinitely restart the same
-completed draft. Explicit cancellation must address its exact identity. Source
+completed draft. Arrivals after the review snapshot belong to the next round.
+Recalling unrelated recent messages or unselected candidates must not discard a
+draft; recalled quoted targets or explicitly referenced required evidence still
+invalidate it. Explicit cancellation must address the exact draft identity. Source
 recall, revoked permissions, scene shutdown and uncertain transport outcomes are
 separate lifecycle/authority events, not approval defaults to bypass. Already
 sent/unknown segments must never be replayed after interruption or restart.

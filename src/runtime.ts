@@ -2038,14 +2038,19 @@ export class Runtime {
               const missingQuotes = current
                 .toReversed()
                 .flatMap((message) =>
-                  message.replyToId && !recent.some((item) => item.id === message.replyToId)
+                  message.replyToId &&
+                  !this.isRecalled(scene.id, message.replyToId) &&
+                  !recent.some((item) => item.id === message.replyToId)
                     ? [message.replyToId]
                     : [],
                 )
               if (mode === 'real' && missingQuotes.length) {
-                const quoted = await this.read(context, 'messages.get', {
-                  ids: [...new Set(missingQuotes)].slice(0, 4),
-                })
+                const quoted = await this.read(
+                  context,
+                  'messages.get',
+                  { ids: [...new Set(missingQuotes)].slice(0, 4) },
+                  false,
+                )
                 imageMessages.push(...quoted.items)
               }
               if (
@@ -2329,9 +2334,40 @@ export class Runtime {
                 )
               )
                 throw new Error('prompt_context_target_budget_exhausted')
+              // A reference is not useful if its exact source was left outside the
+              // rolling window. Carry direct bot quotes as evidence, not send targets.
+              const quotedIds = new Set(
+                replyerRecent.flatMap((m) =>
+                  m.senderId !== 'bot' && m.replyToId ? [m.replyToId] : [],
+                ),
+              )
+              const availableMessages = new Map(
+                [...imageMessages, ...replyerRecent].map((message) => [message.id, message]),
+              )
+              const botQuotes = [...availableMessages.values()].filter(
+                (message) =>
+                  quotedIds.has(message.id) &&
+                  message.senderId === 'bot' &&
+                  message.status === 'available' &&
+                  !this.isRecalled(scene.id, message.id) &&
+                  currentSourceSnapshot(this.store, message),
+              )
+              const botQuoteIds = new Set(botQuotes.map((message) => message.id))
+              const plannedMessageIds = new Set(replyerRecent.map((message) => message.id))
+              const supportingQuotes = botQuotes.filter(
+                (message) => !plannedMessageIds.has(message.id),
+              )
               dependencies.clear()
               for (const id of extensionDependencies) dependencies.add(id)
               for (const message of replyerRecent) dependencies.add(message.id)
+              for (const message of supportingQuotes) dependencies.add(message.id)
+              if (supportingQuotes.length)
+                context.validations.push(() =>
+                  validateSourceSnapshots(
+                    this.store,
+                    supportingQuotes.filter((m) => dependencies.has(m.id)),
+                  ),
+                )
               // Keep the Planner source snapshots aligned with its current authorized
               // candidate scope and dependency set, not unrelated decisions.
               context.sourceSnapshots = structuredClone(replyerRecent)
@@ -2360,6 +2396,10 @@ export class Runtime {
               const readTools = plannerReadTools(allTools)
               const initialEvidence: PlanEvidence[] = [
                 ...replyerRecent.map((message) => ({
+                  id: `message:${message.id}`,
+                  value: message,
+                })),
+                ...supportingQuotes.map((message) => ({
                   id: `message:${message.id}`,
                   value: message,
                 })),
@@ -2648,6 +2688,18 @@ export class Runtime {
               const selectedMessages = [...selectedById.values()].filter((message) =>
                 plan.contextMessageIds.includes(message.id),
               )
+              const selectedIds = new Set(selectedMessages.map((message) => message.id))
+              const selectedQuoteIds = new Set(
+                selectedMessages.flatMap((m) =>
+                  m.senderId !== 'bot' && m.replyToId ? [m.replyToId] : [],
+                ),
+              )
+              const compositionMessages = [
+                ...botQuotes.filter(
+                  (message) => selectedQuoteIds.has(message.id) && !selectedIds.has(message.id),
+                ),
+                ...selectedMessages,
+              ]
               // A completed draft owns one review boundary. Ingress arriving after this
               // boundary belongs to the next queued turn, not an endless version race.
               let draftReviewed = false
@@ -2672,9 +2724,16 @@ export class Runtime {
                   ])
                   retainedTargetIds = [...references]
                   const ordinarySources = new Map(
-                    replyerRecent.map((message) => [message.id, message]),
+                    [...replyerRecent, ...supportingQuotes].map((message) => [message.id, message]),
                   )
-                  for (const message of replyerRecent)
+                  for (const message of selectedMessages)
+                    if (
+                      references.has(message.id) &&
+                      message.replyToId &&
+                      botQuoteIds.has(message.replyToId)
+                    )
+                      references.add(message.replyToId)
+                  for (const message of ordinarySources.values())
                     if (evidenceIds.has(`message:${message.id}`)) references.add(message.id)
                   for (const evidence of planned.evidence) {
                     if (
@@ -2831,7 +2890,7 @@ export class Runtime {
                   now: new Date().toISOString(),
                   timezone: settings.timezone,
                   sceneKind: scene.kind,
-                  messages: selectedMessages,
+                  messages: compositionMessages,
                 },
                 // Keep the exact current clock, but not ahead of all reusable evidence.
                 serialize: (payload) => projection.stringify(payload, ['now']),
@@ -3916,6 +3975,7 @@ export class Runtime {
     context: TurnContext,
     name: string,
     input: Record<string, unknown>,
+    trackRequestedIds = true,
   ): Promise<HistoryResult> {
     const state = this.state(context.scene.id)
     if (context.mode === 'real') this.trim(state)
@@ -3927,7 +3987,7 @@ export class Runtime {
         .strict()
         .parse(input)
       for (const id of ids) {
-        context.dependencies.add(id)
+        if (trackRequestedIds) context.dependencies.add(id)
         if (this.isRecalled(context.scene.id, id)) continue
         const cached = state.messages.find((m) => m.id === id)
         if (cached) result.items.push({ ...cached, origin: 'history' })

@@ -1,7 +1,11 @@
 # Go migration remaining work and handoff
 
-Baseline reviewed: `feat/refactor-golang` at
+Documentation reviewed at Go head `5b7f012d`; implementation/CI checkpoint:
 `58e48dc6d3727abc68c3bcc4b1917b54f69acbb9` (2026-11-11).
+The frozen compatibility oracle remains master
+`24fe8a773d87f2f09996e259fca46524c2c02928`, as recorded in
+`backend/compatibility/baseline.json`. The newer legacy behavior references below
+are intentional deltas, not a silent replacement of that frozen oracle.
 Handoff updated: 2026-11-17. This document is a work plan, not a completion claim.
 
 [Exact-baseline CI 43051645297](https://github.com/killerprojecte/HumanEngine/actions/runs/43051645297)
@@ -82,39 +86,55 @@ platform ingress or switching production startup.
 
 ## P1: updated runtime semantics, not yet delivered by this baseline
 
-The user requested these changes on 2026-11-17. The tested TypeScript reference
-is [04b1817 on the legacy runtime fix branch](https://github.com/killerprojecte/HumanEngine/commit/04b1817af8055d58021c85e94d1f72be914125d6).
-It is not merged into the production branch, deployed, or ported to Go. Use its
-fixtures to define the differential delta rather than treating the old behavior
-as parity. Its separate optional experience-hints path is still bounded to three.
+The user requested these changes on 2026-11-17. Legacy behavior commit
+[04b1817](https://github.com/killerprojecte/HumanEngine/commit/04b1817af8055d58021c85e94d1f72be914125d6)
+is now on `master`; the tested reference is its successor
+[b7f3f92](https://github.com/killerprojecte/HumanEngine/commit/b7f3f92b0d27168955f507535e38c00ed15c6826),
+which makes the typing-cancellation test explicit. Branch publication is not
+proof of deployment or a Go port. Use these behavior fixtures to define deliberate
+deltas from the frozen `24fe8a77` compatibility baseline.
 
 ### P1-A: learning advice on demand, learning work off the reply path
 
-Current chain: `app/experience_planner.go::experiencePlanner` calls
-`experienceservice/runtime_hints.go::PlannerContext`; `botruntime/planning.go`
-serializes the result into `policyContext`. This currently selects/deduplicates at
-most three experience hints; it is **not a whole-library dump**. Separately,
-`botruntime/prepare.go` collects extension context into `learned` evidence.
+Two separate paths must not be conflated:
 
-Target: no automatic advice-body injection into every Planner request. Expose
-relevant advice through an on-demand model tool; keep proposal/consolidation work
-in the existing background learning owners. A tool read and a background learning
-job are distinct operations. Preserve exact source eligibility, scene/privacy
-scope, exposure receipts and feedback attribution. Record exposure when advice is
-actually delivered, not merely when a hidden prefetch occurs. Do not fix context
-cost by silently dropping learned information or adding arbitrary size caps.
+- **Ordinary learned scene/expression hints:** legacy `src/engine.ts` now exposes
+  `rules.list` on demand instead of preloading accumulated advice into initial
+  context. Its optional `query`/`context` filters return manual and learned rules.
+  `src/runtime/planner-evidence-budget.ts` withholds oversized rule receipts as
+  a whole under the existing byte budget; it does not silently count-truncate
+  the library. Dependencies attach when the measured receipt is delivered.
+- **Optional experimental Experience policies:** Go
+  `app/experience_planner.go::experiencePlanner` calls
+  `experienceservice/runtime_hints.go::PlannerContext`, then
+  `botruntime/planning.go` includes its result in `policyContext`. This path
+  selects/deduplicates at most three policies. The legacy reference retains this
+  separate experimental path; it is not the ordinary learned-hints fix and must
+  not be presented as evidence that ordinary advice was already bounded to three.
 
-Landing points: the two chains above; `internal/learningowner`, `learningruntime`,
-`contextuallearning`; `RuntimeHints.DeliveredTool`, `RecordUse` and `Sent` linkage.
-Reuse `TestExperiencePlannerActualSourceOrder`,
+Port the ordinary on-demand contract into the Go application/tool/read budget
+chain, auditing `botruntime/prepare.go` extension `learned` evidence separately.
+Keep proposal/consolidation work in the existing background learning owners:
+a read tool and a background learning job are distinct operations. Preserve
+source eligibility, scene/privacy scope and delivery-bound dependencies. Any
+additional change to experimental policy injection must be tracked explicitly,
+not silently attributed to the already-published `rules.list` change.
+
+Primary fixtures: legacy `tests/learning-hints-on-demand.test.ts` and
+`tests/learning-turn-repair.test.ts`; port their source behavior through the Go
+application tools, `replyplan` evidence budgeting and actual model requests.
+For the separate experimental path, retain `TestExperiencePlannerActualSourceOrder`,
 `TestRuntimeHintsNativeEndToEnd`, `generate-experience-planner.mjs` and
-`generate-experience-runtime-fixtures.mjs` with intentional contract updates.
+`generate-experience-runtime-fixtures.mjs`, including `RuntimeHints.DeliveredTool`,
+`RecordUse` and `Sent` feedback linkage.
 
-Required new evidence: no hint body in an untouched Planner request; on-demand
-query returns relevant scoped advice; delivery records exactly one exposure;
-revocation/recall rejects stale receipts; background learning does not block
-foreground HTTP or Replyer; queued is not reported as persisted learning.
-Measure actual serialized request bytes before/after on the same conversation.
+Required evidence: ordinary learned hints are neither read nor serialized during
+initial preparation; `rules.list` remains available and can narrow a query;
+whole-receipt withholding attaches no undelivered dependencies; a delivered
+receipt attaches only its own source dependencies; revocation/recall remains
+valid; background learning does not block foreground HTTP or Replyer; queued is
+not reported as persisted learning. Measure actual request bytes before/after on
+the same conversation and test experimental policies separately.
 
 ### P1-B: use memes naturally when appropriate
 
@@ -197,6 +217,15 @@ preservation and at-most-once physical transmission, not only final status.
   not establish all four complete products. `app/web_read_disabled.go` still
   rejects default admission; the isolated `web_read_candidate` path cannot be
   promoted before its transport/HTTP 101 and shutdown semantics are accepted.
+- **Plugin API V1/V2 badge acceptance:** `app/pages/plugins.vue` contains
+  `V{{ plugin.apiVersion ?? 1 }}` and `pluginmanager.Manager.List` emits version
+  metadata; `httpapi/plugin_typing_test.go` checks V2 metadata for typing-delay.
+  These are source-level observations, not rendered UI acceptance. Add a named
+  Plugin API badge check covering one V1 local plugin and one V2 builtin through
+  the real list API and UI: correct V1/V2 label, legacy omitted-field V1 fallback,
+  independence from the plugin's own release version, and stable display across
+  enable/disable/reload. Run contract checks and capture the actual rendered list;
+  do not mark the mixed-version UI check complete from metadata alone.
 - **Live graph:** verify media ingestion/history/cache, workspace/semantic and
   Experience tools, proactive timers, settings effects and source-wide recall
   ordering against current code and actual-source fixtures. Several historical

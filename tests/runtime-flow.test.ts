@@ -67,6 +67,7 @@ function fixture(
     messageId: crypto.randomUUID(),
   }),
   planning?: (messages: ChatMessage[]) => Promise<Completion>,
+  getMessage?: RuntimeAdapter['getMessage'],
 ) {
   const store = new Store(':memory:')
   store.set('settings', { ...store.settings, debounceMs: 5, maxWaitMs: 100 })
@@ -84,7 +85,7 @@ function fixture(
   const adapter: RuntimeAdapter = {
     send: receipt,
     history: async () => ({ items: [], coverage: 'partial' }),
-    getMessage: async () => ({ items: [], coverage: 'partial' }),
+    getMessage: getMessage ?? (async () => ({ items: [], coverage: 'partial' })),
     dispose() {},
   }
   runtime.addAdapter('fixture', adapter)
@@ -220,6 +221,85 @@ test('a text-only Planner tool call without emoji reaches the Replyer without re
     balanced(f.store)
   } finally {
     f.end()
+  }
+})
+
+test('explicitly quoted bot text reaches Planner and Replyer without becoming a send target', async () => {
+  for (const source of ['cached', 'history', 'missing', 'recalled', 'foreign'] as const) {
+    const s = scene()
+    const quoted = {
+      ...message(s, 'quoted-bot'),
+      senderId: 'bot',
+      parts: [{ type: 'text' as const, text: 'original bot statement' }],
+    }
+    let planner: Record<string, unknown> | undefined
+    let replyer: Record<string, unknown> | undefined
+    let reads = 0
+    const f = fixture(
+      async (role, messages) => {
+        if (role === 'planner') {
+          const decision = decide()
+          decision.toolCalls[0]!.arguments.targetMessageIds = ['incoming']
+          return decision
+        }
+        if (role === 'replyer' && !replyer) {
+          replyer = JSON.parse(messages.find((m) => m.role === 'user')!.content)
+          return send()
+        }
+        return completion()
+      },
+      undefined,
+      async (messages) => {
+        planner = JSON.parse(messages.find((m) => m.role === 'user')!.content)
+        return fixturePlanCompletion('planner', messages, {
+          targetMessageIds: ['incoming'],
+          contextMessageIds: ['incoming'],
+        })!
+      },
+      async (_scene, id) => {
+        reads++
+        assert.equal(id, quoted.id)
+        return {
+          items:
+            source === 'missing'
+              ? []
+              : [
+                  {
+                    ...quoted,
+                    sceneId: source === 'foreign' ? 'different-group' : quoted.sceneId,
+                    receivedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+                    origin: 'history',
+                  },
+                ],
+          coverage: source === 'missing' ? 'partial' : 'complete',
+        }
+      },
+    )
+    f.add(s)
+    try {
+      if (source === 'cached') f.runtime.ingest(quoted, s, false)
+      if (source === 'recalled') f.runtime.recall(s.id, quoted.id)
+      f.runtime.ingest({ ...message(s), replyToId: quoted.id }, s)
+      await until(() =>
+        f.store.logs.some((row) => row.stage === 'turn' && row.status !== 'started'),
+      )
+      const turn = f.store.logs.find((row) => row.stage === 'turn' && row.status !== 'started')
+      assert.equal(turn?.reason, 'reply_delivered', source)
+      assert.ok(planner, source)
+      assert.ok(replyer, source)
+      const available = source === 'cached' || source === 'history'
+      assert.equal(JSON.stringify(planner).includes('original bot statement'), available, source)
+      assert.equal(JSON.stringify(replyer).includes('original bot statement'), available, source)
+      const visible = replyer.messages as RuntimeMessage[]
+      assert.equal(visible.find((m) => m.id === 'incoming')?.replyToId, quoted.id)
+      if (available) assert.equal(visible.find((m) => m.id === quoted.id)?.senderId, 'bot')
+      assert.deepEqual((replyer.plan as { targetMessageIds: string[] }).targetMessageIds, [
+        'incoming',
+      ])
+      assert.equal(reads, source === 'cached' || source === 'recalled' ? 0 : 1, source)
+    } finally {
+      f.end()
+    }
   }
 })
 

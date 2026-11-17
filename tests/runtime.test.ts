@@ -262,8 +262,17 @@ test('new correction validates the exact stale segments and replans rather than 
     waiting = new Promise<void>((resolve) => (started = resolve))
   const { store, runtime } = setup(async (role, messages) => {
     if (role === 'planner')
-      return messages[0]?.content.includes('Validate the exact')
-        ? result([{ id: 'v', name: 'reply.validate', arguments: { valid: false } }])
+      return messages[0]?.content.includes('Review the exact')
+        ? result([
+            {
+              id: 'v',
+              name: 'reply.cancel',
+              arguments: {
+                draftId: JSON.parse(messages[1]!.content).draftId,
+                reason: 'new correction',
+              },
+            },
+          ])
         : result([
             {
               id: 'd',

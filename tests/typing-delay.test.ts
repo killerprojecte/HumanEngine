@@ -45,10 +45,17 @@ function harness(segments: SendSegment[], speedFactor?: number, pluginSend = fal
     () =>
       ({
         complete: async (role: string, messages: ChatMessage[]) => {
-          if (role === 'planner' && messages[0]?.content.includes('Validate the exact proposed')) {
+          if (role === 'planner' && messages[0]?.content.includes('Review the exact retained')) {
             revalidations++
             return completion([
-              { id: 'validate', name: 'reply.validate', arguments: { valid: false } },
+              {
+                id: 'validate',
+                name: 'reply.cancel',
+                arguments: {
+                  draftId: JSON.parse(messages[1]!.content).draftId,
+                  reason: 'new correction',
+                },
+              },
             ])
           }
           const fixturePlan = fixturePlanCompletion(role, messages, {

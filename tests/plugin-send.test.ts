@@ -98,18 +98,20 @@ test('A plugin send delayed by a mutating hook validates the exact post-hook seg
   const validated: Array<{ proposed: typeof request; newMessages: RuntimeMessage[] }> = []
   const { store, runtime, plugins } = setup(async (role, messages) => {
     if (role === 'planner') {
-      if (messages[0]!.content.includes('Validate the exact')) {
+      if (messages[0]!.content.includes('Review the exact')) {
         const value = JSON.parse(messages[1]!.content) as {
           proposed: typeof request
+          draftId: string
           newMessages: RuntimeMessage[]
         }
         validated.push(value)
         return result([
           {
             id: 'validate',
-            name: 'reply.validate',
+            name: 'reply.cancel',
             arguments: {
-              valid: value.proposed.segments[0]?.parts[0]?.text === 'safe acknowledgment',
+              draftId: value.draftId,
+              reason: 'The full draft contains a stale second segment',
             },
           },
         ])
@@ -180,22 +182,20 @@ test('A plugin send delayed by a mutating hook validates the exact post-hook seg
     )
     release()
     await running
-    assert.equal(
-      validated.length,
-      2,
-      'approval for one segment must not approve a different segment',
-    )
+    assert.equal(validated.length, 1, 'review must inspect the complete post-hook draft once')
     assert.deepEqual(
       validated.map((value) => value.proposed.segments),
       [
-        [{ parts: [{ type: 'text', text: 'safe acknowledgment' }] }],
-        [{ parts: [{ type: 'text', text: 'hook-edited stale answer' }] }],
+        [
+          { parts: [{ type: 'text', text: 'safe acknowledgment' }] },
+          { parts: [{ type: 'text', text: 'hook-edited stale answer' }] },
+        ],
       ],
     )
     assert.ok(
       validated.every((value) => value.newMessages.some((message) => message.id === 'correction')),
     )
-    assert.equal(sends, 1, 'only the explicitly validated acknowledgment may be sent')
+    assert.equal(sends, 0, 'explicit cancellation stops the complete retained draft')
   } finally {
     release()
     await plugins.dispose()

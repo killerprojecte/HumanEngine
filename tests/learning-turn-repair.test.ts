@@ -61,10 +61,18 @@ for (const change of ['unchanged', 'retract', 'lock'] as const) {
           sent = 0
         h.install(async (role, messages) => {
           const fixturePlan = fixturePlanCompletion(role, messages)
-          if (fixturePlan) return fixturePlan
-          if (role === 'planner') {
+          if (fixturePlan) {
+            const receipt = messages.find(
+              (message) =>
+                message.role === 'tool' && JSON.parse(message.content).toolName === 'rules.list',
+            )
+            if (!receipt) return completed([call('rules.list', { query: 'concise' })])
+            assert.equal(JSON.parse(receipt.content).value.learned[0]?.preference, 'concise')
             entered()
             await pending
+            return fixturePlan
+          }
+          if (role === 'planner') {
             return completed([
               call('participation.decide', { action: 'reply', reasonCode: 'addressed' }),
             ])

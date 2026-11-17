@@ -106,8 +106,7 @@ function fixture(t: TestContext, enabled?: boolean) {
     assert.ok(value)
     return completion([call('reply.plan', value)])
   }
-  let validate: (messages: ChatMessage[]) => Completion | Promise<Completion> = () =>
-    completion([call('reply.validate', { valid: true })])
+  let validate: (messages: ChatMessage[]) => Completion | Promise<Completion> = () => completion()
   let historyItems: Message[] = []
   const historyReads: string[] = []
   let receipt: (scope: SceneRef, index: number) => SendResult | Promise<SendResult> = (
@@ -126,7 +125,7 @@ function fixture(t: TestContext, enabled?: boolean) {
         if (tools.some((tool) => tool.name === 'reply.plan')) {
           return plan(messages, ++calls.plan)
         }
-        if (tools.some((tool) => tool.name === 'reply.validate')) {
+        if (tools.some((tool) => tool.name === 'reply.cancel')) {
           calls.validation++
           return validate(messages)
         }
@@ -1046,7 +1045,7 @@ test('Planner cannot borrow a foreign message alias seen only by participation',
 })
 
 for (const freshWake of [false, true])
-  test(`sent-first then stale validation false ${freshWake ? 'uses only the real pending wake' : 'does not mint a wake for unscheduled input'} and never replays the confirmed segment`, async (t) => {
+  test(`ingress after the draft review boundary ${freshWake ? 'uses only the real pending wake' : 'does not mint a wake for unscheduled input'} and never replays the confirmed segment`, async (t) => {
     const h = fixture(t, true)
     try {
       h.decide((_data, index) => decision(index === 1 ? 'reply' : 'silent'))
@@ -1056,10 +1055,17 @@ for (const freshWake of [false, true])
       const validationInputs: string[] = []
       h.validate((messages) => {
         validationInputs.push(messages[1]!.content)
-        return completion([call('reply.validate', { valid: false })])
+        return completion([
+          call('reply.cancel', {
+            draftId: JSON.parse(messages[1]!.content).draftId,
+            reason: 'new correction',
+          }),
+        ])
       })
       let fresh!: Message
-      h.receipt((scope) => {
+      h.receipt((scope, index) => {
+        if (index > 1)
+          return { status: 'sent', messageId: h.message('second-confirmed', '', 'bot', scope).id }
         fresh = h.message('fresh-stale-signal', '[topic:stale-flow] NEW_STALE_SIGNAL')
         if (freshWake) h.receive(fresh)
         else h.runtime.ingest(fresh, scope, false)
@@ -1067,18 +1073,20 @@ for (const freshWake of [false, true])
       })
       h.ingest('stale-original', '[topic:stale-flow] ORIGINAL_QUALIFIED_INPUT')
       await advance(t, 100)
-      assert.equal(h.sends.length, 1)
-      assert.equal(h.calls.validation, 1)
-      assert.match(validationInputs[0]!, /NEW_STALE_SIGNAL/)
+      assert.equal(h.sends.length, 2)
+      assert.equal(h.calls.validation, 0)
+      assert.deepEqual(validationInputs, [])
       assert.equal(
         h.calls.decision,
         1,
         'a zero-delay direct run would already have fired during settled microtasks',
       )
       assert.equal(h.received.get(fresh.id), 1)
-      const firstTurn = h.store.logs.find((row) => row.stage === 'turn' && row.status === 'partial')
-      assert.equal(firstTurn?.counts?.sentSegments, 1)
-      assert.equal(firstTurn?.counts?.cancelledSegments, 1)
+      const firstTurn = h.store.logs.find(
+        (row) => row.stage === 'turn' && row.status === 'completed',
+      )
+      assert.equal(firstTurn?.counts?.sentSegments, 2)
+      assert.equal(firstTurn?.counts?.cancelledSegments, 0)
       await advance(t, 99)
       assert.equal(h.calls.decision, 1)
       await advance(t, 1)
@@ -1087,7 +1095,7 @@ for (const freshWake of [false, true])
       await advance(t, 2000)
       assert.equal(h.calls.decision, freshWake ? 2 : 1)
       assert.equal(h.calls.plan, 1)
-      assert.equal(h.sends.length, 1)
+      assert.equal(h.sends.length, 2)
       assert.equal(h.runtime.activeTasks, 0)
     } finally {
       await h.close()

@@ -80,6 +80,7 @@ export async function dispatchSegment(
   operationId: string,
   guard: {
     grounding: ReplyGrounding
+    deliveryTimeoutMs?: number
     captureTransmitGuard?: () => () => boolean
     validate(request: unknown, signal: AbortSignal): Promise<boolean>
   },
@@ -173,6 +174,13 @@ export async function dispatchSegment(
         return (receipt = { status: 'cancelled', detail: 'send_invalidated' })
       if (context.mode === 'simulation')
         return (receipt = { status: 'sent', messageId: randomUUID() })
+      // A retained draft's review budget is not its network-send budget. Once
+      // invoked, a timed-out adapter has unknown delivery and must not be replayed.
+      if (guard.deliveryTimeoutMs !== undefined)
+        context = {
+          ...context,
+          signal: AbortSignal.any([context.signal, AbortSignal.timeout(guard.deliveryTimeoutMs)]),
+        }
       const transmitGuard = guard.captureTransmitGuard?.()
       const sending = startFlow(services.store, 'adapter_send', {
         nextStep: 'replyer',

@@ -374,18 +374,23 @@ for (const key of ['memoryReadEnabled', 'personalizationEnabled'] as const)
     })
 
 for (const key of ['memoryReadEnabled', 'personalizationEnabled'] as const)
-  test(`actual Runtime learned hint delivery is revoked by ${key} OFF→ON even without a memory tool`, async (t) => {
+  test(`actual Runtime on-demand learned hint delivery is revoked by ${key} OFF→ON`, async (t) => {
     clock(t)
     const h = fixture()
     try {
       h.seedHabit()
-      let delivered = false
+      let delivered = false,
+        rounds = 0
       h.install(async (_role, messages, tools = []) => {
         if (tools.some((t) => t.name === 'participation.decide'))
           return completion([
             call('participation.decide', { action: 'reply', reasonCode: 'synthetic' }),
           ])
         if (tools.some((t) => t.name === 'reply.plan')) {
+          if (++rounds === 1) {
+            assert.doesNotMatch(JSON.stringify(messages), new RegExp(HABIT))
+            return completion([call('rules.list', { query: HABIT })])
+          }
           assert.match(JSON.stringify(messages), new RegExp(HABIT))
           delivered = true
           h.flip({ [key]: false })
@@ -396,7 +401,8 @@ for (const key of ['memoryReadEnabled', 'personalizationEnabled'] as const)
       })
       await h.ask(t)
       assert.equal(delivered, true)
-      assert.equal(h.requests.length, 2)
+      assert.equal(rounds, 2)
+      assert.equal(h.requests.length, 3)
       assert.equal(h.sends(), 0)
     } finally {
       await h.close()

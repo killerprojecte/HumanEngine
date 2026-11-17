@@ -272,7 +272,18 @@ test(
               privacyResults.push(JSON.parse(results[1]!.content).value)
               return output('reply.plan', { ...plan, action: 'noReply' })
             }
-            if (!results.length) return output('memes.search', { query: 'greeting' })
+            if (!results.length) {
+              // Deterministic model fixture: ordinary greeting, not an image request.
+              assert.match(JSON.stringify(messages), /大家早上好，今天也一起加油！/)
+              assert.match(
+                messages
+                  .filter((message) => message.role === 'system')
+                  .map((message) => message.content)
+                  .join('\n'),
+                /proactively use memes.search even if the user did not explicitly request an image/,
+              )
+              return output('memes.search', { query: 'greeting' })
+            }
             const receipt = JSON.parse(results[0]!.content) as {
               id: string
               value: { items: MemeAsset[]; coverage: string }
@@ -576,6 +587,7 @@ test(
           bytes,
         )
       }
+      ingress('大家早上好，今天也一起加油！', 'greeting-speaker')
       const enabled = {
         ...store.scene(scope.id)!,
         participationEnabled: true,

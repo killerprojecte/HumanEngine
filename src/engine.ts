@@ -94,6 +94,10 @@ export class Engine {
   readonly memory: MemoryService
   readonly memes: MemeService
   readonly habits: HabitService
+  private readonly pendingRuleReads = new WeakMap<
+    object,
+    { context: TurnContext; dependencies: Set<string>; validations: Array<() => boolean> }
+  >()
   private readonly background = new WorkScheduler(2, 64)
   private readonly mediaTasks = new Map<string, AbortController>()
   private readonly imageDescriptions = new ImageDescriptionCache()
@@ -480,7 +484,7 @@ export class Engine {
           ),
           definition(
             'memes.search',
-            'Search analyzed available memes by intent without re-running vision.',
+            'Search analyzed available memes by intent without re-running vision. Each item contains its real asset id and tags describing emotion, intent, tone and memeMeaning. These are scoped candidates, not a full library inventory. Inspect the returned candidates and refine query/tags in another call if needed before choosing an asset or meaningful text; empty results never authorize a made-up image or placeholder.',
             z
               .object({ query: z.string().max(500), tags: z.array(z.string()).max(10).optional() })
               .strict(),
@@ -502,8 +506,13 @@ export class Engine {
           ),
           definition(
             'rules.list',
-            'Read applicable manual rules. Fixed template and non-overridable manual rules take precedence.',
-            z.object({}).strict(),
+            'Read applicable manual rules and soft learned scene/expression preferences on demand when current conversation depends on them. Use query to narrow learned hints by all search terms and context to select general or technical discussion. A limited receipt requires a narrower query, not an assumption that no rules exist. Technical-context hints apply only to technical discussions; more specific applicable hints take precedence over general hints. Learned hints never override fixed persona or manual rules.',
+            z
+              .object({
+                query: z.string().max(500).optional(),
+                context: z.enum(['general', 'technical']).optional(),
+              })
+              .strict(),
           ),
           definition(
             'memory.knowledge',
@@ -759,11 +768,6 @@ export class Engine {
         if (result) this.modelRead.begin(context)
         return result
       },
-      contextData: (context) => ({
-        learnedHints: this.learnedHints(context),
-        learnedHintPolicy:
-          'Soft learned hints apply only in their declared scene and context. A technical-context hint applies only to technical discussions. More specific applicable context takes precedence over general hints; these never override manual rules or safety boundaries.',
-      }),
       execute: async (name, input, context) => {
         const ctx = { sceneId: context.scene.id, simulation: context.mode === 'simulation' }
         this.gateModelTool(name, context)
@@ -790,15 +794,6 @@ export class Engine {
             z.string().parse(input.query),
             input.tags as string[] | undefined,
           )
-          for (const asset of assets)
-            context.validations.push(() => {
-              try {
-                this.memes.original(ctx, asset.id)
-                return true
-              } catch {
-                return false
-              }
-            })
           return { items: assets, coverage: 'partial', scope: 'query_candidates', limit: 12 }
         }
         if (name === 'memory.search') {
@@ -1026,8 +1021,40 @@ export class Engine {
             ]),
           )
         }
-        if (name === 'rules.list')
-          return { manual: this.rules(context), learned: this.learnedHints(context) }
+        if (name === 'rules.list') {
+          const query = z
+            .object({
+              query: z.string().max(500).optional(),
+              context: z.enum(['general', 'technical']).optional(),
+            })
+            .strict()
+            .parse(input)
+          const terms = (query.query ?? '').toLowerCase().split(/\s+/u).filter(Boolean)
+          // Keep source dependencies detached until the measured receipt is actually delivered.
+          const readContext = context.deferMemoryExposure
+            ? {
+                ...context,
+                dependencies: new Set<string>(),
+                validations: [] as Array<() => boolean>,
+              }
+            : context
+          const result = {
+            manual: this.rules(readContext),
+            learned: this.learnedHints(readContext, (record) => {
+              if (query.context === 'general' && record.context === 'technical') return false
+              const text =
+                `${record.content ?? ''} ${record.preference ?? ''} ${record.context ?? ''}`.toLowerCase()
+              return terms.every((term) => text.includes(term))
+            }),
+          }
+          if (context.deferMemoryExposure)
+            this.pendingRuleReads.set(result, {
+              context,
+              dependencies: readContext.dependencies,
+              validations: readContext.validations,
+            })
+          return result
+        }
         if (name === 'memory.summaries') {
           z.object({}).strict().parse(input)
           const values = this.semanticExposure.query(context)
@@ -1096,6 +1123,18 @@ export class Engine {
       },
       delivered: (name, value, context, input = {}) => {
         this.gateModelTool(name, context)
+        if (name === 'rules.list' && value && typeof value === 'object') {
+          const pending = this.pendingRuleReads.get(value)
+          if (pending) {
+            this.pendingRuleReads.delete(value)
+            if (pending.context !== context || pending.validations.some((validate) => !validate()))
+              throw new Error('planner_context_ineligible')
+            if (pending.validations.length) this.modelRead.begin(context)
+            for (const id of pending.dependencies) context.dependencies.add(id)
+            context.validations.push(...pending.validations)
+          }
+          return value
+        }
         if (name === 'memory.summaries' && Array.isArray(value))
           return this.semanticExposure.deliver(context, value)
         if (name === 'memory.knowledge' && Array.isArray(value))
@@ -1793,7 +1832,10 @@ export class Engine {
       this.store.log('warn', 'learning', 'public_review_unavailable', { sceneId })
     }
   }
-  private learnedHints(context: TurnContext) {
+  private learnedHints(
+    context: TurnContext,
+    matches: (record: import('./habits.ts').HabitRecord) => boolean = () => true,
+  ) {
     if (context.mode !== 'real' || !this.modelRead.personalizationAllowed(context.scene.id))
       return []
     const readTicket = this.modelRead.capture(context.scene.id)!
@@ -1806,9 +1848,11 @@ export class Engine {
     // must revoke the turn, never bless a stale hint with a later evidence set.
     const identities = this.habits.validationIdentities(
       ctx,
-      originals.filter((record) => habitInScope(ctx, record)).map((record) => record.id),
+      originals
+        .filter((record) => habitInScope(ctx, record) && matches(record))
+        .map((record) => record.id),
     )
-    const hints = this.habits.list(ctx)
+    const hints = this.habits.list(ctx).filter(matches)
     this.modelRead.assert(readTicket)
     if (hints.length) this.modelRead.begin(context)
     for (const hint of hints) {

@@ -37,6 +37,28 @@ export class PlannerEvidenceBudget {
       content: serialize(value),
     })
     const fits = (message: ChatMessage) => this.measure([...messages, message]) <= this.maxBytes
+    // Rules are an indivisible qualified result, not a list to truncate. Keep the
+    // planner alive so it can narrow the query without exposing omitted sources.
+    if (receipt.toolName === 'rules.list') {
+      const message = envelope(receipt)
+      if (Buffer.byteLength(JSON.stringify(receipt.value) ?? '', 'utf8') <= 65536 && fits(message))
+        return { receipt, message }
+      const omitted: PlanEvidence = {
+        ...receipt,
+        value: {
+          coverage: {
+            status: 'limited',
+            reason: 'planner_evidence_budget',
+            scope: 'query_candidates',
+          },
+          refineQuery:
+            'Rules were withheld as a whole for the existing byte budget. Call rules.list with a narrower query/context; this does not mean no matching rules exist.',
+        },
+      }
+      const omittedMessage = envelope(omitted)
+      this.assertWithin([...messages, omittedMessage])
+      return { receipt: omitted, message: omittedMessage }
+    }
     if (
       ![
         ...workspaceStateTools,

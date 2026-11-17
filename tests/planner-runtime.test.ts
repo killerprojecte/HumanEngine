@@ -52,8 +52,11 @@ function setup(
     tools: ToolDefinition[],
     signal?: AbortSignal,
   ) => Promise<Completion>,
+  sourceRevisions = false,
 ) {
   const store = new Store(':memory:')
+  if (sourceRevisions)
+    store.set('settings', { ...store.settings, sourceEventRevisionsEnabled: true })
   store.saveScene({
     ...scene,
     name: 'Fixture',
@@ -90,9 +93,11 @@ function setup(
       ],
     }
     runtime.ingest(message, scene, false)
+    return message
   }
-  ingest()
+  const source = ingest()
   return {
+    source,
     store,
     runtime,
     ingest,
@@ -241,12 +246,21 @@ test('new correction during planning requires exact-send revalidation and reject
   const fixture = setup(async (role, messages, tools) => {
     if (tools.some((tool) => tool.name === 'participation.decide'))
       return decision(++decisions === 1 ? 'reply' : 'silent')
-    if (tools.some((tool) => tool.name === 'reply.validate')) {
+    if (tools.some((tool) => tool.name === 'reply.cancel')) {
       validations++
       const data = JSON.parse(messages.find((message) => message.role === 'user')!.content)
       assert.ok(data.newMessages.some((message: { id: string }) => message.id === 'correction'))
       assert.deepEqual(data.originalTarget, ['source'])
-      return result([{ id: 'validation', name: 'reply.validate', arguments: { valid: false } }])
+      return result([
+        {
+          id: 'validation',
+          name: 'reply.cancel',
+          arguments: {
+            draftId: JSON.parse(messages[1]!.content).draftId,
+            reason: 'new correction',
+          },
+        },
+      ])
     }
     if (role === 'replyer') return result([send('stale-send')])
     started.resolve()
@@ -367,9 +381,18 @@ test('a correction during participation remains stale through planning and is re
       await release.promise
       return decision()
     }
-    if (tools.some((t) => t.name === 'reply.validate')) {
+    if (tools.some((t) => t.name === 'reply.cancel')) {
       checks++
-      return result([{ id: 'check', name: 'reply.validate', arguments: { valid: false } }])
+      return result([
+        {
+          id: 'check',
+          name: 'reply.cancel',
+          arguments: {
+            draftId: JSON.parse(messages[1]!.content).draftId,
+            reason: 'new correction',
+          },
+        },
+      ])
     }
     if (role === 'planner') return plan(messages)
     return result([send('old-answer')])
@@ -491,7 +514,7 @@ test('planner reads and planned learning retain one context identity and retriev
   }
 })
 
-test('uncooperative pre-send hook is bounded and diagnosed as dialogue timeout without emission', async () => {
+test('uncooperative pre-send hook has an independent budget without emission', async () => {
   const release = deferred()
   const fixture = setup(async (role, messages, tools) => {
     if (tools.some((t) => t.name === 'participation.decide')) return decision()
@@ -519,7 +542,7 @@ test('uncooperative pre-send hook is bounded and diagnosed as dialogue timeout w
       (log) => log.stage === 'turn' && log.status === 'failed',
     )
     assert.ok(terminal)
-    assert.match(JSON.stringify(terminal), /dialogue_timeout/)
+    assert(fixture.store.logs.some((row) => row.stage === 'send_hook' && row.status === 'failed'))
   } finally {
     release.resolve()
     fixture.close()
@@ -582,7 +605,7 @@ test('disabled suggestions reject a planner-supplied draft before any Replyer in
 
 for (const changeDuringReply of [false, true]) {
   test(
-    `completed Replyer send call ${changeDuringReply ? 'waits at revalidation but terminates at remaining dialogue deadline' : 'reaches adapter without another model call when topic unchanged'}`,
+    `completed Replyer send call ${changeDuringReply ? 'retains the draft through an independent review deadline then sends unchanged' : 'reaches adapter without another model call when topic unchanged'}`,
     { timeout: 3000 },
     async () => {
       const validationStarted = deferred()
@@ -590,7 +613,7 @@ for (const changeDuringReply of [false, true]) {
         validations = 0
       const fixture = setup(async (role, messages, tools) => {
         if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
-        if (tools.some((tool) => tool.name === 'reply.validate')) {
+        if (tools.some((tool) => tool.name === 'reply.cancel')) {
           validations++
           validationStarted.resolve()
           return new Promise<Completion>(() => {})
@@ -624,25 +647,23 @@ for (const changeDuringReply of [false, true]) {
           assert.equal(fixture.store.logs.at(-1)?.stage, 'send_validation')
           assert.equal(fixture.store.logs.at(-1)?.nextStep, 'adapter_send')
           // This reproduces the reported visible snapshot after Replyer has returned.
-          // It must NOT remain the final state once the existing stage deadline expires.
+          // Review has its own budget; the completed Replyer deadline cannot discard the draft.
         }
         await running
         assert.equal(replyCompletions, 1)
         assert.equal(validations, changeDuringReply ? 1 : 0)
-        assert.equal(fixture.sends(), changeDuringReply ? 0 : 1)
+        assert.equal(fixture.sends(), 1)
         assert.equal(fixture.runtime.activeTasks, 0)
         if (changeDuringReply) {
           assert(
-            fixture.store.logs.some(
-              (row) => row.stage === 'send_validation' && row.status === 'cancelled',
-            ),
+            fixture.store.logs.some((row) => JSON.stringify(row).includes('draft_review_timeout')),
           )
           assert(
             fixture.store.logs.some(
               (row) => row.stage === 'turn_cleanup' && row.status === 'completed',
             ),
           )
-          assert(!fixture.store.logs.some((row) => row.stage === 'adapter_send'))
+          assert(fixture.store.logs.some((row) => row.stage === 'adapter_send'))
         }
       } finally {
         clearInterval(keepalive)
@@ -672,7 +693,7 @@ test(
         complete: async (_context, messages, tools) => {
           if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
           if (tools.some((tool) => tool.name === 'reply.plan')) return plan(messages)
-          if (tools.some((tool) => tool.name === 'reply.validate')) {
+          if (tools.some((tool) => tool.name === 'reply.cancel')) {
             validationStarted.resolve()
             return new Promise<Completion>(() => {})
           }
@@ -730,7 +751,7 @@ test(
       }
       await running
       assert.equal(fixture.runtime.activeTasks, 0)
-      assert.equal(fixture.sends(), 0)
+      assert.equal(fixture.sends(), 1)
       assert(
         fixture.store.logs.some(
           (row) =>
@@ -802,3 +823,303 @@ test('changed prompt policy during pending participation invalidates the old win
     fixture.close()
   }
 })
+
+for (const outcome of [
+  'complete',
+  'wrong-draft',
+  'failure',
+  'recall',
+  'edit',
+  'disable',
+] as const) {
+  test(`retained draft review ${outcome}: ingress cannot erase or restart a completed draft`, async () => {
+    const started = deferred(),
+      release = deferred()
+    let reviews = 0,
+      replies = 0
+    const fixture = setup(async (role, messages, tools) => {
+      if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+      if (tools.some((tool) => tool.name === 'reply.cancel')) {
+        reviews++
+        const draft = JSON.parse(messages[1]!.content)
+        assert.equal(draft.proposed.operationId, 'retained')
+        assert.equal(draft.proposed.segments.length, 2)
+        started.resolve()
+        await release.promise
+        if (outcome === 'failure') throw new Error('provider_unavailable')
+        if (outcome === 'wrong-draft')
+          return result([
+            {
+              id: 'wrong',
+              name: 'reply.cancel',
+              arguments: { draftId: 'obsolete', reason: 'wrong generation' },
+            },
+          ])
+        return result([])
+      }
+      if (role === 'planner') return plan(messages)
+      replies++
+      fixture.ingest('before-review')
+      const call = send('retained')
+      call.arguments.segments.push({
+        replyToId: 'source',
+        parts: [{ type: 'text', text: 'Second segment.' }],
+      })
+      return result([call])
+    }, outcome === 'edit')
+    try {
+      const running = fixture.runtime.proactive(scene.id)
+      await started.promise
+      for (let i = 0; i < 10; i++) fixture.ingest(`during-review-${i}`)
+      if (outcome === 'recall') fixture.runtime.recall(scene.id, 'source')
+      if (outcome === 'disable') fixture.runtime.cancel(scene.id)
+      if (outcome === 'edit')
+        assert.equal(
+          fixture.runtime.edit(
+            { ...fixture.source, parts: [{ type: 'text', text: 'Edited source' }] },
+            scene,
+            {
+              editId: 'draft-source-edit',
+              order: {
+                kind: 'observed_cas',
+                expectedBase: fixture.store.sourceEvents.registered(scene.id, 'source')!.ref,
+              },
+            },
+            false,
+          ).status,
+          'edited',
+        )
+      release.resolve()
+      await running
+      assert.equal(reviews, 1)
+      assert.equal(replies, 1)
+      assert.equal(fixture.sends(), ['recall', 'edit', 'disable'].includes(outcome) ? 0 : 2)
+      if (outcome === 'failure')
+        assert(
+          fixture.store.logs.some((row) => JSON.stringify(row).includes('draft_review_failed')),
+        )
+      assert.equal(fixture.runtime.activeTasks, 0)
+    } finally {
+      release.resolve()
+      fixture.close()
+    }
+  })
+}
+
+test(
+  'grounding rejection keeps the generation budget for a stalled repair model',
+  { timeout: 3000 },
+  async () => {
+    let replies = 0
+    const fixture = setup(async (role, messages, tools) => {
+      if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+      if (role === 'planner') return plan(messages)
+      if (++replies === 2) {
+        assert(
+          messages.some(
+            (message) => message.role === 'tool' && message.content.includes('grounding_rejected'),
+          ),
+        )
+        return new Promise<Completion>(() => {})
+      }
+      const call = send('unsupported')
+      call.arguments.segments[0]!.parts[0]!.text = '今天上午才刚有件好事，下午就挨这一下。'
+      return result([call])
+    })
+    fixture.store.saveModels({
+      providers: [],
+      models: [],
+      routes: [{ role: 'replyer', orderedModelIds: [], timeoutMs: 100 }],
+    })
+    try {
+      await fixture.runtime.proactive(scene.id)
+      assert.equal(replies, 2)
+      assert.equal(fixture.sends(), 0)
+      assert.equal(fixture.runtime.activeTasks, 0)
+      assert(fixture.store.logs.some((row) => JSON.stringify(row).includes('dialogue_timeout')))
+    } finally {
+      fixture.close()
+    }
+  },
+)
+
+test(
+  'retained draft transmission has its own deadline and unknown delivery is not replayed',
+  { timeout: 3000 },
+  async () => {
+    let decisions = 0,
+      transmitted = 0
+    const fixture = setup(async (role, messages, tools) => {
+      if (tools.some((tool) => tool.name === 'participation.decide'))
+        return decision(++decisions === 1 ? 'reply' : 'silent')
+      if (role === 'planner') return plan(messages)
+      return result([send('hanging-transmit')])
+    })
+    fixture.store.saveModels({
+      providers: [],
+      models: [],
+      routes: [{ role: 'replyer', orderedModelIds: [], timeoutMs: 100 }],
+    })
+    fixture.runtime.addAdapter('fixture', {
+      send: async () => {
+        transmitted++
+        return new Promise(() => {})
+      },
+      getMessage: async () => ({ items: [], coverage: 'partial' }),
+      history: async () => ({ items: [], coverage: 'partial' }),
+      dispose() {},
+    })
+    try {
+      await fixture.runtime.proactive(scene.id)
+      assert.equal(transmitted, 1)
+      assert.equal(fixture.runtime.activeTasks, 0)
+      assert(
+        fixture.store.logs.some((row) => row.stage === 'turn' && row.counts?.unknownSegments === 1),
+      )
+      await fixture.runtime.proactive(scene.id)
+      assert.equal(decisions, 2)
+      assert.equal(transmitted, 1)
+      assert.equal(fixture.runtime.activeTasks, 0)
+    } finally {
+      fixture.close()
+    }
+  },
+)
+
+for (const reference of [
+  'unreferenced',
+  'reply-target',
+  'cited-fact',
+  'retrieved-unselected',
+] as const) {
+  test(`completed draft recall scope ${reference}: recall alone never requests review`, async () => {
+    const entered = deferred(),
+      release = deferred()
+    let reviews = 0,
+      planning = 0
+    const fixture = setup(async (role, messages, tools) => {
+      if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+      if (tools.some((tool) => tool.name === 'reply.cancel')) {
+        reviews++
+        return result([])
+      }
+      if (role === 'planner') {
+        if (reference === 'retrieved-unselected' && ++planning === 1)
+          return result([
+            { id: 'read', name: 'messages.around', arguments: { messageId: 'source', limit: 10 } },
+          ])
+        return plan(
+          messages,
+          reference === 'cited-fact'
+            ? {
+                facts: [
+                  {
+                    text: 'Background fact.',
+                    evidenceIds: [
+                      JSON.parse(messages[1]!.content).evidence.find(
+                        (item: { value: { id: string } }) => item.value.id === 'background',
+                      ).id,
+                    ],
+                  },
+                ],
+              }
+            : {},
+        )
+      }
+      return result([send('retained-recall-scope')])
+    })
+    if (reference !== 'retrieved-unselected') fixture.ingest('background')
+    else
+      fixture.runtime.addAdapter('fixture', {
+        send: async () => ({ status: 'sent', messageId: 'retrieved-send' }),
+        getMessage: async () => ({
+          items: [{ ...fixture.source, id: 'background', origin: 'history' }],
+          coverage: 'complete',
+        }),
+        history: async () => ({
+          items: [
+            { ...fixture.source, origin: 'history' },
+            { ...fixture.source, id: 'background', origin: 'history' },
+          ],
+          coverage: 'complete',
+        }),
+        dispose() {},
+      })
+    fixture.runtime.beforeSend({
+      id: 'retained-barrier',
+      priority: 0,
+      handler: async (segments) => {
+        entered.resolve()
+        await release.promise
+        return { action: 'continue', segments }
+      },
+    })
+    try {
+      const running = fixture.runtime.proactive(scene.id)
+      await Promise.race([
+        entered.promise,
+        running.then(() => {
+          throw new Error('draft_barrier_not_entered')
+        }),
+      ])
+      fixture.runtime.recall(scene.id, reference === 'reply-target' ? 'source' : 'background')
+      release.resolve()
+      await running
+      assert.equal(reviews, 0)
+      const receipts = fixture.store.logs.filter(
+        (row) => row.stage === 'send_segment' && row.status === 'completed',
+      )
+      assert.equal(
+        receipts.length,
+        reference === 'unreferenced' || reference === 'retrieved-unselected' ? 1 : 0,
+      )
+      assert.equal(fixture.runtime.activeTasks, 0)
+    } finally {
+      release.resolve()
+      fixture.close()
+    }
+  })
+}
+
+for (const recalled of ['background', 'review-input', 'source'] as const) {
+  test(`recall of ${recalled} during review only blocks an explicit reply reference`, async () => {
+    const entered = deferred(),
+      release = deferred()
+    let reviews = 0
+    const fixture = setup(async (role, messages, tools) => {
+      if (tools.some((tool) => tool.name === 'participation.decide')) return decision()
+      if (tools.some((tool) => tool.name === 'reply.cancel')) {
+        reviews++
+        assert.deepEqual(
+          JSON.parse(messages[1]!.content).newMessages.map((message: { id: string }) => message.id),
+          ['review-input'],
+        )
+        entered.resolve()
+        await release.promise
+        return result([])
+      }
+      if (role === 'planner') return plan(messages)
+      fixture.ingest('review-input')
+      return result([send('review-recall-scope')])
+    })
+    fixture.ingest('background')
+    try {
+      const running = fixture.runtime.proactive(scene.id)
+      await Promise.race([
+        entered.promise,
+        running.then(() => {
+          throw new Error('draft_barrier_not_entered')
+        }),
+      ])
+      fixture.runtime.recall(scene.id, recalled)
+      release.resolve()
+      await running
+      assert.equal(reviews, 1)
+      assert.equal(fixture.sends(), recalled === 'source' ? 0 : 1)
+      assert.equal(fixture.runtime.activeTasks, 0)
+    } finally {
+      release.resolve()
+      fixture.close()
+    }
+  })
+}

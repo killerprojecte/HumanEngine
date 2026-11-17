@@ -1,5 +1,6 @@
 """Driver tests only; these never replace the actual Docker acceptance gate."""
 import io
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 
@@ -7,6 +8,16 @@ import acceptance
 
 
 class DriverTests(unittest.TestCase):
+    def test_packaging_uses_modern_python_distro_and_matching_native_runtime(self):
+        # Source contract only: actual libraries still require the Docker gate.
+        dockerfile = Path(__file__).with_name("Dockerfile").read_text()
+        bases = [line.split()[1] for line in dockerfile.splitlines() if line.startswith("FROM ")]
+        self.assertEqual(bases, ["golang:1.27.3-trixie", "node:24.22.1-trixie-slim",
+                                 "node:24.22.1-trixie-slim"])
+        self.assertIn("python3 make g++", dockerfile)
+        builder = Path(__file__).resolve().parents[2] / "native/icu/build.py"
+        self.assertIn("filter='data'", builder.read_text())
+
     def test_continue_requires_complete_response_before_signal(self):
         acceptance.read_continue(io.BytesIO(b"HTTP/1.1 100 Continue\r\n\r\n"))
         acceptance.read_continue(io.BytesIO(b"HTTP/1.1 100 Continue\r\nX-Test: yes\r\n\r\n"))

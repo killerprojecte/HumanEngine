@@ -4,7 +4,15 @@ This is a **local/CI candidate**, not the default production image, a full API
 replacement or a distribution release. The root Dockerfile and Compose file are
 unchanged. Only Linux amd64 has verified image/vector assets. This recipe uses
 Go 1.27.3, Node 24.22.1, the committed npm lockfile, the existing hash-verified ICU
-builder and pinned libvips/sqlite-vec artifacts. Base-image tags and Debian
+builder and pinned libvips/sqlite-vec artifacts. All stages use Debian Trixie:
+its [Python 3.13 package](https://packages.debian.org/trixie/python3) supports the
+ICU builder's unchanged `TarFile.extractall(filter='data')`; keeping the native
+build and runtime on the same distribution avoids newer CGo/ICU libc or libstdc++
+requirements being copied into an older runtime. The exact
+[Node tag](https://hub.docker.com/v2/repositories/library/node/tags/24.22.1-trixie-slim)
+and [Go tag](https://hub.docker.com/v2/repositories/library/golang/tags/1.27.3-trixie)
+were verified to include linux/amd64. This source verification is not a Docker
+build or container acceptance pass. Base-image tags and Debian
 packages are not immutable byte-for-byte image inputs; retain the resulting image
 ID and artifact hashes with each acceptance result.
 

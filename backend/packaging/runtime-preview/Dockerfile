@@ -1,8 +1,10 @@
 # syntax=docker/dockerfile:1
 # Opt-in local/CI candidate, not the production image or a redistribution release.
 # Only linux/amd64 has pinned native image/vector assets at this checkpoint.
-FROM golang:1.27.3-bookworm AS go-toolchain
-FROM node:24.22.1-bookworm-slim AS build
+# Trixie supplies Python 3.13 for the ICU builder's filtered tar extraction.
+# Keep the CGo/ICU build and runtime on the same libc/libstdc++ distribution.
+FROM golang:1.27.3-trixie AS go-toolchain
+FROM node:24.22.1-trixie-slim AS build
 COPY --from=go-toolchain /usr/local/go /usr/local/go
 ENV PATH=/usr/local/go/bin:$PATH
 WORKDIR /src
@@ -27,7 +29,7 @@ RUN mkdir -p /out/licenses /out/lib \
     && cp package-lock.json /out/licenses/dependency-lock.json \
     && sha256sum /out/humanengine /out/lib/* > /out/artifact-sha256.txt
 
-FROM node:24.22.1-bookworm-slim AS runtime
+FROM node:24.22.1-trixie-slim AS runtime
 ARG SOURCE_REVISION=unknown
 LABEL org.opencontainers.image.revision=$SOURCE_REVISION
 RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 libgomp1 ca-certificates \

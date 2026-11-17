@@ -94,6 +94,7 @@ test('reply plans reject malformed structure and hidden explanation fields', () 
     { ...plan(), hiddenReasoning: 'Do not retain this' },
     { ...plan(), facts: [{ text: 'Unsupported', evidenceIds: [] }] },
     { ...plan(), action: 'send' },
+    { ...plan(), emoji: null },
     { ...plan(), strategy: 'x'.repeat(1001) },
   ])
     assert.throws(() => validateReplyPlan(invalid, scope()), /planner_invalid_plan/)

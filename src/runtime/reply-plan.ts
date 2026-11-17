@@ -29,7 +29,7 @@ export const ReplyPlanSchema = z
       )
       .max(24),
     assets: z.array(z.object({ assetId: id, evidenceId: id }).strict()).max(8),
-    emoji: z.array(z.string().min(1).max(32)).max(8),
+    emoji: z.array(z.string().min(1).max(32)).max(8).default([]),
     expressionGoals: z.array(z.string().min(1).max(500)).max(12).default([]),
     memorySelections: z
       .array(
@@ -105,6 +105,7 @@ const planTool = (suggestions: boolean): ToolDefinition => ({
     'Finalize a grounded composition plan, or noReply. For memorySelections, evidenceId is the outer tool receipt.id; memoryIds are inner record.id values in that same receipt.value array. These are different identifiers even when both use compact e-prefixed references. This does not send or execute actions. Include only public strategy, necessary cited facts and expression goals, never hidden reasoning or an exact answer unless optional reply suggestions are enabled. Receipt coverage marked limited means evidence was omitted for the byte budget, not that the search found no records; narrow the query when needed and never cite omitted records. Select whole memory.summaries (qualified attributed summaries with every original declaration, not independently verified facts), memory.identities, memory.workingSet, memory.episodes, memory.commitments, memory.history, memory.commitmentHistory or memory.commitmentTimeline receipts using stateEvidenceIds; they are qualified state/history, not current verified facts.',
   inputSchema: z.toJSONSchema(
     suggestions ? ReplyPlanSchema : ReplyPlanSchema.omit({ replySuggestion: true }),
+    { io: 'input' },
   ),
 })
 export function validateReplyPlan(

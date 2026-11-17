@@ -174,6 +174,55 @@ test('a mock group flow has correlated ingress, queue, decision, tool and two au
   }
 })
 
+test('a text-only Planner tool call without emoji reaches the Replyer without repair', async () => {
+  let plans = 0
+  let replies = 0
+  let sends = 0
+  const f = fixture(
+    async (role) => {
+      if (role === 'planner') return decide()
+      if (role === 'replyer' && ++replies === 1) return send()
+      return completion()
+    },
+    async () => ({ status: 'sent', messageId: `fixture-sent-${++sends}` }),
+    async (messages) => {
+      plans++
+      const { targetMessageIds, contextMessageIds } = fixtureReplyPlan(messages)!
+      return completion([
+        {
+          id: 'fixture-text-only-plan',
+          name: 'reply.plan',
+          arguments: {
+            action: 'reply',
+            targetMessageIds,
+            contextMessageIds,
+            strategy: 'Answer the selected message directly in text.',
+            constraints: ['Keep it brief.'],
+            facts: [],
+            assets: [],
+            expressionGoals: ['Acknowledge the request.'],
+            actions: [],
+          },
+        },
+      ])
+    },
+  )
+  const s = scene()
+  f.add(s)
+  try {
+    f.runtime.ingest(message(s, '-42'), s)
+    await until(() => f.store.logs.some((row) => row.stage === 'turn' && row.status !== 'started'))
+    const turn = f.store.logs.find((row) => row.stage === 'turn' && row.status !== 'started')
+    assert.equal(turn?.reason, 'reply_delivered')
+    assert.equal(plans, 1)
+    assert.ok(replies > 0)
+    assert.equal(sends, 2)
+    balanced(f.store)
+  } finally {
+    f.end()
+  }
+})
+
 test('silence, wait and disabled participation identify intentional skips rather than delivery', async () => {
   for (const action of ['silent', 'wait'] as const) {
     const f = fixture(async () => decide(action))

@@ -1,0 +1,23 @@
+# Separate project/file: does not override the production compose service.
+name: humanengine-go-preview
+services:
+  runtime-preview:
+    platform: linux/amd64
+    build:
+      context: ../../..
+      dockerfile: backend/packaging/runtime-preview/Dockerfile
+    image: humanengine-go-preview:local
+    ports:
+      - '127.0.0.1:${HUMANENGINE_PREVIEW_PORT:-3001}:3001'
+    environment:
+      HUMANENGINE_ADMIN_TOKEN: ${HUMANENGINE_ADMIN_TOKEN:?Set a preview administration token}
+    volumes:
+      - preview-data:/app/data
+      - preview-authority:/app/authority
+      - preview-plugins:/app/plugins
+    # No restart policy or forced-drain setting is introduced by this candidate.
+    # Use the documented SIGTERM + wait procedure rather than a timed compose down.
+volumes:
+  preview-data:
+  preview-authority:
+  preview-plugins:

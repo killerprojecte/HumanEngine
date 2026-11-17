@@ -1,0 +1,36 @@
+name: Go packaged runtime preview
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/refactor-golang]
+    paths:
+      - 'backend/packaging/runtime-preview/**'
+      - '.github/workflows/golang-package-preview.yml'
+  pull_request:
+    paths:
+      - 'backend/packaging/runtime-preview/**'
+      - '.github/workflows/golang-package-preview.yml'
+permissions:
+  contents: read
+jobs:
+  package-acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Check acceptance driver and Compose configuration
+        env:
+          HUMANENGINE_ADMIN_TOKEN: synthetic-package-token
+        run: |
+          python3 -m unittest discover -s backend/packaging/runtime-preview -p 'test_*.py' -v
+          docker compose -f backend/packaging/runtime-preview/compose.yaml config --quiet
+      - name: Build opt-in candidate (no push)
+        run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
+      - name: Exercise actual packaged startup, HTTP, drain and V1 lifecycle
+        run: python3 backend/packaging/runtime-preview/acceptance.py --evidence "$RUNNER_TEMP/package-evidence"
+      - name: Preserve synthetic acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-package-preview-evidence
+          path: ${{ runner.temp }}/package-evidence
+          if-no-files-found: warn

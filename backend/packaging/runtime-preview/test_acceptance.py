@@ -1,0 +1,50 @@
+"""Driver tests only; these never replace the actual Docker acceptance gate."""
+import io
+import unittest
+from unittest.mock import patch
+
+import acceptance
+
+
+class DriverTests(unittest.TestCase):
+    def test_continue_requires_complete_response_before_signal(self):
+        acceptance.read_continue(io.BytesIO(b"HTTP/1.1 100 Continue\r\n\r\n"))
+        acceptance.read_continue(io.BytesIO(b"HTTP/1.1 100 Continue\r\nX-Test: yes\r\n\r\n"))
+        for response in (b"", b"HTTP/1.1 401 Unauthorized\r\n\r\n",
+                         b"HTTP/1.1 100 Continue\r\nX-Test: yes\r\n"):
+            with self.subTest(response=response), self.assertRaises(AssertionError):
+                acceptance.read_continue(io.BytesIO(response))
+
+    def test_deadline_is_failure_not_success(self):
+        with patch.object(acceptance.time, "monotonic", side_effect=[0, 1]), self.assertRaises(AssertionError):
+            acceptance.wait_for(lambda: False, "fixture", seconds=1)
+
+    def test_ready_value_is_returned(self):
+        self.assertEqual(acceptance.wait_for(lambda: "ready", "fixture"), "ready")
+
+    def test_http_request_keeps_token_out_of_url_and_checks_status(self):
+        with patch.object(acceptance.http.client, "HTTPConnection") as constructor:
+            connection = constructor.return_value
+            response = connection.getresponse.return_value
+            response.status = 200
+            response.read.return_value = b'{"saved":true}'
+            self.assertEqual(acceptance.request(1234, "PUT", "/api/settings", {"debugModelIO": False}), {"saved": True})
+            args = connection.request.call_args.args
+            self.assertEqual(args[:2], ("PUT", "/api/settings"))
+            self.assertEqual(args[3]["Authorization"], "Bearer " + acceptance.TOKEN)
+            connection.close.assert_called_once()
+            response.status = 503
+            with self.assertRaises(AssertionError):
+                acceptance.request(1234, "GET", "/api/settings")
+
+    def test_unauthenticated_probe_omits_header(self):
+        with patch.object(acceptance.http.client, "HTTPConnection") as constructor:
+            connection = constructor.return_value
+            connection.getresponse.return_value.status = 401
+            connection.getresponse.return_value.read.return_value = b'{}'
+            acceptance.request(1234, "GET", "/api/settings", authenticated=False, expected=401)
+            self.assertNotIn("Authorization", connection.request.call_args.args[3])
+
+
+if __name__ == "__main__":
+    unittest.main()

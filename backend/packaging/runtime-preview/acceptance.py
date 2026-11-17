@@ -20,6 +20,20 @@ def docker(*args):
     return subprocess.check_output(["docker", *args], text=True).strip()
 
 
+
+def no_node(name):
+    # Docker uses the PID column to match host processes to this container.
+    # docker top itself does not create a process inside the container.
+    rows = docker("top", name, "-eo", "pid,comm").splitlines()
+    assert rows and rows[0].split()[0] == "PID", "missing docker top PID column"
+    commands = []
+    for row in rows[1:]:
+        pid, command = row.split(None, 1)
+        assert pid.isdecimal(), "invalid docker top PID"
+        commands.append(command.strip())
+    return not any(command in ("node", "nodejs") for command in commands)
+
+
 def wait_for(check, label, seconds=90):
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
@@ -100,11 +114,6 @@ def main():
             return '"code":"server.listening"' in logs(name)
         wait_for(check, name + " ready")
         return int(docker("port", name, "3001/tcp").rsplit(":", 1)[1])
-
-    def no_node(name):
-        # docker top itself does not create a process inside the container.
-        rows = docker("top", name, "-eo", "comm").splitlines()[1:]
-        return not any(row.strip() in ("node", "nodejs") for row in rows)
 
     def drain(name):
         docker("kill", "--signal=TERM", name)

@@ -8,6 +8,19 @@ import acceptance
 
 
 class DriverTests(unittest.TestCase):
+    def test_node_process_check_requests_pid_and_parses_command_column(self):
+        for rows, expected in [
+            ("PID                 COMMAND\n1421                humanengine", True),
+            ("PID COMMAND\n1421 humanengine\n1530 node", False),
+            (" PID   COMMAND\n1421 humanengine\n1531 nodejs", False),
+            ("PID COMMAND\n1421 node-exporter", True),
+        ]:
+            with self.subTest(rows=rows), patch.object(acceptance, "docker", return_value=rows) as call:
+                self.assertEqual(acceptance.no_node("fixture"), expected)
+                call.assert_called_once_with("top", "fixture", "-eo", "pid,comm")
+        with patch.object(acceptance, "docker", return_value="COMMAND\nnode"), self.assertRaises(AssertionError):
+            acceptance.no_node("fixture")
+
     def test_packaging_uses_modern_python_distro_and_matching_native_runtime(self):
         # Source contract only: actual libraries still require the Docker gate.
         dockerfile = Path(__file__).with_name("Dockerfile").read_text()

@@ -12,15 +12,18 @@ type GroundingError struct{ Code string }
 func (e *GroundingError) Error() string { return e.Code }
 
 type sendGuard struct {
-	plan               *Object
-	grounding          *Grounding
-	recipients         []string
-	projection         *replyplan.ContextProjection
-	decision           *Object
-	admitted           map[string]bool
-	version, validated uint64
-	deliveryStarted    bool
-	mu                 sync.Mutex
+	plan                  *Object
+	grounding             *Grounding
+	recipients            []string
+	projection            *replyplan.ContextProjection
+	decision              *Object
+	admitted              map[string]bool
+	ordinarySources       []*Object
+	evidence              []*Object
+	extensionDependencies []string
+	draft                 *retainedDraft
+	deliveryStarted       bool
+	mu                    sync.Mutex
 }
 
 func receiptsValue(receipts []dispatch.Receipt) []any {
@@ -117,7 +120,7 @@ func validateSegments(g *sendGuard, segments []dispatch.Segment) error {
 	}
 	return nil
 }
-func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []dispatch.Receipt, err error) {
+func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool) (observed []dispatch.Receipt, err error) {
 	c := t.context
 	t.sendMu.Lock()
 	g := t.guard
@@ -159,6 +162,12 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 		return []dispatch.Receipt{{Status: dispatch.Cancelled, Detail: ptr("turn_delivery_already_started")}}, nil
 	}
 	g.deliveryStarted = true
+	coreDraft := len(retained) > 0 && retained[0]
+	if coreDraft {
+		r.retainDraft(t, g, operationID, segments, coreDraft)
+		c.stage.Store(nil)
+		ctx = c.root
+	}
 	r.operationMu.Lock()
 	if !r.closed.Load() {
 		op := &receiptOperation{key: key, owner: t, receipts: []dispatch.Receipt{}}
@@ -238,7 +247,16 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 			appendReceipt(dispatch.Receipt{Status: dispatch.Cancelled})
 			return observed, nil
 		}
-		result, e := trackedWithin(r, ctx, func(settle func(HookResult, error)) { hook.Run(ctx, cloneSegments(segments), c, settle) })
+		hookContext := ctx
+		var phase *stage
+		if coreDraft {
+			phase = r.newPhase(t, t.settings.ReplyerTimeoutMS, true)
+			hookContext = phase
+		}
+		result, e := trackedWithin(r, hookContext, func(settle func(HookResult, error)) { hook.Run(hookContext, cloneSegments(segments), c, settle) })
+		if phase != nil {
+			phase.close()
+		}
 		if e != nil {
 			return observed, e
 		}
@@ -268,6 +286,15 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 		reset()
 		return observed, &GroundingError{failure}
 	}
+	// Validate only the final post-hook payload, never every search candidate.
+	if valid, checkErr := r.outgoingEligible(c, segments); checkErr != nil {
+		return observed, checkErr
+	} else if !valid {
+		appendReceipt(dispatch.Receipt{Status: dispatch.Cancelled, Detail: ptr("send_invalidated")})
+		return observed, nil
+	}
+	// The final post-hook payload, not an individual segment, is the review unit.
+	r.retainDraft(t, g, operationID, segments, coreDraft)
 	signal := c.Signal()
 	if ctx != nil && ctx != c.stage.Load() && ctx != signal {
 		combined := dispatch.NewSignal()
@@ -297,51 +324,51 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any) (observed []disp
 		}
 		return nil
 	}}
-	guard := dispatch.Guard{CheckGrounding: func(s []dispatch.Segment) bool { return g.grounding.Check(s) != "" }, CaptureTransmitGuard: func() func() bool {
-		g.mu.Lock()
-		version := g.validated
-		g.mu.Unlock()
-		return func() bool { return t.topic.version.Load() == version }
-	}, Validate: func(request dispatch.ValidationRequest, _ *dispatch.Signal) *dispatch.Future[bool] {
-		if t.topic.version.Load() == g.version {
-			version := t.topic.version.Load()
-			valid, err := r.eligible(c)
-			if err != nil {
-				future := dispatch.NewFuture[bool]()
-				future.Reject(err)
+	guard := dispatch.Guard{CheckGrounding: func(s []dispatch.Segment) bool { return g.grounding.Check(s) != "" },
+		BeginTransmission: func(parent *dispatch.Signal) (*dispatch.Signal, func()) {
+			phase := r.newPhase(t, t.settings.ReplyerTimeoutMS, true)
+			stop := context.AfterFunc(parent, func() { phase.abort(code("context_cancelled")) })
+			if parent.Aborted() {
+				phase.abort(code("context_cancelled"))
+			}
+			return phase.signal, func() { stop(); phase.close() }
+		},
+		Validate: func(request dispatch.ValidationRequest, signal *dispatch.Signal) *dispatch.Future[bool] {
+			future := dispatch.NewFuture[bool]()
+			done, ok := r.work.Child()
+			if !ok {
+				future.Reject(code("runtime_closed"))
 				return future
 			}
-			valid = valid && t.topic.version.Load() == version
-			if valid {
-				g.mu.Lock()
-				g.validated = version
-				g.mu.Unlock()
-			}
-			return dispatch.Resolved(valid)
-		}
-		future := dispatch.NewFuture[bool]()
-		done, ok := r.work.Child()
-		if !ok {
-			future.Reject(code("runtime_closed"))
+			go func() {
+				defer done()
+				valid, e := r.validateSend(t, g, signal)
+				if e != nil {
+					future.Reject(e)
+				} else {
+					future.Resolve(valid)
+				}
+			}()
 			return future
-		}
-		go func() {
-			defer done()
-			valid, e := r.validateSend(t, g, request)
-			if e != nil {
-				future.Reject(e)
-			} else {
-				future.Resolve(valid)
-			}
-		}()
-		return future
-	}}
+		}}
+
 	typing := r.typingDelay()
 	if c.Mode == "simulation" {
 		typing = nil
 	}
 	for i, segment := range segments {
-		receipt, failure := dispatch.DispatchSegment(services, dc, segment, operationID, guard, typing, i, len(segments))
+		segmentServices := services
+		// Capture this exact segment, so a retained asynchronous transmit callback
+		// cannot accidentally validate a later segment from the same draft.
+		segmentServices.EligibleChecked = func(d *dispatch.TurnContext) (bool, error) {
+			return r.dispatchRead(func() (bool, error) {
+				if valid, checkErr := r.eligibleSignal(c, d.Signal); checkErr != nil || !valid {
+					return valid, checkErr
+				}
+				return r.outgoingEligible(c, []dispatch.Segment{segment})
+			})
+		}
+		receipt, failure := dispatch.DispatchSegment(segmentServices, dc, segment, operationID, guard, typing, i, len(segments))
 		if failure != nil {
 			return observed, failure
 		}
@@ -453,63 +480,4 @@ func anySent(r []dispatch.Receipt) bool {
 }
 func cloneSegments(segments []dispatch.Segment) []dispatch.Segment {
 	return segmentsFrom(segmentsValue(segments))
-}
-func (r *Runtime) validateSend(t *turn, g *sendGuard, request dispatch.ValidationRequest) (bool, error) {
-	c, s := t.context, t.state
-	checkedVersion := t.topic.version.Load()
-	s.mu.Lock()
-	fresh := filterMessages(s.messages, func(m *Object) bool {
-		if get(m, "status") != "available" {
-			return false
-		}
-		if g.admitted == nil {
-			return true
-		}
-		id := idOf(m)
-		_, deferred := s.routing.Deferred.Get(id)
-		ack, _ := s.routing.Acknowledged.Get(id)
-		return !deferred && (contains(t.topic.messageIDs, id) || ack == t.topic.id)
-	})
-	fresh = append([]*Object{}, suffix(fresh, 24)...)
-	s.mu.Unlock()
-	text, err := g.projection.Stringify(obj("now", iso(r.services.Clock.Now()), "timezone", t.settings.Timezone, "proposed", obj("operationId", request.OperationID, "segments", segmentsValue(request.Segments)), "newMessages", objects(fresh), "originalTarget", get(g.decision, "targetMessageIds")))
-	if err != nil {
-		return false, err
-	}
-	stage := c.stage.Load()
-	result, err := r.completion(t, stage, "planner", "validation", []*Object{obj("role", "system", "content", prompt("validation")), obj("role", "user", "content", text)}, []*Object{contractTool("reply.validate")})
-	if err != nil {
-		return false, err
-	}
-	valid := false
-	for _, call := range result.ToolCalls {
-		if call.Name == "reply.validate" {
-			valid = get(call.Arguments, "valid") == true
-			break
-		}
-	}
-	if !valid || t.topic.version.Load() != checkedVersion {
-		c.root.Abort(code("context_changed"))
-		if g.admitted == nil {
-			s.mu.Lock()
-			s.pending[t.topic.id] = true
-			s.mu.Unlock()
-		}
-		return false, nil
-	}
-	for _, m := range fresh {
-		c.AddDependency(idOf(m))
-	}
-	expected := t.topic.version.Load()
-	validNow, err := r.eligible(c)
-	if err != nil {
-		return false, err
-	}
-	if !validNow || t.topic.version.Load() != expected {
-		return false, nil
-	}
-	g.mu.Lock()
-	g.validated = expected
-	g.mu.Unlock()
-	return true, nil
 }

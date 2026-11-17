@@ -116,7 +116,10 @@ type ModelFunc func(context.Context, ModelRequest, func(Completion, error))
 func (f ModelFunc) Start(c context.Context, r ModelRequest, s func(Completion, error)) { f(c, r, s) }
 
 type Extension struct {
-	RuntimeEvent func(*Object)
+	// ValidateOutgoingScoped checks only the exact final payload, never every
+	// candidate returned by a read tool. Runs again before physical transmit.
+	ValidateOutgoingScoped func(ReadAuthority, *TurnContext, []dispatch.Segment) (bool, error)
+	RuntimeEvent           func(*Object)
 	// CaptureToolResultGuards snapshots extension-owned result validity, not turn lifetime.
 	CaptureToolResultGuards func(*TurnContext) []*ToolResultGuard
 
@@ -276,24 +279,25 @@ type receiptOperation struct {
 	receipts       []dispatch.Receipt
 }
 type turn struct {
-	drainDone    func()
-	toolIssues   []error
-	records      map[*Object]*messageRecord
-	operations   topicroute.OrderedMap[string, *receiptOperation]
-	outcomeCount int
-	runtime      *Runtime
-	state        *sceneState
-	topic        *topic
-	context      *TurnContext
-	settings     Settings
-	wake         *turnwait.Wake
-	proactive    bool
-	version      uint64
-	done         chan struct{}
-	result       *TurnResult
-	waitUntil    *float64
-	sendMu       sync.Mutex
-	guard        *sendGuard
+	drainDone         func()
+	toolIssues        []error
+	records           map[*Object]*messageRecord
+	operations        topicroute.OrderedMap[string, *receiptOperation]
+	outcomeCount      int
+	runtime           *Runtime
+	state             *sceneState
+	topic             *topic
+	context           *TurnContext
+	settings          Settings
+	wake              *turnwait.Wake
+	proactive         bool
+	version           uint64
+	initialMessageIDs map[string]bool
+	done              chan struct{}
+	result            *TurnResult
+	waitUntil         *float64
+	sendMu            sync.Mutex
+	guard             *sendGuard
 }
 type TurnContext struct {
 	extensionStateClosed bool

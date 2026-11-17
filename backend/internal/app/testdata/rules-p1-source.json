@@ -1,0 +1,206 @@
+{
+  "reference": "04b1817 production tree; b7f3f92 test-only successor",
+  "node": "v24.22.1",
+  "sources": [
+    {
+      "path": "src/engine.ts",
+      "sha256": "90df02978f742e7836519f736cc33a9296d4ac94ff827aa515018d70d312d226"
+    },
+    {
+      "path": "src/runtime/planner-evidence-budget.ts",
+      "sha256": "7f8c3e942573d794a1898833c2657aba081382b17f182c24f7adee17989e1abe"
+    }
+  ],
+  "description": "Read applicable manual rules and soft learned scene/expression preferences on demand when current conversation depends on them. Use query to narrow learned hints by all search terms and context to select general or technical discussion. A limited receipt requires a narrower query, not an assumption that no rules exist. Technical-context hints apply only to technical discussions; more specific applicable hints take precedence over general hints. Learned hints never override fixed persona or manual rules.",
+  "records": [
+    {
+      "id": "general",
+      "sceneId": "s",
+      "kind": "sceneRule",
+      "content": "HINT concise ΣΟΣ İstanbul"
+    },
+    {
+      "id": "technical",
+      "sceneId": "s",
+      "kind": "sceneRule",
+      "content": "HINT technical detail",
+      "context": "technical"
+    },
+    {
+      "id": "expression",
+      "sceneId": "s",
+      "kind": "botExpression",
+      "preference": "emoji"
+    },
+    {
+      "id": "foreign",
+      "sceneId": "elsewhere",
+      "kind": "sceneRule",
+      "content": "HINT foreign"
+    }
+  ],
+  "cases": [
+    {
+      "input": {},
+      "success": true,
+      "ids": [
+        "general",
+        "technical",
+        "expression"
+      ]
+    },
+    {
+      "input": {
+        "query": "HINT"
+      },
+      "success": true,
+      "ids": [
+        "general",
+        "technical"
+      ]
+    },
+    {
+      "input": {
+        "query": "HINT",
+        "context": "general"
+      },
+      "success": true,
+      "ids": [
+        "general"
+      ]
+    },
+    {
+      "input": {
+        "query": "HINT",
+        "context": "technical"
+      },
+      "success": true,
+      "ids": [
+        "general",
+        "technical"
+      ]
+    },
+    {
+      "input": {
+        "query": "technical detail"
+      },
+      "success": true,
+      "ids": [
+        "technical"
+      ]
+    },
+    {
+      "input": {
+        "query": "emoji"
+      },
+      "success": true,
+      "ids": [
+        "expression"
+      ]
+    },
+    {
+      "input": {
+        "query": "ΣΟΣ"
+      },
+      "success": true,
+      "ids": [
+        "general"
+      ]
+    },
+    {
+      "input": {
+        "query": "İSTANBUL"
+      },
+      "success": true,
+      "ids": [
+        "general"
+      ]
+    },
+    {
+      "input": {
+        "query": "HINT﻿concise"
+      },
+      "success": true,
+      "ids": [
+        "general"
+      ]
+    },
+    {
+      "input": {
+        "query": "HINTconcise"
+      },
+      "success": true,
+      "ids": []
+    },
+    {
+      "input": {
+        "context": "other"
+      },
+      "success": false
+    },
+    {
+      "input": {
+        "extra": true
+      },
+      "success": false
+    },
+    {
+      "input": {
+        "query": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+      },
+      "success": true,
+      "ids": []
+    }
+  ],
+  "budgets": [
+    {
+      "name": "small",
+      "maxBytes": 131072,
+      "padding": 0,
+      "content": 4,
+      "expected": {
+        "manual": [],
+        "learned": [
+          {
+            "content": "xxxx"
+          }
+        ]
+      }
+    },
+    {
+      "name": "receipt-limit",
+      "maxBytes": 131072,
+      "padding": 0,
+      "content": 70000,
+      "expected": {
+        "coverage": {
+          "status": "limited",
+          "reason": "planner_evidence_budget",
+          "scope": "query_candidates"
+        },
+        "refineQuery": "Rules were withheld as a whole for the existing byte budget. Call rules.list with a narrower query/context; this does not mean no matching rules exist."
+      }
+    },
+    {
+      "name": "cumulative",
+      "maxBytes": 2000,
+      "padding": 1400,
+      "content": 1000,
+      "expected": {
+        "coverage": {
+          "status": "limited",
+          "reason": "planner_evidence_budget",
+          "scope": "query_candidates"
+        },
+        "refineQuery": "Rules were withheld as a whole for the existing byte budget. Call rules.list with a narrower query/context; this does not mean no matching rules exist."
+      }
+    },
+    {
+      "name": "no-room",
+      "maxBytes": 50,
+      "padding": 40,
+      "content": 100,
+      "error": "planner_evidence_budget_exhausted"
+    }
+  ]
+}

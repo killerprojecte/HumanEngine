@@ -116,6 +116,7 @@ type Guard struct {
 	CheckGrounding       func([]Segment) bool
 	CaptureTransmitGuard func() func() bool
 	Validate             func(ValidationRequest, *Signal) *Future[bool]
+	BeginTransmission    func(*Signal) (*Signal, func())
 }
 type TypingDelay func(Segment, *Signal) *Future[struct{}]
 type Send func(SceneRef, Segment, *Signal, func() error) *Future[Receipt]
@@ -291,6 +292,13 @@ func DispatchSegment(services Services, context *TurnContext, segment Segment, o
 			return Receipt{}, failureOf(err)
 		}
 		return Receipt{Status: Sent, MessageID: &id}, nil
+	}
+	if guard.BeginTransmission != nil {
+		signal, stop := guard.BeginTransmission(context.Signal)
+		defer stop()
+		copy := *context
+		copy.Signal = signal
+		context = &copy
 	}
 	var transmitGuard func() bool
 	if guard.CaptureTransmitGuard != nil {

@@ -324,9 +324,11 @@ func TestTransmitGateRechecksAfterAsyncAdapterPreparation(t *testing.T) {
 	h, _ := r.Run("scene", topic, false)
 	before := <-entered
 	future := <-settlement
-	_, _ = r.Ingest(context.Background(), "scene", fixtureMessage("scene", "correction", "Correction"), false)
+	// Ordinary ingress no longer invalidates a sealed draft. Revoking its actual
+	// quoted target must still stop the final gate after asynchronous preparation.
+	_ = r.Recall(context.Background(), "scene", "source")
 	if err := before(); err == nil {
-		t.Fatal("stale version authorized physical effect")
+		t.Fatal("recalled target authorized physical effect")
 	}
 	future.Resolve(dispatch.Receipt{Status: dispatch.Cancelled, Detail: ptr("send_invalidated")})
 	result := awaitTurn(t, h)

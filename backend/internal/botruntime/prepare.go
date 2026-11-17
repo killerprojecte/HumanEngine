@@ -20,6 +20,10 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 		r.trimLocked(s, false)
 	}
 	t.version = t.topic.version.Load()
+	t.initialMessageIDs = map[string]bool{}
+	for _, message := range s.messages {
+		t.initialMessageIDs[idOf(message)] = true
+	}
 	for body, record := range s.byBody {
 		t.records[body] = record
 	}

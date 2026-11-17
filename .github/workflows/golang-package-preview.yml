@@ -4,11 +4,13 @@ on:
   push:
     branches: [feat/refactor-golang]
     paths:
-      - 'backend/packaging/runtime-preview/**'
+      - 'backend/**'
+      - 'package-lock.json'
       - '.github/workflows/golang-package-preview.yml'
   pull_request:
     paths:
-      - 'backend/packaging/runtime-preview/**'
+      - 'backend/**'
+      - 'package-lock.json'
       - '.github/workflows/golang-package-preview.yml'
 permissions:
   contents: read

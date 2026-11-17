@@ -17,6 +17,14 @@ This is not a claim of complete TypeScript Engine compatibility.
 - Model configuration is captured once per foreground Router/turn. An HTTP model
   update affects the next turn while accepted stages and continuations retain
   their Router. Cross-Router continuation ownership remains enforced.
+- Ordinary learned advice is read only through `rules.list`, with optional
+  `query`/`context` filtering. Initial preparation reads manual rules but no habit
+  records. Oversized rules are withheld whole by the existing Planner byte
+  budget; only delivered hints bind model-read/source identity dependencies.
+  `rules_runtime_test.go` uses real SQLite/source/authority/Runtime owners and
+  deterministic model calls; it is not a live-provider behavior evaluation.
+  Experimental Experience policy context remains separately enabled and bounded
+  to its existing three-policy selection. Background learning owners are unchanged.
 - Actual semantic memory, ordinary learning, projections, working sets,
   commitments, relations and knowledge dependencies. Commitment/relation base
   schemas are initialized through their real constructors' Initialize methods.

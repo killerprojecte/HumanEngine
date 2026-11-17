@@ -35,6 +35,7 @@ type Service struct {
 	main         *sql.DB
 	authority    *recovery.Authority
 	session      *recovery.WriteSession
+	runtimeRead  *readScope
 	bindingError error
 	policy       Policy
 	now          func(*Service) float64
@@ -103,6 +104,12 @@ type readScope struct {
 func (s *Service) read(ctx context.Context, fn func(*readScope) error) error {
 	if s.bindingError != nil {
 		return s.bindingError
+	}
+	if s.runtimeRead != nil {
+		if e := s.runtimeRead.ready(); e != nil {
+			return e
+		}
+		return fn(s.runtimeRead)
 	}
 	if s.session != nil {
 		if e := s.session.CheckBinding(s.authority, s.main); e != nil {

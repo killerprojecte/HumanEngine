@@ -167,6 +167,9 @@ func (g *Grounding) Check(segments []dispatch.Segment) string {
 			}
 		}
 	}
+	if g.searchedMemes && hasMemePlaceholder(segments) {
+		return "meme_placeholder_not_media"
+	}
 	parts := make([]json.RawMessage, 0)
 	for _, segment := range segments {
 		parts = append(parts, segment.Parts...)

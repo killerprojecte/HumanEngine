@@ -19,8 +19,8 @@ read-only preview composition; this package does not silently enable real sends.
   participation decision, native planning/read/repair loop, sequential guarded
   actions, evidence/brief packing, Replyer tool loop and grounding fallback.
   `turn.go` retains stage lifetimes across the whole flow.
-- `send.go` composes hook transforms, plan/grounding checks, exact-word stale
-  revalidation and `dispatch` sequential transport. Receipts include partial,
+- `send.go` composes hook transforms, plan/grounding checks, completed-draft review
+  and `dispatch` sequential transport. Receipts include partial,
   failed, cancelled and unknown outcomes. Unknown sends are not retried.
 - `turn_cleanup.go` and `lifecycle.go` release only their own scene/turn generation,
   while retaining unknown-send protection independently of message bodies.
@@ -124,3 +124,52 @@ Named-zone clock/date coverage requires the repository's pinned native ICU build
 and `-tags humanengine_icu`. The runtime defaults its h23 hour to `intltime.Hour`
 and applies Date TimeClip before crossing that API. It does not start Node to
 infer deployment locale or timezone.
+
+## P1-C retained-draft behavior delta
+
+This is an intentional delta from frozen `24fe8a77`, matching the released legacy
+`04b1817` / `b7f3f92` core-send contract, not a replacement of that baseline oracle.
+`retained_draft.go` owns an exact post-hook payload under the current runtime turn
+UUID. It exists only in that live task and is never loaded or replayed on restart.
+The existing single `deliveryStarted` claim and operation receipt ledger continue
+to arbitrate at-most-once sends; a model-provided operation ID cannot identify or
+cancel another generation's draft.
+
+No new same-topic message means direct delivery. The first send boundary takes
+one snapshot of newly arrived same-topic messages and, if nonempty, invokes
+Planner with the entire unchanged draft and only `reply.cancel`. Cancellation
+must name this exact draft UUID. Normal completion without cancellation sends
+unchanged. Ingress after that boundary remains queued for the next turn; it does
+not reopen review or truncate later segments. A failed/timed-out review is logged
+as `draft_review_failed` / `draft_review_timeout`, not model approval, and can
+release the unchanged draft only while the real send authority remains valid.
+
+Only parsed, plan-valid and grounded core output leaves the Replyer generation
+budget. Review uses the existing Planner route budget; hooks and each physical
+transmission have independent existing Replyer route budgets. Repair generations
+still use the original generation deadline. Extension-tool invocation lifetimes
+are not silently relaxed. Invoked transmission timeout is unknown, never a retry.
+Ordinary context/unselected history recall does not discard a completed core draft;
+actual reply targets, explicitly cited facts/assets and scoped derived-evidence
+validation remain authoritative. Original generation-phase recall/edit semantics,
+scene boundaries, shutdown, adapter identity and permission checks remain intact.
+
+The original `contracts.json`, `runtime.json` and frozen TS source files are
+unchanged. `testdata/retained-draft.json` records the intentional cancellation-tool
+and validation-request delta from actual released TS execution (with UUIDs
+normalized to `__draft__`). It also records source fingerprints and captured prompts
+for review, but only the validation contract is installed by this slice. Regenerate
+or check it against a separate checkout of the exact released legacy source:
+
+```sh
+HUMANENGINE_LEGACY_SOURCE=/path/to/legacy-checkout node --import tsx \
+  backend/tests/generate-bot-runtime-fixtures.mjs --retained-draft-delta --check
+```
+
+`TestActualRuntimeTurnOracle/staleValidation` consumes that explicitly named delta;
+all other frozen cases retain their original expected requests. Native tests cover
+direct delivery, independent review timeout/provider failure, cancellation identity,
+repeated/other-topic ingress, exact whole payloads, quoted and nonquoted recalls,
+required evidence, shutdown/read failures, repair deadlines, unknown transmission,
+and ingress after physical transmission begins. This does not claim all Go
+production-cutover or optional plugin/platform behavior is implemented.

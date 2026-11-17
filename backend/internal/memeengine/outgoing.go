@@ -60,6 +60,29 @@ func (s *Service) outgoingHook() botruntime.Hook {
 	}}
 }
 func (s *Service) composeOutgoing(ext *botruntime.Extension) {
+	inherited := ext.ValidateOutgoingScoped
+	ext.ValidateOutgoingScoped = func(reads botruntime.ReadAuthority, turn *botruntime.TurnContext, segments []dispatch.Segment) (bool, error) {
+		if inherited != nil {
+			if valid, err := inherited(reads, turn, segments); err != nil || !valid {
+				return valid, err
+			}
+		}
+		for _, segment := range segments {
+			for _, part := range segment.Parts {
+				id, err := managedPart(part)
+				if err != nil {
+					return false, err
+				}
+				if id != "" {
+					valid, err := s.Memes.VisibleInRuntimeScope(s.Sources, reads, memeservice.Context{SceneID: turn.Scene.ID, Simulation: turn.Mode == "simulation"}, id)
+					if err != nil || !valid {
+						return valid, err
+					}
+				}
+			}
+		}
+		return true, nil
+	}
 	ext.SegmentSentSequencers = append(ext.SegmentSentSequencers, botruntime.NewSegmentSentSequencer(s.recordOutgoing))
 }
 func (s *Service) recordOutgoing(scene botruntime.Scene, _ string, segment dispatch.Segment, _ dispatch.Receipt) {

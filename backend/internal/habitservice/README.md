@@ -107,9 +107,12 @@ The domain is implemented; these callers are **not** silently claimed migrated:
    Date.parse policy, source-snapshot availability guards and simulation tool
    error mapping. They can call the implemented `Propose`/`Feedback` operations;
    no callback in this package substitutes for that missing dispatch.
-3. `Engine.learnedHints` needs the existing model-read ticket, first-original
-   source dependencies, capture-before-exposure identities and turn validation
-   callbacks wired to `AdminList`, `List` and `ValidationIdentities`.
+3. Ordinary `Engine.learnedHints` reading is now composed by
+   `app/rules_tools.go`: scoped on-demand `rules.list`, capture-before-exposure
+   identities and first-original source dependencies attach only to delivered
+   receipts. `ValidationIdentitiesInRuntimeScope` reuses the same algorithm under
+   a live runtime/recall read scope rather than reopening the root authority.
+   This does not alter the separate experimental Experience policy context.
 4. The habit-first `memory/learning/persistence.ts` batch and its partial-commit
    non-replayable progress accounting remain a separate dispatcher composition.
 5. Engine meme-analysis expression preferences (`src/engine.ts` around line 1673)

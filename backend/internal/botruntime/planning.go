@@ -103,7 +103,11 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 	if cfg.ReplySuggestionsEnabled {
 		template = "planSuggestions"
 	}
-	planningMessages := []*Object{obj("role", "system", "content", cfg.Persona+"\n"+manualContext+"\n"+prompt(template)), user}
+	instructions := prompt(template)
+	if toolNamed(reads, "rules.list") != nil {
+		instructions += "\nRead rules.list only when learned scene or expression preferences are relevant to the current conversation; they are not preloaded."
+	}
+	planningMessages := []*Object{obj("role", "system", "content", cfg.Persona+"\n"+manualContext+"\n"+instructions), user}
 	planned, err := r.services.Policy.BuildReplyPlan(planningStage, replyplan.BuildInput{ValidationInput: replyplan.ValidationInput{TargetMessageIDs: targets, ContextMessageIDs: ids(replyerRecent), Evidence: evidence, ActionTools: actions, DeliveryTools: deliveries, ReplySuggestionsEnabled: cfg.ReplySuggestionsEnabled}, Messages: planningMessages, EvidenceMaxBytes: &cfg.PlannerEvidenceMaxBytes, Projection: projection, ReadTools: reads, EligibleChecked: func() (bool, error) { return r.eligible(c) }, Complete: func(ctx context.Context, messages, tools []*Object, settle func(replyplan.Completion, error)) {
 		if valid, err := r.eligible(c); err != nil || !valid {
 			if err == nil {
@@ -215,7 +219,18 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			}
 		}
 		c.AddValidation(func() bool {
-			for _, id := range stringsOf(get(plan, "targetMessageIds")) {
+			targets := stringsOf(get(plan, "targetMessageIds"))
+			t.sendMu.Lock()
+			guard := t.guard
+			t.sendMu.Unlock()
+			if guard != nil {
+				guard.mu.Lock()
+				if guard.draft != nil && guard.draft.narrowed {
+					targets = append([]string{}, guard.draft.targets...)
+				}
+				guard.mu.Unlock()
+			}
+			for _, id := range targets {
 				if !r.admitted(t, id, admitted, true) {
 					return false
 				}
@@ -297,7 +312,7 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 		}
 	}
 	t.sendMu.Lock()
-	t.guard = &sendGuard{plan: plan, grounding: grounding, recipients: recipients, projection: projection, decision: decision, admitted: admitted, version: t.version, validated: t.version}
+	t.guard = &sendGuard{plan: plan, grounding: grounding, recipients: recipients, projection: projection, decision: decision, admitted: admitted, ordinarySources: append([]*Object{}, replyerRecent...), evidence: planned.Evidence, extensionDependencies: append([]string{}, f.extensionDependencies...)}
 	t.sendMu.Unlock()
 	brief, err := r.services.Policy.BuildReplyBrief(plan, planned.Evidence, actionReceipts, imageContext, related)
 	if err != nil {

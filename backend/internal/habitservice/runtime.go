@@ -23,3 +23,19 @@ func (s *Service) RuntimeRecallPreparation() sourceevents.RecallPreparation {
 		return func() error { _, e := bound.Recall(ctx, scene.ID, id); return e }, nil
 	}
 }
+
+// ValidationIdentitiesInRuntimeScope reuses the ordinary identity algorithm under
+// the caller's live authority rather than reopening a root read during recall.
+func (s *Service) ValidationIdentitiesInRuntimeScope(ctx context.Context, sources *sourceevents.Store, reads botruntime.ReadAuthority, c Context, ids []string) (out map[string]*string, err error) {
+	err = sources.UseRuntimeReadScope(reads, func(scope sourceevents.RuntimeReadScope) error {
+		if e := scope.CheckBinding(s.main, s.authority); e != nil {
+			return e
+		}
+		bound := *s
+		bound.runtimeRead = &readScope{query: scope.Query, ready: scope.Ready}
+		var e error
+		out, e = bound.ValidationIdentities(ctx, c, ids)
+		return e
+	})
+	return
+}

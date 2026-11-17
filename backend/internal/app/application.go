@@ -154,6 +154,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	// Public safe Meme has no remote-image/vision-history owner; don't import the
 	// private media graph or bind an API absent from the accepted service.
 	app.Engine.Runtime.Observe(app.observeRuntime)
+	app.composeRules(owners)
 	memory, err := app.composeMemory(ctx, owners, config.settings, collator)
 	if err != nil {
 		return app, err

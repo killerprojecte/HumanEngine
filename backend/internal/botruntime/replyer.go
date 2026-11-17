@@ -62,7 +62,7 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 				args, toolErr = projection.RestoreArguments(call.Arguments)
 				if toolErr == nil {
 					if call.Name == "messages.send" {
-						receipts, e := r.send(t, dialogueStage, args)
+						receipts, e := r.send(t, dialogueStage, args, true)
 						toolErr = e
 						output = receiptsValue(receipts)
 					} else {
@@ -109,7 +109,7 @@ func (r *Runtime) replyTurn(t *turn, f *turnFrame, issues *int) error {
 			break
 		}
 	}
-	if !c.root.Aborted() {
+	if !c.root.Aborted() && !r.hasOutcome(t) {
 		if err := context.Cause(dialogueStage); err != nil {
 			return r.stageError(t, dialogueStage, "replyer", err)
 		}

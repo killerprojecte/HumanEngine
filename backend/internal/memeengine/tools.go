@@ -11,7 +11,7 @@ import (
 func MemeTools() []*Object {
 	stringSchema := func() *Object { return fields("type", "string") }
 	return []*Object{
-		fields("name", "memes.search", "description", "Search analyzed available memes by intent without re-running vision.", "inputSchema", fields("type", "object", "properties", fields("query", fields("type", "string", "maxLength", float64(500)), "tags", fields("type", "array", "items", stringSchema(), "maxItems", float64(10))), "required", []any{"query"}, "additionalProperties", false)),
+		fields("name", "memes.search", "description", "Search analyzed available memes by intent without re-running vision. Each item contains its real asset id and tags describing emotion, intent, tone and memeMeaning. These are scoped candidates, not a full library inventory. Inspect the returned candidates and refine query/tags in another call if needed before choosing an asset or meaningful text; empty results never authorize a made-up image or placeholder.", "inputSchema", fields("type", "object", "properties", fields("query", fields("type", "string", "maxLength", float64(500)), "tags", fields("type", "array", "items", stringSchema(), "maxItems", float64(10))), "required", []any{"query"}, "additionalProperties", false)),
 		fields("name", "memes.feedback", "description", "Record explicit nonbot reaction to a meme; never infer approval from own usage or silence.", "inputSchema", fields("type", "object", "properties", fields("assetId", stringSchema(), "positive", fields("type", "boolean"), "sourceMessageId", stringSchema()), "required", []any{"assetId", "positive", "sourceMessageId"}, "additionalProperties", false)),
 	}
 }
@@ -59,10 +59,8 @@ func (s *Service) executeMeme(ctx context.Context, name string, input any, turn 
 		items := make([]any, len(assets))
 		for i, asset := range assets {
 			items[i] = asset
-			id := str(get(asset, "id"))
-			turn.AddScopedValidation(func(reads botruntime.ReadAuthority) (bool, error) {
-				return s.Memes.VisibleInRuntimeScope(s.Sources, reads, c, id)
-			})
+			// Discovery candidates are not send dependencies. The exact final media
+			// is checked after hooks and again at the physical transmit boundary.
 		}
 		return fields("items", items, "coverage", "partial", "scope", "query_candidates", "limit", float64(12)), nil
 	}

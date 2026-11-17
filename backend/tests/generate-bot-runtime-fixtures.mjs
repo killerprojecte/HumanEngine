@@ -3,16 +3,23 @@ import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { mock } from 'node:test'
-import { Runtime, DecisionSchema, SendSchema } from '../../src/runtime.ts'
-import { Store } from '../../src/store.ts'
-import { fixtureReplyPlan } from '../../tests/helpers/reply-plan.ts'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+const retainedDelta = process.argv.includes('--retained-draft-delta')
+const sourceRoot = retainedDelta ? process.env.HUMANENGINE_LEGACY_SOURCE : process.cwd()
+assert.ok(sourceRoot, 'HUMANENGINE_LEGACY_SOURCE is required for an explicit retained-draft delta')
+const sourceImport = (path) => import(pathToFileURL(resolve(sourceRoot, path)).href)
+const { Runtime, DecisionSchema, SendSchema } = await sourceImport('src/runtime.ts')
+const { Store } = await sourceImport('src/store.ts')
+const { fixtureReplyPlan } = await sourceImport('tests/helpers/reply-plan.ts')
 import { z } from 'zod'
-import { defaultSettingsInput, settingsReadValue } from '../../src/config-read-values.ts'
+const { defaultSettingsInput, settingsReadValue } = await sourceImport('src/config-read-values.ts')
 assert.equal(process.version, 'v24.22.1')
 process.env.TZ = 'UTC'
 mock.timers.enable({ apis: ['Date'], now: new Date('2026-10-28T00:00:00Z') })
 const check = process.argv.includes('--check')
 const write = (path, value) => {
+  if (retainedDelta && !path.endsWith('/retained-draft.json')) return
   const s = JSON.stringify(value, null, 2) + '\n'
   if (check) assert.equal(readFileSync(path, 'utf8'), s, path)
   else writeFileSync(path, s)
@@ -117,7 +124,7 @@ for (const name of [
     complete: async (role, messages, tools) => {
       const stage = tools.some((t) => t.name === 'participation.decide')
         ? 'decision'
-        : tools.some((t) => t.name === 'reply.validate')
+        : tools.some((t) => t.name === (retainedDelta ? 'reply.cancel' : 'reply.validate'))
           ? 'validation'
           : role === 'replyer'
             ? 'replyer'
@@ -177,7 +184,19 @@ for (const name of [
           }),
         ])
       }
-      if (stage === 'validation') return complete([call('reply.validate', { valid: false })])
+      if (stage === 'validation') {
+        if (retainedDelta) {
+          const recorded = modelRequests.at(-1)
+          Object.assign(
+            recorded,
+            JSON.parse(JSON.stringify(recorded).replaceAll(data.draftId, '__draft__')),
+          )
+          return complete([
+            call('reply.cancel', { draftId: data.draftId, reason: 'new correction' }),
+          ])
+        }
+        return complete([call('reply.validate', { valid: false })])
+      }
       if (stage === 'plan') {
         planCalls++
         if (name === 'missingPlan') return complete()
@@ -666,8 +685,27 @@ const sourceFiles = [
   'src/schema.ts',
 ]
 const source = Object.fromEntries(
-  sourceFiles.map((path) => [path, createHash('sha256').update(readFileSync(path)).digest('hex')]),
+  sourceFiles.map((path) => [
+    path,
+    createHash('sha256')
+      .update(readFileSync(resolve(sourceRoot, path)))
+      .digest('hex'),
+  ]),
 )
 write('backend/internal/botruntime/testdata/contracts.json', contracts)
 write('backend/internal/botruntime/testdata/runtime.json', { node: process.version, source, cases })
 console.log(`Verified ${cases.length} actual Runtime turn traces`)
+
+if (retainedDelta) {
+  const tool = structuredClone(contracts.tools['reply.cancel'])
+  tool.inputSchema.properties.draftId.const = '__draft__'
+  write('backend/internal/botruntime/testdata/retained-draft.json', {
+    contract: 'P1-C intentional delta from frozen 24fe8a77',
+    reference: 'b7f3f92b0d27168955f507535e38c00ed15c6826',
+    source,
+    validationPrompt: contracts.prompts.validation,
+    cancelTool: tool,
+    capturedPrompts: { plan: contracts.prompts.plan, replyer: contracts.prompts.replyer },
+    staleValidation: cases.find((row) => row.name === 'staleValidation'),
+  })
+}

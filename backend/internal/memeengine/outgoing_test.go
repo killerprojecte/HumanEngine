@@ -157,3 +157,70 @@ func TestOutgoingGateAndUsageUseActualScopedOwner(t *testing.T) {
 		t.Fatal("disabled asset admitted", e)
 	}
 }
+
+// Final payload scope is deliberately separate from search receipts: candidates
+// may disappear independently, while the chosen asset's source must remain live.
+func TestFinalOutgoingScopeUsesOnlyExactMediaAndPreservesInheritedGate(t *testing.T) {
+	f := newOutgoingFixture(t)
+	ctx := context.Background()
+	dates, e := jsdate.New("UTC")
+	if e != nil {
+		t.Fatal(e)
+	}
+	store, e := assertions.New(f.main, f.authority, assertions.Options{DateParser: dates})
+	if e != nil {
+		t.Fatal(e)
+	}
+	memes, e := memeservice.New(ctx, f.main, f.authority, store, assertionauthority.Options{DateParser: dates, Compare: func(a, b string) (int, error) { return strings.Compare(a, b), nil }}, t.TempDir())
+	if e != nil {
+		t.Fatal(e)
+	}
+	authority, e := sourceevents.NewRuntimeAuthority(f.events)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.main.Exec(`INSERT INTO scenes VALUES('s','{"id":"s","adapterId":"a","accountId":"c","learningEnabled":true}')`); e != nil {
+		t.Fatal(e)
+	}
+	ids := []string{strings.Repeat("a", 64), strings.Repeat("b", 64)}
+	for i, id := range ids {
+		raw := fmt.Sprintf(`{"id":%q,"format":"png","available":true,"sources":[{"sceneId":"s","messageId":%q,"senderId":"u"}]}`, id, fmt.Sprintf("source-%d", i))
+		if _, e = f.main.Exec("INSERT INTO meme_assets VALUES(?,?)", id, raw); e != nil {
+			t.Fatal(e)
+		}
+	}
+	s := &Service{main: f.main, authority: f.authority, Memes: memes, Sources: f.events}
+	allow := true
+	calls := 0
+	ext := s.ComposeExtension(botruntime.Extension{ValidateOutgoingScoped: func(botruntime.ReadAuthority, *botruntime.TurnContext, []dispatch.Segment) (bool, error) {
+		calls++
+		return allow, nil
+	}})
+	turn := &botruntime.TurnContext{Scene: botruntime.Scene{SceneRef: dispatch.SceneRef{ID: "s"}}, Mode: "real"}
+	media := func(id string) []dispatch.Segment {
+		return []dispatch.Segment{{Parts: []json.RawMessage{json.RawMessage(`{"type":"media","mediaType":"image","assetId":"` + id + `"}`)}}}
+	}
+	check := func(want bool, segments []dispatch.Segment) {
+		t.Helper()
+		valid, err := ext.ValidateOutgoingScoped(authority, turn, segments)
+		if err != nil || valid != want {
+			t.Fatalf("valid=%v expected=%v err=%v", valid, want, err)
+		}
+	}
+	check(true, media(ids[0]))
+	if _, e = f.main.Exec("UPDATE meme_assets SET value=json_set(value,'$.disabled',json('true')) WHERE id=?", ids[1]); e != nil {
+		t.Fatal(e)
+	}
+	check(true, media(ids[0]))
+	check(false, media(ids[1]))
+	check(true, []dispatch.Segment{{Parts: []json.RawMessage{json.RawMessage(`{"type":"text","text":"Meaningful text."}`)}}})
+	if _, e = f.main.Exec("INSERT INTO recall_tombstones VALUES('s','source-0','2026-11-17T00:00:00Z')"); e != nil {
+		t.Fatal(e)
+	}
+	check(false, media(ids[0]))
+	allow = false
+	check(false, nil)
+	if calls != 6 {
+		t.Fatalf("inherited callback calls=%d", calls)
+	}
+}

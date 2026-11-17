@@ -55,6 +55,10 @@ caps, silent truncation or an automatic replay of uncertain effects.
 
 ## P0: next executable vertical slice
 
+The [opt-in Docker/Compose recipe and acceptance driver](../../backend/packaging/runtime-preview/README.md)
+are on this branch. They do not replace the existing production image. The
+packaged gate must pass on the actual candidate before this slice is accepted.
+
 **Outcome:** a clean machine can build and launch an opt-in native runtime-preview
 image, write and reread one authenticated settings/model configuration operation,
 stop during an accepted slow HTTP request, restart the same disposable
@@ -84,15 +88,16 @@ results. CI prerequisites below are necessary but do not substitute for this new
 packaged trace. Resolve packaging defects before widening the slice to live
 platform ingress or switching production startup.
 
-## P1: updated runtime semantics, not yet delivered by this baseline
+## P1: updated runtime semantics implemented in the Go candidate
 
 The user requested these changes on 2026-11-17. Legacy behavior commit
 [04b1817](https://github.com/killerprojecte/HumanEngine/commit/04b1817af8055d58021c85e94d1f72be914125d6)
 is now on `master`; the tested reference is its successor
 [b7f3f92](https://github.com/killerprojecte/HumanEngine/commit/b7f3f92b0d27168955f507535e38c00ed15c6826),
-which makes the typing-cancellation test explicit. Branch publication is not
-proof of deployment or a Go port. Use these behavior fixtures to define deliberate
-deltas from the frozen `24fe8a77` compatibility baseline.
+which makes the typing-cancellation test explicit. These behavior fixtures define deliberate deltas from the frozen `24fe8a77`
+compatibility baseline. The Go candidate wires each delta into its real runtime
+and provides tagged Go acceptance cases; integrated native CI and the packaged
+trace remain separate gates. This is not a production cutover.
 
 ### P1-A: learning advice on demand, learning work off the reply path
 
@@ -112,8 +117,10 @@ Two separate paths must not be conflated:
   separate experimental path; it is not the ordinary learned-hints fix and must
   not be presented as evidence that ordinary advice was already bounded to three.
 
-Port the ordinary on-demand contract into the Go application/tool/read budget
-chain, auditing `botruntime/prepare.go` extension `learned` evidence separately.
+The Go application registers the ordinary on-demand contract in
+`internal/app/rules_tools.go`, with a whole-result receipt budget in
+`internal/replyplan/budget.go`. Generic extension context preparation remains
+available for other evidence owners.
 Keep proposal/consolidation work in the existing background learning owners:
 a read tool and a background learning job are distinct operations. Preserve
 source eligibility, scene/privacy scope and delivery-bound dependencies. Any
@@ -138,12 +145,12 @@ the same conversation and test experimental policies separately.
 
 ### P1-B: use memes naturally when appropriate
 
-Current `memeengine/tools.go::MemeTools` advertises `memes.search`/`memes.feedback`.
+The frozen baseline `memeengine/tools.go::MemeTools` advertises `memes.search`/`memes.feedback`.
 Planner prompts permit meme choices and require actual search receipts, but do
 not give a clear positive policy for naturally initiating a relevant meme search.
 `botruntime/send.go::validateSegments` requires media assets in the chosen plan.
 
-Target: explicitly allow/encourage context-appropriate meme lookup and selection,
+The current Go delta allows context-appropriate meme lookup and selection,
 without requiring the user to say “send a meme”, and without forcing a meme into
 every reply. Reuse the Planner's bounded read-tool loop: show real candidate IDs
 and meaning, allow query refinement, then pick actual media, independently useful
@@ -163,12 +170,12 @@ source prompt generators and existing Meme outgoing/native integration tests.
 
 ### P1-C: preserve a completed reply; Planner explicitly cancels
 
-Current `botruntime/send.go::validateSend` passes exact proposed segments and new
-messages to `reply.validate`, initializes validity to false, and aborts on missing
-approval, false, or another topic-version change. `replyer.go`/`turn.go` have no
-cross-turn pending-draft owner. This is not the requested cancellation-only model.
+The frozen `botruntime/send.go::validateSend` passed exact proposed segments and new
+messages to `reply.validate`, initialized validity to false, and aborted on missing
+approval, false, or another topic-version change. `replyer.go`/`turn.go` had no
+retained-draft owner. That is not the requested cancellation-only model.
 
-Target: once Replyer has a complete outgoing draft, retain it. Send directly
+The current Go delta retains a complete outgoing draft in `retained_draft.go`. Send directly
 when there is no new same-topic message; only new same-topic ingress triggers
 Planner context refresh. Give the Planner that exact previous draft;
 its decision about that draft is cancellation, not rewriting/re-generating it.

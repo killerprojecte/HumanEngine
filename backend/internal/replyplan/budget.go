@@ -72,6 +72,35 @@ func (b *EvidenceBudget) Receipt(messages []*Object, receipt *Object, toolCallID
 		n, err := b.Measure(append(append([]*Object{}, messages...), message))
 		return float64(n) <= b.maxBytes, err
 	}
+	// Keep a qualified rules receipt whole. Withholding lets the planner narrow
+	// its query without exposing sources. Other tool budget semantics stay intact.
+	if str(get(receipt, "toolName")) == "rules.list" {
+		body, err := stringify(get(receipt, "value"))
+		if err != nil {
+			return DeliveredReceipt{}, err
+		}
+		message, err := envelope(receipt)
+		if err != nil {
+			return DeliveredReceipt{}, err
+		}
+		fullFits, err := fits(message)
+		if err != nil {
+			return DeliveredReceipt{}, err
+		}
+		if len(body) <= 65536 && fullFits {
+			return DeliveredReceipt{receipt, message}, nil
+		}
+		omitted := receipt.Clone()
+		set(omitted, "value", obj(member("coverage", obj(member("status", "limited"), member("reason", "planner_evidence_budget"), member("scope", "query_candidates"))), member("refineQuery", "Rules were withheld as a whole for the existing byte budget. Call rules.list with a narrower query/context; this does not mean no matching rules exist.")))
+		message, err = envelope(omitted)
+		if err != nil {
+			return DeliveredReceipt{}, err
+		}
+		if err = b.AssertWithin(append(append([]*Object{}, messages...), message)); err != nil {
+			return DeliveredReceipt{}, err
+		}
+		return DeliveredReceipt{omitted, message}, nil
+	}
 	tools := append([]string{"memory.search", "memory.person", "memory.relations", "memory.commitments", "memory.commitmentHistory", "memory.history", "experience.outcomes"}, workspaceStateTools...)
 	records, ok := get(receipt, "value").([]any)
 	if !includes(tools, str(get(receipt, "toolName"))) || !ok {

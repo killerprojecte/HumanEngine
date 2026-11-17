@@ -291,6 +291,27 @@ func TestActualRuntimeTurnOracle(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, row := range fixture.Cases {
+		if row.Name == "staleValidation" {
+			var delta struct {
+				StaleValidation struct {
+					Expected map[string]any
+					Requests []any
+				}
+			}
+			if err := json.Unmarshal(retainedDraftJSON, &delta); err != nil {
+				t.Fatal(err)
+			}
+			row.Expected = delta.StaleValidation.Expected
+			for i, request := range row.Requests {
+				if request.(map[string]any)["stage"] == "validation" {
+					for _, replacement := range delta.StaleValidation.Requests {
+						if replacement.(map[string]any)["stage"] == "validation" {
+							row.Requests[i] = replacement
+						}
+					}
+				}
+			}
+		}
 		t.Run(row.Name, func(t *testing.T) { runRuntimeOracle(t, row.Name, row.Expected, row.Requests, testPolicy(t)) })
 	}
 }
@@ -308,7 +329,15 @@ func runRuntimeOracle(t *testing.T, name string, expected map[string]any, expect
 	model := ModelFunc(func(ctx context.Context, req ModelRequest, settle func(Completion, error)) {
 		models = append(models, req.Stage)
 		effects = append(effects, map[string]any{"kind": "model", "stage": req.Stage})
-		modelRequests = append(modelRequests, obj("stage", req.Stage, "role", req.Role, "messages", cloneJSON(objects(req.Messages)), "tools", cloneJSON(objects(req.Tools))))
+		request := obj("stage", req.Stage, "role", req.Role, "messages", cloneJSON(objects(req.Messages)), "tools", cloneJSON(objects(req.Tools)))
+		if req.Stage == "validation" {
+			normalized, err := jsjson.Parse(strings.ReplaceAll(string(mustJSON(request)), req.Turn.TurnID, "__draft__"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			request = normalized.(*Object)
+		}
+		modelRequests = append(modelRequests, request)
 		switch req.Stage {
 		case "decision":
 			if strings.HasPrefix(name, "simulation") && name != "simulation" {
@@ -351,7 +380,7 @@ func runRuntimeOracle(t *testing.T, name string, expected map[string]any, expect
 			}
 			settle(out, nil)
 		case "validation":
-			settle(completion([]replyplan.ToolCall{toolCall("reply.validate", obj("valid", false))}, ""), nil)
+			settle(completion([]replyplan.ToolCall{toolCall("reply.cancel", obj("draftId", req.Turn.TurnID, "reason", "new correction"))}, ""), nil)
 		case "plan":
 			planCalls++
 			if name == "missingPlan" {
@@ -527,6 +556,7 @@ func runRuntimeOracle(t *testing.T, name string, expected map[string]any, expect
 		t.Errorf("actual source trace mismatch\nactual=%s\nexpected=%s\nerror=%v", a, b, result.Err)
 	}
 	if expectedRequests != nil {
+		expectedRequests = memeDeltaOracleRequests(expectedRequests)
 		normalized := normalizeRequests(modelRequests, topic)
 		text, _ := jsjson.Stringify(normalized)
 		var got []any

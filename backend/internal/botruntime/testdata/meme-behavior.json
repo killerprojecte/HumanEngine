@@ -1,0 +1,15 @@
+{
+  "behaviorCommit": "04b1817af8055d58021c85e94d1f72be914125d6",
+  "testedSourceCommit": "b7f3f92b0d27168955f507535e38c00ed15c6826",
+  "sourceGitBlobs": {
+    "src/runtime.ts": "f2f78ca47ba008b8ceac61d7228b4f7d8d98e57f",
+    "src/engine.ts": "fbc853fc2dc9f58618eb724384eda5928a12febb"
+  },
+  "sourceHashes": {
+    "src/runtime.ts": "bb2efe7d8cb7d9cf59126725968674d00242caef4e223c39feeebd4d4c68f030",
+    "src/engine.ts": "90df02978f742e7836519f736cc33a9296d4ac94ff827aa515018d70d312d226"
+  },
+  "planner": "When a meme would naturally express the intended tone or reaction, proactively use memes.search even if the user did not explicitly request an image, then select a suitable returned asset in the plan. Inspect actual returned candidate ids and semantic tags before deciding how to express the response. You may call memes.search multiple times with refined queries or tags in this planning loop, including after an empty result. Then choose suitable assets, independent meaningful text, or noReply as appropriate. An empty query result means do not send a meme from that result, not that you must send a textual substitute. Do not force a meme into every reply, invent an asset, or use [表情包], [meme], a bracketed image description or a pretend-send statement as a substitute for actual media. ",
+  "replyer": "Express the selected plan with meaningful text and/or the actual selected media parts; a media-only reply is valid and does not need a textual caption. Never substitute [表情包], [meme], an image-description placeholder or a claim of sending an image for an actual media part. If no asset was selected, send no meme; any text must itself communicate the intended meaning rather than stand in for a missing picture. ",
+  "toolDescription": "Search analyzed available memes by intent without re-running vision. Each item contains its real asset id and tags describing emotion, intent, tone and memeMeaning. These are scoped candidates, not a full library inventory. Inspect the returned candidates and refine query/tags in another call if needed before choosing an asset or meaningful text; empty results never authorize a made-up image or placeholder."
+}

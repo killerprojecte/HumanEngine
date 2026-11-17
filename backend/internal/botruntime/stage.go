@@ -10,33 +10,44 @@ import (
 
 type stage struct {
 	context.Context
-	signal *dispatch.Signal
-	cancel context.CancelCauseFunc
-	mu     sync.Mutex
-	timer  modelservice.Timer
-	stop   func() bool
-	closed bool
+	signal       *dispatch.Signal
+	cancel       context.CancelCauseFunc
+	mu           sync.Mutex
+	timer        modelservice.Timer
+	stop         func() bool
+	closed       bool
+	hardDeadline bool
 }
 
 func (r *Runtime) newStage(t *turn, role string) *stage {
-	ctx, cancel := context.WithCancelCause(context.Background())
-	if t.proactive {
-		ctxWithPriority, _ := scheduler.WithModelPriority(ctx, 2)
-		ctx = ctxWithPriority
-	}
-	s := &stage{Context: ctx, cancel: cancel, signal: dispatch.NewSignal()}
-	s.stop = context.AfterFunc(t.context.root, func() { s.abort(code("context_cancelled")) })
 	ms := t.settings.PlannerTimeoutMS
 	if role == "replyer" {
 		ms = t.settings.ReplyerTimeoutMS
 	}
+	s := r.newPhase(t, ms, false)
+	t.context.stage.Store(s)
+	return s
+}
+
+// A completed draft owns independent review/hook/transport phases. These do not
+// replace generation's context, and streaming progress cannot extend their budget.
+func (r *Runtime) newPhase(t *turn, ms float64, hard bool) *stage {
+	ctx, cancel := context.WithCancelCause(context.Background())
+	if t.proactive {
+		ctx, _ = scheduler.WithModelPriority(ctx, 2)
+	}
+	s := &stage{Context: ctx, cancel: cancel, signal: dispatch.NewSignal(), hardDeadline: hard}
+	s.stop = context.AfterFunc(t.context.root, func() { s.abort(code("context_cancelled")) })
+	var timeout error = code("model_stage_timeout")
+	if hard {
+		timeout = context.DeadlineExceeded
+	}
 	s.mu.Lock()
-	s.timer = r.services.Clock.AfterFunc(ms, func() { s.abort(code("model_stage_timeout")) })
+	s.timer = r.services.Clock.AfterFunc(ms, func() { s.abort(timeout) })
 	s.mu.Unlock()
 	if t.context.root.Aborted() {
 		s.abort(code("context_cancelled"))
 	}
-	t.context.stage.Store(s)
 	return s
 }
 func (s *stage) abort(err error) {
@@ -52,6 +63,9 @@ func (s *stage) abort(err error) {
 func (s *stage) progress() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if s.hardDeadline {
+		return
+	}
 	if s.timer != nil {
 		s.timer.Stop()
 		s.timer = nil

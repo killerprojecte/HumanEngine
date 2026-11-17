@@ -1,5 +1,9 @@
 """Driver tests only; these never replace the actual Docker acceptance gate."""
 import io
+import os
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -8,18 +12,55 @@ import acceptance
 
 
 class DriverTests(unittest.TestCase):
-    def test_node_process_check_requests_pid_and_parses_command_column(self):
-        for rows, expected in [
-            ("PID                 COMMAND\n1421                humanengine", True),
-            ("PID COMMAND\n1421 humanengine\n1530 node", False),
-            (" PID   COMMAND\n1421 humanengine\n1531 nodejs", False),
-            ("PID COMMAND\n1421 node-exporter", True),
-        ]:
+    def test_node_identity_probe_runs_inside_container_as_normal_user(self):
+        for rows, expected in [("", []), ("42\n7", [7, 42])]:
             with self.subTest(rows=rows), patch.object(acceptance, "docker", return_value=rows) as call:
-                self.assertEqual(acceptance.no_node("fixture"), expected)
-                call.assert_called_once_with("top", "fixture", "-eo", "pid,comm")
-        with patch.object(acceptance, "docker", return_value="COMMAND\nnode"), self.assertRaises(AssertionError):
-            acceptance.no_node("fixture")
+                self.assertEqual(acceptance.node_pids("fixture"), expected)
+                self.assertEqual(call.call_args.args[:6], ("exec", "--user", "node", "fixture", "sh", "-c"))
+                script = call.call_args.args[6]
+                self.assertIn("/proc/[0-9]*/exe", script)
+                self.assertNotIn("cmdline", script)
+                self.assertNotIn("environ", script.split("set -eu", 1)[1])
+        with patch.object(acceptance, "docker", return_value="MainThread"), self.assertRaises(AssertionError):
+            acceptance.node_pids("fixture")
+
+    def test_real_node_executable_identity_with_mainthread_name(self):
+        # The same non-root /proc read used by docker exec, with real Node.
+        self.assertNotEqual(os.geteuid(), 0, "run identity proof as an ordinary user")
+        node = shutil.which("node")
+        self.assertIsNotNone(node)
+        script = Path(__file__).with_name("node-pids.sh")
+        process = subprocess.Popen(
+            [node, "-e", "process.title='MainThread';console.log(process.pid);setInterval(()=>{},1000)"],
+            stdout=subprocess.PIPE, text=True)
+        try:
+            self.assertEqual(int(process.stdout.readline()), process.pid)
+            self.assertEqual(Path(f"/proc/{process.pid}/comm").read_text().strip(), "MainThread")
+            self.assertEqual(Path(f"/proc/{process.pid}/exe").resolve(), Path(node).resolve())
+            output = subprocess.check_output(["sh", str(script)], text=True)
+            self.assertIn(str(process.pid), output.splitlines())
+            self.assertTrue(all(row.isdecimal() for row in output.splitlines()))
+        finally:
+            process.terminate()
+            process.wait(timeout=10)
+            process.stdout.close()
+        output = subprocess.check_output(["sh", str(script)], text=True)
+        self.assertNotIn(str(process.pid), output.splitlines())
+
+    def test_parameterized_v1_fixture_has_two_independent_ids_and_echoes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for plugin_id in ("package-fixture-a", "package-fixture-b"):
+                target = Path(directory) / (plugin_id + ".mjs")
+                shutil.copyfile(Path(__file__).with_name("fixture.mjs"), target)
+                source = """
+import assert from 'node:assert/strict';
+const {default: plugin} = await import(process.argv[1]);
+assert.equal(plugin.manifest.id, process.argv[2]);
+let echo;
+plugin.setup({registerAdminAction(name, callback) { assert.equal(name, 'echo'); echo = callback; }});
+assert.deepEqual(await echo({proof:'synthetic'}), {input:{proof:'synthetic'},packaged:true,pluginId:process.argv[2]});
+"""
+                subprocess.run(["node", "--input-type=module", "-e", source, target.as_uri(), plugin_id], check=True)
 
     def test_packaging_uses_modern_python_distro_and_matching_native_runtime(self):
         # Source contract only: actual libraries still require the Docker gate.

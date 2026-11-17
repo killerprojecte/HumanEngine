@@ -65,15 +65,22 @@ It drives the installed image, never a checkout's Go test server:
 
 - unauthenticated refusal and authenticated settings write/read;
 - zero enabled V1 plugins with no retained Node process (no Node healthcheck);
+  the observer runs as the normal image user inside its PID namespace and matches
+  `/proc/<pid>/exe` against the canonical Node executable, emitting PIDs only.
+  It never reads command lines or environments: Node 24 can report `MainThread`
+  in `comm`, so process names are not executable identity;
 - second writer rejection using the same data/authority on a different published
   port, while the first instance remains usable;
 - real HTTP `100 Continue` before SIGTERM, waiting on the held body, accepted write
   completion before owner drain, and persistent settings after restart;
-- standalone synthetic V1 module mounted without the source tree, enabled through
-  the real API, executing an admin action, then physically unloading the last host.
+- the same standalone synthetic V1 fixture mounted under two distinct plugin IDs:
+  zero Node after disabled startup settles; exactly one PID after first enable
+  and echo; that same sole PID after second enable; first disabled action returns
+  unavailable while the second still echoes on that PID; zero after last disable.
+  This proves shared-host lifecycle only when the actual Docker gate passes.
 
 The resulting JSON records the exact image ID and completed checks; synthetic
-container logs are retained without token values. The fixture has no model,
+container logs are retained without token values. The parameterized fixtures have no model,
 platform, or paid-provider effects. No volume or container outside its unique
 per-run prefix is removed. The image embeds V1 workers, ICU and builtin WASM;
 Node is available for V1 but is not the server entrypoint. Local V1 plugins with
@@ -88,11 +95,13 @@ acceptance. Default Go migration CI remains a separate gate.
 
 ## Validation and release limitations
 
-The initial implementation was checked with Python driver tests, syntax/format
-checks and source review. Docker is unavailable in the implementation workspace,
-so **image build and end-to-end container acceptance have not run locally**. The
-workflow must pass on the final commit before this slice is accepted; no skip or
-mock fallback turns a missing Docker runtime into success.
+The identity-probe correction includes Python driver tests, a real Node 24.22.1
+subprocess with `comm=MainThread` inspected as an ordinary non-root user, and both
+fixture IDs imported/executed by real Node. These are local probe/fixture checks,
+not a shared-host or container acceptance result. Docker is unavailable in the
+implementation workspace, so **image build and end-to-end container acceptance
+have not run locally**. The final commit's Docker gate remains required; no skip
+or mock fallback turns a missing Docker runtime into success.
 
 The image carries the repository's available imagecodec source/notices/provenance,
 ICU license/build metadata and sqlite-vec license/manifest. This does **not** close

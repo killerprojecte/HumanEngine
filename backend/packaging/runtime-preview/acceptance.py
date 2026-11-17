@@ -21,17 +21,14 @@ def docker(*args):
 
 
 
-def no_node(name):
-    # Docker uses the PID column to match host processes to this container.
-    # docker top itself does not create a process inside the container.
-    rows = docker("top", name, "-eo", "pid,comm").splitlines()
-    assert rows and rows[0].split()[0] == "PID", "missing docker top PID column"
-    commands = []
-    for row in rows[1:]:
-        pid, command = row.split(None, 1)
-        assert pid.isdecimal(), "invalid docker top PID"
-        commands.append(command.strip())
-    return not any(command in ("node", "nodejs") for command in commands)
+def node_pids(name):
+    # Execute the non-Node observer as the image's ordinary user in its PID
+    # namespace; output contains only PIDs, never argv, environment or tokens.
+    script = Path(__file__).with_name("node-pids.sh").read_text()
+    output = docker("exec", "--user", "node", name, "sh", "-c", script)
+    rows = output.splitlines()
+    assert all(row.isdecimal() for row in rows), "invalid executable identity PID"
+    return sorted(int(row) for row in rows)
 
 
 def wait_for(check, label, seconds=90):
@@ -102,8 +99,9 @@ def main():
                    "-v", data + ":/app/data", "-v", authority + ":/app/authority"]
         if plugin:
             fixture = Path(__file__).with_name("fixture.mjs").resolve()
-            command += ["--mount", f"type=bind,source={fixture},target=/app/plugins/fixture.mjs,readonly",
-                        "-e", "HUMANENGINE_PLUGINS=fixture.mjs"]
+            for plugin_id in ("package-fixture-a", "package-fixture-b"):
+                command += ["--mount", f"type=bind,source={fixture},target=/app/plugins/{plugin_id}.mjs,readonly"]
+            command += ["-e", "HUMANENGINE_PLUGINS=package-fixture-a.mjs,package-fixture-b.mjs"]
         docker(*command, args.image)
         return name
 
@@ -127,7 +125,7 @@ def main():
             volumes.append(volume)
         first = start("first", *volumes)
         port = ready(first)
-        assert no_node(first), "zero V1 plugins spawned Node"
+        assert not node_pids(first), "zero V1 plugins spawned Node"
         report["checks"].append("zero-v1-no-node")
         request(port, "GET", "/api/settings", authenticated=False, expected=401)
         settings = request(port, "GET", "/api/settings")
@@ -164,15 +162,32 @@ def main():
         restarted = start("restart", *volumes, plugin=True)
         port = ready(restarted)
         assert request(port, "GET", "/api/settings")["debugModelIO"] is False
-        assert no_node(restarted), "disabled V1 worker retained after startup inspection"
+        wait_for(lambda: not node_pids(restarted), "disabled V1 startup inspection settled")
         report["checks"].append("restart-persistence")
-        request(port, "PUT", "/api/plugins/package-fixture/enabled", {"enabled": True})
-        wait_for(lambda: not no_node(restarted), "enabled V1 Node host")
-        assert request(port, "POST", "/api/plugins/package-fixture/actions/echo",
-                       {"proof": "source-free"}) == {"input": {"proof": "source-free"}, "packaged": True}
-        request(port, "PUT", "/api/plugins/package-fixture/enabled", {"enabled": False})
-        wait_for(lambda: no_node(restarted), "last V1 physically unloaded")
-        report["checks"].append("packaged-v1-echo-enable-disable")
+        a, b = "package-fixture-a", "package-fixture-b"
+
+        def echo(plugin_id):
+            assert request(port, "POST", f"/api/plugins/{plugin_id}/actions/echo",
+                           {"proof": "source-free"}) == {
+                               "input": {"proof": "source-free"},
+                               "packaged": True, "pluginId": plugin_id}
+
+        request(port, "PUT", f"/api/plugins/{a}/enabled", {"enabled": True})
+        first_host = wait_for(lambda: node_pids(restarted), "first enabled V1 Node host")
+        assert len(first_host) == 1, "first V1 must own exactly one shared host"
+        echo(a)
+        assert node_pids(restarted) == first_host
+        request(port, "PUT", f"/api/plugins/{b}/enabled", {"enabled": True})
+        echo(b)
+        assert node_pids(restarted) == first_host, "second V1 must share the original host"
+        echo(a)
+        request(port, "PUT", f"/api/plugins/{a}/enabled", {"enabled": False})
+        request(port, "POST", f"/api/plugins/{a}/actions/echo", {}, expected=503)
+        echo(b)
+        assert node_pids(restarted) == first_host, "remaining V1 lost or replaced its host"
+        request(port, "PUT", f"/api/plugins/{b}/enabled", {"enabled": False})
+        wait_for(lambda: not node_pids(restarted), "last V1 physically unloaded")
+        report["checks"].append("packaged-two-v1-shared-pid-and-physical-unload")
         drain(restarted)
         report["status"] = "passed"
     except BaseException:

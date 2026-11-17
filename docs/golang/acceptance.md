@@ -1,9 +1,13 @@
 # Go migration acceptance record
 
-The feature branch is not yet a production replacement. The executable still
-uses read-only preview mode; completed packages and checkpoints do not establish
+The feature branch is not yet a production replacement. The executable has
+explicit read-only and writable runtime-preview modes; completed packages and
+checkpoints do not establish
 that all runtime services, HTTP routes, plugin capabilities or deployment paths
 are wired together.
+
+See [remaining work and current baseline](remaining-work.md) for the latest
+verified head, writable-launcher evidence and outstanding cutover gates.
 
 ## Exact-head accepted checkpoints
 

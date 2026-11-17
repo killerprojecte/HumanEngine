@@ -1,8 +1,10 @@
 # Go migration coverage and composition boundaries
 
 This is an implementation map, not a declaration that the Go backend can replace
-production. The current executable still requires `--read-only-preview` and the
-existing TypeScript production startup has not been replaced.
+production. The executable now also offers explicit writable `--runtime-preview`; the
+existing TypeScript production startup has not been replaced. See the current
+[remaining-work handoff](remaining-work.md) for priorities and exact-baseline
+evidence; the slice entries below retain historical composition boundaries.
 
 ## Latest integration status
 

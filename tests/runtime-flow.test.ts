@@ -323,7 +323,8 @@ test('typing cancellation and router setup failure close every started span with
     await until(() =>
       f.store.logs.some((row) => row.stage === 'typing_delay' && row.status === 'started'),
     )
-    f.runtime.recall(s.id, 'incoming')
+    // This fixture tests explicit typing cancellation, not recall of unquoted context.
+    f.runtime.cancel(s.id)
     await until(() => f.runtime.activeTasks === 0)
     await until(() =>
       f.store.logs.some((row) => row.stage === 'turn' && row.status === 'cancel_requested'),

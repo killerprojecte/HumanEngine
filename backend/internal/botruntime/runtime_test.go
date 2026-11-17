@@ -556,7 +556,7 @@ func runRuntimeOracle(t *testing.T, name string, expected map[string]any, expect
 		t.Errorf("actual source trace mismatch\nactual=%s\nexpected=%s\nerror=%v", a, b, result.Err)
 	}
 	if expectedRequests != nil {
-		expectedRequests = memeDeltaOracleRequests(expectedRequests)
+		expectedRequests = optionalEmojiOracleRequests(t, memeDeltaOracleRequests(expectedRequests))
 		normalized := normalizeRequests(modelRequests, topic)
 		text, _ := jsjson.Stringify(normalized)
 		var got []any

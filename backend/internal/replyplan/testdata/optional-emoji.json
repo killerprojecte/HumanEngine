@@ -1,0 +1,69 @@
+{
+  "node": "v24.22.1",
+  "reference": "67bede7445b1b35acaa214097873c40d18bd9958",
+  "source": {
+    "path": "src/runtime/reply-plan.ts",
+    "sha256": "d9eb8e59a67ca15cbfab5dc588828fd3bf7a30fcd67a4b6ff2906dd884b0e06e"
+  },
+  "frozenExpected": "{\"error\":\"planner_invalid_plan\"}",
+  "cases": [
+    {
+      "name": "required-emoji",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"targetMessageIds\":[\"m1\"],\"contextMessageIds\":[\"m1\"],\"strategy\":\"Answer briefly.\",\"constraints\":[],\"facts\":[],\"assets\":[],\"actions\":[]},\"input\":{\"targetMessageIds\":[\"m1\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[{\"id\":\"source\",\"value\":\"Synthetic fact\"}],\"actionTools\":[{\"name\":\"learning.propose\",\"description\":\"Fixture\",\"inputSchema\":{}},{\"name\":\"experience.propose\",\"description\":\"Fixture\",\"inputSchema\":{}},{\"name\":\"memes.feedback\",\"description\":\"Fixture\",\"inputSchema\":{}}]}}",
+      "expected": "{\"value\":{\"action\":\"reply\",\"deliveryTool\":\"messages.send\",\"targetMessageIds\":[\"m1\"],\"contextMessageIds\":[\"m1\"],\"strategy\":\"Answer briefly.\",\"constraints\":[],\"facts\":[],\"assets\":[],\"emoji\":[],\"expressionGoals\":[],\"memorySelections\":[],\"stateEvidenceIds\":[],\"actions\":[]}}"
+    },
+    {
+      "name": "omitted",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"]},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"value\":{\"action\":\"reply\",\"deliveryTool\":\"messages.send\",\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"strategy\":\"Answer the request.\",\"constraints\":[\"Answer briefly.\"],\"facts\":[],\"assets\":[],\"emoji\":[],\"expressionGoals\":[\"Offer a warm response.\"],\"memorySelections\":[],\"stateEvidenceIds\":[],\"actions\":[]}}"
+    },
+    {
+      "name": "empty",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"],\"emoji\":[]},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"value\":{\"action\":\"reply\",\"deliveryTool\":\"messages.send\",\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"strategy\":\"Answer the request.\",\"constraints\":[\"Answer briefly.\"],\"facts\":[],\"assets\":[],\"emoji\":[],\"expressionGoals\":[\"Offer a warm response.\"],\"memorySelections\":[],\"stateEvidenceIds\":[],\"actions\":[]}}"
+    },
+    {
+      "name": "null",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"],\"emoji\":null},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"error\":\"planner_invalid_plan\"}"
+    },
+    {
+      "name": "string",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"],\"emoji\":\"🙂\"},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"error\":\"planner_invalid_plan\"}"
+    },
+    {
+      "name": "number",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"],\"emoji\":0},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"error\":\"planner_invalid_plan\"}"
+    },
+    {
+      "name": "invalid-item",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"],\"emoji\":[1]},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"error\":\"planner_invalid_plan\"}"
+    },
+    {
+      "name": "empty-item",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"],\"emoji\":[\"\"]},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"error\":\"planner_invalid_plan\"}"
+    },
+    {
+      "name": "too-many",
+      "kind": "validate",
+      "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"],\"emoji\":[\"🙂\",\"🙂\",\"🙂\",\"🙂\",\"🙂\",\"🙂\",\"🙂\",\"🙂\",\"🙂\"]},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+      "expected": "{\"error\":\"planner_invalid_plan\"}"
+    }
+  ],
+  "handoff": {
+    "input": "{\"value\":{\"action\":\"reply\",\"actions\":[],\"assets\":[],\"constraints\":[\"Answer briefly.\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"expressionGoals\":[\"Offer a warm response.\"],\"facts\":[],\"strategy\":\"Answer the request.\",\"targetMessageIds\":[\"m2\"]},\"input\":{\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"evidence\":[],\"actionTools\":[]}}",
+    "expected": "{\"result\":{\"plan\":{\"action\":\"reply\",\"deliveryTool\":\"messages.send\",\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"strategy\":\"Answer the request.\",\"constraints\":[\"Answer briefly.\"],\"facts\":[],\"assets\":[],\"emoji\":[],\"expressionGoals\":[\"Offer a warm response.\"],\"memorySelections\":[],\"stateEvidenceIds\":[],\"actions\":[]},\"evidence\":[],\"rounds\":1,\"toolCalls\":0},\"brief\":{\"coverageByEvidence\":[],\"plan\":{\"action\":\"reply\",\"deliveryTool\":\"messages.send\",\"targetMessageIds\":[\"m2\"],\"contextMessageIds\":[\"m1\",\"m2\"],\"strategy\":\"Answer the request.\",\"constraints\":[\"Answer briefly.\"],\"facts\":[],\"assets\":[],\"emoji\":[],\"expressionGoals\":[\"Offer a warm response.\"]},\"evidence\":[],\"imageContext\":[],\"actionReceipts\":[]},\"completions\":1}"
+  }
+}

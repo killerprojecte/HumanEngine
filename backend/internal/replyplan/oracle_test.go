@@ -46,6 +46,7 @@ func loadOracle(t *testing.T) sourceOracle {
 	if f.Node != "v24.22.1" {
 		t.Fatal(f.Node)
 	}
+	applyOptionalEmojiDelta(t, &f)
 	return f
 }
 func parse(t *testing.T, s string) any {

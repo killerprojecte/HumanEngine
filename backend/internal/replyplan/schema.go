@@ -18,9 +18,19 @@ import (
 var schemaFiles embed.FS
 var planSchemas [2]*Object
 var semanticSchema *Object
+var planInputDefaults *Object
 var schemaPatterns = map[string]*regexp.Regexp{}
 
 func init() {
+	data, err := schemaFiles.ReadFile("schema/plan-input-defaults.json")
+	if err != nil {
+		panic(err)
+	}
+	value, err := jsjson.ParseBytes(data)
+	if err != nil {
+		panic(err)
+	}
+	planInputDefaults = object(value)
 	for i, name := range []string{"plan.json", "plan-suggestions.json", "semantic-state.json"} {
 		data, err := schemaFiles.ReadFile("schema/" + name)
 		if err != nil {
@@ -36,6 +46,7 @@ func init() {
 		}
 		checkSchema(s)
 		if i < 2 {
+			applyPlanInputDefaults(s)
 			planSchemas[i] = s
 		} else {
 			semanticSchema = s
@@ -276,6 +287,7 @@ func init() {
 			panic(err)
 		}
 		finalTools[i] = object(value)
+		applyPlanInputDefaults(object(get(finalTools[i], "inputSchema")))
 	}
 }
 
@@ -287,4 +299,11 @@ func PlanTool(suggestions bool) *Object {
 		i = 1
 	}
 	return object(clone(finalTools[i]))
+}
+
+// The compact source-generated delta preserves the frozen schema artifacts while
+// matching the current TypeScript input contract, including omitted emoji.
+func applyPlanInputDefaults(schema *Object) {
+	set(object(get(schema, "properties")), "emoji", clone(get(planInputDefaults, "emoji")))
+	set(schema, "required", clone(get(planInputDefaults, "required")))
 }

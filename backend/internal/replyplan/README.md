@@ -179,3 +179,31 @@ segmented wire accounting and immutable callback ownership. Default and pinned
 native-ICU Go test variants run this same corpus. Dedicated tests retain callback
 views across return, mutate caller copies, preserve shallow brief semantics and
 exercise content larger than earlier fixed byte policies without adding a cap.
+
+## Optional emoji compatibility delta
+
+The released TypeScript fix `67bede7445b1b35acaa214097873c40d18bd9958`
+defaults omitted `emoji` to `[]` and advertises the input rather than output
+schema. A text-only `reply.plan` therefore reaches Replyer without an extra
+repair completion. Explicit null, wrong types, invalid items and existing
+limits are still rejected. Target, evidence and delivery authority are unchanged.
+
+`schema/plan-input-defaults.json` is the compact generated difference applied
+to both active plan variants and tool schemas. The generator verifies that
+applying just these two fields exactly equals all four current TypeScript
+schemas. Original schemas, source hashes and `testdata/node.json` stay frozen;
+the single historical missing-emoji rejection is matched by exact input and
+replaced only by its independently captured current-source expectation.
+
+```sh
+HUMANENGINE_LEGACY_SOURCE=/path/to/the/pinned/typescript/checkout \
+  node --import tsx backend/tests/generate-reply-plan-optional-emoji.mjs --check
+cd backend
+go test -race ./internal/replyplan ./internal/botruntime
+```
+
+The delta corpus covers omitted/empty and invalid emoji values, plus the complete
+planner-to-Replyer brief with one completion. The runtime test additionally
+asserts one Planner call, one Replyer call and one physical adapter send. These
+are deterministic local adapters and models, not a deployment or live-provider
+verification.

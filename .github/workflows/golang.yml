@@ -20,6 +20,16 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - run: npm ci
+      - name: Check out pinned optional-emoji compatibility source
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: 67bede7445b1b35acaa214097873c40d18bd9958
+          path: .compat/optional-emoji-source
+          persist-credentials: false
+      - name: Verify Planner optional-emoji contract against released TypeScript
+        env:
+          HUMANENGINE_LEGACY_SOURCE: .compat/optional-emoji-source
+        run: node --import tsx backend/tests/generate-reply-plan-optional-emoji.mjs --check
       - run: make -C backend plugin-layout-check
       - run: make -C backend test differential test-bundle bundle test-sqlite-profile test-projection-source-free installation-bundle-check
       - name: Build and verify exact native ICU provider

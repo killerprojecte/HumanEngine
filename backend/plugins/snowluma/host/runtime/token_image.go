@@ -3,6 +3,7 @@ package snowlumaruntime
 import (
 	"context"
 	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
@@ -21,14 +22,31 @@ func (s *Sender) readBrowserImage(ctx context.Context, scene botruntime.Scene, r
 		return nil, err
 	}
 	file := str(media, "file")
-	if publicImageLocator(file) {
-		return s.readPublicBrowserImage(ctx, file, before)
-	}
-	return readTokenOrInlineDescriptor(ctx, media, file, func(call context.Context, token string) (any, error) {
+	lookup := func(call context.Context, token string) (any, error) {
 		return s.lookupImageToken(call, token, before)
-	}, browserTokenContinuation(publicBrowserImageSupported, func(call context.Context, locator string) ([]byte, error) {
+	}
+	public := func(call context.Context, locator string) ([]byte, error) {
 		return s.readPublicBrowserImage(call, locator, before)
-	}))
+	}
+	if publicImageLocator(file) {
+		return readPublicImageWithTokenRefresh(ctx, media, file, lookup, public)
+	}
+	return readTokenOrInlineDescriptor(ctx, media, file, lookup, browserTokenContinuation(publicBrowserImageSupported, public))
+}
+
+// A direct public 403 is the scoped stale-locator signal. All other failures
+// retain the original result and cannot authorize a second platform action.
+func readPublicImageWithTokenRefresh(ctx context.Context, media *jsjson.Object, file string, lookup imageTokenLookup, public selectedImageRead) ([]byte, error) {
+	image, err := public(ctx, file)
+	if err != publicImageHTTPStatus(http.StatusForbidden) || ctx.Err() != nil {
+		return image, err
+	}
+	token := str(media, "fileId")
+	// Token syntax excludes the colon in the original HTTP(S) URL.
+	if !validOpaqueToken(token) {
+		return image, err
+	}
+	return fetchImageToken(ctx, token, lookup, browserTokenContinuation(true, public))
 }
 
 func (s *Sender) lookupImageToken(call context.Context, token string, before func(context.Context) error) (any, error) {
@@ -155,13 +173,18 @@ func opaqueImageToken(media *jsjson.Object, file string) string {
 	if !present {
 		token = file
 	}
-	if token == "" || token == "." || token == ".." || strings.ContainsAny(token, "/\\:%\x00") {
-		return ""
-	}
-	if units, err := jsjson.UTF16Len(token); err != nil || units > 16384 {
+	if !validOpaqueToken(token) {
 		return ""
 	}
 	return token
+}
+
+func validOpaqueToken(token string) bool {
+	if token == "" || token == "." || token == ".." || strings.ContainsAny(token, "/\\:%\x00") {
+		return false
+	}
+	units, err := jsjson.UTF16Len(token)
+	return err == nil && units <= 16384
 }
 
 func publicImageLocator(value string) bool {

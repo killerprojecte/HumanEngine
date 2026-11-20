@@ -1,0 +1,176 @@
+{
+  "scene": {
+    "adapterId": "snowluma",
+    "accountId": "42",
+    "kind": "group",
+    "platformSceneId": "99",
+    "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+  },
+  "file": "https://fixture.invalid/stale",
+  "cases": [
+    {
+      "name": "direct-success",
+      "fileId": "opaque",
+      "first": "",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoib3BhcXVlIn0",
+      "actions": [],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "first bytes",
+      "error": ""
+    },
+    {
+      "name": "expired-403-inline",
+      "fileId": "opaque",
+      "first": "public_http_403",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoib3BhcXVlIn0",
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "b",
+      "error": ""
+    },
+    {
+      "name": "expired-403-chosen-public",
+      "fileId": "opaque",
+      "first": "public_http_403",
+      "reply": {
+        "url": "https://fixture.invalid/fresh",
+        "file": "base64://YQ=="
+      },
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoib3BhcXVlIn0",
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/stale",
+        "https://fixture.invalid/fresh"
+      ],
+      "bytes": "fresh bytes",
+      "error": ""
+    },
+    {
+      "name": "returned-403-not-retried",
+      "fileId": "opaque",
+      "first": "public_http_403",
+      "second": "public_http_403",
+      "reply": {
+        "url": "https://fixture.invalid/still-expired",
+        "file": "base64://YQ=="
+      },
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoib3BhcXVlIn0",
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/stale",
+        "https://fixture.invalid/still-expired"
+      ],
+      "bytes": "",
+      "error": "public_http_403"
+    },
+    {
+      "name": "missing-file-id",
+      "first": "public_http_403",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIn0",
+      "actions": [],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "",
+      "error": "public_http_403"
+    },
+    {
+      "name": "same-file-id",
+      "fileId": "https://fixture.invalid/stale",
+      "first": "public_http_403",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoiaHR0cHM6Ly9maXh0dXJlLmludmFsaWQvc3RhbGUifQ",
+      "actions": [],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "",
+      "error": "public_http_403"
+    },
+    {
+      "name": "cancelled",
+      "fileId": "opaque",
+      "first": "public_http_403",
+      "cancel": true,
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoib3BhcXVlIn0",
+      "actions": [],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "",
+      "error": "public_http_403"
+    },
+    {
+      "name": "404-is-scope-limit",
+      "fileId": "opaque",
+      "first": "public_http_404",
+      "goLimited": true,
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoib3BhcXVlIn0",
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "b",
+      "error": ""
+    },
+    {
+      "name": "policy-is-scope-limit",
+      "fileId": "opaque",
+      "first": "media_address_not_public",
+      "goLimited": true,
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoib3BhcXVlIn0",
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "b",
+      "error": ""
+    },
+    {
+      "name": "invalid-token-is-scope-limit",
+      "fileId": "/local/key",
+      "first": "public_http_403",
+      "goLimited": true,
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL3N0YWxlIiwiZmlsZUlkIjoiL2xvY2FsL2tleSJ9",
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "/local/key"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/stale"
+      ],
+      "bytes": "b",
+      "error": ""
+    }
+  ]
+}

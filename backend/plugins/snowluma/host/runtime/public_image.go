@@ -167,7 +167,7 @@ func (r publicImageReader) hop(ctx context.Context, u *whatwg.Url, reqURL *url.U
 		return nil, location, nil
 	case http.StatusOK:
 	default:
-		return nil, "", fmt.Errorf("public_http_%d", resp.StatusCode)
+		return nil, "", publicImageHTTPStatus(resp.StatusCode)
 	}
 	if resp.ContentLength > publicImageMaxBytes {
 		return nil, "", errors.New("media_size_limit")
@@ -192,3 +192,7 @@ func publicImageIOError(ctx context.Context) error {
 	}
 	return errors.New("media_fetch_failed")
 }
+
+type publicImageHTTPStatus int
+
+func (status publicImageHTTPStatus) Error() string { return fmt.Sprintf("public_http_%d", int(status)) }

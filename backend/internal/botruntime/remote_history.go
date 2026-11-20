@@ -46,13 +46,14 @@ func (r *Runtime) FetchRemoteHistory(ctx context.Context, scene Scene) (HistoryP
 
 type BrowserHistory struct {
 	Items              []*Object
+	Managed            map[*Object]struct{}
 	Coverage           string
 	Reason, NextCursor *string
 }
 
 // BrowserRemoteHistory uses the current local view, never one captured before
 // waiting on the platform. Its caller fences the materialization for publication.
-func (r *Runtime) BrowserRemoteHistory(scene Scene, page HistoryPage) (BrowserHistory, error) {
+func (r *Runtime) BrowserRemoteHistory(scene Scene, page HistoryPage, managedEnabled bool) (BrowserHistory, error) {
 	done, admitted := r.beginOperation()
 	if !admitted {
 		return BrowserHistory{}, code("runtime_closed")
@@ -95,10 +96,11 @@ func (r *Runtime) BrowserRemoteHistory(scene Scene, page HistoryPage) (BrowserHi
 			}
 		}
 	}
-	local, err := r.LocalHistory(scene.ID)
+	local, managed, err := r.LocalHistory(scene.ID, managedEnabled)
 	if err != nil {
 		return BrowserHistory{}, err
 	}
+	result.Managed = managed
 	if unavailable {
 		// The no-adapter source path keeps local retention order and skips merge.
 		result.Items = availableHistory(local)

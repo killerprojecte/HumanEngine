@@ -46,6 +46,26 @@ try {
   const previewURL = projected.parts[0].mediaUrl
     .replace(encodeURIComponent(f.scene.id), encodeURIComponent('fixture:scene'))
     .replace(encodeURIComponent(shifted.id), encodeURIComponent('bot/message'))
+  const historyRow = { ...outgoing, id: f.adapter.messageId(f.scene, '85'), parts: [
+    { type: 'text', text: 'Synthetic Snow reply.' },
+    { ...outgoing.parts[0], mediaType: 'image' },
+  ] }
+  f.engine.runtime.ingest(historyRow, f.scene, false)
+  const historyParts = {}
+  for (const [name, search] of [['local', '?source=local'], ['default', '']]) {
+    const history = await f.app.request(`/api/scenes/${encodeURIComponent(f.scene.id)}/history${search}`, {
+      headers: { Authorization: `Bearer ${f.token}` },
+    })
+    const row = (await history.json()).items?.find((message) => message.id === historyRow.id)
+    if (history.status !== 200 || row?.origin !== 'history' || row.parts.length !== 2) {
+      throw new Error('fixture_history_media_mismatch')
+    }
+    const part = row.parts[1]
+    if (!part.mediaUrl?.endsWith('/media/1') || 'assetId' in part) {
+      throw new Error('fixture_history_link_mismatch')
+    }
+    historyParts[name] = { ...part, mediaUrl: previewURL }
+  }
   await check('head', url, 'HEAD')
   await check('unauthorized', url, 'GET', false)
   await check('invalidIndex', url.replace(/\/0$/, '/00'))
@@ -80,7 +100,7 @@ try {
   await check('beforeDelete', route(deleted))
   f.store.db.prepare('DELETE FROM meme_assets WHERE id=?').run(asset.id)
   await check('deleted', route(deleted))
-  const output = JSON.stringify({ base64: f.png.toString('base64'), previewURL, cases }, null, 2) + '\n'
+  const output = JSON.stringify({ base64: f.png.toString('base64'), previewURL, historyParts, cases }, null, 2) + '\n'
   const target = new URL('../internal/app/testdata/managed-display-image-source.json', import.meta.url)
   if (process.argv.includes('--check')) {
     if (fs.readFileSync(target, 'utf8') !== output) process.exitCode = 1

@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -32,6 +33,7 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	}
 	var fixture struct {
 		Base64, PreviewURL string
+		HistoryParts       map[string]map[string]any
 		Cases              map[string]struct {
 			Status                                                    int
 			MIME, Length, Disposition, ResourcePolicy, Cache, Nosniff string
@@ -69,7 +71,25 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	runtime := app.Engine.Runtime
 	sent := make(chan string, 2)
 	ids := []string{"bot/message", "deleted"}
-	runtime.AddAdapter("fixture", &botruntime.Adapter{Transport: &dispatch.Adapter{
+	runtime.AddAdapter("fixture", &botruntime.Adapter{History: func(_ context.Context, scene botruntime.Scene, _ int, settle func(*botruntime.Object, error)) {
+		duplicate := map[string]any{"id": "bot/message", "sceneId": scene.ID, "senderId": "remote-only", "origin": "history", "status": "available", "sentAt": "2099-01-01T00:00:00.000Z", "receivedAt": "2099-01-01T00:00:00.000Z", "parts": []any{map[string]any{"type": "media", "mediaType": "image/png", "assetId": strings.Repeat("f", 64), "mediaUrl": "https://untrusted.invalid/asset"}}}
+		another := make(map[string]any, len(duplicate))
+		for k, v := range duplicate {
+			another[k] = v
+		}
+		another["id"] = "remote-only"
+		raw, err := json.Marshal(map[string]any{"items": []any{duplicate, another}, "coverage": "partial"})
+		if err != nil {
+			settle(nil, err)
+			return
+		}
+		page, err := jsjson.ParseBytes(raw)
+		if err != nil {
+			settle(nil, err)
+			return
+		}
+		settle(page.(*jsjson.Object), nil)
+	}, Transport: &dispatch.Adapter{
 		Send: func(scene dispatch.SceneRef, segment dispatch.Segment, _ *dispatch.Signal, before func() error) *dispatch.Future[dispatch.Receipt] {
 			result := dispatch.NewFuture[dispatch.Receipt]()
 			if err := before(); err != nil {
@@ -199,11 +219,14 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 		t.Helper()
 		t.Run(name, func(t *testing.T) {
 			expected, ok := fixture.Cases[name]
-			if !ok {
+			if !ok && !strings.HasPrefix(name, "historyRoundTrip/") {
 				t.Fatal("missing source case", name)
 			}
 			request := httptest.NewRequest(method, path, nil)
-			if name == "previewRoundTrip" {
+			if name == "previewRoundTrip" || strings.HasPrefix(name, "historyRoundTrip/") {
+				if name != "previewRoundTrip" {
+					expected = fixture.Cases["previewRoundTrip"]
+				}
 				browserAuth(request)
 			} else {
 				sourceFixtureAuth(request, authorized)
@@ -289,6 +312,54 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 		t.Fatalf("preview returned %q, want TypeScript same-origin path %q", link, fixture.PreviewURL)
 	}
 	checkURL("previewRoundTrip", "GET", link, true)
+	historyRows := func(t *testing.T, query string) []map[string]any {
+		t.Helper()
+		historyPath := "/api/scenes/" + url.PathEscape(scene) + "/history" + query
+		request := httptest.NewRequest("GET", historyPath, nil)
+		browserAuth(request)
+		response := httptest.NewRecorder()
+		app.ServeHTTP(response, request)
+		var result struct{ Items []map[string]any }
+		if response.Code != 200 || json.Unmarshal(response.Body.Bytes(), &result) != nil {
+			t.Fatalf("history: %d %s", response.Code, response.Body)
+		}
+		return result.Items
+	}
+	t.Run("managed history links", func(t *testing.T) {
+		for _, tc := range []struct{ name, query string }{{"local", "?source=local"}, {"default", ""}} {
+			t.Run(tc.name, func(t *testing.T) {
+				count := 0
+				remoteSeen := false
+				for _, row := range historyRows(t, tc.query) {
+					if _, exists := row["sourceEventRef"]; exists {
+						t.Fatal("history exposed private source metadata")
+					}
+					if row["id"] == "remote-only" {
+						remoteSeen = true
+						remote := row["parts"].([]any)[0].(map[string]any)
+						if remote["assetId"] != nil || remote["mediaUrl"] != nil || remote["mediaKind"] != "image" {
+							t.Fatalf("remote-only row was linked: %+v", remote)
+						}
+					}
+					if row["id"] == outgoing {
+						count++
+						parts := row["parts"].([]any)
+						if len(parts) != 2 {
+							t.Fatalf("managed history part count = %d", len(parts))
+						}
+						part := parts[1].(map[string]any)
+						if row["origin"] != "history" || row["senderId"] != "bot" || !reflect.DeepEqual(part, fixture.HistoryParts[tc.name]) {
+							t.Fatalf("wrong owned history row: %+v", row)
+						}
+						checkURL("historyRoundTrip/"+tc.name, "GET", part["mediaUrl"].(string), true)
+					}
+				}
+				if count != 1 || remoteSeen != (tc.name == "default") {
+					t.Fatalf("history rows: managed=%d, remote-only=%t", count, remoteSeen)
+				}
+			})
+		}
+	})
 	check("head", "HEAD", scene, outgoing, "1", true)
 	check("unauthorized", "GET", scene, outgoing, "1", false)
 	check("invalidIndex", "GET", scene, outgoing, "00", true)
@@ -298,6 +369,27 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	check("scenePointsBeyond", "GET", strings.Repeat("😀", 4097), outgoing, "1", true)
 	check("messagePointsAt", "GET", scene, strings.Repeat("😀", 8192), "1", true)
 	check("messagePointsBeyond", "GET", scene, strings.Repeat("😀", 8193), "1", true)
+	assertHistoryUnlinked := func(messageID string) {
+		t.Helper()
+		for _, query := range []string{"?source=local", ""} {
+			found := false
+			for _, row := range historyRows(t, query) {
+				if row["id"] != messageID {
+					continue
+				}
+				found = true
+				for _, part := range row["parts"].([]any) {
+					fields := part.(map[string]any)
+					if fields["mediaUrl"] != nil || fields["assetId"] != nil {
+						t.Fatalf("history linked an unproven source on %q: %+v", query, fields)
+					}
+				}
+			}
+			if !found {
+				t.Fatalf("expected unlinked history row %q on %q", messageID, query)
+			}
+		}
+	}
 	capture := func() *memeengine.ManagedDisplayImage {
 		t.Helper()
 		image, err := app.Engine.ReadManagedDisplayImage(root, scene, outgoing, 1)
@@ -356,6 +448,7 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	if link := previewLink(outgoing); link != "" {
 		t.Fatalf("remapped preview contains prior owner link %q", link)
 	}
+	assertHistoryUnlinked(outgoing)
 	checkURL("wrongScene", "GET", link, true)
 	// The SQL remap may commit before the corresponding runtime effect.
 	if err := runtime.RegisterScene(registered); err != nil {
@@ -364,12 +457,14 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	if link := previewLink(outgoing); link != "" {
 		t.Fatalf("preview used runtime's old transport instead of the durable remap: %q", link)
 	}
+	assertHistoryUnlinked(outgoing)
 	checkURL("wrongScene", "GET", link, true)
 	saveScene(scene, "group")
 	ingest(scene, "unproven", "bot", id)
 	if link := previewLink("unproven"); link != "" {
 		t.Fatalf("unproven media exposed link %q", link)
 	}
+	assertHistoryUnlinked("unproven")
 	check("wrongScene", "GET", scene, "unproven", "0", true)
 	image = capture()
 	if err := runtime.Recall(ctx, scene, outgoing); err != nil {
@@ -379,6 +474,22 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	if link := previewLink(outgoing); link != "" {
 		t.Fatalf("recalled preview contains image link %q", link)
 	}
+	t.Run("recalled history", func(t *testing.T) {
+		for _, query := range []string{"?source=local", ""} {
+			found := false
+			for _, row := range historyRows(t, query) {
+				if row["id"] == outgoing {
+					found = true
+					if row["status"] != "recalled" || len(row["parts"].([]any)) != 0 {
+						t.Fatalf("recalled row disclosed old image proof: %+v", row)
+					}
+				}
+			}
+			if found != (query != "") {
+				t.Fatalf("unexpected recalled visibility for %q", query)
+			}
+		}
+	})
 	checkURL("recalled", "GET", link, true)
 	ingest(scene, "missing", "bot", strings.Repeat("f", 64))
 	check("missingAsset", "GET", scene, "missing", "0", true)

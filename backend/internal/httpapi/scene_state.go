@@ -96,15 +96,16 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 		if operation == "history" {
 			if kind != "" && kind != "simulation" {
 				var rows []*botruntime.Object
-				rows, err = owner.runtime.LocalHistory(sceneID)
+				var managed map[*botruntime.Object]struct{}
+				rows, managed, err = owner.runtime.LocalHistory(sceneID, s.memes != nil)
 				if err == nil {
 					reason := "local_history_window"
-					body, err = browserHistoryBody(botruntime.BrowserHistory{Items: rows, Coverage: "partial", Reason: &reason})
+					body, err = browserHistoryBody(botruntime.BrowserHistory{Items: rows, Managed: managed, Coverage: "partial", Reason: &reason})
 				}
 			}
 		} else if scene.ID == sceneID && scene.Kind != "" && scene.Kind != "simulation" {
 			var result botruntime.BrowserHistory
-			result, err = owner.remoteHistory(ctx, sqlID, scene, &observed)
+			result, err = owner.remoteHistory(ctx, sqlID, scene, &observed, s.memes != nil)
 			if err == nil {
 				body, err = browserHistoryBody(result)
 			}

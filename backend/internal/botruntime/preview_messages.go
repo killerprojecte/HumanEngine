@@ -29,20 +29,24 @@ func (r *Runtime) PreviewMessages(sceneID string, managedEnabled bool) ([]*Objec
 			}
 		}
 	}
-	recalled := displayRecallIDs(v)
-	if managed != nil {
-		_, adapterPresent := r.adapters.Load(v.scene.AdapterID)
-		owner, bindingSupported := r.services.Authority.(BoundDisplayAuthority)
-		if adapterPresent && bindingSupported {
-			rows, bound, err := owner.ProjectBoundDisplay(v.scene, bodies, recalled)
-			if !bound {
-				managed = nil
-			}
-			return rows, managed, err
+	rows, bound, err := r.projectBrowserDisplay(v.scene, bodies, displayRecallIDs(v), managed != nil)
+	if !bound {
+		managed = nil
+	}
+	return rows, managed, err
+}
+
+// projectBrowserDisplay reuses the projection's persisted scene read when a
+// retained managed receipt requires proof of its current display binding.
+func (r *Runtime) projectBrowserDisplay(scene Scene, bodies []*Object, recalled []string, managed bool) ([]*Object, bool, error) {
+	if managed {
+		_, adapterPresent := r.adapters.Load(scene.AdapterID)
+		if owner, ok := r.services.Authority.(BoundDisplayAuthority); adapterPresent && ok {
+			return owner.ProjectBoundDisplay(scene, bodies, recalled)
 		}
 	}
-	rows, err := r.services.Authority.ProjectDisplay(v.scene, bodies, recalled)
-	return rows, nil, err
+	rows, err := r.services.Authority.ProjectDisplay(scene, bodies, recalled)
+	return rows, false, err
 }
 
 func (r *Runtime) projectViewMessages(v *sceneView) ([]*Object, error) {

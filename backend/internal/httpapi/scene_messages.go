@@ -48,6 +48,7 @@ func presentSceneMessage(row *jsjson.Object, managed bool) {
 		case "media":
 			// URLs on the private row are not display authority.
 			part.Delete("mediaUrl")
+			part.Delete("mediaKind")
 			mediaType, _ := part.Get("mediaType")
 			mime, _ := mediaType.(string)
 			if available && (mime == "image" || len(mime) >= len("image/") && strings.EqualFold(mime[:len("image/")], "image/")) {

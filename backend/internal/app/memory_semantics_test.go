@@ -2,6 +2,7 @@ package app
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -37,18 +38,23 @@ func TestMemorySemanticsActualSource(t *testing.T) {
 		}
 		Items []json.RawMessage
 		Cases []struct {
-			Name, Path, Method, CacheControl, NoSniff string
-			Status                                    int
-			Body                                      json.RawMessage
-			Authorized, Enabled                       *bool
-			Answer, Expired, Recall                   bool
+			Name, Path, Method, CacheControl, NoSniff, Raw, Type string
+			Status                                               int
+			Body                                                 json.RawMessage
+			Authorized, Enabled                                  *bool
+			Answer, Expired, Recall, Fault                       bool
+			Journal                                              *struct {
+				Delta, Ack, Reader int64
+				Events             []json.RawMessage
+				Version            *int64
+			}
 		}
 	}
 	raw, err := os.ReadFile("testdata/memory-semantics-source.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := json.Unmarshal(raw, &fixture); err != nil || fixture.Node != "v24.22.1" || fixture.Timezone != "UTC" || len(fixture.Cases) != 19 {
+	if err := json.Unmarshal(raw, &fixture); err != nil || fixture.Node != "v24.22.1" || fixture.Timezone != "UTC" || len(fixture.Cases) != 39 {
 		t.Fatalf("Invalid oracle: %s %s %v", fixture.Node, fixture.Timezone, err)
 	}
 	for path, want := range fixture.SourceHashes {
@@ -138,6 +144,11 @@ func TestMemorySemanticsActualSource(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer writer.Close()
+	ledger, err := sql.Open("sqlite3", filepath.Join(gate.Authority, "authority.sqlite")+"?mode=ro")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ledger.Close()
 	store, err := semantic.New(db, writer)
 	if err != nil {
 		t.Fatal(err)
@@ -213,7 +224,18 @@ func TestMemorySemanticsActualSource(t *testing.T) {
 			if method == "" {
 				method = http.MethodGet
 			}
-			req := httptest.NewRequest(method, c.Path, nil)
+			req := httptest.NewRequest(method, c.Path, strings.NewReader(c.Raw))
+			var before recovery.Gate
+			if c.Journal != nil {
+				before, err = recovery.ReadGate(ctx, db)
+				if err != nil {
+					t.Fatal(err)
+				}
+				req.Header.Set("Content-Type", c.Type)
+				if c.Fault {
+					exec("CREATE TRIGGER synthetic_semantic_failure BEFORE UPDATE ON memory_semantic_candidates BEGIN SELECT RAISE(ABORT,'synthetic_semantic_failure'); END")
+				}
+			}
 			sourceFixtureAuth(req, c.Authorized == nil || *c.Authorized)
 			req.Header.Set("X-Request-ID", "synthetic-spoof")
 			out := httptest.NewRecorder()
@@ -237,6 +259,9 @@ func TestMemorySemanticsActualSource(t *testing.T) {
 				t.Fatal(err)
 			}
 			want := raw.(*jsjson.Object)
+			if trace, _ := want.Get("requestId"); trace == "@request" {
+				_ = want.Set("requestId", h.Get("X-Request-ID"))
+			}
 			if compact, ok := want.Get("items"); ok {
 				rows := compact.([]any)
 				for i, index := range rows {
@@ -252,6 +277,59 @@ func TestMemorySemanticsActualSource(t *testing.T) {
 			}
 			if got != string(wire) {
 				t.Fatalf("wire mismatch:\ngot %s\nwant %s", got, wire)
+			}
+			if j := c.Journal; j != nil {
+				after, err := recovery.ReadGate(ctx, db)
+				reader := max(before.MinimumReader, j.Reader)
+				if err != nil || after.Head.Sequence-before.Head.Sequence != j.Ack || after.MinimumReader != reader {
+					t.Fatalf("main ACK=%d reader=%d, want %d/%d (%v)", after.Head.Sequence-before.Head.Sequence, after.MinimumReader, j.Ack, reader, err)
+				}
+				rows, err := ledger.QueryContext(ctx, "SELECT sequence,payload FROM revocations WHERE sequence>? ORDER BY sequence", before.Head.Sequence)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer rows.Close()
+				index := 0
+				hash := regexp.MustCompile(`^[a-f0-9]{64}$`)
+				for rows.Next() {
+					var sequence int64
+					var event string
+					if err := rows.Scan(&sequence, &event); err != nil {
+						t.Fatal(err)
+					}
+					if index >= len(j.Events) || sequence != before.Head.Sequence+int64(index)+1 || recovery.ValidateEvent(event) != nil {
+						t.Fatalf("unexpected durable event at %d: %s", sequence, event)
+					}
+					object := memoryPatchObject(t, json.RawMessage(event))
+					prior, next := field(object, "beforeHash").(string), field(object, "afterHash").(string)
+					if !hash.MatchString(prior) || !hash.MatchString(next) || prior == next {
+						t.Fatalf("unqualified seal: %s", event)
+					}
+					_ = object.Set("beforeHash", "@hash")
+					_ = object.Set("afterHash", "@hash")
+					normalized, err := jsjson.Stringify(object)
+					wantEvent := memoryPatchObject(t, j.Events[index])
+					wantWire, wantErr := jsjson.Stringify(wantEvent)
+					if err != nil || wantErr != nil || normalized != wantWire {
+						t.Fatalf("journal got %s want %s (%v, %v)", normalized, wantWire, err, wantErr)
+					}
+					var version int64
+					var stored string
+					if err := db.QueryRowContext(ctx, "SELECT version,value FROM memory_semantic_candidates WHERE id=?", field(object, "id")).Scan(&version, &stored); err != nil || j.Version == nil || version != *j.Version {
+						t.Fatalf("unmatched registry version %d (%v)", version, err)
+					}
+					seal := next
+					if c.Fault {
+						seal = prior
+					}
+					if fmt.Sprintf("%x", sha256.Sum256([]byte(stored))) != seal {
+						t.Fatal("durable seal does not identify the stored candidate")
+					}
+					index++
+				}
+				if err := rows.Err(); err != nil || index != len(j.Events) || int64(index) != j.Delta {
+					t.Fatalf("durable events %d, want %d (%v)", index, j.Delta, err)
+				}
 			}
 		})
 	}

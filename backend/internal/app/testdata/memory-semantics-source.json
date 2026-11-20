@@ -5226,6 +5226,446 @@
       "noSniff": "nosniff"
     },
     {
+      "name": "review-auth-first",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{",
+      "type": "application/json",
+      "expect": 401,
+      "authorized": false,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "cacheControl": "",
+      "noSniff": ""
+    },
+    {
+      "name": "review-empty-untyped",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "type": "",
+      "expect": 400,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-untyped-json",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "",
+      "expect": 503,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "@request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-malformed",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{",
+      "type": "application/json",
+      "expect": 503,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "@request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-strict",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":2,\"status\":\"admitted\",\"confirmed\":true,\"extra\":1}",
+      "type": "application/json",
+      "expect": 400,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-unconfirmed",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"admitted\",\"confirmed\":false}",
+      "type": "application/json",
+      "expect": 400,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-unsafe-version",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":9007199254740992,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 400,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-zero-version",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":0,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 400,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-param-too-long-before-media",
+      "path": "/api/memory-semantics/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/review",
+      "method": "POST",
+      "raw": "{",
+      "type": "application/json",
+      "expect": 400,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-disabled-even-answer-on",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":2,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 409,
+      "enabled": false,
+      "answer": true,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 409,
+      "body": {
+        "error": "semantic_review_conflict_or_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-simulation",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"simulation\",\"expectedVersion\":2,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 404,
+      "enabled": true,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 404,
+      "body": {
+        "error": "semantic_scene_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-missing-scene",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"missing\",\"expectedVersion\":2,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 404,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 404,
+      "body": {
+        "error": "semantic_scene_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-foreign-scene",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"foreign\",\"expectedVersion\":2,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 409,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 409,
+      "body": {
+        "error": "semantic_review_conflict_or_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-missing-id",
+      "path": "/api/memory-semantics/not-present/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 409,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 409,
+      "body": {
+        "error": "semantic_review_conflict_or_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-cas-conflict",
+      "path": "/api/memory-semantics/b-00/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 409,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 409,
+      "body": {
+        "error": "semantic_review_conflict_or_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-stale-admit",
+      "path": "/api/memory-semantics/a-stale/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 409,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 409,
+      "body": {
+        "error": "semantic_review_conflict_or_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-stale-reject",
+      "path": "/api/memory-semantics/a-stale/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"rejected\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 200,
+      "journal": {
+        "delta": 1,
+        "ack": 1,
+        "reader": 8,
+        "events": [
+          {
+            "kind": "semantic_mutation",
+            "schemaVersion": 1,
+            "operation": "review",
+            "id": "a-stale",
+            "sceneId": "local",
+            "previousVersion": 1,
+            "nextVersion": 2,
+            "beforeHash": "@hash",
+            "afterHash": "@hash",
+            "nextState": {
+              "status": "rejected",
+              "admission": "administrator_review"
+            }
+          }
+        ],
+        "version": 2
+      },
+      "status": 200,
+      "body": {
+        "id": "a-stale",
+        "version": 2,
+        "status": "rejected"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-stale-reject-not-replayed",
+      "path": "/api/memory-semantics/a-stale/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"rejected\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 409,
+      "journal": {
+        "delta": 0,
+        "ack": 0,
+        "reader": 8,
+        "events": [],
+        "version": null
+      },
+      "status": 409,
+      "body": {
+        "error": "semantic_review_conflict_or_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "review-previously-rejected-admit",
+      "path": "/api/memory-semantics/%62-00/review",
+      "method": "POST",
+      "raw": "﻿{\"sceneId\":\"local\",\"expectedVersion\":2,\"status\":\"admitted\",\"confirmed\":true}",
+      "type": "application/vnd.fixture+json; charset=utf-8",
+      "expect": 200,
+      "journal": {
+        "delta": 1,
+        "ack": 1,
+        "reader": 8,
+        "events": [
+          {
+            "kind": "semantic_mutation",
+            "schemaVersion": 1,
+            "operation": "review",
+            "id": "b-00",
+            "sceneId": "local",
+            "previousVersion": 2,
+            "nextVersion": 3,
+            "beforeHash": "@hash",
+            "afterHash": "@hash",
+            "nextState": {
+              "status": "admitted",
+              "admission": "administrator_review"
+            }
+          }
+        ],
+        "version": 3
+      },
+      "status": 200,
+      "body": {
+        "id": "b-00",
+        "version": 3,
+        "status": "admitted"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
       "name": "after-recall",
       "path": "/api/memory-semantics?sceneId=local",
       "recall": true,
@@ -5237,14 +5677,53 @@
         "unavailable": [
           {
             "id": "a-stale",
-            "version": 1,
-            "status": "candidate",
+            "version": 2,
+            "status": "rejected",
             "reason": "qualification_unavailable"
           }
         ]
       },
       "cacheControl": "no-store",
       "noSniff": "nosniff"
+    },
+    {
+      "name": "review-durable-intent-main-rollback",
+      "path": "/api/memory-semantics/a-stale/review",
+      "method": "POST",
+      "raw": "{\"sceneId\":\"local\",\"expectedVersion\":2,\"status\":\"rejected\",\"confirmed\":true}",
+      "type": "application/json",
+      "expect": 503,
+      "fault": true,
+      "journal": {
+        "delta": 1,
+        "ack": 0,
+        "reader": 11,
+        "events": [
+          {
+            "kind": "semantic_mutation",
+            "schemaVersion": 1,
+            "operation": "review",
+            "id": "a-stale",
+            "sceneId": "local",
+            "previousVersion": 2,
+            "nextVersion": 3,
+            "beforeHash": "@hash",
+            "afterHash": "@hash",
+            "nextState": {
+              "status": "rejected",
+              "admission": "administrator_review"
+            }
+          }
+        ],
+        "version": 2
+      },
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "@request"
+      },
+      "cacheControl": "",
+      "noSniff": ""
     }
   ]
 }

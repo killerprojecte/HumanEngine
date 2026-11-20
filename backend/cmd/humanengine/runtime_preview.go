@@ -28,7 +28,7 @@ import (
 )
 
 type runtimeConfig struct {
-	authority, vector, images, node, pluginRoot, timezone, locale string
+	authority, vector, images, node, pluginRoot, timezone, locale, uiRoot string
 }
 
 func runtimeFlags(flags *flag.FlagSet) *runtimeConfig {
@@ -40,6 +40,7 @@ func runtimeFlags(flags *flag.FlagSet) *runtimeConfig {
 	flags.StringVar(&c.pluginRoot, "plugin-root", "", "existing local plugin directory for runtime preview")
 	flags.StringVar(&c.timezone, "source-timezone", "UTC", "source installation IANA timezone")
 	flags.StringVar(&c.locale, "locale", "en-US", "native source collation locale")
+	flags.StringVar(&c.uiRoot, "ui-root", "", "static Nuxt output directory for the same-origin preview")
 	return c
 }
 
@@ -55,6 +56,14 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 		return errors.New("runtime_preview_listen_failed")
 	}
 	defer listener.Close()
+	var ui *previewUI
+	if config.uiRoot != "" {
+		ui, err = openPreviewUI(config.uiRoot)
+		if err != nil {
+			return err
+		}
+		defer ui.root.Close()
+	}
 	options, err := config.preflight(ctx, database)
 	if err != nil {
 		return err
@@ -76,7 +85,11 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 		return errors.New("runtime_preview_open_failed")
 	}
 	logs := application.Logger()
-	server := &http.Server{Handler: application}
+	var handler http.Handler = application
+	if ui != nil {
+		handler = ui.handler(application)
+	}
+	server := &http.Server{Handler: handler}
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
 	_ = logs.Emit(observability.Event{Level: "info", Module: "server", Code: "server.listening", Message: "Go writable runtime preview ready; migration is incomplete", Fields: map[string]any{"address": listener.Addr().String()}})

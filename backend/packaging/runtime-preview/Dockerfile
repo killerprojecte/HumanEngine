@@ -12,6 +12,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 make g+
     && rm -rf /var/lib/apt/lists/*
 COPY . .
 RUN test "$(uname -m)" = x86_64 && npm ci
+# Generate only the client UI. No TypeScript engine workers, credentials, or
+# database are needed at build time, and only the public result is shipped.
+RUN HUMANENGINE_BUILD_GO_PREVIEW_UI=1 ./node_modules/.bin/nuxt generate \
+    && test -s .output/public/index.html && test -s .output/public/200.html \
+    && test -d .output/public/_nuxt && test ! -e .output/public/api \
+    && test ! -e .output/server && test ! -e data
 RUN make -C backend plugin-layout-check native-icu-build wasm
 RUN python3 backend/scripts/prepare-sqlite-vec.py --repository /src
 RUN mkdir -p /out && cd backend && . .native-build/icu/env.sh \
@@ -36,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 libg
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /out /opt/humanengine
+COPY --from=build /src/.output/public /opt/humanengine/ui
 RUN mkdir -p /app/data /app/authority /app/plugins \
     && chown -R node:node /app/data /app/authority /app/plugins
 USER node
@@ -43,4 +50,4 @@ EXPOSE 3001
 STOPSIGNAL SIGTERM
 # No Node healthcheck: zero enabled V1 plugins must not spawn a Node process.
 ENTRYPOINT ["/opt/humanengine/humanengine"]
-CMD ["--runtime-preview", "--database", "/app/data/main.sqlite", "--authority", "/app/authority", "--listen", "0.0.0.0:3001", "--plugin-root", "/app/plugins", "--image-library", "/opt/humanengine/lib/libvips-cpp.so.8.18.7"]
+CMD ["--runtime-preview", "--database", "/app/data/main.sqlite", "--authority", "/app/authority", "--listen", "0.0.0.0:3001", "--plugin-root", "/app/plugins", "--ui-root", "/opt/humanengine/ui", "--image-library", "/opt/humanengine/lib/libvips-cpp.so.8.18.7"]

@@ -35,10 +35,18 @@ and run the independent Compose project:
 docker compose -f backend/packaging/runtime-preview/compose.yaml up -d
 ```
 
-It listens on loopback port 3001 (override `HUMANENGINE_PREVIEW_PORT`) and creates
-separate preview data, authority and plugin volumes. Do not point this at the
-production installation. Both matching database and authority are required for
-an existing test copy; never replace its authority with an old backup. The token
+Open **http://127.0.0.1:3001** (override `HUMANENGINE_PREVIEW_PORT`) and enter
+the preview administration token. This is the existing Nuxt UI built as static
+client files. The Go process serves those files and owns all same-origin
+`/api` requests, including browser sessions; no Nitro server or TypeScript
+database worker runs. An unsupported API stays a Go error, never the UI shell
+or a TypeScript fallback. Preview data, authority and plugin volumes are separate. Do not point this at the
+production installation. The existing preview basename remains `/app/data/main.sqlite` so existing
+preview volumes keep their data. For a disposable TS installation copy, use an
+explicit command override with `--database /app/data/humanengine.sqlite`
+instead; pointing that copy at the preview default would create a second
+database. Both matching database and authority are required for an existing
+test copy; never replace its authority with an old backup. The token
 is not embedded in the image. Set installation-specific locale/timezone via an
 explicit command override using the launcher flags in
 [the runtime-preview guide](../../docs/runtime-preview.md).
@@ -64,6 +72,11 @@ has test-only deadlines and force-removes **its own disposable fixtures** on fai
 It drives the installed image, never a checkout's Go test server:
 
 - unauthenticated refusal and authenticated settings write/read;
+- static Nuxt document, hashed client asset and direct page navigation through
+  the same origin as Go; real cookie login, protected dashboard API reads,
+  cookie-authenticated settings write and logout/revocation, unchanged
+  unsupported API errors and no static fallback for API paths. The package
+  driver checks HTTP responses; it does not run a browser or certify all UI pages;
 - zero enabled V1 plugins with no retained Node process (no Node healthcheck);
   the observer runs as the normal image user inside its PID namespace and matches
   `/proc/<pid>/exe` against the canonical Node executable, emitting PIDs only.
@@ -92,6 +105,27 @@ changes or explicit dispatch, with read-only repository permissions. It does not
 publish an image or deploy anything. Unrelated backend changes still require
 rerunning this gate before release; a previous image's result is not current-head
 acceptance. Default Go migration CI remains a separate gate.
+
+## Rehearse engine rollback only on a disposable clone
+
+1. Record the exact TS and Go image IDs and existing mounts. Stop and drain the
+   TS writer first. Cold-copy the complete synthetic data mount and its
+   matching independent current authority, preserving keys and media. Keep
+   `/app/data/humanengine.sqlite` and `/app/authority` at the same in-container
+   paths. An older authority must not be put back over the current one.
+2. Open the copy with Go only. Read a distinctive TS-created record, make a
+   harmless durable change and confirm the same basename and authority. Stop
+   Go with SIGTERM, require exit 0 and `app.drained`, then start TS alone on
+   the latest matching pair; it must recognize the change and continue
+   authenticating after a fresh login.
+3. If TS cannot open the latest pair with a verified reader, stop there. Use
+   supported offline authority-aware restore/reconciliation with the latest
+   authority; do not swap just the old database back, open both writers, or
+   silently replay uncertain external effects.
+
+A source/binary-level cold-copy rehearsal is not a Docker migration guarantee.
+Neither this package driver nor the public UI proves production rollback,
+backup/recovery, platform adapters, or the remaining API contract.
 
 ## Validation and release limitations
 

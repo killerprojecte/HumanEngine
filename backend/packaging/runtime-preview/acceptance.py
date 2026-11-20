@@ -7,6 +7,8 @@ not new production shutdown/admission policies. Does not build or publish images
 import argparse
 import http.client
 import json
+from http.cookies import SimpleCookie
+import re
 from pathlib import Path
 import socket
 import subprocess
@@ -54,6 +56,62 @@ def request(port, method, path, body=None, authenticated=True, expected=200):
         return json.loads(data) if data else None
     finally:
         connection.close()
+
+
+def frontend_session(port):
+    origin = f"http://127.0.0.1:{port}"
+    browser = {"Origin": origin, "X-HumanEngine-Session": "1", "Sec-Fetch-Site": "same-origin"}
+
+    def visit(method, path, expected, headers=None, body=None):
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+        try:
+            request_headers = dict(headers or {})
+            if body is not None:
+                request_headers["Content-Type"] = "application/json"
+            connection.request(method, path, None if body is None else json.dumps(body), request_headers)
+            response = connection.getresponse()
+            data = response.read()
+            # Never include credentials or response headers in assertion output.
+            assert response.status == expected, (method, path, response.status)
+            return dict(response.getheaders()), data
+        finally:
+            connection.close()
+
+    def api(method, path, expected, headers=browser, body=None):
+        response, data = visit(method, path, expected, headers, body)
+        assert response["Content-Type"].startswith("application/json"), "API returned a static fallback"
+        return response, json.loads(data)
+
+    nav = {"Accept": "text/html,application/xhtml+xml"}
+    headers, index = visit("GET", "/", 200, nav)
+    assert headers["Content-Type"].startswith("text/html") and "no-cache" in headers["Cache-Control"]
+    assert b"<title>HumanEngine" in index and TOKEN.encode() not in index
+    asset = re.search(rb'<script[^>]+src="(/_nuxt/[^"<>]+\.js)"', index)
+    assert asset, "Nuxt boot script missing"
+    headers, script = visit("GET", asset.group(1).decode(), 200)
+    assert "javascript" in headers["Content-Type"] and "immutable" in headers["Cache-Control"]
+    assert script and TOKEN.encode() not in script
+    _, chat = visit("GET", "/chat", 200, nav)
+    assert b"<title>HumanEngine" in chat
+    visit("GET", "/_nuxt/missing-asset", 404, nav)
+    api("GET", "/api/status", 401, nav)
+    api("GET", "/api", 401, nav)
+    api("POST", "/api/auth/session", 403, {**browser, "Origin": "http://other.invalid"}, {"token": TOKEN})
+    headers, _ = api("POST", "/api/auth/session", 200, body={"token": TOKEN})
+    cookie = SimpleCookie(headers["Set-Cookie"])["humanengine-session"]
+    assert cookie["httponly"] and cookie["samesite"].lower() == "strict" and cookie["path"] == "/api"
+    authenticated = {**browser, "Cookie": f"humanengine-session={cookie.value}"}
+    api("GET", "/api/auth/session", 200, authenticated)
+    for path in ("/api/status", "/api/scenes", "/api/logs", "/api/models", "/api/usage"):
+        api("GET", path, 200, authenticated)
+    api("GET", "/api/preview-not-implemented", 503, {**nav, **authenticated})
+    _, settings = api("GET", "/api/settings", 200, authenticated)
+    modified = dict(settings, debugModelIO=not settings["debugModelIO"])
+    api("PUT", "/api/settings", 200, authenticated, modified)
+    assert api("GET", "/api/settings", 200, authenticated)[1]["debugModelIO"] == modified["debugModelIO"]
+    api("PUT", "/api/settings", 200, authenticated, settings)
+    api("DELETE", "/api/auth/session", 200, authenticated)
+    api("GET", "/api/status", 401, authenticated)
 
 
 
@@ -133,6 +191,9 @@ def main():
         request(port, "PUT", "/api/settings", settings)
         assert request(port, "GET", "/api/settings")["debugModelIO"] is True
         report["checks"].append("authenticated-write-read")
+        frontend_session(port)
+        assert not node_pids(first), "frontend spawned a Node runtime"
+        report["checks"].append("same-origin-static-frontend-and-go-session-http")
         second = start("second", *volumes)
         wait_for(lambda: not running(second), "same installation second writer rejected")
         assert docker("inspect", "-f", "{{.State.ExitCode}}", second) != "0"

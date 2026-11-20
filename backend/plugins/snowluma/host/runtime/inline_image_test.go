@@ -56,8 +56,15 @@ func TestInlineImageLinkReadsOnlyCanonicalPrefix(t *testing.T) {
 		}
 		return "ob:media:" + base64.RawURLEncoding.EncodeToString(wire)
 	}
+	direct := asset(scene.ID, "image", "https://fixture.invalid/base64://YQ==")
+	var wantDirect botruntime.NativeImageLink
+	if publicBrowserImageSupported {
+		wantDirect = botruntime.NativeImageBrowserDirect
+	}
+	if got := classifyRetainedImage(scene, direct); got != wantDirect {
+		t.Fatalf("HTTPS locator containing inline-like text: got %d, want %d", got, wantDirect)
+	}
 	for _, candidate := range []string{
-		asset(scene.ID, "image", "https://fixture.invalid/base64://YQ=="),
 		asset(scene.ID, "image", "platform-file-token"),
 		asset(scene.ID, "image", "data:image/svg+xml;base64,YQ=="),
 		asset(scene.ID, "audio", "base64://YQ=="),

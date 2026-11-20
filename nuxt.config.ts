@@ -1,10 +1,24 @@
+const goPreviewUI = process.env.HUMANENGINE_BUILD_GO_PREVIEW_UI === '1'
+
 export default defineNuxtConfig({
+  ...(goPreviewUI && {
+    ssr: false,
+    // Nitro still discovers server plugins and handlers during static generation.
+    // The Go preview must never bundle or initialize the TypeScript engine.
+    serverDir: 'backend/packaging/runtime-preview/ui-only-server',
+    icon: { provider: 'none' },
+  }),
   compatibilityDate: '2026-10-25',
   modules: ['@nuxt/ui', '@nuxtjs/i18n'],
   css: ['~/assets/css/main.css'],
   devtools: { enabled: false },
   ui: { fonts: false },
-  nitro: { externals: { external: ['better-sqlite3', 'sqlite-vec'] } },
+  nitro: {
+    externals: { external: ['better-sqlite3', 'sqlite-vec'] },
+    ...(goPreviewUI && {
+      prerender: { crawlLinks: false, routes: ['/'], ignore: [/^\/api(?:\/|$)/] },
+    }),
+  },
   i18n: {
     defaultLocale: 'en',
     strategy: 'no_prefix',

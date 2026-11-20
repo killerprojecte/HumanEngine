@@ -1,6 +1,9 @@
 package botruntime
 
-import "sync"
+import (
+	"math"
+	"sync"
+)
 
 // sceneOwnerMutex reconciles reader-published retention before a later actor
 // operation observes mutable indexes. Readers never acquire this mutex.
@@ -33,12 +36,16 @@ func (r *Runtime) trimPublished(s *sceneState) *sceneView {
 	s.publicationMu.Lock()
 	defer s.publicationMu.Unlock()
 	v := s.view.Load()
-	if v.scene.Kind == "simulation" {
+	if v.history == nil || v.scene.Kind == "simulation" {
 		return v
 	}
 	cfg := r.config()
 	clear := !cfg.CacheEnabled && v.active == 0 && v.timers == 0
 	cutoff := r.services.Clock.Now() - r.lifetime(cfg)
+	// Both publishers remove discarded memberships before storing a new view.
+	if !clear && v.history.count <= 500 && v.earliest >= cutoff {
+		return v
+	}
 	records := bodyRecords(v.history)
 	retained := make([]*messageRecord, 0, len(records))
 	for _, record := range records {
@@ -54,13 +61,12 @@ func (r *Runtime) trimPublished(s *sceneState) *sceneView {
 		}
 		retained = retained[len(retained)-500:]
 	}
-	if len(retained) == len(records) {
-		return v
-	}
 	next := *v
 	next.history = nil
+	next.earliest = math.Inf(1)
 	for _, record := range retained {
 		next.history = appendRecord(next.history, record)
+		next.earliest = math.Min(next.earliest, record.receivedAt)
 	}
 	s.retentionDirty.Store(true)
 	s.view.Store(&next)

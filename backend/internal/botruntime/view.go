@@ -14,6 +14,7 @@ type TopicView struct {
 type sceneView struct {
 	scene                              Scene
 	history                            *messageBlock
+	earliest                           float64
 	topics                             []TopicView
 	active, deferred, pending, waiting int
 	protected                          []string
@@ -34,7 +35,7 @@ func (r *Runtime) publishLocked(s *sceneState) {
 	s.publicationMu.Lock()
 	defer s.publicationMu.Unlock()
 	r.reconcilePublishedRetentionUnderPublication(s)
-	v := &sceneView{scene: s.scene, history: s.history, active: len(s.tasks), deferred: s.routing.Deferred.Len(), pending: s.queue.Len(), recalled: s.recalled, closed: s.closed.Load(), timers: len(s.timers)}
+	v := &sceneView{scene: s.scene, history: s.history, earliest: s.earliest, active: len(s.tasks), deferred: s.routing.Deferred.Len(), pending: s.queue.Len(), recalled: s.recalled, closed: s.closed.Load(), timers: len(s.timers)}
 	available := s.available
 	for _, e := range s.topics.Entries() {
 		t := e.Value

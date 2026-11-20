@@ -16,8 +16,10 @@ DEFAULT = {
 NATIVE = DEFAULT | {
     "TestRuntimePreviewTCPBootWriteSignalDrainRestart",
     "TestRuntimePreviewNativePreflightFailureDoesNotEnroll",
+    "TestRuntimePreviewNativePreflightFailureDoesNotEnroll/image",
     "TestRuntimePreviewNativePreflightFailureDoesNotEnroll/node",
     "TestRuntimePreviewNativePreflightFailureDoesNotEnroll/vector",
+    "TestRuntimePreviewUsesVerifiedImageAfterPreflight",
     "TestRuntimePreviewUnauthorizedHTTP",
     "TestRuntimePreviewSecondWriterRejectedFirstRemainsUsable",
 }

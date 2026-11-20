@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/app"
-	"github.com/killerprojecte/HumanEngine/backend/internal/imagecodec"
 	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
@@ -102,8 +101,8 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 }
 
 // Validate native dependencies without touching the installation. The actual
-// app.Open repeats owner validation at enrollment, not trusting this preflight
-// as permission to bypass recovery gates or its own checks.
+// app.Open performs enrollment and its own recovery checks; it reuses the
+// actual verified image codec prepared here.
 func (c runtimeConfig) preflight(ctx context.Context, database string) (app.Options, error) {
 	fail := func(code string) (app.Options, error) { return app.Options{}, errors.New(code) }
 	if database == "" || database == ":memory:" {
@@ -133,7 +132,8 @@ func (c runtimeConfig) preflight(ctx context.Context, database string) (app.Opti
 	if !filepath.IsAbs(c.images) {
 		return fail("runtime_preview_image_library_required")
 	}
-	if _, err = imagecodec.New(c.images); err != nil {
+	options, err := (app.Options{ImageLibrary: c.images}).PrepareImageLibrary()
+	if err != nil {
 		return fail("runtime_preview_image_library_invalid")
 	}
 	node, err := exec.LookPath(c.node)
@@ -166,7 +166,9 @@ func (c runtimeConfig) preflight(ctx context.Context, database string) (app.Opti
 			return fail("runtime_preview_builtin_artifact_required")
 		}
 	}
-	return app.Options{Installation: installation.Options{Database: db, AuthorityDirectory: authority, VectorExtension: c.vector, SourceTimezone: c.timezone}, ImageLibrary: c.images, Locale: c.locale, Node: node, PluginRoot: root}, nil
+	options.Installation = installation.Options{Database: db, AuthorityDirectory: authority, VectorExtension: c.vector, SourceTimezone: c.timezone}
+	options.Locale, options.Node, options.PluginRoot = c.locale, node, root
+	return options, nil
 }
 
 func checkRuntimeVector(ctx context.Context, path string) error {

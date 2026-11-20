@@ -63,6 +63,20 @@ type Options struct {
 	// uses the process-wide source owners; it is not an opt-in logging mode.
 	LogRegistry *logdelivery.Registry
 	ownsLogs    bool
+
+	preparedImageLibrary string
+	preparedImage        *imagecodec.Compressor
+}
+
+// PrepareImageLibrary validates and opens the image codec before enrollment.
+// Open reuses that exact instance when the configured path is unchanged.
+func (o Options) PrepareImageLibrary() (Options, error) {
+	codec, err := imagecodec.New(o.ImageLibrary)
+	if err != nil {
+		return Options{}, err
+	}
+	o.preparedImageLibrary, o.preparedImage = o.ImageLibrary, codec
+	return o, nil
 }
 
 // Open owns genuine installation enrollment, database and native application
@@ -101,9 +115,12 @@ func Open(ctx context.Context, o Options) (_ *Application, err error) {
 	if err != nil {
 		return nil, err
 	}
-	codec, err := imagecodec.New(o.ImageLibrary)
-	if err != nil {
-		return nil, err
+	codec := o.preparedImage
+	if codec == nil || o.preparedImageLibrary != o.ImageLibrary {
+		codec, err = imagecodec.New(o.ImageLibrary)
+		if err != nil {
+			return nil, err
+		}
 	}
 	db, a := installationOwner.DB, installationOwner.Authority
 	st, err := assertions.New(db, a, assertions.Options{DateParser: dates})

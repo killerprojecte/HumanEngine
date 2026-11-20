@@ -18,6 +18,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/app"
 )
 
 // Native process acceptance is mandatory in native-runtime-preview-test.
@@ -210,7 +212,7 @@ func TestRuntimePreviewNativePreflightFailureDoesNotEnroll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, dependency := range []string{"node", "vector"} {
+	for _, dependency := range []string{"image", "node", "vector"} {
 		t.Run(dependency, func(t *testing.T) {
 			root := t.TempDir()
 			pluginRoot := filepath.Join(root, "plugins")
@@ -218,10 +220,18 @@ func TestRuntimePreviewNativePreflightFailureDoesNotEnroll(t *testing.T) {
 				t.Fatal(err)
 			}
 			config := runtimeConfig{authority: filepath.Join(root, "authority"), vector: filepath.Join(source, "node_modules/sqlite-vec-linux-x64/vec0.so"), images: images, node: node, pluginRoot: pluginRoot, timezone: "UTC", locale: "en-US"}
-			want := "runtime_preview_node_required"
-			if dependency == "node" {
+			var want string
+			switch dependency {
+			case "image":
+				config.images = filepath.Join(pluginRoot, "invalid-vips.so")
+				if err := os.WriteFile(config.images, []byte("synthetic invalid library"), 0600); err != nil {
+					t.Fatal(err)
+				}
+				want = "runtime_preview_image_library_invalid"
+			case "node":
 				config.node = filepath.Join(root, "missing-node")
-			} else {
+				want = "runtime_preview_node_required"
+			case "vector":
 				config.vector = filepath.Join(root, "missing-vector.so")
 				want = "runtime_preview_sqlite_vec_invalid"
 			}
@@ -234,6 +244,52 @@ func TestRuntimePreviewNativePreflightFailureDoesNotEnroll(t *testing.T) {
 				t.Fatalf("dependency failure enrolled installation: %v %v", entries, err)
 			}
 		})
+	}
+}
+
+func TestRuntimePreviewUsesVerifiedImageAfterPreflight(t *testing.T) {
+	ctx := context.Background()
+	root := t.TempDir()
+	pluginRoot := filepath.Join(root, "plugins")
+	if err := os.Mkdir(pluginRoot, 0700); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(os.Getenv("HE_IMAGE_LIBRARY"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	images := filepath.Join(root, "verified-vips.so")
+	if err = os.WriteFile(images, data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	config := runtimeConfig{
+		authority:  filepath.Join(root, "authority"),
+		vector:     filepath.Join(os.Getenv("HE_SOURCE_ROOT"), "node_modules/sqlite-vec-linux-x64/vec0.so"),
+		images:     images,
+		node:       "node",
+		pluginRoot: pluginRoot,
+		timezone:   "UTC",
+		locale:     "en-US",
+	}
+	options, err := config.preflight(ctx, filepath.Join(root, "live/main.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The codec loaded a verified sealed snapshot. Application assembly must
+	// not re-open or depend on the original filesystem path.
+	if err = os.Rename(images, images+".moved"); err != nil {
+		t.Fatal(err)
+	}
+	application, err := app.Open(ctx, options)
+	if application != nil {
+		t.Cleanup(func() {
+			if err := application.ShutdownAndFlush(ctx); err != nil {
+				t.Error(err)
+			}
+		})
+	}
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 

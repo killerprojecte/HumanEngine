@@ -1,7 +1,7 @@
 //go:build web_read_candidate
 
 // Package webreadruntime assembles the isolated runtime candidate. It does not
-// grant production admission or change the pending HTTP 101 protocol branch.
+// grant production admission.
 package webreadruntime
 
 import (
@@ -44,7 +44,7 @@ func (o *installation) CloseAndWait(ctx context.Context) error {
 	o.closeOnce.Do(func() {
 		go func() {
 			// All Service, admitted guest, stream Finish and DNS relay work belongs to
-			// this generation. A stalled libc lookup is not reported as a finished drain.
+			// this generation, including a resolver child through physical reap.
 			_ = o.work.Wait(context.Background())
 			if o.resolver != nil {
 				o.resolver.CloseAndWait()
@@ -69,17 +69,16 @@ func Factory(manager *pluginmanager.Manager) pluginmanager.BuiltinRuntimeFactory
 		}
 		life, cancel := context.WithCancel(in.Life)
 		owner := &installation{cancel: cancel, closed: make(chan struct{})}
-		resolver, err := host.NewOSResolver()
+		lookup, err := owner.openResolver()
 		if err != nil {
 			return owner, err
 		}
-		owner.resolver = resolver
 		call, err := in.Host.BindCallWithAdmission(in.ID)
 		if err != nil {
 			return owner, err
 		}
 		current := func() bool { return life.Err() == nil && in.Current() }
-		network := host.Network{Life: life, BeginWork: owner.work.Start, CallGuestWithAdmission: call, Lookup: resolver.Lookup, DialContext: (&net.Dialer{}).DialContext}
+		network := host.Network{Life: life, BeginWork: owner.work.Start, CallGuestWithAdmission: call, Lookup: lookup, DialContext: (&net.Dialer{}).DialContext}
 		service, err := host.NewCandidate(host.Ports{Life: life, Config: append(json.RawMessage(nil), in.Config...), BeginWork: owner.work.Start, Current: current, Lifetime: combine, CallGuestWithAdmission: call, Fetch: network.Fetch})
 		if err != nil {
 			return owner, err

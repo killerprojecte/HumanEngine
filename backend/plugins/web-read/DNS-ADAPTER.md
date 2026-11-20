@@ -1,9 +1,12 @@
 # Joinable native DNS port
 
-`NewOSResolver` provides an optional `Network.Lookup` implementation under the
-`web_read_candidate` build tag. It is not registered with the manager or selected
-by default. This addition does not enable web-read in production, change HTTP 101
-behavior, or replace distributed WASM artifacts.
+The tagged WebRead host uses native libc addresses in the order provided by
+the operating system. On Linux/amd64 with CGO, the installed runtime selects
+`pinnedhop.LookupChild`: the same libc lookup runs in a one-shot process that
+is cancelled and joined before its generation reports physical completion.
+A kernel task in uninterruptible I/O can still delay reap. The in-process
+`NewOSResolver` port described below remains the fallback on other supported
+builds. Neither port changes default admission or distributed WASM artifacts.
 
 ## Ownership and completion
 
@@ -19,7 +22,7 @@ context cancellation does not interrupt libc. `Close` prevents new admissions;
 `Wait` and `CloseAndWait` close admission and join all admitted calls. A stalled
 OS resolver can therefore keep physical shutdown incomplete indefinitely.
 Manager integration must explicitly own and join this resolver before reporting
-shutdown complete. Bounded OS cancellation is not implemented.
+shutdown complete. The in-process fallback does not provide bounded OS cancellation.
 
 ## Source compatibility
 

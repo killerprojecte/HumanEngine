@@ -8,8 +8,10 @@ export default {
     let api, scene, source, disposed = 0, modelCalls = 0, sourceSerial = 1
     const sent = [], modelIDs = [], webReceipts = [], advertised = []
     let expectWeb = true
+    let webURL = 'http://127.0.0.1/'
     const message = () => ({id:source,sceneId:scene.id,senderId:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:'I prefer concise replies.'}]})
     ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,webReceipts,advertised}))
+    ctx.registerAdminAction('web-fixture-url',value=>{webURL=value.url;return {ok:true}})
     ctx.registerAdminAction('expect-web',value=>{expectWeb=value.enabled;return {ok:true}})
     ctx.registerAdminAction('new-source',()=>{source=api.messageId(scene,'source-'+(++sourceSerial));api.receive(message(),scene,false);return {ok:true}})
     ctx.registerAdminAction('edit',()=>api.edit({...message(),parts:[{type:'text',text:'Please reply to the edited synthetic request.'}]},scene,{editId:'synthetic-edit-2',order:{kind:'platform_sequence',sequence:2}}))
@@ -46,7 +48,7 @@ export default {
           const web = receipts.find(v=>v.toolName==='web-read.read')
           advertised.push(names.filter(name=>name.startsWith('web-read.')))
           if(expectWeb !== names.includes('web-read.read'))throw Error('web_read_advertisement_mismatch')
-          if(expectWeb && !web)return call('web-read.read',{url:'http://127.0.0.1/'})
+          if(expectWeb && !web)return call('web-read.read',{url:webURL})
           if(web){if(web.value.status!=='address_not_public')throw Error('web_read_private_destination_not_denied');webReceipts.push(web)}
         }
         const memoryReceipt=receipts.find(v=>v.toolName==='memory.person'&&Array.isArray(v.value))

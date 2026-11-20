@@ -23,6 +23,11 @@ import (
 // Its URL is a private literal: the guest rejects it before DNS or sockets, so
 // this test cannot contact a public site. TCP/TLS/DNS/cache are separate suites.
 func TestInstalledWebReadCandidateLifecycle(t *testing.T) {
+	assertInstalledWebReadLifecycle(t, nil)
+}
+
+func assertInstalledWebReadLifecycle(t *testing.T, holdDNS func(*Application, func())) {
+	t.Helper()
 	options := applicationOptions(t)
 	options.Builtins = []string{"web-read"}
 	fixture, err := os.ReadFile("testdata/web-read-model.mjs")
@@ -165,7 +170,12 @@ func TestInstalledWebReadCandidateLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	webAdmin("disable", "/api/plugins/web-read/enabled", map[string]any{"enabled": false})
+	disable := func() { webAdmin("disable", "/api/plugins/web-read/enabled", map[string]any{"enabled": false}) }
+	if holdDNS == nil {
+		disable()
+	} else {
+		holdDNS(a, disable)
+	}
 	assertRetired("disable", active)
 	if _, err = a.WASM.BindCall("web-read"); err == nil {
 		t.Fatal("disabled service was not unloaded")

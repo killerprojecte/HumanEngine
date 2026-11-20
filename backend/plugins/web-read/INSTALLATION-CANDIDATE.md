@@ -53,11 +53,14 @@ The deterministic late-registration/finalization tests passed with race detectio
 in the prior c5bd253 installation validation, including the real registered
 physical-cleanup cancellation probe and legacy cache negative control.
 
-Each service generation owns its OSResolver and physical work group. Logical
-Dispose cancels and removes advertisement; CloseAndWait joins admitted service,
-stream Finish, guest, and DNS work before the manager unloads its guest. An OS
-resolver that stalls can still make physical shutdown unbounded. Cancellation is
-not evidence of physical completion.
+Each service generation owns its physical work group. Logical Dispose cancels
+and removes advertisement; CloseAndWait joins admitted service, stream Finish,
+guest, and DNS work before the manager unloads its guest. The Linux/amd64 CGO
+installation cancels its one-shot libc resolver child and retains its work lease
+until the child is reaped. The installed synthetic fixture verifies that disable
+returns only after reap, then successfully re-enables. Other builds retain the
+existing platform resolver behavior. Cancellation alone is not evidence of
+physical completion.
 
 The application must explicitly select `web-read` **and** use the candidate build
 tag and a separately built candidate artifact in an isolated validation tree.

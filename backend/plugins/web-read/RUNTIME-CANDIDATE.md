@@ -32,11 +32,11 @@ These checks do not establish full backend/frontend or source-free app parity.
   of an upgrade listener. It never publishes a 101 response or its payload.
   Run `node --import tsx backend/plugins/web-read/check-101-source.mjs` from the
   repository root for the loopback source oracle. This does not enable WebRead.
-- A direct libc DNS adapter is implemented, with Linux runtime validation of
-  native completion, cleanup and source hostname-admission boundaries. It remains
-  opt-in and is not registered by the default/production application; see [DNS-ADAPTER.md](DNS-ADAPTER.md).
-  Other platform targets are not runtime-validated. Cancellation cannot interrupt
-  an admitted OS lookup, so physical shutdown is not bounded if libc/NSS stalls.
+- On Linux/amd64 with CGO, tagged installations run the same libc lookup in
+  the one-shot resolver child used by the browser media reader. The installed
+  test held a synthetic lookup and proved the child was reaped before disable
+  completed. Other builds keep the existing platform resolver behavior; see
+  [DNS-ADAPTER.md](DNS-ADAPTER.md). Default production admission is unchanged.
 - Tagged manager registration, owner cache, simulation, finalization, configuration
   and generation/re-enable integration have a candidate. Source-side configuration,
   tool-input and service contracts passed. The prior c5bd253 installation runner

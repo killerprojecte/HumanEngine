@@ -1,0 +1,1623 @@
+{
+  "node": "v24.22.1",
+  "scenes": [
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "scene",
+      "kind": "group",
+      "platformSceneId": "scene"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "foreign",
+      "kind": "private",
+      "platformSceneId": "foreign"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "simulation",
+      "kind": "simulation",
+      "platformSceneId": "simulation"
+    }
+  ],
+  "seeds": [
+    {
+      "id": "a_a",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "a"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic a_a",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "a-A",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "a"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic a-A",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": [],
+      "occurredAt": "2024-12-31T00:00:00Z",
+      "epistemicKind": "reported"
+    },
+    {
+      "id": "aa",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "a"
+      },
+      "status": "disputed",
+      "kind": "experience",
+      "content": "Synthetic aa",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "legacy-other",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "b"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic legacy-other",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "private",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "foreign",
+        "personId": "a"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic private",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "internal",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "a"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic internal",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": [],
+      "internalUse": "synthetic-private"
+    },
+    {
+      "id": "expired",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "a"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic expired",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": [],
+      "validUntil": "2025-06-01T00:00:00Z"
+    },
+    {
+      "id": "invalid",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "a"
+      },
+      "status": "invalidated",
+      "kind": "experience",
+      "content": "Synthetic invalid",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "claim",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "a"
+      },
+      "status": "active",
+      "kind": "claim",
+      "content": "Synthetic claim",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "shared",
+      "scope": {
+        "kind": "sharedPublicKnowledge"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic shared",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    }
+  ],
+  "packed": [
+    {
+      "id": "packed-00",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-00",
+      "learnedAt": "2025-02-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-01",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-01",
+      "learnedAt": "2025-02-02T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-02",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-02",
+      "learnedAt": "2025-02-03T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-03",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-03",
+      "learnedAt": "2025-02-04T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-04",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-04",
+      "learnedAt": "2025-02-05T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-05",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-05",
+      "learnedAt": "2025-02-06T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-06",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-06",
+      "learnedAt": "2025-02-07T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-07",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-07",
+      "learnedAt": "2025-02-08T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-08",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-08",
+      "learnedAt": "2025-02-09T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-09",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-09",
+      "learnedAt": "2025-02-10T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-10",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-10",
+      "learnedAt": "2025-02-11T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-11",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-11",
+      "learnedAt": "2025-02-12T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-12",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-12",
+      "learnedAt": "2025-02-13T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-13",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-13",
+      "learnedAt": "2025-02-14T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-14",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-14",
+      "learnedAt": "2025-02-15T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-15",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-15",
+      "learnedAt": "2025-02-16T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-16",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-16",
+      "learnedAt": "2025-02-17T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-17",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-17",
+      "learnedAt": "2025-02-18T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-18",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-18",
+      "learnedAt": "2025-02-19T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-19",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-19",
+      "learnedAt": "2025-02-20T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-20",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-20",
+      "learnedAt": "2025-02-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-21",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-21",
+      "learnedAt": "2025-02-02T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-22",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-22",
+      "learnedAt": "2025-02-03T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-23",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-23",
+      "learnedAt": "2025-02-04T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-24",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-24",
+      "learnedAt": "2025-02-05T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-25",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-25",
+      "learnedAt": "2025-02-06T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-26",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-26",
+      "learnedAt": "2025-02-07T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-27",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-27",
+      "learnedAt": "2025-02-08T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-28",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-28",
+      "learnedAt": "2025-02-09T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "packed-29",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "crowd"
+      },
+      "status": "active",
+      "kind": "experience",
+      "content": "Synthetic packed-29",
+      "learnedAt": "2025-02-10T00:00:00.000Z",
+      "sources": []
+    }
+  ],
+  "sourceProposal": {
+    "context": {
+      "sceneId": "scene",
+      "simulation": false,
+      "provenance": "source-only",
+      "sourceEvidence": [
+        {
+          "sceneId": "scene",
+          "messageId": "episode-source",
+          "senderId": "a",
+          "available": true,
+          "isBot": false
+        }
+      ]
+    },
+    "candidate": {
+      "kind": "experience",
+      "epistemicKind": "explicit",
+      "content": "Synthetic reported event",
+      "subject": {
+        "kind": "self",
+        "sourceMessageId": "episode-source"
+      },
+      "sources": [
+        {
+          "sceneId": "scene",
+          "messageId": "episode-source",
+          "senderId": "a"
+        }
+      ],
+      "occurredAt": "2024-09-01T00:00:00Z"
+    }
+  },
+  "commitment": {
+    "context": {
+      "sceneId": "scene",
+      "simulation": false,
+      "provenance": "source-only",
+      "sourceEvidence": [
+        {
+          "sceneId": "scene",
+          "senderId": "a",
+          "messageId": "proposal",
+          "available": true,
+          "isBot": false,
+          "sourceText": "I propose Synthetic full plan with the named participant. Time: 18:00; exact date unknown. Conditions: Only if participants confirm.",
+          "mentions": [
+            {
+              "partIndex": 1,
+              "userId": "b"
+            }
+          ]
+        }
+      ]
+    },
+    "candidate": {
+      "kind": "fact",
+      "epistemicKind": "explicit",
+      "content": "Synthetic declaration proposal",
+      "subject": {
+        "kind": "self",
+        "sourceMessageId": "proposal"
+      },
+      "sources": [
+        {
+          "sceneId": "scene",
+          "senderId": "a",
+          "messageId": "proposal"
+        }
+      ],
+      "commitment": {
+        "kind": "propose",
+        "terms": {
+          "kind": "plan",
+          "title": "Synthetic full plan",
+          "participantIds": [
+            "a",
+            "b"
+          ],
+          "polarity": "positive",
+          "modality": "asserted",
+          "temporalScope": "future",
+          "conditions": [
+            "Only if participants confirm"
+          ],
+          "timeQualification": "18:00; exact date unknown"
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "unauthorized",
+      "query": "?sceneId=scene",
+      "method": "GET",
+      "auth": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "missing-query",
+      "query": "",
+      "method": "GET",
+      "auth": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "empty-person",
+      "query": "?sceneId=scene&personId=",
+      "method": "GET",
+      "auth": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "astral-max",
+      "query": "?sceneId=%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1",
+      "method": "GET",
+      "auth": true,
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "astral-over",
+      "query": "?sceneId=%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1%F0%9F%92%A1",
+      "method": "GET",
+      "auth": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "duplicate-scene",
+      "query": "?sceneId=scene&sceneId=foreign",
+      "method": "GET",
+      "auth": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "strict",
+      "query": "?sceneId=scene&includeCold=true",
+      "method": "GET",
+      "auth": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "missing-scene",
+      "query": "?sceneId=missing",
+      "method": "GET",
+      "auth": true,
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "simulation",
+      "query": "?sceneId=simulation",
+      "method": "GET",
+      "auth": true,
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "disabled",
+      "query": "?sceneId=scene",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": false,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "complete",
+          "returned": 0,
+          "omittedEntries": 0
+        },
+        "items": []
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "disabled-head",
+      "query": "?sceneId=scene",
+      "method": "HEAD",
+      "auth": true,
+      "status": 200,
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "enabled-person",
+      "query": "?sceneId=scene&personId=a",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "complete",
+          "returned": 4,
+          "omittedEntries": 0
+        },
+        "items": [
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "@learned",
+              "content": "Synthetic reported event",
+              "kind": "experience",
+              "epistemicKind": "explicit",
+              "status": "active",
+              "learnedAt": "<learned>",
+              "occurredAt": "2024-09-01T00:00:00Z",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "episode-source",
+                  "senderId": "a"
+                }
+              ]
+            },
+            "time": {
+              "occurredAt": "2024-09-01T00:00:00Z",
+              "recordedAt": "<learned>"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "a_a",
+              "content": "Synthetic a_a",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "a-A",
+              "content": "Synthetic a-A",
+              "kind": "experience",
+              "epistemicKind": "reported",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "occurredAt": "2024-12-31T00:00:00Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": "2024-12-31T00:00:00Z",
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "aa",
+              "content": "Synthetic aa",
+              "kind": "experience",
+              "status": "disputed",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 5,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "person-isolated",
+      "query": "?sceneId=scene&personId=b",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "complete",
+          "returned": 1,
+          "omittedEntries": 0
+        },
+        "items": [
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "legacy-other",
+              "content": "Synthetic legacy-other",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 6,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "private",
+      "query": "?sceneId=foreign",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "complete",
+          "returned": 1,
+          "omittedEntries": 0
+        },
+        "items": [
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "private",
+              "content": "Synthetic private",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 7,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "enabled-head",
+      "query": "?sceneId=scene&personId=a",
+      "method": "HEAD",
+      "auth": true,
+      "status": 200,
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 7,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "commitments-answer-on",
+      "query": "?sceneId=scene&personId=a",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "complete",
+          "returned": 5,
+          "omittedEntries": 0
+        },
+        "items": [
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "@learned",
+              "content": "Synthetic reported event",
+              "kind": "experience",
+              "epistemicKind": "explicit",
+              "status": "active",
+              "learnedAt": "<learned>",
+              "occurredAt": "2024-09-01T00:00:00Z",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "episode-source",
+                  "senderId": "a"
+                }
+              ]
+            },
+            "time": {
+              "occurredAt": "2024-09-01T00:00:00Z",
+              "recordedAt": "<learned>"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "a_a",
+              "content": "Synthetic a_a",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "a-A",
+              "content": "Synthetic a-A",
+              "kind": "experience",
+              "epistemicKind": "reported",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "occurredAt": "2024-12-31T00:00:00Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": "2024-12-31T00:00:00Z",
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "aa",
+              "content": "Synthetic aa",
+              "kind": "experience",
+              "status": "disputed",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "shared_plan_declaration",
+            "view": {
+              "sourceMessageIds": [
+                "proposal"
+              ],
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic full plan",
+                "participantIds": [
+                  "a",
+                  "b"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": [
+                  "Only if participants confirm"
+                ],
+                "timeQualification": "18:00; exact date unknown"
+              },
+              "recordedAt": "<recorded>",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "a",
+                "b"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": []
+            },
+            "completionBasis": "participant_self_report_not_observed_event"
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 7,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "commitment-participant-b",
+      "query": "?sceneId=scene&personId=b",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "complete",
+          "returned": 2,
+          "omittedEntries": 0
+        },
+        "items": [
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "legacy-other",
+              "content": "Synthetic legacy-other",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "shared_plan_declaration",
+            "view": {
+              "sourceMessageIds": [
+                "proposal"
+              ],
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic full plan",
+                "participantIds": [
+                  "a",
+                  "b"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": [
+                  "Only if participants confirm"
+                ],
+                "timeQualification": "18:00; exact date unknown"
+              },
+              "recordedAt": "<recorded>",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "a",
+                "b"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": []
+            },
+            "completionBasis": "participant_self_report_not_observed_event"
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 7,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "after-recall",
+      "query": "?sceneId=scene&personId=a",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "complete",
+          "returned": 4,
+          "omittedEntries": 0
+        },
+        "items": [
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "a_a",
+              "content": "Synthetic a_a",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "a-A",
+              "content": "Synthetic a-A",
+              "kind": "experience",
+              "epistemicKind": "reported",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "occurredAt": "2024-12-31T00:00:00Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": "2024-12-31T00:00:00Z",
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "aa",
+              "content": "Synthetic aa",
+              "kind": "experience",
+              "status": "disputed",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "shared_plan_declaration",
+            "view": {
+              "sourceMessageIds": [
+                "proposal"
+              ],
+              "terms": {
+                "kind": "plan",
+                "title": "Synthetic full plan",
+                "participantIds": [
+                  "a",
+                  "b"
+                ],
+                "temporalScope": "future",
+                "polarity": "positive",
+                "modality": "asserted",
+                "conditions": [
+                  "Only if participants confirm"
+                ],
+                "timeQualification": "18:00; exact date unknown"
+              },
+              "recordedAt": "<recorded>",
+              "confirmation": "proposed",
+              "lifecycle": "pending",
+              "qualification": "declared_not_verified",
+              "sourceBodyCoverage": "unavailable",
+              "confirmedParticipantIds": [],
+              "missingParticipantIds": [
+                "a",
+                "b"
+              ],
+              "completedParticipantIds": [],
+              "cancelledParticipantIds": []
+            },
+            "completionBasis": "participant_self_report_not_observed_event"
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 6,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "bounded-prefix",
+      "query": "?sceneId=scene&personId=crowd",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "interpretation": "independent_qualified_records_not_synthesized_episodes",
+        "sourceBodyCoverage": "unavailable",
+        "coverage": {
+          "status": "limited",
+          "returned": 12,
+          "omittedEntries": 16
+        },
+        "items": [
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-19",
+              "content": "Synthetic packed-19",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-20T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-20T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-18",
+              "content": "Synthetic packed-18",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-19T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-19T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-17",
+              "content": "Synthetic packed-17",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-18T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-18T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-16",
+              "content": "Synthetic packed-16",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-17T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-17T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-15",
+              "content": "Synthetic packed-15",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-16T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-16T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-14",
+              "content": "Synthetic packed-14",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-15T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-15T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-13",
+              "content": "Synthetic packed-13",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-14T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-14T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-12",
+              "content": "Synthetic packed-12",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-13T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-13T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-11",
+              "content": "Synthetic packed-11",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-12T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-12T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-10",
+              "content": "Synthetic packed-10",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-11T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-11T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-09",
+              "content": "Synthetic packed-09",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-10T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-10T00:00:00.000Z"
+            }
+          },
+          {
+            "kind": "reported_experience",
+            "record": {
+              "id": "packed-29",
+              "content": "Synthetic packed-29",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-02-10T00:00:00.000Z",
+              "sources": []
+            },
+            "time": {
+              "occurredAt": null,
+              "recordedAt": "2025-02-10T00:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 34,
+        "jobs": 0,
+        "legacy": 1
+      }
+    }
+  ]
+}

@@ -106,9 +106,9 @@ func truthy(v any) bool {
 	return true
 }
 
-// Snapshot uses actual current assertion authority, preserving repeated source
+// AssertionSnapshot uses actual current assertion authority, preserving repeated source
 // occurrences and original JSON order in the qualification hash.
-func (r *Resolver) snapshot(ctx commitments.Context, reference workingset.Reference) (*Object, error) {
+func (r *Resolver) AssertionSnapshot(ctx commitments.Context, reference workingset.Reference) (*Object, error) {
 	view, e := r.read.CurrentAssertion(ctx, ref(refValue(reference)))
 	if e != nil || view == nil {
 		return nil, e
@@ -191,7 +191,7 @@ func (r *Resolver) Resolve(ctx workingset.Context, refs []workingset.Reference) 
 		if reference.Kind != "assertion" {
 			continue
 		}
-		item, e := r.snapshot(c, reference)
+		item, e := r.AssertionSnapshot(c, reference)
 		if e != nil {
 			return nil, e
 		}

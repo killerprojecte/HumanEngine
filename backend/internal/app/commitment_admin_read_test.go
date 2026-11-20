@@ -27,11 +27,11 @@ func TestCommitmentAdminReadActualSource(t *testing.T) {
 		Names  map[string]json.RawMessage
 		Inputs []struct{ Context, Candidate json.RawMessage }
 		Cases  []struct {
-			Name, Path, Method           string
-			Auth                         *bool
-			Seed, Recall, PrivateHeaders bool
-			Status                       int
-			Body                         map[string]any
+			Name, Path, Method                       string
+			Auth                                     *bool
+			Seed, Historical, Recall, PrivateHeaders bool
+			Status                                   int
+			Body                                     map[string]any
 		}
 	}
 	if err := json.Unmarshal(raw, &data); err != nil || data.Node != "v24.22.1" {
@@ -53,16 +53,23 @@ func TestCommitmentAdminReadActualSource(t *testing.T) {
 	labels := map[string]string{}
 	for _, row := range data.Cases {
 		t.Run(row.Name, func(t *testing.T) {
-			if row.Seed {
+			if row.Seed || row.Historical {
 				settings := memoryPatchObject(t, contract.DefaultSettingsInput())
 				if err := settings.Set("memoryCommitmentsEnabled", true); err != nil {
 					t.Fatal(err)
+				}
+				if row.Historical {
+					if err := settings.Set("memoryHistoricalReadEnabled", true); err != nil {
+						t.Fatal(err)
+					}
 				}
 				raw, err := jsjson.Marshal(settings)
 				if err != nil {
 					t.Fatal(err)
 				}
 				appRequest(t, app, http.MethodPut, "/api/settings", json.RawMessage(raw))
+			}
+			if row.Seed {
 				for _, input := range data.Inputs {
 					result, err := app.Semantic.Memory.Propose(ctx, memoryPatchObject(t, input.Context), memoryPatchObject(t, input.Candidate), memoryservice.ProposalOptions{})
 					if err != nil || result.Status != "saved" || result.Commitment == nil || result.Commitment.Status != "saved" {
@@ -110,23 +117,40 @@ func TestCommitmentAdminReadActualSource(t *testing.T) {
 			if err := json.Unmarshal(res.Body.Bytes(), &body); err != nil {
 				t.Fatal(err)
 			}
-			items, _ := body["items"].([]any)
-			if body["ref"] != nil {
-				items = []any{body}
+			stamp := func(row map[string]any, key string) {
+				if at, ok := row[key].(string); ok {
+					if _, err := time.Parse("2006-01-02T15:04:05.000Z", at); err != nil {
+						t.Fatal(err)
+					}
+					row[key] = "@recorded"
+				}
 			}
-			for _, raw := range items {
-				item := raw.(map[string]any)
+			projectRef := func(item map[string]any) {
 				ref := item["ref"].(map[string]any)
 				if label, ok := labels[ref["id"].(string)]; ok {
 					ref["id"] = label
 				}
-				if at, ok := item["recordedAt"].(string); ok {
-					if _, err := time.Parse("2006-01-02T15:04:05.000Z", at); err != nil {
-						t.Fatal(err)
-					}
-					item["recordedAt"] = "@recorded"
+				stamp(item, "recordedAt")
+			}
+			if body["ref"] != nil {
+				projectRef(body)
+			}
+			for _, key := range []string{"items", "revisions"} {
+				items, _ := body[key].([]any)
+				for _, raw := range items {
+					projectRef(raw.(map[string]any))
 				}
 			}
+			states, _ := body["recordedStates"].([]any)
+			for _, raw := range states {
+				state := raw.(map[string]any)
+				stamp(state, "recordedAt")
+				for _, item := range state["states"].([]any) {
+					projectRef(item.(map[string]any))
+				}
+			}
+			window, _ := body["window"].(map[string]any)
+			stamp(window, "firstRecordedAt")
 			if !reflect.DeepEqual(body, row.Body) {
 				got, _ := json.Marshal(body)
 				want, _ := json.Marshal(row.Body)

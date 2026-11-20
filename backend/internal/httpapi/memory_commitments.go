@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/commitments"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
@@ -30,16 +31,28 @@ func memoryCommitmentRoute(method, path string) (string, bool) {
 	if path == memoryCommitmentsPath {
 		return "", true
 	}
-	id, found := strings.CutPrefix(path, memoryCommitmentsPath+"/")
-	return id, found && id != "" && !strings.Contains(id, "/")
+	tail, found := strings.CutPrefix(path, memoryCommitmentsPath+"/")
+	if !found || tail == "" {
+		return "", false
+	}
+	id, operation, nested := strings.Cut(tail, "/")
+	return tail, id != "" && (!nested || operation == "history" || operation == "timeline")
 }
 
-func memoryCommitmentQuery(query url.Values, rawID string) *memoryservice.CommitmentAdminQuery {
+func memoryCommitmentQuery(query url.Values, tail string) *memoryservice.CommitmentAdminQuery {
 	out := &memoryservice.CommitmentAdminQuery{}
 	const maxSafe = 9007199254740991
+	rawID, operation, _ := strings.Cut(tail, "/")
 	if rawID != "" {
+		switch operation {
+		case "history":
+			out.Recorded = memoryservice.CommitmentRevisionHistory
+		case "timeline":
+			out.Recorded = memoryservice.CommitmentTimeline
+		}
 		out.Ref.ID = memoryReadID(habitTryDecode(rawID, false))
-		if out.Ref.ID == "" || len(query) != 3 {
+		if out.Ref.ID == "" || !query.Has("deletionEpoch") ||
+			(out.Recorded != memoryservice.CommitmentTimeline && len(query) != 3) {
 			return nil
 		}
 	} else {
@@ -69,6 +82,24 @@ func memoryCommitmentQuery(query url.Values, rawID string) *memoryservice.Commit
 					return nil
 				}
 				out.Ref.DeletionEpoch = float64(n)
+			case "mutationVersion":
+				n, ok := coerceQueryInteger(v, maxSafe)
+				if out.Recorded != memoryservice.CommitmentTimeline || !ok {
+					return nil
+				}
+				out.AnchorMutation = float64(n)
+			case "asOfRecorded":
+				if out.Recorded != memoryservice.CommitmentTimeline || !commitments.ValidUTCRecordedAt(v) {
+					return nil
+				}
+				out.Timeline.AsOfRecorded = &v
+			case "limit":
+				n, ok := coerceQueryInteger(v, 20)
+				if out.Recorded != memoryservice.CommitmentTimeline || !ok {
+					return nil
+				}
+				limit := float64(n)
+				out.Timeline.Limit = &limit
 			default:
 				return nil
 			}
@@ -96,7 +127,7 @@ func memoryCommitmentQuery(query url.Values, rawID string) *memoryservice.Commit
 			return nil
 		}
 	}
-	if out.SceneID == "" {
+	if out.SceneID == "" || rawID != "" && out.Ref.Version == 0 || out.Recorded == memoryservice.CommitmentTimeline && out.AnchorMutation == 0 {
 		return nil
 	}
 	return out

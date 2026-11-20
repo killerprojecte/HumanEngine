@@ -156,6 +156,16 @@ func instant(v any) (any, error) {
 	return s, nil
 }
 
+// ValidUTCRecordedAt is the HTTP timeline's default Zod ISO datetime shape.
+// The owner's timeline parser also accepts explicit offsets for internal calls.
+func ValidUTCRecordedAt(value string) bool {
+	if len(value) == 0 || value[len(value)-1] != 'Z' {
+		return false
+	}
+	_, err := instant(value)
+	return err == nil
+}
+
 var utcDate, _ = jsdate.New("UTC")
 
 func refValue(v any) (any, error) {

@@ -11,10 +11,20 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
+type CommitmentRecordedRead uint8
+
+const (
+	CommitmentRevisionHistory CommitmentRecordedRead = iota + 1
+	CommitmentTimeline
+)
+
 type CommitmentAdminQuery struct {
-	SceneID string
-	List    commitments.ReadOptions
-	Ref     commitments.Reference
+	SceneID        string
+	List           commitments.ReadOptions
+	Ref            commitments.Reference
+	Recorded       CommitmentRecordedRead
+	AnchorMutation float64
+	Timeline       commitments.TimelineQuery
 }
 
 type CommitmentAdminRead func(context.Context, *CommitmentAdminQuery, func(int, []byte) error) (bool, error)
@@ -27,18 +37,8 @@ func (s *Service) BindCommitmentAdminRead(publisher *recovery.ReadPublisher, sch
 	return func(ctx context.Context, q *CommitmentAdminQuery, emit func(int, []byte) error) (bool, error) {
 		started, enabled := false, false
 		status := http.StatusOK
-		err := publish(ctx, func(r *assertions.Reader, _ commitments.Context) (bool, error) {
-			raw, exists, err := r.SettingsInput()
-			if err != nil {
-				return false, err
-			}
-			input := []byte(raw)
-			if !exists {
-				input = contract.DefaultSettingsInput()
-			}
-			settings, err := schemas.Parse("Settings", input)
-			enabled = settings["memoryCommitmentsEnabled"] == true
-			return enabled, err
+		err := publish(ctx, func(*assertions.Reader, commitments.Context) (bool, error) {
+			return enabled, nil
 		}, func(r *assertions.Reader, read *commitments.ReadService) ([]byte, error) {
 			started = true
 			if q == nil {
@@ -51,10 +51,35 @@ func (s *Service) BindCommitmentAdminRead(publisher *recovery.ReadPublisher, sch
 			}
 			if !real {
 				status = http.StatusNotFound
+				if q.Recorded != 0 {
+					return commitmentHistoryUnavailable, nil
+				}
 				return []byte(`{"error":"Scene unavailable"}`), nil
 			}
+			raw, exists, err := r.SettingsInput()
+			if err != nil {
+				return nil, err
+			}
+			input := []byte(raw)
+			if !exists {
+				input = contract.DefaultSettingsInput()
+			}
+			settings, err := schemas.Parse("Settings", input)
+			if err != nil {
+				return nil, err
+			}
+			enabled = settings["memoryCommitmentsEnabled"] == true
 			c := commitments.Context{SceneID: q.SceneID}
 			names := peopleNames{r, q.SceneID, map[string]string{}}
+			if q.Recorded != 0 {
+				if settings["memoryHistoricalReadEnabled"] != true {
+					status = http.StatusNotFound
+					return commitmentHistoryUnavailable, nil
+				}
+				body, code, err := commitmentRecorded(*q, c, read, &names)
+				status = code
+				return body, err
+			}
 			if q.Ref.ID != "" {
 				item, err := read.Current(c, q.Ref)
 				if err != nil {
@@ -75,11 +100,8 @@ func (s *Service) BindCommitmentAdminRead(publisher *recovery.ReadPublisher, sch
 				return nil, err
 			}
 			items := value(result, "items").([]any)
-			for i, item := range items {
-				items[i], err = commitmentAdminView(object(item), &names)
-				if err != nil {
-					return nil, err
-				}
+			if err := projectCommitmentAdminItems(items, &names); err != nil {
+				return nil, err
 			}
 			return jsjson.Marshal(personObject("sceneId", q.SceneID, "enabled", enabled, "items", items, "coverage", value(result, "coverage")))
 		}, func(body []byte) error { return emit(status, body) })
@@ -123,4 +145,15 @@ func commitmentAdminView(row *Object, names *peopleNames) (*Object, error) {
 	}
 	_ = view.Set("participants", out)
 	return view, nil
+}
+
+func projectCommitmentAdminItems(items []any, names *peopleNames) error {
+	for i, item := range items {
+		row, err := commitmentAdminView(object(item), names)
+		if err != nil {
+			return err
+		}
+		items[i] = row
+	}
+	return nil
 }

@@ -37,6 +37,8 @@ const inputs = ['proposal', 'other'].map((messageId, index) => {
 })
 const list = '/api/memory-commitments'
 const detail = list + '/@0?sceneId=scene&version=1&deletionEpoch=0'
+const history = detail.replace('/@0?', '/@0/history?')
+const timeline = detail.replace('/@0?', '/@0/timeline?') + '&mutationVersion=1'
 const cases = [
   ['unauthorized', list + '?sceneId=scene', { auth: false }],
   ['disabled-list', list + '?sceneId=scene'],
@@ -57,8 +59,27 @@ const cases = [
   ['unknown-query', list + '?sceneId=scene&other=x'],
   ['invalid-limit', list + '?sceneId=scene&limit=13'],
   ['head', detail, { method: 'HEAD' }],
+  ['history-disabled', history],
+  ['timeline-disabled', timeline],
+  ['history', history, { historical: true }],
+  ['timeline', timeline],
+  ['timeline-head', timeline, { method: 'HEAD' }],
+  ['timeline-before', timeline + '&asOfRecorded=2000-01-01T00%3A00%3A00Z'],
+  ['timeline-as-of', timeline + '&limit=2&asOfRecorded=2099-12-31T23%3A59%3A59.99999Z'],
+  ['timeline-date-invalid', timeline + '&asOfRecorded=2000-02-30T00%3A00%3A00Z'],
+  ['timeline-offset-invalid', timeline + '&asOfRecorded=2000-01-01T00%3A00%3A00%2B00%3A00'],
+  ['timeline-invalid-limit', timeline + '&limit=21'],
+  ['timeline-missing-mutation', timeline.replace('&mutationVersion=1', '')],
+  ['timeline-foreign', timeline.replace('sceneId=scene', 'sceneId=foreign')],
+  ['history-foreign', history.replace('sceneId=scene', 'sceneId=foreign')],
+  ['history-missing-scene', history.replace('sceneId=scene', 'sceneId=missing')],
   ['after-recall-list', list + '?sceneId=scene', { recall: true }],
   ['after-recall-detail', detail],
+  ['after-recall-history', history],
+  ['after-recall-stale-timeline-anchor', timeline],
+  ['after-recall-timeline', timeline.replace('mutationVersion=1', 'mutationVersion=2')],
+  ['after-recall-timeline-limit', timeline.replace('mutationVersion=1', 'mutationVersion=2') + '&limit=1'],
+
 ]
 const ids = []
 try {
@@ -75,18 +96,24 @@ try {
         ids.push(saved.commitment.item.ref.id)
       }
     }
+    if (options.historical) store.set('settings', { ...store.settings, memoryHistoricalReadEnabled: true })
     if (options.recall) engine.memory.recall('scene', 'proposal')
     const response = await app.request('http://fixture.invalid' + path.replace('@0', ids[0]), {
       method: options.method, headers: { Authorization: 'Bearer ' + (options.auth === false ? 'wrong-token' : token) },
     })
     const body = options.method === 'HEAD' ? null : await response.json()
-    for (const item of body?.items ?? (body?.ref ? [body] : [])) {
-      item.ref.id = '@' + ids.indexOf(item.ref.id)
-      if (item.recordedAt !== undefined) {
-        assert.equal(new Date(item.recordedAt).toISOString(), item.recordedAt)
-        item.recordedAt = '@recorded'
-      }
+    const stamp = (row, key) => {
+      if (row?.[key] === undefined || row[key] === null) return
+      assert.equal(new Date(row[key]).toISOString(), row[key])
+      row[key] = '@recorded'
     }
+    const states = body?.recordedStates ?? []
+    for (const item of body?.items ?? body?.revisions ?? (body?.ref ? [body] : states.flatMap((row) => row.states))) {
+      item.ref.id = '@' + ids.indexOf(item.ref.id)
+      stamp(item, 'recordedAt')
+    }
+    for (const state of states) stamp(state, 'recordedAt')
+    stamp(body?.window, 'firstRecordedAt')
     rows.push({ name, path, ...options, status: response.status, body,
       privateHeaders: response.headers.get('cache-control') === 'no-store' })
   }
@@ -95,6 +122,12 @@ try {
   assert.equal(pick('person-filter').body.items[0].ref.id, '@0')
   assert.equal(pick('numeric-coercion').status, 200)
   assert.equal(pick('after-recall-detail').body.terms, undefined)
+  assert.equal(pick('history').body.revisions[0].terms.title, 'Synthetic full plan')
+  assert.equal(pick('timeline').body.recordedStates[0].states[0].terms.title, 'Synthetic full plan')
+  assert.deepEqual(pick('timeline-before').body.recordedStates, [])
+  assert.equal(pick('after-recall-stale-timeline-anchor').status, 404)
+  assert.ok(pick('after-recall-history').body.revisions.every((row) => !row.terms))
+  assert.ok(pick('after-recall-timeline').body.recordedStates.every((row) => row.states.every((item) => !item.terms)))
   assert.doesNotMatch(JSON.stringify(rows), /PRIVATE_.*CANARY|backingFingerprint|proofId/)
   const target = new URL('../internal/app/testdata/commitment-admin-read-source.json', import.meta.url)
   const output = JSON.stringify({ node: process.version, scenes, names, inputs, cases: rows }, null, 2) + '\n'

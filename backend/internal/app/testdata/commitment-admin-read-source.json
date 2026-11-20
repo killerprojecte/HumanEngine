@@ -715,6 +715,337 @@
       "privateHeaders": true
     },
     {
+      "name": "history-disabled",
+      "path": "/api/memory-commitments/@0/history?sceneId=scene&version=1&deletionEpoch=0",
+      "status": 404,
+      "body": {
+        "error": "History unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-disabled",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1",
+      "status": 404,
+      "body": {
+        "error": "History unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "history",
+      "path": "/api/memory-commitments/@0/history?sceneId=scene&version=1&deletionEpoch=0",
+      "historical": true,
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "ref": {
+              "id": "@0",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic full plan",
+              "participantIds": [
+                "a",
+                "b"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "b",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          }
+        ],
+        "coverage": "limited",
+        "interpretation": "previously_recorded_not_current_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1",
+      "status": 200,
+      "body": {
+        "recordedStates": [
+          {
+            "recordedAt": "@recorded",
+            "mutationVersion": 1,
+            "reason": "propose",
+            "activeVersion": null,
+            "latestVersion": 1,
+            "status": "available",
+            "states": [
+              {
+                "ref": {
+                  "id": "@0",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "mutationVersion": 1,
+                "terms": {
+                  "kind": "plan",
+                  "title": "Synthetic full plan",
+                  "participantIds": [
+                    "a",
+                    "b"
+                  ],
+                  "temporalScope": "future",
+                  "polarity": "positive",
+                  "modality": "asserted",
+                  "conditions": [
+                    "Only if participants confirm"
+                  ],
+                  "timeQualification": "18:00; exact date unknown"
+                },
+                "recordedAt": "@recorded",
+                "confirmation": "proposed",
+                "lifecycle": "pending",
+                "qualification": "declared_not_verified",
+                "sourceBodyCoverage": "unavailable",
+                "changed": false,
+                "participants": [
+                  {
+                    "personId": "a",
+                    "displayName": "Same nickname",
+                    "confirmed": false,
+                    "missing": true,
+                    "completed": false,
+                    "cancelled": false
+                  },
+                  {
+                    "personId": "b",
+                    "displayName": "Same nickname",
+                    "confirmed": false,
+                    "missing": true,
+                    "completed": false,
+                    "cancelled": false
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "coverage": "limited",
+        "reasons": [],
+        "interpretation": "previously_recorded_declaration_state_not_current_truth",
+        "sourceBodyCoverage": "unavailable",
+        "stateTime": "server_recorded_not_occurred",
+        "window": {
+          "maxTransitions": 64,
+          "firstRecordedAt": "@recorded",
+          "firstMutationVersion": 1,
+          "prunedThroughMutationVersion": 0,
+          "throughMutationVersion": 1
+        }
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-head",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1",
+      "method": "HEAD",
+      "status": 200,
+      "body": null,
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-before",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1&asOfRecorded=2000-01-01T00%3A00%3A00Z",
+      "status": 200,
+      "body": {
+        "recordedStates": [],
+        "coverage": "limited",
+        "reasons": [
+          "no_recorded_state"
+        ],
+        "interpretation": "previously_recorded_declaration_state_not_current_truth",
+        "sourceBodyCoverage": "unavailable",
+        "stateTime": "server_recorded_not_occurred",
+        "window": {
+          "maxTransitions": 64,
+          "firstRecordedAt": "@recorded",
+          "firstMutationVersion": 1,
+          "prunedThroughMutationVersion": 0,
+          "throughMutationVersion": 1
+        }
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-as-of",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1&limit=2&asOfRecorded=2099-12-31T23%3A59%3A59.99999Z",
+      "status": 200,
+      "body": {
+        "recordedStates": [
+          {
+            "recordedAt": "@recorded",
+            "mutationVersion": 1,
+            "reason": "propose",
+            "activeVersion": null,
+            "latestVersion": 1,
+            "status": "available",
+            "states": [
+              {
+                "ref": {
+                  "id": "@0",
+                  "version": 1,
+                  "deletionEpoch": 0
+                },
+                "mutationVersion": 1,
+                "terms": {
+                  "kind": "plan",
+                  "title": "Synthetic full plan",
+                  "participantIds": [
+                    "a",
+                    "b"
+                  ],
+                  "temporalScope": "future",
+                  "polarity": "positive",
+                  "modality": "asserted",
+                  "conditions": [
+                    "Only if participants confirm"
+                  ],
+                  "timeQualification": "18:00; exact date unknown"
+                },
+                "recordedAt": "@recorded",
+                "confirmation": "proposed",
+                "lifecycle": "pending",
+                "qualification": "declared_not_verified",
+                "sourceBodyCoverage": "unavailable",
+                "changed": false,
+                "participants": [
+                  {
+                    "personId": "a",
+                    "displayName": "Same nickname",
+                    "confirmed": false,
+                    "missing": true,
+                    "completed": false,
+                    "cancelled": false
+                  },
+                  {
+                    "personId": "b",
+                    "displayName": "Same nickname",
+                    "confirmed": false,
+                    "missing": true,
+                    "completed": false,
+                    "cancelled": false
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "coverage": "limited",
+        "reasons": [],
+        "interpretation": "previously_recorded_declaration_state_not_current_truth",
+        "sourceBodyCoverage": "unavailable",
+        "stateTime": "server_recorded_not_occurred",
+        "window": {
+          "maxTransitions": 64,
+          "firstRecordedAt": "@recorded",
+          "firstMutationVersion": 1,
+          "prunedThroughMutationVersion": 0,
+          "throughMutationVersion": 1
+        }
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-date-invalid",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1&asOfRecorded=2000-02-30T00%3A00%3A00Z",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-offset-invalid",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1&asOfRecorded=2000-01-01T00%3A00%3A00%2B00%3A00",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-invalid-limit",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1&limit=21",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-missing-mutation",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "timeline-foreign",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=foreign&version=1&deletionEpoch=0&mutationVersion=1",
+      "status": 404,
+      "body": {
+        "error": "History unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "history-foreign",
+      "path": "/api/memory-commitments/@0/history?sceneId=foreign&version=1&deletionEpoch=0",
+      "status": 404,
+      "body": {
+        "error": "Commitment unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "history-missing-scene",
+      "path": "/api/memory-commitments/@0/history?sceneId=missing&version=1&deletionEpoch=0",
+      "status": 404,
+      "body": {
+        "error": "History unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
       "name": "after-recall-list",
       "path": "/api/memory-commitments?sceneId=scene",
       "recall": true,
@@ -805,6 +1136,103 @@
         "sourceBodyCoverage": "unavailable",
         "changed": false,
         "participants": []
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall-history",
+      "path": "/api/memory-commitments/@0/history?sceneId=scene&version=1&deletionEpoch=0",
+      "status": 200,
+      "body": {
+        "revisions": [],
+        "coverage": "limited",
+        "interpretation": "previously_recorded_not_current_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall-stale-timeline-anchor",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=1",
+      "status": 404,
+      "body": {
+        "error": "History unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall-timeline",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=2",
+      "status": 200,
+      "body": {
+        "recordedStates": [
+          {
+            "recordedAt": "@recorded",
+            "mutationVersion": 1,
+            "reason": "propose",
+            "activeVersion": null,
+            "latestVersion": 1,
+            "status": "redacted",
+            "states": []
+          },
+          {
+            "recordedAt": "@recorded",
+            "mutationVersion": 2,
+            "reason": "purge",
+            "activeVersion": null,
+            "latestVersion": 1,
+            "status": "redacted",
+            "states": []
+          }
+        ],
+        "coverage": "limited",
+        "reasons": [
+          "privacy_or_proof_unavailable"
+        ],
+        "interpretation": "previously_recorded_declaration_state_not_current_truth",
+        "sourceBodyCoverage": "unavailable",
+        "stateTime": "server_recorded_not_occurred",
+        "window": {
+          "maxTransitions": 64,
+          "firstRecordedAt": "@recorded",
+          "firstMutationVersion": 1,
+          "prunedThroughMutationVersion": 0,
+          "throughMutationVersion": 2
+        }
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall-timeline-limit",
+      "path": "/api/memory-commitments/@0/timeline?sceneId=scene&version=1&deletionEpoch=0&mutationVersion=2&limit=1",
+      "status": 200,
+      "body": {
+        "recordedStates": [
+          {
+            "recordedAt": "@recorded",
+            "mutationVersion": 2,
+            "reason": "purge",
+            "activeVersion": null,
+            "latestVersion": 1,
+            "status": "redacted",
+            "states": []
+          }
+        ],
+        "coverage": "limited",
+        "reasons": [
+          "result_limit",
+          "privacy_or_proof_unavailable"
+        ],
+        "interpretation": "previously_recorded_declaration_state_not_current_truth",
+        "sourceBodyCoverage": "unavailable",
+        "stateTime": "server_recorded_not_occurred",
+        "window": {
+          "maxTransitions": 64,
+          "firstRecordedAt": "@recorded",
+          "firstMutationVersion": 1,
+          "prunedThroughMutationVersion": 0,
+          "throughMutationVersion": 2
+        }
       },
       "privateHeaders": true
     }

@@ -39,7 +39,7 @@ func (s *Server) WithConfiguration(secrets *credentials.Store, settings *setting
 	return nil
 }
 func configurationPath(path string) bool {
-	return path == "/api/settings" || path == "/api/models" || strings.HasPrefix(path, "/api/settings/") || strings.HasPrefix(path, "/api/models/")
+	return path == "/api/persona/versions" || path == "/api/rules" || path == "/api/settings" || path == "/api/models" || strings.HasPrefix(path, "/api/settings/") || strings.HasPrefix(path, "/api/models/")
 }
 func (s *Server) serveConfiguration(w http.ResponseWriter, r *http.Request, available bool, requestID string) {
 	response := newPublicationResponse(w.Header(), r.Method == "HEAD")
@@ -77,14 +77,17 @@ func (s *Server) serveConfiguration(w http.ResponseWriter, r *http.Request, avai
 	}
 	path := habitRoutingPath(r)
 	var err error
-	if (path != "/api/settings" && path != "/api/models") || (r.Method != "GET" && r.Method != "HEAD" && r.Method != "PUT") {
+	read := r.Method == http.MethodGet || r.Method == http.MethodHead
+	matched := path == "/api/persona/versions" && read || (path == "/api/rules" || path == "/api/settings" || path == "/api/models") && (read || r.Method == http.MethodPut)
+	switch {
+	case !matched:
 		response.header.Set("Content-Type", "text/plain; charset=UTF-8")
 		err = publish(404, []byte("404 Not Found"))
-	} else if r.Method != "PUT" {
+	case read:
 		response.header.Set("Cache-Control", "no-store")
 		response.header.Set("X-Content-Type-Options", "nosniff")
 		err = s.publishResponse(r.Context(), path, response)
-	} else {
+	default:
 		err = s.authority.Publish(r.Context(), s.main, func(*sql.Conn) ([]byte, error) { return nil, nil }, func([]byte) error { return nil })
 		if err != nil {
 			failure(err)
@@ -99,9 +102,14 @@ func (s *Server) serveConfiguration(w http.ResponseWriter, r *http.Request, avai
 			failure(e)
 			return
 		}
-		if _, e = jsjson.ParseBytes(raw); e != nil {
+		input, e := jsjson.ParseBytes(raw)
+		if e != nil {
 			failure(e)
 			return
+		}
+		if path == "/api/rules" {
+			err = s.writeRules(r.Context(), input, publish)
+			break
 		}
 		var parsed, mutations *jsjson.Object
 		if path == "/api/models" {

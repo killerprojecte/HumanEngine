@@ -1,0 +1,487 @@
+{
+  "cases": [
+    {
+      "name": "missing",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "GET",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "present",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "GET",
+      "seeded": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "saved": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 200,
+      "text": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "head",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "HEAD",
+      "seeded": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "saved": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 200,
+      "text": "",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "auth",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "GET",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer wrong",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      }
+    },
+    {
+      "name": "null-stays-null",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "GET",
+      "seeded": "null",
+      "saved": "null",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 200,
+      "text": "null",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-storage",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "GET",
+      "seeded": "{",
+      "saved": "{",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "unsupported-method",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "POST",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "replace",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "saved": "[{\"id\":\"\",\"scope\":\"global\",\"content\":\"New synthetic rule\",\"nonOverridable\":true,\"enabled\":false}]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[{\"enabled\":false,\"content\":\"New synthetic rule\",\"scope\":\"global\",\"nonOverridable\":true,\"id\":\"\"}]",
+      "status": 200,
+      "text": "[{\"id\":\"\",\"scope\":\"global\",\"content\":\"New synthetic rule\",\"nonOverridable\":true,\"enabled\":false}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "clear",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "saved": "[]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[]",
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "duplicate",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true},{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "status": 400,
+      "text": "{\"error\":\"duplicate_rule_ids\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-before-duplicates",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true},{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true},{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"scene\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true,\"ignored\":true}]",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "missing-scene",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[{\"id\":\"rule\",\"scope\":\"scene\",\"sceneId\":\"\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "status": 400,
+      "text": "{\"error\":\"Invalid request\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "global-scene-text",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": null,
+      "saved": "[{\"id\":\"rule\",\"scope\":\"global\",\"sceneId\":\"\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[{\"id\":\"rule\",\"scope\":\"global\",\"sceneId\":\"\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "status": 200,
+      "text": "[{\"id\":\"rule\",\"scope\":\"global\",\"sceneId\":\"\",\"content\":\"Synthetic rule\",\"nonOverridable\":false,\"enabled\":true}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "malformed-input",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "{",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "wrong-content-type",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "text/plain",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[]",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "bad-storage-write",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": "{",
+      "saved": "{",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[]",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "no-auth-write",
+      "path": "/api/rules",
+      "key": "rules",
+      "method": "PUT",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer wrong",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[]",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      }
+    },
+    {
+      "name": "persona-missing",
+      "path": "/api/persona/versions",
+      "key": "personaVersions",
+      "method": "GET",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 200,
+      "text": "[]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "persona-order",
+      "path": "/api/persona/versions",
+      "key": "personaVersions",
+      "method": "GET",
+      "seeded": "[{\"id\":\"new\",\"createdAt\":\"2026-01-02T00:00:00.000Z\",\"content\":\"Current synthetic persona\"},{\"id\":\"old\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"content\":\"Earlier synthetic persona\"}]",
+      "saved": "[{\"id\":\"new\",\"createdAt\":\"2026-01-02T00:00:00.000Z\",\"content\":\"Current synthetic persona\"},{\"id\":\"old\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"content\":\"Earlier synthetic persona\"}]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 200,
+      "text": "[{\"id\":\"new\",\"createdAt\":\"2026-01-02T00:00:00.000Z\",\"content\":\"Current synthetic persona\"},{\"id\":\"old\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"content\":\"Earlier synthetic persona\"}]",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "persona-head",
+      "path": "/api/persona/versions",
+      "key": "personaVersions",
+      "method": "HEAD",
+      "seeded": "[{\"id\":\"new\",\"createdAt\":\"2026-01-02T00:00:00.000Z\",\"content\":\"Current synthetic persona\"},{\"id\":\"old\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"content\":\"Earlier synthetic persona\"}]",
+      "saved": "[{\"id\":\"new\",\"createdAt\":\"2026-01-02T00:00:00.000Z\",\"content\":\"Current synthetic persona\"},{\"id\":\"old\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"content\":\"Earlier synthetic persona\"}]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 200,
+      "text": "",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "persona-auth",
+      "path": "/api/persona/versions",
+      "key": "personaVersions",
+      "method": "GET",
+      "seeded": null,
+      "saved": null,
+      "headers": {
+        "Authorization": "Bearer wrong",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 401,
+      "text": "{\"error\":\"Authentication required\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      }
+    },
+    {
+      "name": "persona-invalid-storage",
+      "path": "/api/persona/versions",
+      "key": "personaVersions",
+      "method": "GET",
+      "seeded": "{",
+      "saved": "{",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "",
+      "status": 503,
+      "text": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "responseHeaders": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "persona-wrong-method",
+      "path": "/api/persona/versions",
+      "key": "personaVersions",
+      "method": "PUT",
+      "seeded": "[{\"id\":\"new\",\"createdAt\":\"2026-01-02T00:00:00.000Z\",\"content\":\"Current synthetic persona\"},{\"id\":\"old\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"content\":\"Earlier synthetic persona\"}]",
+      "saved": "[{\"id\":\"new\",\"createdAt\":\"2026-01-02T00:00:00.000Z\",\"content\":\"Current synthetic persona\"},{\"id\":\"old\",\"createdAt\":\"2026-01-01T00:00:00.000Z\",\"content\":\"Earlier synthetic persona\"}]",
+      "headers": {
+        "Authorization": "Bearer synthetic-config-token",
+        "Content-Type": "application/json",
+        "X-Request-ID": "12345678-1234-4123-8123-123456789012"
+      },
+      "body": "[]",
+      "status": 404,
+      "text": "404 Not Found",
+      "responseHeaders": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    }
+  ]
+}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,8 +15,10 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+	"github.com/killerprojecte/HumanEngine/backend/internal/credentials"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
+	"github.com/killerprojecte/HumanEngine/backend/internal/httpapi"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
@@ -22,6 +26,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/replyplan"
 	"github.com/killerprojecte/HumanEngine/backend/internal/scenestore"
+	"github.com/killerprojecte/HumanEngine/backend/internal/settingsstore"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -53,6 +58,12 @@ func rulesNoReply(data *jsjson.Object) botruntime.Completion {
 	target, _ := contract.Get("targetMessageIds")
 	messages, _ := contract.Get("contextMessageIds")
 	return rulesCompletion("reply.plan", memoryToolObject("action", "noReply", "deliveryTool", "messages.send", "targetMessageIds", target, "contextMessageIds", messages, "strategy", "No reply needed.", "constraints", []any{}, "facts", []any{}, "assets", []any{}, "emoji", []any{}, "actions", []any{}))
+}
+
+type unexpectedRulesSettingsChange struct{}
+
+func (unexpectedRulesSettingsChange) SettingsChanged(context.Context, httpapi.SettingsChange) error {
+	return fmt.Errorf("rules must not trigger runtime settings changes")
 }
 
 // This is the production rules extension on a real Runtime/source/recovery/habit
@@ -99,8 +110,24 @@ func TestRulesOnDemandRealRuntime(t *testing.T) {
 				t.Fatal(err)
 			}
 			manual := `[{"id":"fixed","scope":"global","enabled":true,"nonOverridable":true,"content":"MANUAL_CANARY"}]`
-			if _, err = db.Exec("INSERT INTO config VALUES('rules',?)", manual); err != nil {
+			secrets, err := credentials.NewStore(ctx, db, authority, "")
+			if err != nil {
 				t.Fatal(err)
+			}
+			server, err := httpapi.New(db, authority, "synthetic-rules-token", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := server.WithConfiguration(secrets, &settingsstore.Store{Main: db, Authority: authority}, unexpectedRulesSettingsChange{}); err != nil {
+				t.Fatal(err)
+			}
+			req := httptest.NewRequest(http.MethodPut, "/api/rules", strings.NewReader(manual))
+			req.Header.Set("Authorization", "Bearer synthetic-rules-token")
+			req.Header.Set("Content-Type", "application/json")
+			rec := httptest.NewRecorder()
+			server.ServeHTTP(rec, req)
+			if rec.Code != 200 {
+				t.Fatalf("rules write: %d %s", rec.Code, rec.Body.String())
 			}
 			sources, err := sourceevents.New(db, authority, sourceevents.Options{})
 			if err != nil {

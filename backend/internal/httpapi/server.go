@@ -131,7 +131,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
 	}
 	id := r.Header.Get("X-Request-ID")
-	if simulation || learningAdmin || budgetAdmin || memoryPeople || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if simulation || learningAdmin || budgetAdmin || memoryPeople || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions")) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -350,6 +350,20 @@ func config(ctx context.Context, q *sql.Conn, key string, fallback []byte) ([]by
 }
 func (s *Server) projection(ctx context.Context, q *sql.Conn, path string) ([]byte, error) {
 	switch path {
+	case "/api/rules", "/api/persona/versions":
+		key := "rules"
+		if path == "/api/persona/versions" {
+			key = "personaVersions"
+		}
+		raw, err := config(ctx, q, key, []byte("[]"))
+		if err != nil {
+			return nil, err
+		}
+		value, err := jsjson.ParseBytes(raw)
+		if err != nil {
+			return nil, err
+		}
+		return jsjson.Marshal(value)
 	case "/api/settings":
 		raw, err := config(ctx, q, "settings", contract.DefaultSettingsInput())
 		if err != nil {

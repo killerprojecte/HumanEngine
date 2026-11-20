@@ -1,0 +1,149 @@
+{
+  "scene": {
+    "adapterId": "snowluma",
+    "accountId": "42",
+    "kind": "group",
+    "platformSceneId": "99",
+    "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+  },
+  "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imlnbm9yZWQiLCJmaWxlSWQiOiJvcGFxdWUifQ",
+  "cases": [
+    {
+      "name": "url-over-inline-file",
+      "reply": {
+        "url": "http://fixture.invalid/token/path?fixture=1",
+        "file": "base64://YQ=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "http://fixture.invalid/token/path?fixture=1"
+      ],
+      "bytes": "remote bytes",
+      "error": ""
+    },
+    {
+      "name": "file-only-public",
+      "reply": {
+        "file": "https://fixture.invalid/file"
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/file"
+      ],
+      "bytes": "remote bytes",
+      "error": ""
+    },
+    {
+      "name": "empty-url-file",
+      "reply": {
+        "url": "",
+        "file": "http://fixture.invalid/fallback"
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "http://fixture.invalid/fallback"
+      ],
+      "bytes": "remote bytes",
+      "error": ""
+    },
+    {
+      "name": "non-string-url-file",
+      "reply": {
+        "url": {},
+        "file": "http://fixture.invalid/typed-file"
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "http://fixture.invalid/typed-file"
+      ],
+      "bytes": "remote bytes",
+      "error": ""
+    },
+    {
+      "name": "rejected-url-no-inline-fallback",
+      "reply": {
+        "url": "http://fixture.invalid/failed",
+        "file": "base64://YQ=="
+      },
+      "fail": true,
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "http://fixture.invalid/failed"
+      ],
+      "bytes": "",
+      "error": "synthetic_fetch_failed"
+    },
+    {
+      "name": "invalid-url-no-file-fallback",
+      "reply": {
+        "url": "file:///private",
+        "file": "https://fixture.invalid/ignored"
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "bytes": "",
+      "error": "image_download_url_unavailable"
+    },
+    {
+      "name": "returned-inline-unchanged",
+      "reply": {
+        "file": "base64://YQ=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "bytes": "a",
+      "error": ""
+    },
+    {
+      "name": "cancel-between-action-and-fetch",
+      "reply": {
+        "url": "http://fixture.invalid/cancelled"
+      },
+      "cancel": true,
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "bytes": "",
+      "error": "media_cancelled"
+    }
+  ]
+}

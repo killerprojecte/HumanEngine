@@ -78,6 +78,7 @@ differential: build plugin-source-check contextual-source-check runtime-producer
 	cd .. && HE_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/imagecodec/testdata/display-sharp.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-managed-display-image.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-snowluma-inline-image.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-snowluma-token-public-return.mjs --check
 	cd .. && node backend/internal/plugins/generate-v1-adapters.mjs --check
 	cd .. && V1_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/plugins/generate-v1-adapter-fixture.mjs --check
 	cd .. && V1_SOURCE_ROOT="$$PWD" node --import tsx backend/internal/plugins/generate-v1-adapter-lifecycle-fixture.mjs --check

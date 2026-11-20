@@ -43,7 +43,7 @@ func (f *snowTokenFixture) action(ctx context.Context, token string) (any, bool)
 		return map[string]any{"url": "", "file": "base64://" + f.encoded}, true
 	case "opaque-url-precedence":
 		f.calls <- token
-		return map[string]any{"url": "https://example.invalid/no-network", "file": "base64://" + f.encoded}, true
+		return map[string]any{"url": "http://127.0.0.1/never-dial", "file": "base64://" + f.encoded}, true
 	case "opaque-local-result":
 		f.calls <- token
 		return map[string]any{"file": "/fixture/never-open.png"}, true

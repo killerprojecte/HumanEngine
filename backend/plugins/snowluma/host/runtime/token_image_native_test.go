@@ -147,7 +147,11 @@ func TestTokenImageActualBundledSender(t *testing.T) {
 		}
 	}
 	check("fixture-inline", "")
-	check("fixture-url", "image_download_url_unavailable")
+	publicError := "image_download_url_unavailable"
+	if publicBrowserImageSupported {
+		publicError = "media_address_not_public"
+	}
+	check("fixture-url", publicError)
 	check("fixture-path", "image_download_url_unavailable")
 	check("fixture-null", "invalid_payload")
 	if external.Load() != 0 || len(calls) != 0 {

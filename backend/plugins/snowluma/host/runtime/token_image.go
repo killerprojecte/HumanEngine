@@ -10,6 +10,7 @@ import (
 )
 
 type imageTokenLookup func(context.Context, string) (any, error)
+type selectedImageRead func(context.Context, string) ([]byte, error)
 
 func (s *Sender) readBrowserImage(ctx context.Context, scene botruntime.Scene, reference string, before func(context.Context) error) ([]byte, error) {
 	if err := ctx.Err(); err != nil {
@@ -25,7 +26,9 @@ func (s *Sender) readBrowserImage(ctx context.Context, scene botruntime.Scene, r
 	}
 	return readTokenOrInlineDescriptor(ctx, media, file, func(call context.Context, token string) (any, error) {
 		return s.lookupImageToken(call, token, before)
-	})
+	}, browserTokenContinuation(publicBrowserImageSupported, func(call context.Context, locator string) ([]byte, error) {
+		return s.readPublicBrowserImage(call, locator, before)
+	}))
 }
 
 func (s *Sender) lookupImageToken(call context.Context, token string, before func(context.Context) error) (any, error) {
@@ -64,10 +67,10 @@ func readTokenOrInlineImage(ctx context.Context, scene botruntime.Scene, referen
 	if err != nil {
 		return nil, err
 	}
-	return readTokenOrInlineDescriptor(ctx, media, str(media, "file"), lookup)
+	return readTokenOrInlineDescriptor(ctx, media, str(media, "file"), lookup, inlineTokenContinuation)
 }
 
-func readTokenOrInlineDescriptor(ctx context.Context, media *jsjson.Object, file string, lookup imageTokenLookup) ([]byte, error) {
+func readTokenOrInlineDescriptor(ctx context.Context, media *jsjson.Object, file string, lookup imageTokenLookup, readSelected selectedImageRead) ([]byte, error) {
 	if payload, inline := inlineImagePayload(file); inline {
 		return decodeInlinePayload(payload)
 	}
@@ -75,10 +78,10 @@ func readTokenOrInlineDescriptor(ctx context.Context, media *jsjson.Object, file
 	if token == "" {
 		return nil, botruntime.ErrDisplayImageUnavailable
 	}
-	return fetchInlineImageToken(ctx, token, lookup)
+	return fetchImageToken(ctx, token, lookup, readSelected)
 }
 
-func fetchInlineImageToken(ctx context.Context, token string, lookup imageTokenLookup) ([]byte, error) {
+func fetchImageToken(ctx context.Context, token string, lookup imageTokenLookup, readSelected selectedImageRead) ([]byte, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -97,9 +100,25 @@ func fetchInlineImageToken(ctx context.Context, token string, lookup imageTokenL
 	if redirect == "" {
 		redirect = str(result, "file")
 	}
-	image, err := decodeInlineImage(redirect)
+	// A nonempty URL owns the result, even if its read later fails.
+	return readSelected(ctx, redirect)
+}
+
+func browserTokenContinuation(supported bool, readPublic selectedImageRead) selectedImageRead {
+	if !supported {
+		return inlineTokenContinuation
+	}
+	return func(ctx context.Context, source string) ([]byte, error) {
+		if publicImageLocator(source) {
+			return readPublic(ctx, source)
+		}
+		return inlineTokenContinuation(ctx, source)
+	}
+}
+
+func inlineTokenContinuation(_ context.Context, source string) ([]byte, error) {
+	image, err := decodeInlineImage(source)
 	if errors.Is(err, botruntime.ErrDisplayImageUnavailable) {
-		// Do not fall through to a file when the server returned a nonempty URL.
 		return nil, errors.New("image_download_url_unavailable")
 	}
 	return image, err
@@ -120,9 +139,9 @@ func (s *Sender) prepareImageToken(scene botruntime.Scene, reference string) bot
 		return nil
 	}
 	return func(ctx context.Context, before func(context.Context) error) ([]byte, error) {
-		return fetchInlineImageToken(ctx, token, func(call context.Context, token string) (any, error) {
+		return fetchImageToken(ctx, token, func(call context.Context, token string) (any, error) {
 			return s.lookupImageToken(call, token, before)
-		})
+		}, inlineTokenContinuation)
 	}
 }
 

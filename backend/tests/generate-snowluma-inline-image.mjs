@@ -36,8 +36,8 @@ for (const [name, file] of [
     cases.push({ name, asset, error: err.message })
   }
 }
-// Production Go currently ports the exact token-only and returned-inline
-// subset, never opening the synthetic public/I/O fixtures below.
+// The inline/Vision path never opens a selected public locator. Browser
+// continuation has a separate source oracle with the same reply precedence.
 const tokenCases = []
 for (const [name, file, fileId, reply, goLimited] of [
   ['token-file-inline', 'opaque', undefined, { file: 'base64://YQ==' }],

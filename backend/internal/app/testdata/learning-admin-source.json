@@ -1,0 +1,234 @@
+[
+  {
+    "name": "initial-status",
+    "method": "GET",
+    "path": "/api/learning/status",
+    "authorized": true,
+    "status": 200,
+    "response": {
+      "accepted": 0,
+      "completed": 0,
+      "failed": 0,
+      "overflow": 0,
+      "retried": 0,
+      "paused": 0,
+      "failures": [],
+      "queued": 0,
+      "retrying": 0,
+      "active": 0
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "status-head",
+    "method": "HEAD",
+    "path": "/api/learning/status",
+    "authorized": true,
+    "status": 200,
+    "response": null,
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "unauthorized-status",
+    "method": "GET",
+    "path": "/api/learning/status",
+    "authorized": false,
+    "status": 401,
+    "response": {
+      "error": "Authentication required"
+    },
+    "headers": {
+      "cache-control": "",
+      "content-type": "application/json",
+      "x-content-type-options": ""
+    }
+  },
+  {
+    "name": "unauthorized-head",
+    "method": "HEAD",
+    "path": "/api/learning/status",
+    "authorized": false,
+    "status": 401,
+    "response": null,
+    "headers": {
+      "cache-control": "",
+      "content-type": "application/json",
+      "x-content-type-options": ""
+    }
+  },
+  {
+    "name": "missing-retry",
+    "method": "POST",
+    "path": "/api/learning/failures/missing%2Fid/retry",
+    "authorized": true,
+    "body": "{",
+    "status": 400,
+    "response": {
+      "error": "Batch is unavailable or cannot safely retry"
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "missing-discard",
+    "method": "DELETE",
+    "path": "/api/learning/failures/missing%2Fid",
+    "authorized": true,
+    "status": 400,
+    "response": {
+      "error": "Batch is unavailable"
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "unknown-method",
+    "method": "GET",
+    "path": "/api/learning/failures/missing%2Fid",
+    "authorized": true,
+    "status": 404,
+    "response": "404 Not Found",
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "text/plain; charset=UTF-8",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "unknown-head",
+    "method": "HEAD",
+    "path": "/api/learning/failures/missing%2Fid",
+    "authorized": true,
+    "status": 404,
+    "response": null,
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "text/plain; charset=UTF-8",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "paused-status",
+    "method": "GET",
+    "path": "/api/learning/status",
+    "authorized": true,
+    "status": 200,
+    "response": {
+      "accepted": 0,
+      "completed": 0,
+      "failed": 0,
+      "overflow": 0,
+      "retried": 0,
+      "paused": 1,
+      "failures": [
+        {
+          "id": "synthetic/failure",
+          "sceneId": "learning-scene",
+          "attempt": 1,
+          "messageCount": 1,
+          "partial": false,
+          "canRetry": true,
+          "createdAt": "2026-01-01T00:00:00.000Z"
+        }
+      ],
+      "queued": 0,
+      "retrying": 0,
+      "active": 0
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "unauthorized-retry",
+    "method": "POST",
+    "path": "/api/learning/failures/synthetic%2Ffailure/retry",
+    "authorized": false,
+    "status": 401,
+    "response": {
+      "error": "Authentication required"
+    },
+    "headers": {
+      "cache-control": "",
+      "content-type": "application/json",
+      "x-content-type-options": ""
+    }
+  },
+  {
+    "name": "unauthorized-discard",
+    "method": "DELETE",
+    "path": "/api/learning/failures/synthetic%2Ffailure",
+    "authorized": false,
+    "status": 401,
+    "response": {
+      "error": "Authentication required"
+    },
+    "headers": {
+      "cache-control": "",
+      "content-type": "application/json",
+      "x-content-type-options": ""
+    }
+  },
+  {
+    "name": "retry",
+    "method": "POST",
+    "path": "/api/learning/failures/synthetic%2Ffailure/retry",
+    "authorized": true,
+    "body": "{",
+    "status": 200,
+    "response": {
+      "ok": true
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "partial-retry",
+    "method": "POST",
+    "path": "/api/learning/failures/synthetic%2Ffailure/retry",
+    "authorized": true,
+    "status": 400,
+    "response": {
+      "error": "Batch is unavailable or cannot safely retry"
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  },
+  {
+    "name": "discard",
+    "method": "DELETE",
+    "path": "/api/learning/failures/synthetic%2Ffailure",
+    "authorized": true,
+    "status": 200,
+    "response": {
+      "ok": true
+    },
+    "headers": {
+      "cache-control": "no-store",
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff"
+    }
+  }
+]

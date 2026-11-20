@@ -30,6 +30,7 @@ import (
 
 type Server struct {
 	logStatus           *logStatusOwner
+	learningAdmin       *learningAdminOwner
 	memoryDelete        *memoryservice.Service
 	retainedPublisher   *recovery.ReadPublisher
 	runtimeStatus       *runtimeStatusOwner
@@ -104,8 +105,9 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	path := habitRoutingPath(r)
 	sceneID, operation := sceneReadRoute(r, path)
 	sceneRead := operation != "" && s.runtimeStatus != nil
+	learningAdmin := s.learningAdmin != nil && learningAdminPath(path)
 	id := r.Header.Get("X-Request-ID")
-	if (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if learningAdmin || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -122,7 +124,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneRead || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
+	if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneRead || learningAdmin || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
@@ -143,7 +145,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneRead || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
+		if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneRead || learningAdmin || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -192,6 +194,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if s.retainedPublisher != nil && retainedLogsPath(path) {
 		s.serveRetainedLogs(w, r, available, id)
+		return
+	}
+	if learningAdmin {
+		s.serveLearningAdmin(w, r, available, path, id)
 		return
 	}
 	if sceneRead {

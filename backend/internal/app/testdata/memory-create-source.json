@@ -1,0 +1,184 @@
+{
+  "node": "v24.22.1",
+  "cases": [
+    {
+      "name": "scene-person",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "scope": {
+          "kind": "scene",
+          "sceneId": "synthetic-a",
+          "personId": "fixture-person"
+        },
+        "content": "A synthetic fact.",
+        "kind": "fact",
+        "sources": [],
+        "importance": "medium",
+        "confidence": 1,
+        "status": "active",
+        "locked": false,
+        "origin": "manual",
+        "revision": {
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      }
+    },
+    {
+      "name": "other-scope",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-b\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\",\"importance\":\"high\",\"locked\":true,\"confidence\":0.75}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "scope": {
+          "kind": "scene",
+          "sceneId": "synthetic-b"
+        },
+        "content": "A synthetic fact.",
+        "kind": "fact",
+        "sources": [],
+        "importance": "high",
+        "confidence": 0.75,
+        "status": "active",
+        "locked": true,
+        "origin": "manual",
+        "revision": {
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      }
+    },
+    {
+      "name": "public",
+      "raw": "{\"scope\":{\"kind\":\"sharedPublicKnowledge\"},\"content\":\"Synthetic public claim.\",\"kind\":\"claim\",\"validFrom\":\"2024-02-29T12:32:11.123+02:30\",\"validUntil\":\"2099-01-01T00:00:00Z\",\"occurredAt\":\"2024-01-01T00:00:00Z\",\"epistemicKind\":\"reported\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "scope": {
+          "kind": "sharedPublicKnowledge"
+        },
+        "content": "Synthetic public claim.",
+        "kind": "claim",
+        "sources": [],
+        "importance": "medium",
+        "confidence": 1,
+        "status": "active",
+        "locked": false,
+        "origin": "manual",
+        "validFrom": "2024-02-29T12:32:11.123+02:30",
+        "epistemicKind": "reported",
+        "occurredAt": "2024-01-01T00:00:00Z",
+        "validUntil": "2099-01-01T00:00:00Z",
+        "revision": {
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      }
+    },
+    {
+      "name": "duplicate-scope",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      }
+    },
+    {
+      "name": "unauthorized",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\"}",
+      "contentType": "application/json",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "name": "missing-field",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"kind\":\"fact\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      }
+    },
+    {
+      "name": "invalid-scope",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\",\"arbitrary\":\"invalid\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      }
+    },
+    {
+      "name": "invalid-date",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\",\"validFrom\":\"2026-02-29T00:00:00Z\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      }
+    },
+    {
+      "name": "invalid-offset",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\",\"occurredAt\":\"2024-01-01T00:00:00+24:00\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      }
+    },
+    {
+      "name": "bad-content-type",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\"}",
+      "contentType": "text/plain",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      }
+    },
+    {
+      "name": "malformed-json",
+      "raw": "{",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      }
+    },
+    {
+      "name": "blank-business-content",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\"\\t ﻿\",\"kind\":\"fact\"}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      }
+    },
+    {
+      "name": "private-source-fields",
+      "raw": "{\"scope\":{\"kind\":\"scene\",\"sceneId\":\"synthetic-a\",\"personId\":\"fixture-person\"},\"content\":\" A synthetic fact. \",\"kind\":\"fact\",\"sources\":[]}",
+      "contentType": "application/json",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      }
+    }
+  ]
+}

@@ -394,3 +394,11 @@ func indexID() (string, error) {
 	s := hex.EncodeToString(b[:])
 	return s[:8] + "-" + s[8:12] + "-" + s[12:16] + "-" + s[16:20] + "-" + s[20:], nil
 }
+
+// IndexManualMemory uses the installed index owner after an administrative
+// creation commits. As in the browser source, indexing cannot undo the write.
+func (o *Owner) IndexManualMemory(ctx context.Context, id, content string) {
+	if err := o.indexMemory(ctx, id, content); err != nil {
+		o.log("warn", "embedding_unavailable")
+	}
+}

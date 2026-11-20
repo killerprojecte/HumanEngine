@@ -30,6 +30,7 @@ import (
 
 type Server struct {
 	browserSessions     *browserSessions
+	manualMemoryIndex   func(context.Context, string, string)
 	logStatus           *logStatusOwner
 	learningAdmin       *learningAdminOwner
 	memoryDelete        *memoryservice.Service
@@ -267,6 +268,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if s.experience != nil && experiencePath(path) {
 		s.serveExperience(w, r, available, id)
+		return
+	}
+	if s.manualMemoryIndex != nil && path == memoryDeletePrefix && r.Method == http.MethodPost {
+		s.serveMemoryCreate(w, r, available, id)
 		return
 	}
 	if s.memoryAdminRead != nil && (path == memoryDeletePrefix || path == memoryDeletePrefix+"/page") && (r.Method == http.MethodGet || r.Method == http.MethodHead) {

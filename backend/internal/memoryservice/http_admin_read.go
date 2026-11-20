@@ -41,15 +41,9 @@ func adminRecords(r *assertions.Reader) ([]any, error) {
 		if !ok {
 			return nil, errors.New("assertion_record_id_required")
 		}
-		state, err := r.State(id)
-		if err != nil {
+		if err := presentAdminRevision(r, record, id); err != nil {
 			return nil, err
 		}
-		revision, _ := jsjson.NewObject(
-			jsjson.Member{Key: "version", Value: float64(state.Version)},
-			jsjson.Member{Key: "deletionEpoch", Value: float64(state.DeletionEpoch)},
-		)
-		_ = record.Set("revision", revision)
 		out = append(out, record)
 	}
 	return out, nil

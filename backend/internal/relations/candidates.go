@@ -194,17 +194,17 @@ func (c *candidates) review(ctx Context, id string, expected float64, status, ac
 		return nil, e
 	}
 	if record == nil {
-		return nil, errors.New("relation_unavailable")
+		return nil, ErrUnavailable
 	}
 	ok, e := c.eligible(ctx, record)
 	if e != nil {
 		return nil, e
 	}
 	if !ok {
-		return nil, errors.New("relation_unavailable")
+		return nil, ErrUnavailable
 	}
 	if get(record, "version") != expected {
-		return nil, errors.New("relation_version_conflict")
+		return nil, ErrVersionConflict
 	}
 	next := record.Clone()
 	_ = next.Set("version", num(get(record, "version"))+1)

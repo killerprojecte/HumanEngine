@@ -1308,5 +1308,431 @@
       "cacheControl": "no-store",
       "noSniff": "nosniff"
     }
+  ],
+  "reviewCases": [
+    {
+      "name": "unauthorized",
+      "url": "/api/memory-relations/relation-2/review",
+      "authorized": false,
+      "body": "{",
+      "result": [
+        {
+          "status": 401,
+          "body": {
+            "error": "Authentication required"
+          },
+          "cacheControl": "",
+          "noSniff": ""
+        }
+      ]
+    },
+    {
+      "name": "missing-body-and-type",
+      "url": "/api/memory-relations/relation-2/review",
+      "contentType": "",
+      "result": [
+        {
+          "status": 404,
+          "body": {
+            "error": "Scene unavailable"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "body-without-type",
+      "url": "/api/memory-relations/relation-2/review",
+      "contentType": "",
+      "body": "{}",
+      "result": [
+        {
+          "status": 503,
+          "body": {
+            "error": "Request failed; inspect server diagnostics",
+            "requestId": "@request-id"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "wrong-type",
+      "url": "/api/memory-relations/relation-2/review",
+      "contentType": "text/plain",
+      "body": "{}",
+      "result": [
+        {
+          "status": 503,
+          "body": {
+            "error": "Request failed; inspect server diagnostics",
+            "requestId": "@request-id"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "broken-json",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{",
+      "result": [
+        {
+          "status": 503,
+          "body": {
+            "error": "Request failed; inspect server diagnostics",
+            "requestId": "@request-id"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "empty-json",
+      "url": "/api/memory-relations/relation-2/review",
+      "result": [
+        {
+          "status": 503,
+          "body": {
+            "error": "Request failed; inspect server diagnostics",
+            "requestId": "@request-id"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "missing-fields",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{}",
+      "result": [
+        {
+          "status": 400,
+          "body": {
+            "error": "Invalid request"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "strict-body",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":2,\"status\":\"accepted\",\"actorId\":\"forged\"}",
+      "result": [
+        {
+          "status": 400,
+          "body": {
+            "error": "Invalid request"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "positive-int",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":2.5,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 400,
+          "body": {
+            "error": "Invalid request"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "safe-int",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":9007199254740992,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 400,
+          "body": {
+            "error": "Invalid request"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "no-version-coercion",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":\"2\",\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 400,
+          "body": {
+            "error": "Invalid request"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "invalid-status",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":2,\"status\":\"candidate\"}",
+      "result": [
+        {
+          "status": 400,
+          "body": {
+            "error": "Invalid request"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "simulation",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"simulation\",\"expectedVersion\":2,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 404,
+          "body": {
+            "error": "Scene unavailable"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "private-foreign-edge",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"foreign\",\"expectedVersion\":1,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 404,
+          "body": {
+            "error": "Relation unavailable"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "disabled-before-conflict",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"accepted\"}",
+      "graphEnabled": false,
+      "result": [
+        {
+          "status": 404,
+          "body": {
+            "error": "Relation unavailable"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "stale-version",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"accepted\"}",
+      "graphEnabled": true,
+      "result": [
+        {
+          "status": 409,
+          "body": {
+            "error": "Relation changed; refresh before reviewing"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "recalled-before-conflict",
+      "url": "/api/memory-relations/relation-1/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":2,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 404,
+          "body": {
+            "error": "Relation unavailable"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "encoded-slash-id",
+      "url": "/api/memory-relations/a%2Fb/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":1,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 404,
+          "body": {
+            "error": "Relation unavailable"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "private-edge",
+      "url": "/api/memory-relations/relation-3/review",
+      "body": "{\"sceneId\":\"foreign\",\"expectedVersion\":1,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 200,
+          "body": {
+            "id": "relation-3",
+            "version": 2,
+            "assertionContent": "Synthetic assertion 3",
+            "personId": "subject",
+            "personName": "Foreign subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-3",
+              "kind": "plan",
+              "title": "Synthetic title 3"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-3",
+                    "senderId": "subject",
+                    "senderName": "Foreign subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "duplicate-json-keys-last-wins",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"foreign\",\"sceneId\":\"local\",\"expectedVersion\":1,\"expectedVersion\":2,\"status\":\"accepted\"}",
+      "result": [
+        {
+          "status": 200,
+          "body": {
+            "id": "relation-2",
+            "version": 3,
+            "assertionContent": "Synthetic assertion 2",
+            "personId": "nameless",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-2",
+              "kind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-2",
+                    "senderId": "nameless"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    },
+    {
+      "name": "same-version-concurrent-review",
+      "url": "/api/memory-relations/relation-2/review",
+      "body": "{\"sceneId\":\"local\",\"expectedVersion\":3,\"status\":\"rejected\"}",
+      "concurrent": true,
+      "result": [
+        {
+          "status": 200,
+          "body": {
+            "id": "relation-2",
+            "version": 4,
+            "assertionContent": "Synthetic assertion 2",
+            "personId": "nameless",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-2",
+              "kind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "rejected",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-2",
+                    "senderId": "nameless"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        },
+        {
+          "status": 409,
+          "body": {
+            "error": "Relation changed; refresh before reviewing"
+          },
+          "cacheControl": "no-store",
+          "noSniff": "nosniff"
+        }
+      ]
+    }
   ]
 }

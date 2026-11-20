@@ -18,12 +18,27 @@ func AdmitInAssertionScope(ctx context.Context, storage *relationstorage.Store, 
 		return out, errors.New("relation_dependencies_required")
 	}
 	err = active.WithWriteSession(func(session *recovery.WriteSession) error {
-		bound, e := storage.BindAdmissionSession(session)
+		bound, e := storage.BindAssertionSession(session)
 		if e != nil {
 			return e
 		}
 		service := &Service{Storage: bound, assertions: active, options: options}
 		out, e = service.Admit(ctx, input, backing, proposals)
+		return e
+	})
+	return
+}
+
+// ReviewInAssertionScope borrows the caller's writer for the existing derived
+// relation-row transition. It neither opens a writer nor appends an intent.
+func ReviewInAssertionScope(ctx context.Context, storage *relationstorage.Store, active *assertions.Store, options Options, input Context, id string, version float64, status string) (out *Object, err error) {
+	err = active.WithWriteSession(func(session *recovery.WriteSession) error {
+		bound, e := storage.BindAssertionSession(session)
+		if e != nil {
+			return e
+		}
+		service := &Service{Storage: bound, assertions: active, options: options}
+		out, e = service.Review(ctx, input, id, version, status, "admin")
 		return e
 	})
 	return

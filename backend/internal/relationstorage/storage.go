@@ -10,6 +10,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
+var ErrVersionConflict = errors.New("relation_version_conflict")
+
 type Object = jsjson.Object
 type Rows interface {
 	Next() bool
@@ -259,7 +261,7 @@ func (s *Store) Update(record *Object, expected float64) error {
 		return e
 	}
 	if n != 1 {
-		return errors.New("relation_version_conflict")
+		return ErrVersionConflict
 	}
 	return nil
 }

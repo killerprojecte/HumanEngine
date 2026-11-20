@@ -55,23 +55,9 @@ func (a *AdminRead) PublishRelations(ctx context.Context, q *RelationsQuery, sch
 			return []byte(`{"error":"Scene unavailable"}`), nil
 		}
 
-		raw, exists, err := r.SettingsInput()
+		options, enabled, err := a.relationAdminOptions(r, schemas)
 		if err != nil {
 			return nil, err
-		}
-		input := []byte(raw)
-		if !exists {
-			input = contract.DefaultSettingsInput()
-		}
-		settings, err := schemas.Parse("Settings", input)
-		if err != nil {
-			return nil, err
-		}
-		// The admin view uses the graph flag, not the independent model answer flag.
-		enabled := settings["memoryGraphEnabled"] == true
-		options := relations.Options{
-			Authority: a.memory.d.Authority,
-			Enabled:   func(relations.Context) (bool, error) { return enabled, nil },
 		}
 		result, err := relations.ListInReadScope(r, options, relations.Context{SceneID: q.SceneID, Provenance: "contextual"}, q.List)
 		if err != nil {
@@ -86,6 +72,27 @@ func (a *AdminRead) PublishRelations(ctx context.Context, q *RelationsQuery, sch
 		}
 		return jsjson.Marshal(personObject("sceneId", q.SceneID, "enabled", enabled, "items", items, "coverage", result.Coverage))
 	}, func(body []byte) error { return emit(status, body) })
+}
+
+// The admin surface uses the graph flag, not the independent model answer flag.
+func (a *AdminRead) relationAdminOptions(r *assertions.Reader, schemas *contract.Schemas) (relations.Options, bool, error) {
+	raw, exists, err := r.SettingsInput()
+	if err != nil {
+		return relations.Options{}, false, err
+	}
+	input := []byte(raw)
+	if !exists {
+		input = contract.DefaultSettingsInput()
+	}
+	settings, err := schemas.Parse("Settings", input)
+	if err != nil {
+		return relations.Options{}, false, err
+	}
+	enabled := settings["memoryGraphEnabled"] == true
+	return relations.Options{
+		Authority: a.memory.d.Authority,
+		Enabled:   func(relations.Context) (bool, error) { return enabled, nil },
+	}, enabled, nil
 }
 
 func (a *AdminRead) relationAdminItems(r *assertions.Reader, sceneID string, rows []*Object, schemas *contract.Schemas) ([]any, error) {

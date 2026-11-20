@@ -143,15 +143,83 @@ try {
   assert.equal(pick('visible-backing-restored').body.items[0].id, 'relation-0')
   assert.deepEqual(pick('after-delete').body.items.map(({ id }) => id), ['relation-2'])
   assert.equal(pick('duplicate').status, 400)
+  const reviewPath = (id) => path + '/' + id + '/review'
+  const update = (sceneId, expectedVersion, status = 'accepted') =>
+    JSON.stringify({ sceneId, expectedVersion, status })
+  const active = reviewPath('relation-2')
+  const encode = (body) => body === undefined ? undefined : new TextEncoder().encode(body)
+  const reviewCases = [
+    { name: 'unauthorized', url: active, authorized: false, body: '{' },
+    { name: 'missing-body-and-type', url: active, contentType: '' },
+    { name: 'body-without-type', url: active, contentType: '', body: '{}' },
+    { name: 'wrong-type', url: active, contentType: 'text/plain', body: '{}' },
+    { name: 'broken-json', url: active, body: '{' },
+    { name: 'empty-json', url: active },
+    { name: 'missing-fields', url: active, body: '{}' },
+    { name: 'strict-body', url: active, body: JSON.stringify({ sceneId: 'local', expectedVersion: 2, status: 'accepted', actorId: 'forged' }) },
+    { name: 'positive-int', url: active, body: update('local', 2.5) },
+    { name: 'safe-int', url: active, body: update('local', 9007199254740992) },
+    { name: 'no-version-coercion', url: active, body: update('local', '2') },
+    { name: 'invalid-status', url: active, body: update('local', 2, 'candidate') },
+    { name: 'simulation', url: active, body: update('simulation', 2) },
+    { name: 'private-foreign-edge', url: active, body: update('foreign', 1) },
+    { name: 'disabled-before-conflict', url: active, body: update('local', 1), graphEnabled: false },
+    { name: 'stale-version', url: active, body: update('local', 1), graphEnabled: true },
+    { name: 'recalled-before-conflict', url: reviewPath('relation-1'), body: update('local', 2) },
+    { name: 'encoded-slash-id', url: reviewPath('a%2Fb'), body: update('local', 1) },
+    { name: 'private-edge', url: reviewPath('relation-3'), body: update('foreign', 1) },
+    { name: 'duplicate-json-keys-last-wins', url: active, body: '{"sceneId":"foreign","sceneId":"local","expectedVersion":1,"expectedVersion":2,"status":"accepted"}' },
+    { name: 'same-version-concurrent-review', url: active, body: update('local', 3, 'rejected'), concurrent: true },
+  ]
+  const reviewRows = []
+  const executeReview = async (entry) => {
+    const type = entry.contentType ?? 'application/json'
+    const response = await app.request('http://fixture.invalid' + entry.url, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + (entry.authorized === false ? 'wrong-token' : token),
+        ...(type ? { 'Content-Type': type } : {}), 'X-Request-ID': 'synthetic-spoof' },
+      body: encode(entry.body),
+    })
+    const requestID = response.headers.get('x-request-id')
+    assert.match(requestID, /^[a-f0-9-]{36}$/u)
+    const body = await response.json()
+    assert.doesNotMatch(JSON.stringify(body), /PRIVATE_PLATFORM|deletionEpoch|proofId|actorId|backing/u)
+    if (body.requestId) {
+      assert.equal(body.requestId, requestID)
+      body.requestId = '@request-id'
+    }
+    for (const field of Object.keys(times)) if (field in body) {
+      assert.match(body[field], /^\d{4}-\d\d-\d\dT.*Z$/u)
+      body[field] = times[field]
+    }
+    return { status: response.status, body,
+      cacheControl: response.headers.get('cache-control') ?? '',
+      noSniff: response.headers.get('x-content-type-options') ?? '' }
+  }
+  for (const entry of reviewCases) {
+    if (entry.graphEnabled !== undefined)
+      store.set('settings', { ...store.settings, memoryGraphEnabled: entry.graphEnabled })
+    const result = entry.concurrent
+      ? (await Promise.all([executeReview(entry), executeReview(entry)])).sort((a, b) => a.status - b.status)
+      : [await executeReview(entry)]
+    reviewRows.push({ ...entry, result })
+  }
+  const pickReview = (name) => reviewRows.find((row) => row.name === name).result
+  assert.deepEqual(pickReview('same-version-concurrent-review').map((row) => row.status), [200, 409])
+  assert.equal(pickReview('same-version-concurrent-review')[0].body.version, 4)
+  assert.equal(pickReview('private-edge')[0].body.personName, 'Foreign subject')
+  assert.equal(pickReview('disabled-before-conflict')[0].status, 404)
+  assert.equal(pickReview('stale-version')[0].status, 409)
+  assert.equal(pickReview('recalled-before-conflict')[0].status, 404)
   const sourceHashes = Object.fromEntries([
     'src/api.ts', 'src/memory/interfaces/relation-routes.ts', 'src/memory/relations/candidates.ts',
   ].map((file) => [file, createHash('sha256').update(readFileSync(new URL('../../' + file, import.meta.url))).digest('hex')]))
   const target = new URL('../internal/app/testdata/memory-relations-source.json', import.meta.url)
   const output = JSON.stringify({ node: process.version, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    sourceHashes, scenes, names, proposals, times, cases: rows }, null, 2) + '\n'
+    sourceHashes, scenes, names, proposals, times, cases: rows, reviewCases: reviewRows }, null, 2) + '\n'
   if (process.argv.includes('--check')) assert.equal(readFileSync(target, 'utf8'), output)
   else writeFileSync(target, output)
-  console.log(`PASS ${rows.length} actual-source memory relations cases`)
+  console.log(`PASS ${rows.length} actual-source memory relations GET/HEAD cases and ${reviewRows.length} POST cases`)
 } finally {
   engine.dispose()
   store.close()

@@ -15,6 +15,11 @@ import (
 	"time"
 )
 
+var (
+	ErrUnavailable     = errors.New("relation_unavailable")
+	ErrVersionConflict = relationstorage.ErrVersionConflict
+)
+
 type Context struct {
 	SceneID         string
 	Simulation      bool

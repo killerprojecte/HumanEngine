@@ -5,9 +5,9 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
-// BindAdmissionSession borrows an unbound root or the exact active child. It
+// BindAssertionSession borrows an unbound root or the exact active child. It
 // never rebases a retained ancestor onto a different transaction scope.
-func (s *Store) BindAdmissionSession(session *recovery.WriteSession) (*Store, error) {
+func (s *Store) BindAssertionSession(session *recovery.WriteSession) (*Store, error) {
 	if s.bindingError != nil {
 		return nil, s.bindingError
 	}

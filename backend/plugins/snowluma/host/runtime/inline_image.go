@@ -54,6 +54,14 @@ func readInlineImage(ctx context.Context, scene botruntime.Scene, reference stri
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	media, err := nativeImageDescriptor(scene, reference)
+	if err != nil {
+		return nil, err
+	}
+	return decodeInlineImage(str(media, "file"))
+}
+
+func nativeImageDescriptor(scene botruntime.Scene, reference string) (*jsjson.Object, error) {
 	raw, ok := strings.CutPrefix(reference, "ob:media:")
 	if !ok || scene.ID != snow.SceneID(scene.AdapterID, scene.AccountID, scene.Kind, scene.PlatformSceneID) {
 		return nil, botruntime.ErrDisplayImageUnavailable
@@ -67,10 +75,18 @@ func readInlineImage(ctx context.Context, scene botruntime.Scene, reference stri
 	if err != nil || !ok || str(media, "sceneId") != scene.ID || str(media, "type") != "image" {
 		return nil, botruntime.ErrDisplayImageUnavailable
 	}
-	payload, inline := inlineImagePayload(str(media, "file"))
+	return media, nil
+}
+
+func decodeInlineImage(file string) ([]byte, error) {
+	payload, inline := inlineImagePayload(file)
 	if !inline {
 		return nil, botruntime.ErrDisplayImageUnavailable
 	}
+	return decodeInlinePayload(payload)
+}
+
+func decodeInlinePayload(payload string) ([]byte, error) {
 	const max = 64 * 1024 * 1024
 	if len(payload) > (max+2)/3*4 {
 		return nil, errors.New("media_size_limit")

@@ -68,6 +68,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 
 	connections := make(chan *websocket.Conn, 2)
 	unexpected := make(chan string, 8)
+	mediaTokens := newSnowTokenFixture(t)
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer synthetic" {
 			http.Error(w, "missing fixture token", http.StatusUnauthorized)
@@ -87,6 +88,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 			var request struct {
 				Action string
 				Echo   any
+				Params struct{ File string }
 			}
 			if json.Unmarshal(wire, &request) != nil {
 				return
@@ -104,7 +106,14 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 					})
 				}
 				data = map[string]any{"messages": messages}
-			case "get_msg", "get_image":
+			case "get_image":
+				result, ok := mediaTokens.action(ctx, request.Params.File)
+				if ok {
+					data = result
+				} else {
+					unexpected <- request.Action
+				}
+			case "get_msg":
 				unexpected <- request.Action
 			}
 			out, _ := json.Marshal(map[string]any{"echo": request.Echo, "status": "ok", "retcode": 0, "data": data})
@@ -170,10 +179,12 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	}
 	verifyRetired := assertSnowLumaInlineImageActualIngress(t, ctx, app, emit, unexpected, true)
 	assertInlineVisionModel(t, ctx, app, emit, counter)
+	verifyTokenRetired := mediaTokens.assertImages(t, ctx, app, emit)
 	if err := first.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
 	}
 	second, _ := activate(2)
 	defer second.CloseAndWait(context.Background())
 	verifyRetired()
+	verifyTokenRetired()
 }

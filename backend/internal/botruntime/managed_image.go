@@ -139,6 +139,7 @@ type DisplayImageSource struct {
 	adapter *Adapter
 	record  *messageRecord
 	assetID string
+	inline  bool
 }
 
 func (r *Runtime) retainedDisplayImageRow(sceneID, messageID string) DisplayImageSource {
@@ -184,8 +185,11 @@ func (r *Runtime) DisplayImage(sceneID, messageID string, partIndex int) *Displa
 		if !IsManagedImageAssetID(asset) {
 			return nil
 		}
-	} else if !strings.HasPrefix(asset, "ob:media:") {
-		return nil
+	} else {
+		if !strings.HasPrefix(asset, "ob:media:") {
+			return nil
+		}
+		source.inline = (DisplayImageLinks{inline: &source.record.displayMedia.native.parts}).InlineAt(partIndex)
 	}
 	source.assetID = asset
 	return &source
@@ -233,6 +237,15 @@ func (m *DisplayImageSource) IsManaged() bool { return m.record.displayMedia.nat
 
 func (m *DisplayImageSource) InlineBytes(ctx context.Context) ([]byte, error) {
 	return m.adapter.InlineImage.Read(ctx, m.scene, m.assetID)
+}
+
+func (m *DisplayImageSource) IsInline() bool { return m.inline }
+
+func (m *DisplayImageSource) BrowserImageBytes(ctx context.Context, before func(context.Context) error) ([]byte, error) {
+	if read := m.adapter.BrowserImage; read != nil {
+		return read(ctx, m.scene, m.assetID, before)
+	}
+	return m.InlineBytes(ctx)
 }
 
 func (m *DisplayImageSource) AssetID() string { return m.assetID }

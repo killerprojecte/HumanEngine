@@ -187,7 +187,9 @@ type Adapter struct {
 	History     func(context.Context, Scene, int, func(*Object, error))
 	GetMessage  func(context.Context, Scene, string, func(*Object, error))
 	InlineImage *InlineImageAdapter
-	Dispose     func()
+	// BrowserImage is bound only to the active adapter, never to retained proof.
+	BrowserImage func(context.Context, Scene, string, func(context.Context) error) ([]byte, error)
+	Dispose      func()
 }
 type Services struct {
 	Models      Models

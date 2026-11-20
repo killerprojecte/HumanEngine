@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
 func TestInlineImageActualSource(t *testing.T) {
@@ -68,5 +70,64 @@ func TestInlineImageLinkReadsOnlyCanonicalPrefix(t *testing.T) {
 	large := asset(scene.ID, "image", "base64://"+strings.Repeat("YQ==", 4096))
 	if !linkInlineImage(scene, large[:len(large)-1]+"!") {
 		t.Fatal("classification scanned the tail; only the authorized fetch owns full validation")
+	}
+}
+
+func TestTokenImageActualSource(t *testing.T) {
+	raw, err := os.ReadFile("testdata/inline-image-source.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Scene      botruntime.Scene
+		TokenCases []struct {
+			Name, Asset, Bytes, Error, GoLimited string
+			Reply                                json.RawMessage
+			Actions                              []struct{ Action, File string }
+		}
+	}
+	if err := json.Unmarshal(raw, &fixture); err != nil || len(fixture.TokenCases) != 9 {
+		t.Fatalf("missing token cases: %v", err)
+	}
+	for _, c := range fixture.TokenCases {
+		t.Run(c.Name, func(t *testing.T) {
+			lookups := 0
+			value, err := jsjson.ParseBytes(c.Reply)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := readTokenOrInlineImage(context.Background(), fixture.Scene, c.Asset, func(_ context.Context, token string) (any, error) {
+				lookups++
+				if len(c.Actions) != 1 || c.Actions[0].Action != "get_image" || c.Actions[0].File != token {
+					t.Fatalf("unexpected token action: %q", token)
+				}
+				return value, nil
+			})
+			wantLookups := len(c.Actions)
+			switch c.GoLimited {
+			case "no-refresh", "no-path-token":
+				wantLookups = 0
+				if !errors.Is(err, botruntime.ErrDisplayImageUnavailable) {
+					t.Fatalf("source outside the opaque-token subset was admitted: %v", err)
+				}
+			case "no-public-fetch":
+				if err == nil || err.Error() != "image_download_url_unavailable" {
+					t.Fatalf("external reply did not stay unavailable: %v", err)
+				}
+			case "":
+				if c.Error != "" {
+					if err == nil || err.Error() != c.Error {
+						t.Fatalf("error = %v, want %q", err, c.Error)
+					}
+				} else if err != nil || base64.StdEncoding.EncodeToString(got) != c.Bytes {
+					t.Fatalf("token payload differs: len=%d err=%v", len(got), err)
+				}
+			default:
+				t.Fatalf("unknown source subset expectation %q", c.GoLimited)
+			}
+			if lookups != wantLookups {
+				t.Fatalf("lookups = %d, want %d", lookups, wantLookups)
+			}
+		})
 	}
 }

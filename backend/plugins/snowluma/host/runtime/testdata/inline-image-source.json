@@ -67,5 +67,150 @@
       "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL0FBSC1fdz09In0",
       "error": "invalid_image_data"
     }
+  ],
+  "tokenCases": [
+    {
+      "name": "token-file-inline",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Im9wYXF1ZSJ9",
+      "reply": {
+        "file": "base64://YQ=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "bytes": "YQ=="
+    },
+    {
+      "name": "explicit-token",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6InNlY29uZGFyeSIsImZpbGVJZCI6Im9wYXF1ZSJ9",
+      "reply": {
+        "url": "",
+        "file": "data:image/png;base64,YQ=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "bytes": "YQ=="
+    },
+    {
+      "name": "inline-url-wins",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Im9wYXF1ZSJ9",
+      "reply": {
+        "url": "DATA:image/JPEG;base64,Yg==",
+        "file": "base64://YQ=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "bytes": "Yg=="
+    },
+    {
+      "name": "public-url-wins",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Im9wYXF1ZSJ9",
+      "reply": {
+        "url": "https://fixture.invalid/fresh",
+        "file": "base64://YQ=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/fresh"
+      ],
+      "goLimited": "no-public-fetch",
+      "bytes": "Yw=="
+    },
+    {
+      "name": "local-return-denied",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Im9wYXF1ZSJ9",
+      "reply": {
+        "file": "C:\fixtureimage.png"
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "error": "image_download_url_unavailable"
+    },
+    {
+      "name": "non-object-return",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Im9wYXF1ZSJ9",
+      "reply": null,
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "error": "invalid_payload"
+    },
+    {
+      "name": "malformed-inline-return",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Im9wYXF1ZSJ9",
+      "reply": {
+        "file": "base64://YQ"
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [],
+      "error": "invalid_image_data"
+    },
+    {
+      "name": "direct-first-refresh",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Imh0dHBzOi8vZml4dHVyZS5pbnZhbGlkL2V4cGlyZWQiLCJmaWxlSWQiOiJvcGFxdWUifQ",
+      "reply": {
+        "file": "base64://Yw=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "opaque"
+        }
+      ],
+      "urls": [
+        "https://fixture.invalid/expired"
+      ],
+      "goLimited": "no-refresh",
+      "bytes": "Yw=="
+    },
+    {
+      "name": "file-path-input",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6Ii9maXh0dXJlL25vbmxvY2FsLnBuZyJ9",
+      "reply": {
+        "file": "base64://YQ=="
+      },
+      "actions": [
+        {
+          "action": "get_image",
+          "file": "/fixture/nonlocal.png"
+        }
+      ],
+      "urls": [],
+      "goLimited": "no-path-token",
+      "bytes": "YQ=="
+    }
   ]
 }

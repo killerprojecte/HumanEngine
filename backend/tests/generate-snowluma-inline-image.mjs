@@ -36,7 +36,40 @@ for (const [name, file] of [
     cases.push({ name, asset, error: err.message })
   }
 }
-const serialized = JSON.stringify({ scene, cases }, null, 2) + '\n'
+// Production Go currently ports the exact token-only and returned-inline
+// subset, never opening the synthetic public/I/O fixtures below.
+const tokenCases = []
+for (const [name, file, fileId, reply, goLimited] of [
+  ['token-file-inline', 'opaque', undefined, { file: 'base64://YQ==' }],
+  ['explicit-token', 'secondary', 'opaque', { url: '', file: 'data:image/png;base64,YQ==' }],
+  ['inline-url-wins', 'opaque', undefined, { url: 'DATA:image/JPEG;base64,Yg==', file: 'base64://YQ==' }],
+  ['public-url-wins', 'opaque', undefined, { url: 'https://fixture.invalid/fresh', file: 'base64://YQ==' }, 'no-public-fetch'],
+  ['local-return-denied', 'opaque', undefined, { file: 'C:\fixture\image.png' }],
+  ['non-object-return', 'opaque', undefined, null],
+  ['malformed-inline-return', 'opaque', undefined, { file: 'base64://YQ' }],
+  ['direct-first-refresh', 'https://fixture.invalid/expired', 'opaque', { file: 'base64://Yw==' }, 'no-refresh'],
+  ['file-path-input', '/fixture/nonlocal.png', undefined, { file: 'base64://YQ==' }, 'no-path-token'],
+]) {
+  const asset = 'ob:media:' + encode({ sceneId: scene.id, type: 'image', file, fileId })
+  const actions = [], urls = []
+  const entry = { name, asset, reply, actions, urls }
+  if (goLimited) entry.goLimited = goLimited
+  try {
+    const bytes = await readOneBotImage(scene, asset, async (action, params) => {
+      actions.push({ action, file: params.file })
+      return reply
+    }, undefined, async (url) => {
+      urls.push(url)
+      if (url.endsWith('/expired')) throw new Error('media_fetch_failed')
+      return Buffer.from('c')
+    })
+    entry.bytes = bytes.toString('base64')
+  } catch (err) {
+    entry.error = err.message
+  }
+  tokenCases.push(entry)
+}
+const serialized = JSON.stringify({ scene, cases, tokenCases }, null, 2) + '\n'
 const path = new URL('../plugins/snowluma/host/runtime/testdata/inline-image-source.json', import.meta.url)
 if (process.argv.includes('--check')) {
   if (fs.readFileSync(path, 'utf8') !== serialized) process.exitCode = 1

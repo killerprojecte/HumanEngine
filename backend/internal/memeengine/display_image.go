@@ -83,8 +83,14 @@ func (s *Service) ReadDisplayImage(ctx context.Context, sceneID, messageID strin
 
 	if managed {
 		out.Bytes, err = readManagedImage(out.original.Path)
-	} else {
+	} else if source.IsInline() {
 		out.Bytes, err = source.InlineBytes(ctx)
+	} else {
+		out.Bytes, err = source.BrowserImageBytes(ctx, func(call context.Context) error {
+			return s.authority.Publish(call, s.main, func(conn *sql.Conn) ([]byte, error) {
+				return nil, out.VerifyPublication(call, conn)
+			}, func([]byte) error { return nil })
+		})
 	}
 	if err != nil {
 		return nil, err

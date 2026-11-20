@@ -4,12 +4,15 @@ package topiccollation
 
 import (
 	"bytes"
+	_ "embed"
 	"encoding/json"
 	"errors"
-	"os"
 	"slices"
 	"testing"
 )
+
+//go:embed testdata/requested-locale.json
+var requestedLocaleOracle []byte
 
 func TestRequestedLocaleFromPinnedNode(t *testing.T) {
 	var oracle struct {
@@ -20,11 +23,7 @@ func TestRequestedLocaleFromPinnedNode(t *testing.T) {
 			Lower, Sorted []string
 		}
 	}
-	data, err := os.ReadFile("testdata/requested-locale.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(data, &oracle); err != nil || oracle.Node != SourceNode {
+	if err := json.Unmarshal(requestedLocaleOracle, &oracle); err != nil || oracle.Node != SourceNode {
 		t.Fatalf("requested locale oracle: %s %v", oracle.Node, err)
 	}
 	for a := 'a'; a <= 'z'; a++ {

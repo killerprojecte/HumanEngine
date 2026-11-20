@@ -81,9 +81,7 @@ func TestMemoryAdminListActualSource(t *testing.T) {
 			req := httptest.NewRequest(c.Method, "/api/memories", nil)
 			const suppliedID = "12345678-1234-4123-8123-123456789012"
 			req.Header.Set("X-Request-ID", suppliedID)
-			if c.Authorized {
-				req.Header.Set("Authorization", "Bearer synthetic-token")
-			}
+			sourceFixtureAuth(req, c.Authorized)
 			res := httptest.NewRecorder()
 			app.ServeHTTP(res, req)
 			if res.Code != c.Status {

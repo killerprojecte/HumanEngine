@@ -182,9 +182,7 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 				t.Fatal("missing source case", name)
 			}
 			request := httptest.NewRequest(method, "/api/scenes/"+url.PathEscape(sceneID)+"/messages/"+url.PathEscape(messageID)+"/media/"+index, nil)
-			if authorized {
-				request.Header.Set("Authorization", "Bearer synthetic-token")
-			}
+			sourceFixtureAuth(request, authorized)
 			response := httptest.NewRecorder()
 			app.ServeHTTP(response, request)
 			if response.Code != expected.Status {

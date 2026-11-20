@@ -54,9 +54,7 @@ func TestSceneMessagesActualSource(t *testing.T) {
 	for _, tc := range fixture.Cases {
 		t.Run(tc.Method+tc.Path, func(t *testing.T) {
 			request := httptest.NewRequest(tc.Method, tc.Path, nil)
-			if tc.Authorized {
-				request.Header.Set("Authorization", "Bearer synthetic-token")
-			}
+			sourceFixtureAuth(request, tc.Authorized)
 			result := httptest.NewRecorder()
 			app.ServeHTTP(result, request)
 			if result.Code != tc.Status {

@@ -61,7 +61,6 @@ func TestSimulationsActualSource(t *testing.T) {
 		t.Fatal(err)
 	}
 	appRequest(t, app, http.MethodPut, "/api/settings", json.RawMessage(settingsBody))
-	const token = "synthetic-token"
 	idPattern := regexp.MustCompile(`^sim:[0-9a-f-]{36}$`)
 	var simulation string
 	for _, tc := range fixture.Cases {
@@ -70,9 +69,7 @@ func TestSimulationsActualSource(t *testing.T) {
 			input := bytes.ReplaceAll(tc.Input, []byte("{astral}"), []byte(strings.Repeat("😀", 6001)))
 			input = bytes.ReplaceAll(input, []byte("{overflow}"), []byte(strings.Repeat("😀", 12001)))
 			req := httptest.NewRequest(tc.Method, path, bytes.NewReader(input))
-			if tc.Authorized {
-				req.Header.Set("Authorization", "Bearer "+token)
-			}
+			sourceFixtureAuth(req, tc.Authorized)
 			if len(input) != 0 {
 				req.Header.Set("Content-Type", "application/json")
 			}

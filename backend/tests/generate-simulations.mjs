@@ -36,7 +36,7 @@ try {
     ['DELETE','/api/simulations/{simulation}',true],
     ['GET','/api/simulations/{simulation}',true],
   ]) {
-    const headers = authorized ? { Authorization: 'Bearer synthetic-simulations' } : {}
+    const headers = { Authorization: authorized ? 'Bearer synthetic-simulations' : 'Bearer synthetic-invalid-bearer' }
     if (input !== undefined) headers['Content-Type'] = 'application/json'
     const response = await api.request(new Request(`http://fixture.invalid${path.replace('{simulation}', encodeURIComponent(simulation ?? ''))}`, {
       method, headers, body: input === undefined ? undefined : JSON.stringify(input),

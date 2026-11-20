@@ -10,7 +10,7 @@ try {
   const route = (message) => presentChatMessage(message).parts[0].mediaUrl
   const url = route(outgoing)
   const check = async (name, path = url, method = 'GET', authorized = true) => {
-    const headers = authorized ? { Authorization: `Bearer ${f.token}` } : {}
+    const headers = { Authorization: authorized ? `Bearer ${f.token}` : 'Bearer synthetic-invalid-bearer' }
     const response = await f.app.request(path, { method, headers })
     const entry = { status: response.status }
     if (response.ok) {

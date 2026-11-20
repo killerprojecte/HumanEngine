@@ -17,7 +17,7 @@ try {
   const app = createApp(store, { engine, token: 'synthetic-token' })
   const record = async (name, method, path, { authorized = true, body } = {}) => {
     const headers = { 'X-Request-ID': '12345678-1234-4123-8123-123456789012' }
-    if (authorized) headers.Authorization = 'Bearer synthetic-token'
+    headers.Authorization = authorized ? 'Bearer synthetic-token' : 'Bearer synthetic-invalid-bearer'
     if (body !== undefined) headers['Content-Type'] = 'application/json'
     const response = await app.request('http://synthetic.test' + path, { method, body, headers })
     const requestId = response.headers.get('x-request-id')

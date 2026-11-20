@@ -41,7 +41,7 @@ const specs = [
   ...['GET','HEAD','POST','PUT','OPTIONS'].map(method=>({name:'wrong-method-'+method,method,path:prefix+'/m'})),
   {name:'no-id', path:prefix}, {name:'empty-id',path:prefix+'/'},
   {name:'trailing-slash',path:prefix+'/m/'}, {name:'extra-segment',path:prefix+'/m/extra'},
-  {name:'missing-auth',path:prefix+'/m',authorization:null},
+  {name:'empty-bearer',path:prefix+'/m',authorization:'Bearer '},
   {name:'wrong-auth',path:prefix+'/m',authorization:'Bearer wrong'},
   {name:'raw-token',path:prefix+'/m',authorization:'synthetic-token'},
   {name:'no-server-token',path:prefix+'/m',serverToken:''},
@@ -62,7 +62,7 @@ for (const spec of specs) {
     if(spec.corrupt) store.db.prepare("UPDATE memories SET value='{' WHERE id=?").run(spec.id??'m')
     if(spec.unready) store.assertRecoveryReady=()=>{throw Error('synthetic_recovery_unready')}
     const app=createApp(store,{engine,token:spec.serverToken??'synthetic-token'})
-    const headers={'X-Request-ID':'synthetic-memory-delete',...(spec.authorization===null?{}:{Authorization:spec.authorization??'Bearer synthetic-token'}),...(spec.contentType?{'Content-Type':spec.contentType}:{})}
+    const headers={'X-Request-ID':'synthetic-memory-delete',Authorization:spec.authorization??'Bearer synthetic-token',...(spec.contentType?{'Content-Type':spec.contentType}:{})}
     const init={method:spec.method??'DELETE',headers,...(spec.body===undefined?{}:{body:spec.body})}
     if(spec.repeat) { const first=await app.request('http://example.test'+spec.path,init);assert.equal(await first.text(),'{"ok":true}') }
     const response=await app.request('http://example.test'+spec.path,init)

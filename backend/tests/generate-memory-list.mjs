@@ -26,7 +26,7 @@ try {
   const record = async (name, { method = 'GET', authorized = true } = {}) => {
     const headerID = '12345678-1234-4123-8123-123456789012'
     const headers = { 'X-Request-ID': headerID }
-    if (authorized) headers.Authorization = 'Bearer synthetic-token'
+    headers.Authorization = authorized ? 'Bearer synthetic-token' : 'Bearer synthetic-invalid-bearer'
     const response = await app.request('http://synthetic.test/api/memories', { method, headers })
     const bodyText = await response.text()
     const body = bodyText ? JSON.parse(bodyText) : null

@@ -38,7 +38,7 @@ try {
     ['HEAD', '/api/scenes/fixture/messages', false],
   ]) {
     const request = new Request(`http://fixture.invalid${path}`, {
-      method, headers: authorized ? { Authorization: 'Bearer synthetic-scene-messages' } : {},
+      method, headers: { Authorization: authorized ? 'Bearer synthetic-scene-messages' : 'Bearer synthetic-invalid-bearer' },
     })
     const response = await api.request(request)
     const body = method === 'HEAD' ? await response.text() : await response.json()

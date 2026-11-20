@@ -34,7 +34,7 @@ try {
     ['GET','/api/scenes/fixture/history?source=local',false],
   ]) {
     const request = new Request(`http://fixture.invalid${path}`, {
-      method, headers: authorized ? { Authorization: 'Bearer synthetic-local-history' } : {},
+      method, headers: { Authorization: authorized ? 'Bearer synthetic-local-history' : 'Bearer synthetic-invalid-bearer' },
     })
     const response = await api.request(request)
     cases.push({ method, path, authorized, status: response.status, body: await response.json() })

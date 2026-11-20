@@ -54,9 +54,7 @@ func TestLocalHistoryActualSource(t *testing.T) {
 	for _, tc := range fixture.Cases {
 		t.Run(tc.Path, func(t *testing.T) {
 			request := httptest.NewRequest(tc.Method, tc.Path, nil)
-			if tc.Authorized {
-				request.Header.Set("Authorization", "Bearer synthetic-token")
-			}
+			sourceFixtureAuth(request, tc.Authorized)
 			response := httptest.NewRecorder()
 			app.ServeHTTP(response, request)
 			if response.Code != tc.Status {

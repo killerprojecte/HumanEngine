@@ -1289,9 +1289,9 @@
       }
     },
     {
-      "name": "missing-auth",
+      "name": "empty-bearer",
       "path": "/api/memories/m",
-      "authorization": null,
+      "authorization": "Bearer ",
       "method": "DELETE",
       "before": {
         "memories": [

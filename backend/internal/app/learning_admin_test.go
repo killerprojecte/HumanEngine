@@ -56,9 +56,7 @@ func TestLearningAdminActualSource(t *testing.T) {
 		req := httptest.NewRequest(fixture.Method, path, strings.NewReader(fixture.Body))
 		const suppliedID = "12345678-1234-4123-8123-123456789012"
 		req.Header.Set("X-Request-ID", suppliedID)
-		if fixture.Authorized {
-			req.Header.Set("Authorization", "Bearer synthetic-token")
-		}
+		sourceFixtureAuth(req, fixture.Authorized)
 		if fixture.Body != "" {
 			req.Header.Set("Content-Type", "application/json")
 		}

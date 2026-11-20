@@ -98,6 +98,17 @@ func applicationOptions(t *testing.T) Options {
 	})
 	return Options{Installation: installation.Options{Database: filepath.Join(root, "data/main.sqlite"), AuthorityDirectory: filepath.Join(root, "authority"), VectorExtension: extension, SourceTimezone: "UTC"}, ImageLibrary: os.Getenv("HE_IMAGE_LIBRARY"), Locale: "en-US", PluginRoot: pluginRoot, Node: node, AdminToken: "synthetic-token", Entries: []string{"application.mjs"}, Diagnostics: diagnostics, LogRegistry: logdelivery.NewRegistry(diagnostics)}
 }
+
+// Source fixtures call Hono behind the browser gateway. Use a real invalid
+// bearer to exercise that inner authentication boundary through the Go app.
+func sourceFixtureAuth(request *http.Request, authorized bool) {
+	token := "synthetic-invalid-bearer"
+	if authorized {
+		token = "synthetic-token"
+	}
+	request.Header.Set("Authorization", "Bearer "+token)
+}
+
 func appRequest(t *testing.T, app *Application, method, path string, body any) any {
 	t.Helper()
 	var raw []byte

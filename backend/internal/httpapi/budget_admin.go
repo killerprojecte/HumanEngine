@@ -24,9 +24,15 @@ func (s *Server) WithBudgetAdmin(budget *providertransport.BudgetService, publis
 	return nil
 }
 
-func budgetAdminRead(method, path string) bool {
-	return (method == http.MethodGet || method == http.MethodHead) &&
-		(path == "/api/budget" || path == "/api/budget/recovery" || path == "/api/budget/external-costs")
+func budgetAdminPath(method, path string) bool {
+	switch path {
+	case budgetAckPath:
+		return true
+	case "/api/budget", "/api/budget/recovery", "/api/budget/external-costs":
+		return method == http.MethodGet || method == http.MethodHead
+	default:
+		return false
+	}
 }
 
 func (s *Server) serveBudgetAdmin(w http.ResponseWriter, r *http.Request, available bool, path, requestID string) {

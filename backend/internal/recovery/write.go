@@ -265,6 +265,46 @@ func (m *MainMutation) Query(query string, args ...any) (*MainRows, error) {
 	m.rows = append(m.rows, controlled)
 	return controlled, nil
 }
+
+// RestoredModelHoldSchema inspects only the fixed hold table while retaining
+// the same transaction. The normal authorizer is restored before control or
+// any statement handle returns to the caller.
+func (m *MainMutation) RestoredModelHoldSchema() (names []string, err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if err = m.transactionLocked(); err != nil {
+		return nil, err
+	}
+	defer func() { err = m.failLocked(errors.Join(err, protectMutation(m.conn, true))) }()
+	if err = protectMain(m.conn, true, true, true); err != nil {
+		return nil, err
+	}
+	return RestoredModelHoldSchema(m.ctx, m.conn)
+}
+
+// RestoredModelHoldSchema returns the exact visible and hidden columns that
+// the TypeScript hold validator checks.
+func RestoredModelHoldSchema(ctx context.Context, conn interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}) ([]string, error) {
+	rows, err := conn.QueryContext(ctx, "PRAGMA main.table_xinfo(recovery_model_hold)")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var names []string
+	for rows.Next() {
+		var cid, notnull, pk, hidden int
+		var name, typ string
+		var def any
+		if err := rows.Scan(&cid, &name, &typ, &notnull, &def, &pk, &hidden); err != nil {
+			return nil, err
+		}
+		names = append(names, name)
+	}
+	return names, rows.Err()
+}
+
 func (m *MainMutation) finish(prior error) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/settingsstore"
 )
 
@@ -103,42 +104,45 @@ func readBudgetSettings(ctx context.Context, q budgetReadQuery) (*jsjson.Object,
 var restoredUUID = regexp.MustCompile(`(?i)^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
 
 func readRestoredHold(ctx context.Context, q budgetReadQuery) (BudgetRecovery, error) {
+	query := func(statement string) (*sql.Rows, error) { return q.QueryContext(ctx, statement) }
+	return readRestoredHoldRows(query, func() ([]string, error) { return recovery.RestoredModelHoldSchema(ctx, q) })
+}
+
+type modelHoldRows interface {
+	Next() bool
+	Scan(...any) error
+	Err() error
+	Close() error
+}
+
+func readRestoredHoldRows[R modelHoldRows](query func(string) (R, error), schema func() ([]string, error)) (BudgetRecovery, error) {
 	invalid := func() (BudgetRecovery, error) { return BudgetRecovery{}, errors.New("recovery_model_hold_invalid") }
-	var kind string
-	e := q.QueryRowContext(ctx, "SELECT type FROM sqlite_master WHERE name='recovery_model_hold'").Scan(&kind)
-	if e == sql.ErrNoRows {
-		return BudgetRecovery{RestorationCoverage: "none"}, nil
+	object, e := query("SELECT type FROM main.sqlite_master WHERE name='recovery_model_hold'")
+	if e != nil {
+		return BudgetRecovery{}, e
 	}
+	if !object.Next() {
+		e = object.Err()
+		object.Close()
+		return BudgetRecovery{RestorationCoverage: "none"}, e
+	}
+	var kind string
+	e = object.Scan(&kind)
+	object.Close()
 	if e != nil {
 		return BudgetRecovery{}, e
 	}
 	if kind != "table" {
 		return invalid()
 	}
-	rows, e := q.QueryContext(ctx, "PRAGMA table_xinfo(recovery_model_hold)")
-	if e != nil {
-		return BudgetRecovery{}, e
-	}
-	names := []string{}
-	for rows.Next() {
-		var cid, notnull, pk, hidden int
-		var name, typ string
-		var defaultValue any
-		if e = rows.Scan(&cid, &name, &typ, &notnull, &defaultValue, &pk, &hidden); e != nil {
-			rows.Close()
-			return BudgetRecovery{}, e
-		}
-		names = append(names, name)
-	}
-	e = rows.Err()
-	rows.Close()
+	names, e := schema()
 	if e != nil {
 		return BudgetRecovery{}, e
 	}
 	if strings.Join(names, ",") != "id,restore_id,status" {
 		return invalid()
 	}
-	rows, e = q.QueryContext(ctx, "SELECT id,restore_id,status FROM recovery_model_hold LIMIT 2")
+	rows, e := query("SELECT id,restore_id,status FROM main.recovery_model_hold LIMIT 2")
 	if e != nil {
 		return BudgetRecovery{}, e
 	}

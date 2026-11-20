@@ -98,9 +98,11 @@ func rollbackOwned(conn *sql.Conn) error {
 // SQLITE_RECURSIVE is a stable SQLite authorizer opcode, not exported by go-sqlite3.
 const sqliteRecursive = 33
 
-func protectMutation(conn *sql.Conn, enabled bool) error { return protectMain(conn, enabled, true) }
-func protectPreparation(conn *sql.Conn) error            { return protectMain(conn, true, false) }
-func protectMain(conn *sql.Conn, enabled, writable bool) error {
+func protectMutation(conn *sql.Conn, enabled bool) error {
+	return protectMain(conn, enabled, true, false)
+}
+func protectPreparation(conn *sql.Conn) error { return protectMain(conn, true, false, false) }
+func protectMain(conn *sql.Conn, enabled, writable, holdSchemaRead bool) error {
 	return conn.Raw(func(raw any) error {
 		native, ok := raw.(*sqlite3.SQLiteConn)
 		if !ok {
@@ -119,6 +121,10 @@ func protectMain(conn *sql.Conn, enabled, writable bool) error {
 				return sqlite3.SQLITE_OK
 			case sqlite3.SQLITE_READ:
 				if database == "main" {
+					return sqlite3.SQLITE_OK
+				}
+			case sqlite3.SQLITE_PRAGMA:
+				if holdSchemaRead && table == "table_xinfo" && argument == "recovery_model_hold" && database == "main" {
 					return sqlite3.SQLITE_OK
 				}
 			case sqlite3.SQLITE_INSERT, sqlite3.SQLITE_UPDATE, sqlite3.SQLITE_DELETE:

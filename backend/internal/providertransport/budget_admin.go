@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"slices"
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/externalcost"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
 type BudgetRecovery struct {
@@ -24,6 +26,29 @@ func (s *BudgetService) ReadBudgetRecovery(ctx context.Context, q *sql.Conn) ([]
 		return nil, err
 	}
 	return json.Marshal(hold)
+}
+
+var ErrBudgetRecoveryConflict = errors.New("recovery_model_review_conflict")
+
+// AcknowledgeBudgetRecovery updates only the currently held restoration. It
+// neither appends an accounting event nor recalculates historical coverage.
+func (s *BudgetService) AcknowledgeBudgetRecovery(ctx context.Context, authority *recovery.Authority, restoreID string) error {
+	_, err := authority.Write(ctx, s.DB, nil, 1, func(tx *recovery.MainMutation) error {
+		current, err := readRestoredHoldRows(func(statement string) (*recovery.MainRows, error) {
+			return tx.Query(statement)
+		}, tx.RestoredModelHoldSchema)
+		if err != nil {
+			return err
+		}
+		if current.RestoreID != restoreID {
+			return ErrBudgetRecoveryConflict
+		}
+		if current.Held {
+			_, err = tx.Exec("UPDATE main.recovery_model_hold SET status='manually_acknowledged' WHERE id=1 AND restore_id=? AND status='held'", restoreID)
+		}
+		return err
+	})
+	return err
 }
 
 // ReadBudgetCoverage reuses the ledger's arithmetic on an existing read

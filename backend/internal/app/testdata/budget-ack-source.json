@@ -1,0 +1,333 @@
+{
+  "restoreId": "12345678-1234-4123-8123-1234567890ab",
+  "nextId": "abcd5678-1234-4123-8123-1234567890ef",
+  "cases": [
+    {
+      "name": "unauthorized",
+      "requestBody": "{broken",
+      "method": "POST",
+      "authorized": false,
+      "contentType": "application/json",
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "cache-control": "",
+        "x-content-type-options": "",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "absent",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 409,
+      "body": {
+        "error": "recovery_model_review_conflict"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "wrong-method",
+      "requestBody": "",
+      "method": "GET",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 404,
+      "body": "404 Not Found",
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "text/plain; charset=UTF-8"
+      }
+    },
+    {
+      "name": "wrong-head",
+      "requestBody": "",
+      "method": "HEAD",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 404,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "text/plain; charset=UTF-8"
+      }
+    },
+    {
+      "name": "invalid-token",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"wrong\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "invalid-id",
+      "requestBody": "{\"restoreId\":\"not-a-uuid\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "extra",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\",\"extra\":true}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "malformed-json",
+      "requestBody": "{broken",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "wrong-content-type",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "text/plain",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "missing-content-type",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "stale",
+      "requestBody": "{\"restoreId\":\"abcd5678-1234-4123-8123-1234567890ef\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 409,
+      "body": {
+        "error": "recovery_model_review_conflict"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "same-id-case-sensitive",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890AB\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 409,
+      "body": {
+        "error": "recovery_model_review_conflict"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "valid-v7-stale",
+      "requestBody": "{\"restoreId\":\"abcd5678-1234-7123-8123-1234567890ef\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 409,
+      "body": {
+        "error": "recovery_model_review_conflict"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "valid-nil-stale",
+      "requestBody": "{\"restoreId\":\"00000000-0000-0000-0000-000000000000\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 409,
+      "body": {
+        "error": "recovery_model_review_conflict"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "acknowledged",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 200,
+      "body": {
+        "restoreId": "12345678-1234-4123-8123-1234567890ab",
+        "held": false,
+        "restorationCoverage": "manually_acknowledged"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "idempotent",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 200,
+      "body": {
+        "restoreId": "12345678-1234-4123-8123-1234567890ab",
+        "held": false,
+        "restorationCoverage": "manually_acknowledged"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "fresh-hold-rejects-old-id",
+      "requestBody": "{\"restoreId\":\"12345678-1234-4123-8123-1234567890ab\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 409,
+      "body": {
+        "error": "recovery_model_review_conflict"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "fresh-hold-acknowledged",
+      "requestBody": "{\"restoreId\":\"abcd5678-1234-4123-8123-1234567890ef\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 200,
+      "body": {
+        "restoreId": "abcd5678-1234-4123-8123-1234567890ef",
+        "held": false,
+        "restorationCoverage": "manually_acknowledged"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "malformed-state",
+      "requestBody": "{\"restoreId\":\"abcd5678-1234-4123-8123-1234567890ef\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "malformed-schema",
+      "requestBody": "{\"restoreId\":\"abcd5678-1234-4123-8123-1234567890ef\",\"acknowledgment\":\"I_reviewed_accounting_and_accept_incomplete_history\"}",
+      "method": "POST",
+      "authorized": true,
+      "contentType": "application/json",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    }
+  ]
+}

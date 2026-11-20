@@ -13,10 +13,11 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/netip"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
 )
 
 // ErrHTTP101Pending marks the isolated, unapproved protocol branch. This
@@ -25,19 +26,10 @@ import (
 // user-visible web-read status or an endorsed replacement for source behavior.
 var ErrHTTP101Pending = errors.New("web_read_http101_pending_decision")
 
-// Lookup separates source-visible settlement from actual resolver completion.
-// NewOSResolver supplies a directly joinable libc implementation on supported
-// cgo platforms. DefaultResolver is not an adapter: its singleflight/cgo
-// internals do not expose a joinable completion boundary.
-type DNSResult struct {
-	Addresses []netip.Addr
-	Err       error
-}
-type LookupJob struct {
-	Result  <-chan DNSResult
-	Drained <-chan struct{}
-}
-type Lookup func(context.Context, string) LookupJob
+// Lookup and its results retain the WebRead API for native resolver ports.
+type DNSResult = pinnedhop.DNSResult
+type LookupJob = pinnedhop.LookupJob
+type Lookup = pinnedhop.Lookup
 
 // Network supplies only DNS/TCP/TLS/stream facilities. Its guest binding must be
 // the same generation as the Service. No environment proxy, cookie jar, content
@@ -157,80 +149,10 @@ func (n Network) resolve(ctx context.Context, h hop) (wireAddress, error) {
 	if h.Literal != nil {
 		addresses = []wireAddress{*h.Literal}
 	} else {
-		if n.Lookup == nil {
-			return wireAddress{}, errors.New("web_read_joinable_dns_port_missing")
+		ips, err := pinnedhop.Resolve(ctx, h.Hostname, time.Duration(h.DNSTimeoutMS)*time.Millisecond, n.Lookup, n.BeginWork)
+		if err != nil {
+			return wireAddress{}, err
 		}
-		dns, cancel := context.WithTimeout(ctx, time.Duration(h.DNSTimeoutMS)*time.Millisecond)
-		defer cancel()
-		done, ok := n.BeginWork()
-		if !ok {
-			return wireAddress{}, context.Canceled
-		}
-		job := n.Lookup(dns, h.Hostname)
-		if job.Result == nil || job.Drained == nil {
-			done()
-			return wireAddress{}, errors.New("web_read_invalid_dns_job")
-		}
-		// One relay owns the resolver result channel until physical completion.
-		// It keeps receiving even after the logical timeout, including from an
-		// unbuffered producer that can close Drained only after its send.
-		settled := make(chan DNSResult, 1)
-		go func() {
-			defer done()
-			results := job.Result
-			published := false
-			for {
-				select {
-				case result, open := <-results:
-					if !open {
-						results = nil
-						continue
-					}
-					if !published {
-						settled <- result
-						published = true
-					}
-				case <-job.Drained:
-					// A buffered result may already be available when Drained closes.
-					// Consume it before retiring; never race success into a timeout.
-					for {
-						select {
-						case result, open := <-results:
-							if !open {
-								return
-							}
-							if !published {
-								settled <- result
-								published = true
-							}
-						default:
-							return
-						}
-					}
-
-				}
-			}
-		}()
-		var found DNSResult
-		select {
-		case <-dns.Done():
-			if ctx.Err() != nil {
-				return wireAddress{}, errors.New("media_cancelled")
-			}
-			return wireAddress{}, errors.New("media_dns_timeout")
-		case found = <-settled:
-		}
-		// In particular, late success MUST NOT bypass the independent timer.
-		if ctx.Err() != nil {
-			return wireAddress{}, errors.New("media_cancelled")
-		}
-		if dns.Err() != nil {
-			return wireAddress{}, errors.New("media_dns_timeout")
-		}
-		if found.Err != nil {
-			return wireAddress{}, errors.New("media_dns_failed")
-		}
-		ips := found.Addresses
 
 		for _, ip := range ips {
 			family := 6
@@ -269,45 +191,13 @@ func (n Network) open(ctx context.Context, h hop, address wireAddress) (Resource
 	if e := json.Unmarshal(h.State, &state); e != nil {
 		return Resource{}, e
 	}
-	dial := n.DialContext
-	if dial == nil {
-		dial = (&net.Dialer{}).DialContext
-	}
-	family := "tcp6"
-	if address.Family == 4 {
-		family = "tcp4"
-	}
-	raw, e := dial(ctx, family, net.JoinHostPort(address.Address, h.Port))
+	conn, stop, finish, e := pinnedhop.Open(ctx, n.DialContext, n.TLSConfig,
+		address.Family, address.Address, h.Port, h.Hostname, h.TLS)
 	if e != nil {
 		return Resource{}, networkIOError(ctx)
 	}
-	var conn net.Conn = raw
-	stopped, joined := make(chan struct{}), make(chan struct{})
-	var once sync.Once
-	stop := func() { once.Do(func() { close(stopped); raw.Close() }) }
-	finish := func() { stop(); <-joined }
-	go func() {
-		defer close(joined)
-		select {
-		case <-ctx.Done():
-			raw.Close()
-		case <-stopped:
-		}
-	}()
 	fail := func(e error) (Resource, error) { finish(); return Resource{}, e }
-	if h.TLS {
-		config := &tls.Config{}
-		if n.TLSConfig != nil {
-			config = n.TLSConfig.Clone()
-		}
-		config.ServerName = h.Hostname
-		config.NextProtos = []string{"http/1.1"}
-		secure := tls.Client(raw, config)
-		if e = secure.HandshakeContext(ctx); e != nil {
-			return fail(networkIOError(ctx))
-		}
-		conn = secure
-	}
+
 	var body []byte
 	if state.Body != nil {
 		body, e = base64.StdEncoding.DecodeString(*state.Body)
@@ -341,10 +231,10 @@ func (n Network) open(ctx context.Context, h hop, address wireAddress) (Resource
 		if _, err := io.WriteString(conn, wire.String()); err == nil {
 			_, err = io.Copy(conn, bytes.NewReader(body))
 			if err != nil {
-				raw.Close()
+				stop()
 			}
 		} else {
-			raw.Close()
+			stop()
 		}
 	}()
 	baseFinish := finish

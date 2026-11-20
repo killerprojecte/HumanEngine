@@ -71,7 +71,7 @@ func (f *snowTokenFixture) assertImages(t *testing.T, ctx context.Context, app *
 		{"file": "opaque-local-result"},
 		{"file": "opaque-hold"},
 		{"file": "/fixture/never-open.png"},
-		{"url": "http://example.invalid/no-network", "file": "opaque-inline"},
+		{"file": "http://127.0.0.1/no-network"},
 	}
 	for n, data := range rows {
 		emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group,
@@ -106,7 +106,7 @@ func (f *snowTokenFixture) assertImages(t *testing.T, ctx context.Context, app *
 		app.ServeHTTP(out, req)
 		return out
 	}
-	check := func(n, status int, allowed bool) {
+	check := func(n, status int, allowed bool) *httptest.ResponseRecorder {
 		t.Helper()
 		response := get(n, allowed)
 		if response.Code != status {
@@ -115,6 +115,7 @@ func (f *snowTokenFixture) assertImages(t *testing.T, ctx context.Context, app *
 		if status == 200 && (!bytes.Equal(response.Body.Bytes(), original) || response.Header().Get("Content-Type") != "image/png") {
 			t.Fatal("authenticated token fetch did not publish the exact original")
 		}
+		return response
 	}
 	expectAction := func(token string) {
 		t.Helper()
@@ -135,7 +136,16 @@ func (f *snowTokenFixture) assertImages(t *testing.T, ctx context.Context, app *
 	check(3, 503, true)
 	expectAction("opaque-local-result")
 	check(5, 404, true)
-	check(6, 404, true)
+	blocked := check(6, 503, true)
+	var failure struct{ Error string }
+	if err := json.Unmarshal(blocked.Body.Bytes(), &failure); err != nil || failure.Error != "image_fetch_unavailable" {
+		t.Fatalf("blocked direct file locator: %s, %v", blocked.Body, err)
+	}
+	select {
+	case token := <-f.calls:
+		t.Fatalf("blocked direct file locator attempted adapter token fallback %s", token)
+	default:
+	}
 	for _, row := range appRequest(t, app, "GET", path+"/messages", nil).([]any) {
 		for _, part := range field(row, "parts").([]any) {
 			if field(part, "assetId") != nil || field(part, "mediaUrl") != nil {

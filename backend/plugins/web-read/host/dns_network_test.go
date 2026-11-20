@@ -27,17 +27,25 @@ func TestOSDNSNetworkLateOutcomes(t *testing.T) {
 				var once sync.Once
 				finish := func() { once.Do(func() { close(release) }) }
 				defer finish()
-				r := &OSResolver{lookup: func(string) DNSResult {
-					close(entered)
-					<-release
-					if failure {
-						return DNSResult{Err: errors.New("late_native_failure")}
-					}
-					return DNSResult{Addresses: []netip.Addr{netip.MustParseAddr("8.8.8.8")}}
-				}}
+				lookup := func(context.Context, string) LookupJob {
+					result := make(chan DNSResult, 1)
+					drained := make(chan struct{})
+					go func() {
+						defer close(drained)
+						defer close(result)
+						close(entered)
+						<-release
+						if failure {
+							result <- DNSResult{Err: errors.New("late_native_failure")}
+						} else {
+							result <- DNSResult{Addresses: []netip.Addr{netip.MustParseAddr("8.8.8.8")}}
+						}
+					}()
+					return LookupJob{Result: result, Drained: drained}
+				}
 				var active, chosen atomic.Int32
 				retired := make(chan struct{})
-				n := Network{Lookup: r.Lookup, BeginWork: func() (func(), bool) { active.Add(1); return func() { active.Add(-1); close(retired) }, true }, Life: context.Background(), CallGuestWithAdmission: func(context.Context, context.Context, []byte) ([]byte, error) {
+				n := Network{Lookup: lookup, BeginWork: func() (func(), bool) { active.Add(1); return func() { active.Add(-1); close(retired) }, true }, Life: context.Background(), CallGuestWithAdmission: func(context.Context, context.Context, []byte) ([]byte, error) {
 					chosen.Add(1)
 					return nil, errors.New("late selection must not execute")
 				}}
@@ -65,7 +73,6 @@ func TestOSDNSNetworkLateOutcomes(t *testing.T) {
 					t.Fatal("physical lease released before native completion", active.Load())
 				}
 				finish()
-				r.CloseAndWait()
 				select {
 				case <-retired:
 				case <-time.After(time.Second):

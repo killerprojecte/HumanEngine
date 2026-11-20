@@ -1,0 +1,437 @@
+{
+  "source": "src/media-fetch.ts:fetchQqMedia",
+  "maxHeaderSize": 16384,
+  "cases": [
+    {
+      "name": "http",
+      "url": "http://example.com:8080/image%2Fhere?fixture=1",
+      "responses": [
+        {
+          "bytes": "original"
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "8080",
+          "family": 4,
+          "servername": "",
+          "path": "/image%2Fhere?fixture=1",
+          "host": "example.com:8080"
+        }
+      ],
+      "bytes": "original",
+      "error": ""
+    },
+    {
+      "name": "https-chain",
+      "url": "https://example.com/a/b",
+      "responses": [
+        {
+          "status": 302,
+          "location": "../middle"
+        },
+        {
+          "status": 307,
+          "location": "https://cdn.example.com/image?fixture=1"
+        },
+        {
+          "bytes": "original"
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com",
+        "example.com",
+        "cdn.example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/a/b",
+          "host": "example.com"
+        },
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/middle",
+          "host": "example.com"
+        },
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "cdn.example.com",
+          "path": "/image?fixture=1",
+          "host": "cdn.example.com"
+        }
+      ],
+      "bytes": "original",
+      "error": ""
+    },
+    {
+      "name": "ipv6-only",
+      "url": "https://example.com/ipv6",
+      "responses": [
+        {
+          "bytes": "v6"
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "2606:4700:4700::1111",
+          "port": "443",
+          "family": 6,
+          "servername": "example.com",
+          "path": "/ipv6",
+          "host": "example.com"
+        }
+      ],
+      "bytes": "v6",
+      "error": ""
+    },
+    {
+      "name": "mixed-private",
+      "url": "https://example.com/",
+      "responses": [],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8",
+        "127.0.0.1"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [],
+      "bytes": "",
+      "error": "media_address_not_public"
+    },
+    {
+      "name": "mixed-mapped",
+      "url": "https://example.com/",
+      "responses": [],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8",
+        "::ffff:8.8.8.8"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [],
+      "bytes": "",
+      "error": "media_address_not_public"
+    },
+    {
+      "name": "mixed-wire-server",
+      "url": "https://example.com/",
+      "responses": [],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8",
+        "168.63.129.16"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [],
+      "bytes": "",
+      "error": "media_address_not_public"
+    },
+    {
+      "name": "empty-answer",
+      "url": "https://example.com/",
+      "responses": [],
+      "addresses": [],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [],
+      "bytes": "",
+      "error": "media_address_not_public"
+    },
+    {
+      "name": "private-literal",
+      "url": "http://127.0.0.1/",
+      "responses": [],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [],
+      "requests": [],
+      "bytes": "",
+      "error": "media_address_not_public"
+    },
+    {
+      "name": "blocked-after-redirect",
+      "url": "https://example.com/a",
+      "responses": [
+        {
+          "status": 302,
+          "location": "https://192.0.2.77/never"
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/a",
+          "host": "example.com"
+        }
+      ],
+      "bytes": "",
+      "error": "media_address_not_public"
+    },
+    {
+      "name": "credentialed",
+      "url": "https://secret@example.com/",
+      "responses": [],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [],
+      "requests": [],
+      "bytes": "",
+      "error": "media_url_not_supported"
+    },
+    {
+      "name": "fragment",
+      "url": "https://example.com/#never",
+      "responses": [],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [],
+      "requests": [],
+      "bytes": "",
+      "error": "media_url_not_supported"
+    },
+    {
+      "name": "local-file",
+      "url": "file:///never",
+      "responses": [],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [],
+      "requests": [],
+      "bytes": "",
+      "error": "media_url_not_supported"
+    },
+    {
+      "name": "downgrade",
+      "url": "https://example.com/",
+      "responses": [
+        {
+          "status": 301,
+          "location": "http://example.com/never"
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/",
+          "host": "example.com"
+        }
+      ],
+      "bytes": "",
+      "error": "media_redirect_not_supported"
+    },
+    {
+      "name": "empty-location",
+      "url": "https://example.com/",
+      "responses": [
+        {
+          "status": 302
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/",
+          "host": "example.com"
+        }
+      ],
+      "bytes": "",
+      "error": "media_redirect_limit"
+    },
+    {
+      "name": "redirect-limit",
+      "url": "https://example.com/",
+      "responses": [
+        {
+          "status": 308,
+          "location": "/next"
+        },
+        {
+          "status": 308,
+          "location": "/next"
+        },
+        {
+          "status": 308,
+          "location": "/next"
+        },
+        {
+          "status": 308,
+          "location": "/next"
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com",
+        "example.com",
+        "example.com",
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/",
+          "host": "example.com"
+        },
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/next",
+          "host": "example.com"
+        },
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/next",
+          "host": "example.com"
+        },
+        {
+          "address": "8.8.8.8",
+          "port": "443",
+          "family": 4,
+          "servername": "example.com",
+          "path": "/next",
+          "host": "example.com"
+        }
+      ],
+      "bytes": "",
+      "error": "media_redirect_limit"
+    },
+    {
+      "name": "wrong-status",
+      "url": "http://example.com/",
+      "responses": [
+        {
+          "status": 206
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "80",
+          "family": 4,
+          "servername": "",
+          "path": "/",
+          "host": "example.com"
+        }
+      ],
+      "bytes": "",
+      "error": "public_http_206"
+    },
+    {
+      "name": "oversized-length",
+      "url": "http://example.com/",
+      "responses": [
+        {
+          "length": "67108865"
+        }
+      ],
+      "addresses": [
+        "2606:4700:4700::1111",
+        "8.8.8.8"
+      ],
+      "dns": [
+        "example.com"
+      ],
+      "requests": [
+        {
+          "address": "8.8.8.8",
+          "port": "80",
+          "family": 4,
+          "servername": "",
+          "path": "/",
+          "host": "example.com"
+        }
+      ],
+      "bytes": "",
+      "error": "media_size_limit"
+    }
+  ]
+}

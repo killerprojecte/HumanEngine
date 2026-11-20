@@ -12,7 +12,18 @@ import (
 type imageTokenLookup func(context.Context, string) (any, error)
 
 func (s *Sender) readBrowserImage(ctx context.Context, scene botruntime.Scene, reference string, before func(context.Context) error) ([]byte, error) {
-	return readTokenOrInlineImage(ctx, scene, reference, func(call context.Context, token string) (any, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	media, err := nativeImageDescriptor(scene, reference)
+	if err != nil {
+		return nil, err
+	}
+	file := str(media, "file")
+	if publicImageLocator(file) {
+		return s.readPublicBrowserImage(ctx, file, before)
+	}
+	return readTokenOrInlineDescriptor(ctx, media, file, func(call context.Context, token string) (any, error) {
 		return s.lookupImageToken(call, token, before)
 	})
 }
@@ -53,7 +64,10 @@ func readTokenOrInlineImage(ctx context.Context, scene botruntime.Scene, referen
 	if err != nil {
 		return nil, err
 	}
-	file := str(media, "file")
+	return readTokenOrInlineDescriptor(ctx, media, str(media, "file"), lookup)
+}
+
+func readTokenOrInlineDescriptor(ctx context.Context, media *jsjson.Object, file string, lookup imageTokenLookup) ([]byte, error) {
 	if payload, inline := inlineImagePayload(file); inline {
 		return decodeInlinePayload(payload)
 	}
@@ -131,11 +145,14 @@ func opaqueImageToken(media *jsjson.Object, file string) string {
 	return token
 }
 
+func publicImageLocator(value string) bool {
+	return hasFoldPrefix(value, "http:") || hasFoldPrefix(value, "https:")
+}
+
 func directImageLocator(value string) bool {
-	for _, prefix := range [...]string{"http:", "https:", "base64://", "data:"} {
-		if len(value) >= len(prefix) && strings.EqualFold(value[:len(prefix)], prefix) {
-			return true
-		}
-	}
-	return false
+	return publicImageLocator(value) || hasFoldPrefix(value, "base64://") || hasFoldPrefix(value, "data:")
+}
+
+func hasFoldPrefix(value, prefix string) bool {
+	return len(value) >= len(prefix) && strings.EqualFold(value[:len(prefix)], prefix)
 }

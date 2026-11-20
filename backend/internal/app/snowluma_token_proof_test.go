@@ -26,6 +26,15 @@ import (
 // byte publication; transport/decoding is separately exercised by a real
 // bundled Sender. There is no test endpoint or shipping injection.
 func TestTokenImageNativeApplicationProof(t *testing.T) {
+	assertRetainedBrowserImageProof(t, "native-opaque-a", "native-opaque-held")
+}
+
+func TestDirectPublicImageNativeApplicationProof(t *testing.T) {
+	assertRetainedBrowserImageProof(t, "https://media.fixture.invalid/direct?case=browser", "https://media.fixture.invalid/held")
+}
+
+func assertRetainedBrowserImageProof(t *testing.T, availableLocator, heldLocator string) {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	options := applicationOptions(t)
@@ -74,9 +83,9 @@ func TestTokenImageNativeApplicationProof(t *testing.T) {
 		parts := field(row, "parts").([]any)
 		return row, field(parts[0], "assetId").(string)
 	}
-	available, availableAsset := message(1, "native-opaque-a")
-	held, heldAsset := message(2, "native-opaque-held")
-	unproven, _ := message(3, "native-opaque-a")
+	available, availableAsset := message(1, availableLocator)
+	held, heldAsset := message(2, heldLocator)
+	unproven, _ := message(3, availableLocator)
 	entered, release := make(chan struct{}), make(chan struct{})
 	var releaseOnce sync.Once
 	releaseHeld := func() { releaseOnce.Do(func() { close(release) }) }
@@ -88,7 +97,7 @@ func TestTokenImageNativeApplicationProof(t *testing.T) {
 				Current: func() bool { return true },
 				Links:   func(botruntime.Scene, string) bool { return false },
 				Read: func(context.Context, botruntime.Scene, string) ([]byte, error) {
-					return nil, errors.New("opaque source is not direct inline")
+					return nil, errors.New("selected fixture source is not inline")
 				},
 			},
 			BrowserImage: read,
@@ -135,14 +144,14 @@ func TestTokenImageNativeApplicationProof(t *testing.T) {
 		t.Helper()
 		res := get(n, authorized)
 		if res.Code != status || status == 200 && (!bytes.Equal(res.Body.Bytes(), original) || res.Header().Get("Content-Type") != "image/png") {
-			t.Fatalf("token row %d: code=%d wanted=%d bytes=%d MIME=%q", n, res.Code, status, res.Body.Len(), res.Header().Get("Content-Type"))
+			t.Fatalf("browser image row %d: code=%d wanted=%d bytes=%d MIME=%q", n, res.Code, status, res.Body.Len(), res.Header().Get("Content-Type"))
 		}
 	}
 	check(1, 401, false)
 	check(3, 404, true)
 	check(1, 200, true)
 	if actions.Load() != 1 {
-		t.Fatal("unproven or unauthorized input reached token IO")
+		t.Fatal("unproven or unauthorized input reached adapter IO")
 	}
 
 	var saved *jsjson.Object
@@ -174,7 +183,7 @@ func TestTokenImageNativeApplicationProof(t *testing.T) {
 	select {
 	case <-entered:
 	case <-ctx.Done():
-		t.Fatal("token request did not cross its exact guarded transport boundary")
+		t.Fatal("image request did not cross its exact guarded transport boundary")
 	}
 	if err := runtime.Recall(root, scene.ID, snow.MessageID(scene.ID, "2")); err != nil {
 		t.Fatal(err)
@@ -183,10 +192,10 @@ func TestTokenImageNativeApplicationProof(t *testing.T) {
 	select {
 	case res := <-result:
 		if res.Code != 404 || bytes.Equal(res.Body.Bytes(), original) {
-			t.Fatalf("late recall exposed token result: status=%d bytes=%d", res.Code, res.Body.Len())
+			t.Fatalf("late recall exposed browser image: status=%d bytes=%d", res.Code, res.Body.Len())
 		}
 	case <-ctx.Done():
-		t.Fatal("token response did not settle after recall")
+		t.Fatal("browser image response did not settle after recall")
 	}
 
 	runtime.AddAdapter(scene.AdapterID, newAdapter(func(context.Context, botruntime.Scene, string, func(context.Context) error) ([]byte, error) {
@@ -195,6 +204,6 @@ func TestTokenImageNativeApplicationProof(t *testing.T) {
 	}))
 	check(1, 404, true)
 	if actions.Load() != 3 {
-		t.Fatalf("unexpected guarded token calls: %d", actions.Load())
+		t.Fatalf("unexpected guarded browser image reads: %d", actions.Load())
 	}
 }

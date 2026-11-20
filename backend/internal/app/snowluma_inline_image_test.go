@@ -67,7 +67,7 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 			}
 		}
 	}
-	checkURL := func(path string, wantStatus int, authorized bool) {
+	checkURL := func(path string, wantStatus int, authorized bool) *httptest.ResponseRecorder {
 		t.Helper()
 		req := httptest.NewRequest("GET", path, nil)
 		sourceFixtureAuth(req, authorized)
@@ -79,16 +79,17 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 		if wantStatus == 200 && (!bytes.Equal(res.Body.Bytes(), png) || res.Header().Get("Content-Type") != "image/png") {
 			t.Fatalf("original bytes or verified content type differed: len=%d mime=%q", res.Body.Len(), res.Header().Get("Content-Type"))
 		}
+		return res
 	}
-	check := func(sceneID, messageID string, wantStatus int, authorized bool) {
+	check := func(sceneID, messageID string, wantStatus int, authorized bool) *httptest.ResponseRecorder {
 		t.Helper()
-		checkURL("/api/scenes/"+url.PathEscape(sceneID)+"/messages/"+url.PathEscape(messageID)+"/media/0", wantStatus, authorized)
+		return checkURL("/api/scenes/"+url.PathEscape(sceneID)+"/messages/"+url.PathEscape(messageID)+"/media/0", wantStatus, authorized)
 	}
 	ingress(1, "image", map[string]any{"base64": source.Base64})
 	ingress(2, "mface", map[string]any{"file": "DATA:image/JPEG;base64," + source.Base64},
 		map[string]any{"type": "image", "data": map[string]any{"base64": source.Base64}})
 	ingress(3, "image", map[string]any{"file": "base64://YQ==\n"})
-	ingress(4, "image", map[string]any{"url": "https://untrusted.invalid/fixture", "file": "image-token"})
+	ingress(4, "image", map[string]any{"url": "https://127.0.0.1/fixture", "file": "image-token"})
 	ingress(5, "image", map[string]any{"base64": "YQ=="})
 	row := wait(id("1"), "available")
 	for _, message := range []string{"2", "3", "4", "5"} {
@@ -162,7 +163,16 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 	assertLinks(links, id("4"))
 
 	check(scene, id("3"), 503, true)
-	check(scene, id("4"), 404, true)
+	blocked := check(scene, id("4"), 503, true)
+	var failure struct{ Error string }
+	if err := json.Unmarshal(blocked.Body.Bytes(), &failure); err != nil || failure.Error != "image_fetch_unavailable" {
+		t.Fatalf("blocked direct literal: %s, %v", blocked.Body, err)
+	}
+	select {
+	case action := <-unexpected:
+		t.Fatalf("blocked direct literal attempted adapter token fallback %s", action)
+	default:
+	}
 	check(scene, id("5"), 415, true)
 	check(scene, id("1"), 401, false)
 	check(snow.SceneID(adapter, account, "group", "101"), id("1"), 404, true)

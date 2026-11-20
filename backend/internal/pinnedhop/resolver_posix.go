@@ -1,6 +1,6 @@
-//go:build web_read_candidate && cgo && (linux || darwin || freebsd || openbsd || netbsd || dragonfly)
+//go:build cgo && ((linux && amd64) || (web_read_candidate && (linux || darwin || freebsd || openbsd || netbsd || dragonfly)))
 
-package host
+package pinnedhop
 
 /*
 #include <sys/types.h>

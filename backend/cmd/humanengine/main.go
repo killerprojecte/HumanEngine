@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/killerprojecte/HumanEngine/backend/internal/httpapi"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
+	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"net"
 	"net/http"
@@ -18,6 +19,12 @@ import (
 )
 
 func main() {
+	if child, err := pinnedhop.RunResolverChild(os.Args[1:]); child {
+		if err != nil {
+			os.Exit(1)
+		}
+		return
+	}
 	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

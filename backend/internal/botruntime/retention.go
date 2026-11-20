@@ -18,16 +18,16 @@ func (r *Runtime) clearBodiesLocked(s *sceneState) {
 	s.routing.Acknowledged.Clear()
 	r.pruneHistoryLocked(s, math.Inf(1), 0)
 }
-func (r *Runtime) trimLocked(s *sceneState, pending bool) {
+func (r *Runtime) trimLocked(s *sceneState, pending bool) bool {
 	c := r.config()
 	if !c.CacheEnabled && !pending && len(s.tasks) == 0 && len(s.timers) == 0 {
 		r.clearBodiesLocked(s)
-		return
+		return true
 	}
 	cutoff := r.services.Clock.Now() - r.lifetime(c)
 	bodyDirty := len(s.messages) > 500 || !(s.earliest >= cutoff)
 	if !bodyDirty && !s.historyDirty && s.historyEarliest >= cutoff && s.historyIDs.Len() <= c.TopicHistoryMaxMessages {
-		return
+		return false
 	}
 	if bodyDirty {
 		s.trimVisits += uint64(len(s.messages))
@@ -54,6 +54,7 @@ func (r *Runtime) trimLocked(s *sceneState, pending bool) {
 		}
 	}
 	r.pruneHistoryLocked(s, cutoff, c.TopicHistoryMaxMessages)
+	return true
 }
 func (r *Runtime) pruneHistoryLocked(s *sceneState, cutoff float64, max int) {
 	protected, preferred := map[string]bool{}, map[string]bool{}

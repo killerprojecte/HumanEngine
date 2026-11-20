@@ -1,0 +1,275 @@
+{
+  "node": "v24.22.1",
+  "data": {
+    "format": 1,
+    "revision": 3,
+    "edges": [
+      [
+        {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        {
+          "adapterId": "other-adapter",
+          "accountId": "foreign",
+          "personId": "other-person"
+        }
+      ]
+    ],
+    "aliases": [
+      {
+        "id": "manual",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Expired manual",
+        "scopeSceneId": "scene",
+        "source": {
+          "kind": "manual",
+          "administratorId": "authenticated-admin"
+        },
+        "validFrom": "2001-01-01T00:00:00+01:00",
+        "validUntil": "2002-01-01T00:00:00Z"
+      },
+      {
+        "id": "observed",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Observed alias",
+        "scopeSceneId": "scene",
+        "source": {
+          "kind": "observation",
+          "sceneId": "scene",
+          "messageId": "source-message",
+          "senderId": "synthetic-sender",
+          "eventRef": {
+            "eventId": "synthetic-event",
+            "revision": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "validFrom": null,
+        "validUntil": null
+      }
+    ],
+    "operations": [
+      {
+        "id": "do-not-expose-operation-0",
+        "hash": "6d32f6dbd6a95a2c15db58e8ea49758eb3b3e4429447fa9abae739142f00ac87",
+        "revision": 1
+      },
+      {
+        "id": "do-not-expose-operation-1",
+        "hash": "cd028ff90219daad2d98d5ad29c49553e5225e070c45d4f5dd520dcc61911eb3",
+        "revision": 2
+      },
+      {
+        "id": "do-not-expose-observation",
+        "hash": "f2ff1efb4adffb22050772f0dba5345a00d10b8232e7bcf60e48bffd606bb9d8",
+        "revision": 3
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "unauthorized",
+      "route": "/api/memory-identities",
+      "method": "GET",
+      "auth": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "noStore": false,
+      "table": false
+    },
+    {
+      "name": "fresh-empty",
+      "route": "/api/memory-identities",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "revision": 0,
+        "edges": [],
+        "aliases": []
+      },
+      "noStore": true,
+      "table": false
+    },
+    {
+      "name": "fresh-head",
+      "route": "/api/memory-identities",
+      "method": "HEAD",
+      "auth": true,
+      "status": 200,
+      "body": null,
+      "noStore": true,
+      "table": false
+    },
+    {
+      "name": "loaded-public-view",
+      "route": "/api/memory-identities",
+      "method": "GET",
+      "auth": true,
+      "action": "seed",
+      "status": 200,
+      "body": {
+        "revision": 3,
+        "edges": [
+          [
+            {
+              "adapterId": "fixture",
+              "accountId": "local",
+              "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+            },
+            {
+              "adapterId": "other-adapter",
+              "accountId": "foreign",
+              "personId": "other-person"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "fixture",
+              "accountId": "local",
+              "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+            },
+            "label": "Expired manual",
+            "scopeSceneId": "scene",
+            "source": {
+              "kind": "manual",
+              "administratorId": "authenticated-admin"
+            },
+            "validFrom": "2001-01-01T00:00:00+01:00",
+            "validUntil": "2002-01-01T00:00:00Z"
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "fixture",
+              "accountId": "local",
+              "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+            },
+            "label": "Observed alias",
+            "scopeSceneId": "scene",
+            "source": {
+              "kind": "observation",
+              "sceneId": "scene",
+              "messageId": "source-message",
+              "senderId": "synthetic-sender",
+              "eventRef": {
+                "eventId": "synthetic-event",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ]
+      },
+      "noStore": true,
+      "table": true
+    },
+    {
+      "name": "no-scene-filter",
+      "route": "/api/memory-identities?sceneId=foreign&extra=ignored",
+      "method": "GET",
+      "auth": true,
+      "status": 200,
+      "body": {
+        "revision": 3,
+        "edges": [
+          [
+            {
+              "adapterId": "fixture",
+              "accountId": "local",
+              "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+            },
+            {
+              "adapterId": "other-adapter",
+              "accountId": "foreign",
+              "personId": "other-person"
+            }
+          ]
+        ],
+        "aliases": [
+          {
+            "id": "manual",
+            "endpoint": {
+              "adapterId": "fixture",
+              "accountId": "local",
+              "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+            },
+            "label": "Expired manual",
+            "scopeSceneId": "scene",
+            "source": {
+              "kind": "manual",
+              "administratorId": "authenticated-admin"
+            },
+            "validFrom": "2001-01-01T00:00:00+01:00",
+            "validUntil": "2002-01-01T00:00:00Z"
+          },
+          {
+            "id": "observed",
+            "endpoint": {
+              "adapterId": "fixture",
+              "accountId": "local",
+              "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+            },
+            "label": "Observed alias",
+            "scopeSceneId": "scene",
+            "source": {
+              "kind": "observation",
+              "sceneId": "scene",
+              "messageId": "source-message",
+              "senderId": "synthetic-sender",
+              "eventRef": {
+                "eventId": "synthetic-event",
+                "revision": 1,
+                "deletionEpoch": 0
+              }
+            },
+            "validFrom": null,
+            "validUntil": null
+          }
+        ]
+      },
+      "noStore": true,
+      "table": true
+    },
+    {
+      "name": "loaded-head",
+      "route": "/api/memory-identities",
+      "method": "HEAD",
+      "auth": true,
+      "status": 200,
+      "body": null,
+      "noStore": true,
+      "table": true
+    },
+    {
+      "name": "missing-singleton-is-corrupt",
+      "route": "/api/memory-identities",
+      "method": "GET",
+      "auth": true,
+      "action": "delete",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      },
+      "noStore": true,
+      "table": true
+    }
+  ]
+}

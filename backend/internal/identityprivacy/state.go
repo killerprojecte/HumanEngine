@@ -37,7 +37,7 @@ func bounded(v any, max int) bool {
 	if !ok {
 		return false
 	}
-	n, e := jsjson.UTF16Len(s)
+	n, e := jsjson.CodePointCount(s)
 	return e == nil && n >= 1 && n <= max
 }
 func integer(v any) bool {

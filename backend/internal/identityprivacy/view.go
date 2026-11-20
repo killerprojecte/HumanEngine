@@ -10,10 +10,23 @@ import (
 // ReadRegistry borrows an existing domain scope. It never creates the registry
 // or opens a database/root transaction. Schema validation is shared with recall.
 func ReadRegistry(scope sourceevents.RuntimeReadScope) (*jsjson.Object, error) {
-	if err := scope.Ready(); err != nil {
+	return readRegistry(scope.Ready, scope.Query)
+}
+
+// ReadAdminRegistry projects the registry from an existing authenticated read snapshot.
+func ReadAdminRegistry(ready func() error, query func(string, ...any) (sourceevents.Rows, error)) (*jsjson.Object, error) {
+	state, err := readRegistry(ready, query)
+	if err != nil {
 		return nil, err
 	}
-	rows, err := scope.Query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='memory_identity_registry'")
+	return object("revision", get(state, "revision"), "edges", get(state, "edges"), "aliases", get(state, "aliases")), nil
+}
+
+func readRegistry(ready func() error, query func(string, ...any) (sourceevents.Rows, error)) (*jsjson.Object, error) {
+	if err := ready(); err != nil {
+		return nil, err
+	}
+	rows, err := query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='memory_identity_registry'")
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +38,7 @@ func ReadRegistry(scope sourceevents.RuntimeReadScope) (*jsjson.Object, error) {
 	if !exists {
 		return object("format", float64(1), "revision", float64(0), "edges", []any{}, "aliases", []any{}, "operations", []any{}), nil
 	}
-	rows, err = scope.Query("SELECT value FROM memory_identity_registry WHERE id=1")
+	rows, err = query("SELECT value FROM memory_identity_registry WHERE id=1")
 	if err != nil {
 		return nil, err
 	}

@@ -13,6 +13,10 @@ func presentAdminRevision(r *assertions.Reader, record *Object, id string) error
 	if err != nil {
 		return err
 	}
+	return setAdminRevision(record, state)
+}
+
+func setAdminRevision(record *Object, state assertions.State) error {
 	revision, _ := jsjson.NewObject(
 		jsjson.Member{Key: "version", Value: float64(state.Version)},
 		jsjson.Member{Key: "deletionEpoch", Value: float64(state.DeletionEpoch)},

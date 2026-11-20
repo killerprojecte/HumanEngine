@@ -216,7 +216,7 @@ func TestApplicationMemoryDeleteActualSourceHTTP(t *testing.T) {
 
 func TestApplicationMemoryDeleteLeavesOtherCRUDAtPreview(t *testing.T) {
 	a, _ := memoryDeleteApplication(t, "synthetic-token")
-	for _, operation := range []string{"PATCH /api/memories/m", "POST /api/memory-commitments", "DELETE /api/memory-commitments/m"} {
+	for _, operation := range []string{"POST /api/memory-commitments", "DELETE /api/memory-commitments/m"} {
 		method, path, _ := strings.Cut(operation, " ")
 		r := httptest.NewRequest(method, path, nil)
 		r.Header.Set("Authorization", "Bearer synthetic-token")

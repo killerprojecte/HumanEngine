@@ -22,6 +22,13 @@ func (s *Service) Update(ctx context.Context, id string, patch *Object) (*Object
 	}
 	return c.Update(ctx, id, patch)
 }
+func (s *Service) UpdateForAcknowledgement(ctx context.Context, id string, patch *Object, guard *memorymanual.Guard) (memorymanual.UpdateAcknowledgement, error) {
+	c, err := s.manualCommands(memorymanual.Runtime{})
+	if err != nil {
+		return memorymanual.UpdateAcknowledgement{}, err
+	}
+	return c.UpdateForAcknowledgement(ctx, id, patch, guard)
+}
 func (s *Service) Lock(ctx context.Context, id string, locked bool) (*Object, error) {
 	c, e := s.manualCommands(memorymanual.Runtime{})
 	if e != nil {

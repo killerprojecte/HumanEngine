@@ -23,9 +23,15 @@ func NewSchemas() (*Schemas, error) {
 	if err := json.Unmarshal(compatibility.OpenAPI, &root); err != nil {
 		return nil, err
 	}
-	body := root["paths"].(map[string]any)["/api/memories"].(map[string]any)["post"].(map[string]any)["requestBody"].(map[string]any)
-	content := body["content"].(map[string]any)["application/json"].(map[string]any)
-	root["components"].(map[string]any)["schemas"].(map[string]any)["MemoryCreate"] = content["schema"]
+	paths := root["paths"].(map[string]any)
+	definitions := root["components"].(map[string]any)["schemas"].(map[string]any)
+	for _, write := range []struct{ name, path, method string }{
+		{"MemoryCreate", "/api/memories", "post"},
+		{"MemoryPatch", "/api/memories/{id}", "patch"},
+	} {
+		body := paths[write.path].(map[string]any)[write.method].(map[string]any)["requestBody"].(map[string]any)
+		definitions[write.name] = body["content"].(map[string]any)["application/json"].(map[string]any)["schema"]
+	}
 	compiler := jsonschema.NewCompiler()
 	compiler.DefaultDraft(jsonschema.Draft2020)
 	// OpenAPI is the contract container, with ordinary JSON Schema component refs.
@@ -37,9 +43,9 @@ func NewSchemas() (*Schemas, error) {
 		return nil, err
 	}
 	components, _ := document.(*jsjson.Object).Get("components")
-	definitions, _ := components.(*jsjson.Object).Get("schemas")
-	s := &Schemas{root: root, compiled: map[string]*jsonschema.Schema{}, orderedDefinitions: definitions.(*jsjson.Object)}
-	for _, name := range []string{"Settings", "ModelConfig", "Scene", "MemoryCreate"} {
+	orderedDefinitions, _ := components.(*jsjson.Object).Get("schemas")
+	s := &Schemas{root: root, compiled: map[string]*jsonschema.Schema{}, orderedDefinitions: orderedDefinitions.(*jsjson.Object)}
+	for _, name := range []string{"Settings", "ModelConfig", "Scene", "MemoryCreate", "MemoryPatch"} {
 		compiled, err := compiler.Compile("https://humanengine.invalid/contract.json#/components/schemas/" + name)
 		if err != nil {
 			return nil, err

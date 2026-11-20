@@ -276,9 +276,11 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		s.serveExperience(w, r, available, id)
 		return
 	}
-	if s.manualMemoryIndex != nil && path == memoryDeletePrefix && r.Method == http.MethodPost {
-		s.serveMemoryCreate(w, r, available, id)
-		return
+	if s.manualMemoryIndex != nil {
+		if memoryID, ok := memoryWriteRoute(r.Method, path); ok {
+			s.serveMemoryWrite(w, r, available, id, memoryID)
+			return
+		}
 	}
 	if s.memoryAdminRead != nil && (path == memoryDeletePrefix || path == memoryDeletePrefix+"/page") && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
 		s.serveMemoryAdminRead(w, r, available, id, path != memoryDeletePrefix)

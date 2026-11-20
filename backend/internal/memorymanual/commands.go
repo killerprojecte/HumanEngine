@@ -194,6 +194,10 @@ func safe(n float64) bool {
 	return !math.IsNaN(n) && !math.IsInf(n, 0) && n >= 0 && n <= 9007199254740991 && math.Trunc(n) == n
 }
 func (c *Command) UpdateGuarded(ctx context.Context, id string, patch *Object, g Guard) (out *Object, err error) {
+	return c.updateGuarded(ctx, id, patch, g, nil)
+}
+
+func (c *Command) updateGuarded(ctx context.Context, id string, patch *Object, g Guard, acknowledge func(*Object, assertions.State)) (out *Object, err error) {
 	err = c.revisions.Transaction(ctx, func(tx *assertions.RevisionTxn) error {
 		units, e := jsjson.UTF16(g.IdempotencyKey)
 		if e != nil {
@@ -233,6 +237,9 @@ func (c *Command) UpdateGuarded(ctx context.Context, id string, patch *Object, g
 				if out == nil {
 					return errors.New("memory_not_found")
 				}
+				if acknowledge != nil {
+					acknowledge(out, before)
+				}
 				return nil
 			}
 			if before.Deleted || float64(before.DeletionEpoch) != g.ExpectedDeletionEpoch {
@@ -255,7 +262,13 @@ func (c *Command) UpdateGuarded(ctx context.Context, id string, patch *Object, g
 			if e != nil {
 				return e
 			}
-			return tx.Store.SaveManualReceipt(g.IdempotencyKey, assertions.ManualCommandReceipt{AssertionID: id, PayloadHash: hash, DeletionEpoch: after.DeletionEpoch, ResultVersion: after.Version}, c.runtime.Now())
+			if e = tx.Store.SaveManualReceipt(g.IdempotencyKey, assertions.ManualCommandReceipt{AssertionID: id, PayloadHash: hash, DeletionEpoch: after.DeletionEpoch, ResultVersion: after.Version}, c.runtime.Now()); e != nil {
+				return e
+			}
+			if acknowledge != nil {
+				acknowledge(out, after)
+			}
+			return nil
 		})
 	})
 	if err != nil {

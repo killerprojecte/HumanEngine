@@ -91,6 +91,10 @@ func TestTokenImageActualSource(t *testing.T) {
 	}
 	for _, c := range fixture.TokenCases {
 		t.Run(c.Name, func(t *testing.T) {
+			wantOpaque := c.GoLimited != "no-refresh" && c.GoLimited != "no-path-token"
+			if opaque := (new(Sender).prepareImageToken(fixture.Scene, c.Asset) != nil); opaque != wantOpaque {
+				t.Fatalf("vision token eligibility = %t, want %t", opaque, wantOpaque)
+			}
 			lookups := 0
 			value, err := jsjson.ParseBytes(c.Reply)
 			if err != nil {

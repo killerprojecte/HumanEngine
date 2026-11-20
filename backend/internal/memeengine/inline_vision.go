@@ -24,7 +24,7 @@ func (s *Service) selectInlineVision(turn *botruntime.TurnContext, messages []*O
 			if get(message, "id") != id {
 				continue
 			}
-			if source, index := turn.InlineVisionSource(message); source != nil {
+			if source, index := turn.NativeVisionSource(message); source != nil {
 				return source, message, index
 			}
 		}
@@ -93,6 +93,9 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 		AddDependency:       turn.AddDependency,
 		AddSourceValidation: func(visioncontext.Candidate) { turn.AddScopedValidation(validate) },
 		ReadImage: func(call context.Context, _ visioncontext.Candidate) ([]byte, error) {
+			if !source.IsInline() {
+				return source.BrowserImageBytes(call, require)
+			}
 			if err := require(call); err != nil {
 				return nil, err
 			}

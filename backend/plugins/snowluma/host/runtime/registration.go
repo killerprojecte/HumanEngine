@@ -65,6 +65,7 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 		Links:   linkInlineImage,
 	}
 	adapter.BrowserImage = s.readBrowserImage
+	adapter.PrepareImageToken = s.prepareImageToken
 	adapter.Transport = dispatch.AbortContainedAdapter(&dispatch.Adapter{Send: func(scene dispatch.SceneRef, segment dispatch.Segment, signal *dispatch.Signal, before func() error) *dispatch.Future[dispatch.Receipt] {
 		result := dispatch.NewFuture[dispatch.Receipt]()
 		go func() {

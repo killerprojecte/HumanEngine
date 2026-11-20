@@ -302,6 +302,52 @@ test('quoted image outranks newer images; four authorized sources retain provena
   }
 })
 
+test('the vision budget ranks opaque and inline locators by message priority, not transport form', async () => {
+  const png = await sharp({ create: { width: 1, height: 1, channels: 3, background: '#abc' } })
+    .png()
+    .toBuffer()
+  const modes = ['opaque', 'inline'] as const
+  for (const preferred of modes) {
+    const { store, context } = fixture()
+    const make = (index: number, file: string) => {
+      const message = imageMessage(index)
+      const assetId =
+        'ob:media:' +
+        Buffer.from(JSON.stringify({ sceneId: 'scene', type: 'image', file })).toString('base64url')
+      message.parts = [{ type: 'media', mediaType: 'image', assetId }]
+      return message
+    }
+    const inline = 'base64://' + png.toString('base64')
+    const messages = [
+      make(0, 'opaque'),
+      make(1, inline),
+      make(2, inline),
+      make(3, inline),
+      make(4, inline),
+    ]
+    const keep = preferred === 'opaque' ? 'image-0' : 'image-1'
+    const omit = preferred === 'opaque' ? 'image-1' : 'image-0'
+    context.imagePriorityIds = [keep, 'image-2', 'image-3', 'image-4', omit]
+    const read = new Set<string>()
+    const runtime = {
+      imageSourceAvailable: () => true,
+      readImage: async (_context: unknown, _assetId: string, message: RuntimeMessage) => {
+        read.add(message.id)
+        return png
+      },
+    } as unknown as Runtime
+    const router = () => ({ complete: async () => completed() }) as unknown as Router
+    try {
+      const result = await describeCurrentImages(store, runtime, router, context, messages)
+      assert.deepEqual(result.omitted, [{ messageId: omit, reason: 'image_budget_exhausted' }])
+      assert.equal(read.has(keep), true)
+      assert.equal(read.has(omit), false)
+    } finally {
+      store.close()
+    }
+  }
+})
+
 for (const failure of ['empty', 'download'] as const) {
   test(`${failure} failures attempt once per authorized source per turn and do not confuse mutable references across messages`, async () => {
     const { store, context } = fixture()

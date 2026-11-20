@@ -179,6 +179,9 @@ type InlineImageAdapter struct {
 	Current func() bool
 }
 
+// GuardedImageRead is prepared by an adapter from an exact native locator.
+type GuardedImageRead func(context.Context, func(context.Context) error) ([]byte, error)
+
 type Adapter struct {
 	// Status reads this registration, never a replacement with the same ID.
 	Status      func(context.Context) (string, error)
@@ -188,8 +191,9 @@ type Adapter struct {
 	GetMessage  func(context.Context, Scene, string, func(*Object, error))
 	InlineImage *InlineImageAdapter
 	// BrowserImage is bound only to the active adapter, never to retained proof.
-	BrowserImage func(context.Context, Scene, string, func(context.Context) error) ([]byte, error)
-	Dispose      func()
+	BrowserImage      func(context.Context, Scene, string, func(context.Context) error) ([]byte, error)
+	PrepareImageToken func(Scene, string) GuardedImageRead
+	Dispose           func()
 }
 type Services struct {
 	Models      Models

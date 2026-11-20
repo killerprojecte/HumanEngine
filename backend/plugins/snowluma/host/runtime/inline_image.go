@@ -15,9 +15,14 @@ import (
 // prefix. It reads only enough of the outer base64 to identify the file scheme;
 // the direct read owns alphabet, size, integrity, and image-type validation.
 func linkInlineImage(scene botruntime.Scene, reference string) bool {
+	payload, ok := inlineImagePayload(imageFilePrefix(scene, reference))
+	return ok && len(payload) > 0 && payload[0] != '"'
+}
+
+func imageFilePrefix(scene botruntime.Scene, reference string) string {
 	raw, ok := strings.CutPrefix(reference, "ob:media:")
 	if !ok || len(scene.ID) > 4096 {
-		return false
+		return ""
 	}
 	prefix := `{"sceneId":"` + scene.ID + `","type":"image","file":"`
 	want := len(prefix) + len("data:image/jpeg;base64,") + 1
@@ -30,10 +35,9 @@ func linkInlineImage(scene botruntime.Scene, reference string) bool {
 	}
 	n, err := base64.RawURLEncoding.Decode(wire, []byte(raw[:encoded]))
 	if err != nil || n <= len(prefix) || string(wire[:len(prefix)]) != prefix {
-		return false
+		return ""
 	}
-	payload, ok := inlineImagePayload(string(wire[len(prefix):n]))
-	return ok && len(payload) > 0 && payload[0] != '"'
+	return string(wire[len(prefix):n])
 }
 
 func inlineImagePayload(file string) (string, bool) {

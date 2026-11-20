@@ -41,7 +41,7 @@ func (c *inlineVisionCounter) Count([]byte) (float64, error) {
 	return 1, nil
 }
 
-func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application, emit func(any), counter *inlineVisionCounter) {
+func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application, emit func(any), counter *inlineVisionCounter, tokenTest ...*opaqueVisionTestBarrier) {
 	t.Helper()
 	type actualCall struct {
 		Model    string `json:"model"`
@@ -89,15 +89,32 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	begin := func(group int) (*botruntime.TurnHandle, string) {
 		t.Helper()
 		sceneID := snow.SceneID("snowluma", "42", "group", fmt.Sprint(group))
-		emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7,
-			"message_id": 1, "time": time.Now().Unix(), "message": []any{map[string]any{"type": "image", "data": map[string]any{"base64": fixture.Base64}}}})
+		emitImage := func(id int, data map[string]any) {
+			at := time.Now().Unix()
+			if id == 2 {
+				at-- // make fixture priority independent of clock granularity
+			}
+			emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7,
+				"message_id": id, "time": at, "message": []any{map[string]any{"type": "image", "data": data}}})
+		}
+		count := 1
+		if len(tokenTest) == 0 {
+			emitImage(1, map[string]any{"base64": fixture.Base64})
+		} else {
+			if group == 102 {
+				// The newest opaque image outranks the older ready-inline image.
+				emitImage(2, map[string]any{"base64": fixture.Base64})
+				count++
+			}
+			emitImage(1, map[string]any{"file": "opaque-" + fmt.Sprint(group)})
+		}
 		wait, cancel := context.WithTimeout(ctx, 8*time.Second)
 		defer cancel()
 		var topic string
 		tick := time.NewTicker(5 * time.Millisecond)
 		defer tick.Stop()
 		for topic == "" {
-			if v, err := app.Engine.Runtime.Snapshot(sceneID); err == nil && len(v.Topics) != 0 && len(v.Messages) != 0 {
+			if v, err := app.Engine.Runtime.Snapshot(sceneID); err == nil && len(v.Topics) != 0 && len(v.Messages) == count {
 				topic = v.Topics[0].ID
 				break
 			}
@@ -202,25 +219,65 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	case <-time.After(8 * time.Second):
 		t.Fatal("late vision request did not reach serialized wire barrier")
 	}
-	emit(map[string]any{"post_type": "notice", "notice_type": "group_recall", "self_id": 42,
-		"group_id": 103, "message_id": 1, "user_id": 7, "operator_id": 7, "time": time.Now().Unix()})
-	wait, cancel := context.WithTimeout(ctx, 8*time.Second)
-	defer cancel()
-	tick := time.NewTicker(5 * time.Millisecond)
-	defer tick.Stop()
-	for {
-		if v, err := app.Engine.Runtime.Snapshot(sceneID); err == nil && len(v.Messages) == 1 && field(v.Messages[0], "status") == "recalled" {
-			break
-		}
-		select {
-		case <-tick.C:
-		case <-wait.Done():
-			t.Fatal("native recall did not commit at wire barrier")
+	recall := func(group int, sceneID string) {
+		t.Helper()
+		emit(map[string]any{"post_type": "notice", "notice_type": "group_recall", "self_id": 42,
+			"group_id": group, "message_id": 1, "user_id": 7, "operator_id": 7, "time": time.Now().Unix()})
+		wait, cancel := context.WithTimeout(ctx, 8*time.Second)
+		defer cancel()
+		tick := time.NewTicker(5 * time.Millisecond)
+		defer tick.Stop()
+		for {
+			if v, err := app.Engine.Runtime.Snapshot(sceneID); err == nil && len(v.Messages) == 1 && field(v.Messages[0], "status") == "recalled" {
+				break
+			}
+			select {
+			case <-tick.C:
+			case <-wait.Done():
+				t.Fatal("native recall did not commit at wire barrier")
+			}
 		}
 	}
+	recall(103, sceneID)
 	counter.block.Store(false)
 	close(counter.release)
 	if final := awaitDone(late); final.Status != "cancelled" {
 		t.Fatalf("late recall did not cancel the image turn: %+v", final)
+	}
+	if len(tokenTest) != 0 {
+		barrier := tokenTest[0]
+		held, sceneID := begin(104)
+		select {
+		case <-barrier.entered:
+		case <-time.After(8 * time.Second):
+			t.Fatal("token request did not reach its guarded adapter boundary")
+		}
+		recall(104, sceneID)
+		barrier.releaseHeld()
+		if final := awaitDone(held); final.Status != "cancelled" {
+			t.Fatalf("held token recall did not cancel the image turn: %+v", final)
+		}
+
+		routerWithoutVision, err := jsjson.ParseBytes(models)
+		if err != nil {
+			t.Fatal(err)
+		}
+		config := routerWithoutVision.(*jsjson.Object)
+		routes, _ := config.Get("routes")
+		_ = config.Set("routes", routes.([]any)[1:])
+		wire, err := jsjson.Marshal(config)
+		if err != nil {
+			t.Fatal(err)
+		}
+		appRequest(t, app, "PUT", "/api/models", json.RawMessage(wire))
+		noRoute, _ := begin(105)
+		decision := awaitCall("planner-synthetic")
+		describedMissing := false
+		for _, message := range decision.Messages {
+			describedMissing = describedMissing || bytes.Contains(message.Content, []byte("route_not_configured"))
+		}
+		if final := awaitDone(noRoute); final.Status != "skipped" || !describedMissing {
+			t.Fatalf("route-less context failed: %+v", final)
+		}
 	}
 }

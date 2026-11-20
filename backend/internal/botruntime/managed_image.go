@@ -133,13 +133,14 @@ func (r *Runtime) bindNativeImage(scene Scene, message *Object, owner *Adapter) 
 // DisplayImageSource captures a private retained record and its adapter.
 // Its raw parts are never returned by a browser preview.
 type DisplayImageSource struct {
-	runtime *Runtime
-	state   *sceneState
-	scene   Scene
-	adapter *Adapter
-	record  *messageRecord
-	assetID string
-	inline  bool
+	runtime   *Runtime
+	state     *sceneState
+	scene     Scene
+	adapter   *Adapter
+	record    *messageRecord
+	assetID   string
+	inline    bool
+	tokenRead GuardedImageRead
 }
 
 func (r *Runtime) retainedDisplayImageRow(sceneID, messageID string) DisplayImageSource {
@@ -195,9 +196,9 @@ func (r *Runtime) DisplayImage(sceneID, messageID string, partIndex int) *Displa
 	return &source
 }
 
-// InlineVisionSource uses one retained lookup only for a live row with a native
-// image locator. Its private bitset chooses the exact indices, not raw URLs.
-func (c *TurnContext) InlineVisionSource(message *Object) (*DisplayImageSource, int) {
+// NativeVisionSource uses one retained lookup only for a live row with a native
+// image locator, then preserves original part order within that row.
+func (c *TurnContext) NativeVisionSource(message *Object) (*DisplayImageSource, int) {
 	sceneID := c.Scene.ID
 	if get(message, "sceneId") != sceneID || get(message, "origin") != "live" ||
 		get(message, "senderId") == "bot" || get(message, "status") != "available" {
@@ -219,13 +220,19 @@ func (c *TurnContext) InlineVisionSource(message *Object) (*DisplayImageSource, 
 		}
 		mask := DisplayImageLinks{inline: &source.record.displayMedia.native.parts}
 		retained := array(get(source.record.body, "parts"))
+		prepare := source.adapter.PrepareImageToken
 		for i := first; i < min(len(parts), len(retained), 256); i++ {
-			if mask.InlineAt(i) {
-				asset := imageAsset(retained[i])
-				if asset == imageAsset(parts[i]) {
-					source.assetID = asset
-					return &source, i
-				}
+			asset := imageAsset(retained[i])
+			if !strings.HasPrefix(asset, "ob:media:") || asset != imageAsset(parts[i]) {
+				continue
+			}
+			inline := mask.InlineAt(i)
+			if !inline && prepare != nil {
+				source.tokenRead = prepare(source.scene, asset)
+			}
+			if inline || source.tokenRead != nil {
+				source.inline, source.assetID = inline, asset
+				return &source, i
 			}
 		}
 		break
@@ -242,6 +249,9 @@ func (m *DisplayImageSource) InlineBytes(ctx context.Context) ([]byte, error) {
 func (m *DisplayImageSource) IsInline() bool { return m.inline }
 
 func (m *DisplayImageSource) BrowserImageBytes(ctx context.Context, before func(context.Context) error) ([]byte, error) {
+	if m.tokenRead != nil {
+		return m.tokenRead(ctx, before)
+	}
 	if read := m.adapter.BrowserImage; read != nil {
 		return read(ctx, m.scene, m.assetID, before)
 	}

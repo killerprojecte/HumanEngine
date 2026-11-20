@@ -19,6 +19,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
+      - name: Detect an explicit browser proof change
+        id: browser
+        if: github.event_name == 'push' && github.ref == 'refs/heads/feat/refactor-golang'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [[ ! "$BEFORE" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Missing push base" >&2
+            exit 1
+          fi
+          if [[ "$BEFORE" == 0000000000000000000000000000000000000000 ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! git cat-file -e "$BEFORE^{commit}"; then
+            git fetch --no-tags --depth=1 origin "$BEFORE"
+          fi
+          changed=0
+          git diff --quiet "$BEFORE" "$GITHUB_SHA" -- \
+            .github/workflows/golang-package-preview.yml \
+            backend/packaging/runtime-preview/browser_smoke.py \
+            backend/packaging/runtime-preview/browser-requirements.txt || changed=$?
+          case "$changed" in
+            0) echo "run=false" >> "$GITHUB_OUTPUT" ;;
+            1) echo "run=true" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$changed" ;;
+          esac
       - name: Check acceptance driver and Compose configuration
         env:
           HUMANENGINE_ADMIN_TOKEN: synthetic-package-token
@@ -27,8 +54,30 @@ jobs:
           docker compose -f backend/packaging/runtime-preview/compose.yaml config --quiet
       - name: Build opt-in candidate (no push)
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
+      - name: Select Python for the opt-in browser smoke
+        if: steps.browser.outputs.run == 'true'
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install the pinned host Chromium test tooling
+        if: steps.browser.outputs.run == 'true'
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/humanengine-browser
+        run: |
+          python -m venv "$RUNNER_TEMP/humanengine-browser-venv"
+          py="$RUNNER_TEMP/humanengine-browser-venv/bin/python"
+          "$py" -m pip install --require-hashes --only-binary :all: -r backend/packaging/runtime-preview/browser-requirements.txt
+          "$py" -m playwright install --with-deps chromium
       - name: Exercise actual packaged startup, HTTP, drain and V1 lifecycle
-        run: python3 backend/packaging/runtime-preview/acceptance.py --evidence "$RUNNER_TEMP/package-evidence"
+        env:
+          RUN_BROWSER_SMOKE: ${{ steps.browser.outputs.run == 'true' }}
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/humanengine-browser
+        run: |
+          if [ "$RUN_BROWSER_SMOKE" = true ]; then
+            "$RUNNER_TEMP/humanengine-browser-venv/bin/python" backend/packaging/runtime-preview/acceptance.py --browser-smoke --evidence "$RUNNER_TEMP/package-evidence"
+          else
+            python3 backend/packaging/runtime-preview/acceptance.py --evidence "$RUNNER_TEMP/package-evidence"
+          fi
       - name: Preserve synthetic acceptance evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -106,6 +106,28 @@ publish an image or deploy anything. Unrelated backend changes still require
 rerunning this gate before release; a previous image's result is not current-head
 acceptance. Default Go migration CI remains a separate gate.
 
+## Opt-in hosted Chromium smoke
+
+The browser smoke activates only on an existing `feat/refactor-golang` push
+whose before/after diff changes `browser_smoke.py`, `browser-requirements.txt`
+or `.github/workflows/golang-package-preview.yml`. Pull requests, ordinary
+pushes and manual runs do not install or start Chromium. This branch-local push
+path does not require the workflow to exist on the default branch. The existing job builds the real preview image and
+launches it against only disposable synthetic data. In addition to the normal
+HTTP and lifecycle checks, a sandboxed, host-side Chromium page uses the real
+Nuxt login form, reads dashboard data, edits and saves the name through the
+Settings page, reloads to verify the write, and logs out. No API is stubbed;
+the runner blocks browser traffic away from the preview origin. No browser or
+driver is added to either runtime image or to ordinary push/PR package runs.
+
+The host driver wheels are hash-locked in `browser-requirements.txt`; the
+Playwright release's [browser manifest](https://github.com/microsoft/playwright/blob/v1.62.0/packages/playwright-core/browsers.json)
+pins Chromium 151.0.7922.34 (revision 1234). An unavailable Chromium sandbox
+is a failed smoke, not a reason to run without it. The existing
+`go-package-preview-evidence` artifact contains the OCI image ID, revision,
+browser versions and sanitized action/status receipts in `result.json`. Opted-in
+runs do not retain container logs, screenshots, traces, HTML or request bodies.
+
 ## Rehearse engine rollback only on a disposable clone
 
 1. Record the exact TS and Go image IDs and existing mounts. Stop and drain the

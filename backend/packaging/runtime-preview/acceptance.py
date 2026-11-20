@@ -7,6 +7,7 @@ not new production shutdown/admission policies. Does not build or publish images
 import argparse
 import http.client
 import json
+import os
 from http.cookies import SimpleCookie
 import re
 from pathlib import Path
@@ -18,8 +19,8 @@ import uuid
 TOKEN = "synthetic-package-token"
 
 
-def docker(*args):
-    return subprocess.check_output(["docker", *args], text=True).strip()
+def docker(*args, env=None):
+    return subprocess.check_output(["docker", *args], text=True, env=env).strip()
 
 
 
@@ -125,10 +126,14 @@ def read_continue(reader):
 
 
 def main():
+    global TOKEN
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", default="humanengine-go-preview:local")
     parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--browser-smoke", action="store_true", help="run real host Chromium against this package")
     args = parser.parse_args()
+    if args.browser_smoke:
+        TOKEN = "synthetic-package-" + uuid.uuid4().hex
     args.evidence.mkdir(parents=True, exist_ok=True)
     docker("info")
     prefix = "he-package-" + uuid.uuid4().hex[:12]
@@ -153,20 +158,20 @@ def main():
         name = prefix + "-" + label
         containers.append(name)
         command = ["run", "-d", "--name", name, "--platform", "linux/amd64",
-                   "-p", "127.0.0.1::3001", "-e", "HUMANENGINE_ADMIN_TOKEN=" + TOKEN,
+                   "-p", "127.0.0.1::3001", "-e", "HUMANENGINE_ADMIN_TOKEN",
                    "-v", data + ":/app/data", "-v", authority + ":/app/authority"]
         if plugin:
             fixture = Path(__file__).with_name("fixture.mjs").resolve()
             for plugin_id in ("package-fixture-a", "package-fixture-b"):
                 command += ["--mount", f"type=bind,source={fixture},target=/app/plugins/{plugin_id}.mjs,readonly"]
             command += ["-e", "HUMANENGINE_PLUGINS=package-fixture-a.mjs,package-fixture-b.mjs"]
-        docker(*command, args.image)
+        docker(*command, args.image, env={**os.environ, "HUMANENGINE_ADMIN_TOKEN": TOKEN})
         return name
 
     def ready(name):
         def check():
             if not running(name):
-                raise AssertionError("startup failed: " + logs(name))
+                raise AssertionError("preview startup failed" if args.browser_smoke else "startup failed: " + logs(name))
             return '"code":"server.listening"' in logs(name)
         wait_for(check, name + " ready")
         return int(docker("port", name, "3001/tcp").rsplit(":", 1)[1])
@@ -225,6 +230,12 @@ def main():
         assert request(port, "GET", "/api/settings")["debugModelIO"] is False
         wait_for(lambda: not node_pids(restarted), "disabled V1 startup inspection settled")
         report["checks"].append("restart-persistence")
+        if args.browser_smoke:
+            import browser_smoke
+            report["browser"] = {}
+            browser_smoke.run(port, TOKEN, report["browser"])
+            assert not node_pids(restarted), "browser caused a Node runtime inside the image"
+            report["checks"].append("hosted-chromium-real-ui")
         a, b = "package-fixture-a", "package-fixture-b"
 
         def echo(plugin_id):
@@ -259,7 +270,8 @@ def main():
             try:
                 content = logs(name)
                 assert TOKEN not in content, "token leaked to logs"
-                (args.evidence / (name + ".log")).write_text(content)
+                if not args.browser_smoke:
+                    (args.evidence / (name + ".log")).write_text(content)
             except Exception as error:
                 report["status"] = "failed"
                 report.setdefault("evidence_errors", []).append(type(error).__name__)

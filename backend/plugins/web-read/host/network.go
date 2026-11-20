@@ -20,12 +20,6 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
 )
 
-// ErrHTTP101Pending marks the isolated, unapproved protocol branch. This
-// candidate must NOT be registered as a production builtin until that branch is
-// resolved against the source and the user's pending decision. It is not a new
-// user-visible web-read status or an endorsed replacement for source behavior.
-var ErrHTTP101Pending = errors.New("web_read_http101_pending_decision")
-
 // Lookup and its results retain the WebRead API for native resolver ports.
 type DNSResult = pinnedhop.DNSResult
 type LookupJob = pinnedhop.LookupJob
@@ -246,7 +240,11 @@ func (n Network) open(ctx context.Context, h hop, address wireAddress) (Resource
 			return fail(networkIOError(ctx))
 		}
 		if response.StatusCode == 101 {
-			return fail(ErrHTTP101Pending)
+			// The pinned source has no upgrade listener: Node closes the
+			// socket immediately, but the request settles only on cancellation.
+			finish()
+			<-ctx.Done()
+			return Resource{}, networkIOError(ctx)
 		}
 		if response.StatusCode >= 100 && response.StatusCode < 200 {
 			reader = remaining

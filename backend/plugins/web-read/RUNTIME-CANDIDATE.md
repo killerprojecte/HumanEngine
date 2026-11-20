@@ -27,8 +27,11 @@ These checks do not establish full backend/frontend or source-free app parity.
 
 ## Remaining work
 
-- HTTP 101 behavior remains unresolved. Candidate sentinel behavior is not
-  compatible production behavior.
+- The tagged host now closes and joins an unsolicited HTTP 101 stream before
+  waiting for the existing request cancellation, matching pinned Node's lack
+  of an upgrade listener. It never publishes a 101 response or its payload.
+  Run `node --import tsx backend/plugins/web-read/check-101-source.mjs` from the
+  repository root for the loopback source oracle. This does not enable WebRead.
 - A direct libc DNS adapter is implemented, with Linux runtime validation of
   native completion, cleanup and source hostname-admission boundaries. It remains
   opt-in and is not registered by the default/production application; see [DNS-ADAPTER.md](DNS-ADAPTER.md).

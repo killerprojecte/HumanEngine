@@ -13,7 +13,7 @@ const rows = [
  {name:'no follow exposes 302',url:'http://fixture.invalid/',options:{followRedirects:false},responses:['HTTP/1.1 302 Found\r\nLocation: /next\r\nContent-Length: 0\r\nConnection: close\r\n\r\n']},
  {name:'redirect budget zero',url:'http://fixture.invalid/',options:{maxRedirects:0},responses:['HTTP/1.1 302 Found\r\nLocation: /next\r\nContent-Length: 0\r\nConnection: close\r\n\r\n']},
  {name:'error status chunked stays exact',url:'http://fixture.invalid/',options:{method:'DELETE'},responses:['HTTP/1.1 429 Rate Limited\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n3;x=y\r\nno!\r\n0\r\nX-Trailer: done\r\n\r\n']},
- {name:'103 then final response',url:'http://fixture.invalid/',options:{},responses:['HTTP/1.1 103 Early Hints\r\nLink: </a>\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok']},
+ {name:'103 and 100 then final response',url:'http://fixture.invalid/',options:{},responses:['HTTP/1.1 103 Early Hints\r\nLink: </a>\r\n\r\nHTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok']},
  {name:'unsafe mixed DNS rejected',url:'http://fixture.invalid/',options:{},addresses:[{address:'8.8.8.8',family:4},{address:'127.0.0.1',family:4}],responses:[]},
  {name:'private redirect rejected',url:'http://fixture.invalid/',options:{},responses:['HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n']},
  {name:'forbidden header rejected',url:'http://fixture.invalid/',options:{headers:{Host:'wrong'}},responses:[]},

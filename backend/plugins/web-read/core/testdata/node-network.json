@@ -2486,11 +2486,11 @@
     }
   },
   {
-    "name": "103 then final response",
+    "name": "103 and 100 then final response",
     "url": "http://fixture.invalid/",
     "options": {},
     "responses": [
-      "HTTP/1.1 103 Early Hints\r\nLink: </a>\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok"
+      "HTTP/1.1 103 Early Hints\r\nLink: </a>\r\n\r\nHTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok"
     ],
     "requests": [
       {

@@ -341,19 +341,26 @@ func proofSources(proofs []any) ([]any, error) {
 	return uniqueSources(out)
 }
 func (a *Authority) Sanitize(memory *Object) (*Object, error) {
+	record, _, err := a.SanitizeWithProofs(memory)
+	return record, err
+}
+
+// SanitizeWithProofs returns the exact current proof set already used to sanitize
+// the visible record. Both values remain subject to the caller's read scope.
+func (a *Authority) SanitizeWithProofs(memory *Object) (*Object, []any, error) {
 	if e := a.read.CheckScope(); e != nil {
-		return nil, e
+		return nil, nil, e
 	}
 	if get(get(memory, "scope"), "kind") == "sharedPublicKnowledge" {
 		record := memory.Clone()
 		record.Delete("observedAt")
 		_ = record.Set("sources", []any{})
 		_ = record.Set("supersedesId", jsjson.Undefined)
-		return record, nil
+		return record, nil, nil
 	}
 	proofs, e := a.currentProofs(memory)
 	if e != nil {
-		return nil, e
+		return nil, nil, e
 	}
 	var sources []any
 	if get(memory, "lineageStatus") == "verified" {
@@ -362,12 +369,12 @@ func (a *Authority) Sanitize(memory *Object) (*Object, error) {
 		sources = []any{}
 		original, err := fieldArray(memory, "sources")
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		for _, source := range original {
 			ok, err := a.DomainSourceCurrent(object(source))
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			if ok {
 				sources = append(sources, source)
@@ -375,11 +382,12 @@ func (a *Authority) Sanitize(memory *Object) (*Object, error) {
 		}
 	}
 	if e != nil {
-		return nil, e
+		return nil, nil, e
 	}
 	record := memory.Clone()
 	_ = record.Set("sources", sources)
-	return a.WithObservation(record, proofs)
+	record, e = a.WithObservation(record, proofs)
+	return record, proofs, e
 }
 
 type Context struct {

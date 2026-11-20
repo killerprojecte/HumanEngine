@@ -10,6 +10,7 @@ import (
 )
 
 type AdminRead struct {
+	memory  *Service
 	publish func(context.Context, func(*assertions.Reader) ([]byte, error), func([]byte) error) error
 }
 
@@ -18,7 +19,7 @@ func (s *Service) BindAdminRead(publisher *recovery.ReadPublisher) (*AdminRead, 
 	if err != nil {
 		return nil, err
 	}
-	return &AdminRead{publish: publish}, nil
+	return &AdminRead{memory: s, publish: publish}, nil
 }
 
 // adminRecords preserves storage order and the source's eager map: all rows

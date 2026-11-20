@@ -120,6 +120,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	sceneRead := operation != "" && s.runtimeStatus != nil
 	learningAdmin := s.learningAdmin != nil && learningAdminPath(path)
 	budgetRead := s.budgetAdmin != nil && budgetAdminRead(r.Method, path)
+	memoryPeople := s.memoryAdminRead != nil && peopleReadPath(r.Method, path)
 	simulation := s.runtimeStatus != nil && simulationsPath(path)
 	var mediaRequest sceneMediaRequest
 	var sceneMedia bool
@@ -127,7 +128,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
 	}
 	id := r.Header.Get("X-Request-ID")
-	if simulation || learningAdmin || budgetRead || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if simulation || learningAdmin || budgetRead || memoryPeople || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -152,12 +153,12 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if s.memoryDelete != nil && memoryDeletePath(path) {
+	if memoryPeople || (s.memoryDelete != nil && memoryDeletePath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if s.memoryDelete != nil && memoryDeletePath(path) {
+		if memoryPeople || (s.memoryDelete != nil && memoryDeletePath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -281,6 +282,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			s.serveMemoryWrite(w, r, available, id, memoryID)
 			return
 		}
+	}
+	if memoryPeople {
+		s.serveMemoryPeople(w, r, available, id, path == memoryPeoplePath+"/profile")
+		return
 	}
 	if s.memoryAdminRead != nil && (path == memoryDeletePrefix || path == memoryDeletePrefix+"/page") && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
 		s.serveMemoryAdminRead(w, r, available, id, path != memoryDeletePrefix)

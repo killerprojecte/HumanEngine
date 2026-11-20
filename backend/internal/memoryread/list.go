@@ -27,6 +27,16 @@ func New(reader *assertions.Reader, options assertionauthority.Options) (*Servic
 	return &Service{reader, options}, nil
 }
 func (s *Service) List(input Input) ([]*assertions.Object, error) {
+	return s.list(input, nil)
+}
+
+// ListWithProofs hands off already-current evidence along the exact same
+// authorization path without a second read of mutable evidence.
+func (s *Service) ListWithProofs(input Input, visit func(*assertions.Object, []any)) ([]*assertions.Object, error) {
+	return s.list(input, visit)
+}
+
+func (s *Service) list(input Input, visit func(*assertions.Object, []any)) ([]*assertions.Object, error) {
 	rows, e := s.reader.MemoryListCandidates(input)
 	if e != nil {
 		return nil, e
@@ -60,9 +70,12 @@ func (s *Service) List(input Input) ([]*assertions.Object, error) {
 		}
 		// Source filter completes before any sanitize call, preserving error order.
 		for _, record := range eligible {
-			v, e := a.Sanitize(record)
+			v, proofs, e := a.SanitizeWithProofs(record)
 			if e != nil {
 				return e
+			}
+			if visit != nil {
+				visit(v, proofs)
 			}
 			out = append(out, v)
 		}

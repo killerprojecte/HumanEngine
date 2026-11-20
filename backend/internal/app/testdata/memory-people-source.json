@@ -1,0 +1,499 @@
+{
+  "node": "v24.22.1",
+  "scenes": [
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "local",
+      "kind": "group",
+      "platformSceneId": "local"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "foreign",
+      "kind": "private",
+      "platformSceneId": "foreign"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "simulation",
+      "kind": "simulation",
+      "platformSceneId": "simulation"
+    }
+  ],
+  "names": {
+    "identity:local:subject": {
+      "senderDisplayName": " ‪Same nickname‬\n ",
+      "senderPlatformId": "PRIVATE_PLATFORM"
+    },
+    "identity:local:Subject": {
+      "senderDisplayName": "Same nickname"
+    },
+    "identity:local:speaker": {
+      "senderDisplayName": "Reporting speaker"
+    },
+    "identity:foreign:subject": {
+      "senderDisplayName": "FOREIGN_NAME"
+    },
+    "identity:local:missing": {
+      "senderDisplayName": "UNBACKED_NAME"
+    }
+  },
+  "proposal": {
+    "context": {
+      "sceneId": "local",
+      "simulation": false,
+      "provenance": "source-only",
+      "botUserId": "bot",
+      "sourceEvidence": [
+        {
+          "sceneId": "local",
+          "messageId": "source",
+          "senderId": "speaker",
+          "available": true,
+          "isBot": false,
+          "mentions": [
+            {
+              "partIndex": 2,
+              "userId": "subject"
+            }
+          ],
+          "sentAt": "2024-10-01T12:00:00Z",
+          "receivedAt": "2024-10-01T12:00:02Z"
+        }
+      ]
+    },
+    "candidate": {
+      "content": "Mentioned preference",
+      "kind": "fact",
+      "epistemicKind": "explicit",
+      "subject": {
+        "kind": "mentioned",
+        "personId": "subject",
+        "sourceMessageId": "source",
+        "mentionPartIndex": 2
+      },
+      "sources": [
+        {
+          "sceneId": "local",
+          "messageId": "source",
+          "senderId": "speaker"
+        }
+      ],
+      "occurredAt": "2024-09-01T10:00:00Z",
+      "validFrom": "2024-09-01T10:00:00Z"
+    }
+  },
+  "seeds": [
+    {
+      "scope": {
+        "kind": "scene",
+        "sceneId": "local",
+        "personId": "subject"
+      },
+      "kind": "claim",
+      "content": "Manual statement"
+    },
+    {
+      "scope": {
+        "kind": "scene",
+        "sceneId": "local",
+        "personId": "Subject"
+      },
+      "kind": "claim",
+      "content": "Distinct same nickname"
+    },
+    {
+      "scope": {
+        "kind": "scene",
+        "sceneId": "foreign",
+        "personId": "subject"
+      },
+      "kind": "fact",
+      "content": "FOREIGN_RECORD"
+    },
+    {
+      "scope": {
+        "kind": "scene",
+        "sceneId": "local"
+      },
+      "kind": "fact",
+      "content": "UNRESOLVED_RECORD"
+    },
+    {
+      "scope": {
+        "kind": "sharedPublicKnowledge"
+      },
+      "kind": "fact",
+      "content": "PUBLIC_RECORD"
+    },
+    {
+      "scope": {
+        "kind": "scene",
+        "sceneId": "local",
+        "personId": "expired"
+      },
+      "kind": "fact",
+      "content": "EXPIRED_RECORD",
+      "validUntil": "2025-01-01T00:00:00Z"
+    }
+  ],
+  "times": [
+    "2025-02-01T00:00:00.000Z",
+    "2025-02-02T00:00:00.000Z",
+    "2025-02-03T00:00:00.000Z",
+    "2025-02-04T00:00:00.000Z",
+    "2025-02-05T00:00:00.000Z",
+    "2025-02-06T00:00:00.000Z",
+    "2025-02-07T00:00:00.000Z"
+  ],
+  "source": {
+    "sceneId": "local",
+    "messageId": "source",
+    "senderId": "speaker"
+  },
+  "cases": [
+    {
+      "name": "unauthorized",
+      "path": "/api/memory-people?sceneId=local",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "privateHeaders": false
+    },
+    {
+      "name": "directory",
+      "path": "/api/memory-people?sceneId=local",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "people": [
+          {
+            "personId": "subject",
+            "recordCount": 2,
+            "displayName": "Same nickname"
+          },
+          {
+            "personId": "Subject",
+            "recordCount": 1,
+            "displayName": "Same nickname"
+          }
+        ]
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "profile-with-witness",
+      "path": "/api/memory-people/profile?sceneId=local&personId=subject",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "personId": "subject",
+        "displayName": "Same nickname",
+        "records": [
+          {
+            "id": "@1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "subject"
+            },
+            "kind": "claim",
+            "content": "Manual statement",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "2025-02-02T00:00:00.000Z",
+            "subjectEvidence": {
+              "coverage": "complete",
+              "witnesses": []
+            },
+            "status": "active",
+            "origin": "manual",
+            "locked": false
+          },
+          {
+            "id": "@0",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "subject"
+            },
+            "kind": "claim",
+            "content": "Mentioned preference",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "source",
+                "senderId": "speaker"
+              }
+            ],
+            "importance": "medium",
+            "confidence": 0.5,
+            "learnedAt": "2025-02-01T00:00:00.000Z",
+            "observedAt": "2024-10-01T12:00:02Z",
+            "subjectEvidence": {
+              "observedAt": "2024-10-01T12:00:02Z",
+              "coverage": "complete",
+              "witnesses": [
+                {
+                  "kind": "mentioned",
+                  "personId": "subject",
+                  "subjectDisplayName": "Same nickname",
+                  "sourceMessageId": "source",
+                  "mentionPartIndex": 2,
+                  "sources": [
+                    {
+                      "sceneId": "local",
+                      "messageId": "source",
+                      "senderId": "speaker",
+                      "senderDisplayName": "Reporting speaker"
+                    }
+                  ],
+                  "observations": [
+                    {
+                      "sceneId": "local",
+                      "messageId": "source",
+                      "senderId": "speaker",
+                      "sentAt": "2024-10-01T12:00:00Z",
+                      "receivedAt": "2024-10-01T12:00:02Z"
+                    }
+                  ]
+                }
+              ]
+            },
+            "validFrom": "2024-09-01T10:00:00Z",
+            "epistemicKind": "reported",
+            "occurredAt": "2024-09-01T10:00:00Z",
+            "status": "active",
+            "origin": "learned",
+            "locked": false,
+            "lineageStatus": "verified"
+          }
+        ],
+        "subjectEvidenceCoverage": "complete",
+        "timeline": [
+          {
+            "memoryId": "@0",
+            "recordedAt": "2025-02-01T00:00:00.000Z",
+            "observedAt": "2024-10-01T12:00:02Z",
+            "validFrom": "2024-09-01T10:00:00Z",
+            "occurredAt": "2024-09-01T10:00:00Z",
+            "status": "active",
+            "origin": "learned",
+            "sourceCount": 1
+          },
+          {
+            "memoryId": "@1",
+            "recordedAt": "2025-02-02T00:00:00.000Z",
+            "status": "active",
+            "origin": "manual",
+            "sourceCount": 0
+          }
+        ]
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "other-same-nickname",
+      "path": "/api/memory-people/profile?sceneId=local&personId=Subject",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "personId": "Subject",
+        "displayName": "Same nickname",
+        "records": [
+          {
+            "id": "@2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "Subject"
+            },
+            "kind": "claim",
+            "content": "Distinct same nickname",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "2025-02-03T00:00:00.000Z",
+            "subjectEvidence": {
+              "coverage": "complete",
+              "witnesses": []
+            },
+            "status": "active",
+            "origin": "manual",
+            "locked": false
+          }
+        ],
+        "subjectEvidenceCoverage": "complete",
+        "timeline": [
+          {
+            "memoryId": "@2",
+            "recordedAt": "2025-02-03T00:00:00.000Z",
+            "status": "active",
+            "origin": "manual",
+            "sourceCount": 0
+          }
+        ]
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "absent-person",
+      "path": "/api/memory-people/profile?sceneId=local&personId=missing",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "personId": "missing",
+        "records": [],
+        "subjectEvidenceCoverage": "complete",
+        "timeline": []
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "private-scene",
+      "path": "/api/memory-people?sceneId=foreign",
+      "status": 200,
+      "body": {
+        "sceneId": "foreign",
+        "people": [
+          {
+            "personId": "subject",
+            "recordCount": 1,
+            "displayName": "FOREIGN_NAME"
+          }
+        ]
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "absent-scene",
+      "path": "/api/memory-people?sceneId=missing",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "simulation",
+      "path": "/api/memory-people/profile?sceneId=simulation&personId=subject",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "required-key",
+      "path": "/api/memory-people/profile?sceneId=local",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "strict",
+      "path": "/api/memory-people?sceneId=local&unknown=x",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "duplicate",
+      "path": "/api/memory-people?sceneId=local&sceneId=foreign",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "head",
+      "path": "/api/memory-people?sceneId=local",
+      "method": "HEAD",
+      "status": 200,
+      "body": null,
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall",
+      "path": "/api/memory-people/profile?sceneId=local&personId=subject",
+      "recall": true,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "personId": "subject",
+        "displayName": "Same nickname",
+        "records": [
+          {
+            "id": "@1",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "subject"
+            },
+            "kind": "claim",
+            "content": "Manual statement",
+            "sources": [],
+            "importance": "medium",
+            "confidence": 1,
+            "learnedAt": "2025-02-02T00:00:00.000Z",
+            "subjectEvidence": {
+              "coverage": "complete",
+              "witnesses": []
+            },
+            "status": "active",
+            "origin": "manual",
+            "locked": false
+          }
+        ],
+        "subjectEvidenceCoverage": "complete",
+        "timeline": [
+          {
+            "memoryId": "@1",
+            "recordedAt": "2025-02-02T00:00:00.000Z",
+            "status": "active",
+            "origin": "manual",
+            "sourceCount": 0
+          }
+        ]
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "after-delete",
+      "path": "/api/memory-people/profile?sceneId=local&personId=subject",
+      "delete": true,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "personId": "subject",
+        "records": [],
+        "subjectEvidenceCoverage": "complete",
+        "timeline": []
+      },
+      "privateHeaders": true
+    }
+  ]
+}

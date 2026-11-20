@@ -29,9 +29,8 @@ func episodesQuery(query url.Values) *memoryservice.EpisodesQuery {
 		if len(values) != 1 {
 			return nil
 		}
-		id := values[0]
-		n, err := jsjson.CodePointCount(id)
-		if err != nil || n < 1 || n > 512 {
+		id := workspaceID(values[0])
+		if id == "" {
 			return nil
 		}
 		switch key {
@@ -47,6 +46,14 @@ func episodesQuery(query url.Values) *memoryservice.EpisodesQuery {
 		return nil
 	}
 	return out
+}
+
+func workspaceID(value any) string {
+	id, _ := value.(string)
+	if n, err := jsjson.CodePointCount(id); err == nil && n >= 1 && n <= 512 {
+		return id
+	}
+	return ""
 }
 
 func (s *Server) serveMemoryEpisodes(w http.ResponseWriter, r *http.Request, available bool, requestID string) {

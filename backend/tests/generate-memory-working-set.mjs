@@ -60,12 +60,13 @@ try {
   let learnedId, learnedAt
   function flag(settings) { store.set('settings',{...store.settings,...settings}) }
   const headersKeys = ['content-type','cache-control','x-content-type-options']
-  async function capture(name, query = '?sceneId=scene', {method='GET',auth=true} = {}) {
+  async function capture(name, query = '?sceneId=scene', {method='GET',auth=true,path='',contentType,requestBody} = {}) {
     const headers = { 'X-Request-ID':'12345678-1234-4123-8123-123456789012' }
     if (auth) headers.Authorization = 'Bearer synthetic-token'
-    const response = await app.request('/api/memory-working-set'+query,{method,headers})
+    if (contentType !== undefined) headers['Content-Type'] = contentType
+    const response = await app.request('/api/memory-working-set'+path+query,{method,headers,body:requestBody})
     const raw = await response.text()
-    const body = raw ? JSON.parse(raw) : null
+    const body = raw ? response.headers.get('content-type')?.startsWith('application/json') ? JSON.parse(raw) : raw : null
     if (body?.requestId) body.requestId = '<request-id>'
     for (const p of body?.policies?.items ?? []) {
       assert.match(p.selection.dependencyKey,/^[a-f0-9]{64}$/)
@@ -86,10 +87,12 @@ try {
     }
     const exists = name => Boolean(store.db.prepare('SELECT 1 FROM sqlite_master WHERE name=?').get(name))
     const rows = name => exists(name) ? store.db.prepare('SELECT count(*) n FROM '+name).get().n : 0
-    cases.push({name,query,method,auth,status:response.status,body,headers:Object.fromEntries(headersKeys.map(k=>[k,response.headers.get(k)??''])),
+    cases.push({name,query,method,auth,...(path ? {path,contentType,requestBody} : {}),status:response.status,body,headers:Object.fromEntries(headersKeys.map(k=>[k,response.headers.get(k)??''])),
       workspace:{ items:rows('memory_working_set_items'), jobs:rows('memory_working_set_jobs'),
         legacy:store.db.prepare("SELECT version FROM memory_assertion_state WHERE assertion_id='a-A'").get()?.version??0 }})
   }
+  const rebuild = (name,requestBody,options={}) => capture('rebuild-'+name, options.query ?? '',
+    {method:'POST',path:'/rebuild',contentType:'application/json',requestBody,...options})
   await capture('unauthorized','?sceneId=scene',{auth:false})
   await capture('missing-query','')
   await capture('empty-person','?sceneId=scene&personId=')
@@ -102,6 +105,31 @@ try {
   await capture('missing-scene','?sceneId=missing')
   await capture('simulation','?sceneId=simulation')
   await capture('disabled')
+  await rebuild('unauthorized','not json',{auth:false})
+  await rebuild('head',undefined,{method:'HEAD',contentType:undefined})
+  await rebuild('head-unauthorized',undefined,{method:'HEAD',auth:false,contentType:undefined})
+  await rebuild('get',undefined,{method:'GET',contentType:undefined})
+  await rebuild('missing-scene','{"sceneId":"missing"}')
+  await rebuild('bom','﻿{"sceneId":"scene"}')
+  await rebuild('duplicate-scene','{"sceneId":"missing","sceneId":"scene"}')
+  await rebuild('proto','{"sceneId":"scene","__proto__":{}}')
+  await rebuild('no-type',undefined,{contentType:undefined})
+  await rebuild('json-no-type','{"sceneId":"scene"}',{contentType:undefined})
+  await rebuild('wrong-type','{"sceneId":"scene"}',{contentType:'text/plain'})
+  await rebuild('wrong-type-empty',undefined,{contentType:'text/plain'})
+  await rebuild('json-empty')
+  await rebuild('malformed','{')
+  await rebuild('zod-empty','{}')
+  await rebuild('zod-array','[]')
+  await rebuild('zod-null','null')
+  await rebuild('strict','{"sceneId":"scene","includeCold":true}')
+  await rebuild('null-person','{"sceneId":"scene","personId":null}')
+  await rebuild('numeric-person','{"sceneId":"scene","personId":4}')
+  await rebuild('astral-max',JSON.stringify({sceneId:'💡'.repeat(512)}))
+  await rebuild('astral-over',JSON.stringify({sceneId:'💡'.repeat(513)}))
+  await rebuild('simulation','{"sceneId":"simulation"}')
+  await rebuild('vendor-json','{"sceneId":"scene"}',{contentType:'application/vnd.test+json; charset=utf-8'})
+  await rebuild('disabled','{"sceneId":"scene"}')
   await capture('disabled-head','?sceneId=scene',{method:'HEAD'})
   flag({memoryWorkingSetEnabled:true,memoryCommitmentsEnabled:true,memoryCommitmentsAnswerEnabled:false})
   const learned = engine.memory.propose(sourceProposal.context,sourceProposal.candidate)
@@ -112,6 +140,7 @@ try {
   assert.equal(plan.commitment.status,'saved')
   await capture('enabled-person','?sceneId=scene&personId=a')
   await capture('include-cold','?sceneId=scene&personId=a&includeCold=true')
+  await rebuild('enabled','{"sceneId":"scene","personId":"a"}',{query:'?bogus=true'})
   const selected = await (await app.request('/api/memory-working-set?sceneId=scene&personId=a&includeCold=true',{headers:{Authorization:'Bearer synthetic-token'}})).json()
   const {ref,dependencyKey} = selected.items.find(i=>i.record?.id==='a-A').accessibility
   const response = await app.request('/api/memory-working-set/pin',{method:'POST',headers:{Authorization:'Bearer synthetic-token','Content-Type':'application/json'},body:JSON.stringify({sceneId:'scene',selection:{ref,dependencyKey},pinned:true,expectedRevision:0})})
@@ -161,6 +190,9 @@ try {
   assert.equal(pick('disabled-with-pin').body.enabled,false)
   assert.ok(!('omittedEntries' in pick('disabled-with-pin').body))
   assert.ok(pick('commitments-answer-on').body.items.some(i=>i.kind==='commitment'))
+  assert.ok(pick('rebuild-enabled').body.items.some(i=>i.accessibility.state==='cold'))
+  assert.deepEqual(pick('rebuild-enabled').body,pick('include-cold').body)
+  assert.equal(pick('rebuild-enabled').workspace.jobs,0)
   const versions = pick('commitment-variants').body.items.filter(i=>i.view?.terms?.title==='Synthetic versioned plan')
   assert.equal(versions.length,2)
   assert.deepEqual(versions[0].accessibility.ref,versions[1].accessibility.ref)

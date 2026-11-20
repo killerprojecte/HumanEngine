@@ -1095,6 +1095,597 @@
       }
     },
     {
+      "name": "rebuild-unauthorized",
+      "query": "",
+      "method": "POST",
+      "auth": false,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "not json",
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-head",
+      "query": "",
+      "method": "HEAD",
+      "auth": true,
+      "path": "/rebuild",
+      "status": 404,
+      "body": null,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-head-unauthorized",
+      "query": "",
+      "method": "HEAD",
+      "auth": false,
+      "path": "/rebuild",
+      "status": 401,
+      "body": null,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-get",
+      "query": "",
+      "method": "GET",
+      "auth": true,
+      "path": "/rebuild",
+      "status": 404,
+      "body": "404 Not Found",
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-missing-scene",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"missing\"}",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-bom",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "﻿{\"sceneId\":\"scene\"}",
+      "status": 200,
+      "body": {
+        "policies": {
+          "items": [],
+          "coverage": "complete"
+        },
+        "enabled": false,
+        "coverage": "disabled",
+        "omittedCold": 0,
+        "items": []
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-duplicate-scene",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"missing\",\"sceneId\":\"scene\"}",
+      "status": 200,
+      "body": {
+        "policies": {
+          "items": [],
+          "coverage": "complete"
+        },
+        "enabled": false,
+        "coverage": "disabled",
+        "omittedCold": 0,
+        "items": []
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-proto",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"scene\",\"__proto__\":{}}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-no-type",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-json-no-type",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "requestBody": "{\"sceneId\":\"scene\"}",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-wrong-type",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "text/plain",
+      "requestBody": "{\"sceneId\":\"scene\"}",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-wrong-type-empty",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "text/plain",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-json-empty",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-malformed",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-zod-empty",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-zod-array",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "[]",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-zod-null",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "null",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-strict",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"scene\",\"includeCold\":true}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-null-person",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"scene\",\"personId\":null}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-numeric-person",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"scene\",\"personId\":4}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-astral-max",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡\"}",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-astral-over",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡\"}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-simulation",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"simulation\"}",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-vendor-json",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/vnd.test+json; charset=utf-8",
+      "requestBody": "{\"sceneId\":\"scene\"}",
+      "status": 200,
+      "body": {
+        "policies": {
+          "items": [],
+          "coverage": "complete"
+        },
+        "enabled": false,
+        "coverage": "disabled",
+        "omittedCold": 0,
+        "items": []
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
+      "name": "rebuild-disabled",
+      "query": "",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"scene\"}",
+      "status": 200,
+      "body": {
+        "policies": {
+          "items": [],
+          "coverage": "complete"
+        },
+        "enabled": false,
+        "coverage": "disabled",
+        "omittedCold": 0,
+        "items": []
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 0,
+        "jobs": 0,
+        "legacy": 0
+      }
+    },
+    {
       "name": "disabled-head",
       "query": "?sceneId=scene",
       "method": "HEAD",
@@ -1216,6 +1807,234 @@
       "query": "?sceneId=scene&personId=a&includeCold=true",
       "method": "GET",
       "auth": true,
+      "status": 200,
+      "body": {
+        "policies": {
+          "items": [],
+          "coverage": "complete"
+        },
+        "enabled": true,
+        "coverage": "complete",
+        "omittedCold": 0,
+        "omittedEntries": 0,
+        "items": [
+          {
+            "kind": "assertion",
+            "record": {
+              "id": "unknown",
+              "content": "Synthetic unknown",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "unknown",
+              "sources": []
+            },
+            "accessibility": {
+              "ref": {
+                "kind": "assertion",
+                "id": "unknown",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "<dependency>",
+              "state": "unknown",
+              "reviewDue": false,
+              "pinned": false,
+              "pinIntent": false,
+              "pinRevision": 0,
+              "pinStatus": "none",
+              "policyCoverage": "complete",
+              "metadataRevision": 1,
+              "contextSelectedCount": 0,
+              "lastSelectedAt": null,
+              "protection": null
+            }
+          },
+          {
+            "kind": "assertion",
+            "record": {
+              "id": "@learned",
+              "content": "Synthetic reported event",
+              "kind": "experience",
+              "epistemicKind": "explicit",
+              "status": "active",
+              "learnedAt": "<learned>",
+              "occurredAt": "2024-09-01T00:00:00Z",
+              "sources": [
+                {
+                  "sceneId": "scene",
+                  "messageId": "episode-source",
+                  "senderId": "a"
+                }
+              ]
+            },
+            "accessibility": {
+              "ref": {
+                "kind": "assertion",
+                "id": "@learned",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "<dependency>",
+              "state": "hot",
+              "reviewDue": false,
+              "pinned": false,
+              "pinIntent": false,
+              "pinRevision": 0,
+              "pinStatus": "none",
+              "policyCoverage": "complete",
+              "metadataRevision": 1,
+              "contextSelectedCount": 0,
+              "lastSelectedAt": null,
+              "protection": null
+            }
+          },
+          {
+            "kind": "assertion",
+            "record": {
+              "id": "a_a",
+              "content": "Synthetic a_a",
+              "kind": "experience",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "accessibility": {
+              "ref": {
+                "kind": "assertion",
+                "id": "a_a",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "<dependency>",
+              "state": "cold",
+              "reviewDue": false,
+              "pinned": false,
+              "pinIntent": false,
+              "pinRevision": 0,
+              "pinStatus": "none",
+              "policyCoverage": "complete",
+              "metadataRevision": 1,
+              "contextSelectedCount": 0,
+              "lastSelectedAt": null,
+              "protection": null
+            }
+          },
+          {
+            "kind": "assertion",
+            "record": {
+              "id": "a-A",
+              "content": "Synthetic a-A",
+              "kind": "experience",
+              "epistemicKind": "reported",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "occurredAt": "2024-12-31T00:00:00Z",
+              "sources": []
+            },
+            "accessibility": {
+              "ref": {
+                "kind": "assertion",
+                "id": "a-A",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "<dependency>",
+              "state": "cold",
+              "reviewDue": false,
+              "pinned": false,
+              "pinIntent": false,
+              "pinRevision": 0,
+              "pinStatus": "none",
+              "policyCoverage": "complete",
+              "metadataRevision": 1,
+              "contextSelectedCount": 0,
+              "lastSelectedAt": null,
+              "protection": null
+            }
+          },
+          {
+            "kind": "assertion",
+            "record": {
+              "id": "aa",
+              "content": "Synthetic aa",
+              "kind": "experience",
+              "status": "disputed",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "accessibility": {
+              "ref": {
+                "kind": "assertion",
+                "id": "aa",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "<dependency>",
+              "state": "cold",
+              "reviewDue": false,
+              "pinned": false,
+              "pinIntent": false,
+              "pinRevision": 0,
+              "pinStatus": "none",
+              "policyCoverage": "complete",
+              "metadataRevision": 1,
+              "contextSelectedCount": 0,
+              "lastSelectedAt": null,
+              "protection": null
+            }
+          },
+          {
+            "kind": "assertion",
+            "record": {
+              "id": "claim",
+              "content": "Synthetic claim",
+              "kind": "claim",
+              "status": "active",
+              "learnedAt": "2025-01-01T00:00:00.000Z",
+              "sources": []
+            },
+            "accessibility": {
+              "ref": {
+                "kind": "assertion",
+                "id": "claim",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "<dependency>",
+              "state": "cold",
+              "reviewDue": false,
+              "pinned": false,
+              "pinIntent": false,
+              "pinRevision": 0,
+              "pinStatus": "none",
+              "policyCoverage": "complete",
+              "metadataRevision": 1,
+              "contextSelectedCount": 0,
+              "lastSelectedAt": null,
+              "protection": null
+            }
+          }
+        ]
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "workspace": {
+        "items": 7,
+        "jobs": 0,
+        "legacy": 1
+      }
+    },
+    {
+      "name": "rebuild-enabled",
+      "query": "?bogus=true",
+      "method": "POST",
+      "auth": true,
+      "path": "/rebuild",
+      "contentType": "application/json",
+      "requestBody": "{\"sceneId\":\"scene\",\"personId\":\"a\"}",
       "status": 200,
       "body": {
         "policies": {

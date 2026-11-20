@@ -133,7 +133,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	memoryHistory := s.memoryAdminRead != nil && historyReadPath(r.Method, path)
 	assertionHistory := s.memoryAdminRead != nil && assertionHistoryReadPath(r.Method, path)
 	workspaceEpisodes := s.episodesRead != nil && path == memoryEpisodesPath && (r.Method == http.MethodGet || r.Method == http.MethodHead)
-	workspaceWorkingSet := s.workingSetRead != nil && path == memoryWorkingSetPath && (r.Method == http.MethodGet || r.Method == http.MethodHead)
+	workspaceWorkingSet := s.workingSetRead != nil && (path == memoryWorkingSetRebuildPath || path == memoryWorkingSetPath && (r.Method == http.MethodGet || r.Method == http.MethodHead))
 	commitmentID, commitmentRead := memoryCommitmentRoute(r.Method, path)
 	commitmentRead = commitmentRead && s.commitmentRead != nil
 	simulation := s.runtimeStatus != nil && simulationsPath(path)
@@ -307,7 +307,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		return
 	}
 	if workspaceWorkingSet {
-		s.serveMemoryWorkingSet(w, r, available, id)
+		s.serveMemoryWorkingSet(w, r, available, id, path == memoryWorkingSetRebuildPath)
 		return
 	}
 	if commitmentRead {

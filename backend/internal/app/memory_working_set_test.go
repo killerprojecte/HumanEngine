@@ -22,19 +22,19 @@ func TestMemoryWorkingSetActualSource(t *testing.T) {
 		Scenes, Seeds, Packed                                                     []json.RawMessage
 		SourceProposal, Commitment, VariantProposal, VariantConfirm, VariantAmend proposal
 		Cases                                                                     []struct {
-			Name, Query, Method string
-			Auth                bool
-			Status              int
-			Body                map[string]any
-			Headers             map[string]string
-			Workspace           struct{ Items, Jobs, Legacy int }
+			Name, Query, Method, Path, ContentType, RequestBody string
+			Auth                                                bool
+			Status                                              int
+			Body                                                any
+			Headers                                             map[string]string
+			Workspace                                           struct{ Items, Jobs, Legacy int }
 		}
 	}
 	raw, err := os.ReadFile("testdata/memory-working-set-source.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := json.Unmarshal(raw, &fixture); err != nil || len(fixture.Cases) != 26 || fixture.Node != "v24.22.1" {
+	if err := json.Unmarshal(raw, &fixture); err != nil || len(fixture.Cases) != 52 || fixture.Node != "v24.22.1" {
 		t.Fatalf("invalid source oracle: %d %v", len(fixture.Cases), err)
 	}
 	app, db := memoryDeleteApplication(t, "synthetic-token")
@@ -147,9 +147,12 @@ func TestMemoryWorkingSetActualSource(t *testing.T) {
 			case "bounded-prefix":
 				add(fixture.Packed)
 			}
-			req := httptest.NewRequest(c.Method, "/api/memory-working-set"+c.Query, nil).WithContext(ctx)
+			req := httptest.NewRequest(c.Method, "/api/memory-working-set"+c.Path+c.Query, strings.NewReader(c.RequestBody)).WithContext(ctx)
 			const given = "12345678-1234-4123-8123-123456789012"
 			req.Header.Set("X-Request-ID", given)
+			if c.ContentType != "" {
+				req.Header.Set("Content-Type", c.ContentType)
+			}
 			sourceFixtureAuth(req, c.Auth)
 			out := httptest.NewRecorder()
 			app.ServeHTTP(out, req)
@@ -165,8 +168,9 @@ func TestMemoryWorkingSetActualSource(t *testing.T) {
 			if len(requestID) != 36 || requestID == given {
 				t.Fatalf("invalid request ID %q", requestID)
 			}
-			var body map[string]any
-			if out.Body.Len() != 0 {
+			var actual any
+			if out.Body.Len() != 0 && out.Header().Get("Content-Type") == "application/json" {
+				var body map[string]any
 				if err := json.Unmarshal(out.Body.Bytes(), &body); err != nil {
 					t.Fatal(err)
 				}
@@ -207,9 +211,12 @@ func TestMemoryWorkingSetActualSource(t *testing.T) {
 						plan["recordedAt"] = "<recorded>"
 					}
 				}
+				actual = body
+			} else if out.Body.Len() != 0 {
+				actual = out.Body.String()
 			}
-			if !reflect.DeepEqual(body, c.Body) {
-				got, _ := json.Marshal(body)
+			if !reflect.DeepEqual(actual, c.Body) {
+				got, _ := json.Marshal(actual)
 				want, _ := json.Marshal(c.Body)
 				t.Fatalf("body %s; want %s", got, want)
 			}

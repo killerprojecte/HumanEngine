@@ -12,25 +12,37 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
-func sceneStateRoute(r *http.Request, path string) (string, bool) {
+func sceneReadRoute(r *http.Request, path string) (string, string) {
 	if r.Method != "GET" && r.Method != "HEAD" {
-		return "", false
+		return "", ""
 	}
 	tail, ok := strings.CutPrefix(path, "/api/scenes/")
 	if !ok {
-		return "", false
+		return "", ""
 	}
-	segment, ok := strings.CutSuffix(tail, "/state")
-	if !ok || segment == "" || strings.Contains(segment, "/") {
-		return "", false
+	segment, operation, ok := strings.Cut(tail, "/")
+	if !ok || segment == "" {
+		return "", ""
 	}
-	return habitTryDecode(segment, false), true
+	switch operation {
+	case "state":
+	case "history":
+		sources, explicit := honoQueryValues(r.URL.RawQuery)["source"]
+		if !explicit || sources[0] == "remote" {
+			operation = "history-remote"
+		} else if sources[0] != "local" {
+			operation = "history-invalid"
+		}
+	default:
+		return "", ""
+	}
+	return habitTryDecode(segment, false), operation
 }
 
-func (s *Server) serveSceneState(w http.ResponseWriter, r *http.Request, available bool, id, sceneID string) {
+func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, available bool, id, sceneID, operation string) {
 	response := newPublicationResponse(w.Header(), r.Method == "HEAD")
 	fail := func() {
-		_ = s.logs.Emit(observability.Event{Level: "error", Module: "http", Code: "scene_state.failed", Message: "Scene state read failed", RequestID: id})
+		_ = s.logs.Emit(observability.Event{Level: "error", Module: "http", Code: "scene_" + operation + ".failed", Message: "Scene read failed", RequestID: id})
 		if !response.accepted && r.Context().Err() == nil {
 			if r.Method == "HEAD" {
 				w.WriteHeader(503)
@@ -51,27 +63,45 @@ func (s *Server) serveSceneState(w http.ResponseWriter, r *http.Request, availab
 		return
 	}
 	var exists bool
+	var kind string
 	var observed recovery.Gate
 	err = owner.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
 		var err error
 		if observed, err = recovery.ReadGate(ctx, q); err != nil {
 			return nil, err
 		}
-		return nil, q.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM scenes WHERE id=?)", sqlID).Scan(&exists)
+		switch operation {
+		case "state":
+			return nil, q.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM scenes WHERE id=?)", sqlID).Scan(&exists)
+		case "history":
+			return nil, q.QueryRowContext(ctx, "SELECT COALESCE((SELECT json_extract(value,'$.kind') FROM scenes WHERE id=?),'')", sqlID).Scan(&kind)
+		}
+		return nil, nil
 	}, func([]byte) error { return nil })
 	if err != nil {
 		fail()
 		return
 	}
 	body := []byte(`{"error":"Scene unavailable"}`)
-	if exists {
-		body, err = json.Marshal(owner.runtime.SceneState(sceneID))
-		if err != nil {
-			fail()
-			return
-		}
-	} else {
+	switch operation {
+	case "history":
+		body, err = localHistoryBody(owner.runtime, sceneID, kind)
+	case "history-remote":
+		response.status = 503
+		body = []byte(`{"error":"This API has not yet migrated to the Go preview"}`)
+	case "history-invalid":
 		response.status = 400
+		body = []byte(`{"error":"Invalid request"}`)
+	default:
+		if exists {
+			body, err = json.Marshal(owner.runtime.SceneState(sceneID))
+		} else {
+			response.status = 400
+		}
+	}
+	if err != nil {
+		fail()
+		return
 	}
 	err = owner.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
 		current, err := recovery.ReadGate(ctx, q)

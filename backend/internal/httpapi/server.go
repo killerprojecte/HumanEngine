@@ -102,8 +102,8 @@ func (s *Server) ServeUnavailable(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available bool) {
 	path := habitRoutingPath(r)
-	sceneID, sceneState := sceneStateRoute(r, path)
-	sceneState = sceneState && s.runtimeStatus != nil
+	sceneID, operation := sceneReadRoute(r, path)
+	sceneRead := operation != "" && s.runtimeStatus != nil
 	id := r.Header.Get("X-Request-ID")
 	if (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
@@ -122,7 +122,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneState || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
+	if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneRead || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
@@ -143,7 +143,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneState || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
+		if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || sceneRead || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -194,8 +194,8 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		s.serveRetainedLogs(w, r, available, id)
 		return
 	}
-	if sceneState {
-		s.serveSceneState(w, r, available, id, sceneID)
+	if sceneRead {
+		s.serveSceneRead(w, r, available, id, sceneID, operation)
 		return
 	}
 	if s.runtimeStatus != nil && statusPath(path) {

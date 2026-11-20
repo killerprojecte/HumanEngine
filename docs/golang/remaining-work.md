@@ -218,6 +218,17 @@ preservation and at-most-once physical transmission, not only final status.
   pagination, errors, writes and streaming. Add real TCP fixtures for gaps.
   Audit session/WebSocket upgrade, HTTP 101, disconnect/cancel and reconnect
   semantics separately. Do not call partial admin-route coverage complete.
+  The Go preview supports authenticated `GET/HEAD /api/scenes/{id}/state`
+  and the explicit `GET/HEAD /api/scenes/{id}/history?source=local` slice.
+  Local history reads at most 30 retained rows before ownership-safe display
+  projection, preserves order and redacted recalls, and does not contact the
+  platform. Missing or simulated scenes return unavailable. Media references
+  remain private and no image URLs are emitted until the bytes route lands.
+  Missing `source` still means remote, and remote history returns 503, so this
+  operation is partial. Do not report remote history, media or HTTP 101 as migrated.
+  Regenerate/check `backend/tests/generate-local-history.mjs` with
+  `node --import tsx`; the Go installed-app differential case compares the
+  captured TypeScript bodies for bounded, expired, recalled and invalid inputs.
 - **V1/V2 and builtins:** retain lazy shared Node, actual isolate unload, original
   callback/protocol identity and physical drain. Audit all tool/cache/send/model/
   adapter capabilities against actual plugin consumers. Four WASM manifests do

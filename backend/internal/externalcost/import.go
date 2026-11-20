@@ -37,6 +37,39 @@ func ParseImport(value any) (ImportInput, error) {
 }
 
 func Import(ctx context.Context, authority *recovery.Authority, main *sql.DB, input ImportInput) (Receipt, recovery.Head, error) {
+	return writeCost(ctx, authority, main, func(storage Storage, exists bool) (Receipt, bool, error) {
+		receipt := input.receipt
+		if !exists {
+			return Receipt{value: receipt.value.Clone()}, true, nil
+		}
+		prior, err := storage.findSupported(ctx, latestWhere, receipt.ID())
+		if err != nil {
+			return Receipt{}, false, err
+		}
+		if prior != nil {
+			if !prior.sameInput(receipt) {
+				return Receipt{}, false, ErrConflict
+			}
+			return *prior, false, nil
+		}
+		heads, err := storage.currentSupported(ctx)
+		if err != nil {
+			return Receipt{}, false, err
+		}
+		if len(heads) >= 10000 {
+			return Receipt{}, false, ErrCapacity
+		}
+		return Receipt{value: receipt.value.Clone()}, true, nil
+	})
+}
+
+func (r Receipt) sameInput(other Receipt) bool {
+	a, _ := r.value.Get("receipt")
+	b, _ := other.value.Get("receipt")
+	return equal(a, b)
+}
+
+func writeCost(ctx context.Context, authority *recovery.Authority, main *sql.DB, prepare func(Storage, bool) (Receipt, bool, error)) (Receipt, recovery.Head, error) {
 	var result Receipt
 	var head recovery.Head
 	err := authority.WithWriteSession(ctx, main, func(session *recovery.WriteSession) error {
@@ -50,30 +83,15 @@ func Import(ctx context.Context, authority *recovery.Authority, main *sql.DB, in
 		if err != nil {
 			return err
 		}
-		receipt := input.receipt
-		if exists {
-			prior, err := storage.findSupported(ctx, latestWhere, receipt.ID())
-			if err != nil {
-				return err
-			}
-			if prior != nil {
-				a, _ := prior.value.Get("receipt")
-				b, _ := receipt.value.Get("receipt")
-				if !equal(a, b) {
-					return ErrConflict
-				}
-				result = *prior
-				return nil
-			}
-			heads, err := storage.currentSupported(ctx)
-			if err != nil {
-				return err
-			}
-			if len(heads) >= 10000 {
-				return ErrCapacity
-			}
+		receipt, appendReceipt, err := prepare(storage, exists)
+		if err != nil {
+			return err
 		}
-		receipt.value = receipt.value.Clone()
+		if !appendReceipt {
+			result = receipt
+			return nil
+		}
+		// A new receipt is privately owned by this write; retries return earlier.
 		_ = receipt.value.Set("recordedAt", time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
 		intent, err := receipt.RecoveryEvent()
 		if err != nil {

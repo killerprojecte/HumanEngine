@@ -28,6 +28,8 @@ func budgetAdminPath(method, path string) bool {
 	switch path {
 	case budgetAckPath:
 		return true
+	case budgetExternalCostCorrectionsPath:
+		return method == http.MethodPost
 	case budgetExternalCostsPath:
 		return method == http.MethodGet || method == http.MethodHead || method == http.MethodPost
 	case "/api/budget", "/api/budget/recovery":

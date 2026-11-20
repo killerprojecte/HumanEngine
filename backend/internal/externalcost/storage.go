@@ -253,7 +253,7 @@ func (s Storage) Latest(ctx context.Context, id string) (*Receipt, error) {
 	return s.find(ctx, latestWhere, id)
 }
 func (s Storage) Correction(ctx context.Context, id string) (*Receipt, error) {
-	return s.find(ctx, "correction_id=?", id)
+	return s.find(ctx, correctionWhere, id)
 }
 func (s Storage) Current(ctx context.Context) ([]Receipt, error) {
 	ok, err := s.AssertSupported(ctx)

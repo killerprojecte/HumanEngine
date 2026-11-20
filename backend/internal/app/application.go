@@ -137,14 +137,18 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 
 	calls := modelcalls.New(owners.Main)
 	app.models.Calls = calls
-	// Capture the actual Experience owner, installed below before any ingress
-	// producer starts. Recall participates in the existing source writer, never
-	// reopening a root transaction from a scoped runtime callback.
+	// The concrete recall owners are installed below before ingress starts.
+	// Apply Experience, then memory, in the existing root writer. NewRuntime
+	// appends Meme after both; memory flushes its projection only after commit.
 	runtimeAuthority := owners.RuntimeAuthority.AppendRecallPreparation(func(ctx context.Context, ws *recovery.WriteSession, reads botruntime.ReadAuthority, scene botruntime.Scene, id string) (func() error, error) {
 		if app.Experience == nil {
 			return nil, errors.New("experience_owner_not_installed")
 		}
 		return app.Experience.RuntimeRecallPreparation()(ctx, ws, reads, scene, id)
+	}).AppendRecallPreparation(func(ctx context.Context, ws *recovery.WriteSession, reads botruntime.ReadAuthority, scene botruntime.Scene, id string) (func() error, error) {
+		return app.Semantic.Memory.RuntimeRecallPreparation()(ctx, ws, reads, scene, id)
+	}).WithRecallCompletion(func(ctx context.Context) error {
+		return app.Semantic.Memory.CompleteRuntimeRecall(ctx)
 	})
 	app.Engine, err = memeengine.NewRuntime(owners.Main, owners.Authority, owners.Memes, owners.Habits, owners.Assertions, owners.Sources, owners.Codec, app.models, runtimeAuthority, runtimeSettings(config.settings), owners.Dates, owners.Compare, botruntime.Extension{})
 	if err != nil {

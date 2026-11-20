@@ -332,12 +332,16 @@ func (s *Service) recallPrepared(ctx context.Context, tx *assertions.RevisionTxn
 // BindRecallAuthority installs both lifecycle work and post-root projection
 // flushing. The original runtime authority remains unchanged.
 func (s *Service) BindRecallAuthority(a *sourceevents.RuntimeAuthority) *sourceevents.RuntimeAuthority {
-	return a.WithRecallPreparation(s.RuntimeRecallPreparation()).WithRecallCompletion(func(ctx context.Context) error {
-		if _, e := s.d.Projections.Flush(ctx); e != nil {
-			s.d.Log("warn", "memory", "memory_projection_refresh_failed")
-		}
-		return nil
-	})
+	return a.WithRecallPreparation(s.RuntimeRecallPreparation()).WithRecallCompletion(s.CompleteRuntimeRecall)
+}
+
+// CompleteRuntimeRecall flushes queued projections after the owning recall
+// transaction commits. Projection failure cannot undo an acknowledged recall.
+func (s *Service) CompleteRuntimeRecall(ctx context.Context) error {
+	if _, e := s.d.Projections.Flush(ctx); e != nil {
+		s.d.Log("warn", "memory", "memory_projection_refresh_failed")
+	}
+	return nil
 }
 
 // PrepareRecall captures in an explicit caller-owned root and is consumed once.

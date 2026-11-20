@@ -76,8 +76,9 @@ This is not a claim of complete TypeScript Engine compatibility.
   and historical guards. Contextual `learning.propose` is now a model
   tool in this bounded graph, without those remaining exposure domains. Complete
   Experience model-facing tools are also outstanding.
-- Source-wide recall preparation ordering (including every memory/habit domain),
-  proactive scene timer binding and complete global Engine startup hooks remain.
+- Runtime recall composes existing Experience, memory, and Meme preparations
+  under the same durable source write. Full source-wide ordering (including
+  habits), proactive scene timers, and all Engine startup hooks remain open.
 - Four real built-in WASM artifacts are built and required by the native test
   profile, but this graph's V1 integration does not prove all four built-ins have
   their complete product capabilities installed. Native OneBot and full SnowLuma

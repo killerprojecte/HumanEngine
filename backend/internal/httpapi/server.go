@@ -123,6 +123,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	budgetAdmin := s.budgetAdmin != nil && budgetAdminPath(r.Method, path)
 	memoryPeople := s.memoryAdminRead != nil && peopleReadPath(r.Method, path)
 	memoryHistory := s.memoryAdminRead != nil && historyReadPath(r.Method, path)
+	assertionHistory := s.memoryAdminRead != nil && assertionHistoryReadPath(r.Method, path)
 	commitmentID, commitmentRead := memoryCommitmentRoute(r.Method, path)
 	commitmentRead = commitmentRead && s.commitmentRead != nil
 	simulation := s.runtimeStatus != nil && simulationsPath(path)
@@ -132,7 +133,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
 	}
 	id := r.Header.Get("X-Request-ID")
-	if simulation || learningAdmin || budgetAdmin || memoryPeople || memoryHistory || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions")) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if simulation || learningAdmin || budgetAdmin || memoryPeople || memoryHistory || assertionHistory || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions")) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -157,12 +158,12 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if memoryPeople || memoryHistory || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+	if memoryPeople || memoryHistory || assertionHistory || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if memoryPeople || memoryHistory || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+		if memoryPeople || memoryHistory || assertionHistory || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -293,6 +294,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if commitmentRead {
 		s.serveMemoryCommitmentRead(w, r, available, id, commitmentID)
+		return
+	}
+	if assertionHistory {
+		s.serveMemoryAssertionHistory(w, r, available, id)
 		return
 	}
 	if memoryHistory {

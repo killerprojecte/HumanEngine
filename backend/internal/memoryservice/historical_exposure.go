@@ -179,12 +179,27 @@ func (p *historicalExposurePort) current(reads botruntime.ReadAuthority, c Conte
 		return nil, errors.New("memory_history_disabled")
 	}
 	err = p.memory.withReader(reads, func(r *assertions.Reader) error {
-		available, err := p.memory.memory.historyForRead(r, c, text(input, "memoryId"))
+		value, err := p.memory.memory.historicalQueryRead(r, c, input)
+		if err == nil {
+			out = append(out, value)
+		}
+		return err
+	})
+	return
+}
+
+var errHistoryAnchorUnavailable = errors.New("memory_history_anchor_unavailable")
+
+// historicalQueryRead is the shared reader-level query. Its caller owns the
+// feature/scene admission and the current recovery snapshot.
+func (s *Service) historicalQueryRead(r *assertions.Reader, c Context, input *Object) (out *Object, err error) {
+	err = func() error {
+		available, err := s.historyForRead(r, c, text(input, "memoryId"))
 		if err != nil {
 			return err
 		}
 		if available == nil || value(available, "deleted") == true || !historySafe(value(available, "version"), 1) {
-			return errors.New("memory_history_anchor_unavailable")
+			return errHistoryAnchorUnavailable
 		}
 		currentAnchor := epObj("id", text(input, "memoryId"), "version", value(available, "version"), "deletionEpoch", value(available, "deletionEpoch"))
 		requested := historyOptional(input, "anchor")
@@ -204,7 +219,7 @@ func (p *historicalExposurePort) current(reads botruntime.ReadAuthority, c Conte
 			return errors.New("memory_history_query_invalid")
 		}
 		authorize := func() (string, *Object, error) {
-			record, err := historicalCurrent(r, p.memory.memory.d.Authority, c, text(anchor, "id"))
+			record, err := historicalCurrent(r, s.d.Authority, c, text(anchor, "id"))
 			if err != nil || record == nil {
 				return "", nil, err
 			}
@@ -222,7 +237,7 @@ func (p *historicalExposurePort) current(reads botruntime.ReadAuthority, c Conte
 			return err
 		}
 		if scope == "" {
-			return errors.New("memory_history_anchor_unavailable")
+			return errHistoryAnchorUnavailable
 		}
 		options := epObj("throughVersion", value(anchor, "version"), "limit", limit)
 		if !jsjson.IsUndefined(asOf) {
@@ -235,7 +250,7 @@ func (p *historicalExposurePort) current(reads botruntime.ReadAuthority, c Conte
 		if err != nil {
 			return err
 		}
-		authority, err := assertionauthority.New(r, p.memory.memory.d.Authority)
+		authority, err := assertionauthority.New(r, s.d.Authority)
 		if err != nil {
 			return err
 		}
@@ -331,7 +346,7 @@ func (p *historicalExposurePort) current(reads botruntime.ReadAuthority, c Conte
 			return err
 		}
 		if scopeAfter != scope {
-			return errors.New("memory_history_anchor_unavailable")
+			return errHistoryAnchorUnavailable
 		}
 		reasonNames := make([]string, 0, len(reasons))
 		for reason := range reasons {
@@ -347,11 +362,12 @@ func (p *historicalExposurePort) current(reads botruntime.ReadAuthority, c Conte
 			status = "limited"
 		}
 		result := epObj("kind", "assertion_history", "interpretation", "previously_recorded_not_current_truth", "sourceBodyCoverage", "unavailable", "asOfRecorded", asOf, "validAt", validAt, "revisions", retained, "coverage", epObj("status", status, "reasons", reasonValues, "returned", float64(len(retained)), "hasMore", page.HasMore), "anchor", exposureClone(anchor), "stateKind", "assertion_history", "query", exposureClone(input))
-		out = append(out, result)
+		out = result
 		return nil
-	})
+	}()
 	return
 }
+
 func (e *HistoricalExposure) ComposeExtension(base botruntime.Extension) *botruntime.Extension {
 	ext := base
 	ext.CaptureToolResultGuards = func(c *botruntime.TurnContext) []*botruntime.ToolResultGuard {

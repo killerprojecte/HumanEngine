@@ -21,7 +21,7 @@ type EpisodesAdminRead func(context.Context, *EpisodesQuery, func(int, []byte) e
 
 type episodesFlags struct{ real, enabled, commitments bool }
 
-func loadEpisodesFlags(r *assertions.Reader, schemas *contract.Schemas, scene string) (flags episodesFlags, err error) {
+func loadEpisodesFlags(r *assertions.Reader, schemas *contract.Schemas, scene, feature string) (flags episodesFlags, err error) {
 	flags.real, err = realPeopleScene(r, scene)
 	if err != nil || !flags.real {
 		return
@@ -38,7 +38,7 @@ func loadEpisodesFlags(r *assertions.Reader, schemas *contract.Schemas, scene st
 	if err != nil {
 		return flags, err
 	}
-	flags.enabled = settings["memoryEpisodesEnabled"] == true
+	flags.enabled = settings[feature] == true
 	flags.commitments = settings["memoryCommitmentsEnabled"] == true && settings["memoryCommitmentsAnswerEnabled"] == true
 	return flags, nil
 }
@@ -56,7 +56,7 @@ func (s *Service) BindEpisodesAdminRead(publisher *recovery.ReadPublisher, schem
 		var page *Object
 		if q != nil {
 			if err := s.d.Assertions.Read(ctx, func(r *assertions.Reader) (err error) {
-				initial, err = loadEpisodesFlags(r, schemas, q.SceneID)
+				initial, err = loadEpisodesFlags(r, schemas, q.SceneID, "memoryEpisodesEnabled")
 				return err
 			}); err != nil {
 				return false, err
@@ -79,7 +79,7 @@ func (s *Service) BindEpisodesAdminRead(publisher *recovery.ReadPublisher, schem
 				status = http.StatusBadRequest
 				return []byte(`{"error":"Invalid request"}`), nil
 			}
-			flags, err := loadEpisodesFlags(r, schemas, q.SceneID)
+			flags, err := loadEpisodesFlags(r, schemas, q.SceneID, "memoryEpisodesEnabled")
 			if err != nil {
 				return nil, err
 			}
@@ -115,13 +115,32 @@ func disabledEpisodes() *Object {
 		"interpretation", "independent_qualified_records_not_synthesized_episodes", "sourceBodyCoverage", "unavailable")
 }
 
+type workspaceCandidates struct {
+	assertions, plans                 []any
+	assertionsCoverage, plansCoverage string
+	selections                        []workingset.Selection
+}
+
 func (s *Service) prepareAdminEpisodes(ctx context.Context, q EpisodesQuery, allowPlans bool) (*Object, error) {
-	scene := Context{SceneID: q.SceneID}
-	candidates, err := s.List(ctx, scene, "")
+	input, err := s.prepareWorkspaceCandidates(ctx, q, true, allowPlans, nil)
 	if err != nil {
 		return nil, err
 	}
-	candidates = episodeCandidates(candidates, q)
+	page, err := experienceview.Project(epObj("sceneId", q.SceneID, "simulation", false, "assertions", input.assertions,
+		"commitments", input.plans, "upstreamCoverage", epObj("assertions", input.assertionsCoverage, "commitments", input.plansCoverage)))
+	if err != nil {
+		return nil, err
+	}
+	return page, s.refreshWorkspaceMetadata(ctx, q.SceneID, input.selections)
+}
+
+func (s *Service) prepareWorkspaceCandidates(ctx context.Context, q EpisodesQuery, experienceOnly, allowPlans bool, lifecycle *string) (out workspaceCandidates, err error) {
+	scene := Context{SceneID: q.SceneID}
+	candidates, err := s.List(ctx, scene, "")
+	if err != nil {
+		return out, err
+	}
+	candidates = episodeCandidates(candidates, q, experienceOnly)
 	var compareErr error
 	sort.SliceStable(candidates, func(i, j int) bool {
 		if compareErr != nil {
@@ -136,20 +155,18 @@ func (s *Service) prepareAdminEpisodes(ctx context.Context, q EpisodesQuery, all
 		return order < 0
 	})
 	if compareErr != nil {
-		return nil, compareErr
+		return out, compareErr
 	}
 	limited := len(candidates) > 28
 	candidates = candidates[:min(len(candidates), 28)]
 	refs, err := s.CaptureParentReferences(ctx, scene, candidates)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 	byID := make(map[string]*Object, len(candidates))
 	for _, record := range candidates {
 		byID[text(record, "id")] = record
 	}
-	var page *Object
-	var selections []workingset.Selection
 	c := commitments.Context{SceneID: q.SceneID}
 	err = s.d.Commitments.ReadCurrent(ctx, s.d.Assertions, s.d.CommitmentsEnabled, s.d.Authority, func(read *commitments.ReadService) error {
 		resolver, err := memoryworkspace.NewResolver(read, s.d.Authority.DateParser)
@@ -175,7 +192,7 @@ func (s *Service) prepareAdminEpisodes(ctx context.Context, q EpisodesQuery, all
 		}
 		planItems := []any{}
 		if allowPlans {
-			plans, err := read.List(c, commitments.ReadOptions{PersonID: q.PersonID})
+			plans, err := read.List(c, commitments.ReadOptions{PersonID: q.PersonID, Lifecycle: lifecycle})
 			if err != nil {
 				return err
 			}
@@ -192,34 +209,34 @@ func (s *Service) prepareAdminEpisodes(ctx context.Context, q EpisodesQuery, all
 		if err != nil {
 			return err
 		}
-		selections = make([]workingset.Selection, 0, len(snapshots))
+		out.selections = make([]workingset.Selection, 0, len(snapshots))
 		for _, snapshot := range snapshots {
-			selections = append(selections, snapshot.Selection())
+			out.selections = append(out.selections, snapshot.Selection())
 		}
-		page, err = experienceview.Project(epObj("sceneId", q.SceneID, "simulation", false, "assertions", assertionItems,
-			"commitments", planItems, "upstreamCoverage", epObj("assertions", asCoverage, "commitments", planCoverage)))
-		return err
+		out.assertions, out.plans = assertionItems, planItems
+		out.assertionsCoverage, out.plansCoverage = asCoverage, planCoverage
+		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-	if len(selections) != 0 {
-		scope := workingset.Context{SceneID: q.SceneID}
-		if _, err := s.d.WorkingSet.Enqueue(ctx, scope, selections); err != nil {
-			return nil, err
-		}
-		if _, err := s.d.WorkingSet.Drain(ctx, scope, 40); err != nil {
-			return nil, err
-		}
-	}
-	return page, nil
+	return out, err
 }
 
-func episodeCandidates(records []*Object, q EpisodesQuery) []*Object {
+func (s *Service) refreshWorkspaceMetadata(ctx context.Context, sceneID string, selections []workingset.Selection) error {
+	if len(selections) == 0 {
+		return nil
+	}
+	scope := workingset.Context{SceneID: sceneID}
+	if _, err := s.d.WorkingSet.Enqueue(ctx, scope, selections); err != nil {
+		return err
+	}
+	_, err := s.d.WorkingSet.Drain(ctx, scope, 40)
+	return err
+}
+
+func episodeCandidates(records []*Object, q EpisodesQuery, experienceOnly bool) []*Object {
 	out := records[:0]
 	for _, record := range records {
 		scope := object(value(record, "scope"))
-		if text(record, "kind") == "experience" && !truthy(value(record, "internalUse")) &&
+		if (!experienceOnly || text(record, "kind") == "experience") && !truthy(value(record, "internalUse")) &&
 			text(scope, "kind") == "scene" && text(scope, "sceneId") == q.SceneID &&
 			(q.PersonID == "" || text(scope, "personId") == q.PersonID) {
 			out = append(out, record)
@@ -261,41 +278,52 @@ func projectAdminEpisodes(page *Object, enabled bool) ([]byte, error) {
 	for _, raw := range items {
 		entry := object(raw)
 		if text(entry, "kind") == "reported_experience" {
-			r := object(value(entry, "record"))
-			if !validEpisodeID(value(r, "id")) {
-				return nil, experienceview.ErrInvalid
+			record, err := projectWorkspaceRecord(object(value(entry, "record")))
+			if err != nil {
+				return nil, err
 			}
-			record := episodeFields(r, "id", "content", "kind", "status", "learnedAt")
-			for _, key := range []string{"epistemicKind", "occurredAt", "validFrom", "validUntil"} {
-				if v, present := r.Get(key); present {
-					if _, ok := v.(string); !ok {
-						return nil, experienceview.ErrInvalid
-					}
-					_ = record.Set(key, v)
-				}
-			}
-			sources := []any{}
-			for _, rawSource := range epArr(value(r, "sources")) {
-				source := object(rawSource)
-				scene, message, sender := value(source, "sceneId"), value(source, "messageId"), value(source, "senderId")
-				if !validEpisodeID(scene) || !validEpisodeID(message) || !validEpisodeID(sender) {
-					return nil, experienceview.ErrInvalid
-				}
-				sources = append(sources, epObj("sceneId", scene, "messageId", message, "senderId", sender))
-			}
-			_ = record.Set("sources", sources)
 			out = append(out, epObj("kind", "reported_experience", "record", record, "time", value(entry, "time")))
 			continue
 		}
-		p := object(value(entry, "view"))
-		view := episodeFields(p, "terms", "recordedAt", "confirmation", "lifecycle", "qualification", "sourceBodyCoverage",
-			"confirmedParticipantIds", "missingParticipantIds", "completedParticipantIds", "cancelledParticipantIds")
-		_ = view.Set("sourceMessageIds", episodePlanSources(p))
+		view := projectWorkspacePlan(object(value(entry, "view")))
 		out = append(out, epObj("kind", "shared_plan_declaration", "view", view, "completionBasis", value(entry, "completionBasis")))
 	}
 	return jsjson.Marshal(epObj("enabled", enabled, "interpretation", value(page, "interpretation"),
 		"sourceBodyCoverage", value(page, "sourceBodyCoverage"),
 		"coverage", episodeFields(object(value(page, "coverage")), "status", "returned", "omittedEntries"), "items", out))
+}
+
+func projectWorkspaceRecord(r *Object) (*Object, error) {
+	if !validEpisodeID(value(r, "id")) {
+		return nil, experienceview.ErrInvalid
+	}
+	record := episodeFields(r, "id", "content", "kind", "status", "learnedAt")
+	for _, key := range []string{"epistemicKind", "occurredAt", "validFrom", "validUntil"} {
+		if v, present := r.Get(key); present {
+			if _, ok := v.(string); !ok {
+				return nil, experienceview.ErrInvalid
+			}
+			_ = record.Set(key, v)
+		}
+	}
+	sources := []any{}
+	for _, rawSource := range epArr(value(r, "sources")) {
+		source := object(rawSource)
+		scene, message, sender := value(source, "sceneId"), value(source, "messageId"), value(source, "senderId")
+		if !validEpisodeID(scene) || !validEpisodeID(message) || !validEpisodeID(sender) {
+			return nil, experienceview.ErrInvalid
+		}
+		sources = append(sources, epObj("sceneId", scene, "messageId", message, "senderId", sender))
+	}
+	_ = record.Set("sources", sources)
+	return record, nil
+}
+
+func projectWorkspacePlan(p *Object) *Object {
+	view := episodeFields(p, "terms", "recordedAt", "confirmation", "lifecycle", "qualification", "sourceBodyCoverage",
+		"confirmedParticipantIds", "missingParticipantIds", "completedParticipantIds", "cancelledParticipantIds")
+	_ = view.Set("sourceMessageIds", episodePlanSources(p))
+	return view
 }
 
 func validEpisodeID(v any) bool {

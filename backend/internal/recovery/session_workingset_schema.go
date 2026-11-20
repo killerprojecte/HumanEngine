@@ -238,7 +238,19 @@ func (a *Authority) WithWorkingSetRead(ctx context.Context, main *sql.DB, fn fun
 	if fn == nil {
 		return errors.New("working_set_callback_required")
 	}
-	return a.Publish(ctx, main, func(conn *sql.Conn) (out []byte, err error) {
+	return a.Publish(ctx, main, workingSetReadProjection(ctx, func(r *WorkingSetReadSession) ([]byte, error) {
+		return nil, fn(r)
+	}), func([]byte) error { return nil })
+}
+
+// PublishWorkingSet lends only the native read capability on the existing HTTP
+// publisher snapshot, with its standard lifecycle, gate, and output fence.
+func (r *ReadPublisher) PublishWorkingSet(ctx context.Context, read func(*WorkingSetReadSession) ([]byte, error), emit func([]byte) error) error {
+	return r.Publish(ctx, workingSetReadProjection(ctx, read), emit)
+}
+
+func workingSetReadProjection(ctx context.Context, fn func(*WorkingSetReadSession) ([]byte, error)) func(*sql.Conn) ([]byte, error) {
+	return func(conn *sql.Conn) (out []byte, err error) {
 		if err = protectPreparation(conn); err != nil {
 			return nil, err
 		}
@@ -257,6 +269,6 @@ func (a *Authority) WithWorkingSetRead(ctx context.Context, main *sql.DB, fn fun
 			r.active = false
 			err = errors.Join(err, protectMutation(conn, false))
 		}()
-		return nil, fn(r)
-	}, func([]byte) error { return nil })
+		return fn(r)
+	}
 }

@@ -84,20 +84,37 @@ func (s *Service) Read(ctx context.Context, fn func(*Service) error) error {
 		return fn(s)
 	}
 	return s.authority.WithWorkingSetRead(ctx, s.main, func(reader *recovery.WorkingSetReadSession) error {
-		scope := &Scope{main: s.main, authority: s.authority, check: reader.CheckScope, audit: reader.SchemaSupported, prepare: func(q string) (PreparedRead, error) {
-			p, e := reader.PrepareQuery(q)
-			if e != nil {
-				return nil, e
-			}
-			return publicationStatement{p}, nil
-		}}
-		scope.query = func(q string, args ...any) (Rows, error) {
-			return reader.Query(q, args...)
-		}
-		b := *s
-		b.readScope = scope
-		return fn(&b)
+		return fn(s.withReadSession(reader))
 	})
+}
+
+// BindPublishedRead instantiates the same private read scope on the HTTP
+// publisher; callers must use its bound service, never reenter publication.
+func (s *Service) BindPublishedRead(publisher *recovery.ReadPublisher) (func(context.Context, func(*Service) ([]byte, error), func([]byte) error) error, error) {
+	if s.bindingError != nil || s.session != nil || s.readScope != nil || s.maintenance != nil || !publisher.OwnedBy(s.main, s.authority) {
+		return nil, errors.New("working_set_publication_binding")
+	}
+	return func(ctx context.Context, read func(*Service) ([]byte, error), emit func([]byte) error) error {
+		return publisher.PublishWorkingSet(ctx, func(reader *recovery.WorkingSetReadSession) ([]byte, error) {
+			return read(s.withReadSession(reader))
+		}, emit)
+	}, nil
+}
+
+func (s *Service) withReadSession(reader *recovery.WorkingSetReadSession) *Service {
+	scope := &Scope{main: s.main, authority: s.authority, check: reader.CheckScope, audit: reader.SchemaSupported, prepare: func(q string) (PreparedRead, error) {
+		p, e := reader.PrepareQuery(q)
+		if e != nil {
+			return nil, e
+		}
+		return publicationStatement{p}, nil
+	}}
+	scope.query = func(q string, args ...any) (Rows, error) {
+		return reader.Query(q, args...)
+	}
+	b := *s
+	b.readScope = scope
+	return &b
 }
 
 // CheckReadBinding verifies the concrete owner, without exposing its connection.

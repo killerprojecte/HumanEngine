@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -30,8 +31,8 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 		t.Fatal(err)
 	}
 	var fixture struct {
-		Base64 string
-		Cases  map[string]struct {
+		Base64, PreviewURL string
+		Cases              map[string]struct {
 			Status                                                    int
 			MIME, Length, Disposition, ResourcePolicy, Cache, Nosniff string
 			Hash, Error                                               string
@@ -114,6 +115,9 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 		part := map[string]any{"type": "text", "text": "Please reply to this synthetic request."}
 		if mediaID != "" {
 			part = map[string]any{"type": "media", "assetId": mediaID, "mediaType": "image/png"}
+			if messageID == "unproven" {
+				part["mediaUrl"] = "https://untrusted.invalid/preview-image"
+			}
 		}
 		raw, err := json.Marshal(map[string]any{
 			"id": messageID, "sceneId": sceneID, "senderId": senderID,
@@ -157,6 +161,10 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 			return ""
 		}
 	}
+	ingest(scene, "recalled-prefix", "person", "")
+	if err := runtime.Recall(ctx, scene, "recalled-prefix"); err != nil {
+		t.Fatal(err)
+	}
 	ingest(scene, "source", "person", "")
 	asset := appRequest(t, app, "POST", "/api/memes/import", map[string]any{
 		"sceneId": scene, "messageId": "source", "base64": fixture.Base64,
@@ -174,15 +182,32 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 		appRequest(t, app, "POST", assetPath+"/inclusion", map[string]bool{"included": value})
 	}
 	disabled := func(value bool) { appRequest(t, app, "PATCH", assetPath, map[string]bool{"disabled": value}) }
-	check := func(name, method, sceneID, messageID, index string, authorized bool) {
+	login := httptest.NewRequest("POST", "/api/auth/session", strings.NewReader(`{"token":"synthetic-token"}`))
+	login.Header.Set("X-HumanEngine-Session", "1")
+	loginResult := httptest.NewRecorder()
+	app.ServeHTTP(loginResult, login)
+	cookies := loginResult.Result().Cookies()
+	if loginResult.Code != 200 || len(cookies) != 1 {
+		t.Fatalf("browser session login: %d %s", loginResult.Code, loginResult.Body)
+	}
+	browserAuth := func(request *http.Request) {
+		request.Header.Set("X-HumanEngine-Session", "1")
+		request.Header.Set("Sec-Fetch-Site", "same-origin")
+		request.AddCookie(cookies[0])
+	}
+	checkURL := func(name, method, path string, authorized bool) {
 		t.Helper()
 		t.Run(name, func(t *testing.T) {
 			expected, ok := fixture.Cases[name]
 			if !ok {
 				t.Fatal("missing source case", name)
 			}
-			request := httptest.NewRequest(method, "/api/scenes/"+url.PathEscape(sceneID)+"/messages/"+url.PathEscape(messageID)+"/media/"+index, nil)
-			sourceFixtureAuth(request, authorized)
+			request := httptest.NewRequest(method, path, nil)
+			if name == "previewRoundTrip" {
+				browserAuth(request)
+			} else {
+				sourceFixtureAuth(request, authorized)
+			}
 			response := httptest.NewRecorder()
 			app.ServeHTTP(response, request)
 			if response.Code != expected.Status {
@@ -212,12 +237,58 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 			}
 		})
 	}
+	check := func(name, method, sceneID, messageID, index string, authorized bool) {
+		t.Helper()
+		path := "/api/scenes/" + url.PathEscape(sceneID) + "/messages/" + url.PathEscape(messageID) + "/media/" + index
+		checkURL(name, method, path, authorized)
+	}
+	previewLink := func(messageID string) string {
+		t.Helper()
+		path := "/api/scenes/" + url.PathEscape(scene) + "/messages"
+		request := httptest.NewRequest("GET", path, nil)
+		browserAuth(request)
+		response := httptest.NewRecorder()
+		app.ServeHTTP(response, request)
+		if response.Code != 200 {
+			t.Fatalf("browser preview: %d %s", response.Code, response.Body)
+		}
+		parsed, err := jsjson.ParseBytes(response.Body.Bytes())
+		if err != nil {
+			t.Fatal(err)
+		}
+		rows := parsed.([]any)
+		if len(rows) == 0 || field(rows[0], "id") != "recalled-prefix" || field(rows[0], "status") != "recalled" {
+			t.Fatal("preview fixture must begin with a recall tombstone")
+		}
+		for _, row := range rows {
+			if field(row, "id") != messageID {
+				continue
+			}
+			parts, _ := field(row, "parts").([]any)
+			for _, part := range parts {
+				if field(part, "assetId") != nil {
+					t.Fatal("preview exposed a private asset ID")
+				}
+				if link, ok := field(part, "mediaUrl").(string); ok {
+					return link
+				}
+			}
+			return ""
+		}
+		t.Fatalf("preview does not contain expected message %q", messageID)
+		return ""
+	}
 	included(true)
 	outgoing := sendManaged("first")
 	included(false)
 	check("proposed", "GET", scene, outgoing, "1", true)
 	included(true)
 	check("visible", "GET", scene, outgoing, "1", true)
+	link := previewLink(outgoing)
+	if link == "" || link != fixture.PreviewURL {
+		t.Fatalf("preview returned %q, want TypeScript same-origin path %q", link, fixture.PreviewURL)
+	}
+	checkURL("previewRoundTrip", "GET", link, true)
 	check("head", "HEAD", scene, outgoing, "1", true)
 	check("unauthorized", "GET", scene, outgoing, "1", false)
 	check("invalidIndex", "GET", scene, outgoing, "00", true)
@@ -282,16 +353,33 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	if !oldRetained {
 		t.Fatal("remap test requires the prior outbound row to remain retained")
 	}
-	check("wrongScene", "GET", scene, outgoing, "1", true)
+	if link := previewLink(outgoing); link != "" {
+		t.Fatalf("remapped preview contains prior owner link %q", link)
+	}
+	checkURL("wrongScene", "GET", link, true)
+	// The SQL remap may commit before the corresponding runtime effect.
+	if err := runtime.RegisterScene(registered); err != nil {
+		t.Fatal(err)
+	}
+	if link := previewLink(outgoing); link != "" {
+		t.Fatalf("preview used runtime's old transport instead of the durable remap: %q", link)
+	}
+	checkURL("wrongScene", "GET", link, true)
 	saveScene(scene, "group")
 	ingest(scene, "unproven", "bot", id)
+	if link := previewLink("unproven"); link != "" {
+		t.Fatalf("unproven media exposed link %q", link)
+	}
 	check("wrongScene", "GET", scene, "unproven", "0", true)
 	image = capture()
 	if err := runtime.Recall(ctx, scene, outgoing); err != nil {
 		t.Fatal(err)
 	}
 	reject(image)
-	check("recalled", "GET", scene, outgoing, "1", true)
+	if link := previewLink(outgoing); link != "" {
+		t.Fatalf("recalled preview contains image link %q", link)
+	}
+	checkURL("recalled", "GET", link, true)
 	ingest(scene, "missing", "bot", strings.Repeat("f", 64))
 	check("missingAsset", "GET", scene, "missing", "0", true)
 	ingest(foreign, "foreign", "bot", id)

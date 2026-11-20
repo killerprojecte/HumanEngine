@@ -31,6 +31,21 @@ try {
   await check('proposed')
   f.engine.memes.adminSetIncluded(asset.id, true)
   await check('visible')
+  const shifted = { ...outgoing, id: f.adapter.messageId(f.scene, '84'), parts: [
+    { type: 'unsupported', description: 'Untrusted platform image metadata: {"kind":"sticker"}' },
+    ...outgoing.parts,
+  ] }
+  f.engine.runtime.ingest(shifted, f.scene, false)
+  const list = await f.app.request(`/api/scenes/${encodeURIComponent(f.scene.id)}/messages`, {
+    headers: { Authorization: `Bearer ${f.token}` },
+  })
+  const projected = (await list.json()).find((message) => message.id === shifted.id)
+  if (list.status !== 200 || projected?.parts.length !== 1 || !projected.parts[0].mediaUrl?.endsWith('/media/1'))
+    throw new Error('fixture_preview_part_index_mismatch')
+  await check('previewRoundTrip', projected.parts[0].mediaUrl)
+  const previewURL = projected.parts[0].mediaUrl
+    .replace(encodeURIComponent(f.scene.id), encodeURIComponent('fixture:scene'))
+    .replace(encodeURIComponent(shifted.id), encodeURIComponent('bot/message'))
   await check('head', url, 'HEAD')
   await check('unauthorized', url, 'GET', false)
   await check('invalidIndex', url.replace(/\/0$/, '/00'))
@@ -65,7 +80,7 @@ try {
   await check('beforeDelete', route(deleted))
   f.store.db.prepare('DELETE FROM meme_assets WHERE id=?').run(asset.id)
   await check('deleted', route(deleted))
-  const output = JSON.stringify({ base64: f.png.toString('base64'), cases }, null, 2) + '\n'
+  const output = JSON.stringify({ base64: f.png.toString('base64'), previewURL, cases }, null, 2) + '\n'
   const target = new URL('../internal/app/testdata/managed-display-image-source.json', import.meta.url)
   if (process.argv.includes('--check')) {
     if (fs.readFileSync(target, 'utf8') !== output) process.exitCode = 1

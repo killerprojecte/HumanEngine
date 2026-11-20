@@ -90,7 +90,7 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 	body := []byte(`{"error":"Scene unavailable"}`)
 	switch operation {
 	case "messages":
-		body, err = sceneMessagesBody(owner.runtime, sceneID)
+		body, err = sceneMessagesBody(owner.runtime, sceneID, s.memes != nil)
 	case "history", "history-remote":
 		body = []byte(`{"items":[],"coverage":"unavailable","reason":"real_scene_required"}`)
 		if operation == "history" {

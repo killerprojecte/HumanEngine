@@ -7,6 +7,10 @@ import (
 
 var managedImageID = regexp.MustCompile("^[0-9a-f]{64}$")
 
+// IsManagedImageAssetID recognizes the local asset namespace, not permission
+// to read an asset. A real retained dispatch proof is also required.
+func IsManagedImageAssetID(asset string) bool { return managedImageID.MatchString(asset) }
+
 type managedMediaScene struct {
 	kind, adapter, account, platform string
 }
@@ -25,7 +29,7 @@ func managedAsset(part any) string {
 		return ""
 	}
 	asset, _ := get(part, "assetId").(string)
-	if !managedImageID.MatchString(asset) {
+	if !IsManagedImageAssetID(asset) {
 		return ""
 	}
 	return asset

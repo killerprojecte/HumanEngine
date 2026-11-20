@@ -85,10 +85,17 @@ type ReadAuthority interface {
 	ValidateSources(Scene, []*Object, []string) (bool, error)
 	IsRecalled(Scene, string) (bool, error)
 	PromptAuthority(Scene, []*Object) (any, error)
-	// ProjectDisplay does not mutate or retain the input. Returned rows and
-	// their nested values are owned by the caller.
+	// ProjectDisplay does not mutate or retain the input. It preserves row
+	// cardinality and order; the returned rows and nested values are caller-owned.
 	ProjectDisplay(Scene, []*Object, []string) ([]*Object, error)
 }
+
+// BoundDisplayAuthority adds the persisted scene tuple check to the same
+// ordered display read; an unbound result cannot mint managed media paths.
+type BoundDisplayAuthority interface {
+	ProjectBoundDisplay(Scene, []*Object, []string) ([]*Object, bool, error)
+}
+
 type Authority interface {
 	ReadAuthority
 	// ProjectRemoteHistory filters the scoped platform page before its display bound.

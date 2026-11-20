@@ -472,3 +472,13 @@ func TestProjectDisplayOwnsNestedValuesAndPreservesInputOnRecall(t *testing.T) {
 		t.Fatalf("recall projection mutated nested input: %v", text)
 	}
 }
+
+func TestBoundDisplayWithoutPersistedScene(t *testing.T) {
+	_, a := runtimeFixture(t, Options{})
+	scene := botruntime.Scene{SceneRef: dispatch.SceneRef{ID: "unsaved", Kind: "group", AdapterID: "fixture", AccountID: "bot", PlatformSceneID: "group"}}
+	body := runtimeObject(t, `{"id":"fixture","sceneId":"unsaved","senderId":"bot","origin":"live","status":"available","parts":[]}`)
+	rows, bound, err := a.ProjectBoundDisplay(scene, []*jsjson.Object{body}, nil)
+	if err != nil || bound || len(rows) != 1 {
+		t.Fatalf("unpersisted projection: rows=%v bound=%v err=%v", rows, bound, err)
+	}
+}

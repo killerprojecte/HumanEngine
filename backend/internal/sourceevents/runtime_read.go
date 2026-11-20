@@ -193,40 +193,50 @@ func (r *runtimeReads) PromptAuthority(scene botruntime.Scene, tools []*jsjson.O
 	})
 	return result, err
 }
-func presentRuntimeMessage(v *View, m *jsjson.Object) error {
+func presentRuntimeMessage(v *View, m *jsjson.Object) (*jsjson.Object, error) {
 	sceneValue, _, err := valueRow(v, "SELECT value FROM scenes WHERE id=?", str(m, "sceneId"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	scene, ok := sceneValue.(*jsjson.Object)
 	if !ok || !oneBotScene(scene) {
-		return nil
+		return scene, nil
 	}
 	identity, exists, err := valueRow(v, "SELECT value FROM config WHERE key=?", "identity:"+str(m, "sceneId")+":"+str(m, "senderId"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !exists {
 		identity = obj()
 	}
 	platform, platformPresent, err := coalescedIdentity(m, identity, "senderPlatformId")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	name, namePresent, err := coalescedIdentity(m, identity, "senderDisplayName")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	avatar, err := qqAvatar(platform)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	optionalProperty(m, "senderDisplayName", name, namePresent)
 	optionalProperty(m, "senderPlatformId", platform, platformPresent)
 	optionalProperty(m, "senderAvatarUrl", avatar, avatar != nil)
-	return nil
+	return scene, nil
 }
 func (r *runtimeReads) ProjectDisplay(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled []string) ([]*jsjson.Object, error) {
+	return r.projectDisplay(scene, messages, locallyRecalled, nil)
+}
+
+func (r *runtimeReads) ProjectBoundDisplay(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled []string) ([]*jsjson.Object, bool, error) {
+	var bound bool
+	out, err := r.projectDisplay(scene, messages, locallyRecalled, &bound)
+	return out, bound, err
+}
+
+func (r *runtimeReads) projectDisplay(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled []string, bound *bool) ([]*jsjson.Object, error) {
 	out := make([]*jsjson.Object, len(messages))
 	for i, m := range messages {
 		if m == nil {
@@ -245,6 +255,7 @@ func (r *runtimeReads) ProjectDisplay(scene botruntime.Scene, messages []*jsjson
 		return out, nil
 	}
 	err := r.read(func(v *View) error {
+		checkBinding := bound != nil
 		for _, m := range out {
 			recalled := local[str(m, "id")]
 			if !recalled {
@@ -258,8 +269,20 @@ func (r *runtimeReads) ProjectDisplay(scene botruntime.Scene, messages []*jsjson
 				_ = m.Set("parts", []any{})
 				_ = m.Set("status", "recalled")
 			} else if str(m, "origin") != "simulation" {
-				if e := presentRuntimeMessage(v, m); e != nil {
-					return e
+				stored, err := presentRuntimeMessage(v, m)
+				if err != nil {
+					return err
+				}
+				// Reuse the immutable scene already read for this visible row.
+				// Recalled rows do not consume the one binding comparison.
+				if checkBinding && str(m, "sceneId") == scene.ID {
+					checkBinding = false
+					if stored != nil {
+						actual := sceneFromValue(stored)
+						*bound = actual.ID == scene.ID && actual.Kind == scene.Kind &&
+							actual.AdapterID == scene.AdapterID && actual.AccountID == scene.AccountID &&
+							actual.PlatformSceneID == scene.PlatformSceneID
+					}
 				}
 			}
 		}
@@ -293,7 +316,7 @@ func (r *runtimeReads) ProjectRemoteHistory(scene botruntime.Scene, messages []*
 		slices.Reverse(out)
 		for _, m := range out {
 			botruntime.NormalizeOwnedBotIdentity(m, bot)
-			if err := presentRuntimeMessage(v, m); err != nil {
+			if _, err := presentRuntimeMessage(v, m); err != nil {
 				return err
 			}
 		}

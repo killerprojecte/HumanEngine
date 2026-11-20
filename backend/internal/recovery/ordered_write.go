@@ -111,7 +111,11 @@ func (a *Authority) executeOrderedWrite(ctx context.Context, main *sql.DB, prepa
 		return head, errors.New("recovery_write_invalid")
 	}
 	minimumReader := plan.MinimumReader
-	events := make([][]writeEvent, len(plan.Steps))
+	var single [1][]writeEvent
+	events := single[:]
+	if len(plan.Steps) != 1 {
+		events = make([][]writeEvent, len(plan.Steps))
+	}
 	for i, step := range plan.Steps {
 		events[i], err = encodePlan(step.Intents, minimumReader, step.Apply)
 		if err != nil {
@@ -124,6 +128,14 @@ func (a *Authority) executeOrderedWrite(ctx context.Context, main *sql.DB, prepa
 	defer a.mu.Unlock()
 	if !a.writer {
 		return head, errors.New("recovery_writer_required")
+	}
+	// An ordinary single step needs neither preflight nor a separately
+	// fenced intermediate mutation. Do not reserve authority three times.
+	if len(plan.Steps) == 1 {
+		step := plan.Steps[0]
+		if step.BeforeIntent == nil && !step.EnsureSecurityState {
+			return a.finishPreparedWrite(ctx, conn, gate, events[0], minimumReader, step.Apply, hooks)
+		}
 	}
 	head = gate.Head
 	for i, step := range plan.Steps {

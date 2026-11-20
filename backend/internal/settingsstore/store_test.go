@@ -196,21 +196,6 @@ func TestActualStoreSettingsWriteOracle(t *testing.T) {
 			if before != after {
 				t.Fatal("input mutated")
 			}
-			if entry.AbsentSecuritySchema {
-				// The oracle establishes that TS creates this table. The candidate reports
-				// its bootstrap gap explicitly, before authority or main changes.
-				if !errors.Is(err, ErrSecuritySchemaUnsupported) {
-					t.Fatal("expected explicit enrollment gap", err)
-				}
-				events, _ := authorityEvents(t, s)
-				if len(events) != 0 {
-					t.Fatal("unsupported enrollment appended intent")
-				}
-				if got := configRows(t, s); !reflect.DeepEqual(got, []configRow{{"settings", "{}"}}) {
-					t.Fatal(got)
-				}
-				return
-			}
 			if entry.Error != "" {
 				if err == nil || err.Error() != entry.Error {
 					t.Fatalf("error got %v\nwant %s", err, entry.Error)
@@ -225,18 +210,28 @@ func TestActualStoreSettingsWriteOracle(t *testing.T) {
 			if !reflect.DeepEqual(events, entry.Events) {
 				t.Fatalf("events got %v\nwant %v", events, entry.Events)
 			}
-			var security string
-			if err = s.Main.QueryRow("SELECT revision FROM recovery_security_state WHERE id=1").Scan(&security); err != nil {
+			var table int
+			if err := s.Main.QueryRow("SELECT count(*) FROM sqlite_master WHERE name='recovery_security_state'").Scan(&table); err != nil {
 				t.Fatal(err)
 			}
-			if security != initialSecurity {
-				if security != lastRevision {
-					t.Fatal("main security row does not ACK exact authority UUID")
+			if entry.Security == nil {
+				if table != 0 {
+					t.Fatal("expected absent security schema after rollback/no-op")
 				}
-				security = "<uuid-v4>"
-			}
-			if entry.Security == nil || security != *entry.Security {
-				t.Fatalf("security got %s want %v", security, entry.Security)
+			} else {
+				var security string
+				if err = s.Main.QueryRow("SELECT revision FROM recovery_security_state WHERE id=1").Scan(&security); err != nil {
+					t.Fatal(err)
+				}
+				if security != initialSecurity {
+					if security != lastRevision {
+						t.Fatal("main security row does not ACK exact authority UUID")
+					}
+					security = "<uuid-v4>"
+				}
+				if security != *entry.Security {
+					t.Fatalf("security got %s want %s", security, *entry.Security)
+				}
 			}
 			gate, err := recovery.ReadGate(context.Background(), s.Main)
 			if err != nil || gate.Head.Sequence != entry.AckSequence || gate.MinimumReader != int64(entry.MinimumReader) {
@@ -322,7 +317,7 @@ func TestDurableIntentFailureDoesNotRetryOrAcknowledge(t *testing.T) {
 }
 
 func TestUnsupportedSecuritySchemaFailsBeforeAnyIntent(t *testing.T) {
-	for _, schema := range []string{"", `CREATE TABLE recovery_security_state(id INTEGER PRIMARY KEY,revision TEXT)`} {
+	for _, schema := range []string{`CREATE VIEW recovery_security_state AS SELECT 1 AS id, 'bad' AS revision`, `CREATE TABLE recovery_security_state(id INTEGER PRIMARY KEY,revision TEXT)`} {
 		t.Run(schema, func(t *testing.T) {
 			s := fixtureStore(t, false)
 			if schema != "" {

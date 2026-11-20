@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 func TestOrderedWriteReachedPrefix(t *testing.T) {
@@ -114,6 +116,93 @@ func TestOrderedWriteReachedPrefix(t *testing.T) {
 			}
 			if point == "sql-first" && prepared != 1 {
 				t.Fatalf("prepared later key custody after SQL failure: %d", prepared)
+			}
+		})
+	}
+}
+
+func TestOrdinaryOrderedWriteUsesNormalReservation(t *testing.T) {
+	for _, tc := range []struct {
+		name                 string
+		before, intent, fail bool
+		stale                bool
+		begins, durable      int
+	}{
+		{name: "no intent", begins: 1},
+		{name: "invalid plan", before: true},
+		{name: "stale head", stale: true, begins: 1, durable: 1},
+		{name: "failed after intent", intent: true, fail: true, begins: 2, durable: 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := newWriterFixture(t)
+			ctx := context.Background()
+			if tc.stale {
+				if _, err := f.authority.Append(ctx, Source{"s", "independent"}, f.gate.Head, false); err != nil {
+					t.Fatal(err)
+				}
+			}
+			begins, applied := 0, false
+			if err := f.authority.conn.Raw(func(raw any) error {
+				raw.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, operation, _, _ string) int {
+					if op == sqlite3.SQLITE_TRANSACTION && operation == "BEGIN" {
+						begins++
+					}
+					return sqlite3.SQLITE_OK
+				})
+				return nil
+			}); err != nil {
+				t.Fatal(err)
+			}
+			injected := errors.New("synthetic_ordinary_write_failure")
+			_, err := f.authority.PrepareOrderedWrite(ctx, f.main, func(*MainRead) (OrderedWritePlan, error) {
+				step := OrderedWriteStep{Apply: func(m *MainMutation) error {
+					applied = true
+					if _, err := m.Exec("UPDATE data SET value='written'"); err != nil {
+						return err
+					}
+					if tc.fail {
+						return injected
+					}
+					return nil
+				}}
+				if tc.intent {
+					step.Intents = []Revocation{Source{"s", "write"}}
+				}
+				if tc.before {
+					return OrderedWritePlan{}, injected
+				}
+				return OrderedWritePlan{MinimumReader: 1, Steps: []OrderedWriteStep{step}}, nil
+			})
+			observed := begins
+			if err := f.authority.conn.Raw(func(raw any) error {
+				raw.(*sqlite3.SQLiteConn).RegisterAuthorizer(nil)
+				return nil
+			}); err != nil {
+				t.Fatal(err)
+			}
+			switch {
+			case tc.stale:
+				if err == nil || err.Error() != "recovery_authority_head_changed" {
+					t.Fatalf("stale write returned %v", err)
+				}
+			case tc.before || tc.fail:
+				if !errors.Is(err, injected) {
+					t.Fatalf("injected failure returned %v", err)
+				}
+			case err != nil:
+				t.Fatal(err)
+			}
+			if observed != tc.begins || applied != (!tc.before && !tc.stale) {
+				t.Fatalf("reservations=%d, callback=%t; want %d, %t", observed, applied, tc.begins, !tc.before && !tc.stale)
+			}
+			head, err := f.authority.Head(ctx)
+			if err != nil || head.Sequence != int64(tc.durable) {
+				t.Fatalf("unexpected durable head %+v: %v", head, err)
+			}
+			if tc.before || tc.stale || tc.fail {
+				assertMain(t, f, "original", 0, 1)
+			} else {
+				assertMain(t, f, "written", 0, 1)
 			}
 		})
 	}

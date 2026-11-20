@@ -224,6 +224,13 @@ add(
   { budgetDailyUsd: 2 },
   { absentSecuritySchema: true },
 )
+add(
+  'fresh_schema_rolls_back_after_flags_and_security_intents',
+  {},
+  { memoryKnowledgeEnabled: true, budgetDailyUsd: 2 },
+  { absentSecuritySchema: true, failSettingsWrite: true },
+)
+add('fresh_schema_not_created_for_defaults', {}, { budgetDailyUsd: 1, budgetExperimentEnabled: false }, { absentSecuritySchema: true })
 const root = mkdtempSync(join(tmpdir(), 'he-settings-write-'))
 process.env.HUMANENGINE_LOG_DIR = join(root, 'logs')
 delete process.env.HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY
@@ -234,8 +241,8 @@ try {
       readonly: true,
     })
     try {
-      // The candidate supports a previously established canonical schema. The
-      // last case explicitly records the TS lazy-create behavior still missing.
+      // Most cases start from an existing canonical schema. Fresh cases
+      // exercise source lazy creation, no-op, and main-transaction rollback.
       if (!entry.absentSecuritySchema) {
         ensureSecurityState(store.db)
         store.db.prepare('INSERT INTO recovery_security_state VALUES(1,?)').run(initialSecurity)

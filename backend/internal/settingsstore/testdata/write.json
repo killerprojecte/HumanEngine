@@ -3683,6 +3683,51 @@
       "security": "<uuid-v4>",
       "ackSequence": 1,
       "minimumReader": 1
+    },
+    {
+      "name": "fresh_schema_rolls_back_after_flags_and_security_intents",
+      "previous": {},
+      "input": {
+        "memoryKnowledgeEnabled": true,
+        "budgetDailyUsd": 2
+      },
+      "absentSecuritySchema": true,
+      "failSettingsWrite": true,
+      "rawInput": "{\"memoryKnowledgeEnabled\":true,\"budgetDailyUsd\":2}",
+      "error": "fixture_settings_write_failed",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{}"
+        }
+      ],
+      "events": [
+        "{\"kind\":\"configuration_flags\",\"schemaVersion\":8,\"flags\":{\"memoryExperienceFeedbackEnabled\":false,\"memorySemanticEnabled\":false,\"memorySemanticAutoAdmissionEnabled\":false,\"memorySemanticAnswerEnabled\":false,\"memoryKnowledgeEnabled\":true,\"memoryKnowledgeAutoAdmissionEnabled\":false,\"memoryKnowledgeAnswerEnabled\":false,\"topicAdmissionEnabled\":false,\"memoryWorkingSetEnabled\":false,\"memoryEpisodesEnabled\":false,\"memoryCommitmentsEnabled\":false,\"memoryCommitmentsAnswerEnabled\":false,\"memoryHistoricalReadEnabled\":false,\"sourceEventRevisionsEnabled\":false,\"cacheEnabled\":true,\"debugModelIO\":false,\"memoryProjectionEnabled\":false,\"memoryGraphEnabled\":false,\"memoryGraphAutoAdmissionEnabled\":false,\"memoryGraphAnswerEnabled\":false,\"memoryGraphShadowEnabled\":false,\"memoryExperienceEnabled\":false,\"memoryExperienceAutoActivateEnabled\":false,\"memoryExperienceHintsEnabled\":false}}",
+        "{\"kind\":\"security_state\",\"revision\":\"<uuid-v4>\"}"
+      ],
+      "security": null,
+      "ackSequence": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "fresh_schema_not_created_for_defaults",
+      "previous": {},
+      "input": {
+        "budgetDailyUsd": 1,
+        "budgetExperimentEnabled": false
+      },
+      "absentSecuritySchema": true,
+      "rawInput": "{\"budgetDailyUsd\":1,\"budgetExperimentEnabled\":false}",
+      "output": [
+        {
+          "key": "settings",
+          "value": "{\"budgetDailyUsd\":1,\"budgetExperimentEnabled\":false}"
+        }
+      ],
+      "events": [],
+      "security": null,
+      "ackSequence": 0,
+      "minimumReader": 1
     }
   ]
 }

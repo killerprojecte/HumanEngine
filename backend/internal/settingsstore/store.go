@@ -10,9 +10,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
-// ErrSecuritySchemaUnsupported identifies a candidate enrollment gap, not an
-// original Store validation error. Bootstrap/migration must establish the TS
-// security-state table before security-changing writes can use this service.
+// ErrSecuritySchemaUnsupported refuses to reuse an incompatible existing
+// security-state object. The canonical table may be absent on a fresh install.
 var ErrSecuritySchemaUnsupported = errors.New("settings_security_schema_unsupported")
 
 type Store struct {
@@ -34,31 +33,53 @@ func (s *Store) Set(ctx context.Context, input any) (recovery.Head, error) {
 		return recovery.Head{}, err
 	}
 	snapshot := clone(input)
-	return s.Authority.PrepareWrite(ctx, s.Main, func(read *recovery.MainRead) (recovery.WritePlan, error) {
+	return s.Authority.PrepareOrderedWrite(ctx, s.Main, func(read *recovery.MainRead) (recovery.OrderedWritePlan, error) {
 		previous, err := configValue(read, "settings", nil)
 		if err != nil {
-			return recovery.WritePlan{}, err
+			return recovery.OrderedWritePlan{}, err
 		}
 		prepared, err := prepare(previous, snapshot, func(key string) (any, error) { return configValue(read, key, float64(0)) })
 		if err != nil {
-			return recovery.WritePlan{}, err
+			return recovery.OrderedWritePlan{}, err
 		}
-		revision := ""
+		revision, createSchema := "", false
 		if prepared.securityChanged {
-			// This unsupported enrollment state is detected before any intent. Do not
-			// route CREATE through MainMutation or partially change an unenrolled DB.
-			if err = requireSecuritySchema(read); err != nil {
-				return recovery.WritePlan{}, err
+			// Reject an incompatible existing object before any earlier flag
+			// intent. Absent is valid; create only at the source's security step.
+			createSchema, err = securitySchemaMissing(read)
+			if err != nil {
+				return recovery.OrderedWritePlan{}, err
 			}
 			revision, err = securityRevision()
 			if err != nil {
-				return recovery.WritePlan{}, err
+				return recovery.OrderedWritePlan{}, err
 			}
-			prepared.intents = append(prepared.intents, recovery.SecurityState{Revision: revision})
 		}
-		return recovery.WritePlan{Intents: prepared.intents, MinimumReader: 1, Apply: func(tx *recovery.MainMutation) error {
-			for _, update := range prepared.updates {
+		ordered := recovery.OrderedWritePlan{MinimumReader: 1}
+		intents := prepared.intents
+		updates := prepared.updates
+		applyUpdates := func(tx *recovery.MainMutation) error {
+			for _, update := range updates {
 				if _, err := tx.Exec("INSERT OR REPLACE INTO main.config(key,value) VALUES(?,?)", update.key, update.raw); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+		// Revision SQL precedes flags and lazy schema work. With neither, it
+		// can run inside the normal final callback instead of a separate step.
+		if len(updates) != 0 && (len(intents) != 0 || revision != "") {
+			ordered.Steps = append(ordered.Steps, recovery.OrderedWriteStep{Apply: applyUpdates})
+		}
+		if revision != "" {
+			if len(intents) != 0 {
+				ordered.Steps = append(ordered.Steps, recovery.OrderedWriteStep{Intents: intents, Apply: func(*recovery.MainMutation) error { return nil }})
+			}
+			intents = []recovery.Revocation{recovery.SecurityState{Revision: revision}}
+		}
+		ordered.Steps = append(ordered.Steps, recovery.OrderedWriteStep{EnsureSecurityState: createSchema, Intents: intents, Apply: func(tx *recovery.MainMutation) error {
+			if len(intents) == 0 {
+				if err := applyUpdates(tx); err != nil {
 					return err
 				}
 			}
@@ -72,7 +93,8 @@ func (s *Store) Set(ctx context.Context, input any) (recovery.Head, error) {
 			}
 			_, err := tx.Exec("INSERT INTO main.config(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", "settings", encoded)
 			return err
-		}}, nil
+		}})
+		return ordered, nil
 	})
 }
 
@@ -96,13 +118,13 @@ func configValue(read *recovery.MainRead, key string, fallback any) (any, error)
 	return jsjson.Parse(raw)
 }
 
-// Accept the canonical schema created by ensureSecurityState. No Go schema
-// migration is smuggled into the restricted main mutation capability. Other
-// schemas (even seemingly similar ones) need a separately audited migration.
-func requireSecuritySchema(read *recovery.MainRead) error {
+// securitySchemaMissing distinguishes fresh enrollment from an unsupported
+// preexisting object. This runs under the same main writer transaction as the
+// later scoped EnsureSecurityState; no schema changes are exposed to callers.
+func securitySchemaMissing(read *recovery.MainRead) (bool, error) {
 	rows, err := read.Query("SELECT type,sql FROM main.sqlite_master WHERE name='recovery_security_state'")
 	if err != nil {
-		return err
+		return false, err
 	}
 	var kind, definition string
 	exists := rows.Next()
@@ -110,14 +132,14 @@ func requireSecuritySchema(read *recovery.MainRead) error {
 		err = rows.Scan(&kind, &definition)
 	}
 	err = errors.Join(err, rows.Err(), rows.Close())
-	if err != nil {
-		return err
+	if err != nil || !exists {
+		return !exists, err
 	}
 	normalized := strings.ToLower(strings.Join(strings.Fields(definition), ""))
 	normalized = strings.Replace(normalized, "ifnotexists", "", 1)
 	const expected = "createtablerecovery_security_state(idintegerprimarykeycheck(id=1),revisiontextnotnull)"
-	if !exists || kind != "table" || normalized != expected {
-		return ErrSecuritySchemaUnsupported
+	if kind != "table" || normalized != expected {
+		return false, ErrSecuritySchemaUnsupported
 	}
-	return nil
+	return false, nil
 }

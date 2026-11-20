@@ -411,6 +411,13 @@ func (a *Authority) executeWrite(ctx context.Context, main *sql.DB, events []wri
 	if !a.writer {
 		return head, errors.New("recovery_writer_required")
 	}
+	return a.finishPreparedWrite(ctx, conn, gate, events, minimumReader, apply, hooks)
+}
+
+// finishPreparedWrite runs a fully prepared single write under the caller's
+// existing main transaction and authority mutex. It validates the current
+// head, applies the mutation, and acknowledges it under one final reservation.
+func (a *Authority) finishPreparedWrite(ctx context.Context, conn *sql.Conn, gate Gate, events []writeEvent, minimumReader int, apply func(*MainMutation) error, hooks writeHooks) (head Head, err error) {
 	head = gate.Head
 	for _, event := range events {
 		head, err = a.appendLocked(ctx, event, head, false, hooks.commit)

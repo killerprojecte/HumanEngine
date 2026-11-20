@@ -36,22 +36,17 @@ combined with a changed flag can therefore leave a configuration intent, even
 though validation fails and main rolls back. Invalid/overflowed policy revisions
 fail before that intent.
 
-TypeScript lazily creates recovery_security_state in advanceSecurityState, not
-in initial enrollment. MainMutation correctly forbids schema changes. Until a
-separate bootstrap/migration supplies the schema, security-changing Go writes
-require the canonical table produced by ensureSecurityState. A missing or
-noncanonical schema returns `ErrSecuritySchemaUnsupported` before **any** intent
-or main mutation. This is an explicit candidate limitation, not equivalent to the
-TypeScript lazy-create behavior. Non-security writes do not require that table.
-The oracle includes the unsupported lazy-create case so the gap stays visible.
+TypeScript lazily creates the security-state table on the first changed budget
+projection, not during enrollment. Go uses the same fixed schema inside the
+ordered main transaction, immediately before the security-state intent. It
+rejects an incompatible existing object before any intent, and a failed main
+write rolls back table creation with settings, revisions and the ACK. No-op and
+non-security writes do not create the table.
 
-Only the existing canonical application schemas and ordinary data mutations are
-covered. Arbitrary extra config triggers, altered constraints or other database
-schema customizations can change the source's write/failure ordering and are not
-a migration compatibility claim. In particular the coordinator stages all domain
-intents before main row mutations, rather than interleaving revision SQL writes
-with authority appends. Original invalid revision and budget-validation ordering
-is explicitly tested; arbitrary revision-write triggers are not supported parity.
+The ordered writer reaches policy revisions, configuration flag intent, budget
+validation, and security-state intent in source order. Compare on canonical
+application schemas; arbitrary application-external schema or trigger changes
+are not a migration compatibility claim.
 
 Inputs are jsjson data values, not arbitrary JavaScript objects with accessors,
 prototypes, functions or undefined. Corrupt stored JSON is rejected by jsjson;
@@ -68,8 +63,8 @@ does not reproduce the policy in the oracle. Source hashes, Node 24.22.1 and Zod
 the Go test separately checks the main security row equals the exact authority
 UUID. `--check` verifies the checked-in oracle without rewriting it.
 
-The 166 oracle cases cover 165 supported writes/failures and the explicit missing
-security-schema limitation. They compare persisted JSON bytes, ordered authority
+The 168 oracle cases cover existing and fresh security schema writes, expected
+failures, and no-op projections. They compare persisted JSON bytes, ordered authority
 payloads, revision rows, security rotation, validation messages and ACK capability.
 Additional real-WAL tests cover concurrent revision increments, repeated writes,
 no-op intents, unsupported-schema rollback and refusal to silently acknowledge a

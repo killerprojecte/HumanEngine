@@ -1,0 +1,93 @@
+{
+  "node": "v24.22.1",
+  "views": [
+    {
+      "name": "retry-success",
+      "wire": [
+        "503",
+        "200"
+      ],
+      "billing": [
+        [
+          "primary",
+          "model.completed"
+        ]
+      ],
+      "diagnostic": [
+        [
+          "primary",
+          "model.failed"
+        ],
+        [
+          "primary",
+          "model.completed"
+        ]
+      ],
+      "rows": [
+        [
+          "primary",
+          1,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "exhaustion-with-fallback",
+      "wire": [
+        "503",
+        "503",
+        "200"
+      ],
+      "billing": [
+        [
+          "primary",
+          "model.failed"
+        ],
+        [
+          "fallback",
+          "model.completed"
+        ]
+      ],
+      "diagnostic": [
+        [
+          "primary",
+          "model.failed"
+        ],
+        [
+          "primary",
+          "model.failed"
+        ],
+        [
+          "fallback",
+          "model.completed"
+        ]
+      ],
+      "rows": [
+        [
+          "fallback",
+          1,
+          0
+        ],
+        [
+          "primary",
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "parent-abort",
+      "wire": [
+        "cancel"
+      ],
+      "billing": [],
+      "diagnostic": [
+        [
+          "primary",
+          "model.failed"
+        ]
+      ],
+      "rows": []
+    }
+  ]
+}

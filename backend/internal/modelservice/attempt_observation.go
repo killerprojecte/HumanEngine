@@ -12,8 +12,9 @@ import (
 // No response text, tool arguments, credentials or continuation can cross this
 // observation port.
 type AttemptUsage struct {
-	Known                                                                  bool
-	InputTokens, OutputTokens, CacheReadInputTokens, CacheWriteInputTokens *float64
+	Known, CacheKnown                                                                           bool
+	InputTokens, OutputTokens, OrdinaryInputTokens, CacheReadInputTokens, CacheWriteInputTokens *float64
+	CacheWriteTTL                                                                               [4]*float64 // 5m, 1h, 30m, 12h.
 }
 type AttemptObservation struct {
 	ModelID, ProviderID, APIModelName, Role string
@@ -29,6 +30,10 @@ type AttemptObservation struct {
 }
 type AttemptObserver func(context.Context, AttemptObservation)
 type attemptObserverKey struct{}
+type modelObservers struct {
+	attempt, usage AttemptObserver
+	candidateStart time.Time
+}
 type attemptStateKey struct{}
 type attemptState struct {
 	mu        sync.Mutex
@@ -40,7 +45,25 @@ type attemptState struct {
 }
 
 func WithAttemptObserver(ctx context.Context, observer AttemptObserver) context.Context {
-	return context.WithValue(ctx, attemptObserverKey{}, observer)
+	observers := getModelObservers(ctx)
+	observers.attempt = observer
+	return context.WithValue(ctx, attemptObserverKey{}, observers)
+}
+
+// WithUsageObserver observes candidate billing (a paid success or a terminal
+// non-aborted failure), not each independent diagnostic retry.
+func WithUsageObserver(ctx context.Context, observer AttemptObserver) context.Context {
+	observers := getModelObservers(ctx)
+	observers.usage = observer
+	return context.WithValue(ctx, attemptObserverKey{}, observers)
+}
+func getModelObservers(ctx context.Context) modelObservers {
+	observers, _ := ctx.Value(attemptObserverKey{}).(modelObservers)
+	return observers
+}
+func emitModelObservation(ctx context.Context, observer AttemptObserver, event AttemptObservation) {
+	defer func() { _ = recover() }()
+	observer(ctx, event)
 }
 func ObserveTransportMode(ctx context.Context, mode string) {
 	state, _ := ctx.Value(attemptStateKey{}).(*attemptState)
@@ -69,7 +92,14 @@ func copyAttemptUsage(u *AttemptUsage) *AttemptUsage {
 	if u == nil {
 		return nil
 	}
-	return &AttemptUsage{u.Known, copyNumber(u.InputTokens), copyNumber(u.OutputTokens), copyNumber(u.CacheReadInputTokens), copyNumber(u.CacheWriteInputTokens)}
+	out := *u
+	out.InputTokens, out.OutputTokens = copyNumber(u.InputTokens), copyNumber(u.OutputTokens)
+	out.OrdinaryInputTokens = copyNumber(u.OrdinaryInputTokens)
+	out.CacheReadInputTokens, out.CacheWriteInputTokens = copyNumber(u.CacheReadInputTokens), copyNumber(u.CacheWriteInputTokens)
+	for i, n := range u.CacheWriteTTL {
+		out.CacheWriteTTL[i] = copyNumber(n)
+	}
+	return &out
 }
 func AttemptObservationActive(ctx context.Context) bool {
 	state, _ := ctx.Value(attemptStateKey{}).(*attemptState)
@@ -92,8 +122,8 @@ func ObserveAttemptUsage(ctx context.Context, usage *AttemptUsage) {
 	}
 }
 func (p *Policy) executeObserved(ctx context.Context, c Candidate, number int, policy RequestPolicy, invoke Invocation) (value any, err error) {
-	observer, _ := ctx.Value(attemptObserverKey{}).(AttemptObserver)
-	if observer == nil || c.Role == "models" {
+	observers := getModelObservers(ctx)
+	if (observers.attempt == nil && observers.usage == nil) || c.Role == "models" {
 		return p.execute(ctx, c, number, policy, invoke)
 	}
 	mode := "custom"
@@ -124,7 +154,14 @@ func (p *Policy) executeObserved(ctx context.Context, c Candidate, number int, p
 		state.mu.Unlock()
 		// No business result is passed to the optional callback. Callback execution
 		// remains inside the accepted Policy runner's physical lifetime.
-		func() { defer func() { _ = recover() }(); observer(ctx, event) }()
+		if err == nil && observers.usage != nil {
+			billing := event
+			billing.Duration = time.Since(observers.candidateStart)
+			emitModelObservation(ctx, observers.usage, billing)
+		}
+		if observers.attempt != nil {
+			emitModelObservation(ctx, observers.attempt, event)
+		}
 	}()
 	return p.execute(context.WithValue(ctx, attemptStateKey{}, state), c, number, policy, invoke)
 }

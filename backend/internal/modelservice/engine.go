@@ -7,6 +7,7 @@ import (
 	"math"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/scheduler"
 )
@@ -281,11 +282,26 @@ func (p *Policy) run(ctx context.Context, request Request, invoke Invocation) (a
 	}
 	return nil, result
 }
-func (p *Policy) attempts(ctx context.Context, c Candidate, invoke Invocation) (any, error) {
+func (p *Policy) attempts(ctx context.Context, c Candidate, invoke Invocation) (result any, err error) {
 	policy, err := ProviderPolicy(c.Provider)
 	if err != nil {
 		return nil, err
 	}
+	if observers := getModelObservers(ctx); observers.usage != nil && c.Role != "models" {
+		observers.candidateStart = time.Now()
+		ctx = context.WithValue(ctx, attemptObserverKey{}, observers)
+		defer func() {
+			// Source records failed candidates once, but not caller aborts. The
+			// existing attempt observer still records each diagnostic retry.
+			if err != nil && ctx.Err() == nil {
+				emitModelObservation(ctx, observers.usage, AttemptObservation{
+					ModelID: c.Model.ID, ProviderID: c.Provider.ID, APIModelName: c.Model.APIModelName,
+					Role: c.Role, Duration: time.Since(observers.candidateStart),
+				})
+			}
+		}()
+	}
+
 	for attempt := 1; attempt <= policy.MaxAttempts; attempt++ {
 		if ctx.Err() != nil {
 			return nil, cancelled(context.Cause(ctx))

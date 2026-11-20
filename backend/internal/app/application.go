@@ -132,11 +132,13 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		next.Host = app.models.Host
 		next.Diagnostics = app.models.Diagnostics
 		next.Calls = app.models.Calls
+		next.Usage = app.models.Usage
 		return next, nil
 	}
 
 	calls := modelcalls.New(owners.Main)
 	app.models.Calls = calls
+	app.models.Usage = usageview.NewWriter(owners.Main)
 	// The concrete recall owners are installed below before ingress starts.
 	// Apply Experience, then memory, in the existing root writer. NewRuntime
 	// appends Meme after both; memory flushes its projection only after commit.

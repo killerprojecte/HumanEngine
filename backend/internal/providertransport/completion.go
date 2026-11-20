@@ -43,6 +43,7 @@ type NativeModels struct {
 	routers           routerOwners
 	Diagnostics       DiagnosticSink
 	Calls             ModelCallSink
+	Usage             ModelUsageSink
 	requests          quiescence.Group
 	attempts          quiescence.Group
 	Host              *plugins.V1Host

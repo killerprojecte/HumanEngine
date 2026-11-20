@@ -30,42 +30,44 @@ import (
 )
 
 type Server struct {
-	browserSessions     *browserSessions
-	manualMemoryIndex   func(context.Context, string, string)
-	logStatus           *logStatusOwner
-	learningAdmin       *learningAdminOwner
-	embeddingIndexRead  learningowner.IndexAdminRead
-	budgetAdmin         *budgetAdminOwner
-	memoryDelete        *memoryservice.Service
-	memoryAdminRead     *memoryservice.AdminRead
-	episodesRead        memoryservice.EpisodesAdminRead
-	semanticsRead       memoryservice.SemanticsAdminRead
-	workingSetRead      memoryservice.WorkingSetAdminRead
-	workingSetPin       memoryservice.WorkingSetPinAdmin
-	commitmentRead      memoryservice.CommitmentAdminRead
-	knowledgeRead       memoryservice.KnowledgeAdminRead
-	retainedPublisher   *recovery.ReadPublisher
-	runtimeStatus       *runtimeStatusOwner
-	usage               *usageview.Store
-	usagePublisher      *recovery.ReadPublisher
-	providerReads       *providertransport.NativeModels
-	providerPublisher   *recovery.ReadPublisher
-	sceneConfiguration  *sceneConfigurationOwner
-	plugins             *pluginmanager.Manager
-	modelCalls          *modelcalls.Store
-	modelCallsPublisher *recovery.ReadPublisher
-	diagnostics         DiagnosticReader
-	diagnosticPublisher *recovery.ReadPublisher
-	configuration       *configurationOwner
-	memes               *memeengine.Service
-	experience          *experienceservice.Service
-	habits              *habitservice.Service
-	main                *sql.DB
-	authority           *recovery.Authority
-	schemas             *contract.Schemas
-	token               string
-	logs                observability.RetainedLogger
-	owned               *ownership
+	browserSessions          *browserSessions
+	manualMemoryIndex        func(context.Context, string, string)
+	logStatus                *logStatusOwner
+	learningAdmin            *learningAdminOwner
+	embeddingIndexRead       learningowner.IndexAdminRead
+	embeddingIndexAction     learningowner.IndexAdminAction
+	embeddingActionPublisher *recovery.ReadPublisher
+	budgetAdmin              *budgetAdminOwner
+	memoryDelete             *memoryservice.Service
+	memoryAdminRead          *memoryservice.AdminRead
+	episodesRead             memoryservice.EpisodesAdminRead
+	semanticsRead            memoryservice.SemanticsAdminRead
+	workingSetRead           memoryservice.WorkingSetAdminRead
+	workingSetPin            memoryservice.WorkingSetPinAdmin
+	commitmentRead           memoryservice.CommitmentAdminRead
+	knowledgeRead            memoryservice.KnowledgeAdminRead
+	retainedPublisher        *recovery.ReadPublisher
+	runtimeStatus            *runtimeStatusOwner
+	usage                    *usageview.Store
+	usagePublisher           *recovery.ReadPublisher
+	providerReads            *providertransport.NativeModels
+	providerPublisher        *recovery.ReadPublisher
+	sceneConfiguration       *sceneConfigurationOwner
+	plugins                  *pluginmanager.Manager
+	modelCalls               *modelcalls.Store
+	modelCallsPublisher      *recovery.ReadPublisher
+	diagnostics              DiagnosticReader
+	diagnosticPublisher      *recovery.ReadPublisher
+	configuration            *configurationOwner
+	memes                    *memeengine.Service
+	experience               *experienceservice.Service
+	habits                   *habitservice.Service
+	main                     *sql.DB
+	authority                *recovery.Authority
+	schemas                  *contract.Schemas
+	token                    string
+	logs                     observability.RetainedLogger
+	owned                    *ownership
 }
 
 func Open(ctx context.Context, database, token string, logs observability.RetainedLogger) (*Server, error) {
@@ -128,6 +130,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	sceneRead := operation != "" && s.runtimeStatus != nil
 	learningAdmin := s.learningAdmin != nil && learningAdminPath(path)
 	embeddingIndex := s.embeddingIndexRead != nil && path == embeddingIndexPath && (r.Method == http.MethodGet || r.Method == http.MethodHead)
+	embeddingFamily := embeddingIndex || s.embeddingIndexAction != nil && (path == embeddingIndexPath || strings.HasPrefix(path, embeddingIndexPath+"/"))
 	budgetAdmin := s.budgetAdmin != nil && budgetAdminPath(r.Method, path)
 	memoryIdentities := s.memoryAdminRead != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodPost) && path == "/api/memory-identities"
 	relationID, reviewRelation := memoryRelationReviewPath(r.Method, path)
@@ -152,7 +155,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
 	}
 	id := r.Header.Get("X-Request-ID")
-	if simulation || embeddingIndex || learningAdmin || budgetAdmin || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || semanticReview || workspaceWorkingSet || workspacePin || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions" || r.Method == http.MethodPost && strings.HasPrefix(path, "/api/models/") && strings.HasSuffix(path, "/probe"))) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if simulation || embeddingFamily || learningAdmin || budgetAdmin || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || semanticReview || workspaceWorkingSet || workspacePin || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions" || r.Method == http.MethodPost && strings.HasPrefix(path, "/api/models/") && strings.HasSuffix(path, "/probe"))) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -177,12 +180,12 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if embeddingIndex || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || semanticReview || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+	if embeddingFamily || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || semanticReview || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if embeddingIndex || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || semanticReview || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+		if embeddingFamily || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || semanticReview || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -251,6 +254,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if embeddingIndex {
 		s.serveEmbeddingIndex(w, r, available, id)
+		return
+	}
+	if embeddingFamily {
+		s.serveEmbeddingIndexAction(w, r, available, id, path)
 		return
 	}
 	if learningAdmin {

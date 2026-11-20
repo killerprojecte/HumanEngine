@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+	"github.com/killerprojecte/HumanEngine/backend/internal/contract"
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/httpapi"
 	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/learningowner"
 	"github.com/killerprojecte/HumanEngine/backend/internal/learningruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
@@ -112,18 +114,14 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		return app, err
 	}
 	app.models.Diagnostics = app.Diagnostics.Store
-	app.models.Router = func(call context.Context) (*providertransport.NativeModels, error) {
-		latest, e := readConfiguration(call, owners.Main, owners.Authority)
-		if e != nil {
-			return nil, e
-		}
+	buildModelRouter := func(models, settings map[string]any) (*providertransport.NativeModels, error) {
 		nextClient := *client
 		nextClient.MaxOutputTokens = nil
-		if latest.settings["budgetExperimentEnabled"] == true {
-			cap := int(latest.settings["budgetMaxOutputTokens"].(float64))
+		if settings["budgetExperimentEnabled"] == true {
+			cap := int(settings["budgetMaxOutputTokens"].(float64))
 			nextClient.MaxOutputTokens = &cap
 		}
-		next, e := modelConfiguration(latest.models, &nextClient, modelservice.Options{Scheduler: sched, Observe: func(event modelservice.Event) {
+		next, e := modelConfiguration(models, &nextClient, modelservice.Options{Scheduler: sched, Observe: func(event modelservice.Event) {
 			emit(options.Logs, observability.Event{Level: "info", Module: "model", Code: "model." + event.Kind, Message: event.Kind, Fields: map[string]any{"modelId": event.ModelID, "attempt": event.Attempt, "reason": event.Code}})
 		}})
 		if e != nil {
@@ -134,6 +132,28 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		next.Calls = app.models.Calls
 		next.Usage = app.models.Usage
 		return next, nil
+	}
+	app.models.Router = func(call context.Context) (*providertransport.NativeModels, error) {
+		latest, e := readConfiguration(call, owners.Main, owners.Authority)
+		if e != nil {
+			return nil, e
+		}
+		return buildModelRouter(latest.models, latest.settings)
+	}
+	embeddingRouter := func(_ context.Context, pinned *jsjson.Object, settings map[string]any) (*providertransport.NativeModels, error) {
+		raw, err := jsjson.Marshal(pinned)
+		if err != nil {
+			return nil, err
+		}
+		schemas, err := contract.SharedSchemas()
+		if err != nil {
+			return nil, err
+		}
+		models, err := schemas.Parse("ModelConfig", raw)
+		if err != nil {
+			return nil, err
+		}
+		return buildModelRouter(models, settings)
 	}
 
 	calls := modelcalls.New(owners.Main)
@@ -290,6 +310,9 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error { return app.HTTP.WithMemes(app.Engine) },
 		func() error { return app.HTTP.WithLearningAdmin(app.Learning.Coordinator, app.readPublisher) },
 		func() error { return app.HTTP.WithEmbeddingIndexRead(app.Learning.Owner, app.readPublisher) },
+		func() error {
+			return app.HTTP.WithEmbeddingIndexActions(app.Learning.Owner, app.readPublisher, embeddingRouter)
+		},
 		func() error { return app.HTTP.WithBudgetAdmin(owners.Budgets, app.readPublisher, owners.Compare) },
 		func() error { return app.HTTP.WithRetainedLogs(app.readPublisher) },
 		func() error {

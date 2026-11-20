@@ -201,7 +201,7 @@ func (o *Owner) initializeIndex(ctx context.Context) error {
 		if e != nil {
 			return e
 		}
-		o.indexBootstrap = state.empty
+		o.indexBootstrap.Store(state.empty)
 		return o.expireIndexLease(ws, state.job)
 	})
 }
@@ -301,7 +301,7 @@ func (o *Owner) indexMemoryRun(ctx context.Context, id, content string, active *
 		return e
 	}
 	selected := state.selected
-	if selected == nil || (active == nil && !o.indexBootstrap) || (active != nil && !indexUsable(state, active)) {
+	if selected == nil || (active == nil && !o.indexBootstrap.Load()) || (active != nil && !indexUsable(state, active)) {
 		return nil
 	}
 	before, e := o.d.Memory.IndexableByIDs(ctx, []string{id})
@@ -359,7 +359,7 @@ func (o *Owner) indexMemoryRun(ctx context.Context, id, content string, active *
 			return nil
 		}
 		if active == nil {
-			if !o.indexBootstrap || now.job != nil {
+			if !o.indexBootstrap.Load() || now.job != nil {
 				return nil
 			}
 			if now.active != nil {
@@ -369,23 +369,12 @@ func (o *Owner) indexMemoryRun(ctx context.Context, id, content string, active *
 				if dimensions == 0 {
 					return nil
 				}
-				if dimensions > 16384 || selected.provider.ID == "" || selected.model.ID == "" || selected.model.APIModelName == "" || selected.provider.BaseURL == "" {
-					return errors.New("invalid_vector_space")
-				}
 				generation, e := indexID()
 				if e != nil {
 					return e
 				}
-				space := obj("providerId", selected.provider.ID, "modelId", selected.model.ID, "apiModelName", selected.model.APIModelName, "deployment", selected.provider.BaseURL, "dimensions", float64(dimensions), "preprocessing", "text-v1", "normalized", false, "generation", generation, "encoderRevision", selected.revision)
-				spaceID, e := indexHash(space)
+				spaceID, e := registerIndexGeneration(ws, selected, generation, dimensions)
 				if e != nil {
-					return e
-				}
-				raw, e := jsjson.Stringify(space)
-				if e != nil {
-					return e
-				}
-				if _, e = ws.Exec("INSERT OR IGNORE INTO vector_spaces VALUES(?,?)", spaceID, raw); e != nil {
 					return e
 				}
 				active = obj("generationId", generation, "encoderRevision", selected.revision, "modelId", selected.model.ID, "dimensions", float64(dimensions), "spaceId", spaceID)

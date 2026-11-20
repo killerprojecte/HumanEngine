@@ -1,0 +1,1070 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/admin.ts": "1c0075c91a98be05189c36c347f16bcd3f285d8ebc2afb50c2b6af7628a5969c",
+    "src/embedding-index.ts": "78f460b094f84bef9b484df9e14307b33652e02ac2551ae0acd770bfc4eb2deb",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a"
+  },
+  "providerCalls": 0,
+  "cases": [
+    {
+      "name": "unauthenticated-invalid-action",
+      "method": "POST",
+      "path": "/api/embedding-index/made-up",
+      "auth": false,
+      "type": "application/json",
+      "requestBody": "{",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Authentication required\"}",
+      "calls": []
+    },
+    {
+      "name": "unauthenticated-known-action",
+      "method": "POST",
+      "path": "/api/embedding-index/resume",
+      "auth": false,
+      "type": "application/json",
+      "requestBody": "{",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Authentication required\"}",
+      "calls": []
+    },
+    {
+      "name": "unauthenticated-base",
+      "method": "POST",
+      "path": "/api/embedding-index",
+      "auth": false,
+      "type": "application/json",
+      "requestBody": null,
+      "status": 401,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Authentication required\"}",
+      "calls": []
+    },
+    {
+      "name": "unauthenticated-method",
+      "method": "HEAD",
+      "path": "/api/embedding-index/start",
+      "auth": false,
+      "type": "application/json",
+      "requestBody": null,
+      "status": 401,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "hasServerRequestId": true,
+      "responseBody": "",
+      "calls": []
+    },
+    {
+      "name": "unknown-valid-json",
+      "method": "POST",
+      "path": "/api/embedding-index/made-up",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "unknown-invalid-json",
+      "method": "POST",
+      "path": "/api/embedding-index/made-up",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "unknown-no-content-type",
+      "method": "POST",
+      "path": "/api/embedding-index/made-up",
+      "auth": true,
+      "type": null,
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "uppercase-action",
+      "method": "POST",
+      "path": "/api/embedding-index/Start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "encoded-start",
+      "method": "POST",
+      "path": "/api/embedding-index/%73tart",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\"}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "start",
+          null,
+          "r"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "encoded-slash",
+      "method": "POST",
+      "path": "/api/embedding-index/start%2Fpause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "trailing-slash",
+      "method": "POST",
+      "path": "/api/embedding-index/start/",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\"}",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "404 Not Found",
+      "calls": []
+    },
+    {
+      "name": "surplus-path-component",
+      "method": "POST",
+      "path": "/api/embedding-index/start/extra",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\"}",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "404 Not Found",
+      "calls": []
+    },
+    {
+      "name": "base-post",
+      "method": "POST",
+      "path": "/api/embedding-index",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "404 Not Found",
+      "calls": []
+    },
+    {
+      "name": "get-action",
+      "method": "GET",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": null,
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "404 Not Found",
+      "calls": []
+    },
+    {
+      "name": "head-action",
+      "method": "HEAD",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": null,
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "",
+      "calls": []
+    },
+    {
+      "name": "put-action",
+      "method": "PUT",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\"}",
+      "status": 404,
+      "headers": {
+        "content-type": "text/plain; charset=UTF-8",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "404 Not Found",
+      "calls": []
+    },
+    {
+      "name": "missing-content-type-with-body",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": null,
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "missing-body-and-content-type",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": null,
+      "requestBody": null,
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "missing-body-json-content-type",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": null,
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "empty-body-json-content-type",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "",
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "malformed-json",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{",
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "trailing-json",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null}{}",
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "wrong-content-type",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "text/plain",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "charset-json",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json; charset=UTF-8",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "pause",
+          null
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "uppercase-content-type",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "Application/JSON",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "pause",
+          null
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "suffix-json-content-type",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/vnd.test+json",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "pause",
+          null
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "non-json-prefix",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "x-application/json",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "utf8-bom-json",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "﻿{\"expectedJobId\":null}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "pause",
+          null
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "utf8-bom-only",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "﻿",
+      "status": 503,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Request failed; inspect server diagnostics\",\"requestId\":\"<request-id>\"}",
+      "calls": []
+    },
+    {
+      "name": "primitive-null",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "null",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "array-json",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "[null]",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "strict-extra",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"extra\":1}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "missing-expected-job",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "explicit-null-expected-job",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "pause",
+          null
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "empty-expected-job",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"\"}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "pause",
+          ""
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "nonstring-expected-job",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":1}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "start-missing-encoder",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"embedding_index_refresh_required\"}",
+      "calls": []
+    },
+    {
+      "name": "start-empty-encoder",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"embedding_index_refresh_required\"}",
+      "calls": []
+    },
+    {
+      "name": "start-whitespace-encoder",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\" \"}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "start",
+          null,
+          " "
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "start-null-encoder",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":null}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "start-missing-job-before-semantic-check",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "start-controls-last-declaration",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":false,\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\"}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "start",
+          null,
+          "r"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "resume-confirm-default",
+      "method": "POST",
+      "path": "/api/embedding-index/resume",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"job\"}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "resume",
+          false,
+          "job"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "resume-confirm-false",
+      "method": "POST",
+      "path": "/api/embedding-index/resume",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"job\",\"confirmUnknownRequest\":false}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "resume",
+          false,
+          "job"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "resume-confirm-true",
+      "method": "POST",
+      "path": "/api/embedding-index/resume",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"job\",\"confirmUnknownRequest\":true}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "resume",
+          true,
+          "job"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "resume-confirm-invalid-string",
+      "method": "POST",
+      "path": "/api/embedding-index/resume",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"job\",\"confirmUnknownRequest\":\"true\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "resume-confirm-invalid-null",
+      "method": "POST",
+      "path": "/api/embedding-index/resume",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"job\",\"confirmUnknownRequest\":null}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "start-irrelevant-confirm-invalid",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":null,\"expectedEncoderRevision\":\"r\",\"confirmUnknownRequest\":null}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"Invalid request\"}",
+      "calls": []
+    },
+    {
+      "name": "cancel-irrelevant-encoder-valid",
+      "method": "POST",
+      "path": "/api/embedding-index/cancel",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"job\",\"expectedEncoderRevision\":\"\"}",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"state\":\"unconfigured\",\"coverage\":{\"eligible\":0,\"indexed\":0,\"pending\":0},\"retained\":{\"generations\":0,\"vectors\":0}}",
+      "calls": [
+        [
+          "cancel",
+          "job"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    {
+      "name": "pause-private-owner-error",
+      "method": "POST",
+      "path": "/api/embedding-index/pause",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"@fail\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"embedding_index_action_unavailable\"}",
+      "calls": [
+        [
+          "pause",
+          "@fail"
+        ]
+      ]
+    },
+    {
+      "name": "resume-private-owner-error",
+      "method": "POST",
+      "path": "/api/embedding-index/resume",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"@fail\",\"confirmUnknownRequest\":true}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"embedding_index_action_unavailable\"}",
+      "calls": [
+        [
+          "resume",
+          true,
+          "@fail"
+        ]
+      ]
+    },
+    {
+      "name": "start-private-owner-error",
+      "method": "POST",
+      "path": "/api/embedding-index/start",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"@fail\",\"expectedEncoderRevision\":\"r\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"embedding_index_action_unavailable\"}",
+      "calls": [
+        [
+          "start",
+          "@fail",
+          "r"
+        ]
+      ]
+    },
+    {
+      "name": "cancel-private-owner-error",
+      "method": "POST",
+      "path": "/api/embedding-index/cancel",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"@fail\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"embedding_index_action_unavailable\"}",
+      "calls": [
+        [
+          "cancel",
+          "@fail"
+        ]
+      ]
+    },
+    {
+      "name": "post-status-private-error",
+      "method": "POST",
+      "path": "/api/embedding-index/cancel",
+      "auth": true,
+      "type": "application/json",
+      "requestBody": "{\"expectedJobId\":\"@status-fail\"}",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "hasServerRequestId": true,
+      "responseBody": "{\"error\":\"embedding_index_action_unavailable\"}",
+      "calls": [
+        [
+          "cancel",
+          "@status-fail"
+        ],
+        [
+          "status"
+        ]
+      ]
+    }
+  ]
+}

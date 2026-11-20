@@ -157,3 +157,35 @@ func (s *Service) PromotePublicGuarded(ctx context.Context, input Context, id st
 	})
 	return
 }
+
+// IndexableInSession evaluates the rebuild's complete, ordered population in
+// the caller's existing writer, after the normal support refresh.
+func (s *Service) IndexableInSession(ctx context.Context, ws *recovery.WriteSession) (out []*Object, err error) {
+	scoped := *s
+	scoped.revisions = s.revisions.WithSession(ws)
+	if err := scoped.RefreshSupport(ctx); err != nil {
+		return nil, err
+	}
+	err = s.d.Assertions.WithSession(ws).Read(ctx, func(r *assertions.Reader) error {
+		rows, err := r.All()
+		if err != nil {
+			return err
+		}
+		a, err := assertionauthority.New(r, s.d.Authority)
+		if err != nil {
+			return err
+		}
+		for _, raw := range rows {
+			row := object(raw)
+			ok, err := indexable(row, a)
+			if err != nil {
+				return err
+			}
+			if ok {
+				out = append(out, row)
+			}
+		}
+		return nil
+	})
+	return
+}

@@ -1,0 +1,1153 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/embedding-index.ts": "78f460b094f84bef9b484df9e14307b33652e02ac2551ae0acd770bfc4eb2deb",
+    "src/admin.ts": "1c0075c91a98be05189c36c347f16bcd3f285d8ebc2afb50c2b6af7628a5969c"
+  },
+  "results": [
+    {
+      "name": "atomic-cutover-and-prune",
+      "outcomes": [
+        {
+          "label": "requires-rendered-encoder-revision",
+          "action": "start",
+          "status": 400,
+          "body": {
+            "error": "embedding_index_refresh_required"
+          }
+        },
+        {
+          "label": "initial-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 2,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 0,
+              "pending": 2
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "initial-completed",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-0",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-0",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 2,
+              "total": 2,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 2,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 2
+            },
+            "prior": null,
+            "generations": [
+              "generation-0"
+            ],
+            "checkpoints": 2,
+            "calls": 2
+          }
+        },
+        {
+          "label": "replacement-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": {
+              "generation": "generation-0",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-1",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 2,
+              "expectedActive": "generation-0"
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 0,
+              "pending": 2
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 2
+            },
+            "prior": null,
+            "generations": [
+              "generation-0"
+            ],
+            "checkpoints": 2,
+            "calls": 3
+          }
+        },
+        {
+          "label": "old-active-before-first-provider",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": {
+              "generation": "generation-0",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-1",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 2,
+              "expectedActive": "generation-0"
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 0,
+              "pending": 2
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 2
+            },
+            "prior": null,
+            "generations": [
+              "generation-0"
+            ],
+            "checkpoints": 2,
+            "calls": 3
+          }
+        },
+        {
+          "label": "old-active-with-staging-checkpoint",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": {
+              "generation": "generation-0",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-1",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 1,
+              "total": 2,
+              "expectedActive": "generation-0"
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 0,
+              "pending": 2
+            },
+            "retained": {
+              "generations": 2,
+              "vectors": 3
+            },
+            "prior": null,
+            "generations": [
+              "generation-0",
+              "generation-1"
+            ],
+            "checkpoints": 3,
+            "calls": 4
+          }
+        },
+        {
+          "label": "replacement-committed",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-1",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-1",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 2,
+              "total": 2,
+              "expectedActive": "generation-0"
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 2,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 2,
+              "vectors": 4
+            },
+            "prior": "generation-0",
+            "generations": [
+              "generation-0",
+              "generation-1"
+            ],
+            "checkpoints": 4,
+            "calls": 4
+          }
+        },
+        {
+          "label": "third-generation-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": {
+              "generation": "generation-1",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-2",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 2,
+              "expectedActive": "generation-1"
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 0,
+              "pending": 2
+            },
+            "retained": {
+              "generations": 2,
+              "vectors": 4
+            },
+            "prior": "generation-0",
+            "generations": [
+              "generation-0",
+              "generation-1"
+            ],
+            "checkpoints": 4,
+            "calls": 5
+          }
+        },
+        {
+          "label": "previous-kept-oldest-pruned",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-2",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-2",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 2,
+              "total": 2,
+              "expectedActive": "generation-1"
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 2,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 2,
+              "vectors": 4
+            },
+            "prior": "generation-1",
+            "generations": [
+              "generation-1",
+              "generation-2"
+            ],
+            "checkpoints": 4,
+            "calls": 6
+          }
+        }
+      ],
+      "calls": [
+        {
+          "model": "one",
+          "contents": [
+            "newer"
+          ]
+        },
+        {
+          "model": "one",
+          "contents": [
+            "older"
+          ]
+        },
+        {
+          "model": "two",
+          "contents": [
+            "newer"
+          ]
+        },
+        {
+          "model": "two",
+          "contents": [
+            "older"
+          ]
+        },
+        {
+          "model": "three",
+          "contents": [
+            "newer"
+          ]
+        },
+        {
+          "model": "three",
+          "contents": [
+            "older"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "empty-and-unknown-width",
+      "outcomes": [
+        {
+          "label": "unknown-width-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "paused",
+              "error": "embedding_empty_native_dimension_unknown",
+              "uncertainty": false,
+              "processed": 0,
+              "total": 0,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 0,
+              "indexed": 0,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 0
+          }
+        },
+        {
+          "label": "unknown-width-paused-no-probe",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "paused",
+              "error": "embedding_empty_native_dimension_unknown",
+              "uncertainty": false,
+              "processed": 0,
+              "total": 0,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 0,
+              "indexed": 0,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 0
+          }
+        },
+        {
+          "label": "known-width-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-1",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-1",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 0,
+              "total": 0,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 0,
+              "indexed": 0,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [
+              "generation-1"
+            ],
+            "checkpoints": 0,
+            "calls": 0
+          }
+        },
+        {
+          "label": "known-empty-completed-no-probe",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-1",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-1",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 0,
+              "total": 0,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 0,
+              "indexed": 0,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [
+              "generation-1"
+            ],
+            "checkpoints": 0,
+            "calls": 0
+          }
+        }
+      ],
+      "calls": []
+    },
+    {
+      "name": "pause-discards-late-result",
+      "outcomes": [
+        {
+          "label": "start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "pause",
+          "action": "pause",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "paused",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "late-result-cannot-write-or-publish",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "paused",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        }
+      ],
+      "calls": [
+        {
+          "model": "one",
+          "contents": [
+            "paused-record"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "edit-and-recall-after-first-request",
+      "outcomes": [
+        {
+          "label": "start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 2,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 2,
+              "indexed": 0,
+              "pending": 2
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "old-vector-not-committed",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [
+              "generation-0"
+            ],
+            "checkpoints": 0,
+            "calls": 2
+          }
+        },
+        {
+          "label": "only-requalified-edit-committed",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-0",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-0",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 1,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 1,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 1
+            },
+            "prior": null,
+            "generations": [
+              "generation-0"
+            ],
+            "checkpoints": 1,
+            "calls": 2
+          }
+        }
+      ],
+      "calls": [
+        {
+          "model": "one",
+          "contents": [
+            "old edit body"
+          ]
+        },
+        {
+          "model": "one",
+          "contents": [
+            "replacement edit body"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "policy-revoked-after-dispatch",
+      "outcomes": [
+        {
+          "label": "start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "revocation-discards-late-result",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "failed",
+              "error": "memory_read_revoked",
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        }
+      ],
+      "calls": [
+        {
+          "model": "one",
+          "contents": [
+            "protected-record"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "known-and-unknown-retry-confirmation",
+      "outcomes": [
+        {
+          "label": "known-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "known-response-clears-uncertainty",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "failed",
+              "error": "provider_http_400",
+              "uncertainty": false,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "resume-known-without-confirmation",
+          "action": "resume",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 2
+          }
+        },
+        {
+          "label": "unknown-response-retains-uncertainty",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "failed",
+              "error": "provider_request_failed",
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 2
+          }
+        },
+        {
+          "label": "unconfirmed-retry-denied",
+          "action": "resume",
+          "status": 400,
+          "body": {
+            "error": "embedding_index_action_unavailable"
+          }
+        },
+        {
+          "label": "confirmed-retry-admitted",
+          "action": "resume",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 3
+          }
+        },
+        {
+          "label": "confirmed-retry-completed",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-0",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-0",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 1,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 1,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 1
+            },
+            "prior": null,
+            "generations": [
+              "generation-0"
+            ],
+            "checkpoints": 1,
+            "calls": 3
+          }
+        }
+      ],
+      "calls": [
+        {
+          "model": "one",
+          "contents": [
+            "charged-record"
+          ]
+        },
+        {
+          "model": "one",
+          "contents": [
+            "charged-record"
+          ]
+        },
+        {
+          "model": "one",
+          "contents": [
+            "charged-record"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "captured-credential-removal-fails-closed-or-uses-env",
+      "outcomes": [
+        {
+          "label": "stored-only-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 0
+          }
+        },
+        {
+          "label": "removed-stored-credential-no-anonymous-provider",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-0",
+              "state": "failed",
+              "error": "credential_not_configured",
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 0
+          }
+        },
+        {
+          "label": "environment-fallback-start",
+          "action": "start",
+          "status": 200,
+          "body": {
+            "state": "needs_rebuild",
+            "active": null,
+            "job": {
+              "id": "generation-1",
+              "state": "running",
+              "error": null,
+              "uncertainty": true,
+              "processed": 0,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 0,
+              "pending": 1
+            },
+            "retained": {
+              "generations": 0,
+              "vectors": 0
+            },
+            "prior": null,
+            "generations": [],
+            "checkpoints": 0,
+            "calls": 1
+          }
+        },
+        {
+          "label": "environment-fallback-completed",
+          "action": "status",
+          "status": 200,
+          "body": {
+            "state": "ready",
+            "active": {
+              "generation": "generation-1",
+              "dimensions": 2
+            },
+            "job": {
+              "id": "generation-1",
+              "state": "completed",
+              "error": null,
+              "uncertainty": false,
+              "processed": 1,
+              "total": 1,
+              "expectedActive": null
+            },
+            "coverage": {
+              "eligible": 1,
+              "indexed": 1,
+              "pending": 0
+            },
+            "retained": {
+              "generations": 1,
+              "vectors": 1
+            },
+            "prior": null,
+            "generations": [
+              "generation-1"
+            ],
+            "checkpoints": 1,
+            "calls": 1
+          }
+        }
+      ],
+      "calls": [
+        {
+          "model": "env-fallback",
+          "contents": [
+            "credential protected record"
+          ]
+        }
+      ]
+    }
+  ]
+}

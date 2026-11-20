@@ -1,0 +1,379 @@
+{
+  "node": "v24.22.1",
+  "sourceHashes": {
+    "src/embedding-index.ts": "78f460b094f84bef9b484df9e14307b33652e02ac2551ae0acd770bfc4eb2deb"
+  },
+  "clock": 1800000000000,
+  "config": {
+    "providers": [
+      {
+        "id": "p",
+        "name": "Synthetic",
+        "protocol": "fixture:embed",
+        "baseUrl": "http://127.0.0.1/v1",
+        "credentialEnv": "HUMANENGINE_EMBEDDING_STORAGE_FIXTURE"
+      }
+    ],
+    "models": [
+      {
+        "id": "m",
+        "displayName": "Synthetic",
+        "providerId": "p",
+        "apiModelName": "local",
+        "capabilities": [
+          "embedding"
+        ],
+        "embeddingBatchSize": 1,
+        "embeddingDimensions": 2
+      }
+    ],
+    "routes": [
+      {
+        "role": "embedding",
+        "orderedModelIds": [
+          "m"
+        ],
+        "timeoutMs": 10000
+      }
+    ]
+  },
+  "inputs": [
+    "Synthetic older record",
+    "Synthetic newer record"
+  ],
+  "previous": {
+    "generationId": "prior-generation",
+    "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+    "modelId": "m",
+    "dimensions": 2,
+    "spaceId": "c399fc9ad4a18f5765a3f96a611aeeeaf06d27147e2972d5e6c52ced001192f9"
+  },
+  "tables": {
+    "embedding_rebuild_items": "CREATE TABLE embedding_rebuild_items (\n      job_id TEXT NOT NULL, memory_id TEXT NOT NULL REFERENCES memories(id) ON DELETE CASCADE,\n      content_hash TEXT NOT NULL, PRIMARY KEY(job_id,memory_id)\n    )"
+  },
+  "cases": [
+    {
+      "name": "wrong-latest-before-start",
+      "error": "embedding_job_changed"
+    },
+    {
+      "name": "wrong-encoder-before-start",
+      "error": "embedding_config_changed"
+    },
+    {
+      "name": "busy-local-owner",
+      "error": "embedding_rebuild_busy"
+    },
+    {
+      "name": "pause-stale-job",
+      "error": "embedding_job_changed"
+    },
+    {
+      "name": "unconfirmed-resume",
+      "error": "embedding_retry_confirmation_required"
+    },
+    {
+      "name": "cancel-stale-job",
+      "error": "embedding_job_changed"
+    },
+    {
+      "name": "resume-cancelled-job",
+      "error": "embedding_rebuild_not_resumable"
+    }
+  ],
+  "snapshots": [
+    {
+      "name": "submitted-paid-request-uncertain",
+      "now": 1800000000000,
+      "calls": 1,
+      "job": {
+        "id": "job-0",
+        "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+        "modelId": "m",
+        "state": "running",
+        "processed": 0,
+        "total": 2,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "prior-generation",
+        "attemptId": "attempt-0",
+        "ownerId": "owner-0",
+        "leaseUntil": 1800000030000
+      },
+      "checkpoints": [],
+      "active": "prior-generation"
+    },
+    {
+      "name": "expired-restart-no-replay",
+      "now": 1800000030001,
+      "calls": 1,
+      "job": {
+        "id": "job-0",
+        "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+        "modelId": "m",
+        "state": "paused",
+        "processed": 0,
+        "total": 2,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "prior-generation",
+        "attemptId": "attempt-0",
+        "ownerId": "owner-0",
+        "leaseUntil": 1800000030000,
+        "error": "lease_expired_uncertain_request"
+      },
+      "checkpoints": [],
+      "active": "prior-generation"
+    },
+    {
+      "name": "resumed-attempt-uncertain",
+      "now": 1800000030001,
+      "calls": 2,
+      "job": {
+        "id": "job-0",
+        "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+        "modelId": "m",
+        "state": "running",
+        "processed": 0,
+        "total": 2,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "prior-generation",
+        "attemptId": "attempt-1",
+        "ownerId": "owner-1",
+        "leaseUntil": 1800000060001
+      },
+      "checkpoints": [],
+      "active": "prior-generation"
+    },
+    {
+      "name": "stale-attempt-cannot-advance-or-pause-peer",
+      "now": 1800000030001,
+      "calls": 2,
+      "job": {
+        "id": "job-0",
+        "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+        "modelId": "m",
+        "state": "running",
+        "processed": 0,
+        "total": 2,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "prior-generation",
+        "attemptId": "attempt-1",
+        "ownerId": "owner-1",
+        "leaseUntil": 1800000060001
+      },
+      "checkpoints": [],
+      "active": "prior-generation"
+    },
+    {
+      "name": "committed-checkpoint-next-request-uncertain",
+      "now": 1800000031001,
+      "calls": 3,
+      "job": {
+        "id": "job-0",
+        "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+        "modelId": "m",
+        "state": "running",
+        "processed": 1,
+        "total": 2,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "prior-generation",
+        "attemptId": "attempt-1",
+        "ownerId": "owner-1",
+        "leaseUntil": 1800000061001,
+        "dimensions": 2,
+        "spaceId": "staging-space"
+      },
+      "checkpoints": [
+        {
+          "job_id": "job-0",
+          "memory_id": "memory-1",
+          "content_hash": "9c8bc4325fec8ba741512d4741b57266700aba9470fc81475a74d1dedb4997bf"
+        }
+      ],
+      "active": "prior-generation"
+    },
+    {
+      "name": "paused-owned-attempt",
+      "now": 1800000031001,
+      "calls": 3,
+      "job": {
+        "id": "job-0",
+        "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+        "modelId": "m",
+        "state": "paused",
+        "processed": 1,
+        "total": 2,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "prior-generation",
+        "attemptId": "attempt-1",
+        "ownerId": "owner-1",
+        "leaseUntil": 1800000061001,
+        "dimensions": 2,
+        "spaceId": "staging-space"
+      },
+      "checkpoints": [
+        {
+          "job_id": "job-0",
+          "memory_id": "memory-1",
+          "content_hash": "9c8bc4325fec8ba741512d4741b57266700aba9470fc81475a74d1dedb4997bf"
+        }
+      ],
+      "active": "prior-generation"
+    },
+    {
+      "name": "cancelled-retains-committed-checkpoint",
+      "now": 1800000031001,
+      "calls": 3,
+      "job": {
+        "id": "job-0",
+        "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+        "modelId": "m",
+        "state": "cancelled",
+        "processed": 1,
+        "total": 2,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "prior-generation",
+        "attemptId": "attempt-1",
+        "ownerId": "owner-1",
+        "leaseUntil": 1800000061001,
+        "dimensions": 2,
+        "spaceId": "staging-space"
+      },
+      "checkpoints": [
+        {
+          "job_id": "job-0",
+          "memory_id": "memory-1",
+          "content_hash": "9c8bc4325fec8ba741512d4741b57266700aba9470fc81475a74d1dedb4997bf"
+        }
+      ],
+      "active": "prior-generation"
+    }
+  ],
+  "writes": [
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "running",
+      "processed": 0,
+      "total": 2,
+      "requiresRetryConfirmation": false,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-0",
+      "ownerId": "owner-0",
+      "leaseUntil": 1800000030000
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "running",
+      "processed": 0,
+      "total": 2,
+      "requiresRetryConfirmation": true,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-0",
+      "ownerId": "owner-0",
+      "leaseUntil": 1800000030000
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "paused",
+      "processed": 0,
+      "total": 2,
+      "requiresRetryConfirmation": true,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-0",
+      "ownerId": "owner-0",
+      "leaseUntil": 1800000030000,
+      "error": "lease_expired_uncertain_request"
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "running",
+      "processed": 0,
+      "total": 2,
+      "requiresRetryConfirmation": false,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-1",
+      "ownerId": "owner-1",
+      "leaseUntil": 1800000060001
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "running",
+      "processed": 0,
+      "total": 2,
+      "requiresRetryConfirmation": true,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-1",
+      "ownerId": "owner-1",
+      "leaseUntil": 1800000060001
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "running",
+      "processed": 1,
+      "total": 2,
+      "requiresRetryConfirmation": false,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-1",
+      "ownerId": "owner-1",
+      "leaseUntil": 1800000061001,
+      "dimensions": 2,
+      "spaceId": "staging-space"
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "running",
+      "processed": 1,
+      "total": 2,
+      "requiresRetryConfirmation": true,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-1",
+      "ownerId": "owner-1",
+      "leaseUntil": 1800000061001,
+      "dimensions": 2,
+      "spaceId": "staging-space"
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "paused",
+      "processed": 1,
+      "total": 2,
+      "requiresRetryConfirmation": true,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-1",
+      "ownerId": "owner-1",
+      "leaseUntil": 1800000061001,
+      "dimensions": 2,
+      "spaceId": "staging-space"
+    },
+    {
+      "id": "job-0",
+      "encoderRevision": "5467499a263971ce00e1bceb4af63713b0eb2edc19ebb9b32e44d76ab2f564ab",
+      "modelId": "m",
+      "state": "cancelled",
+      "processed": 1,
+      "total": 2,
+      "requiresRetryConfirmation": true,
+      "expectedActive": "prior-generation",
+      "attemptId": "attempt-1",
+      "ownerId": "owner-1",
+      "leaseUntil": 1800000061001,
+      "dimensions": 2,
+      "spaceId": "staging-space"
+    }
+  ]
+}

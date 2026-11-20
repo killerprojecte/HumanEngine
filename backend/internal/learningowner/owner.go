@@ -46,7 +46,9 @@ type Dependencies struct {
 type Owner struct {
 	d              Dependencies
 	closed         atomic.Bool
-	indexBootstrap bool
+	indexBootstrap atomic.Bool
+	indexOwner     string
+	rebuild        indexWork
 }
 type Runtime struct {
 	Owner       *Owner
@@ -106,7 +108,7 @@ func New(d Dependencies) (*Runtime, error) {
 func (r *Runtime) CloseAndWait(ctx context.Context) error {
 	r.Owner.closed.Store(true)
 	r.detach()
-	return r.Coordinator.CloseAndWait(ctx)
+	return errors.Join(r.Owner.closeIndexWork(ctx), r.Coordinator.CloseAndWait(ctx))
 }
 func (r *Runtime) SettingsChanged(ctx context.Context) error {
 	s, e := r.Owner.settings(ctx)

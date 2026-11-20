@@ -194,7 +194,7 @@ func TestIndexActualSourceBootstrapAndRecovery(t *testing.T) {
 			if e = o.initializeIndex(context.Background()); e != nil {
 				t.Fatal(e)
 			}
-			if calls.Load() != before || o.indexBootstrap {
+			if calls.Load() != before || o.indexBootstrap.Load() {
 				t.Fatal("restart replay/bootstrap")
 			}
 			if e = f.recovery.WithWriteSession(context.Background(), f.main, func(ws *recovery.WriteSession) error { return ws.AssertReady() }); e != nil {
@@ -434,7 +434,7 @@ func TestIndexDurableWriterReopenNoReplay(t *testing.T) {
 	if e = restarted.initializeIndex(context.Background()); e != nil {
 		t.Fatal(e)
 	}
-	if restarted.indexBootstrap || calls.Load() != 1 {
+	if restarted.indexBootstrap.Load() || calls.Load() != 1 {
 		t.Fatal("restart replayed learning/index")
 	}
 	var count int

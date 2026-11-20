@@ -37,6 +37,7 @@ type Server struct {
 	memoryDelete        *memoryservice.Service
 	memoryAdminRead     *memoryservice.AdminRead
 	episodesRead        memoryservice.EpisodesAdminRead
+	semanticsRead       memoryservice.SemanticsAdminRead
 	workingSetRead      memoryservice.WorkingSetAdminRead
 	commitmentRead      memoryservice.CommitmentAdminRead
 	knowledgeRead       memoryservice.KnowledgeAdminRead
@@ -132,6 +133,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	memoryPeople := s.memoryAdminRead != nil && peopleReadPath(r.Method, path)
 	memoryHistory := s.memoryAdminRead != nil && historyReadPath(r.Method, path)
 	assertionHistory := s.memoryAdminRead != nil && assertionHistoryReadPath(r.Method, path)
+	memorySemantics := s.semanticsRead != nil && path == memorySemanticsPath && (r.Method == http.MethodGet || r.Method == http.MethodHead)
 	workspaceEpisodes := s.episodesRead != nil && path == memoryEpisodesPath && (r.Method == http.MethodGet || r.Method == http.MethodHead)
 	workspaceWorkingSet := s.workingSetRead != nil && (path == memoryWorkingSetRebuildPath || path == memoryWorkingSetPath && (r.Method == http.MethodGet || r.Method == http.MethodHead))
 	commitmentID, commitmentRead := memoryCommitmentRoute(r.Method, path)
@@ -143,7 +145,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
 	}
 	id := r.Header.Get("X-Request-ID")
-	if simulation || learningAdmin || budgetAdmin || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || workspaceWorkingSet || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions" || r.Method == http.MethodPost && strings.HasPrefix(path, "/api/models/") && strings.HasSuffix(path, "/probe"))) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if simulation || learningAdmin || budgetAdmin || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions" || r.Method == http.MethodPost && strings.HasPrefix(path, "/api/models/") && strings.HasSuffix(path, "/probe"))) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -168,12 +170,12 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || workspaceWorkingSet || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+	if memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || workspaceWorkingSet || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+		if memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -301,6 +303,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			s.serveMemoryWrite(w, r, available, id, memoryID)
 			return
 		}
+	}
+	if memorySemantics {
+		s.serveMemorySemantics(w, r, available, id)
+		return
 	}
 	if workspaceEpisodes {
 		s.serveMemoryEpisodes(w, r, available, id)

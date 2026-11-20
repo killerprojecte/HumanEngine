@@ -45,6 +45,7 @@ differential: build plugin-source-check contextual-source-check runtime-producer
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-knowledge.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-history.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-episodes.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-semantics.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-working-set.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-assertion-history.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-identity-admin-read.mjs --check

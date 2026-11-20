@@ -111,6 +111,140 @@
     "edge",
     "entity"
   ],
+  "dated": {
+    "context": {
+      "sceneId": "scene",
+      "simulation": false,
+      "provenance": "source-only",
+      "sourceEvidence": [
+        {
+          "sceneId": "scene",
+          "messageId": "dated-message",
+          "senderId": "dated-person",
+          "available": true,
+          "isBot": false,
+          "parts": [
+            {
+              "type": "text",
+              "text": "I use these dated tools."
+            }
+          ]
+        }
+      ]
+    },
+    "candidate": {
+      "kind": "claim",
+      "content": "Dated synthetic declarations.",
+      "epistemicKind": "explicit",
+      "subject": {
+        "kind": "self",
+        "sourceMessageId": "dated-message"
+      },
+      "sources": [
+        {
+          "sceneId": "scene",
+          "messageId": "dated-message",
+          "senderId": "dated-person"
+        }
+      ],
+      "knowledge": [
+        {
+          "registryVersion": 1,
+          "predicate": "uses_tool",
+          "subject": {
+            "kind": "self",
+            "personId": "dated-person"
+          },
+          "object": {
+            "kind": "new",
+            "entityKind": "tool",
+            "title": "Current dated tool"
+          },
+          "polarity": "positive",
+          "modality": "asserted",
+          "temporalScope": "current",
+          "conditions": [],
+          "validFrom": "2000-01-01T00:00:00Z",
+          "validUntil": "2099-01-01T00:00:00Z",
+          "sourceSpans": [
+            {
+              "messageId": "dated-message",
+              "partIndex": 0,
+              "start": 0,
+              "end": 24,
+              "stance": "self"
+            }
+          ]
+        },
+        {
+          "registryVersion": 1,
+          "predicate": "uses_tool",
+          "subject": {
+            "kind": "self",
+            "personId": "dated-person"
+          },
+          "object": {
+            "kind": "new",
+            "entityKind": "tool",
+            "title": "Future dated tool"
+          },
+          "polarity": "positive",
+          "modality": "asserted",
+          "temporalScope": "current",
+          "conditions": [],
+          "validFrom": "2099-01-01T00:00:00Z",
+          "validUntil": "2100-01-01T00:00:00Z",
+          "sourceSpans": [
+            {
+              "messageId": "dated-message",
+              "partIndex": 0,
+              "start": 0,
+              "end": 24,
+              "stance": "self"
+            }
+          ]
+        },
+        {
+          "registryVersion": 1,
+          "predicate": "uses_tool",
+          "subject": {
+            "kind": "self",
+            "personId": "dated-person"
+          },
+          "object": {
+            "kind": "new",
+            "entityKind": "tool",
+            "title": "Expired dated tool"
+          },
+          "polarity": "positive",
+          "modality": "asserted",
+          "temporalScope": "current",
+          "conditions": [],
+          "validFrom": "2000-01-01T00:00:00Z",
+          "validUntil": "2001-01-01T00:00:00Z",
+          "sourceSpans": [
+            {
+              "messageId": "dated-message",
+              "partIndex": 0,
+              "start": 0,
+              "end": 24,
+              "stance": "self"
+            }
+          ]
+        }
+      ]
+    },
+    "ids": [
+      "dated-current",
+      "dated-current-entity",
+      "dated-future",
+      "dated-future-entity",
+      "dated-expired",
+      "dated-expired-entity"
+    ],
+    "memoryId": "10000000-0000-4000-8000-000000000002",
+    "learnedAt": "2026-11-20T00:00:00.000Z"
+  },
   "rows": [
     {
       "name": "unauthorized",
@@ -1041,6 +1175,285 @@
       "status": 409,
       "body": {
         "error": "knowledge_query_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "dated-applicability",
+      "request": {
+        "sceneId": "scene",
+        "personId": "dated-person",
+        "anchor": {
+          "kind": "person",
+          "personId": "dated-person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "dated",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "edges": [
+          {
+            "id": "dated-current",
+            "version": 1,
+            "predicate": "uses_tool",
+            "subject": {
+              "kind": "person",
+              "personId": "dated-person"
+            },
+            "object": {
+              "kind": "entity",
+              "entity": {
+                "id": "dated-current-entity",
+                "sceneId": "scene",
+                "kind": "tool",
+                "title": "Current dated tool",
+                "backing": {
+                  "id": "10000000-0000-4000-8000-000000000002",
+                  "version": 1,
+                  "deletionEpoch": 0
+                }
+              }
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "validFrom": "2000-01-01T00:00:00Z",
+            "validUntil": "2099-01-01T00:00:00Z",
+            "createdAt": "2026-11-20T00:00:00.000Z",
+            "backing": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "backingStatus": "active",
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "applicability": "current",
+            "proofs": [
+              {
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "dated-message",
+                    "senderId": "dated-person"
+                  }
+                ],
+                "parents": [],
+                "parentReferences": []
+              }
+            ],
+            "dependencies": [],
+            "requiresPersonalization": true,
+            "readDependencies": [],
+            "dependencyStatuses": [],
+            "spans": [
+              {
+                "source": {
+                  "sceneId": "scene",
+                  "messageId": "dated-message",
+                  "senderId": "dated-person"
+                },
+                "partIndex": 0,
+                "start": 0,
+                "end": 24,
+                "stance": "self"
+              }
+            ]
+          },
+          {
+            "id": "dated-expired",
+            "version": 1,
+            "predicate": "uses_tool",
+            "subject": {
+              "kind": "person",
+              "personId": "dated-person"
+            },
+            "object": {
+              "kind": "entity",
+              "entity": {
+                "id": "dated-expired-entity",
+                "sceneId": "scene",
+                "kind": "tool",
+                "title": "Expired dated tool",
+                "backing": {
+                  "id": "10000000-0000-4000-8000-000000000002",
+                  "version": 1,
+                  "deletionEpoch": 0
+                }
+              }
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "validFrom": "2000-01-01T00:00:00Z",
+            "validUntil": "2001-01-01T00:00:00Z",
+            "createdAt": "2026-11-20T00:00:00.000Z",
+            "backing": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "backingStatus": "active",
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "applicability": "expired",
+            "proofs": [
+              {
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "dated-message",
+                    "senderId": "dated-person"
+                  }
+                ],
+                "parents": [],
+                "parentReferences": []
+              }
+            ],
+            "dependencies": [],
+            "requiresPersonalization": true,
+            "readDependencies": [],
+            "dependencyStatuses": [],
+            "spans": [
+              {
+                "source": {
+                  "sceneId": "scene",
+                  "messageId": "dated-message",
+                  "senderId": "dated-person"
+                },
+                "partIndex": 0,
+                "start": 0,
+                "end": 24,
+                "stance": "self"
+              }
+            ]
+          },
+          {
+            "id": "dated-future",
+            "version": 1,
+            "predicate": "uses_tool",
+            "subject": {
+              "kind": "person",
+              "personId": "dated-person"
+            },
+            "object": {
+              "kind": "entity",
+              "entity": {
+                "id": "dated-future-entity",
+                "sceneId": "scene",
+                "kind": "tool",
+                "title": "Future dated tool",
+                "backing": {
+                  "id": "10000000-0000-4000-8000-000000000002",
+                  "version": 1,
+                  "deletionEpoch": 0
+                }
+              }
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "validFrom": "2099-01-01T00:00:00Z",
+            "validUntil": "2100-01-01T00:00:00Z",
+            "createdAt": "2026-11-20T00:00:00.000Z",
+            "backing": {
+              "id": "10000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "backingStatus": "active",
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "applicability": "future",
+            "proofs": [
+              {
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "dated-message",
+                    "senderId": "dated-person"
+                  }
+                ],
+                "parents": [],
+                "parentReferences": []
+              }
+            ],
+            "dependencies": [],
+            "requiresPersonalization": true,
+            "readDependencies": [],
+            "dependencyStatuses": [],
+            "spans": [
+              {
+                "source": {
+                  "sceneId": "scene",
+                  "messageId": "dated-message",
+                  "senderId": "dated-person"
+                },
+                "partIndex": 0,
+                "start": 0,
+                "end": 24,
+                "stance": "self"
+              }
+            ]
+          }
+        ],
+        "supportClosure": {
+          "edges": [],
+          "records": [
+            {
+              "ref": {
+                "id": "10000000-0000-4000-8000-000000000002",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "record": {
+                "id": "10000000-0000-4000-8000-000000000002",
+                "content": "Dated synthetic declarations.",
+                "kind": "claim",
+                "epistemicKind": "explicit",
+                "status": "active",
+                "origin": "learned",
+                "learnedAt": "2026-11-20T00:00:00.000Z",
+                "scope": {
+                  "kind": "scene",
+                  "sceneId": "scene",
+                  "personId": "dated-person"
+                },
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "dated-message",
+                    "senderId": "dated-person"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "paths": [
+          [
+            "dated-current"
+          ],
+          [
+            "dated-expired"
+          ],
+          [
+            "dated-future"
+          ]
+        ],
+        "coverage": "complete",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
       },
       "requestId": false,
       "cacheControl": "no-store",

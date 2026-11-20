@@ -30,10 +30,11 @@ try {
   crypto.randomUUID = () => '10000000-0000-4000-8000-' + (++sequence).toString().padStart(12, '0')
   syncBuiltinESMExports()
   const OriginalDate = globalThis.Date
-  globalThis.Date = class extends OriginalDate {
+  const FixedDate = class extends OriginalDate {
     constructor(...args) { super(...(args.length ? args : ['2026-11-20T00:00:00.000Z'])) }
     static now() { return OriginalDate.parse('2026-11-20T00:00:00.000Z') }
   }
+  globalThis.Date = FixedDate
   const context = {
     sceneId, simulation: false, provenance: 'source-only',
     sourceEvidence: [{ ...source, available: true, isBot: false, parts: [{ type: 'text', text: sourceText }] }],
@@ -49,6 +50,30 @@ try {
     }],
   }
   const proposed = engine.memory.propose(context, candidate)
+  const datedPerson = 'dated-person'
+  const datedSource = { sceneId, messageId: 'dated-message', senderId: datedPerson }
+  const datedText = 'I use these dated tools.'
+  const datedContext = { ...context, sourceEvidence: [{ ...datedSource, available: true, isBot: false,
+    parts: [{ type: 'text', text: datedText }] }] }
+  const datedIDs = ['dated-current', 'dated-current-entity', 'dated-future', 'dated-future-entity', 'dated-expired', 'dated-expired-entity']
+  const remainingDatedIDs = [...datedIDs]
+  engine.memory.knowledge.options.id = () => remainingDatedIDs.shift()
+  const datedCandidate = {
+    kind: 'claim', content: 'Dated synthetic declarations.', epistemicKind: 'explicit',
+    subject: { kind: 'self', sourceMessageId: datedSource.messageId }, sources: [datedSource],
+    knowledge: [
+      ['Current dated tool', '2000-01-01T00:00:00Z', '2099-01-01T00:00:00Z'],
+      ['Future dated tool', '2099-01-01T00:00:00Z', '2100-01-01T00:00:00Z'],
+      ['Expired dated tool', '2000-01-01T00:00:00Z', '2001-01-01T00:00:00Z'],
+    ].map(([title, validFrom, validUntil]) => ({
+      registryVersion: 1, predicate: 'uses_tool', subject: { kind: 'self', personId: datedPerson },
+      object: { kind: 'new', entityKind: 'tool', title }, polarity: 'positive', modality: 'asserted',
+      temporalScope: 'current', conditions: [], validFrom, validUntil,
+      sourceSpans: [{ messageId: datedSource.messageId, partIndex: 0, start: 0, end: datedText.length, stance: 'self' }],
+    })),
+  }
+  const datedRequest = { sceneId, personId: datedPerson, anchor: { kind: 'person', personId: datedPerson }, predicates: ['uses_tool'], depth: 2 }
+  let datedFixture
   globalThis.Date = OriginalDate
   crypto.randomUUID = originalUUID
   syncBuiltinESMExports()
@@ -79,6 +104,7 @@ try {
     ['wrong-id', { ...seed, anchor: { ...anchor, entityId: 'other' } }, '', 404],
     ['seed-priority', { ...seed, personId, seedBackingRef: { ...backingRef, version: 2 } }, '', 409],
     ['foreign', { ...memory, sceneId: 'foreign' }, '', 409],
+    ['dated-applicability', datedRequest, 'dated', 200],
     ['limited', person, 'limit', 200],
     ['limited-seed', seed, '', 404],
     ['disabled', person, 'disable', 200],
@@ -89,6 +115,22 @@ try {
   const scenes = store.db.prepare('SELECT value FROM scenes ORDER BY id').all().map(({ value }) => JSON.parse(value))
   const rows = []
   for (const [name, request, action, want] of cases) {
+    if (action === 'dated') {
+      globalThis.Date = FixedDate
+      crypto.randomUUID = () => '10000000-0000-4000-8000-' + (++sequence).toString().padStart(12, '0')
+      syncBuiltinESMExports()
+      try {
+        const dated = engine.memory.propose(datedContext, datedCandidate)
+        assert.equal(dated.status, 'saved')
+        assert.deepEqual(remainingDatedIDs, [])
+        datedFixture = { context: datedContext, candidate: datedCandidate, ids: datedIDs,
+          memoryId: dated.memory.id, learnedAt: dated.memory.learnedAt }
+      } finally {
+        globalThis.Date = OriginalDate
+        crypto.randomUUID = originalUUID
+        syncBuiltinESMExports()
+      }
+    }
     if (action === 'limit') store.db.exec(`
       WITH RECURSIVE extra(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM extra WHERE n<200)
       INSERT INTO memory_knowledge_edges(id,scene_id,assertion_id,admission_key,value)
@@ -110,6 +152,10 @@ try {
     const requestId = body.requestId !== undefined
     delete body.requestId
     assert.doesNotMatch(JSON.stringify(body), /backingFingerprint|originEdgeId|proofId|sourceObservations|subjectWitness|spanHash|eventRef|I may not use this tool/)
+    if (action === 'dated') assert.deepEqual(
+      Object.fromEntries(body.edges.map((edge) => [edge.id, edge.applicability])),
+      { 'dated-current': 'current', 'dated-expired': 'expired', 'dated-future': 'future' },
+    )
     if (name === 'limited') assert.equal(body.coverage, 'limited')
     if (['person', 'memory', 'entity-person', 'entity-memory'].includes(name)) {
       assert.equal(body.edges.length, 1, name)
@@ -118,7 +164,7 @@ try {
     rows.push({ name, request, action, status: r.status, body, requestId,
       cacheControl: r.headers.get('cache-control') ?? '', noSniff: r.headers.get('x-content-type-options') ?? '' })
   }
-  const output = JSON.stringify({ node: process.version, scenes, context, candidate, backingRef, learnedAt: proposed.memory.learnedAt, ids: [edge.id, anchor.entityId], rows }, null, 2) + '\n'
+  const output = JSON.stringify({ node: process.version, scenes, context, candidate, backingRef, learnedAt: proposed.memory.learnedAt, ids: [edge.id, anchor.entityId], dated: datedFixture, rows }, null, 2) + '\n'
   const target = new URL('../internal/app/testdata/memory-knowledge-source.json', import.meta.url)
   if (process.argv.includes('--check')) assert.equal(readFileSync(target, 'utf8'), output)
   else writeFileSync(target, output)

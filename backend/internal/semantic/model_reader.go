@@ -19,7 +19,7 @@ type ModelReadPolicy struct {
 	ParseDate func(string) (float64, error)
 }
 type ModelReader struct {
-	scope  sourceevents.RuntimeReadScope
+	query  func(string, ...any) (sourceevents.Rows, error)
 	ready  func() error
 	policy ModelReadPolicy
 }
@@ -51,7 +51,7 @@ func (s *Store) ReadRuntimeCurrent(scope sourceevents.RuntimeReadScope, p ModelR
 		}
 		return p.Authority.AssertReady()
 	}
-	reader := &ModelReader{scope: scope, ready: check, policy: p}
+	reader := &ModelReader{query: scope.Query, ready: check, policy: p}
 	return errors.Join(fn(reader), check())
 }
 func (r *ModelReader) rows(where string, args ...any) (out []*jsjson.Object, err error) {
@@ -59,7 +59,7 @@ func (r *ModelReader) rows(where string, args ...any) (out []*jsjson.Object, err
 	if err = r.ready(); err != nil {
 		return
 	}
-	exists, e := r.scope.Query("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", "memory_semantic_candidates")
+	exists, e := r.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", "memory_semantic_candidates")
 	if e != nil {
 		return nil, e
 	}
@@ -68,7 +68,7 @@ func (r *ModelReader) rows(where string, args ...any) (out []*jsjson.Object, err
 	if e != nil || !found {
 		return out, e
 	}
-	rows, e := r.scope.Query("SELECT id,scene_id,input_key,version,value FROM memory_semantic_candidates"+where, semBind(args)...)
+	rows, e := r.query("SELECT id,scene_id,input_key,version,value FROM memory_semantic_candidates"+where, semBind(args)...)
 	if e != nil {
 		return nil, e
 	}
@@ -94,7 +94,7 @@ func (r *ModelReader) rows(where string, args ...any) (out []*jsjson.Object, err
 	return
 }
 func (r *ModelReader) Current(c Context, id string) (*jsjson.Object, error) {
-	return r.project(c, id, map[any]string{})
+	return r.project(c, id, map[any]string{}, false)
 }
 func (r *ModelReader) List(c Context, limit int) (*jsjson.Object, error) {
 	if e := r.ready(); e != nil {
@@ -123,7 +123,7 @@ func (r *ModelReader) List(c Context, limit int) (*jsjson.Object, error) {
 	}
 	partitions := map[any]string{}
 	for _, row := range rows {
-		v, e := r.project(c, scStr(scGet(row, "id")), partitions)
+		v, e := r.project(c, scStr(scGet(row, "id")), partitions, false)
 		if e != nil {
 			return nil, e
 		}
@@ -138,7 +138,71 @@ func (r *ModelReader) List(c Context, limit int) (*jsjson.Object, error) {
 	}
 	return privacyObject("items", items, "coverage", coverage), nil
 }
-func (r *ModelReader) project(c Context, id string, partitions map[any]string) (*jsjson.Object, error) {
+
+// SelectedAdminPartitions reports only partitions the source's raw bounded
+// prefix can ask us to prepare before the final publication.
+func (r *ModelReader) SelectedAdminPartitions(c Context, limit int) ([]any, error) {
+	rows, e := r.adminRows(c, limit)
+	if e != nil {
+		return nil, e
+	}
+	persons := []any{}
+	seen := map[any]bool{}
+	for _, row := range rows[:min(limit, len(rows))] {
+		p := scGet(row, "personId")
+		if scGet(row, "partitionKey") != nil && !seen[p] {
+			seen[p] = true
+			persons = append(persons, p)
+		}
+	}
+	return persons, nil
+}
+
+func (r *ModelReader) AdminList(c Context, limit int) (*jsjson.Object, error) {
+	rows, e := r.adminRows(c, limit)
+	if e != nil {
+		return nil, e
+	}
+	items, unavailable := []any{}, []any{}
+	coverage := "complete"
+	if len(rows) > limit {
+		coverage = "limited"
+	}
+	partitions := map[any]string{}
+	for _, row := range rows[:min(limit, len(rows))] {
+		id := scGet(row, "id")
+		view, e := r.project(c, scStr(id), partitions, true)
+		if e != nil {
+			return nil, e
+		}
+		if view != nil {
+			items = append(items, view)
+		} else {
+			unavailable = append(unavailable, privacyObject("id", id, "version", scGet(row, "version"),
+				"status", scGet(row, "status"), "reason", "qualification_unavailable"))
+		}
+	}
+	return privacyObject("coverage", coverage, "items", items, "unavailable", unavailable), nil
+}
+
+func (r *ModelReader) adminRows(c Context, limit int) ([]*jsjson.Object, error) {
+	if e := r.ready(); e != nil {
+		return nil, e
+	}
+	if limit < 1 || limit > 40 {
+		return nil, errors.New("semantic_read_limit")
+	}
+	if c.Simulation {
+		return nil, nil
+	}
+	enabled, e := r.policy.Enabled(c)
+	if e != nil || !enabled {
+		return nil, e
+	}
+	return r.rows(" WHERE scene_id=? ORDER BY id", c.SceneID)
+}
+
+func (r *ModelReader) project(c Context, id string, partitions map[any]string, permitRejected bool) (*jsjson.Object, error) {
 	if e := r.ready(); e != nil {
 		return nil, e
 	}
@@ -154,7 +218,7 @@ func (r *ModelReader) project(c Context, id string, partitions map[any]string) (
 		return nil, e
 	}
 	candidate := rows[0]
-	if scGet(candidate, "sceneId") != c.SceneID || scGet(candidate, "status") == "rejected" {
+	if scGet(candidate, "sceneId") != c.SceneID || (!permitRejected && scGet(candidate, "status") == "rejected") {
 		return nil, nil
 	}
 	a := r.policy.Authority

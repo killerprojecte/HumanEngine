@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"slices"
 	"testing"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertionproposal"
@@ -26,7 +27,12 @@ func TestMemoryKnowledgeActualSource(t *testing.T) {
 		}
 		LearnedAt string
 		IDs       []string
-		Rows      []struct {
+		Dated     struct {
+			Context, Candidate  json.RawMessage
+			MemoryID, LearnedAt string
+			IDs                 []string
+		}
+		Rows []struct {
 			Name, Action, CacheControl, NoSniff string
 			Request                             json.RawMessage
 			Status                              int
@@ -103,7 +109,32 @@ func TestMemoryKnowledgeActualSource(t *testing.T) {
 	trace := regexp.MustCompile(`^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`)
 	for _, c := range fixture.Rows {
 		t.Run(c.Name, func(t *testing.T) {
+			caseCreatedAt := createdAt
+
 			switch c.Action {
+			case "dated":
+				ids := slices.Clone(fixture.Dated.IDs)
+				proposed, err := memory.Propose(ctx, memoryPatchObject(t, fixture.Dated.Context), memoryPatchObject(t, fixture.Dated.Candidate), memoryservice.ProposalOptions{
+					KnowledgeEnabled: true,
+					Runtime: assertionproposal.Runtime{
+						ID:  func() (string, error) { return fixture.Dated.MemoryID, nil },
+						Now: func() string { return fixture.Dated.LearnedAt },
+					},
+					KnowledgeID: func() string {
+						id := ids[0]
+						ids = ids[1:]
+						return id
+					},
+				})
+				if err != nil || proposed.Status != "saved" || proposed.Knowledge == nil || len(proposed.Knowledge.Created) != 3 || len(ids) != 0 {
+					t.Fatalf("dated proposal: %+v (%v)", proposed, err)
+				}
+				times := map[string]any{}
+				for _, row := range proposed.Knowledge.Created {
+					times[field(row, "id").(string)] = field(row, "createdAt")
+				}
+				caseCreatedAt = times
+
 			case "limit":
 				if _, err := db.ExecContext(ctx, `
 					WITH RECURSIVE extra(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM extra WHERE n<200)
@@ -138,8 +169,8 @@ func TestMemoryKnowledgeActualSource(t *testing.T) {
 			}
 			delete(body, "requestId")
 			if edges, ok := body["edges"].([]any); ok {
-				normalizeKnowledgeCreationTime(t, edges, createdAt, sourceCreatedAt)
-				normalizeKnowledgeCreationTime(t, body["supportClosure"].(map[string]any)["edges"].([]any), createdAt, sourceCreatedAt)
+				normalizeKnowledgeCreationTime(t, edges, caseCreatedAt, sourceCreatedAt)
+				normalizeKnowledgeCreationTime(t, body["supportClosure"].(map[string]any)["edges"].([]any), caseCreatedAt, sourceCreatedAt)
 			}
 			if !reflect.DeepEqual(body, c.Body) {
 				got, _ := json.Marshal(body)
@@ -154,8 +185,12 @@ func normalizeKnowledgeCreationTime(t *testing.T, edges []any, native any, sourc
 	t.Helper()
 	for _, item := range edges {
 		edge := item.(map[string]any)
-		if edge["createdAt"] != native {
-			t.Fatalf("wrong edge creation time %v (want %v)", edge["createdAt"], native)
+		expected := native
+		if dates, ok := native.(map[string]any); ok {
+			expected = dates[edge["id"].(string)]
+		}
+		if expected == nil || edge["createdAt"] != expected {
+			t.Fatalf("wrong edge creation time %v (want %v)", edge["createdAt"], expected)
 		}
 		edge["createdAt"] = source
 	}

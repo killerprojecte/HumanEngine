@@ -5,6 +5,8 @@ import (
 	"math"
 	"sort"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/assertionauthority"
+
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/commitments"
@@ -77,48 +79,9 @@ func (p *semanticModelPort) load(reads botruntime.ReadAuthority, c Context) (pag
 			}}
 			authority.PartitionKey = func(c semantic.Context, person any) (out string, err error) {
 				err = p.memory.withScopeReader(scope, func(r *assertions.Reader) error {
-					read, e := memoryread.New(r, opts)
-					if e != nil {
-						return e
-					}
-					records, e := read.List(memoryread.Input{SceneID: c.SceneID, Simulation: c.Simulation})
-					if e != nil {
-						return e
-					}
-					selected := []*Object{}
-					for _, record := range records {
-						sc := object(value(record, "scope"))
-						if !truthy(value(record, "internalUse")) && text(record, "origin") == "learned" && text(sc, "kind") == "scene" && text(sc, "sceneId") == c.SceneID && deepEqual(value(sc, "personId"), person) {
-							selected = append(selected, record)
-						}
-					}
-					if len(selected) < 2 || len(selected) > 12 {
-						return nil
-					}
-					selections := []any{}
-					for _, record := range selected {
-						st, e := r.State(text(record, "id"))
-						if e != nil {
-							return e
-						}
-						if st.Version < 1 || st.Deleted {
-							return nil
-						}
-						ref := epObj("id", text(record, "id"), "version", float64(st.Version), "deletionEpoch", float64(st.DeletionEpoch))
-						live, e := authority.Current(c, ref)
-						if e != nil {
-							return e
-						}
-						if live == nil {
-							return nil
-						}
-						selections = append(selections, epObj("ref", ref, "dependencyKey", value(live, "dependencyKey")))
-					}
-					sort.SliceStable(selections, func(i, j int) bool {
-						return epLess(text(object(epGet(selections[i], "ref")), "id"), text(object(epGet(selections[j], "ref")), "id"))
-					})
-					out, e = semanticHash(selections)
-					return e
+					var err error
+					out, err = semanticPartitionInReadScope(r, opts, authority.Current, c, person)
+					return err
 				})
 				return
 			}
@@ -176,4 +139,50 @@ func (p *semanticModelPort) load(reads botruntime.ReadAuthority, c Context) (pag
 	}
 	_ = page.Set("items", items)
 	return page, nil
+}
+
+// semanticPartitionInReadScope computes the same scoped partition as model
+// exposure, after a caller has performed any prerequisite import outside reads.
+func semanticPartitionInReadScope(r *assertions.Reader, opts assertionauthority.Options, current func(semantic.Context, *Object) (*Object, error), c semantic.Context, person any) (string, error) {
+	read, e := memoryread.New(r, opts)
+	if e != nil {
+		return "", e
+	}
+	records, e := read.List(memoryread.Input{SceneID: c.SceneID, Simulation: c.Simulation})
+	if e != nil {
+		return "", e
+	}
+	selected := []*Object{}
+	for _, record := range records {
+		sc := object(value(record, "scope"))
+		if !truthy(value(record, "internalUse")) && text(record, "origin") == "learned" && text(sc, "kind") == "scene" && text(sc, "sceneId") == c.SceneID && deepEqual(value(sc, "personId"), person) {
+			selected = append(selected, record)
+		}
+	}
+	if len(selected) < 2 || len(selected) > 12 {
+		return "", nil
+	}
+	selections := []any{}
+	for _, record := range selected {
+		st, e := r.State(text(record, "id"))
+		if e != nil {
+			return "", e
+		}
+		if st.Version < 1 || st.Deleted {
+			return "", nil
+		}
+		ref := epObj("id", text(record, "id"), "version", float64(st.Version), "deletionEpoch", float64(st.DeletionEpoch))
+		live, e := current(c, ref)
+		if e != nil {
+			return "", e
+		}
+		if live == nil {
+			return "", nil
+		}
+		selections = append(selections, epObj("ref", ref, "dependencyKey", value(live, "dependencyKey")))
+	}
+	sort.SliceStable(selections, func(i, j int) bool {
+		return epLess(text(object(epGet(selections[i], "ref")), "id"), text(object(epGet(selections[j], "ref")), "id"))
+	})
+	return semanticHash(selections)
 }

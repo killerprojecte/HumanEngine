@@ -45,7 +45,7 @@ func NewSchemas() (*Schemas, error) {
 	components, _ := document.(*jsjson.Object).Get("components")
 	orderedDefinitions, _ := components.(*jsjson.Object).Get("schemas")
 	s := &Schemas{root: root, compiled: map[string]*jsonschema.Schema{}, orderedDefinitions: orderedDefinitions.(*jsjson.Object)}
-	for _, name := range []string{"Settings", "ModelConfig", "Scene", "MemoryCreate", "MemoryPatch", "MemoryRelationView", "KnowledgeAdministrationView"} {
+	for _, name := range []string{"Settings", "ModelConfig", "Scene", "MemoryCreate", "MemoryPatch", "MemoryRelationView", "KnowledgeAdministrationView", "SemanticAdministrationItem"} {
 		compiled, err := compiler.Compile("https://humanengine.invalid/contract.json#/components/schemas/" + name)
 		if err != nil {
 			return nil, err
@@ -210,6 +210,11 @@ func (s *Schemas) ValidateMemoryRelationView(view *jsjson.Object) error {
 
 func (s *Schemas) ValidateKnowledgeAdministrationView(view *jsjson.Object) error {
 	_, err := s.parseValue("KnowledgeAdministrationView", view)
+	return err
+}
+
+func (s *Schemas) ValidateSemanticAdministrationItem(view *jsjson.Object) error {
+	_, err := s.parseValue("SemanticAdministrationItem", view)
 	return err
 }
 

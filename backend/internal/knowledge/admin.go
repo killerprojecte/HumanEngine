@@ -3,6 +3,7 @@ package knowledge
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertionauthority"
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
@@ -13,19 +14,39 @@ import (
 
 type AdminPublish func(context.Context, func(*assertions.Reader, func(bool) *Reader) ([]byte, error), func([]byte) error) error
 
-// BindAdminRead borrows current assertion support and graph storage from the
-// same published SQLite snapshot. It owns no model grants or write session.
+type AdminScopePublish func(context.Context, func(*assertions.Reader, *commitments.ReadService, commitments.PublicationQuery, func(bool) *Reader) ([]byte, error), func([]byte) error) error
+
+// BindAdminRead borrows only the knowledge graph reader needed by its HTTP route.
 func (s *Store) BindAdminRead(publisher *recovery.ReadPublisher, as *assertions.Store, cs *commitments.Store, policy assertionauthority.Options) (AdminPublish, error) {
+	scoped, err := s.BindAdminScope(publisher, as, cs, policy)
+	if err != nil {
+		return nil, err
+	}
+	return func(ctx context.Context, fn func(*assertions.Reader, func(bool) *Reader) ([]byte, error), emit func([]byte) error) error {
+		return scoped(ctx, func(ar *assertions.Reader, _ *commitments.ReadService, _ commitments.PublicationQuery, reader func(bool) *Reader) ([]byte, error) {
+			return fn(ar, reader)
+		}, emit)
+	}, nil
+}
+
+// BindAdminScope reuses the same leased publication for qualification across
+// knowledge, assertion and graph-derived domains. The caller gets no writer.
+func (s *Store) BindAdminScope(publisher *recovery.ReadPublisher, as *assertions.Store, cs *commitments.Store, policy assertionauthority.Options) (AdminScopePublish, error) {
 	if s.bindingError != nil || s.maintenance != nil || s.session != nil || !publisher.OwnedBy(s.main, s.authority) {
 		return nil, errors.New("knowledge_publication_binding")
+	}
+	// Stored edges can have validity dates even if the application doesn't
+	// inject a clock. Resolve it once, before constructing any scoped reader.
+	if policy.NowMillis == nil {
+		policy.NowMillis = func() int64 { return time.Now().UnixMilli() }
 	}
 	publish, err := cs.BindPublishedCurrent(publisher, as, policy)
 	if err != nil {
 		return nil, err
 	}
-	return func(ctx context.Context, fn func(*assertions.Reader, func(bool) *Reader) ([]byte, error), emit func([]byte) error) error {
+	return func(ctx context.Context, fn func(*assertions.Reader, *commitments.ReadService, commitments.PublicationQuery, func(bool) *Reader) ([]byte, error), emit func([]byte) error) error {
 		return publish(ctx, func(*assertions.Reader, commitments.Context) (bool, error) { return false, nil }, func(ar *assertions.Reader, support *commitments.ReadService, query commitments.PublicationQuery) ([]byte, error) {
-			return fn(ar, func(enabled bool) *Reader {
+			return fn(ar, support, query, func(enabled bool) *Reader {
 				return &Reader{
 					storage: &scopeStorage{check: support.AssertReady, query: func(q string, args ...any) (workingset.Rows, error) {
 						return query(q, args...)

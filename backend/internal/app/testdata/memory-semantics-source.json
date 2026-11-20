@@ -1,0 +1,5250 @@
+{
+  "node": "v24.22.1",
+  "timezone": "UTC",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/memory/interfaces/semantic-routes.ts": "6b9b9d1bc58a5f7b82ca717c03e392d11ae0ba00dcfc47207f5f9f8a077efc02",
+    "src/memory/semantic/candidates.ts": "898e1790d66e45c3fe809b7be6548afd824fbaefef343e6c742a365906524122"
+  },
+  "scenes": [
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "local",
+      "kind": "group",
+      "platformSceneId": "local"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "foreign",
+      "kind": "private",
+      "platformSceneId": "foreign"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "simulation",
+      "kind": "simulation",
+      "platformSceneId": "simulation"
+    }
+  ],
+  "seeds": [
+    {
+      "label": "@former-0",
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "former-0",
+            "senderId": "former",
+            "sourceText": "Attribution and original conditions retained: former-0",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Attribution and original conditions retained: former-0"
+              }
+            ],
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "proposal": {
+        "kind": "fact",
+        "content": "Attribution and original conditions retained: former-0",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "former-0",
+            "senderId": "former"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "former-0"
+        }
+      }
+    },
+    {
+      "label": "@former-1",
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "former-1",
+            "senderId": "former",
+            "sourceText": "Attribution and original conditions retained: former-1",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Attribution and original conditions retained: former-1"
+              }
+            ],
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "proposal": {
+        "kind": "fact",
+        "content": "Attribution and original conditions retained: former-1",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "former-1",
+            "senderId": "former"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "former-1"
+        }
+      }
+    },
+    {
+      "label": "@current-0",
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "current-0",
+            "senderId": "current",
+            "sourceText": "Attribution and original conditions retained: current-0",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Attribution and original conditions retained: current-0"
+              }
+            ],
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "proposal": {
+        "kind": "fact",
+        "content": "Attribution and original conditions retained: current-0",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "current-0",
+            "senderId": "current"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "current-0"
+        }
+      }
+    },
+    {
+      "label": "@current-1",
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "current-1",
+            "senderId": "current",
+            "sourceText": "Attribution and original conditions retained: current-1",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Attribution and original conditions retained: current-1"
+              }
+            ],
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "proposal": {
+        "kind": "fact",
+        "content": "Attribution and original conditions retained: current-1",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "current-1",
+            "senderId": "current"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "current-1"
+        }
+      }
+    },
+    {
+      "label": "@current-2",
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "current-2",
+            "senderId": "current",
+            "sourceText": "Attribution and original conditions retained: current-2",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Attribution and original conditions retained: current-2"
+              }
+            ],
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "proposal": {
+        "kind": "fact",
+        "content": "Attribution and original conditions retained: current-2",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "current-2",
+            "senderId": "current"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "current-2"
+        }
+      }
+    },
+    {
+      "label": "@current-3",
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "current-3",
+            "senderId": "current",
+            "sourceText": "Attribution and original conditions retained: current-3",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Attribution and original conditions retained: current-3"
+              }
+            ],
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "proposal": {
+        "kind": "fact",
+        "content": "Attribution and original conditions retained: current-3",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "current-3",
+            "senderId": "current"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "current-3"
+        }
+      }
+    },
+    {
+      "label": "@current-4",
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "current-4",
+            "senderId": "current",
+            "sourceText": "Attribution and original conditions retained: current-4",
+            "parts": [
+              {
+                "type": "text",
+                "text": "Attribution and original conditions retained: current-4"
+              }
+            ],
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "proposal": {
+        "kind": "fact",
+        "content": "Attribution and original conditions retained: current-4",
+        "epistemicKind": "explicit",
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "current-4",
+            "senderId": "current"
+          }
+        ],
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "current-4"
+        }
+      }
+    }
+  ],
+  "groups": [
+    {
+      "person": "former",
+      "ids": [
+        "a-stale"
+      ],
+      "picks": [
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    {
+      "person": "current",
+      "ids": [
+        "b-00",
+        "b-01",
+        "b-02",
+        "b-03",
+        "b-04",
+        "b-05",
+        "b-06",
+        "b-07",
+        "b-08",
+        "b-09",
+        "b-10",
+        "b-11",
+        "b-12"
+      ],
+      "picks": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          3
+        ],
+        [
+          0,
+          1,
+          4
+        ]
+      ]
+    }
+  ],
+  "admittedAt": "2099-02-01T00:00:00.000Z",
+  "items": [
+    {
+      "id": "b-00",
+      "version": 2,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-00",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-1"
+      ],
+      "status": "rejected",
+      "admission": "administrator_review",
+      "hypothesis": true,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": "2099-02-08T00:00:00.000Z",
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-01",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-01",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-2"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-02",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-02",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-3"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-03",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-03",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-4"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-04",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-04",
+      "selectedParentIds": [
+        "@current-1",
+        "@current-2"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-05",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-05",
+      "selectedParentIds": [
+        "@current-1",
+        "@current-3"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-06",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-06",
+      "selectedParentIds": [
+        "@current-1",
+        "@current-4"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-07",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-07",
+      "selectedParentIds": [
+        "@current-2",
+        "@current-3"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-08",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-08",
+      "selectedParentIds": [
+        "@current-2",
+        "@current-4"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-09",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-09",
+      "selectedParentIds": [
+        "@current-3",
+        "@current-4"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-10",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-10",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-1",
+        "@current-2"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-11",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-11",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-1",
+        "@current-3"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-12",
+      "version": 1,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-12",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-1",
+        "@current-4"
+      ],
+      "status": "candidate",
+      "admission": "qualified_candidate",
+      "hypothesis": false,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": null,
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "current",
+      "interpretation": "attributed_summary_not_verified_truth"
+    },
+    {
+      "id": "b-00",
+      "version": 2,
+      "personId": "current",
+      "kind": "summary_candidate",
+      "text": "Synthetic semantic item b-00",
+      "selectedParentIds": [
+        "@current-0",
+        "@current-1"
+      ],
+      "status": "rejected",
+      "admission": "administrator_review",
+      "hypothesis": true,
+      "anchorQualifications": [],
+      "createdAt": "2099-02-01T00:00:00.000Z",
+      "applicableUntil": "2000-01-01T00:00:00.000Z",
+      "parents": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-0"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-0",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-1"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-1",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-2"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-2",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-3"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-3",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "proofs": [
+            {
+              "sources": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ],
+              "parents": [],
+              "parentReferences": [],
+              "subjectWitness": {
+                "kind": "self",
+                "personId": "current",
+                "sourceMessageId": "current-4"
+              },
+              "sourceObservations": [
+                {
+                  "sceneId": "local",
+                  "messageId": "current-4",
+                  "senderId": "current"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "declarations": [
+        {
+          "ref": {
+            "id": "@current-0",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-0",
+            "content": "Attribution and original conditions retained: current-0",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-0",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-1",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-1",
+            "content": "Attribution and original conditions retained: current-1",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-1",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-2",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-2",
+            "content": "Attribution and original conditions retained: current-2",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-2",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-3",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-3",
+            "content": "Attribution and original conditions retained: current-3",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-3",
+                "senderId": "current"
+              }
+            ]
+          }
+        },
+        {
+          "ref": {
+            "id": "@current-4",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "record": {
+            "id": "@current-4",
+            "content": "Attribution and original conditions retained: current-4",
+            "kind": "fact",
+            "epistemicKind": "explicit",
+            "status": "active",
+            "origin": "learned",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "local",
+              "personId": "current"
+            },
+            "learnedAt": "@learnedAt",
+            "sources": [
+              {
+                "sceneId": "local",
+                "messageId": "current-4",
+                "senderId": "current"
+              }
+            ]
+          }
+        }
+      ],
+      "rootCount": 5,
+      "applicability": "review_needed",
+      "interpretation": "attributed_summary_not_verified_truth"
+    }
+  ],
+  "cases": [
+    {
+      "name": "auth-first",
+      "path": "/api/memory-semantics?sceneId=local&wrong=x",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "cacheControl": "",
+      "noSniff": ""
+    },
+    {
+      "name": "default-prefix",
+      "path": "/api/memory-semantics?sceneId=local",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "coverage": "limited",
+        "items": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "unavailable": [
+          {
+            "id": "a-stale",
+            "version": 1,
+            "status": "candidate",
+            "reason": "qualification_unavailable"
+          }
+        ]
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "raw-prefix-unavailable",
+      "path": "/api/memory-semantics?sceneId=local&limit=0x1",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "coverage": "limited",
+        "items": [],
+        "unavailable": [
+          {
+            "id": "a-stale",
+            "version": 1,
+            "status": "candidate",
+            "reason": "qualification_unavailable"
+          }
+        ]
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "qualified-rejected",
+      "path": "/api/memory-semantics?sceneId=local&limit=+2e0",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "coverage": "limited",
+        "items": [
+          0
+        ],
+        "unavailable": [
+          {
+            "id": "a-stale",
+            "version": 1,
+            "status": "candidate",
+            "reason": "qualification_unavailable"
+          }
+        ]
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "all",
+      "path": "/api/memory-semantics?sceneId=local&limit=40",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "coverage": "complete",
+        "items": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "unavailable": [
+          {
+            "id": "a-stale",
+            "version": 1,
+            "status": "candidate",
+            "reason": "qualification_unavailable"
+          }
+        ]
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "head",
+      "path": "/api/memory-semantics?sceneId=local",
+      "method": "HEAD",
+      "status": 200,
+      "body": null,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "head-invalid",
+      "path": "/api/memory-semantics?sceneId=local&limit=41",
+      "method": "HEAD",
+      "status": 400,
+      "body": null,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "limit-bad-int",
+      "path": "/api/memory-semantics?sceneId=local&limit=1.5",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "duplicates",
+      "path": "/api/memory-semantics?sceneId=local&limit=1&limit=2",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "strict",
+      "path": "/api/memory-semantics?sceneId=local&status=admitted",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "required-id",
+      "path": "/api/memory-semantics",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "id-max",
+      "path": "/api/memory-semantics?sceneId=%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82",
+      "status": 404,
+      "body": {
+        "error": "semantic_scene_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "id-over-max",
+      "path": "/api/memory-semantics?sceneId=%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82%F0%9F%99%82",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "foreign-private",
+      "path": "/api/memory-semantics?sceneId=foreign",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "coverage": "complete",
+        "items": [],
+        "unavailable": []
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "missing",
+      "path": "/api/memory-semantics?sceneId=missing",
+      "status": 404,
+      "body": {
+        "error": "semantic_scene_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "simulation",
+      "path": "/api/memory-semantics?sceneId=simulation",
+      "status": 404,
+      "body": {
+        "error": "semantic_scene_unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "disabled-even-answer-on",
+      "path": "/api/memory-semantics?sceneId=local",
+      "enabled": false,
+      "answer": true,
+      "status": 200,
+      "body": {
+        "enabled": false,
+        "coverage": "complete",
+        "items": [],
+        "unavailable": []
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "expired-but-qualified",
+      "path": "/api/memory-semantics?sceneId=local&limit=2",
+      "enabled": true,
+      "answer": false,
+      "expired": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "coverage": "limited",
+        "items": [
+          13
+        ],
+        "unavailable": [
+          {
+            "id": "a-stale",
+            "version": 1,
+            "status": "candidate",
+            "reason": "qualification_unavailable"
+          }
+        ]
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "after-recall",
+      "path": "/api/memory-semantics?sceneId=local",
+      "recall": true,
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "coverage": "complete",
+        "items": [],
+        "unavailable": [
+          {
+            "id": "a-stale",
+            "version": 1,
+            "status": "candidate",
+            "reason": "qualification_unavailable"
+          }
+        ]
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    }
+  ]
+}

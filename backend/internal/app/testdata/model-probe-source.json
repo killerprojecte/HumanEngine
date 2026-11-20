@@ -1,0 +1,1222 @@
+{
+  "node": "v24.22.1",
+  "models": {
+    "providers": [
+      {
+        "id": "chat",
+        "name": "chat",
+        "protocol": "openai-chat",
+        "baseUrl": "http://127.0.0.1:0/v1",
+        "credentialEnv": "",
+        "retryCount": 0,
+        "timeoutMs": 5000
+      },
+      {
+        "id": "responses",
+        "name": "responses",
+        "protocol": "openai-responses",
+        "baseUrl": "http://127.0.0.1:0/v1",
+        "credentialEnv": "",
+        "retryCount": 0,
+        "timeoutMs": 5000
+      },
+      {
+        "id": "fallback",
+        "name": "fallback",
+        "protocol": "openai-chat",
+        "baseUrl": "http://127.0.0.1:0/v1",
+        "credentialEnv": "",
+        "retryCount": 0,
+        "timeoutMs": 5000
+      },
+      {
+        "id": "custom",
+        "name": "custom",
+        "protocol": "fixture:probe",
+        "baseUrl": "http://127.0.0.1:0/v1",
+        "credentialEnv": "",
+        "retryCount": 0,
+        "timeoutMs": 5000
+      },
+      {
+        "id": "unregistered",
+        "name": "unregistered",
+        "protocol": "fixture:unregistered",
+        "baseUrl": "http://127.0.0.1:0/v1",
+        "credentialEnv": "",
+        "retryCount": 0,
+        "timeoutMs": 5000
+      }
+    ],
+    "models": [
+      {
+        "id": "chat",
+        "providerId": "chat",
+        "displayName": "chat",
+        "apiModelName": "wire-chat",
+        "capabilities": [
+          "text"
+        ],
+        "embeddingDimensions": 2,
+        "embeddingBatchSize": 4,
+        "streaming": false,
+        "inputUsdPerMillion": 2,
+        "outputUsdPerMillion": 3
+      },
+      {
+        "id": "responses",
+        "providerId": "responses",
+        "displayName": "responses",
+        "apiModelName": "wire-responses",
+        "capabilities": [
+          "text"
+        ],
+        "embeddingDimensions": 2,
+        "embeddingBatchSize": 4,
+        "streaming": false,
+        "inputUsdPerMillion": 2,
+        "outputUsdPerMillion": 3
+      },
+      {
+        "id": "fallback",
+        "providerId": "fallback",
+        "displayName": "fallback",
+        "apiModelName": "wire-fallback",
+        "capabilities": [
+          "text"
+        ],
+        "embeddingDimensions": 2,
+        "embeddingBatchSize": 4,
+        "streaming": false,
+        "inputUsdPerMillion": 2,
+        "outputUsdPerMillion": 3
+      },
+      {
+        "id": "custom",
+        "providerId": "custom",
+        "displayName": "custom",
+        "apiModelName": "wire-custom",
+        "capabilities": [
+          "text"
+        ],
+        "embeddingDimensions": 2,
+        "embeddingBatchSize": 4,
+        "streaming": false,
+        "inputUsdPerMillion": 2,
+        "outputUsdPerMillion": 3
+      },
+      {
+        "id": "unregistered",
+        "providerId": "unregistered",
+        "displayName": "unregistered",
+        "apiModelName": "wire-unregistered",
+        "capabilities": [
+          "text"
+        ],
+        "embeddingDimensions": 2,
+        "embeddingBatchSize": 4,
+        "streaming": false,
+        "inputUsdPerMillion": 2,
+        "outputUsdPerMillion": 3
+      }
+    ],
+    "routes": [
+      {
+        "role": "replyer",
+        "orderedModelIds": [
+          "fallback"
+        ],
+        "timeoutMs": 5000
+      },
+      {
+        "role": "vision",
+        "orderedModelIds": [
+          "fallback"
+        ],
+        "timeoutMs": 5000
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "auth-first",
+      "scope": "text",
+      "payload": "{broken",
+      "unauthorized": true,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      }
+    },
+    {
+      "name": "malformed",
+      "scope": "text",
+      "payload": "{broken",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "strict",
+      "scope": "text",
+      "payload": "{\"capability\":\"text\",\"extra\":1}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-capability",
+      "scope": "text",
+      "payload": "{\"capability\":\"anything\"}",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "missing",
+      "scope": "text",
+      "id": "missing",
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "text",
+        "detail": "model_not_found"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "chat",
+      "scope": "text",
+      "provider": "chat",
+      "reply": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "role": "assistant",
+              "content": "OK"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "text",
+        "detail": "text_response_received"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": "This is a text protocol test. Reply briefly with OK."
+              }
+            ],
+            "stream": false
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "chat-empty",
+      "scope": "text",
+      "provider": "chat",
+      "reply": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "role": "assistant",
+              "content": " "
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "text",
+        "detail": "text_response_missing"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": "This is a text protocol test. Reply briefly with OK."
+              }
+            ],
+            "stream": false
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "chat-no-fallback",
+      "scope": "text",
+      "provider": "chat",
+      "reply": {
+        "error": "synthetic upstream payload"
+      },
+      "error": 503,
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "text",
+        "detail": "all_models_failed"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": "This is a text protocol test. Reply briefly with OK."
+              }
+            ],
+            "stream": false
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "tools",
+      "scope": "tools",
+      "provider": "chat",
+      "reply": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call-probe",
+                  "type": "function",
+                  "function": {
+                    "name": "probe__echo",
+                    "arguments": "{\"value\":\"humanengine-probe\"}"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"tools\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "tools",
+        "detail": "tool_call_validated"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": "Call probe.echo exactly once with value \"humanengine-probe\". Do not answer with text."
+              }
+            ],
+            "stream": false,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "probe__echo",
+                  "description": "Return the supplied fixed probe value. This has no external side effects.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "enum": [
+                          "humanengine-probe"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "tools-wrong-value",
+      "scope": "tools",
+      "provider": "chat",
+      "reply": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call-probe",
+                  "type": "function",
+                  "function": {
+                    "name": "probe__echo",
+                    "arguments": "{\"value\":\"wrong\"}"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"tools\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "tools",
+        "detail": "tool_call_validation_failed"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": "Call probe.echo exactly once with value \"humanengine-probe\". Do not answer with text."
+              }
+            ],
+            "stream": false,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "probe__echo",
+                  "description": "Return the supplied fixed probe value. This has no external side effects.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "enum": [
+                          "humanengine-probe"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "tools-extra-argument",
+      "scope": "tools",
+      "provider": "chat",
+      "reply": {
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [
+                {
+                  "id": "call-probe",
+                  "type": "function",
+                  "function": {
+                    "name": "probe__echo",
+                    "arguments": "{\"value\":\"humanengine-probe\",\"extra\":true}"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"tools\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "tools",
+        "detail": "tool_call_validation_failed"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": "Call probe.echo exactly once with value \"humanengine-probe\". Do not answer with text."
+              }
+            ],
+            "stream": false,
+            "tools": [
+              {
+                "type": "function",
+                "function": {
+                  "name": "probe__echo",
+                  "description": "Return the supplied fixed probe value. This has no external side effects.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "enum": [
+                          "humanengine-probe"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "strict": false
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "vision",
+      "scope": "vision",
+      "provider": "chat",
+      "reply": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "role": "assistant",
+              "content": "Accepted"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"vision\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "vision",
+        "detail": "vision_input_accepted_accuracy_unverified"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "This is a protocol image-input acceptance test. Acknowledge this request briefly."
+                  },
+                  {
+                    "type": "image_url",
+                    "image_url": {
+                      "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP4//8/AAX+Av5Y8msOAAAAAElFTkSuQmCC"
+                    }
+                  }
+                ]
+              }
+            ],
+            "stream": false
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "embedding",
+      "scope": "embedding",
+      "provider": "chat",
+      "reply": {
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              1,
+              2
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "total_tokens": 10
+        }
+      },
+      "payload": "{\"capability\":\"embedding\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "embedding",
+        "detail": "embedding_vector_validated"
+      },
+      "wire": [
+        {
+          "path": "/v1/embeddings",
+          "body": {
+            "model": "wire-chat",
+            "input": [
+              "HumanEngine capability probe."
+            ],
+            "encoding_format": "float",
+            "dimensions": 2
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "embedding-zero",
+      "scope": "embedding",
+      "provider": "chat",
+      "reply": {
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              0,
+              0
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "total_tokens": 10
+        }
+      },
+      "payload": "{\"capability\":\"embedding\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "embedding",
+        "detail": "embedding_validation_failed"
+      },
+      "wire": [
+        {
+          "path": "/v1/embeddings",
+          "body": {
+            "model": "wire-chat",
+            "input": [
+              "HumanEngine capability probe."
+            ],
+            "encoding_format": "float",
+            "dimensions": 2
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "embedding-wrong-dimensions",
+      "scope": "embedding",
+      "provider": "chat",
+      "reply": {
+        "data": [
+          {
+            "index": 0,
+            "embedding": [
+              1,
+              2,
+              3
+            ]
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "total_tokens": 10
+        }
+      },
+      "payload": "{\"capability\":\"embedding\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "embedding",
+        "detail": "embedding_dimensions_mismatch"
+      },
+      "wire": [
+        {
+          "path": "/v1/embeddings",
+          "body": {
+            "model": "wire-chat",
+            "input": [
+              "HumanEngine capability probe."
+            ],
+            "encoding_format": "float",
+            "dimensions": 2
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "responses-text",
+      "scope": "text",
+      "provider": "responses",
+      "reply": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "message",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "OK"
+              }
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "text",
+        "detail": "text_response_received"
+      },
+      "wire": [
+        {
+          "path": "/v1/responses",
+          "body": {
+            "model": "wire-responses",
+            "input": [
+              {
+                "role": "user",
+                "content": "This is a text protocol test. Reply briefly with OK."
+              }
+            ],
+            "store": false,
+            "stream": false,
+            "include": [
+              "reasoning.encrypted_content"
+            ]
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "responses-tools",
+      "scope": "tools",
+      "provider": "responses",
+      "reply": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "function_call",
+            "call_id": "call-probe",
+            "name": "probe__echo",
+            "arguments": "{\"value\":\"humanengine-probe\"}"
+          }
+        ],
+        "usage": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"tools\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "tools",
+        "detail": "tool_call_validated"
+      },
+      "wire": [
+        {
+          "path": "/v1/responses",
+          "body": {
+            "model": "wire-responses",
+            "input": [
+              {
+                "role": "user",
+                "content": "Call probe.echo exactly once with value \"humanengine-probe\". Do not answer with text."
+              }
+            ],
+            "store": false,
+            "stream": false,
+            "include": [
+              "reasoning.encrypted_content"
+            ],
+            "tools": [
+              {
+                "type": "function",
+                "name": "probe__echo",
+                "description": "Return the supplied fixed probe value. This has no external side effects.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string",
+                      "enum": [
+                        "humanengine-probe"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "value"
+                  ],
+                  "additionalProperties": false
+                },
+                "strict": false
+              }
+            ]
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "responses-vision",
+      "scope": "vision",
+      "provider": "responses",
+      "reply": {
+        "status": "completed",
+        "output": [
+          {
+            "type": "message",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "Accepted"
+              }
+            ]
+          }
+        ],
+        "usage": {
+          "input_tokens": 10,
+          "output_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"vision\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "vision",
+        "detail": "vision_input_accepted_accuracy_unverified"
+      },
+      "wire": [
+        {
+          "path": "/v1/responses",
+          "body": {
+            "model": "wire-responses",
+            "input": [
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "input_text",
+                    "text": "This is a protocol image-input acceptance test. Acknowledge this request briefly."
+                  },
+                  {
+                    "type": "input_image",
+                    "image_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP4//8/AAX+Av5Y8msOAAAAAElFTkSuQmCC",
+                    "detail": "auto"
+                  }
+                ]
+              }
+            ],
+            "store": false,
+            "stream": false,
+            "include": [
+              "reasoning.encrypted_content"
+            ]
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "encoded-id",
+      "scope": "text",
+      "id": "%63hat",
+      "reply": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "message": {
+              "role": "assistant",
+              "content": "OK"
+            }
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 10,
+          "completion_tokens": 2,
+          "total_tokens": 12
+        }
+      },
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "text",
+        "detail": "text_response_received"
+      },
+      "wire": [
+        {
+          "path": "/v1/chat/completions",
+          "body": {
+            "model": "wire-chat",
+            "messages": [
+              {
+                "role": "user",
+                "content": "This is a text protocol test. Reply briefly with OK."
+              }
+            ],
+            "stream": false
+          }
+        }
+      ],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "v1-completion",
+      "scope": "text",
+      "provider": "custom",
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "text",
+        "detail": "text_response_received"
+      },
+      "wire": [],
+      "guest": [
+        {
+          "operation": "complete",
+          "model": "custom",
+          "capabilities": [
+            "text"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "This is a text protocol test. Reply briefly with OK."
+            }
+          ],
+          "tools": []
+        }
+      ],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "v1-embedding",
+      "scope": "embedding",
+      "provider": "custom",
+      "payload": "{\"capability\":\"embedding\"}",
+      "status": 200,
+      "body": {
+        "ok": true,
+        "capability": "embedding",
+        "detail": "embedding_vector_validated"
+      },
+      "wire": [],
+      "guest": [
+        {
+          "operation": "embeddings",
+          "model": "custom",
+          "capabilities": [
+            "text",
+            "embedding"
+          ],
+          "inputs": [
+            "HumanEngine capability probe."
+          ]
+        }
+      ],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "v1-unregistered",
+      "scope": "text",
+      "provider": "unregistered",
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "text",
+        "detail": "all_models_failed"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "held-native",
+      "scope": "text",
+      "provider": "chat",
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "text",
+        "detail": "budget_restore_accounting_hold"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "held-custom",
+      "scope": "text",
+      "provider": "custom",
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "text",
+        "detail": "budget_restore_accounting_hold"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "held-unregistered",
+      "scope": "text",
+      "provider": "unregistered",
+      "payload": "{\"capability\":\"text\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "text",
+        "detail": "budget_restore_accounting_hold"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "held-unregistered-embedding",
+      "scope": "embedding",
+      "provider": "unregistered",
+      "payload": "{\"capability\":\"embedding\"}",
+      "status": 200,
+      "body": {
+        "ok": false,
+        "capability": "embedding",
+        "detail": "budget_restore_accounting_hold"
+      },
+      "wire": [],
+      "guest": [],
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      }
+    }
+  ]
+}

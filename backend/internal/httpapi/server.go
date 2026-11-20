@@ -133,7 +133,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
 	}
 	id := r.Header.Get("X-Request-ID")
-	if simulation || learningAdmin || budgetAdmin || memoryPeople || memoryHistory || assertionHistory || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions")) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if simulation || learningAdmin || budgetAdmin || memoryPeople || memoryHistory || assertionHistory || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions" || r.Method == http.MethodPost && strings.HasPrefix(path, "/api/models/") && strings.HasSuffix(path, "/probe"))) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)

@@ -11,6 +11,22 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/providerwire"
 )
 
+// The administrative probe's source checks restoration and budget before
+// consulting the V1 registry. Only this already-terminal branch needs its
+// admission precedence restored; registered protocols already check the gate.
+func (m *NativeModels) unregisteredProtocol(ctx context.Context, modelCall bool) error {
+	if modelCall && m.Client.CheckUnavailableProtocolBudget {
+		gate, err := m.Client.Budgets.Current(ctx)
+		if err != nil {
+			return budgetFailure(err)
+		}
+		if gate != nil {
+			return safe("budget_protocol_unsupported")
+		}
+	}
+	return safe("protocol_not_registered")
+}
+
 func (m *NativeModels) completeV1(ctx context.Context, a modelservice.Attempt, request CompletionRequest, messages []map[string]any) (*Completion, error) {
 	if m.Host == nil {
 		return nil, safe("protocol_not_registered")
@@ -25,7 +41,7 @@ func (m *NativeModels) completeV1(ctx context.Context, a modelservice.Attempt, r
 		}
 	}
 	if registration == nil {
-		return nil, safe("protocol_not_registered")
+		return nil, m.unregisteredProtocol(ctx, true)
 	}
 	supported := false
 	for _, op := range registration.Operations {
@@ -217,7 +233,7 @@ func (m *NativeModels) customOperation(ctx context.Context, a modelservice.Attem
 		}
 	}
 	if registration == nil {
-		return nil, safe("protocol_not_registered")
+		return nil, m.unregisteredProtocol(ctx, operation != "listModels")
 	}
 	supported := false
 	for _, op := range registration.Operations {

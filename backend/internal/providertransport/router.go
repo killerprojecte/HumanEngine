@@ -20,10 +20,14 @@ type routerOwners struct {
 }
 
 func (m *NativeModels) operationRouter(ctx context.Context) (*NativeModels, func(), error) {
-	if m.Router == nil {
+	return m.ownOperationRouter(ctx, m.Router)
+}
+
+func (m *NativeModels) ownOperationRouter(ctx context.Context, factory RouterFactory) (*NativeModels, func(), error) {
+	if factory == nil {
 		return m, func() {}, nil
 	}
-	child, err := m.Router(ctx)
+	child, err := factory(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -100,11 +104,17 @@ func (m *NativeModels) HasConfiguredRoute(ctx context.Context, role string) (boo
 // AcquireRouter retains one source Router snapshot across multi-step operations
 // such as vision-route selection and image observation. Release is mandatory.
 func (m *NativeModels) AcquireRouter(ctx context.Context) (*NativeModels, func(), error) {
+	return m.AcquireOperationRouter(ctx, m.Router)
+}
+
+// AcquireOperationRouter accepts a server-owned builder for a pinned operation
+// and tracks it through the same physical router drain.
+func (m *NativeModels) AcquireOperationRouter(ctx context.Context, factory RouterFactory) (*NativeModels, func(), error) {
 	done, ok := m.requests.Start()
 	if !ok {
 		return nil, nil, safe("native_models_closed")
 	}
-	router, release, err := m.operationRouter(ctx)
+	router, release, err := m.ownOperationRouter(ctx, factory)
 	if err != nil {
 		done()
 		return nil, nil, err

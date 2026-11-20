@@ -105,6 +105,13 @@ func runtimeSettings(v map[string]any) botruntime.Settings {
 	return c
 }
 
+func numberOf(v any) *float64 {
+	if n, ok := v.(float64); ok {
+		return &n
+	}
+	return nil
+}
+
 func modelConfiguration(v map[string]any, client *providertransport.Client, options modelservice.Options) (*providertransport.NativeModels, error) {
 	// Schema validation already produced canonical WTF-8 strings. Map fields
 	// directly: encoding/json's replacement of lone surrogates is not lossless.
@@ -117,12 +124,7 @@ func modelConfiguration(v map[string]any, client *providertransport.Client, opti
 		}
 		return out
 	}
-	numberOf := func(v any) *float64 {
-		if n, ok := v.(float64); ok {
-			return &n
-		}
-		return nil
-	}
+
 	for _, raw := range v["providers"].([]any) {
 		p := raw.(map[string]any)
 		config.Providers = append(config.Providers, modelservice.Provider{ID: p["id"].(string), Protocol: p["protocol"].(string), RetryCount: numberOf(p["retryCount"]), TimeoutMS: numberOf(p["timeoutMs"])})

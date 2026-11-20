@@ -86,12 +86,13 @@ type ImageSerializer interface {
 	Serialize(context.Context, map[string]any, *ImageUploadLimits, *int) ([]byte, error)
 }
 type Client struct {
-	HTTP            *http.Client
-	Credentials     CredentialResolver
-	Budgets         BudgetSource
-	Images          ImageSerializer
-	MaxOutputTokens *int
-	Counter         CounterRegistry
+	HTTP                           *http.Client
+	Credentials                    CredentialResolver
+	Budgets                        BudgetSource
+	Images                         ImageSerializer
+	MaxOutputTokens                *int
+	Counter                        CounterRegistry
+	CheckUnavailableProtocolBudget bool // Probe parity on the terminal unregistered V1 path only.
 }
 type Request struct {
 	credentialUsed    func(string)

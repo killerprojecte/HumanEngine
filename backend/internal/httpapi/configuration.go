@@ -26,6 +26,7 @@ type configurationOwner struct {
 	settings  *settingsstore.Store
 	runtime   ConfigurationRuntime
 	admission chan struct{}
+	probe     ModelProbe
 }
 
 // WithConfiguration is an explicit writer opt-in. Read-only preview constructors
@@ -78,7 +79,9 @@ func (s *Server) serveConfiguration(w http.ResponseWriter, r *http.Request, avai
 	path := habitRoutingPath(r)
 	var err error
 	read := r.Method == http.MethodGet || r.Method == http.MethodHead
-	matched := path == "/api/persona/versions" && read || (path == "/api/rules" || path == "/api/settings" || path == "/api/models") && (read || r.Method == http.MethodPut)
+	probeID, probe := modelProbePath(r.Method, path)
+	probe = probe && s.configuration.probe != nil
+	matched := probe || path == "/api/persona/versions" && read || (path == "/api/rules" || path == "/api/settings" || path == "/api/models") && (read || r.Method == http.MethodPut)
 	switch {
 	case !matched:
 		response.header.Set("Content-Type", "text/plain; charset=UTF-8")
@@ -106,6 +109,10 @@ func (s *Server) serveConfiguration(w http.ResponseWriter, r *http.Request, avai
 		if e != nil {
 			failure(e)
 			return
+		}
+		if probe {
+			err = s.executeModelProbe(r.Context(), probeID, input, publish)
+			break
 		}
 		if path == "/api/rules" {
 			err = s.writeRules(r.Context(), input, publish)

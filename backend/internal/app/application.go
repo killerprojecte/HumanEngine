@@ -304,6 +304,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error {
 			return app.HTTP.WithConfiguration(owners.Credentials, &settingsstore.Store{Main: owners.Main, Authority: owners.Authority}, settingsRuntime)
 		},
+		func() error { return app.HTTP.WithModelProbe(app.modelProbe(owners, client, sched)) },
 		func() error { return app.HTTP.WithPlugins(app.Plugins) },
 		func() error {
 			return app.HTTP.WithSceneConfiguration(&scenestore.Store{Main: owners.Main, Authority: owners.Authority}, app)

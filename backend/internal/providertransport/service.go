@@ -30,6 +30,20 @@ func (s *BudgetService) Current(ctx context.Context) (BudgetGate, error) {
 	if err != nil {
 		return nil, err
 	}
+	return s.gate(settings)
+}
+
+// CurrentOnSnapshot evaluates the same budget and restoration admission on an
+// already verified main read. It never opens a second transaction.
+func (s *BudgetService) CurrentOnSnapshot(ctx context.Context, read *sql.Conn) (BudgetGate, error) {
+	settings, err := budgetSettingsWithHold(ctx, read)
+	if err != nil {
+		return nil, err
+	}
+	return s.gate(settings)
+}
+
+func (s *BudgetService) gate(settings *jsjson.Object) (BudgetGate, error) {
 	enabled, _ := settings.Get("budgetExperimentEnabled")
 	if enabled != true {
 		return nil, nil
@@ -64,14 +78,7 @@ func (s *BudgetService) settings(ctx context.Context) (*jsjson.Object, error) {
 		return nil, e
 	}
 	defer tx.Rollback()
-	hold, e := readRestoredHold(ctx, tx)
-	if e != nil {
-		return nil, e
-	}
-	if hold.Held {
-		return nil, errors.New("budget_restore_accounting_hold")
-	}
-	settings, e := readBudgetSettings(ctx, tx)
+	settings, e := budgetSettingsWithHold(ctx, tx)
 	if e != nil {
 		return nil, e
 	}
@@ -79,6 +86,17 @@ func (s *BudgetService) settings(ctx context.Context) (*jsjson.Object, error) {
 		return nil, e
 	}
 	return settings, nil
+}
+
+func budgetSettingsWithHold(ctx context.Context, q budgetReadQuery) (*jsjson.Object, error) {
+	hold, err := readRestoredHold(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	if hold.Held {
+		return nil, errors.New("budget_restore_accounting_hold")
+	}
+	return readBudgetSettings(ctx, q)
 }
 
 type budgetReadQuery interface {

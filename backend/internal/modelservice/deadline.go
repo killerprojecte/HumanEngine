@@ -29,6 +29,13 @@ type progressDeadline struct {
 	parent     context.Context
 }
 
+// StartProbeDeadline mirrors the administrative operation's outer deadline;
+// native meaningful first content stops it through the same progress chain.
+func (p *Policy) StartProbeDeadline(ctx context.Context, ms float64) (context.Context, func()) {
+	deadline := newDeadline(ctx, ms, "probe_timeout", p.clock)
+	return deadline.Context, deadline.Close
+}
+
 func newDeadline(parent context.Context, ms float64, code string, clock Clock) *progressDeadline {
 	return newDeadlineWithTimeout(parent, ms, code, clock, nil)
 }

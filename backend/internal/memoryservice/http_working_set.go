@@ -61,12 +61,7 @@ func (s *Service) BindWorkingSetAdminRead(publisher *recovery.ReadPublisher, sch
 				return []byte(`{"error":"Invalid request"}`), nil
 			}
 			err = ws.ReadScope(ctx, func(scope *workingset.Scope) error {
-				ar, err := s.d.Assertions.BorrowReader(scope.CheckScope, func(q string, args ...any) (assertions.Rows, error) {
-					return scope.Query(q, args...)
-				}, func(q string) (assertions.PreparedRead, error) {
-					p, err := scope.PrepareQuery(q)
-					return workspaceStatement{p}, err
-				})
+				ar, err := s.workspaceAssertionReader(scope)
 				if err != nil {
 					return err
 				}
@@ -116,6 +111,15 @@ func (s *Service) BindWorkingSetAdminRead(publisher *recovery.ReadPublisher, sch
 		}, func(body []byte) error { return emit(status, body) })
 		return started, err
 	}, nil
+}
+
+func (s *Service) workspaceAssertionReader(scope *workingset.Scope) (*assertions.Reader, error) {
+	return s.d.Assertions.BorrowReader(scope.CheckScope, func(q string, args ...any) (assertions.Rows, error) {
+		return scope.Query(q, args...)
+	}, func(q string) (assertions.PreparedRead, error) {
+		p, err := scope.PrepareQuery(q)
+		return workspaceStatement{p}, err
+	})
 }
 
 type workspaceStatement struct{ workingset.PreparedRead }

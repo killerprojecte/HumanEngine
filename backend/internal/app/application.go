@@ -284,6 +284,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error { return app.HTTP.WithMemoryEpisodesRead(app.readPublisher) },
 		func() error { return app.HTTP.WithMemorySemanticsRead(app.readPublisher) },
 		func() error { return app.HTTP.WithMemoryWorkingSetRead(app.readPublisher) },
+		func() error { return app.HTTP.WithMemoryWorkingSetPin(app.readPublisher) },
 		func() error { return app.HTTP.WithMemoryKnowledgeRead(app.readPublisher) },
 		func() error { return app.HTTP.WithMemoryCreate(app.queueManualMemoryIndex) },
 		func() error { return app.HTTP.WithMemes(app.Engine) },

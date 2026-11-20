@@ -1,0 +1,951 @@
+{
+  "node": "v24.22.1",
+  "scenes": [
+    {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "platformSceneId": "scene",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false
+    },
+    {
+      "id": "foreign",
+      "kind": "private",
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "platformSceneId": "foreign",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false
+    },
+    {
+      "id": "simulation",
+      "kind": "simulation",
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "platformSceneId": "simulation",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false
+    }
+  ],
+  "records": [
+    {
+      "id": "target",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "person"
+      },
+      "kind": "claim",
+      "status": "active",
+      "content": "Synthetic target",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    },
+    {
+      "id": "failed",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "person"
+      },
+      "kind": "claim",
+      "status": "active",
+      "content": "Synthetic failed",
+      "learnedAt": "2025-01-01T00:00:00.000Z",
+      "sources": []
+    }
+  ],
+  "cases": [
+    {
+      "name": "unauthorized-before-parser",
+      "requestBody": "{broken",
+      "authorized": false,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "malformed-json",
+      "requestBody": "{broken",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "absent-body",
+      "requestBody": "",
+      "authorized": true,
+      "contentType": "",
+      "absent": true,
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "different-content-type",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "text/plain",
+      "absent": false,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "extra-outer",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true,\"extra\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "extra-selection",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\",\"extra\":true},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "extra-reference",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0,\"mutationVersion\":1},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "missing-commitment-mutation",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"commitment\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "invalid-key",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "unsafe-revision",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":9007199254740992,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "string-revision",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":\"0\",\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "astral-scene-max",
+      "requestBody": "{\"sceneId\":\"💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "astral-scene-over",
+      "requestBody": "{\"sceneId\":\"💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "missing-scene",
+      "requestBody": "{\"sceneId\":\"missing\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "simulation",
+      "requestBody": "{\"sceneId\":\"simulation\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "foreign",
+      "requestBody": "{\"sceneId\":\"foreign\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 409,
+      "body": {
+        "error": "Pin state changed or is unavailable; refresh before retrying"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "missing-unpin",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":false}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 404,
+      "body": {
+        "error": "Pin unavailable"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "stale-selection",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 409,
+      "body": {
+        "error": "Pin state changed or is unavailable; refresh before retrying"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "pin",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 200,
+      "body": {
+        "schemaVersion": 1,
+        "sceneId": "scene",
+        "selection": {
+          "ref": {
+            "kind": "assertion",
+            "id": "target",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "@target"
+        },
+        "policyRevision": 1,
+        "pinned": true,
+        "terminal": false
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [
+        {
+          "kind": "working_set_pin",
+          "schemaVersion": 1,
+          "policy": {
+            "schemaVersion": 1,
+            "sceneId": "scene",
+            "selection": {
+              "ref": {
+                "kind": "assertion",
+                "id": "target",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "@target"
+            },
+            "policyRevision": 1,
+            "pinned": true,
+            "terminal": false
+          }
+        }
+      ],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 1,
+          "pinned": true,
+          "terminal": false
+        }
+      ],
+      "gateAdvance": 1,
+      "reader": 4
+    },
+    {
+      "name": "same-current-revision",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":1,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 200,
+      "body": {
+        "schemaVersion": 1,
+        "sceneId": "scene",
+        "selection": {
+          "ref": {
+            "kind": "assertion",
+            "id": "target",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "@target"
+        },
+        "policyRevision": 1,
+        "pinned": true,
+        "terminal": false
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 1,
+          "pinned": true,
+          "terminal": false
+        }
+      ],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "old-cas",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 409,
+      "body": {
+        "error": "Pin state changed or is unavailable; refresh before retrying"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 1,
+          "pinned": true,
+          "terminal": false
+        }
+      ],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "disabled-pin",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":1,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 409,
+      "body": {
+        "error": "Pin state changed or is unavailable; refresh before retrying"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 1,
+          "pinned": true,
+          "terminal": false
+        }
+      ],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "disabled-stale-unpin",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"expectedRevision\":1,\"pinned\":false}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 200,
+      "body": {
+        "schemaVersion": 1,
+        "sceneId": "scene",
+        "selection": {
+          "ref": {
+            "kind": "assertion",
+            "id": "target",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "@target"
+        },
+        "policyRevision": 2,
+        "pinned": false,
+        "terminal": false
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [
+        {
+          "kind": "working_set_pin",
+          "schemaVersion": 1,
+          "policy": {
+            "schemaVersion": 1,
+            "sceneId": "scene",
+            "selection": {
+              "ref": {
+                "kind": "assertion",
+                "id": "target",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "@target"
+            },
+            "policyRevision": 2,
+            "pinned": false,
+            "terminal": false
+          }
+        }
+      ],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 2,
+          "pinned": false,
+          "terminal": false
+        }
+      ],
+      "gateAdvance": 1,
+      "reader": 4
+    },
+    {
+      "name": "repeat-disabled-unpin",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":2,\"pinned\":false}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 200,
+      "body": {
+        "schemaVersion": 1,
+        "sceneId": "scene",
+        "selection": {
+          "ref": {
+            "kind": "assertion",
+            "id": "target",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "@target"
+        },
+        "policyRevision": 2,
+        "pinned": false,
+        "terminal": false
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 2,
+          "pinned": false,
+          "terminal": false
+        }
+      ],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "episodes-only-repin",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":2,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 200,
+      "body": {
+        "schemaVersion": 1,
+        "sceneId": "scene",
+        "selection": {
+          "ref": {
+            "kind": "assertion",
+            "id": "target",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "dependencyKey": "@target"
+        },
+        "policyRevision": 3,
+        "pinned": true,
+        "terminal": false
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [
+        {
+          "kind": "working_set_pin",
+          "schemaVersion": 1,
+          "policy": {
+            "schemaVersion": 1,
+            "sceneId": "scene",
+            "selection": {
+              "ref": {
+                "kind": "assertion",
+                "id": "target",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "@target"
+            },
+            "policyRevision": 3,
+            "pinned": true,
+            "terminal": false
+          }
+        }
+      ],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 3,
+          "pinned": true,
+          "terminal": false
+        }
+      ],
+      "gateAdvance": 1,
+      "reader": 4
+    },
+    {
+      "name": "terminal-policy",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"target\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@target\"},\"expectedRevision\":4,\"pinned\":false}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 409,
+      "body": {
+        "error": "Pin state changed or is unavailable; refresh before retrying"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "events": [],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 4,
+          "pinned": false,
+          "terminal": true
+        }
+      ],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "post-intent-failure",
+      "requestBody": "{\"sceneId\":\"scene\",\"selection\":{\"ref\":{\"kind\":\"assertion\",\"id\":\"failed\",\"version\":1,\"deletionEpoch\":0},\"dependencyKey\":\"@failed\"},\"expectedRevision\":0,\"pinned\":true}",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "events": [
+        {
+          "kind": "working_set_pin",
+          "schemaVersion": 1,
+          "policy": {
+            "schemaVersion": 1,
+            "sceneId": "scene",
+            "selection": {
+              "ref": {
+                "kind": "assertion",
+                "id": "failed",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "dependencyKey": "@failed"
+            },
+            "policyRevision": 1,
+            "pinned": true,
+            "terminal": false
+          }
+        }
+      ],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 4,
+          "pinned": false,
+          "terminal": true
+        }
+      ],
+      "gateAdvance": 0,
+      "reader": 4
+    },
+    {
+      "name": "gap-before-parser",
+      "requestBody": "{broken",
+      "authorized": true,
+      "contentType": "application/json",
+      "absent": false,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "events": [],
+      "rows": [
+        {
+          "schemaVersion": 1,
+          "sceneId": "scene",
+          "selection": {
+            "ref": {
+              "kind": "assertion",
+              "id": "target",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "dependencyKey": "@target"
+          },
+          "policyRevision": 4,
+          "pinned": false,
+          "terminal": true
+        }
+      ],
+      "gateAdvance": 0,
+      "reader": 4
+    }
+  ]
+}

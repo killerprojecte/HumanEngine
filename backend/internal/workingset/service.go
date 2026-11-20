@@ -513,13 +513,22 @@ func (s *Service) ListPinPolicies(ctx context.Context, c Context, limit float64)
 	})
 	return
 }
+
+var (
+	ErrPinConflict = errors.New("working_set_policy_conflict")
+	ErrPinTerminal = errors.New("working_set_policy_terminal")
+	ErrPinDisabled = errors.New("working_set_disabled")
+	ErrPinStale    = errors.New("working_set_source_stale")
+	ErrPinNotFound = errors.New("working_set_policy_not_found")
+)
+
 func (s *Service) SetPinned(ctx context.Context, c Context, selected Selection, expected float64, pinned bool) (out PinPolicy, err error) {
 	err = s.Transaction(ctx, func(b *Service) error {
 		if e := b.ready(); e != nil {
 			return e
 		}
 		if c.Simulation {
-			return errors.New("working_set_disabled")
+			return ErrPinDisabled
 		}
 		if !safe(expected) {
 			return errors.New("working_set_pin_invalid")
@@ -537,24 +546,24 @@ func (s *Service) SetPinned(ctx context.Context, c Context, selected Selection, 
 			revision = prior.PolicyRevision
 		}
 		if revision != expected {
-			return errors.New("working_set_policy_conflict")
+			return ErrPinConflict
 		}
 		if prior != nil && prior.Terminal {
-			return errors.New("working_set_policy_terminal")
+			return ErrPinTerminal
 		}
 		if pinned {
 			if !b.ports.Enabled() {
-				return errors.New("working_set_disabled")
+				return ErrPinDisabled
 			}
 			current, _, e := b.resolve(c, []Selection{value})
 			if e != nil {
 				return e
 			}
 			if _, ok := current[SelectionKey(value)]; !ok {
-				return errors.New("working_set_source_stale")
+				return ErrPinStale
 			}
 		} else if prior == nil {
-			return errors.New("working_set_policy_not_found")
+			return ErrPinNotFound
 		}
 		anchor := value
 		if !pinned {

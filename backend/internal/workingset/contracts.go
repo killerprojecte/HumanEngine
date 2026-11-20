@@ -191,11 +191,22 @@ func Decode[T any](raw string) (out T, err error) {
 	if e != nil {
 		return out, invalid()
 	}
-	if e = decodeValue(v, reflect.ValueOf(&out).Elem()); e != nil {
-		return out, e
+	return decodeParsed[T](v)
+}
+
+// ParseSelection applies the same strict selection contract to parsed HTTP
+// input without serializing and reparsing the body.
+func ParseSelection(v any) (Selection, error) {
+	return decodeParsed[Selection](v)
+}
+
+func decodeParsed[T any](v any) (out T, err error) {
+	if err = decodeValue(v, reflect.ValueOf(&out).Elem()); err != nil {
+		return out, err
 	}
 	return out, validate(out)
 }
+
 func Encode(v any) (string, error) {
 	if e := validate(v); e != nil {
 		return "", e

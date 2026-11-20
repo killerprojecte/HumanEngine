@@ -1,0 +1,583 @@
+{
+  "node": "v24.22.1",
+  "scenes": [
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "scene",
+      "kind": "group",
+      "platformSceneId": "scene"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "private",
+      "kind": "private",
+      "platformSceneId": "private"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "simulation",
+      "kind": "simulation",
+      "platformSceneId": "simulation"
+    }
+  ],
+  "records": [
+    {
+      "id": "ordinary",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "subject"
+      },
+      "content": "Synthetic ordinary",
+      "kind": "claim",
+      "status": "active",
+      "origin": "manual",
+      "importance": "medium",
+      "confidence": 0.8,
+      "locked": false,
+      "sources": [],
+      "learnedAt": "2024-01-01T00:00:00.000Z",
+      "epistemicKind": "reported",
+      "occurredAt": "2023-10-03T00:00:00.000Z",
+      "validFrom": "2023-11-03T00:00:00.000Z"
+    },
+    {
+      "id": "head-first",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "subject"
+      },
+      "content": "Synthetic head-first",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "importance": "medium",
+      "confidence": 0.8,
+      "locked": false,
+      "sources": [],
+      "learnedAt": "not-a-clock"
+    },
+    {
+      "id": "foreign",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "private"
+      },
+      "content": "Synthetic foreign",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "importance": "medium",
+      "confidence": 0.8,
+      "locked": false,
+      "sources": [],
+      "learnedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "simulation",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "simulation"
+      },
+      "content": "Synthetic simulation",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "importance": "medium",
+      "confidence": 0.8,
+      "locked": false,
+      "sources": [],
+      "learnedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "shared",
+      "scope": {
+        "kind": "sharedPublicKnowledge"
+      },
+      "content": "Synthetic shared",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "importance": "medium",
+      "confidence": 0.8,
+      "locked": false,
+      "sources": [],
+      "learnedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "window",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "scene",
+        "personId": "subject"
+      },
+      "content": "Synthetic window",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "importance": "medium",
+      "confidence": 0.8,
+      "locked": false,
+      "sources": [],
+      "learnedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ],
+  "source": {
+    "sceneId": "scene",
+    "messageId": "old-message",
+    "senderId": "synthetic-witness"
+  },
+  "sourcedInput": {
+    "scope": {
+      "kind": "scene",
+      "sceneId": "scene",
+      "personId": "subject"
+    },
+    "kind": "fact",
+    "content": "Synthetic sourced version",
+    "sources": [
+      {
+        "sceneId": "scene",
+        "messageId": "old-message",
+        "senderId": "synthetic-witness"
+      }
+    ]
+  },
+  "update": {
+    "content": "Synthetic updated version",
+    "status": "disputed"
+  },
+  "path": "/api/memory-history",
+  "cases": [
+    {
+      "name": "unauthorized",
+      "target": "ordinary",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": false,
+      "action": "",
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": false
+    },
+    {
+      "name": "required-id",
+      "target": "ordinary",
+      "query": "?sceneId=scene&ignored=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "duplicate",
+      "target": "ordinary",
+      "query": "?sceneId=scene&id=other&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "strict",
+      "target": "ordinary",
+      "query": "?sceneId=scene&extra=&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "absent-scene",
+      "target": "ordinary",
+      "query": "?sceneId=missing&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "Memory unavailable"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "absent-memory",
+      "target": "missing",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "Memory unavailable"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "foreign-scene",
+      "target": "foreign",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "Memory unavailable"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "correct-private-scene",
+      "target": "foreign",
+      "query": "?sceneId=private&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 1,
+            "recordedAt": "2024-01-01T00:00:00.000Z",
+            "validFrom": null,
+            "validTo": null,
+            "content": "Synthetic foreign",
+            "status": "active",
+            "kind": "fact",
+            "origin": "manual",
+            "parentBinding": "none"
+          }
+        ],
+        "coverage": "complete"
+      },
+      "before": 0,
+      "after": 1,
+      "privateHeaders": true
+    },
+    {
+      "name": "simulation",
+      "target": "simulation",
+      "query": "?sceneId=simulation&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "Memory unavailable"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "shared",
+      "target": "shared",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "Memory unavailable"
+      },
+      "before": 0,
+      "after": 0,
+      "privateHeaders": true
+    },
+    {
+      "name": "legacy-first",
+      "target": "ordinary",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 1,
+            "recordedAt": "2024-01-01T00:00:00.000Z",
+            "validFrom": "2023-11-03T00:00:00.000Z",
+            "validTo": null,
+            "content": "Synthetic ordinary",
+            "status": "active",
+            "kind": "claim",
+            "epistemicKind": "reported",
+            "occurredAt": "2023-10-03T00:00:00.000Z",
+            "origin": "manual",
+            "parentBinding": "none"
+          }
+        ],
+        "coverage": "complete"
+      },
+      "before": 0,
+      "after": 1,
+      "privateHeaders": true
+    },
+    {
+      "name": "legacy-repeat",
+      "target": "ordinary",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 1,
+            "recordedAt": "2024-01-01T00:00:00.000Z",
+            "validFrom": "2023-11-03T00:00:00.000Z",
+            "validTo": null,
+            "content": "Synthetic ordinary",
+            "status": "active",
+            "kind": "claim",
+            "epistemicKind": "reported",
+            "occurredAt": "2023-10-03T00:00:00.000Z",
+            "origin": "manual",
+            "parentBinding": "none"
+          }
+        ],
+        "coverage": "complete"
+      },
+      "before": 1,
+      "after": 1,
+      "privateHeaders": true
+    },
+    {
+      "name": "head-enrolls",
+      "target": "head-first",
+      "query": "?sceneId=scene&id=",
+      "method": "HEAD",
+      "authorized": true,
+      "action": "",
+      "status": 200,
+      "body": null,
+      "before": 0,
+      "after": 1,
+      "privateHeaders": true
+    },
+    {
+      "name": "null-recorded-clock",
+      "target": "head-first",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 1,
+            "recordedAt": null,
+            "validFrom": null,
+            "validTo": null,
+            "content": "Synthetic head-first",
+            "status": "active",
+            "kind": "fact",
+            "origin": "manual",
+            "parentBinding": "none"
+          }
+        ],
+        "coverage": "complete"
+      },
+      "before": 1,
+      "after": 1,
+      "privateHeaders": true
+    },
+    {
+      "name": "ordered-revisions",
+      "target": "ordinary",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "update",
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 1,
+            "recordedAt": "2024-01-01T00:00:00.000Z",
+            "validFrom": "2023-11-03T00:00:00.000Z",
+            "validTo": null,
+            "content": "Synthetic ordinary",
+            "status": "active",
+            "kind": "claim",
+            "epistemicKind": "reported",
+            "occurredAt": "2023-10-03T00:00:00.000Z",
+            "origin": "manual",
+            "parentBinding": "none"
+          },
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 2,
+            "recordedAt": "<recorded-at>",
+            "validFrom": "2023-11-03T00:00:00.000Z",
+            "validTo": null,
+            "content": "Synthetic updated version",
+            "status": "disputed",
+            "kind": "claim",
+            "epistemicKind": "reported",
+            "occurredAt": "2023-10-03T00:00:00.000Z",
+            "origin": "manual",
+            "parentBinding": "none"
+          }
+        ],
+        "coverage": "complete"
+      },
+      "before": 2,
+      "after": 2,
+      "privateHeaders": true
+    },
+    {
+      "name": "before-recall",
+      "target": "sourced",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "",
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 1,
+            "recordedAt": "<recorded-at>",
+            "validFrom": null,
+            "validTo": null,
+            "content": "Synthetic sourced version",
+            "status": "active",
+            "kind": "fact",
+            "origin": "manual",
+            "parentBinding": "none"
+          }
+        ],
+        "coverage": "complete"
+      },
+      "before": 1,
+      "after": 1,
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall",
+      "target": "sourced",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "recall",
+      "status": 404,
+      "body": {
+        "error": "Memory unavailable"
+      },
+      "before": 1,
+      "after": 1,
+      "privateHeaders": true
+    },
+    {
+      "name": "after-delete",
+      "target": "ordinary",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "delete",
+      "status": 404,
+      "body": {
+        "error": "Memory unavailable"
+      },
+      "before": 2,
+      "after": 2,
+      "privateHeaders": true
+    },
+    {
+      "name": "limited-retained-window",
+      "target": "window",
+      "query": "?sceneId=scene&id=",
+      "method": "GET",
+      "authorized": true,
+      "action": "fill-window",
+      "status": 200,
+      "body": {
+        "revisions": [
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 2,
+            "recordedAt": "<recorded-at>",
+            "validFrom": null,
+            "validTo": null,
+            "content": "Window 2",
+            "status": "active",
+            "kind": "fact",
+            "origin": "manual",
+            "parentBinding": "none"
+          },
+          {
+            "sourceBodyCoverage": "unavailable",
+            "version": 201,
+            "recordedAt": "<recorded-at>",
+            "validFrom": null,
+            "validTo": null,
+            "content": "Window 201",
+            "status": "active",
+            "kind": "fact",
+            "origin": "manual",
+            "parentBinding": "none"
+          }
+        ],
+        "coverage": "limited",
+        "revisionCount": 200
+      },
+      "before": 201,
+      "after": 201,
+      "privateHeaders": true
+    }
+  ]
+}

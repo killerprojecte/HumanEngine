@@ -11,7 +11,13 @@ func (r *Runtime) Cancel(id string) {
 		return
 	}
 	s.mu.Lock()
-	signals := []*dispatch.Signal{}
+	signals := r.cancelSceneLocked(s)
+	s.mu.Unlock()
+	abortSceneSignals(signals)
+}
+
+func (r *Runtime) cancelSceneLocked(s *sceneState) []*dispatch.Signal {
+	var signals []*dispatch.Signal
 	for _, ticket := range s.timers {
 		ticket.timer.Stop()
 	}
@@ -29,20 +35,37 @@ func (r *Runtime) Cancel(id string) {
 		signals = append(signals, t.context.root)
 	}
 	r.publishLocked(s)
-	s.mu.Unlock()
+	return signals
+}
+
+func abortSceneSignals(signals []*dispatch.Signal) {
 	for _, signal := range signals {
 		signal.Abort(code("scene_cancelled"))
 	}
 }
+
 func (r *Runtime) EndSimulation(id string) {
-	s := r.state(id)
-	if s == nil || s.view.Load().scene.Kind != "simulation" {
+	if s := r.state(id); s != nil {
+		r.endSimulation(s)
+	}
+}
+
+func (r *Runtime) endSimulation(s *sceneState) {
+	s.mu.Lock()
+	if s.scene.Kind != "simulation" || s.closed.Swap(true) {
+		s.mu.Unlock()
 		return
 	}
-	r.Cancel(id)
-	s.closed.Store(true)
-	r.scenes.CompareAndDelete(id, s)
-	r.transports.Delete(id)
+	signals := r.cancelSceneLocked(s)
+	r.lifecycleMu.Lock()
+	// Remove only this owner and its binding. A replacement can register
+	// after the pair is detached, never between the two operations.
+	if r.scenes.CompareAndDelete(s.scene.ID, s) {
+		r.transports.Delete(s.scene.ID)
+	}
+	r.lifecycleMu.Unlock()
+	s.mu.Unlock()
+	abortSceneSignals(signals)
 	r.operationMu.Lock()
 	for key := range s.operationKeys {
 		r.deleteOperationLocked(key)
@@ -145,7 +168,7 @@ func (r *Runtime) CleanupIdle() {
 			expired := now-s.lastTouched > 3600000
 			s.mu.Unlock()
 			if expired {
-				r.EndSimulation(k.(string))
+				r.endSimulation(s)
 			}
 			return true
 		}

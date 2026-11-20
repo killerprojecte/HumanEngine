@@ -54,9 +54,9 @@ func (r *Runtime) IngestScene(ctx context.Context, scene Scene, message *Object,
 	if scene.Kind == "simulation" && !strings.HasPrefix(scene.ID, "sim:") {
 		return "", code("simulation_scope_required")
 	}
-	registration := r.sceneRegistration(scene)
-	if registration == nil {
-		return "", code("runtime_closed")
+	registration, err := r.sceneRegistration(scene)
+	if err != nil {
+		return "", err
 	}
 	registration.mu.Lock()
 	defer registration.mu.Unlock()
@@ -320,9 +320,9 @@ func (r *Runtime) editResult(ctx context.Context, sceneID string, message, edit 
 	if get(current, "sceneId") != scene.ID || get(current, "origin") == "history" {
 		return status, nil
 	}
-	registration := r.sceneRegistration(scene)
-	if registration == nil {
-		return status, code("runtime_closed")
+	registration, err := r.sceneRegistration(scene)
+	if err != nil {
+		return status, err
 	}
 	registeredScene := scene
 	registration.scene.Store(&registeredScene)

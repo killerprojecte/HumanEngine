@@ -116,6 +116,10 @@ func (r *Runtime) Run(sceneID, topicID string, proactive bool) (*TurnHandle, err
 	if s == nil {
 		return nil, code("scene_missing")
 	}
+	return r.runScene(s, topicID, proactive)
+}
+
+func (r *Runtime) runScene(s *sceneState, topicID string, proactive bool) (*TurnHandle, error) {
 	s.mu.Lock()
 	t, err := r.startLocked(s, topicID, proactive, nil)
 	r.publishLocked(s)

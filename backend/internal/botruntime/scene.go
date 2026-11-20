@@ -2,10 +2,10 @@ package botruntime
 
 import (
 	"context"
+	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/turnwait"
 	"math"
-	"sort"
 	"strings"
 )
 
@@ -16,16 +16,28 @@ func (r *Runtime) state(id string) *sceneState {
 	}
 	return v.(*sceneState)
 }
-func (r *Runtime) sceneRegistration(scene Scene) *sceneRegistration {
-	registration := &sceneRegistration{}
-	registration.scene.Store(&scene)
+
+var errSimulationSceneCollision = errors.New("simulation_scene_collision")
+
+func (r *Runtime) sceneRegistration(scene Scene) (*sceneRegistration, error) {
 	r.lifecycleMu.Lock()
 	defer r.lifecycleMu.Unlock()
 	if r.closed.Load() {
-		return nil
+		return nil, code("runtime_closed")
 	}
-	value, _ := r.transports.LoadOrStore(scene.ID, registration)
-	return value.(*sceneRegistration)
+	if value, loaded := r.transports.Load(scene.ID); loaded {
+		binding := value.(*sceneRegistration)
+		// An ID belongs to its registered runtime mode until that owner closes.
+		if (binding.scene.Load().Kind == "simulation") != (scene.Kind == "simulation") {
+			return nil, errSimulationSceneCollision
+		}
+		return binding, nil
+	}
+	binding := &sceneRegistration{}
+	owned := scene
+	binding.scene.Store(&owned)
+	r.transports.Store(owned.ID, binding)
+	return binding, nil
 }
 
 // RegisteredScene returns transport metadata without allocating message state.
@@ -65,9 +77,14 @@ func (r *Runtime) RegisterScene(scene Scene) error {
 	} else if !strings.HasPrefix(scene.ID, "sim:") {
 		return code("simulation_scope_required")
 	}
-	registration := r.sceneRegistration(scene)
-	if registration == nil {
-		return code("runtime_closed")
+	registration, err := r.sceneRegistration(scene)
+	if err != nil {
+		// The source saves real configuration independently of an active
+		// simulation, without replacing the in-process simulation.
+		if err == errSimulationSceneCollision && scene.Kind != "simulation" {
+			return nil
+		}
+		return err
 	}
 	registration.scene.Store(&scene)
 	s := r.newSceneState(scene)
@@ -96,43 +113,85 @@ func (r *Runtime) RegisterScene(scene Scene) error {
 	return nil
 }
 func (r *Runtime) CreateSimulation() (string, error) {
-	var existing []*sceneState
+	r.simulationCreationMu.Lock()
+	defer r.simulationCreationMu.Unlock()
+	var oldest *sceneState
+	count := 0
 	r.scenes.Range(func(_, v any) bool {
 		s := v.(*sceneState)
 		if s.view.Load().scene.Kind == "simulation" {
-			existing = append(existing, s)
+			count++
+			if oldest == nil || s.sequence < oldest.sequence {
+				oldest = s
+			}
 		}
 		return true
 	})
-	if len(existing) >= 64 {
-		sort.SliceStable(existing, func(i, j int) bool { return existing[i].sequence < existing[j].sequence })
-		r.EndSimulation(existing[0].view.Load().scene.ID)
+	if count >= 64 {
+		r.endSimulation(oldest)
 	}
 	id := "sim:" + newID()
 	return id, r.RegisterScene(Scene{SceneRef: dispatch.SceneRef{ID: id, Kind: "simulation", AdapterID: "simulation", AccountID: "simulation", PlatformSceneID: id}})
 }
-func (r *Runtime) Simulate(ctx context.Context, id, text string) (Snapshot, error) {
+
+// SimulationMessages is a message-only projection of one simulation view.
+func (r *Runtime) SimulationMessages(id string) ([]*Object, error) {
 	s := r.state(id)
-	if s == nil || s.view.Load().scene.Kind != "simulation" {
-		return Snapshot{}, code("simulation_missing")
+	if s == nil || s.closed.Load() {
+		return nil, nil
+	}
+	view := s.view.Load()
+	if view.scene.Kind != "simulation" {
+		return nil, nil
+	}
+	return r.projectViewMessages(view)
+}
+
+func (r *Runtime) Simulate(ctx context.Context, id, text string) ([]*Object, error) {
+	done, admitted := r.beginOperation()
+	if !admitted {
+		return nil, code("runtime_closed")
+	}
+	defer done()
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	s := r.state(id)
+	if s == nil {
+		return nil, code("simulation_missing")
+	}
+	scene := s.view.Load().scene
+	if scene.Kind != "simulation" {
+		return nil, code("simulation_missing")
 	}
 	if !s.simulationAdmission.TryLock() {
-		return Snapshot{}, code("simulation_busy")
+		return nil, code("simulation_busy")
 	}
 	defer s.simulationAdmission.Unlock()
 	if s.view.Load().active > 0 {
-		return Snapshot{}, code("simulation_busy")
+		return nil, code("simulation_busy")
 	}
 	now := iso(r.services.Clock.Now())
 	m := obj("id", newID(), "sceneId", id, "senderId", "simulation-user", "sentAt", now, "receivedAt", now, "origin", "simulation", "parts", []any{obj("type", "text", "text", text)}, "status", "available")
-	topic, err := r.Ingest(ctx, id, m, false)
-	if err != nil {
-		return Snapshot{}, err
+	// This owned synthetic message stays bound to the admitted state, even
+	// if DELETE or idle cleanup removes its registration during the request.
+	if blocked, err := r.ingressBlocked(s, m); err != nil {
+		return nil, err
+	} else if blocked {
+		return []*Object{}, nil
 	}
-	h, err := r.Run(id, topic, false)
+	topic, err := r.accept(s, m, false, true)
 	if err != nil {
-		return Snapshot{}, err
+		return nil, err
+	}
+	h, err := r.runScene(s, topic, false)
+	if err != nil {
+		return nil, err
 	}
 	h.Wait()
-	return r.Snapshot(id)
+	view := s.view.Load()
+	if s.closed.Load() || view.scene.Kind != "simulation" {
+		return []*Object{}, nil
+	}
+	return r.projectViewMessages(view)
 }

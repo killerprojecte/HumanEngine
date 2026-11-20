@@ -28,7 +28,14 @@ func honoQueryValues(raw string) url.Values {
 }
 
 func coerceQueryInteger(text string, maximum float64) (int64, bool) {
+	return coerceQueryIntegerRange(text, 1, maximum)
+}
+
+func coerceQueryIntegerRange(text string, minimum, maximum float64) (int64, bool) {
 	text = jsstring.Trim(text)
+	if text == "" {
+		return 0, minimum == 0
+	}
 	var n float64
 	var err error
 	if len(text) > 2 && text[0] == '0' && strings.ContainsAny(text[1:2], "xXoObB") {
@@ -44,7 +51,7 @@ func coerceQueryInteger(text string, maximum float64) (int64, bool) {
 		}
 		n, err = strconv.ParseFloat(text, 64)
 	}
-	if err != nil || n < 1 || n > maximum || math.Trunc(n) != n {
+	if err != nil || n < minimum || n > maximum || math.Trunc(n) != n {
 		return 0, false
 	}
 	return int64(n), true

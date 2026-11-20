@@ -53,3 +53,10 @@ func (r *Reader) Scene(id string) (*Object, error) {
 	}
 	return o, nil
 }
+
+// SettingsInput reads the settings backing row from this already-scoped snapshot.
+func (r *Reader) SettingsInput() (string, bool, error) {
+	var raw string
+	exists, err := r.one("SELECT value FROM config WHERE key='settings'", nil, &raw)
+	return raw, exists, err
+}

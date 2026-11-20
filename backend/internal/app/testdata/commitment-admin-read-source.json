@@ -1,0 +1,812 @@
+{
+  "node": "v24.22.1",
+  "scenes": [
+    {
+      "id": "scene",
+      "kind": "group",
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "platformSceneId": "scene",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false
+    },
+    {
+      "id": "foreign",
+      "kind": "private",
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "platformSceneId": "foreign",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false
+    }
+  ],
+  "names": {
+    "identity:scene:a": {
+      "senderDisplayName": " ‪Same nickname‬ ",
+      "senderPlatformId": "PRIVATE_PLATFORM_CANARY"
+    },
+    "identity:scene:b": {
+      "senderDisplayName": "Same nickname"
+    },
+    "identity:foreign:a": {
+      "senderDisplayName": "PRIVATE_FOREIGN_CANARY"
+    }
+  },
+  "inputs": [
+    {
+      "context": {
+        "sceneId": "scene",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "scene",
+            "senderId": "a",
+            "messageId": "proposal",
+            "available": true,
+            "isBot": false,
+            "sourceText": "I propose Synthetic full plan with the named participant. Time: 18:00; exact date unknown. Conditions: Only if participants confirm.",
+            "mentions": [
+              {
+                "partIndex": 1,
+                "userId": "b"
+              }
+            ]
+          }
+        ]
+      },
+      "candidate": {
+        "kind": "fact",
+        "epistemicKind": "explicit",
+        "content": "Synthetic declaration proposal",
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "proposal"
+        },
+        "sources": [
+          {
+            "sceneId": "scene",
+            "senderId": "a",
+            "messageId": "proposal"
+          }
+        ],
+        "commitment": {
+          "kind": "propose",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic full plan",
+            "participantIds": [
+              "a",
+              "b"
+            ],
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "future",
+            "conditions": [
+              "Only if participants confirm"
+            ],
+            "timeQualification": "18:00; exact date unknown"
+          }
+        }
+      }
+    },
+    {
+      "context": {
+        "sceneId": "scene",
+        "simulation": false,
+        "provenance": "source-only",
+        "sourceEvidence": [
+          {
+            "sceneId": "scene",
+            "senderId": "a",
+            "messageId": "other",
+            "available": true,
+            "isBot": false,
+            "sourceText": "I propose Synthetic other plan with the named participant. Time: 18:00; exact date unknown. Conditions: Only if participants confirm.",
+            "mentions": [
+              {
+                "partIndex": 1,
+                "userId": "c"
+              }
+            ]
+          }
+        ]
+      },
+      "candidate": {
+        "kind": "fact",
+        "epistemicKind": "explicit",
+        "content": "Synthetic declaration other",
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "other"
+        },
+        "sources": [
+          {
+            "sceneId": "scene",
+            "senderId": "a",
+            "messageId": "other"
+          }
+        ],
+        "commitment": {
+          "kind": "propose",
+          "terms": {
+            "kind": "plan",
+            "title": "Synthetic other plan",
+            "participantIds": [
+              "a",
+              "c"
+            ],
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "future",
+            "conditions": [
+              "Only if participants confirm"
+            ],
+            "timeQualification": "18:00; exact date unknown"
+          }
+        }
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "unauthorized",
+      "path": "/api/memory-commitments?sceneId=scene",
+      "auth": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "privateHeaders": false
+    },
+    {
+      "name": "disabled-list",
+      "path": "/api/memory-commitments?sceneId=scene",
+      "status": 200,
+      "body": {
+        "sceneId": "scene",
+        "enabled": false,
+        "items": [],
+        "coverage": "complete"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "disabled-detail",
+      "path": "/api/memory-commitments/missing?sceneId=scene&version=1&deletionEpoch=0",
+      "status": 404,
+      "body": {
+        "error": "Commitment unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "enabled",
+      "path": "/api/memory-commitments?sceneId=scene",
+      "seed": true,
+      "status": 200,
+      "body": {
+        "sceneId": "scene",
+        "enabled": true,
+        "items": [
+          {
+            "ref": {
+              "id": "@1",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic other plan",
+              "participantIds": [
+                "a",
+                "c"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "c",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          },
+          {
+            "ref": {
+              "id": "@0",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic full plan",
+              "participantIds": [
+                "a",
+                "b"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "b",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "limit-coverage",
+      "path": "/api/memory-commitments?sceneId=scene&limit=1",
+      "status": 200,
+      "body": {
+        "sceneId": "scene",
+        "enabled": true,
+        "items": [
+          {
+            "ref": {
+              "id": "@1",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic other plan",
+              "participantIds": [
+                "a",
+                "c"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "c",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          }
+        ],
+        "coverage": "limited"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "person-filter",
+      "path": "/api/memory-commitments?sceneId=scene&personId=b",
+      "status": 200,
+      "body": {
+        "sceneId": "scene",
+        "enabled": true,
+        "items": [
+          {
+            "ref": {
+              "id": "@0",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic full plan",
+              "participantIds": [
+                "a",
+                "b"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "b",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "terminal-filter",
+      "path": "/api/memory-commitments?sceneId=scene&lifecycle=terminal",
+      "status": 200,
+      "body": {
+        "sceneId": "scene",
+        "enabled": true,
+        "items": [],
+        "coverage": "complete"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "all",
+      "path": "/api/memory-commitments?sceneId=scene&lifecycle=all",
+      "status": 200,
+      "body": {
+        "sceneId": "scene",
+        "enabled": true,
+        "items": [
+          {
+            "ref": {
+              "id": "@1",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic other plan",
+              "participantIds": [
+                "a",
+                "c"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "c",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          },
+          {
+            "ref": {
+              "id": "@0",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic full plan",
+              "participantIds": [
+                "a",
+                "b"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "b",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "detail",
+      "path": "/api/memory-commitments/@0?sceneId=scene&version=1&deletionEpoch=0",
+      "status": 200,
+      "body": {
+        "ref": {
+          "id": "@0",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        "mutationVersion": 1,
+        "terms": {
+          "kind": "plan",
+          "title": "Synthetic full plan",
+          "participantIds": [
+            "a",
+            "b"
+          ],
+          "temporalScope": "future",
+          "polarity": "positive",
+          "modality": "asserted",
+          "conditions": [
+            "Only if participants confirm"
+          ],
+          "timeQualification": "18:00; exact date unknown"
+        },
+        "recordedAt": "@recorded",
+        "confirmation": "proposed",
+        "lifecycle": "pending",
+        "qualification": "declared_not_verified",
+        "sourceBodyCoverage": "unavailable",
+        "changed": false,
+        "participants": [
+          {
+            "personId": "a",
+            "displayName": "Same nickname",
+            "confirmed": false,
+            "missing": true,
+            "completed": false,
+            "cancelled": false
+          },
+          {
+            "personId": "b",
+            "displayName": "Same nickname",
+            "confirmed": false,
+            "missing": true,
+            "completed": false,
+            "cancelled": false
+          }
+        ]
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "numeric-coercion",
+      "path": "/api/memory-commitments/@0?sceneId=scene&version=0x1&deletionEpoch=",
+      "status": 200,
+      "body": {
+        "ref": {
+          "id": "@0",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        "mutationVersion": 1,
+        "terms": {
+          "kind": "plan",
+          "title": "Synthetic full plan",
+          "participantIds": [
+            "a",
+            "b"
+          ],
+          "temporalScope": "future",
+          "polarity": "positive",
+          "modality": "asserted",
+          "conditions": [
+            "Only if participants confirm"
+          ],
+          "timeQualification": "18:00; exact date unknown"
+        },
+        "recordedAt": "@recorded",
+        "confirmation": "proposed",
+        "lifecycle": "pending",
+        "qualification": "declared_not_verified",
+        "sourceBodyCoverage": "unavailable",
+        "changed": false,
+        "participants": [
+          {
+            "personId": "a",
+            "displayName": "Same nickname",
+            "confirmed": false,
+            "missing": true,
+            "completed": false,
+            "cancelled": false
+          },
+          {
+            "personId": "b",
+            "displayName": "Same nickname",
+            "confirmed": false,
+            "missing": true,
+            "completed": false,
+            "cancelled": false
+          }
+        ]
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "bad-version",
+      "path": "/api/memory-commitments/@0?sceneId=scene&version=0&deletionEpoch=0",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "stale-version",
+      "path": "/api/memory-commitments/@0?sceneId=scene&version=2&deletionEpoch=0",
+      "status": 404,
+      "body": {
+        "error": "Commitment unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "stale-epoch",
+      "path": "/api/memory-commitments/@0?sceneId=scene&version=1&deletionEpoch=1",
+      "status": 404,
+      "body": {
+        "error": "Commitment unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "other-scene",
+      "path": "/api/memory-commitments/@0?sceneId=foreign&version=1&deletionEpoch=0",
+      "status": 404,
+      "body": {
+        "error": "Commitment unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "absent-scene",
+      "path": "/api/memory-commitments/@0?sceneId=missing&version=1&deletionEpoch=0",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "duplicate-scene",
+      "path": "/api/memory-commitments?sceneId=scene&sceneId=foreign",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "unknown-query",
+      "path": "/api/memory-commitments?sceneId=scene&other=x",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "invalid-limit",
+      "path": "/api/memory-commitments?sceneId=scene&limit=13",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "head",
+      "path": "/api/memory-commitments/@0?sceneId=scene&version=1&deletionEpoch=0",
+      "method": "HEAD",
+      "status": 200,
+      "body": null,
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall-list",
+      "path": "/api/memory-commitments?sceneId=scene",
+      "recall": true,
+      "status": 200,
+      "body": {
+        "sceneId": "scene",
+        "enabled": true,
+        "items": [
+          {
+            "ref": {
+              "id": "@1",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 1,
+            "terms": {
+              "kind": "plan",
+              "title": "Synthetic other plan",
+              "participantIds": [
+                "a",
+                "c"
+              ],
+              "temporalScope": "future",
+              "polarity": "positive",
+              "modality": "asserted",
+              "conditions": [
+                "Only if participants confirm"
+              ],
+              "timeQualification": "18:00; exact date unknown"
+            },
+            "recordedAt": "@recorded",
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": [
+              {
+                "personId": "a",
+                "displayName": "Same nickname",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              },
+              {
+                "personId": "c",
+                "confirmed": false,
+                "missing": true,
+                "completed": false,
+                "cancelled": false
+              }
+            ]
+          },
+          {
+            "ref": {
+              "id": "@0",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "mutationVersion": 2,
+            "confirmation": "proposed",
+            "lifecycle": "pending",
+            "qualification": "declared_not_verified",
+            "sourceBodyCoverage": "unavailable",
+            "changed": false,
+            "participants": []
+          }
+        ],
+        "coverage": "complete"
+      },
+      "privateHeaders": true
+    },
+    {
+      "name": "after-recall-detail",
+      "path": "/api/memory-commitments/@0?sceneId=scene&version=1&deletionEpoch=0",
+      "status": 200,
+      "body": {
+        "ref": {
+          "id": "@0",
+          "version": 1,
+          "deletionEpoch": 0
+        },
+        "mutationVersion": 2,
+        "confirmation": "proposed",
+        "lifecycle": "pending",
+        "qualification": "declared_not_verified",
+        "sourceBodyCoverage": "unavailable",
+        "changed": false,
+        "participants": []
+      },
+      "privateHeaders": true
+    }
+  ]
+}

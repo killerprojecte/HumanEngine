@@ -23,45 +23,51 @@ func ReadAdminRegistry(ready func() error, query func(string, ...any) (sourceeve
 }
 
 func readRegistry(ready func() error, query func(string, ...any) (sourceevents.Rows, error)) (*jsjson.Object, error) {
+	state, _, err := loadRegistry(ready, query)
+	return state, err
+}
+
+func loadRegistry(ready func() error, query func(string, ...any) (sourceevents.Rows, error)) (*jsjson.Object, bool, error) {
 	if err := ready(); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	rows, err := query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='memory_identity_registry'")
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	exists := rows.Next()
 	err = errors.Join(rows.Err(), rows.Close())
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if !exists {
-		return object("format", float64(1), "revision", float64(0), "edges", []any{}, "aliases", []any{}, "operations", []any{}), nil
+		return object("format", float64(1), "revision", float64(0), "edges", []any{}, "aliases", []any{}, "operations", []any{}), false, nil
 	}
 	rows, err = query("SELECT value FROM memory_identity_registry WHERE id=1")
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
 		if err = rows.Err(); err != nil {
-			return nil, err
+			return nil, false, err
 		}
-		return nil, errCorrupt
+		return nil, false, errCorrupt
 	}
 	var raw any
 	if err = rows.Scan(&raw); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	text, ok := raw.(string)
 	if !ok {
-		return nil, errCorrupt
+		return nil, false, errCorrupt
 	}
 	v, err := jsjson.Parse(text)
 	if err != nil {
-		return nil, errCorrupt
+		return nil, false, errCorrupt
 	}
-	return parseState(v)
+	state, err := parseState(v)
+	return state, true, err
 }
 
 // Members implements the bounded source component walk, then restricts it to

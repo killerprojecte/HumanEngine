@@ -126,7 +126,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	sceneRead := operation != "" && s.runtimeStatus != nil
 	learningAdmin := s.learningAdmin != nil && learningAdminPath(path)
 	budgetAdmin := s.budgetAdmin != nil && budgetAdminPath(r.Method, path)
-	memoryIdentities := s.memoryAdminRead != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead) && path == "/api/memory-identities"
+	memoryIdentities := s.memoryAdminRead != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodPost) && path == "/api/memory-identities"
 	relationID, reviewRelation := memoryRelationReviewPath(r.Method, path)
 	reviewRelation = reviewRelation && s.memoryAdminRead != nil
 	memoryKnowledge := s.knowledgeRead != nil && r.Method == http.MethodPost && path == "/api/memory-knowledge/query"

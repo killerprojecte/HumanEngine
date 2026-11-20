@@ -250,89 +250,11 @@ func replayIdentityCommand(state, event *jsjson.Object) error {
 		source := get(targets, "source").(*jsjson.Object)
 		payload = object("sceneId", get(source, "sceneId"), "messageId", get(source, "messageId"))
 	}
-	revision := get(state, "revision").(float64)
-	digest := hash(object("kind", operation, "payload", payload, "expectedRevision", get(event, "expectedRevision")))
-	operations := get(state, "operations").([]any)
-	for _, value := range operations {
-		prior := value.(*jsjson.Object)
-		if get(prior, "id") == get(event, "operationId") {
-			if get(prior, "hash") != digest {
-				return errors.New("identity_operation_conflict")
-			}
-			return nil
-		}
-	}
-	if len(operations) >= 16384 || revision >= 9007199254740991 {
-		return errors.New("identity_capacity")
-	}
-	switch operation {
-	case "unlink":
-		kept := []any{}
-		for _, edge := range get(state, "edges").([]any) {
-			if hash(edge) != hash(selected) {
-				kept = append(kept, edge)
-			}
-		}
-		_ = state.Set("edges", kept)
-	case "split":
-		if len(selected) == 0 || len(selected) > 32 {
-			return errors.New("identity_partition_invalid")
-		}
-		keys := map[string]bool{}
-		for _, ep := range selected {
-			keys[endpointKey(ep.(*jsjson.Object))] = true
-		}
-		if len(keys) != len(selected) {
-			return errors.New("identity_partition_invalid")
-		}
-		whole, e := identityComponent(state, selected[0].(*jsjson.Object))
-		if e != nil {
-			return e
-		}
-		if len(keys) == len(whole) {
-			return errors.New("identity_partition_invalid")
-		}
-		for key := range keys {
-			if !whole[key] {
-				return errors.New("identity_partition_invalid")
-			}
-		}
-		kept := []any{}
-		for _, value := range get(state, "edges").([]any) {
-			edge := value.([]any)
-			if keys[endpointKey(edge[0].(*jsjson.Object))] == keys[endpointKey(edge[1].(*jsjson.Object))] {
-				kept = append(kept, value)
-			}
-		}
-		_ = state.Set("edges", kept)
-	case "alias_remove", "source_recall":
-		kept := []any{}
-		for _, value := range get(state, "aliases").([]any) {
-			alias := value.(*jsjson.Object)
-			drop := false
-			if operation == "alias_remove" {
-				drop = get(alias, "id") == get(payload.(*jsjson.Object), "aliasId")
-			} else {
-				source := get(alias, "source").(*jsjson.Object)
-				p := payload.(*jsjson.Object)
-				drop = get(source, "kind") == "observation" && get(source, "sceneId") == get(p, "sceneId") && get(source, "messageId") == get(p, "messageId")
-			}
-			if !drop {
-				kept = append(kept, value)
-			}
-		}
-		_ = state.Set("aliases", kept)
-	default:
-		return errors.New("recovery_identity_event_invalid")
-	}
-	_ = state.Set("revision", revision+1)
-	operations = append(operations, object("id", get(event, "operationId"), "hash", digest, "revision", revision+1))
-	_ = state.Set("operations", operations)
-	if len(operations)+len(get(state, "edges").([]any))+len(get(state, "aliases").([]any)) > 16384 {
-		return errors.New("identity_revocation_reserve_capacity")
-	}
-	_, e := parseState(state)
-	return e
+	_, _, err := planTransition(state, transition{
+		kind: operation, operationID: get(event, "operationId").(string), expectedRevision: get(event, "expectedRevision").(float64),
+		payload: payload,
+	})
+	return err
 }
 func (o *OfflineRegistry) Verify(ctx context.Context, tx *recovery.MaintenanceTx, events []string) error {
 	state, e := o.read(ctx, tx)

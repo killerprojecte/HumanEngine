@@ -1,0 +1,1202 @@
+{
+  "node": "v24.22.1",
+  "scenes": [
+    {
+      "adapterId": "fixture",
+      "accountId": "local",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "kind": "group",
+      "id": "scene",
+      "platformSceneId": "scene"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "local",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "kind": "private",
+      "id": "other",
+      "platformSceneId": "other"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "local",
+      "name": "Synthetic",
+      "learningEnabled": false,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "kind": "simulation",
+      "id": "simulation",
+      "platformSceneId": "simulation"
+    }
+  ],
+  "minimumReader": 1,
+  "cases": [
+    {
+      "name": "unauthorized-invalid",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "auth",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "auth": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "",
+      "nosniff": "",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "missing-type-empty",
+      "request": null,
+      "type": "",
+      "raw": "",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "wrong-type",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "wrong-type",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "type": "text/plain",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      },
+      "requestId": true,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "wrong-type-empty",
+      "request": null,
+      "type": "text/plain",
+      "raw": "",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      },
+      "requestId": true,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "typed-empty",
+      "request": null,
+      "raw": "",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      },
+      "requestId": true,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "utf8-bom-json",
+      "request": null,
+      "raw": "﻿{\"action\":\"link\",\"confirmed\":true,\"operationId\":\"bom-stale\",\"expectedRevision\":1,\"left\":{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"right\":{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}}",
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "missing-type",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "missing-type",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "type": "",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      },
+      "requestId": true,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "malformed",
+      "request": null,
+      "raw": "{",
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      },
+      "requestId": true,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "not-confirmed",
+      "request": {
+        "action": "link",
+        "confirmed": false,
+        "operationId": "not-confirmed",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "strict-endpoint",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "strict",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+          "extra": 1
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "stale-fresh",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "stale-fresh",
+        "expectedRevision": 1,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "operation-utf16",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "self-link",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "self",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        }
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "scene-unavailable-first",
+      "request": {
+        "action": "alias_put",
+        "operationId": "bad-scene",
+        "expectedRevision": 0,
+        "confirmed": true,
+        "sceneId": "simulation",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "foreign",
+          "accountId": "different",
+          "personId": "f"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "2001-02-01T00:00:00+01:00",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 404,
+      "body": {
+        "error": "identity_scene_unavailable"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "namespace-mismatch",
+      "request": {
+        "action": "alias_put",
+        "operationId": "bad-namespace",
+        "expectedRevision": 0,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "foreign",
+          "accountId": "different",
+          "personId": "f"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "2001-02-01T00:00:00+01:00",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 400,
+      "body": {
+        "error": "identity_namespace_mismatch"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "datetime-format",
+      "request": {
+        "action": "alias_put",
+        "operationId": "bad-date",
+        "expectedRevision": 0,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "not a date",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "datetime-interval",
+      "request": {
+        "action": "alias_put",
+        "operationId": "bad-interval",
+        "expectedRevision": 0,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "2002-02-01T00:00:00Z",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": null,
+      "headDelta": 0,
+      "gateDelta": 0,
+      "minimumReader": 1
+    },
+    {
+      "name": "link-first",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "first",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        }
+      },
+      "status": 200,
+      "body": {
+        "revision": 1,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"link\",\"operationId\":\"first\",\"expectedRevision\":0,\"nextRevision\":1,\"beforeHash\":\"e99e6f57578bcf286e7dac338cb801e268b02add919060b161696cbd1248c1bc\",\"qualificationHash\":\"f99d93183101a3d48399d664c82bab0b52f5425da778820527d10e0378b9267a\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],\"aliasIds\":[]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":1,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1}]}",
+      "headDelta": 1,
+      "gateDelta": 1,
+      "minimumReader": 6
+    },
+    {
+      "name": "link-cross-namespace",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "cross",
+        "expectedRevision": 1,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "a"
+        },
+        "right": {
+          "adapterId": "foreign",
+          "accountId": "different",
+          "personId": "f"
+        }
+      },
+      "status": 200,
+      "body": {
+        "revision": 2,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"link\",\"operationId\":\"cross\",\"expectedRevision\":1,\"nextRevision\":2,\"beforeHash\":\"f99d93183101a3d48399d664c82bab0b52f5425da778820527d10e0378b9267a\",\"qualificationHash\":\"d50b5487761125ac07688b08aa3f51ec079588c56322011808456512c9dd01f6\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}],\"aliasIds\":[]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":2,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2}]}",
+      "headDelta": 2,
+      "gateDelta": 2,
+      "minimumReader": 6
+    },
+    {
+      "name": "duplicate-reversed-after-new-revision",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "first",
+        "expectedRevision": 0,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 200,
+      "body": {
+        "revision": 1,
+        "duplicate": true
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":2,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2}]}",
+      "headDelta": 2,
+      "gateDelta": 2,
+      "minimumReader": 6
+    },
+    {
+      "name": "operation-conflict",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "first",
+        "expectedRevision": 2,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":2,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2}]}",
+      "headDelta": 2,
+      "gateDelta": 2,
+      "minimumReader": 6
+    },
+    {
+      "name": "stale-link",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "stale",
+        "expectedRevision": 1,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "a"
+        }
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":2,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2}]}",
+      "headDelta": 2,
+      "gateDelta": 2,
+      "minimumReader": 6
+    },
+    {
+      "name": "triangle-side-2",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "side2",
+        "expectedRevision": 2,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "a"
+        }
+      },
+      "status": 200,
+      "body": {
+        "revision": 3,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"link\",\"operationId\":\"side2\",\"expectedRevision\":2,\"nextRevision\":3,\"beforeHash\":\"d50b5487761125ac07688b08aa3f51ec079588c56322011808456512c9dd01f6\",\"qualificationHash\":\"ec2558f25483d39763e86ae92b6abc98f7ee2a6f5ec5970f378e45da30a0a697\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],\"aliasIds\":[]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":3,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3}]}",
+      "headDelta": 3,
+      "gateDelta": 3,
+      "minimumReader": 6
+    },
+    {
+      "name": "triangle-side-3",
+      "request": {
+        "action": "link",
+        "confirmed": true,
+        "operationId": "side3",
+        "expectedRevision": 3,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "a"
+        }
+      },
+      "status": 200,
+      "body": {
+        "revision": 4,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"link\",\"operationId\":\"side3\",\"expectedRevision\":3,\"nextRevision\":4,\"beforeHash\":\"ec2558f25483d39763e86ae92b6abc98f7ee2a6f5ec5970f378e45da30a0a697\",\"qualificationHash\":\"b08376a3fd05e5ba30aa4f409f8eeac619d4f6451088ca35987b29baa14cb189\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],\"aliasIds\":[]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":4,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4}]}",
+      "headDelta": 4,
+      "gateDelta": 4,
+      "minimumReader": 6
+    },
+    {
+      "name": "unlink-one-triangle-side",
+      "request": {
+        "action": "unlink",
+        "confirmed": true,
+        "operationId": "unlink",
+        "expectedRevision": 4,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 200,
+      "body": {
+        "revision": 5,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"unlink\",\"operationId\":\"unlink\",\"expectedRevision\":4,\"nextRevision\":5,\"beforeHash\":\"b08376a3fd05e5ba30aa4f409f8eeac619d4f6451088ca35987b29baa14cb189\",\"qualificationHash\":\"0c224e4f23f27837aeecae1146556622df2b1859868d192f5fd8e2b519165884\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],\"aliasIds\":[]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":5,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5}]}",
+      "headDelta": 5,
+      "gateDelta": 5,
+      "minimumReader": 6
+    },
+    {
+      "name": "split-duplicate-partition",
+      "request": {
+        "action": "split",
+        "operationId": "bad-duplicate",
+        "expectedRevision": 5,
+        "confirmed": true,
+        "partition": [
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          },
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ]
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":5,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5}]}",
+      "headDelta": 5,
+      "gateDelta": 5,
+      "minimumReader": 6
+    },
+    {
+      "name": "split-foreign-component",
+      "request": {
+        "action": "split",
+        "operationId": "bad-outside",
+        "expectedRevision": 5,
+        "confirmed": true,
+        "partition": [
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          },
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": "missing"
+          }
+        ]
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":5,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5}]}",
+      "headDelta": 5,
+      "gateDelta": 5,
+      "minimumReader": 6
+    },
+    {
+      "name": "split-cycle-cut",
+      "request": {
+        "action": "split",
+        "operationId": "split",
+        "expectedRevision": 5,
+        "confirmed": true,
+        "partition": [
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          },
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": ""
+          }
+        ]
+      },
+      "status": 200,
+      "body": {
+        "revision": 6,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"split\",\"operationId\":\"split\",\"expectedRevision\":5,\"nextRevision\":6,\"beforeHash\":\"0c224e4f23f27837aeecae1146556622df2b1859868d192f5fd8e2b519165884\",\"qualificationHash\":\"9dc2f1bc341fcc53c76dd86f297473dbfbdda4332238744707d3e66bc7b1e054\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],\"aliasIds\":[]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":6,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6}]}",
+      "headDelta": 6,
+      "gateDelta": 6,
+      "minimumReader": 6
+    },
+    {
+      "name": "split-replay-reordered",
+      "request": {
+        "action": "split",
+        "operationId": "split",
+        "expectedRevision": 5,
+        "confirmed": true,
+        "partition": [
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": ""
+          },
+          {
+            "adapterId": "fixture",
+            "accountId": "local",
+            "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ]
+      },
+      "status": 200,
+      "body": {
+        "revision": 6,
+        "duplicate": true
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":6,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6}]}",
+      "headDelta": 6,
+      "gateDelta": 6,
+      "minimumReader": 6
+    },
+    {
+      "name": "unlink-no-op-advances",
+      "request": {
+        "action": "unlink",
+        "confirmed": true,
+        "operationId": "unlink-absent",
+        "expectedRevision": 6,
+        "left": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "right": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": ""
+        }
+      },
+      "status": 200,
+      "body": {
+        "revision": 7,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"unlink\",\"operationId\":\"unlink-absent\",\"expectedRevision\":6,\"nextRevision\":7,\"beforeHash\":\"9dc2f1bc341fcc53c76dd86f297473dbfbdda4332238744707d3e66bc7b1e054\",\"qualificationHash\":\"b9629cf6a7b09110eefc3942f6a1cfd9019384065c432eef5df41823b8b2b0ca\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"\"}],\"aliasIds\":[]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":7,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7}]}",
+      "headDelta": 7,
+      "gateDelta": 7,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-put",
+      "request": {
+        "action": "alias_put",
+        "operationId": "put",
+        "expectedRevision": 7,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "2001-02-01T00:00:00+01:00",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 200,
+      "body": {
+        "revision": 8,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"alias_put\",\"operationId\":\"put\",\"expectedRevision\":7,\"nextRevision\":8,\"beforeHash\":\"b9629cf6a7b09110eefc3942f6a1cfd9019384065c432eef5df41823b8b2b0ca\",\"qualificationHash\":\"f26a58e462cf011a171829d1878c5b50d92127a3e7fe1a2a84b0799a71261850\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],\"aliasIds\":[\"alias\"]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":8,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[{\"id\":\"alias\",\"endpoint\":{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"label\":\"Synthetic alias body is not in journal\",\"scopeSceneId\":\"scene\",\"source\":{\"kind\":\"manual\",\"administratorId\":\"authenticated-admin\"},\"validFrom\":\"2001-02-01T00:00:00+01:00\",\"validUntil\":\"2001-02-01T00:00:00Z\"}],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8}]}",
+      "headDelta": 8,
+      "gateDelta": 8,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-replay",
+      "request": {
+        "action": "alias_put",
+        "operationId": "put",
+        "expectedRevision": 7,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "2001-02-01T00:00:00+01:00",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 200,
+      "body": {
+        "revision": 8,
+        "duplicate": true
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":8,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[{\"id\":\"alias\",\"endpoint\":{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"label\":\"Synthetic alias body is not in journal\",\"scopeSceneId\":\"scene\",\"source\":{\"kind\":\"manual\",\"administratorId\":\"authenticated-admin\"},\"validFrom\":\"2001-02-01T00:00:00+01:00\",\"validUntil\":\"2001-02-01T00:00:00Z\"}],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8}]}",
+      "headDelta": 8,
+      "gateDelta": 8,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-immutable",
+      "request": {
+        "action": "alias_put",
+        "operationId": "immutable",
+        "expectedRevision": 8,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "different",
+        "validFrom": "2001-02-01T00:00:00+01:00",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 409,
+      "body": {
+        "error": "identity_change_rejected_refresh_required"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":8,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[{\"id\":\"alias\",\"endpoint\":{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"label\":\"Synthetic alias body is not in journal\",\"scopeSceneId\":\"scene\",\"source\":{\"kind\":\"manual\",\"administratorId\":\"authenticated-admin\"},\"validFrom\":\"2001-02-01T00:00:00+01:00\",\"validUntil\":\"2001-02-01T00:00:00Z\"}],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8}]}",
+      "headDelta": 8,
+      "gateDelta": 8,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-remove-other-scene",
+      "request": {
+        "action": "alias_remove",
+        "operationId": "bad-remove",
+        "expectedRevision": 8,
+        "confirmed": true,
+        "sceneId": "other",
+        "aliasId": "alias"
+      },
+      "status": 404,
+      "body": {
+        "error": "identity_alias_unavailable"
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":8,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[{\"id\":\"alias\",\"endpoint\":{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"label\":\"Synthetic alias body is not in journal\",\"scopeSceneId\":\"scene\",\"source\":{\"kind\":\"manual\",\"administratorId\":\"authenticated-admin\"},\"validFrom\":\"2001-02-01T00:00:00+01:00\",\"validUntil\":\"2001-02-01T00:00:00Z\"}],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8}]}",
+      "headDelta": 8,
+      "gateDelta": 8,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-put-identical-new-key",
+      "request": {
+        "action": "alias_put",
+        "operationId": "put-again",
+        "expectedRevision": 8,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "2001-02-01T00:00:00+01:00",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "status": 200,
+      "body": {
+        "revision": 9,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"alias_put\",\"operationId\":\"put-again\",\"expectedRevision\":8,\"nextRevision\":9,\"beforeHash\":\"f26a58e462cf011a171829d1878c5b50d92127a3e7fe1a2a84b0799a71261850\",\"qualificationHash\":\"171732b29fc5a24eddf836bd2203886d47673dd11a92eb6450ebafa13a154703\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],\"aliasIds\":[\"alias\"]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":9,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[{\"id\":\"alias\",\"endpoint\":{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"},\"label\":\"Synthetic alias body is not in journal\",\"scopeSceneId\":\"scene\",\"source\":{\"kind\":\"manual\",\"administratorId\":\"authenticated-admin\"},\"validFrom\":\"2001-02-01T00:00:00+01:00\",\"validUntil\":\"2001-02-01T00:00:00Z\"}],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8},{\"id\":\"put-again\",\"hash\":\"fdc28f9856106af29f9275e436a94bc479d23942bd10c51d9557fe49f50c439d\",\"revision\":9}]}",
+      "headDelta": 9,
+      "gateDelta": 9,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-remove",
+      "request": {
+        "action": "alias_remove",
+        "operationId": "remove",
+        "expectedRevision": 9,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias"
+      },
+      "status": 200,
+      "body": {
+        "revision": 10,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"alias_remove\",\"operationId\":\"remove\",\"expectedRevision\":9,\"nextRevision\":10,\"beforeHash\":\"171732b29fc5a24eddf836bd2203886d47673dd11a92eb6450ebafa13a154703\",\"qualificationHash\":\"17ee7c6e512a30ea6e456aa90a944612af0657a52f78a4a420047efc2fa0379a\",\"targets\":{\"endpoints\":[],\"aliasIds\":[\"alias\"]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":10,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8},{\"id\":\"put-again\",\"hash\":\"fdc28f9856106af29f9275e436a94bc479d23942bd10c51d9557fe49f50c439d\",\"revision\":9},{\"id\":\"remove\",\"hash\":\"304d8d6f4b1b6549c47f08afa3ced26d4a67b5c778c6065c5fcdec8b5803d3c4\",\"revision\":10}]}",
+      "headDelta": 10,
+      "gateDelta": 10,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-remove-replay-now-absent",
+      "request": {
+        "action": "alias_remove",
+        "operationId": "remove",
+        "expectedRevision": 9,
+        "confirmed": true,
+        "sceneId": "other",
+        "aliasId": "alias"
+      },
+      "status": 200,
+      "body": {
+        "revision": 10,
+        "duplicate": true
+      },
+      "requestId": false,
+      "events": [],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":10,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8},{\"id\":\"put-again\",\"hash\":\"fdc28f9856106af29f9275e436a94bc479d23942bd10c51d9557fe49f50c439d\",\"revision\":9},{\"id\":\"remove\",\"hash\":\"304d8d6f4b1b6549c47f08afa3ced26d4a67b5c778c6065c5fcdec8b5803d3c4\",\"revision\":10}]}",
+      "headDelta": 10,
+      "gateDelta": 10,
+      "minimumReader": 6
+    },
+    {
+      "name": "alias-remove-absent-advances",
+      "request": {
+        "action": "alias_remove",
+        "operationId": "remove-absent",
+        "expectedRevision": 10,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias"
+      },
+      "status": 200,
+      "body": {
+        "revision": 11,
+        "duplicate": false
+      },
+      "requestId": false,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"alias_remove\",\"operationId\":\"remove-absent\",\"expectedRevision\":10,\"nextRevision\":11,\"beforeHash\":\"17ee7c6e512a30ea6e456aa90a944612af0657a52f78a4a420047efc2fa0379a\",\"qualificationHash\":\"f372b0bcdfd493e233650345c00943f67fef62da8ca5481d0e1f3b365a46647d\",\"targets\":{\"endpoints\":[],\"aliasIds\":[\"alias\"]}}"
+      ],
+      "cacheControl": "no-store",
+      "nosniff": "nosniff",
+      "state": "{\"format\":1,\"revision\":11,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8},{\"id\":\"put-again\",\"hash\":\"fdc28f9856106af29f9275e436a94bc479d23942bd10c51d9557fe49f50c439d\",\"revision\":9},{\"id\":\"remove\",\"hash\":\"304d8d6f4b1b6549c47f08afa3ced26d4a67b5c778c6065c5fcdec8b5803d3c4\",\"revision\":10},{\"id\":\"remove-absent\",\"hash\":\"c0180048ef93e2d65bdc055d01c5252f7b724499ddce4b86dd05758ab2796883\",\"revision\":11}]}",
+      "headDelta": 11,
+      "gateDelta": 11,
+      "minimumReader": 6
+    },
+    {
+      "name": "durable-intent-main-rollback",
+      "request": {
+        "action": "alias_put",
+        "operationId": "fault",
+        "expectedRevision": 11,
+        "confirmed": true,
+        "sceneId": "scene",
+        "aliasId": "alias",
+        "endpoint": {
+          "adapterId": "fixture",
+          "accountId": "local",
+          "personId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+        },
+        "label": "Synthetic alias body is not in journal",
+        "validFrom": "2001-02-01T00:00:00+01:00",
+        "validUntil": "2001-02-01T00:00:00Z"
+      },
+      "rollback": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics"
+      },
+      "requestId": true,
+      "events": [
+        "{\"kind\":\"identity_mutation\",\"schemaVersion\":1,\"operation\":\"alias_put\",\"operationId\":\"fault\",\"expectedRevision\":11,\"nextRevision\":12,\"beforeHash\":\"f372b0bcdfd493e233650345c00943f67fef62da8ca5481d0e1f3b365a46647d\",\"qualificationHash\":\"33357a1383c00e0f9471c2424e20f5139762eb21dcf78611f4f72b70c161acb0\",\"targets\":{\"endpoints\":[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\"}],\"aliasIds\":[\"alias\"]}}"
+      ],
+      "cacheControl": "",
+      "nosniff": "",
+      "state": "{\"format\":1,\"revision\":11,\"edges\":[[{\"adapterId\":\"fixture\",\"accountId\":\"local\",\"personId\":\"a\"},{\"adapterId\":\"foreign\",\"accountId\":\"different\",\"personId\":\"f\"}]],\"aliases\":[],\"operations\":[{\"id\":\"first\",\"hash\":\"3005d00443cb4a8c878a2b423aab1b05c68622b96cd6b3643fdfc6fcb20f60df\",\"revision\":1},{\"id\":\"cross\",\"hash\":\"260c56e7a39868f7042bb2323712cfaf804b38c35b15eb386ec964176a43b3b7\",\"revision\":2},{\"id\":\"side2\",\"hash\":\"9566db6e1f253599ca2a525740e02f4c56fdf899e71c2768dd70f435416644ca\",\"revision\":3},{\"id\":\"side3\",\"hash\":\"309f8a664ebb4b5d03223bcbc6e2b5dcd8d49049548de45a2667f15386a40fe8\",\"revision\":4},{\"id\":\"unlink\",\"hash\":\"ede37e2c37f9f31b067c102ed8dd435691d551e715976193a5ef9f97505ae6ce\",\"revision\":5},{\"id\":\"split\",\"hash\":\"d8be60363446a0363fe9f7dd41276698f3e63d678677a3f4661ea5eee198215b\",\"revision\":6},{\"id\":\"unlink-absent\",\"hash\":\"e8f662adcd9a3e98b768df0fdebcbe0ccdc5dd9e4ad7ecbe504fa3b673b71174\",\"revision\":7},{\"id\":\"put\",\"hash\":\"5671473dacb6866f92643e4a85431099f03dddec6c18cb01931a2ade7b02f4b4\",\"revision\":8},{\"id\":\"put-again\",\"hash\":\"fdc28f9856106af29f9275e436a94bc479d23942bd10c51d9557fe49f50c439d\",\"revision\":9},{\"id\":\"remove\",\"hash\":\"304d8d6f4b1b6549c47f08afa3ced26d4a67b5c778c6065c5fcdec8b5803d3c4\",\"revision\":10},{\"id\":\"remove-absent\",\"hash\":\"c0180048ef93e2d65bdc055d01c5252f7b724499ddce4b86dd05758ab2796883\",\"revision\":11}]}",
+      "headDelta": 12,
+      "gateDelta": 11,
+      "minimumReader": 6
+    }
+  ]
+}

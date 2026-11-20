@@ -120,10 +120,13 @@ Settings page, reloads to verify the write, and logs out. No API is stubbed;
 the runner blocks browser traffic away from the preview origin. No browser or
 driver is added to either runtime image or to ordinary push/PR package runs.
 
-The host driver wheels are hash-locked in `browser-requirements.txt`; the
-Playwright release's [browser manifest](https://github.com/microsoft/playwright/blob/v1.62.0/packages/playwright-core/browsers.json)
-pins Chromium 151.0.7922.34 (revision 1234). An unavailable Chromium sandbox
-is a failed smoke, not a reason to run without it. The existing
+The host driver wheels are hash-locked in `browser-requirements.txt`. The
+[Playwright Chrome channel](https://playwright.dev/python/docs/browsers#google-chrome--microsoft-edge)
+selects the runner's preinstalled Chrome Stable, with its sandbox enabled and
+no browser download or fallback. Chrome's observed version belongs to the
+evidence, not the lockfile; the exact driver/runner-browser pairing is not
+qualified until the hosted test passes. Launch failures record only a fixed
+category and never the exception text. The existing
 `go-package-preview-evidence` artifact contains the OCI image ID, revision,
 browser versions and sanitized action/status receipts in `result.json`. Opted-in
 runs do not retain container logs, screenshots, traces, HTML or request bodies.

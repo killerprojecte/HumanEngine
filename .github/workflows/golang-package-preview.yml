@@ -59,19 +59,15 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
-      - name: Install the pinned host Chromium test tooling
+      - name: Install the pinned host Playwright driver
         if: steps.browser.outputs.run == 'true'
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/humanengine-browser
         run: |
           python -m venv "$RUNNER_TEMP/humanengine-browser-venv"
           py="$RUNNER_TEMP/humanengine-browser-venv/bin/python"
           "$py" -m pip install --require-hashes --only-binary :all: -r backend/packaging/runtime-preview/browser-requirements.txt
-          "$py" -m playwright install --with-deps chromium
       - name: Exercise actual packaged startup, HTTP, drain and V1 lifecycle
         env:
           RUN_BROWSER_SMOKE: ${{ steps.browser.outputs.run == 'true' }}
-          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/humanengine-browser
         run: |
           if [ "$RUN_BROWSER_SMOKE" = true ]; then
             "$RUNNER_TEMP/humanengine-browser-venv/bin/python" backend/packaging/runtime-preview/acceptance.py --browser-smoke --evidence "$RUNNER_TEMP/package-evidence"

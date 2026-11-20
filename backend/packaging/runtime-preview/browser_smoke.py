@@ -1,7 +1,45 @@
 """Opt-in hosted smoke against the installed Go preview, never an API stub."""
 from importlib.metadata import version
+import os
+import re
+import subprocess
 from urllib.parse import urlsplit
 import uuid
+
+
+def launch_category(error):
+    message = str(error).lower()
+    if "error while loading shared libraries" in message or "missing dependencies" in message:
+        return "missing_browser_libraries"
+    if ("distribution 'chrome' is not found" in message or "executable doesn't exist" in message):
+        return "missing_chrome_stable"
+    if any(hint in message for hint in (
+        "no usable sandbox", "failed to move to new namespace", "sandbox is not supported",
+        "running as root without --no-sandbox", "userns_create",
+    )):
+        return "sandbox_launch_blocked"
+    return "unclassified_launch_failure"
+
+
+def host_evidence():
+    result = {"backend": "host-chrome-stable", "chromium_sandbox": True}
+    for key, env, pattern in (
+        ("runner_os", "ImageOS", r"ubuntu[0-9]{4}"),
+        ("runner_image_version", "ImageVersion", r"[0-9]+(?:\.[0-9]+){1,3}"),
+    ):
+        value = os.environ.get(env, "")
+        if re.fullmatch(pattern, value):
+            result[key] = value
+    try:
+        package = subprocess.run(
+            ["dpkg-query", "-W", "-f", "${Version}", "google-chrome-stable"],
+            capture_output=True, text=True, check=True, timeout=5,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return result
+    if re.fullmatch(r"[0-9]+(?:\.[0-9]+){3}(?:-[0-9]+)?", package):
+        result["chrome_package_version"] = package
+    return result
 
 
 def run(port, token, evidence):
@@ -10,13 +48,15 @@ def run(port, token, evidence):
 
     origin = f"http://127.0.0.1:{port}"
     evidence.update({"playwright": version("playwright"), "outcomes": [], "status": "failed"})
+    evidence.update(host_evidence())
     outcomes = evidence["outcomes"]
     phase = "launch"
     try:
         with sync_playwright() as driver:
-            browser = driver.chromium.launch(headless=True, chromium_sandbox=True)
+            browser = driver.chromium.launch(channel="chrome", headless=True, chromium_sandbox=True)
             try:
-                evidence["chromium"] = browser.version
+                if re.fullmatch(r"[0-9]+(?:\.[0-9]+){3}", browser.version):
+                    evidence["chromium"] = browser.version
                 context = browser.new_context(locale="en-US", viewport={"width": 1440, "height": 960})
                 external = [0]
 
@@ -122,5 +162,7 @@ def run(port, token, evidence):
     except Exception as error:
         # Playwright errors can contain DOM and action arguments. Never publish
         # them or collect screenshots, traces, cookie values, URLs or payloads.
-        evidence.update({"failed_phase": phase, "error_type": type(error).__name__})
+        evidence["failed_phase"] = phase
+        if phase == "launch":
+            evidence["launch_category"] = launch_category(error)
         raise AssertionError(f"Chromium UI smoke failed at {phase}") from None

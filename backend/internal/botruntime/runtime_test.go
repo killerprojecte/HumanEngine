@@ -136,7 +136,7 @@ func (a *testAuthority) ProjectDisplay(s Scene, rows []*Object, _ []string) ([]*
 	return out, nil
 }
 
-func (*testAuthority) ProjectRemoteHistory(Scene, []*Object, map[string]bool, string) ([]*Object, error) {
+func (*testAuthority) ProjectRemoteHistory(Scene, []*Object, map[string]bool, string, func(*Object) DisplayImageLinks) ([]*Object, map[*Object]DisplayImageLinks, error) {
 	panic("unexpected remote history projection in runtime fixture")
 }
 

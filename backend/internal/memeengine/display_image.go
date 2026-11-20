@@ -34,7 +34,7 @@ type DisplayImage struct {
 func (s *Service) ReadDisplayImage(ctx context.Context, sceneID, messageID string, part int) (*DisplayImage, error) {
 	source := s.Runtime.DisplayImage(sceneID, messageID, part)
 	if source == nil {
-		return nil, ErrDisplayImageUnavailable
+		return s.readRemoteDisplayImage(ctx, sceneID, messageID, part)
 	}
 	out := &DisplayImage{source: source, owner: s.Memes}
 	managed := source.IsManaged()

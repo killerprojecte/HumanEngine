@@ -1,0 +1,63 @@
+{
+  "node": "v24.22.1",
+  "history": [
+    {
+      "type": "text",
+      "text": "prefix"
+    },
+    {
+      "type": "media",
+      "mediaType": "image/unknown",
+      "mediaUrl": "/api/scenes/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0/messages/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0%3Am%3AIjkwIg/media/1",
+      "mediaKind": "image"
+    }
+  ],
+  "captures": [
+    {
+      "name": "unauthenticated",
+      "status": 401,
+      "actions": []
+    },
+    {
+      "name": "exact-message",
+      "status": 200,
+      "actions": [
+        {
+          "action": "get_msg",
+          "params": {
+            "message_id": "90"
+          }
+        }
+      ]
+    },
+    {
+      "name": "wrong-id",
+      "status": 404,
+      "actions": [
+        {
+          "action": "get_msg",
+          "params": {
+            "message_id": "90"
+          }
+        }
+      ]
+    },
+    {
+      "name": "wrong-scene",
+      "status": 404,
+      "actions": [
+        {
+          "action": "get_msg",
+          "params": {
+            "message_id": "90"
+          }
+        }
+      ]
+    },
+    {
+      "name": "recalled-before-lookup",
+      "status": 404,
+      "actions": []
+    }
+  ]
+}

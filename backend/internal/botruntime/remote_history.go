@@ -62,6 +62,7 @@ func (r *Runtime) BrowserRemoteHistory(scene Scene, page HistoryPage, mediaEnabl
 
 	result := BrowserHistory{Coverage: "partial"}
 	var remote []*Object
+	var remoteLinks map[*Object]DisplayImageLinks
 	current, _ := r.adapters.Load(scene.AdapterID)
 	unavailable := page.adapter == nil || page.adapter != current
 	if unavailable {
@@ -90,7 +91,12 @@ func (r *Runtime) BrowserRemoteHistory(scene Scene, page HistoryPage, mediaEnabl
 				recalled = s.view.Load().recalled
 			}
 			var err error
-			remote, err = r.services.Authority.ProjectRemoteHistory(scene, messages, recalled, page.adapter.BotUserID)
+			var candidate func(*Object) DisplayImageLinks
+			if mediaEnabled && page.adapter.BrowserMessage != nil && page.adapter.BrowserImage != nil &&
+				page.adapter.InlineImage != nil && page.adapter.InlineImage.Current() {
+				candidate = func(row *Object) DisplayImageLinks { return remoteImageLinks(page.adapter, scene, row) }
+			}
+			remote, remoteLinks, err = r.services.Authority.ProjectRemoteHistory(scene, messages, recalled, page.adapter.BotUserID, candidate)
 			if err != nil {
 				return BrowserHistory{}, err
 			}
@@ -111,6 +117,16 @@ func (r *Runtime) BrowserRemoteHistory(scene Scene, page HistoryPage, mediaEnabl
 		return BrowserHistory{}, err
 	}
 	result.Items = availableHistory(rows)
+	if current, _ := r.adapters.Load(scene.AdapterID); len(remoteLinks) != 0 && current == page.adapter && page.adapter.InlineImage.Current() {
+		for _, row := range result.Items {
+			if proof, ok := remoteLinks[row]; ok {
+				if result.ImageLinks == nil {
+					result.ImageLinks = make(map[*Object]DisplayImageLinks)
+				}
+				result.ImageLinks[row] = proof
+			}
+		}
+	}
 	return result, nil
 }
 

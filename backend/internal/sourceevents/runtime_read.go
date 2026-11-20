@@ -55,6 +55,22 @@ func valueRow(v *View, query string, args ...any) (any, bool, error) {
 	value, err := jsjson.Parse(raw)
 	return value, true, err
 }
+
+// UnversionedBrowserImage checks only the exact source ID needed for adapter
+// fallback. It does not enroll, edit, or retain the returned adapter body.
+func (v *View) UnversionedBrowserImage(sceneID, messageID string) (bool, error) {
+	recalled, err := recalledAt(v, sceneID, messageID)
+	if err != nil || recalled {
+		return false, err
+	}
+	return v.notEnrolledBrowserImage(sceneID, messageID)
+}
+
+func (v *View) notEnrolledBrowserImage(sceneID, messageID string) (bool, error) {
+	meta, err := v.Registered(sceneID, messageID)
+	return meta == nil && err == nil, err
+}
+
 func recalledAt(v *View, sceneID, messageID string) (bool, error) {
 	var one int
 	return v.one("SELECT 1 FROM recall_tombstones WHERE scene_id=? AND message_id=?", []any{sceneID, messageID}, &one)
@@ -296,7 +312,8 @@ func (r *runtimeReads) projectDisplay(scene botruntime.Scene, messages []*jsjson
 
 // ProjectRemoteHistory checks recall in one authority snapshot, keeps only the
 // latest 30 eligible adapter rows, then copies and presents those rows.
-func (r *runtimeReads) ProjectRemoteHistory(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled map[string]bool, bot string) ([]*jsjson.Object, error) {
+func (r *runtimeReads) ProjectRemoteHistory(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled map[string]bool, bot string, candidate func(*jsjson.Object) botruntime.DisplayImageLinks) ([]*jsjson.Object, map[*jsjson.Object]botruntime.DisplayImageLinks, error) {
+	var links map[*jsjson.Object]botruntime.DisplayImageLinks
 	out := make([]*jsjson.Object, 0, min(len(messages), botruntime.BrowserHistoryWindow))
 	err := r.read(func(v *View) error {
 		for i := len(messages) - 1; i >= 0 && len(out) < botruntime.BrowserHistoryWindow; i-- {
@@ -316,13 +333,36 @@ func (r *runtimeReads) ProjectRemoteHistory(scene botruntime.Scene, messages []*
 		slices.Reverse(out)
 		for _, m := range out {
 			botruntime.NormalizeOwnedBotIdentity(m, bot)
-			if _, err := presentRuntimeMessage(v, m); err != nil {
+			persisted, err := presentRuntimeMessage(v, m)
+			if err != nil {
 				return err
+			}
+			if candidate == nil {
+				continue
+			}
+			proof := candidate(m)
+			if proof == (botruntime.DisplayImageLinks{}) || persisted == nil || !sameRuntimeBinding(scene, sceneFromValue(persisted)) {
+				continue
+			}
+			unversioned, err := v.notEnrolledBrowserImage(scene.ID, str(m, "id"))
+			if err != nil {
+				return err
+			}
+			if unversioned {
+				if links == nil {
+					links = make(map[*jsjson.Object]botruntime.DisplayImageLinks)
+				}
+				links[m] = proof
 			}
 		}
 		return nil
 	})
-	return out, err
+	return out, links, err
+}
+
+func sameRuntimeBinding(a, b botruntime.Scene) bool {
+	return a.ID == b.ID && a.Kind == b.Kind && a.AdapterID == b.AdapterID &&
+		a.AccountID == b.AccountID && a.PlatformSceneID == b.PlatformSceneID
 }
 
 // SceneParticipationEnabled reads the persisted row on every live eligibility

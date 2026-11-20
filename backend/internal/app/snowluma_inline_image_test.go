@@ -113,6 +113,9 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 			for _, row := range rows {
 				messageID := field(row, "id").(string)
 				expectedParts := expected[messageID]
+				if checkRemote && expected != nil && surface == "/history" && messageID == id("900") {
+					expectedParts = map[int]int{0: 200}
+				}
 				parts, _ := field(row, "parts").([]any)
 				found := 0
 				for _, part := range parts {
@@ -145,7 +148,7 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 				seen[messageID] = true
 			}
 			if checkRemote && expected != nil && surface == "/history" && !seen[id("900")] {
-				t.Fatal("default history did not include unlinked remote-only inline image")
+				t.Fatal("default history did not include eligible remote-only inline image")
 			}
 			for message := range expected {
 				if !seen[message] {
@@ -258,7 +261,7 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 		t.Helper()
 		wait(id("2"), "available")
 		check(scene, id("2"), 404, true)
-		assertLinks(nil, id("2"), id("666"))
+		assertLinks(map[string]map[int]int{}, id("2"), id("666"))
 		select {
 		case action := <-unexpected:
 			t.Fatalf("inline display attempted adapter fallback %s", action)

@@ -67,7 +67,7 @@ func (a *dispatchAuthority) ProjectDisplay(_ botruntime.Scene, rows []*botruntim
 	return out, nil
 }
 
-func (*dispatchAuthority) ProjectRemoteHistory(botruntime.Scene, []*botruntime.Object, map[string]bool, string) ([]*botruntime.Object, error) {
+func (*dispatchAuthority) ProjectRemoteHistory(botruntime.Scene, []*botruntime.Object, map[string]bool, string, func(*botruntime.Object) botruntime.DisplayImageLinks) ([]*botruntime.Object, map[*botruntime.Object]botruntime.DisplayImageLinks, error) {
 	panic("unexpected remote history projection in transport fixture")
 }
 

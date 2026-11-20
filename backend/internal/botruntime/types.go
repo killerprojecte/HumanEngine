@@ -99,7 +99,7 @@ type BoundDisplayAuthority interface {
 type Authority interface {
 	ReadAuthority
 	// ProjectRemoteHistory filters the scoped platform page before its display bound.
-	ProjectRemoteHistory(Scene, []*Object, map[string]bool, string) ([]*Object, error)
+	ProjectRemoteHistory(Scene, []*Object, map[string]bool, string, func(*Object) DisplayImageLinks) ([]*Object, map[*Object]DisplayImageLinks, error)
 	// RouteIngress discovers the scene and observes identity before admission.
 	RouteIngress(context.Context, Scene, *Object) error
 	Observe(context.Context, Scene, *Object, *Object) (status string, trusted *Object, err error)
@@ -193,12 +193,13 @@ type GuardedImageRead func(context.Context, func(context.Context) error) ([]byte
 
 type Adapter struct {
 	// Status reads this registration, never a replacement with the same ID.
-	Status      func(context.Context) (string, error)
-	Transport   *dispatch.Adapter
-	BotUserID   string
-	History     func(context.Context, Scene, int, func(*Object, error))
-	GetMessage  func(context.Context, Scene, string, func(*Object, error))
-	InlineImage *InlineImageAdapter
+	Status         func(context.Context) (string, error)
+	Transport      *dispatch.Adapter
+	BotUserID      string
+	History        func(context.Context, Scene, int, func(*Object, error))
+	GetMessage     func(context.Context, Scene, string, func(*Object, error))
+	BrowserMessage func(context.Context, Scene, string, func(context.Context) error, func(*Object, error))
+	InlineImage    *InlineImageAdapter
 	// BrowserImage is bound only to the active adapter, never to retained proof.
 	BrowserImage      func(context.Context, Scene, string, func(context.Context) error) ([]byte, error)
 	PrepareImageToken func(Scene, string) GuardedImageRead

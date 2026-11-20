@@ -17,6 +17,10 @@ type Queries struct {
 }
 
 func (q *Queries) Run(ctx context.Context, scene botruntime.Scene, request *jsjson.Object, single bool, complete func(*jsjson.Object, error)) {
+	q.run(ctx, scene, request, single, nil, complete)
+}
+
+func (q *Queries) run(ctx context.Context, scene botruntime.Scene, request *jsjson.Object, single bool, before func(context.Context) error, complete func(*jsjson.Object, error)) {
 	done, ok := q.sender.work.Start()
 	if !ok {
 		complete(nil, errors.New("plugin_disabled"))
@@ -25,11 +29,11 @@ func (q *Queries) Run(ctx context.Context, scene botruntime.Scene, request *jsjs
 	go func() {
 		defer done()
 		defer q.profiles.Flush()
-		result, err := q.query(ctx, scene, request, single)
+		result, err := q.query(ctx, scene, request, single, before)
 		complete(result, err)
 	}()
 }
-func (q *Queries) query(ctx context.Context, scene botruntime.Scene, request *jsjson.Object, single bool) (*jsjson.Object, error) {
+func (q *Queries) query(ctx context.Context, scene botruntime.Scene, request *jsjson.Object, single bool, before func(context.Context) error) (*jsjson.Object, error) {
 	ref, err := jsonObject(scene.SceneRef)
 	if err != nil {
 		return nil, err
@@ -63,10 +67,27 @@ func (q *Queries) query(ctx context.Context, scene botruntime.Scene, request *js
 			}
 			var value any
 			var e error
-			if q.sender.http != nil {
-				value, e = q.sender.http.Action(ctx, str(result, "action"), params)
+			action := str(result, "action")
+			if before == nil {
+				if q.sender.http != nil {
+					value, e = q.sender.http.Action(ctx, action, params)
+				} else {
+					value, e = q.sender.ws.Action(ctx, action, params)
+				}
 			} else {
-				value, e = q.sender.ws.Action(ctx, str(result, "action"), params)
+				var denied error
+				qualify := func(call context.Context) error {
+					denied = before(call)
+					return denied
+				}
+				if q.sender.http != nil {
+					value, e = q.sender.http.ActionWithGuard(ctx, action, params, qualify)
+				} else {
+					value, e = q.sender.ws.ActionWithGuard(ctx, action, params, func() error { return qualify(ctx) })
+				}
+				if denied != nil {
+					return nil, denied
+				}
 			}
 			input = obj("operation", "history_response", "state", state)
 			if e == nil {

@@ -113,6 +113,9 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 		adapter.GetMessage = func(ctx context.Context, scene botruntime.Scene, id string, complete func(*jsjson.Object, error)) {
 			s.queries.Run(ctx, scene, obj("messageId", id), true, complete)
 		}
+		adapter.BrowserMessage = func(ctx context.Context, scene botruntime.Scene, id string, before func(context.Context) error, complete func(*jsjson.Object, error)) {
+			s.queries.run(ctx, scene, obj("messageId", id), true, before, complete)
+		}
 	}
 	entry.adapter = adapter
 	r.mu.Lock()

@@ -157,6 +157,7 @@ type DisplayImageSource struct {
 	scene     Scene
 	adapter   *Adapter
 	record    *messageRecord
+	remote    *remoteImage
 	assetID   string
 	inline    bool
 	tokenRead GuardedImageRead
@@ -259,7 +260,9 @@ func (c *TurnContext) NativeVisionSource(message *Object) (*DisplayImageSource, 
 	return nil, 0
 }
 
-func (m *DisplayImageSource) IsManaged() bool { return m.record.displayMedia.native == nil }
+func (m *DisplayImageSource) IsManaged() bool {
+	return m.remote == nil && m.record.displayMedia.native == nil
+}
 
 func (m *DisplayImageSource) InlineBytes(ctx context.Context) ([]byte, error) {
 	return m.adapter.InlineImage.Read(ctx, m.scene, m.assetID)
@@ -292,6 +295,9 @@ func (m *DisplayImageSource) Validate(reads ReadAuthority) (bool, error) {
 // Current checks private runtime facts at final publication, without acquiring
 // a scene lock or opening a second authority transaction.
 func (m *DisplayImageSource) Current() bool {
+	if m.remote != nil {
+		return m.runtime.currentRemoteImage(m.scene, m.adapter, m.remote.messageID)
+	}
 	r := m.runtime
 	v := m.state.view.Load()
 	if r.state(m.scene.ID) != m.state ||

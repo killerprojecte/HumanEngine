@@ -3,9 +3,12 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -15,6 +18,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
+	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
+	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/core"
 	snowhost "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/runtime"
 )
 
@@ -69,6 +74,8 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	connections := make(chan *websocket.Conn, 2)
 	unexpected := make(chan string, 8)
 	mediaTokens := newSnowTokenFixture(t)
+	var remoteReads atomic.Int32
+	held, releaseHeld := make(chan struct{}), make(chan struct{})
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer synthetic" {
 			http.Error(w, "missing fixture token", http.StatusUnauthorized)
@@ -88,7 +95,10 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 			var request struct {
 				Action string
 				Echo   any
-				Params struct{ File string }
+				Params struct {
+					File      string
+					MessageID any `json:"message_id"`
+				}
 			}
 			if json.Unmarshal(wire, &request) != nil {
 				return
@@ -114,7 +124,24 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 					unexpected <- request.Action
 				}
 			case "get_msg":
-				unexpected <- request.Action
+				id := fmt.Sprint(request.Params.MessageID)
+				remoteReads.Add(1)
+				if id == "901" {
+					close(held)
+					select {
+					case <-releaseHeld:
+					case <-ctx.Done():
+						return
+					}
+				}
+				if id == "900" || id == "901" {
+					data = map[string]any{
+						"message_type": "group", "group_id": 100, "user_id": 7, "message_id": request.Params.MessageID, "time": time.Now().Unix(),
+						"message": []any{map[string]any{"type": "image", "data": map[string]any{"base64": mediaTokens.encoded}}},
+					}
+				} else {
+					unexpected <- request.Action
+				}
 			}
 			out, _ := json.Marshal(map[string]any{"echo": request.Echo, "status": "ok", "retcode": 0, "data": data})
 			if err := socket.Write(ctx, websocket.MessageText, out); err != nil {
@@ -178,6 +205,61 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		}
 	}
 	verifyRetired := assertSnowLumaInlineImageActualIngress(t, ctx, app, emit, unexpected, true)
+	scene := snow.SceneID("snowluma", "42", "group", "100")
+	messageID := snow.MessageID(scene, "901")
+	getRemote := func(id string, authorized bool) *httptest.ResponseRecorder {
+		path := "/api/scenes/" + url.PathEscape(scene) + "/messages/" + url.PathEscape(id) + "/media/0"
+		req := httptest.NewRequestWithContext(ctx, http.MethodGet, path, nil)
+		sourceFixtureAuth(req, authorized)
+		res := httptest.NewRecorder()
+		app.ServeHTTP(res, req)
+		return res
+	}
+	before := remoteReads.Load()
+	if res := getRemote(messageID, false); res.Code != http.StatusUnauthorized || remoteReads.Load() != before {
+		t.Fatalf("unauthorized remote media reached get_msg: %d", res.Code)
+	}
+	result := make(chan *httptest.ResponseRecorder, 1)
+	go func() { result <- getRemote(messageID, true) }()
+	select {
+	case <-held:
+	case <-ctx.Done():
+		t.Fatal("guarded get_msg did not reach relay")
+	}
+	root, release, err := app.Engine.RootContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = app.Engine.Runtime.Recall(root, scene, messageID)
+	release()
+	if err != nil {
+		t.Fatal(err)
+	}
+	close(releaseHeld)
+	select {
+	case res := <-result:
+		if res.Code != http.StatusNotFound {
+			t.Fatalf("late recall exposed remote media: %d %s", res.Code, res.Body)
+		}
+	case <-ctx.Done():
+		t.Fatal("recalled remote get_msg did not finish")
+	}
+	if res := getRemote(messageID, true); res.Code != http.StatusNotFound || remoteReads.Load() != before+1 {
+		t.Fatalf("tombstoned media triggered another get_msg: %d, calls %d", res.Code, remoteReads.Load()-before)
+	}
+
+	enrolledID := snow.MessageID(scene, "902")
+	enrolled, err := owners.Sources.Observe(ctx, sourceevents.Change{
+		Kind: "ingress", BodyHash: strings.Repeat("a", 64),
+		Identity: sourceevents.Identity{SceneID: scene, AdapterID: "snowluma", AccountID: "42", MessageID: enrolledID, SenderID: "synthetic-person"},
+	})
+	if err != nil || enrolled.Ref == nil {
+		t.Fatalf("could not establish revision-only source prestate: %+v %v", enrolled, err)
+	}
+	if res := getRemote(enrolledID, true); res.Code != http.StatusNotFound || remoteReads.Load() != before+1 {
+		t.Fatalf("enrolled source without retained body triggered get_msg: %d, calls %d", res.Code, remoteReads.Load()-before)
+	}
+
 	assertInlineVisionModel(t, ctx, app, emit, counter)
 	verifyTokenRetired := mediaTokens.assertImages(t, ctx, app, emit)
 	if err := first.CloseAndWait(ctx); err != nil {

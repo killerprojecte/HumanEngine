@@ -86,6 +86,69 @@ func TestPublicationCancellationAndHEAD(t *testing.T) {
 	}
 }
 
+func TestPublicationOwnedBytesTransfersOnce(t *testing.T) {
+	ctx := context.Background()
+	cancelled, cancel := context.WithCancel(ctx)
+	cancel()
+	p := newPublicationResponse(nil, false)
+	if err := p.enqueueOwnedBytes(cancelled, []byte("private")); !errors.Is(err, context.Canceled) || p.accepted {
+		t.Fatal("canceled handoff", err)
+	}
+
+	failed := errors.New("synthetic transport failure")
+	for _, tc := range []struct {
+		name              string
+		head, short       bool
+		ctx               context.Context
+		writeErr, wantErr error
+		writes            int
+	}{
+		{name: "direct", ctx: ctx, writes: 1},
+		{name: "head", ctx: ctx, head: true},
+		{name: "short", ctx: ctx, short: true, wantErr: io.ErrShortWrite, writes: 1},
+		{name: "failed", ctx: ctx, writeErr: failed, wantErr: failed, writes: 1},
+		{name: "cancelled", ctx: cancelled, wantErr: context.Canceled},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			p := newPublicationResponse(nil, tc.head)
+			body := []byte("private image")
+			writer := &ownedPointerWriter{
+				trackingResponse: trackingResponse{header: make(http.Header), short: tc.short, failure: tc.writeErr},
+				first:            &body[0],
+			}
+			if err := p.enqueueOwnedBytes(ctx, body); err != nil {
+				t.Fatal(err)
+			}
+			if tc.head && p.owned != nil {
+				t.Fatal("HEAD retained the buffer")
+			}
+			if err := p.enqueue(ctx, []byte("replacement")); err == nil {
+				t.Fatal("accepted twice")
+			}
+			if err := p.drain(tc.ctx, writer); !errors.Is(err, tc.wantErr) {
+				t.Fatalf("drain: %v, want %v", err, tc.wantErr)
+			}
+			if writer.writeCalls != tc.writes || writer.wrongBuffer || p.owned != nil {
+				t.Fatalf("handoff: writes=%d, copied=%v, retained=%v", writer.writeCalls, writer.wrongBuffer, p.owned != nil)
+			}
+			if err := p.drain(ctx, writer); err == nil || writer.writeCalls != tc.writes {
+				t.Fatal("replayed consumed response")
+			}
+		})
+	}
+}
+
+type ownedPointerWriter struct {
+	trackingResponse
+	first       *byte
+	wrongBuffer bool
+}
+
+func (w *ownedPointerWriter) Write(b []byte) (int, error) {
+	w.wrongBuffer = len(b) == 0 || &b[0] != w.first
+	return w.trackingResponse.Write(b)
+}
+
 type trackingResponse struct {
 	header                          http.Header
 	status, statusCalls, writeCalls int

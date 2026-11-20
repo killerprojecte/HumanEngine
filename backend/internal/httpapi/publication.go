@@ -10,8 +10,8 @@ import (
 
 // publicationResponse is the request's private, one-entry output queue. Only
 // its handler goroutine owns it; it never retains a database capability or a
-// transport, and does not spawn another goroutine. Enqueue transfers an immutable
-// copy of the complete body under the authority reservation. Draining is solely
+// transport, and does not spawn another goroutine. Enqueue copies borrowed
+// bytes or takes exclusive ownership of a fresh buffer. Draining is solely
 // transport work: later revocation cannot change or revalidate this response.
 // Like Node's end(body), acceptance does not promise delivery to the client.
 // There is no body limit, admission limit, timeout, or shared output queue.
@@ -20,6 +20,7 @@ type publicationResponse struct {
 	status   int
 	head     bool
 	body     string
+	owned    []byte
 	accepted bool
 	consumed bool
 	started  bool
@@ -29,11 +30,15 @@ func newPublicationResponse(header http.Header, head bool) *publicationResponse 
 	return &publicationResponse{header: header.Clone(), head: head, status: http.StatusOK}
 }
 
-func (p *publicationResponse) enqueue(ctx context.Context, body []byte) error {
+func (p *publicationResponse) checkEnqueue(ctx context.Context) error {
 	if p.accepted || p.consumed {
 		return errors.New("http_publication_already_accepted")
 	}
-	if err := ctx.Err(); err != nil {
+	return ctx.Err()
+}
+
+func (p *publicationResponse) enqueue(ctx context.Context, body []byte) error {
+	if err := p.checkEnqueue(ctx); err != nil {
 		return err
 	}
 	// A string conversion owns the bytes, including if the producer reuses its
@@ -50,6 +55,19 @@ func (p *publicationResponse) enqueue(ctx context.Context, body []byte) error {
 	return nil
 }
 
+// enqueueOwnedBytes takes a private, immutable response buffer without copying.
+// The producer must not access the buffer after successful acceptance.
+func (p *publicationResponse) enqueueOwnedBytes(ctx context.Context, body []byte) error {
+	if err := p.checkEnqueue(ctx); err != nil {
+		return err
+	}
+	if !p.head {
+		p.owned = body
+	}
+	p.accepted = true
+	return nil
+}
+
 func (p *publicationResponse) drain(ctx context.Context, w http.ResponseWriter) error {
 	if !p.accepted || p.consumed {
 		return errors.New("http_publication_not_pending")
@@ -57,8 +75,8 @@ func (p *publicationResponse) drain(ctx context.Context, w http.ResponseWriter) 
 	// Consume before any transport call or cancellation check: failed/partial
 	// output must never be replayed, nor replaced with an error response.
 	p.consumed = true
-	body := p.body
-	p.body = ""
+	body, owned := p.body, p.owned
+	p.body, p.owned = "", nil
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -76,8 +94,16 @@ func (p *publicationResponse) drain(ctx context.Context, w http.ResponseWriter) 
 	if p.head {
 		return nil
 	}
-	n, err := io.WriteString(w, body)
-	if err == nil && n != len(body) {
+	var n, length int
+	var err error
+	if owned != nil {
+		length = len(owned)
+		n, err = w.Write(owned)
+	} else {
+		length = len(body)
+		n, err = io.WriteString(w, body)
+	}
+	if err == nil && n != length {
 		return io.ErrShortWrite
 	}
 	return err

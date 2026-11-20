@@ -95,7 +95,11 @@ func (s *Server) serveSceneMedia(w http.ResponseWriter, r *http.Request, availab
 		response.header.Set("Cross-Origin-Resource-Policy", "same-origin")
 		err = s.runtimeStatus.publisher.Publish(ctx, func(conn *sql.Conn) ([]byte, error) {
 			return image.Bytes, image.VerifyPublication(ctx, conn)
-		}, func(body []byte) error { return response.enqueue(ctx, body) })
+		}, func(body []byte) error {
+			// This request owns the validated file buffer. No producer or cache
+			// reads it again after the response takes ownership.
+			return response.enqueueOwnedBytes(ctx, body)
+		})
 		if response.accepted {
 			_ = response.drain(r.Context(), w)
 			return

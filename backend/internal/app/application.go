@@ -155,8 +155,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		return app, err
 	}
 
-	// Managed display uses this same scene-bound Meme owner; remote image and
-	// model vision sources are not composed here.
+	// Managed and native inline sources share the scene-bound runtime owner.
 	app.Engine.Runtime.Observe(app.observeRuntime)
 	app.composeRules(owners)
 	memory, err := app.composeMemory(ctx, owners, config.settings, collator)

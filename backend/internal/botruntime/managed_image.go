@@ -141,41 +141,92 @@ type DisplayImageSource struct {
 	assetID string
 }
 
-func (r *Runtime) DisplayImage(sceneID, messageID string, partIndex int) *DisplayImageSource {
+func (r *Runtime) retainedDisplayImageRow(sceneID, messageID string) DisplayImageSource {
 	s := r.state(sceneID)
-	if s == nil || partIndex < 0 || partIndex > 255 {
-		return nil
+	if s == nil {
+		return DisplayImageSource{}
 	}
 	v := r.trimPublished(s)
 	if v.scene.Kind == "simulation" || v.recalled[messageID] {
-		return nil
+		return DisplayImageSource{}
 	}
 	value, ok := r.adapters.Load(v.scene.AdapterID)
 	if !ok {
-		return nil
+		return DisplayImageSource{}
 	}
 	adapter := value.(*Adapter)
 	record := retainedRecord(v.history, messageID, true, 0)
-	if record == nil || record.displayMedia == nil || !record.displayMedia.matches(v.scene) {
+	if record == nil || record.displayMedia == nil || !record.displayMedia.matches(v.scene) ||
+		get(record.body, "sceneId") != sceneID || get(record.body, "status") != "available" {
+		return DisplayImageSource{}
+	}
+	if origin := record.displayMedia.native; origin != nil &&
+		(origin.generation != adapter.InlineImage || !origin.generation.Current()) {
+		return DisplayImageSource{}
+	}
+	return DisplayImageSource{runtime: r, state: s, scene: v.scene, adapter: adapter, record: record}
+}
+
+func (r *Runtime) DisplayImage(sceneID, messageID string, partIndex int) *DisplayImageSource {
+	if uint(partIndex) > 255 {
 		return nil
 	}
-	row := record.body
-	if get(row, "sceneId") != sceneID || get(row, "status") != "available" {
+	source := r.retainedDisplayImageRow(sceneID, messageID)
+	if source.record == nil {
 		return nil
 	}
-	parts := array(get(row, "parts"))
+	parts := array(get(source.record.body, "parts"))
 	if partIndex >= len(parts) {
 		return nil
 	}
 	asset := imageAsset(parts[partIndex])
-	if owner := record.displayMedia.native; owner != nil {
-		if owner.generation != adapter.InlineImage || !owner.generation.Current() || !strings.HasPrefix(asset, "ob:media:") {
+	if source.IsManaged() {
+		if !IsManagedImageAssetID(asset) {
 			return nil
 		}
-	} else if !IsManagedImageAssetID(asset) {
+	} else if !strings.HasPrefix(asset, "ob:media:") {
 		return nil
 	}
-	return &DisplayImageSource{r, s, v.scene, adapter, record, asset}
+	source.assetID = asset
+	return &source
+}
+
+// InlineVisionSource uses one retained lookup only for a live row with a native
+// image locator. Its private bitset chooses the exact indices, not raw URLs.
+func (c *TurnContext) InlineVisionSource(message *Object) (*DisplayImageSource, int) {
+	sceneID := c.Scene.ID
+	if get(message, "sceneId") != sceneID || get(message, "origin") != "live" ||
+		get(message, "senderId") == "bot" || get(message, "status") != "available" {
+		return nil, 0
+	}
+	parts := array(get(message, "parts"))
+	for first := 0; first < min(len(parts), 256); first++ {
+		if !strings.HasPrefix(imageAsset(parts[first]), "ob:media:") {
+			continue
+		}
+		id := idOf(message)
+		if !c.hasRecentSource(id) {
+			return nil, 0
+		}
+		source := c.owner.runtime.retainedDisplayImageRow(sceneID, id)
+		if source.record == nil || source.IsManaged() || get(source.record.body, "origin") != "live" ||
+			get(source.record.body, "senderId") == "bot" {
+			return nil, 0
+		}
+		mask := DisplayImageLinks{inline: &source.record.displayMedia.native.parts}
+		retained := array(get(source.record.body, "parts"))
+		for i := first; i < min(len(parts), len(retained), 256); i++ {
+			if mask.InlineAt(i) {
+				asset := imageAsset(retained[i])
+				if asset == imageAsset(parts[i]) {
+					source.assetID = asset
+					return &source, i
+				}
+			}
+		}
+		break
+	}
+	return nil, 0
 }
 
 func (m *DisplayImageSource) IsManaged() bool { return m.record.displayMedia.native == nil }

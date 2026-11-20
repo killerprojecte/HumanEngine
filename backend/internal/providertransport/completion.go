@@ -34,6 +34,7 @@ type Completion struct {
 type CompletionRequest struct {
 	FirstContent func()
 	Role         string
+	NativeOnly   bool
 	Messages     []*Message
 	Tools        []map[string]any
 }
@@ -120,6 +121,10 @@ func (m *NativeModels) Complete(ctx context.Context, request CompletionRequest) 
 			return
 		}
 		if !modelservice.IsBuiltin(attempt.Candidate.Provider.Protocol) {
+			if request.NativeOnly {
+				complete(nil, safe("protocol_operation_unsupported"))
+				return
+			}
 			value, err := m.completeV1(ctx, attempt, request, expanded)
 			if err == nil && value != nil {
 				observeCallUsage(ctx, value.Usage)

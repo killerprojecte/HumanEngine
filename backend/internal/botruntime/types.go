@@ -368,6 +368,21 @@ func (c *TurnContext) Sources() []*Object {
 	}
 	return r
 }
+
+// hasRecentSource binds a selected live image to this turn's prepared window.
+func (c *TurnContext) hasRecentSource(id string) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for _, m := range c.sources {
+		if idOf(m) == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *TurnContext) Timezone() string { return c.owner.settings.Timezone }
+
 func (c *TurnContext) Send(ctx context.Context, input any) ([]dispatch.Receipt, error) {
 	return c.owner.runtime.send(c.owner, ctx, input)
 }

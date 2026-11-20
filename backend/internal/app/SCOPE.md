@@ -83,9 +83,12 @@ This is not a claim of complete TypeScript Engine compatibility.
   profile, but this graph's V1 integration does not prove all four built-ins have
   their complete product capabilities installed. Native OneBot and full SnowLuma
   transport/history/media integration remain separate work.
-- Native media ingestion, historical image transport, private media cache/fetch and
-  the unresolved HTTP 101 behavior are excluded. No legacy readImage bridge or
-  permissive media owner is substituted.
+- Native SnowLuma live inline images can supply one first-frame description per
+  turn through the native configured vision route before participation. It uses
+  the exact current retained source, never learns or stores the description,
+  and cannot borrow historical, managed, URL, or V1 image transport. Historical
+  image transport, private media cache/fetch, and unresolved HTTP 101 behavior
+  remain excluded.
 - The existing async Logger is used; complete source log retention/status/delivery
   route equivalence is not claimed. Independent read publication still preserves
   recovery checks; no constant-time cross-connection audit performance claim is made.

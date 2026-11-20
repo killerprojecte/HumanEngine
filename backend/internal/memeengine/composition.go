@@ -38,7 +38,8 @@ func NewRuntime(main *sql.DB, a *recovery.Authority, memes *memeservice.Service,
 	configured := authority.AppendRecallPreparation(func(ctx context.Context, ws *recovery.WriteSession, _ botruntime.ReadAuthority, scene botruntime.Scene, id string) (func() error, error) {
 		return func() error { _, e := memes.RecallWithSession(ctx, ws, scene.ID, id); return e }, nil
 	})
-	runtime, e := botruntime.New(settings, botruntime.Services{Models: &RuntimeModels{Native: models, Read: read}, Authority: configured, Policy: policy, Dates: dates, Compare: compare})
+	modelPort := &RuntimeModels{Native: models, Read: read}
+	runtime, e := botruntime.New(settings, botruntime.Services{Models: modelPort, Authority: configured, Policy: policy, Dates: dates, Compare: compare})
 	if e != nil {
 		return nil, e
 	}
@@ -51,5 +52,6 @@ func NewRuntime(main *sql.DB, a *recovery.Authority, memes *memeservice.Service,
 	engine.TurnRead = read
 	engine.installOutgoing()
 	runtime.AddExtension(engine.ComposeExtension(base))
+	runtime.AddExtension(&botruntime.Extension{DescribeImages: engine.inlineVision(modelPort)})
 	return engine, nil
 }

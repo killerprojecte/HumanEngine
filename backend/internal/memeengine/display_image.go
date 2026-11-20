@@ -14,6 +14,10 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
+const displayImageSceneQuery = `SELECT 1 FROM scenes WHERE id=? AND
+				json_extract(value,'$.kind')=? AND json_extract(value,'$.adapterId')=? AND
+				json_extract(value,'$.accountId')=? AND json_extract(value,'$.platformSceneId')=?`
+
 var ErrDisplayImageUnavailable = botruntime.ErrDisplayImageUnavailable
 
 type DisplayImage struct {
@@ -40,9 +44,7 @@ func (s *Service) ReadDisplayImage(ctx context.Context, sceneID, messageID strin
 			// A scene configuration commit and its runtime effect are separate.
 			// Never pair a retained row from one transport with a different owner.
 			kind, adapter, account, platform := source.SceneIdentity()
-			rows, err := ws.Query(`SELECT 1 FROM scenes WHERE id=? AND
-				json_extract(value,'$.kind')=? AND json_extract(value,'$.adapterId')=? AND
-				json_extract(value,'$.accountId')=? AND json_extract(value,'$.platformSceneId')=?`,
+			rows, err := ws.Query(displayImageSceneQuery,
 				sceneID, kind, adapter, account, platform)
 			if err != nil {
 				return err

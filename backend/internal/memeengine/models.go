@@ -22,6 +22,7 @@ type continuationState struct {
 	router        *providertransport.NativeModels
 	releaseRouter func()
 	routerError   error
+	visionStarted bool
 	closed        bool
 	messages      map[*Object]*providertransport.Message
 }

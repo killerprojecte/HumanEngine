@@ -26,6 +26,8 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	var owners Owners
 	options := applicationOptions(t)
 	options.Entries = []string{}
+	counter := &inlineVisionCounter{entered: make(chan struct{}), release: make(chan struct{})}
+	options.Counter = counter
 	options.relationExposurePort = func(a *Application, o Owners) (*memoryservice.ExposurePort, error) {
 		owners = o
 		return memoryservice.NewExposurePort(a.Semantic.Memory, o.Sources, o.Main, o.Authority)
@@ -156,7 +158,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	first, socket := activate(1)
 	defer first.CloseAndWait(context.Background())
 	t.Log("exercise native ingress and original-byte browser route")
-	verifyRetired := assertSnowLumaInlineImageActualIngress(t, ctx, app, func(event any) {
+	emit := func(event any) {
 		t.Helper()
 		raw, err := json.Marshal(event)
 		if err != nil {
@@ -165,7 +167,9 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		if err := socket.Write(ctx, websocket.MessageText, raw); err != nil {
 			t.Fatal(err)
 		}
-	}, unexpected, true)
+	}
+	verifyRetired := assertSnowLumaInlineImageActualIngress(t, ctx, app, emit, unexpected, true)
+	assertInlineVisionModel(t, ctx, app, emit, counter)
 	if err := first.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
 	}

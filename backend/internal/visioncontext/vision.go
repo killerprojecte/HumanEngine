@@ -80,6 +80,7 @@ type Config struct {
 	ReadModels              func() (*jsjson.Object, error)
 	ReadTimezone            func() (string, error)
 	VisionRoute             bool
+	Uncached                bool // a caller with one already-selected image needs no cache keys
 	PriorityIDs             []string
 	Now                     func() time.Time
 }
@@ -238,7 +239,9 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		}
 		return false, nil
 	}
-	if cache == nil {
+	if cfg.Uncached {
+		cache = nil
+	} else if cache == nil {
 		cache = &Cache{}
 	}
 	t.mu.Lock()
@@ -352,13 +355,16 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		if e := ensure(); e != nil {
 			return out, e
 		}
-		modelValue, e := models()
-		if e != nil {
-			return out, e
-		}
-		key, e := hash("visual-expression-v2", cfg.SceneID, c.Message.ID, c.Part.AssetID, modelValue)
-		if e != nil {
-			return out, e
+		var key string
+		if cache != nil {
+			modelValue, e := models()
+			if e != nil {
+				return out, e
+			}
+			key, e = hash("visual-expression-v2", cfg.SceneID, c.Message.ID, c.Part.AssetID, modelValue)
+			if e != nil {
+				return out, e
+			}
 		}
 		appendObs := func(o Observation) {
 			out.Images = append(out.Images, Image{c.Message.ID, o})
@@ -380,26 +386,30 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 				}
 				lib.AddLookupValidation(c, stored)
 				o := Observation{Status: "described", Description: stored, FramePolicy: "stored_library_observation"}
-				t.results[key] = o
+				if cache != nil {
+					t.results[key] = o
+				}
 				appendObs(o)
 				continue
 			}
 		}
-		if previous, ok := t.results[key]; ok && (lib == nil || lib.Lookup == nil || previous.FramePolicy != "stored_library_observation") {
-			if e := ensure(); e != nil {
-				return out, e
+		if cache != nil {
+			if previous, ok := t.results[key]; ok && (lib == nil || lib.Lookup == nil || previous.FramePolicy != "stored_library_observation") {
+				if e := ensure(); e != nil {
+					return out, e
+				}
+				appendObs(previous)
+				continue
 			}
-			appendObs(previous)
-			continue
-		}
-		if cached, ok := cache.Get(key); ok && cached != "" {
-			if e := ensure(); e != nil {
-				return out, e
+			if cached, ok := cache.Get(key); ok && cached != "" {
+				if e := ensure(); e != nil {
+					return out, e
+				}
+				o := Observation{Status: "described", Description: cached}
+				t.results[key] = o
+				appendObs(o)
+				continue
 			}
-			o := Observation{Status: "described", Description: cached}
-			t.results[key] = o
-			appendObs(o)
-			continue
 		}
 		operation := "image.download"
 		o, e := func() (Observation, error) {
@@ -438,18 +448,21 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			if e = ensure(); e != nil {
 				return Observation{}, e
 			}
-			modelValue, e := models()
-			if e != nil {
-				return Observation{}, e
-			}
-			contentKey, e := hash("visual-expression-v2", cfg.SceneID, fmt.Sprintf("%x", sha256.Sum256(bytes)), modelValue)
-			if e != nil {
-				return Observation{}, e
-			}
+			contentKey := ""
 			found := matched
-			if content, ok := cache.Get(contentKey); !matched && ok && content != "" {
-				description = content
-				found = true
+			if cache != nil {
+				modelValue, e := models()
+				if e != nil {
+					return Observation{}, e
+				}
+				contentKey, e = hash("visual-expression-v2", cfg.SceneID, fmt.Sprintf("%x", sha256.Sum256(bytes)), modelValue)
+				if e != nil {
+					return Observation{}, e
+				}
+				if content, ok := cache.Get(contentKey); !matched && ok && content != "" {
+					description = content
+					found = true
+				}
 			}
 			if !found {
 				route, e := hasVision()
@@ -503,7 +516,7 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			policy := "first_frame_only"
 			if matched {
 				policy = "stored_library_observation"
-			} else {
+			} else if cache != nil {
 				cache.Put(key, cfg.SceneID, c.Message.ID, description)
 				cache.Put(contentKey, cfg.SceneID, c.Message.ID, description)
 			}
@@ -522,7 +535,9 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			}
 			o = Observation{Status: "unavailable", Reason: FailureReason(e)}
 		}
-		t.results[key] = o
+		if cache != nil {
+			t.results[key] = o
+		}
 		appendObs(o)
 	}
 	return out, nil

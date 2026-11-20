@@ -146,13 +146,28 @@ func (f *snowTokenFixture) assertImages(t *testing.T, ctx context.Context, app *
 		t.Fatalf("blocked direct file locator attempted adapter token fallback %s", token)
 	default:
 	}
-	for _, row := range appRequest(t, app, "GET", path+"/messages", nil).([]any) {
-		linked := field(row, "id") == id(6)
-		for _, part := range field(row, "parts").([]any) {
-			if field(part, "assetId") != nil || (field(part, "mediaUrl") != nil) != linked {
-				t.Fatal("preview did not expose only the retained direct browser link")
+	for _, surface := range []string{"/messages", "/history?source=local"} {
+		body := appRequest(t, app, "GET", path+surface, nil)
+		rows, preview := body.([]any)
+		if !preview {
+			rows = field(body, "items").([]any)
+		}
+		for _, row := range rows {
+			rowID := field(row, "id")
+			if rowID != id(1) && rowID != id(2) && rowID != id(3) && rowID != id(4) && rowID != id(5) && rowID != id(6) {
+				continue
+			}
+			for _, part := range field(row, "parts").([]any) {
+				if field(part, "assetId") != nil || (field(part, "mediaUrl") != nil) != (rowID != id(5)) {
+					t.Fatalf("%s did not expose the eligible opaque/direct token %v", surface, rowID)
+				}
 			}
 		}
+	}
+	select {
+	case token := <-f.calls:
+		t.Fatalf("listing performed get_image on %s", token)
+	default:
 	}
 	result := make(chan *httptest.ResponseRecorder, 1)
 	go func() { result <- get(4, true) }()

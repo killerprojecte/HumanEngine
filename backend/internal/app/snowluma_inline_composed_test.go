@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -75,6 +76,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	unexpected := make(chan string, 8)
 	mediaTokens := newSnowTokenFixture(t)
 	var remoteReads atomic.Int32
+	var opaqueListing atomic.Bool
 	held, releaseHeld := make(chan struct{}), make(chan struct{})
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer synthetic" {
@@ -115,6 +117,12 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 						"message": []any{map[string]any{"type": "image", "data": map[string]any{"base64": "YQ=="}}},
 					})
 				}
+				if opaqueListing.Load() {
+					messages = append(messages, map[string]any{
+						"message_type": "group", "group_id": 100, "user_id": 7, "message_id": 903, "time": time.Now().Unix(),
+						"message": []any{map[string]any{"type": "image", "data": map[string]any{"file": "opaque-inline"}}},
+					})
+				}
 				data = map[string]any{"messages": messages}
 			case "get_image":
 				result, ok := mediaTokens.action(ctx, request.Params.File)
@@ -134,10 +142,14 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 						return
 					}
 				}
-				if id == "900" || id == "901" {
+				if id == "900" || id == "901" || id == "903" {
+					locator := map[string]any{"base64": mediaTokens.encoded}
+					if id != "900" {
+						locator = map[string]any{"file": "opaque-inline"}
+					}
 					data = map[string]any{
 						"message_type": "group", "group_id": 100, "user_id": 7, "message_id": request.Params.MessageID, "time": time.Now().Unix(),
-						"message": []any{map[string]any{"type": "image", "data": map[string]any{"base64": mediaTokens.encoded}}},
+						"message": []any{map[string]any{"type": "image", "data": locator}},
 					}
 				} else {
 					unexpected <- request.Action
@@ -259,6 +271,45 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	if res := getRemote(enrolledID, true); res.Code != http.StatusNotFound || remoteReads.Load() != before+1 {
 		t.Fatalf("enrolled source without retained body triggered get_msg: %d, calls %d", res.Code, remoteReads.Load()-before)
 	}
+
+	opaqueListing.Store(true)
+	afterRecall := remoteReads.Load()
+	history := appRequest(t, app, http.MethodGet, "/api/scenes/"+url.PathEscape(scene)+"/history", nil)
+	opaqueID := snow.MessageID(scene, "903")
+	found := false
+	for _, row := range field(history, "items").([]any) {
+		if field(row, "id") == opaqueID {
+			part := field(row, "parts").([]any)[0]
+			found = field(part, "mediaUrl") != nil && field(part, "assetId") == nil
+		}
+	}
+	if !found || remoteReads.Load() != afterRecall {
+		t.Fatal("remote listing did not mint a private opaque link without exact-message fetch")
+	}
+	select {
+	case token := <-mediaTokens.calls:
+		t.Fatalf("listing or recalled get_msg performed get_image: %s", token)
+	default:
+	}
+	res := getRemote(opaqueID, true)
+	encoded := base64.StdEncoding.EncodeToString(res.Body.Bytes())
+	if res.Code != http.StatusOK || encoded != mediaTokens.encoded || remoteReads.Load() != afterRecall+1 {
+		t.Fatalf("opaque remote get_msg continuation: HTTP %d, calls %d", res.Code, remoteReads.Load()-afterRecall)
+	}
+	select {
+	case token := <-mediaTokens.calls:
+		if token != "opaque-inline" {
+			t.Fatalf("wrong remote platform token: %s", token)
+		}
+	default:
+		t.Fatal("remote GET did not invoke get_image")
+	}
+	select {
+	case token := <-mediaTokens.calls:
+		t.Fatalf("extra get_image %s", token)
+	default:
+	}
+	opaqueListing.Store(false)
 
 	assertInlineVisionModel(t, ctx, app, emit, counter)
 	verifyTokenRetired := mediaTokens.assertImages(t, ctx, app, emit)

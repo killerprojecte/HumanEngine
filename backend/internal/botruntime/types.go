@@ -186,6 +186,7 @@ type NativeImageLink uint8
 const (
 	NativeImageInline NativeImageLink = iota + 1
 	NativeImageBrowserDirect
+	NativeImageBrowserOpaque
 )
 
 // GuardedImageRead is prepared by an adapter from an exact native locator.

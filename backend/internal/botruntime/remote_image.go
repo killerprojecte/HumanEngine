@@ -103,10 +103,10 @@ func remoteImageLinks(adapter *Adapter, scene Scene, row *Object) DisplayImageLi
 		}
 		_, class := remoteImagePart(adapter, scene, part)
 		if class != 0 {
-			if links.direct == nil {
-				links.direct = new(inlineImageParts)
+			if links.browser == nil {
+				links.browser = new(inlineImageParts)
 			}
-			links.direct[index/64] |= 1 << (index % 64)
+			links.browser[index/64] |= 1 << (index % 64)
 		}
 	}
 	return links

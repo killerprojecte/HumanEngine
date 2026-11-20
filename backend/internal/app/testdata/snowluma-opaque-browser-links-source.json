@@ -1,0 +1,48 @@
+{
+  "entries": [
+    {
+      "surface": "/messages",
+      "id": 1,
+      "part": {
+        "type": "media",
+        "mediaType": "image/unknown",
+        "mediaUrl": "/api/scenes/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0/messages/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0%3Am%3AIjEi/media/1",
+        "mediaKind": "image"
+      }
+    },
+    {
+      "surface": "/history?source=local",
+      "id": 1,
+      "part": {
+        "type": "media",
+        "mediaType": "image/unknown",
+        "mediaUrl": "/api/scenes/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0/messages/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0%3Am%3AIjEi/media/1",
+        "mediaKind": "image"
+      }
+    },
+    {
+      "surface": "/history",
+      "id": 95,
+      "part": {
+        "type": "media",
+        "mediaType": "image/unknown",
+        "mediaUrl": "/api/scenes/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0/messages/ob%3As%3AWyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5Il0%3Am%3AIjk1Ig/media/1",
+        "mediaKind": "sticker"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "action": "get_msg",
+      "params": {
+        "message_id": "95"
+      }
+    },
+    {
+      "action": "get_image",
+      "params": {
+        "file": "opaque-browser-remote"
+      }
+    }
+  ]
+}

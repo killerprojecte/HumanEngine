@@ -35,7 +35,7 @@ func TestRetainedDirectLinksActualSource(t *testing.T) {
 			t.Log("TS promotes presentation based on shape; Go additionally requires the retained native locator class and target transport")
 		}
 	}()
-	classes := [...]botruntime.NativeImageLink{botruntime.NativeImageBrowserDirect, botruntime.NativeImageBrowserDirect, botruntime.NativeImageBrowserDirect, botruntime.NativeImageInline, 0}
+	classes := [...]botruntime.NativeImageLink{botruntime.NativeImageBrowserDirect, botruntime.NativeImageBrowserDirect, botruntime.NativeImageBrowserDirect, botruntime.NativeImageInline, botruntime.NativeImageBrowserOpaque}
 	const adapter, account, peer = "snowluma", "42", "104"
 	scene := botruntime.Scene{SceneRef: dispatch.SceneRef{ID: snow.SceneID(adapter, account, "group", peer), Kind: "group", AdapterID: adapter, AccountID: account, PlatformSceneID: peer}}
 	for i, wire := range fixture.Locators {

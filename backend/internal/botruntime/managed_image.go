@@ -25,14 +25,14 @@ type inlineImageParts [4]uint64
 type nativeImageBinding struct {
 	generation *InlineImageAdapter
 	parts      inlineImageParts
-	direct     *inlineImageParts
+	browser    *inlineImageParts
 }
 
 // DisplayImageLinks is the private link proof for one selected browser row.
 type DisplayImageLinks struct {
 	Managed bool
 	inline  *inlineImageParts
-	direct  *inlineImageParts
+	browser *inlineImageParts
 }
 
 func (l DisplayImageLinks) InlineAt(index int) bool {
@@ -40,7 +40,7 @@ func (l DisplayImageLinks) InlineAt(index int) bool {
 }
 
 func (l DisplayImageLinks) BrowserAt(index int) bool {
-	return l.inline.at(index) || l.direct.at(index)
+	return l.inline.at(index) || l.browser.at(index)
 }
 
 func (parts *inlineImageParts) at(index int) bool {
@@ -61,7 +61,7 @@ func (l *browserImageLinker) links(proof *displayMediaScene) DisplayImageLinks {
 	if proof.native == nil {
 		return DisplayImageLinks{Managed: true}
 	}
-	if proof.native.parts == (inlineImageParts{}) && proof.native.direct == nil {
+	if proof.native.parts == (inlineImageParts{}) && proof.native.browser == nil {
 		return DisplayImageLinks{}
 	}
 	if !l.checked {
@@ -74,7 +74,7 @@ func (l *browserImageLinker) links(proof *displayMediaScene) DisplayImageLinks {
 		}
 	}
 	if l.current == proof.native.generation {
-		return DisplayImageLinks{inline: &proof.native.parts, direct: proof.native.direct}
+		return DisplayImageLinks{inline: &proof.native.parts, browser: proof.native.browser}
 	}
 	return DisplayImageLinks{}
 }
@@ -136,11 +136,11 @@ func (r *Runtime) bindNativeImage(scene Scene, message *Object, owner *Adapter) 
 		switch owner.InlineImage.Classify(scene, asset) {
 		case NativeImageInline:
 			native.parts[i/64] |= 1 << (i % 64)
-		case NativeImageBrowserDirect:
-			if native.direct == nil {
-				native.direct = new(inlineImageParts)
+		case NativeImageBrowserDirect, NativeImageBrowserOpaque:
+			if native.browser == nil {
+				native.browser = new(inlineImageParts)
 			}
-			native.direct[i/64] |= 1 << (i % 64)
+			native.browser[i/64] |= 1 << (i % 64)
 		}
 	}
 	if native == nil {

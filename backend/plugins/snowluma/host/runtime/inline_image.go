@@ -12,8 +12,7 @@ import (
 )
 
 // classifyRetainedImage recognizes the pinned guest's canonical image descriptor
-// prefix. It reads only enough of the outer base64 to identify the file scheme;
-// the direct read owns alphabet, size, integrity, and image-type validation.
+// prefix first. Direct reads own full descriptor and transport validation.
 func classifyRetainedImage(scene botruntime.Scene, reference string) botruntime.NativeImageLink {
 	file := imageFilePrefix(scene, reference)
 	if payload, inline := inlineImagePayload(file); inline && len(payload) != 0 && payload[0] != '"' {
@@ -21,6 +20,15 @@ func classifyRetainedImage(scene botruntime.Scene, reference string) botruntime.
 	}
 	if publicBrowserImageSupported && publicImageLocator(file) {
 		return botruntime.NativeImageBrowserDirect
+	}
+	// Only a non-direct canonical candidate needs the exact token parser.
+	// Inline and direct locators can contain large bodies or ignored fields.
+	if file == "" || directImageLocator(file) {
+		return 0
+	}
+	media, err := nativeImageDescriptor(scene, reference)
+	if err == nil && opaqueImageToken(media, str(media, "file")) != "" {
+		return botruntime.NativeImageBrowserOpaque
 	}
 	return 0
 }

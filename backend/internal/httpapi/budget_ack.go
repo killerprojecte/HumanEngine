@@ -7,11 +7,14 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/externalcost"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
+const budgetExternalCostsPath = "/api/budget/external-costs"
 const budgetAckPath = "/api/budget/recovery/acknowledge"
 const budgetReviewAck = "I_reviewed_accounting_and_accept_incomplete_history"
 
@@ -28,7 +31,7 @@ func budgetAcknowledgementID(value any) (string, bool) {
 	return s, ok && token == budgetReviewAck && budgetAckUUID.MatchString(s)
 }
 
-func (s *Server) serveBudgetAcknowledgement(w http.ResponseWriter, r *http.Request, available bool, requestID string) {
+func (s *Server) serveBudgetWrite(w http.ResponseWriter, r *http.Request, available bool, path, requestID string) {
 	ctx := r.Context()
 	head := r.Method == http.MethodHead
 	fail := func(err error, admitted bool) {
@@ -55,6 +58,8 @@ func (s *Server) serveBudgetAcknowledgement(w http.ResponseWriter, r *http.Reque
 	response := newPublicationResponse(w.Header(), head)
 	owner := s.budgetAdmin
 	status, literal := 0, ""
+	var imported externalcost.Receipt
+	var observed recovery.Head
 	if r.Method != http.MethodPost {
 		status, literal = 404, "404 Not Found"
 		response.header.Set("Content-Type", "text/plain; charset=UTF-8")
@@ -78,8 +83,24 @@ func (s *Server) serveBudgetAcknowledgement(w http.ResponseWriter, r *http.Reque
 			fail(err, true)
 			return
 		}
-		restoreID, valid := budgetAcknowledgementID(input)
-		if !valid {
+		if path == budgetExternalCostsPath {
+			parsed, err := externalcost.ParseImport(input)
+			if err != nil {
+				status, literal = 400, `{"error":"Invalid request"}`
+			} else {
+				imported, observed, err = owner.budget.ImportExternalCost(ctx, s.authority, parsed)
+				switch {
+				case errors.Is(err, externalcost.ErrConflict):
+					status, literal = 409, `{"error":"external_cost_conflict"}`
+				case errors.Is(err, externalcost.ErrCapacity):
+					status, literal = 409, `{"error":"external_cost_capacity"}`
+				case err != nil:
+					ready := s.authority.Publish(ctx, s.main, func(*sql.Conn) ([]byte, error) { return nil, nil }, func([]byte) error { return nil })
+					fail(err, ready == nil)
+					return
+				}
+			}
+		} else if restoreID, valid := budgetAcknowledgementID(input); !valid {
 			status, literal = 400, `{"error":"Invalid request"}`
 		} else {
 			err = owner.budget.AcknowledgeBudgetRecovery(ctx, s.authority, restoreID)
@@ -96,9 +117,21 @@ func (s *Server) serveBudgetAcknowledgement(w http.ResponseWriter, r *http.Reque
 	admitted := false
 	err := owner.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
 		admitted = true
+		if observed != (recovery.Head{}) {
+			gate, err := recovery.ReadGate(ctx, q)
+			if err != nil {
+				return nil, err
+			}
+			if gate.Head != observed {
+				return nil, errors.New("recovery_authority_head_changed")
+			}
+		}
 		if status != 0 {
 			response.status = status
 			return []byte(literal), nil
+		}
+		if path == budgetExternalCostsPath {
+			return imported.MarshalJSON()
 		}
 		return owner.budget.ReadBudgetRecovery(ctx, q)
 	}, func(body []byte) error {

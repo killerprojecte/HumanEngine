@@ -221,8 +221,8 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		return
 	}
 	if budgetAdmin {
-		if path == budgetAckPath {
-			s.serveBudgetAcknowledgement(w, r, available, id)
+		if path == budgetAckPath || r.Method == http.MethodPost {
+			s.serveBudgetWrite(w, r, available, path, id)
 		} else {
 			s.serveBudgetAdmin(w, r, available, path, id)
 		}

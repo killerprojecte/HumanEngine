@@ -123,6 +123,10 @@ func (s *BudgetService) ReadBudgetCoverage(ctx context.Context, q *sql.Conn) ([]
 	return json.Marshal(result)
 }
 
+func (s *BudgetService) ImportExternalCost(ctx context.Context, authority *recovery.Authority, input externalcost.ImportInput) (externalcost.Receipt, recovery.Head, error) {
+	return externalcost.Import(ctx, authority, s.DB, input)
+}
+
 // ReadExternalCosts lists only on the existing admitted snapshot. Validate
 // all current receipts before paging so a corrupt off-page row cannot hide.
 func (s *BudgetService) ReadExternalCosts(ctx context.Context, q *sql.Conn, page, size int, compare func(string, string) (int, error)) ([]byte, error) {

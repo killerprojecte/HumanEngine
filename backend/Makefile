@@ -35,6 +35,7 @@ contextual-source-check:
 differential: build plugin-source-check contextual-source-check runtime-producer-source-check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-create.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-external-cost-read.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-external-cost-import.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-budget-ack.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-budget-read.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-patch.mjs --check

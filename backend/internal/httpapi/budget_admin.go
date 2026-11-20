@@ -28,7 +28,9 @@ func budgetAdminPath(method, path string) bool {
 	switch path {
 	case budgetAckPath:
 		return true
-	case "/api/budget", "/api/budget/recovery", "/api/budget/external-costs":
+	case budgetExternalCostsPath:
+		return method == http.MethodGet || method == http.MethodHead || method == http.MethodPost
+	case "/api/budget", "/api/budget/recovery":
 		return method == http.MethodGet || method == http.MethodHead
 	default:
 		return false
@@ -62,7 +64,7 @@ func (s *Server) serveBudgetAdmin(w http.ResponseWriter, r *http.Request, availa
 		switch path {
 		case "/api/budget/recovery":
 			return owner.budget.ReadBudgetRecovery(ctx, q)
-		case "/api/budget/external-costs":
+		case budgetExternalCostsPath:
 			page, size, valid := externalCostPage(r.URL.RawQuery)
 			if !valid {
 				response.status = http.StatusBadRequest

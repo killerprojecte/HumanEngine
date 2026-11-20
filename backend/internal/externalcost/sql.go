@@ -21,6 +21,8 @@ type errorScanner struct{ err error }
 func (s errorScanner) Scan(...any) error { return s.err }
 func (s Storage) query(ctx context.Context, q string, args ...any) (rows, error) {
 	switch db := s.DB.(type) {
+	case liveSQL:
+		return db.session.Query(q, args...)
 	case interface {
 		QueryContext(context.Context, string, ...any) (*recovery.MaintenanceRows, error)
 	}:
@@ -35,6 +37,9 @@ func (s Storage) query(ctx context.Context, q string, args ...any) (rows, error)
 }
 func (s Storage) row(ctx context.Context, q string, args ...any) scanner {
 	switch db := s.DB.(type) {
+	case liveSQL:
+		rows, err := db.session.Query(q, args...)
+		return liveScanner{rows, err}
 	case interface {
 		QueryRowContext(context.Context, string, ...any) *recovery.MaintenanceRow
 	}:
@@ -46,4 +51,29 @@ func (s Storage) row(ctx context.Context, q string, args ...any) scanner {
 	default:
 		return errorScanner{errors.New("external_cost_query_unsupported")}
 	}
+}
+
+type liveSQL struct{ session *recovery.WriteSession }
+
+func (s liveSQL) ExecContext(_ context.Context, query string, args ...any) (sql.Result, error) {
+	return s.session.Exec(query, args...)
+}
+
+type liveScanner struct {
+	rows *recovery.SessionRows
+	err  error
+}
+
+func (s liveScanner) Scan(dest ...any) error {
+	if s.err != nil {
+		return s.err
+	}
+	defer s.rows.Close()
+	if s.rows.Next() {
+		return s.rows.Scan(dest...)
+	}
+	if err := s.rows.Err(); err != nil {
+		return err
+	}
+	return sql.ErrNoRows
 }

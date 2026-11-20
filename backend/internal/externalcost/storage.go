@@ -161,6 +161,16 @@ func (s Storage) AssertSupported(ctx context.Context) (bool, error) {
 	if count != 1 || !valid {
 		return false, errors.New("external_cost_schema_unsupported")
 	}
+	if live, ok := s.DB.(liveSQL); ok {
+		names, err := live.session.ExternalCostColumns()
+		if err != nil {
+			return false, err
+		}
+		if !reflect.DeepEqual(names, columns) {
+			return false, errors.New("external_cost_schema_unsupported")
+		}
+		return true, nil
+	}
 	rows, err = s.query(ctx, "PRAGMA table_xinfo("+Table+")")
 	if err != nil {
 		return false, err
@@ -189,7 +199,7 @@ func (s Storage) Ensure(ctx context.Context) error {
 	if err != nil || ok {
 		return err
 	}
-	_, err = s.DB.ExecContext(ctx, `CREATE TABLE `+Table+`(id TEXT NOT NULL,revision INTEGER NOT NULL,payload TEXT NOT NULL,payload_hash TEXT NOT NULL,correction_id TEXT UNIQUE,recorded_at TEXT NOT NULL,PRIMARY KEY(id,revision))`)
+	_, err = s.DB.ExecContext(ctx, recovery.ExternalCostTableDDL)
 	return err
 }
 
@@ -227,6 +237,9 @@ func (s Storage) find(ctx context.Context, where string, arg any) (*Receipt, err
 	if err != nil || !ok {
 		return nil, err
 	}
+	return s.findSupported(ctx, where, arg)
+}
+func (s Storage) findSupported(ctx context.Context, where string, arg any) (*Receipt, error) {
 	r, err := decode(s.row(ctx, "SELECT * FROM "+Table+" WHERE "+where, arg))
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
@@ -237,7 +250,7 @@ func (s Storage) find(ctx context.Context, where string, arg any) (*Receipt, err
 	return &r, nil
 }
 func (s Storage) Latest(ctx context.Context, id string) (*Receipt, error) {
-	return s.find(ctx, "id=? ORDER BY revision DESC LIMIT 1", id)
+	return s.find(ctx, latestWhere, id)
 }
 func (s Storage) Correction(ctx context.Context, id string) (*Receipt, error) {
 	return s.find(ctx, "correction_id=?", id)
@@ -247,6 +260,10 @@ func (s Storage) Current(ctx context.Context) ([]Receipt, error) {
 	if err != nil || !ok {
 		return []Receipt{}, err
 	}
+	return s.currentSupported(ctx)
+}
+
+func (s Storage) currentSupported(ctx context.Context) ([]Receipt, error) {
 	rows, err := s.query(ctx, `SELECT r.* FROM `+Table+` r JOIN (SELECT id,max(revision) revision FROM `+Table+` GROUP BY id) h ON r.id=h.id AND r.revision=h.revision LIMIT 10001`)
 	if err != nil {
 		return nil, err
@@ -264,7 +281,7 @@ func (s Storage) Current(ctx context.Context) ([]Receipt, error) {
 		return nil, err
 	}
 	if len(material) > 10000 {
-		return nil, errors.New("external_cost_capacity")
+		return nil, ErrCapacity
 	}
 	out := []Receipt{}
 	for _, row := range material {
@@ -278,7 +295,7 @@ func (s Storage) Current(ctx context.Context) ([]Receipt, error) {
 }
 
 // Put is storage-only and deliberately does not require consecutive revisions.
-// The caller owns transaction/authority admission; production mutation is not wired.
+// The caller owns transaction/authority admission.
 func (s Storage) Put(ctx context.Context, input Receipt) error {
 	r, err := Parse(input.JSON())
 	if err != nil {
@@ -288,19 +305,27 @@ func (s Storage) Put(ctx context.Context, input Receipt) error {
 	if err = s.Ensure(ctx); err != nil {
 		return err
 	}
+	return s.putSupported(ctx, r)
+}
+
+func (s Storage) putSupported(ctx context.Context, r Receipt) error {
 	old, err := decode(s.row(ctx, "SELECT * FROM "+Table+" WHERE id=? AND revision=?", r.ID(), r.Revision()))
 	if err == nil {
 		if !equal(old.value, r.value) {
-			return errors.New("external_cost_conflict")
+			return ErrConflict
 		}
 		return nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return err
 	}
+	return s.insert(ctx, r)
+}
+
+func (s Storage) insert(ctx context.Context, r Receipt) error {
 	c, _ := r.value.Get("correctionId")
 	t, _ := r.value.Get("recordedAt")
-	_, err = s.DB.ExecContext(ctx, "INSERT INTO "+Table+" VALUES(?,?,?,?,?,?)", r.ID(), r.Revision(), r.JSON(), r.Hash(), c, t)
+	_, err := s.DB.ExecContext(ctx, "INSERT INTO "+Table+" VALUES(?,?,?,?,?,?)", r.ID(), r.Revision(), r.JSON(), r.Hash(), c, t)
 	return err
 }
 

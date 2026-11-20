@@ -264,16 +264,25 @@ func (s *WriteSession) ready(g Gate) (err error) {
 	return err
 }
 func (s *WriteSession) AssertReady() error {
+	_, err := s.ReadyHead()
+	return err
+}
+
+// ReadyHead returns the verified head of this writer snapshot, not publication authority.
+func (s *WriteSession) ReadyHead() (Head, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if e := s.check(); e != nil {
-		return e
+		return Head{}, e
 	}
 	g, _, e := s.gate()
 	if e != nil {
-		return e
+		return Head{}, e
 	}
-	return s.ready(g)
+	if e := s.ready(g); e != nil {
+		return Head{}, e
+	}
+	return g.Head, nil
 }
 func (s *WriteSession) RequireReader(minimum int) error {
 	s.mu.Lock()

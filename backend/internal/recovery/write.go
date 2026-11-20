@@ -287,7 +287,13 @@ func (m *MainMutation) RestoredModelHoldSchema() (names []string, err error) {
 func RestoredModelHoldSchema(ctx context.Context, conn interface {
 	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
 }) ([]string, error) {
-	rows, err := conn.QueryContext(ctx, "PRAGMA main.table_xinfo(recovery_model_hold)")
+	return fixedTableColumns(ctx, conn, "PRAGMA main.table_xinfo(recovery_model_hold)")
+}
+
+func fixedTableColumns(ctx context.Context, conn interface {
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}, statement string) ([]string, error) {
+	rows, err := conn.QueryContext(ctx, statement)
 	if err != nil {
 		return nil, err
 	}

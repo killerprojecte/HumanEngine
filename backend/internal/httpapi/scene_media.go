@@ -84,7 +84,7 @@ func (s *Server) serveSceneMedia(w http.ResponseWriter, r *http.Request, availab
 		return
 	}
 	defer release()
-	image, err := s.memes.ReadManagedDisplayImage(ctx, p.sceneID, p.messageID, index)
+	image, err := s.memes.ReadDisplayImage(ctx, p.sceneID, p.messageID, index)
 	if err == nil {
 		response := newPublicationResponse(w.Header(), head)
 		response.header.Set("Content-Type", image.MIME)

@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"sync/atomic"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
@@ -28,6 +30,7 @@ type Ports struct {
 	ResolveMedia  func(context.Context, any, *jsjson.Object) (*jsjson.Object, error)
 }
 type Sender struct {
+	registered       atomic.Pointer[botruntime.Adapter]
 	status           *installationStatus
 	queries          *Queries
 	adapter, account string

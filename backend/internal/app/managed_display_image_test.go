@@ -390,15 +390,15 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 			}
 		}
 	}
-	capture := func() *memeengine.ManagedDisplayImage {
+	capture := func() *memeengine.DisplayImage {
 		t.Helper()
-		image, err := app.Engine.ReadManagedDisplayImage(root, scene, outgoing, 1)
+		image, err := app.Engine.ReadDisplayImage(root, scene, outgoing, 1)
 		if err != nil {
 			t.Fatal(err)
 		}
 		return image
 	}
-	reject := func(image *memeengine.ManagedDisplayImage) {
+	reject := func(image *memeengine.DisplayImage) {
 		t.Helper()
 		published := false
 		err := app.readPublisher.Publish(ctx, func(c *sql.Conn) ([]byte, error) {
@@ -424,7 +424,7 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	if err := runtime.RegisterScene(unmatched); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := app.Engine.ReadManagedDisplayImage(root, scene, outgoing, 1); !errors.Is(err, memeengine.ErrDisplayImageUnavailable) {
+	if _, err := app.Engine.ReadDisplayImage(root, scene, outgoing, 1); !errors.Is(err, memeengine.ErrDisplayImageUnavailable) {
 		t.Fatalf("captured different persisted transport: %v", err)
 	}
 	if err := runtime.RegisterScene(registered); err != nil {

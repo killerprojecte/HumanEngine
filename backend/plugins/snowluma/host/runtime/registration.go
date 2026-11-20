@@ -58,6 +58,11 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 	if s.status != nil {
 		adapter.Status = s.status.read
 	}
+	life := s.life
+	adapter.InlineImage = &botruntime.InlineImageAdapter{
+		Current: func() bool { return life.Err() == nil },
+		Read:    readInlineImage,
+	}
 	adapter.Transport = dispatch.AbortContainedAdapter(&dispatch.Adapter{Send: func(scene dispatch.SceneRef, segment dispatch.Segment, signal *dispatch.Signal, before func() error) *dispatch.Future[dispatch.Receipt] {
 		result := dispatch.NewFuture[dispatch.Receipt]()
 		go func() {
@@ -116,6 +121,7 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 		return nil, errors.New("registry_adapter_mismatch")
 	}
 	r.runtime.AddAdapter(s.adapter, adapter)
+	s.registered.Store(adapter)
 	r.current = entry
 	entry.detach = context.AfterFunc(s.life, entry.Remove)
 	return entry, nil

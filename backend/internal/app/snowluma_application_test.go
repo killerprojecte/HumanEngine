@@ -42,6 +42,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	connections := make(chan *websocket.Conn, 8)
 	sent := make(chan map[string]any, 8)
 	historyRequests := make(chan map[string]any, 8)
+	unexpectedMedia := make(chan string, 8)
 	closed := make(chan struct{}, 8)
 	var writes sync.Mutex
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -76,6 +77,8 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 				sent <- request
 				sentCount++
 				data = map[string]any{"message_id": sentCount}
+			case "get_image", "get_msg":
+				unexpectedMedia <- action
 			case "get_group_msg_history", "get_friend_msg_history":
 				data = map[string]any{"messages": []any{}}
 				if browserHistory {
@@ -418,6 +421,20 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	}
 	waitIdle("12")
 	t.Log("stage: actual media dispatch and receipt12 committed")
+	t.Log("stage: inbound inline originals on a separate non-participating Snow group")
+	verifyRetiredInline := assertSnowLumaInlineImageActualIngress(t, ctx, application, func(event any) {
+		t.Helper()
+		raw, err := json.Marshal(event)
+		if err != nil {
+			t.Fatal(err)
+		}
+		writes.Lock()
+		err = socket.Write(ctx, websocket.MessageText, raw)
+		writes.Unlock()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}, unexpectedMedia)
 	// Reconfigure while enabled: old generation must physically close before its
 	// replacement is installed, and the stored token survives omitted secret input.
 	t.Log("stage: beginning hot configuration with physical runtime retirement")
@@ -434,6 +451,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	case <-ctx.Done():
 		t.Fatal("replacement generation missing")
 	}
+	verifyRetiredInline()
 	snowAdmin("/api/plugins/snowluma/enabled", map[string]any{"enabled": false})
 	assertSnowStatus("")
 	assertPolicyUnloaded()

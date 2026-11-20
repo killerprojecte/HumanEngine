@@ -21,7 +21,7 @@ func (r *Runtime) PreviewMessages(sceneID string, managedEnabled bool) ([]*Objec
 		at -= len(b.records)
 		for i, record := range b.records {
 			bodies[at+i] = record.body
-			if proof := record.managedMedia; proof != nil && proof.matches(v.scene) && !v.recalled[idOf(record.body)] {
+			if proof := record.displayMedia; proof != nil && proof.native == nil && proof.matches(v.scene) && !v.recalled[idOf(record.body)] {
 				if managed == nil {
 					managed = make(map[int]struct{})
 				}

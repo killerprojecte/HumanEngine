@@ -14,25 +14,26 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
-var ErrDisplayImageUnavailable = errors.New("image_unavailable")
+var ErrDisplayImageUnavailable = botruntime.ErrDisplayImageUnavailable
 
-type ManagedDisplayImage struct {
+type DisplayImage struct {
 	Bytes    []byte
 	MIME     string
-	source   *botruntime.ManagedImageSource
+	source   *botruntime.DisplayImageSource
 	witness  *recovery.ReadWitness
 	original memeservice.Original
 	owner    *memeservice.Service
 }
 
-// ReadManagedDisplayImage reads the one verified original for a retained bot
-// message. Only the brief qualification snapshot owns a recovery session.
-func (s *Service) ReadManagedDisplayImage(ctx context.Context, sceneID, messageID string, part int) (*ManagedDisplayImage, error) {
-	source := s.Runtime.ManagedImage(sceneID, messageID, part)
+// ReadDisplayImage reads either a bound managed original or native inline
+// ingress bytes. The qualification session does not cover decoding or disk IO.
+func (s *Service) ReadDisplayImage(ctx context.Context, sceneID, messageID string, part int) (*DisplayImage, error) {
+	source := s.Runtime.DisplayImage(sceneID, messageID, part)
 	if source == nil {
 		return nil, ErrDisplayImageUnavailable
 	}
-	out := &ManagedDisplayImage{source: source, owner: s.Memes}
+	out := &DisplayImage{source: source, owner: s.Memes}
+	managed := source.IsManaged()
 	err := s.authority.WithWriteSession(ctx, s.main, func(ws *recovery.WriteSession) error {
 		var err error
 		out.witness, err = ws.CaptureReadWitness(func() error {
@@ -63,7 +64,7 @@ func (s *Service) ReadManagedDisplayImage(ctx context.Context, sceneID, messageI
 				}
 				return nil
 			})
-			if err != nil {
+			if err != nil || !managed {
 				return err
 			}
 			out.original, err = s.Memes.OriginalWithSession(ctx, ws, memeservice.Context{SceneID: sceneID}, source.AssetID())
@@ -78,37 +79,48 @@ func (s *Service) ReadManagedDisplayImage(ctx context.Context, sceneID, messageI
 		return nil, err
 	}
 
-	file, err := os.Open(out.original.Path)
+	if managed {
+		out.Bytes, err = readManagedImage(out.original.Path)
+	} else {
+		out.Bytes, err = source.InlineBytes(ctx)
+	}
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-	const MaxImageBytes = 64 * 1024 * 1024
-	out.Bytes, err = io.ReadAll(io.LimitReader(file, MaxImageBytes+1))
-	if err != nil {
-		return nil, err
-	}
+	// The original pixels determine the response MIME, not a data URL label.
 	out.MIME, err = s.Codec.ValidateDisplayImage(ctx, out.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	hash := sha256.Sum256(out.Bytes)
-	if float64(len(out.Bytes)) != out.original.Bytes || hex.EncodeToString(hash[:]) != out.original.Hash {
-		return nil, errors.New("media_content_hash_mismatch")
+	if managed {
+		hash := sha256.Sum256(out.Bytes)
+		if float64(len(out.Bytes)) != out.original.Bytes || hex.EncodeToString(hash[:]) != out.original.Hash {
+			return nil, errors.New("media_content_hash_mismatch")
+		}
 	}
 	return out, nil
 }
 
+func readManagedImage(path string) ([]byte, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	const max = 64 * 1024 * 1024
+	return io.ReadAll(io.LimitReader(file, max+1))
+}
+
 // VerifyPublication runs before the owned byte response is accepted. All file
 // access and image validation have already finished outside the authority fence.
-func (m *ManagedDisplayImage) VerifyPublication(ctx context.Context, conn *sql.Conn) error {
+func (m *DisplayImage) VerifyPublication(ctx context.Context, conn *sql.Conn) error {
 	if err := m.witness.Verify(ctx, conn); err != nil {
 		if errors.Is(err, recovery.ErrReadWitnessChanged) {
 			return ErrDisplayImageUnavailable
 		}
 		return err
 	}
-	if !m.source.Current() || !m.owner.OriginalCurrent(m.source.AssetID(), m.original) {
+	if !m.source.Current() || m.source.IsManaged() && !m.owner.OriginalCurrent(m.source.AssetID(), m.original) {
 		return ErrDisplayImageUnavailable
 	}
 	return nil

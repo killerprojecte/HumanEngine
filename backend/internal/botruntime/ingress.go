@@ -39,6 +39,16 @@ func (r *Runtime) Ingest(ctx context.Context, sceneID string, message *Object, s
 // IngestScene is the transport ingress entry point. Scene metadata is registered
 // before routing persistence, without RegisterScene's lifecycle readiness/cancel.
 func (r *Runtime) IngestScene(ctx context.Context, scene Scene, message *Object, schedule bool) (string, error) {
+	return r.ingestScene(ctx, scene, message, schedule, nil)
+}
+
+// IngestNativeMedia accepts the original native ingress generation, never a
+// mutable adapter ID from the payload. Ordinary ingress has no such proof.
+func (r *Runtime) IngestNativeMedia(ctx context.Context, owner *Adapter, scene Scene, message *Object, schedule bool) (string, error) {
+	return r.ingestScene(ctx, scene, message, schedule, owner)
+}
+
+func (r *Runtime) ingestScene(ctx context.Context, scene Scene, message *Object, schedule bool, owner *Adapter) (string, error) {
 	done, admitted := r.beginOperation()
 	if !admitted {
 		return "", code("runtime_closed")
@@ -110,7 +120,7 @@ func (r *Runtime) IngestScene(ctx context.Context, scene Scene, message *Object,
 		}
 		m = cloneJSON(trusted).(*Object)
 	}
-	return r.accept(s, m, schedule, true)
+	return r.acceptDisplay(s, m, schedule, true, r.bindNativeImage(scene, m, owner))
 }
 func (r *Runtime) ingressBlocked(s *sceneState, m *Object) (bool, error) {
 	if s.closed.Load() {
@@ -136,13 +146,17 @@ func (r *Runtime) ingressBlocked(s *sceneState, m *Object) (bool, error) {
 	return false, nil
 }
 func (r *Runtime) accept(s *sceneState, m *Object, schedule, received bool) (string, error) {
+	return r.acceptDisplay(s, m, schedule, received, nil)
+}
+
+func (r *Runtime) acceptDisplay(s *sceneState, m *Object, schedule, received bool, media *displayMediaScene) (string, error) {
 	s.mu.Lock()
 	if s.closed.Load() {
 		s.mu.Unlock()
 		return "", nil
 	}
 	s.lastTouched = r.services.Clock.Now()
-	r.appendMessageLocked(s, m)
+	r.appendBoundMessageLocked(s, m, media)
 	r.trimLocked(s, true)
 	r.publishLocked(s)
 	scene := s.scene

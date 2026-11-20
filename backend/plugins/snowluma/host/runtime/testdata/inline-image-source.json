@@ -1,0 +1,71 @@
+{
+  "scene": {
+    "adapterId": "snowluma",
+    "accountId": "42",
+    "kind": "group",
+    "platformSceneId": "99",
+    "id": "ob:s:WyJzbm93bHVtYSIsIjQyIiwiZ3JvdXAiLCI5OSJd"
+  },
+  "cases": [
+    {
+      "name": "original",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL0FBSCsvdz09In0",
+      "bytes": "AAH+/w=="
+    },
+    {
+      "name": "pad-bits",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL1lSPT0ifQ",
+      "bytes": "YQ=="
+    },
+    {
+      "name": "data-case",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6IkRBVEE6SU1BR0UvV2ViUDtCQVNFNjQsWVE9PSJ9",
+      "bytes": "YQ=="
+    },
+    {
+      "name": "data-jpeg",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImRhdGE6aW1hZ2UvanBlZztiYXNlNjQsWVE9PSJ9",
+      "bytes": "YQ=="
+    },
+    {
+      "name": "data-png",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxZUT09In0",
+      "bytes": "YQ=="
+    },
+    {
+      "name": "data-gif",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImRhdGE6aW1hZ2UvZ2lmO2Jhc2U2NCxZUT09In0",
+      "bytes": "YQ=="
+    },
+    {
+      "name": "newline",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL1lRPT1cbiJ9",
+      "error": "invalid_image_data"
+    },
+    {
+      "name": "space",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovLyBZUT0ifQ",
+      "error": "invalid_image_data"
+    },
+    {
+      "name": "misplaced-padding",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL1lRPUEifQ",
+      "error": "invalid_image_data"
+    },
+    {
+      "name": "length",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL1lRIn0",
+      "error": "invalid_image_data"
+    },
+    {
+      "name": "empty",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovLyJ9",
+      "error": "invalid_image_data"
+    },
+    {
+      "name": "url-alphabet",
+      "asset": "ob:media:eyJzY2VuZUlkIjoib2I6czpXeUp6Ym05M2JIVnRZU0lzSWpReUlpd2laM0p2ZFhBaUxDSTVPU0pkIiwidHlwZSI6ImltYWdlIiwiZmlsZSI6ImJhc2U2NDovL0FBSC1fdz09In0",
+      "error": "invalid_image_data"
+    }
+  ]
+}

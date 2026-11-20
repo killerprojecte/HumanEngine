@@ -63,7 +63,7 @@ func (e EngineIngress) scene(ctx context.Context, value *jsjson.Object) (scene b
 	})
 	return
 }
-func (e EngineIngress) Ingest(ctx context.Context, message, ref *jsjson.Object) error {
+func (e EngineIngress) ingest(ctx context.Context, owner *botruntime.Adapter, message, ref *jsjson.Object) error {
 	root, release, err := e.Engine.RootContext(ctx)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (e EngineIngress) Ingest(ctx context.Context, message, ref *jsjson.Object) 
 	if err != nil {
 		return err
 	}
-	_, err = e.Engine.Runtime.IngestScene(root, scene, message, true)
+	_, err = e.Engine.Runtime.IngestNativeMedia(root, owner, scene, message, true)
 	return err
 }
 func (e EngineIngress) Recall(ctx context.Context, scene, id string) error {
@@ -138,7 +138,9 @@ func (e EngineIngress) ReceiverFactory(failure func(), now func() time.Time) fun
 		if err != nil {
 			return nil, err
 		}
-		receiver, err := NewReceiver(sender, ReceivePorts{Recalled: e.Recalled, ObserveProfiles: profiles.Observe, Ingest: e.Ingest, Recall: e.Recall, Now: now})
+		receiver, err := NewReceiver(sender, ReceivePorts{Recalled: e.Recalled, ObserveProfiles: profiles.Observe, Ingest: func(ctx context.Context, message, scene *jsjson.Object) error {
+			return e.ingest(ctx, sender.registered.Load(), message, scene)
+		}, Recall: e.Recall, Now: now})
 		if err != nil {
 			return nil, err
 		}

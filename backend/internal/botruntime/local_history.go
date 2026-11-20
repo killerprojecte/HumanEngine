@@ -24,7 +24,7 @@ func (r *Runtime) LocalHistory(sceneID string, managedEnabled bool) ([]*Object, 
 			id := idOf(record.body)
 			if v.recalled[id] {
 				recalled = append(recalled, id)
-			} else if managedEnabled && record.managedMedia != nil && record.managedMedia.matches(v.scene) {
+			} else if proof := record.displayMedia; managedEnabled && proof != nil && proof.native == nil && proof.matches(v.scene) {
 				eligible |= 1 << at
 			}
 		}

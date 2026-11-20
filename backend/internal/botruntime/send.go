@@ -432,7 +432,7 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 						if segment.ReplyToID != nil {
 							_ = m.Set("replyToId", *segment.ReplyToID)
 						}
-						var managed *managedMediaScene
+						var managed *displayMediaScene
 						if c.Mode == "real" {
 							// A scene may have been remapped while this physical send
 							// was pending. The receipt belongs to its dispatch target.

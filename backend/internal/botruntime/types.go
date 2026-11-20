@@ -169,14 +169,23 @@ type HookResult struct {
 	Cancel   bool
 	Segments []dispatch.Segment
 }
+
+// InlineImageAdapter belongs to one native ingress generation. Read decodes
+// the retained locator in memory; Current rejects a stopped generation.
+type InlineImageAdapter struct {
+	Read    func(context.Context, Scene, string) ([]byte, error)
+	Current func() bool
+}
+
 type Adapter struct {
 	// Status reads this registration, never a replacement with the same ID.
-	Status     func(context.Context) (string, error)
-	Transport  *dispatch.Adapter
-	BotUserID  string
-	History    func(context.Context, Scene, int, func(*Object, error))
-	GetMessage func(context.Context, Scene, string, func(*Object, error))
-	Dispose    func()
+	Status      func(context.Context) (string, error)
+	Transport   *dispatch.Adapter
+	BotUserID   string
+	History     func(context.Context, Scene, int, func(*Object, error))
+	GetMessage  func(context.Context, Scene, string, func(*Object, error))
+	InlineImage *InlineImageAdapter
+	Dispose     func()
 }
 type Services struct {
 	Models      Models

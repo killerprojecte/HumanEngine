@@ -10,16 +10,19 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
+// PublicationQuery is valid only within the existing published assertion callback.
+type PublicationQuery func(string, ...any) (Rows, error)
+
 // BindPublishedCurrent borrows an existing HTTP publication for both readers.
 // It does not acquire another SQLite connection or recovery reservation.
-func (s *Store) BindPublishedCurrent(publisher *recovery.ReadPublisher, assertionsStore *assertions.Store, options assertionauthority.Options) (func(context.Context, func(*assertions.Reader, Context) (bool, error), func(*assertions.Reader, *ReadService) ([]byte, error), func([]byte) error) error, error) {
+func (s *Store) BindPublishedCurrent(publisher *recovery.ReadPublisher, assertionsStore *assertions.Store, options assertionauthority.Options) (func(context.Context, func(*assertions.Reader, Context) (bool, error), func(*assertions.Reader, *ReadService, PublicationQuery) ([]byte, error), func([]byte) error) error, error) {
 	if s.bindingError != nil || s.maintenance != nil || s.session != nil || !publisher.OwnedBy(s.main, s.authority) {
 		return nil, errors.New("commitment_publication_binding")
 	}
 	if err := assertionsStore.CheckReadBinding(s.authority, s.main, nil); err != nil {
 		return nil, err
 	}
-	return func(ctx context.Context, enabled func(*assertions.Reader, Context) (bool, error), fn func(*assertions.Reader, *ReadService) ([]byte, error), emit func([]byte) error) error {
+	return func(ctx context.Context, enabled func(*assertions.Reader, Context) (bool, error), fn func(*assertions.Reader, *ReadService, PublicationQuery) ([]byte, error), emit func([]byte) error) error {
 		return publisher.Publish(ctx, func(conn *sql.Conn) (body []byte, err error) {
 			active := true
 			defer func() { active = false }()
@@ -49,7 +52,7 @@ func (s *Store) BindPublishedCurrent(publisher *recovery.ReadPublisher, assertio
 				if err != nil {
 					return err
 				}
-				body, err = fn(scoped, read)
+				body, err = fn(scoped, read, cr.query)
 				return err
 			})
 			return body, err

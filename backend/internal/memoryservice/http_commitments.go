@@ -39,7 +39,7 @@ func (s *Service) BindCommitmentAdminRead(publisher *recovery.ReadPublisher, sch
 		status := http.StatusOK
 		err := publish(ctx, func(*assertions.Reader, commitments.Context) (bool, error) {
 			return enabled, nil
-		}, func(r *assertions.Reader, read *commitments.ReadService) ([]byte, error) {
+		}, func(r *assertions.Reader, read *commitments.ReadService, _ commitments.PublicationQuery) ([]byte, error) {
 			started = true
 			if q == nil {
 				status = http.StatusBadRequest

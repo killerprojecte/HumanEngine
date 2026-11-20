@@ -1,0 +1,1237 @@
+{
+  "node": "v24.22.1",
+  "scenes": [
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "foreign",
+      "kind": "private",
+      "platformSceneId": "foreign"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "scene",
+      "kind": "group",
+      "platformSceneId": "scene"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "simulation",
+      "kind": "simulation",
+      "platformSceneId": "simulation"
+    }
+  ],
+  "context": {
+    "sceneId": "scene",
+    "simulation": false,
+    "provenance": "source-only",
+    "sourceEvidence": [
+      {
+        "sceneId": "scene",
+        "messageId": "message",
+        "senderId": "person",
+        "available": true,
+        "isBot": false,
+        "parts": [
+          {
+            "type": "text",
+            "text": "I may not use this tool if busy"
+          }
+        ]
+      }
+    ]
+  },
+  "candidate": {
+    "kind": "claim",
+    "content": "Qualified summary.",
+    "epistemicKind": "explicit",
+    "subject": {
+      "kind": "self",
+      "sourceMessageId": "message"
+    },
+    "sources": [
+      {
+        "sceneId": "scene",
+        "messageId": "message",
+        "senderId": "person"
+      }
+    ],
+    "knowledge": [
+      {
+        "registryVersion": 1,
+        "predicate": "uses_tool",
+        "subject": {
+          "kind": "self",
+          "personId": "person"
+        },
+        "object": {
+          "kind": "new",
+          "entityKind": "tool",
+          "title": "Synthetic tool"
+        },
+        "polarity": "negative",
+        "modality": "possible",
+        "temporalScope": "past",
+        "conditions": [
+          "if busy"
+        ],
+        "sourceSpans": [
+          {
+            "messageId": "message",
+            "partIndex": 0,
+            "start": 0,
+            "end": 31,
+            "stance": "self"
+          }
+        ]
+      }
+    ]
+  },
+  "backingRef": {
+    "id": "10000000-0000-4000-8000-000000000001",
+    "version": 1,
+    "deletionEpoch": 0
+  },
+  "learnedAt": "2026-11-20T00:00:00.000Z",
+  "ids": [
+    "edge",
+    "entity"
+  ],
+  "rows": [
+    {
+      "name": "unauthorized",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "unauthorized",
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "requestId": false,
+      "cacheControl": "",
+      "noSniff": ""
+    },
+    {
+      "name": "strict-root",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "extra": true
+      },
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "strict-anchor",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          },
+          "extra": true
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "bad-depth",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 3
+      },
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "person-mismatch",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "knowledge_anchor_mismatch"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "scene-first",
+      "request": {
+        "sceneId": "simulation",
+        "personId": "other",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_scene_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "missing-scene",
+      "request": {
+        "sceneId": "missing",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_scene_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "person",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "edges": [
+          {
+            "id": "edge",
+            "version": 1,
+            "predicate": "uses_tool",
+            "subject": {
+              "kind": "person",
+              "personId": "person"
+            },
+            "object": {
+              "kind": "entity",
+              "entity": {
+                "id": "entity",
+                "sceneId": "scene",
+                "kind": "tool",
+                "title": "Synthetic tool",
+                "backing": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "version": 1,
+                  "deletionEpoch": 0
+                }
+              }
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "if busy"
+            ],
+            "createdAt": "2026-11-20T00:00:00.000Z",
+            "backing": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "backingStatus": "active",
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "applicability": "past",
+            "proofs": [
+              {
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ],
+                "parents": [],
+                "parentReferences": []
+              }
+            ],
+            "dependencies": [],
+            "requiresPersonalization": true,
+            "readDependencies": [],
+            "dependencyStatuses": [],
+            "spans": [
+              {
+                "source": {
+                  "sceneId": "scene",
+                  "messageId": "message",
+                  "senderId": "person"
+                },
+                "partIndex": 0,
+                "start": 0,
+                "end": 31,
+                "stance": "self"
+              }
+            ]
+          }
+        ],
+        "supportClosure": {
+          "edges": [],
+          "records": [
+            {
+              "ref": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "record": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "content": "Qualified summary.",
+                "kind": "claim",
+                "epistemicKind": "explicit",
+                "status": "active",
+                "origin": "learned",
+                "learnedAt": "2026-11-20T00:00:00.000Z",
+                "scope": {
+                  "kind": "scene",
+                  "sceneId": "scene",
+                  "personId": "person"
+                },
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "paths": [
+          [
+            "edge"
+          ]
+        ],
+        "coverage": "complete",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "memory",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "memory",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "edges": [
+          {
+            "id": "edge",
+            "version": 1,
+            "predicate": "uses_tool",
+            "subject": {
+              "kind": "person",
+              "personId": "person"
+            },
+            "object": {
+              "kind": "entity",
+              "entity": {
+                "id": "entity",
+                "sceneId": "scene",
+                "kind": "tool",
+                "title": "Synthetic tool",
+                "backing": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "version": 1,
+                  "deletionEpoch": 0
+                }
+              }
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "if busy"
+            ],
+            "createdAt": "2026-11-20T00:00:00.000Z",
+            "backing": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "backingStatus": "active",
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "applicability": "past",
+            "proofs": [
+              {
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ],
+                "parents": [],
+                "parentReferences": []
+              }
+            ],
+            "dependencies": [],
+            "requiresPersonalization": true,
+            "readDependencies": [],
+            "dependencyStatuses": [],
+            "spans": [
+              {
+                "source": {
+                  "sceneId": "scene",
+                  "messageId": "message",
+                  "senderId": "person"
+                },
+                "partIndex": 0,
+                "start": 0,
+                "end": 31,
+                "stance": "self"
+              }
+            ]
+          }
+        ],
+        "supportClosure": {
+          "edges": [],
+          "records": [
+            {
+              "ref": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "record": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "content": "Qualified summary.",
+                "kind": "claim",
+                "epistemicKind": "explicit",
+                "status": "active",
+                "origin": "learned",
+                "learnedAt": "2026-11-20T00:00:00.000Z",
+                "scope": {
+                  "kind": "scene",
+                  "sceneId": "scene",
+                  "personId": "person"
+                },
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "paths": [
+          [
+            "edge"
+          ]
+        ],
+        "coverage": "complete",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "entity-person",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "edges": [
+          {
+            "id": "edge",
+            "version": 1,
+            "predicate": "uses_tool",
+            "subject": {
+              "kind": "person",
+              "personId": "person"
+            },
+            "object": {
+              "kind": "entity",
+              "entity": {
+                "id": "entity",
+                "sceneId": "scene",
+                "kind": "tool",
+                "title": "Synthetic tool",
+                "backing": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "version": 1,
+                  "deletionEpoch": 0
+                }
+              }
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "if busy"
+            ],
+            "createdAt": "2026-11-20T00:00:00.000Z",
+            "backing": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "backingStatus": "active",
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "applicability": "past",
+            "proofs": [
+              {
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ],
+                "parents": [],
+                "parentReferences": []
+              }
+            ],
+            "dependencies": [],
+            "requiresPersonalization": true,
+            "readDependencies": [],
+            "dependencyStatuses": [],
+            "spans": [
+              {
+                "source": {
+                  "sceneId": "scene",
+                  "messageId": "message",
+                  "senderId": "person"
+                },
+                "partIndex": 0,
+                "start": 0,
+                "end": 31,
+                "stance": "self"
+              }
+            ]
+          }
+        ],
+        "supportClosure": {
+          "edges": [],
+          "records": [
+            {
+              "ref": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "record": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "content": "Qualified summary.",
+                "kind": "claim",
+                "epistemicKind": "explicit",
+                "status": "active",
+                "origin": "learned",
+                "learnedAt": "2026-11-20T00:00:00.000Z",
+                "scope": {
+                  "kind": "scene",
+                  "sceneId": "scene",
+                  "personId": "person"
+                },
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "paths": [
+          [
+            "edge"
+          ]
+        ],
+        "coverage": "complete",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "entity-memory",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "seedBackingRef": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      },
+      "action": "",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "edges": [
+          {
+            "id": "edge",
+            "version": 1,
+            "predicate": "uses_tool",
+            "subject": {
+              "kind": "person",
+              "personId": "person"
+            },
+            "object": {
+              "kind": "entity",
+              "entity": {
+                "id": "entity",
+                "sceneId": "scene",
+                "kind": "tool",
+                "title": "Synthetic tool",
+                "backing": {
+                  "id": "10000000-0000-4000-8000-000000000001",
+                  "version": 1,
+                  "deletionEpoch": 0
+                }
+              }
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "if busy"
+            ],
+            "createdAt": "2026-11-20T00:00:00.000Z",
+            "backing": {
+              "id": "10000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "deletionEpoch": 0
+            },
+            "backingStatus": "active",
+            "status": "candidate",
+            "admission": "qualified_candidate",
+            "applicability": "past",
+            "proofs": [
+              {
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ],
+                "parents": [],
+                "parentReferences": []
+              }
+            ],
+            "dependencies": [],
+            "requiresPersonalization": true,
+            "readDependencies": [],
+            "dependencyStatuses": [],
+            "spans": [
+              {
+                "source": {
+                  "sceneId": "scene",
+                  "messageId": "message",
+                  "senderId": "person"
+                },
+                "partIndex": 0,
+                "start": 0,
+                "end": 31,
+                "stance": "self"
+              }
+            ]
+          }
+        ],
+        "supportClosure": {
+          "edges": [],
+          "records": [
+            {
+              "ref": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "version": 1,
+                "deletionEpoch": 0
+              },
+              "record": {
+                "id": "10000000-0000-4000-8000-000000000001",
+                "content": "Qualified summary.",
+                "kind": "claim",
+                "epistemicKind": "explicit",
+                "status": "active",
+                "origin": "learned",
+                "learnedAt": "2026-11-20T00:00:00.000Z",
+                "scope": {
+                  "kind": "scene",
+                  "sceneId": "scene",
+                  "personId": "person"
+                },
+                "sources": [
+                  {
+                    "sceneId": "scene",
+                    "messageId": "message",
+                    "senderId": "person"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "paths": [
+          [
+            "edge"
+          ]
+        ],
+        "coverage": "complete",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "missing-seed",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 400,
+      "body": {
+        "error": "knowledge_seed_required"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "wrong-person",
+      "request": {
+        "sceneId": "scene",
+        "personId": "other",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_anchor_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "wrong-epoch",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 1
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "seedBackingRef": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_anchor_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "wrong-version",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 2,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "seedBackingRef": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_anchor_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "wrong-id",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "other",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "seedBackingRef": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_anchor_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "seed-priority",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "seedBackingRef": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 2,
+          "deletionEpoch": 0
+        }
+      },
+      "action": "",
+      "status": 409,
+      "body": {
+        "error": "knowledge_query_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "foreign",
+      "request": {
+        "sceneId": "foreign",
+        "anchor": {
+          "kind": "memory",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 409,
+      "body": {
+        "error": "knowledge_query_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "limited",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "limit",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "edges": [],
+        "supportClosure": {
+          "edges": [],
+          "records": []
+        },
+        "paths": [],
+        "coverage": "limited",
+        "reason": "scan_limit",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "limited-seed",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "seedBackingRef": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_anchor_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "disabled",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "disable",
+      "status": 200,
+      "body": {
+        "enabled": false,
+        "edges": [],
+        "supportClosure": {
+          "edges": [],
+          "records": []
+        },
+        "paths": [],
+        "coverage": "complete",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "disabled-entity",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "entity",
+          "entityId": "entity",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2,
+        "seedBackingRef": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "deletionEpoch": 0
+        }
+      },
+      "action": "",
+      "status": 404,
+      "body": {
+        "error": "knowledge_anchor_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "after-recall",
+      "request": {
+        "sceneId": "scene",
+        "personId": "person",
+        "anchor": {
+          "kind": "person",
+          "personId": "person"
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "recall",
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "edges": [],
+        "supportClosure": {
+          "edges": [],
+          "records": []
+        },
+        "paths": [],
+        "coverage": "complete",
+        "interpretation": "attributed_claims_not_transitive_truth",
+        "sourceBodyCoverage": "unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "recalled-memory",
+      "request": {
+        "sceneId": "scene",
+        "anchor": {
+          "kind": "memory",
+          "backingRef": {
+            "id": "10000000-0000-4000-8000-000000000001",
+            "version": 1,
+            "deletionEpoch": 0
+          }
+        },
+        "predicates": [
+          "uses_tool"
+        ],
+        "depth": 2
+      },
+      "action": "",
+      "status": 409,
+      "body": {
+        "error": "knowledge_query_unavailable"
+      },
+      "requestId": false,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    }
+  ]
+}

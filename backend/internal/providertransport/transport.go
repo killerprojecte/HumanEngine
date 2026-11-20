@@ -205,6 +205,7 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 		}
 	}()
 	requestLimit := r.ImageRequestLimit
+	finalRead := finalModelReadGuard(ctx)
 	for {
 		gate, e := c.Budgets.Current(ctx)
 		if e != nil {
@@ -263,7 +264,7 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 		if r.Descriptor != nil && attempt == nil && finalGate != nil {
 			return nil, safe("budget_configuration_changed")
 		}
-		if attempt != nil {
+		if attempt != nil && finalRead == nil {
 			if e = attempt.Start(accounting); e != nil {
 				return nil, budgetFailure(e)
 			}
@@ -289,6 +290,30 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 		}
 		if measurement != nil && r.Measurement != nil {
 			func() { defer func() { _ = recover() }(); r.Measurement(*measurement) }()
+		}
+		if finalRead != nil {
+			var native *nativeAttempt
+			if attempt != nil {
+				var ok bool
+				native, ok = attempt.(*nativeAttempt)
+				if !ok {
+					return nil, safe("budget_protocol_unsupported")
+				}
+				if _, ok := native.ledger.(unsentBudgetLedger); !ok {
+					return nil, safe("budget_protocol_unsupported")
+				}
+				if e = native.Start(accounting); e != nil {
+					return nil, budgetFailure(e)
+				}
+			}
+			if deny := checkFinalModelRead(ctx, finalRead); deny != nil {
+				if native != nil {
+					if err := native.releaseProvenUnsent(accounting); err != nil {
+						return nil, budgetFailure(err)
+					}
+				}
+				return nil, deny
+			}
 		}
 		requestStarted := time.Now()
 		response, e := httpClient.Do(req)

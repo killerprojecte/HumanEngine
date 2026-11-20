@@ -266,6 +266,26 @@ func (a *nativeAttempt) Settle(ctx context.Context, usage map[string]any) error 
 	a.settled = true
 	return nil
 }
+
+// Only the native HTTP owner can prove its exact attempt has not entered Do.
+// Keep this operation out of ordinary Ledger and BudgetAttempt capabilities.
+type unsentBudgetLedger interface {
+	releaseUnsent(context.Context, string) error
+}
+
+func (a *nativeAttempt) releaseProvenUnsent(ctx context.Context) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if !a.started || a.settled {
+		return errors.New("budget_invalid_transition")
+	}
+	if err := a.ledger.(unsentBudgetLedger).releaseUnsent(ctx, a.id); err != nil {
+		return err
+	}
+	a.settled = true
+	return nil
+}
+
 func (a *nativeAttempt) Fail(ctx context.Context) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()

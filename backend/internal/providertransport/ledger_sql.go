@@ -542,6 +542,23 @@ func (l *SQLLedger) Release(ctx context.Context, id string) error {
 		return e
 	})
 }
+
+// releaseUnsent clears only an owned start that the native transport proved
+// never escaped to HTTP. Preserve the actual local start and audit timestamps.
+func (l *SQLLedger) releaseUnsent(ctx context.Context, id string) error {
+	return l.transaction(ctx, func(c *sql.Conn) error {
+		result, err := c.ExecContext(ctx, `UPDATE budget_attempts SET state='released',held_nano=0,settled_at=?
+			WHERE id=? AND boot_id=? AND state='started' AND known_nano=0`, l.at(), id, l.BootID)
+		if err != nil {
+			return err
+		}
+		n, err := result.RowsAffected()
+		if err == nil && n != 1 {
+			return errors.New("budget_invalid_transition")
+		}
+		return err
+	})
+}
 func (l *SQLLedger) Unknown(ctx context.Context, id string) error {
 	return l.transaction(ctx, func(c *sql.Conn) error {
 		r, e := ledgerRow(ctx, c, id)

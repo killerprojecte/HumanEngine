@@ -22,9 +22,9 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 		r.publishLocked(s)
 	}
 	var rows []*Object
-	var cached map[string]*Object
+	var history *messageBlock
 	if name == "messages.get" {
-		cached = cachedMessagesByID(s.messages, requested)
+		history = s.history
 	} else {
 		rows = append([]*Object{}, s.messages...)
 	}
@@ -39,14 +39,15 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 		if inputErr != nil {
 			return nil, inputErr
 		}
-		for _, id := range requested {
+		cached := cachedMessages(history, requested)
+		for i, id := range requested {
 			c.AddDependency(id)
 			if recalled, err := r.recalled(s, id); err != nil {
 				return nil, err
 			} else if recalled {
 				continue
 			}
-			if cached := cached[id]; cached != nil {
+			if cached := cached[i]; cached != nil {
 				m := cached.Clone()
 				_ = m.Set("origin", "history")
 				items = append(items, m)
@@ -143,17 +144,53 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 	return result, nil
 }
 
-// cachedMessagesByID snapshots the first cached row for each requested ID.
-func cachedMessagesByID(rows []*Object, ids []string) map[string]*Object {
-	matches := make(map[string]*Object, len(ids))
-	for _, id := range ids {
-		matches[id] = nil
+// findCached returns the first cached row for id in the immutable snapshot.
+func findCached(root *messageBlock, id string) *Object {
+	if root == nil {
+		return nil
 	}
-	remaining := len(matches)
+	if row := findCached(root.previous, id); row != nil {
+		return row
+	}
+	for _, row := range root.rows {
+		if idOf(row) == id {
+			return row
+		}
+	}
+	return nil
+}
+
+func cachedMessages(root *messageBlock, ids []string) []*Object {
+	out := make([]*Object, len(ids))
+	switch len(ids) {
+	case 0:
+		return out
+	case 1:
+		out[0] = findCached(root, ids[0])
+	default:
+		matches := make(map[string]*Object, len(ids))
+		for _, id := range ids {
+			matches[id] = nil
+		}
+		fillCachedMatches(root, matches, len(matches))
+		for i, id := range ids {
+			out[i] = matches[id]
+		}
+	}
+	return out
+}
+
+// Visit oldest blocks first to preserve the original first match for duplicate
+// IDs. Writers publish new blocks so the captured snapshot needs no scene lock.
+func fillCachedMatches(root *messageBlock, matches map[string]*Object, remaining int) int {
+	if root == nil {
+		return remaining
+	}
+	remaining = fillCachedMatches(root.previous, matches, remaining)
 	if remaining == 0 {
-		return matches
+		return 0
 	}
-	for _, row := range rows {
+	for _, row := range root.rows {
 		id := idOf(row)
 		if value, requested := matches[id]; requested && value == nil {
 			matches[id] = row
@@ -163,5 +200,5 @@ func cachedMessagesByID(rows []*Object, ids []string) map[string]*Object {
 			}
 		}
 	}
-	return matches
+	return remaining
 }

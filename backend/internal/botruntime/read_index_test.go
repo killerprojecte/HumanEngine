@@ -5,11 +5,15 @@ import (
 	"testing"
 )
 
-func TestCachedMessagesByID(t *testing.T) {
+func TestCachedMessages(t *testing.T) {
 	first, second, last := obj("id", "1"), obj("id", "2"), obj("id", "1", "text", "last")
-	got := cachedMessagesByID([]*Object{first, second, last}, []string{"2", "missing", "1", "2"})
-	if len(got) != 3 || got["2"] != second || got["missing"] != nil || got["1"] != first {
+	root := &messageBlock{previous: &messageBlock{rows: []*Object{first}}, rows: []*Object{second, last}}
+	got := cachedMessages(root, []string{"2", "missing", "1", "2"})
+	if len(got) != 4 || got[0] != second || got[1] != nil || got[2] != first || got[3] != second {
 		t.Fatalf("unexpected results: %v", got)
+	}
+	if got := cachedMessages(root, []string{"1"}); len(got) != 1 || got[0] != first {
+		t.Fatalf("singleton lookup did not retain first row: %v", got)
 	}
 }
 
@@ -21,6 +25,10 @@ func BenchmarkCachedMessagesByID(b *testing.B) {
 		rows[i] = obj("id", id)
 	}
 	ids := []string{"4095", "4087", "2048", "4040", "missing", "16", "200", "3000", "3200", "3600"}
+	var root *messageBlock
+	for _, row := range rows {
+		root = appendRecord(root, &messageRecord{body: row})
+	}
 	var sink *Object
 	b.Run("copy_scan", func(b *testing.B) {
 		b.ReportAllocs()
@@ -41,7 +49,7 @@ func BenchmarkCachedMessagesByID(b *testing.B) {
 	b.Run("one_pass", func(b *testing.B) {
 		b.ReportAllocs()
 		for b.Loop() {
-			sink = cachedMessagesByID(rows, ids)[ids[0]]
+			sink = cachedMessages(root, ids)[0]
 		}
 	})
 	if sink != rows[history-1] {

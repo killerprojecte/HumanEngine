@@ -4,6 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"slices"
+	"strings"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/externalcost"
 )
 
 type BudgetRecovery struct {
@@ -92,4 +96,37 @@ func (s *BudgetService) ReadBudgetCoverage(ctx context.Context, q *sql.Conn) ([]
 	result["pendingAttempts"] = pending
 	result["coverage"] = status
 	return json.Marshal(result)
+}
+
+// ReadExternalCosts lists only on the existing admitted snapshot. Validate
+// all current receipts before paging so a corrupt off-page row cannot hide.
+func (s *BudgetService) ReadExternalCosts(ctx context.Context, q *sql.Conn, page, size int, compare func(string, string) (int, error)) ([]byte, error) {
+	rows, err := (externalcost.Storage{DB: q}).Current(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var compareErr error
+	slices.SortStableFunc(rows, func(a, b externalcost.Receipt) int {
+		if n := strings.Compare(b.RecordedAt(), a.RecordedAt()); n != 0 {
+			return n
+		}
+		if compareErr != nil {
+			return 0
+		}
+		n, err := compare(a.ID(), b.ID())
+		compareErr = err
+		return n
+	})
+	if compareErr != nil {
+		return nil, compareErr
+	}
+	total := len(rows)
+	start := min((page-1)*size, total)
+	end := min(start+size, total)
+	return json.Marshal(struct {
+		Items    []externalcost.Receipt `json:"items"`
+		Total    int                    `json:"total"`
+		Page     int                    `json:"page"`
+		PageSize int                    `json:"pageSize"`
+	}{rows[start:end], total, page, size})
 }

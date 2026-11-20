@@ -43,6 +43,13 @@ func (r Receipt) Spend() (billingDate string, amountNanoUSD int64, known bool) {
 	amount, _ := input.Get("amountNanoUsd")
 	return date.(string), int64(amount.(float64)), true
 }
+func (r Receipt) RecordedAt() string {
+	value, _ := r.value.Get("recordedAt")
+	return value.(string)
+}
+
+func (r Receipt) MarshalJSON() ([]byte, error) { return jsjson.Marshal(r.value) }
+
 func (r Receipt) Revision() int { v, _ := r.value.Get("revision"); return int(v.(float64)) }
 func (r Receipt) JSON() string {
 	if r.value == nil {

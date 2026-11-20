@@ -13,19 +13,20 @@ import (
 type budgetAdminOwner struct {
 	budget    *providertransport.BudgetService
 	publisher *recovery.ReadPublisher
+	compare   func(string, string) (int, error)
 }
 
-func (s *Server) WithBudgetAdmin(budget *providertransport.BudgetService, publisher *recovery.ReadPublisher) error {
-	if budget == nil || budget.DB != s.main || budget.Ledger == nil || budget.Ledger.DB != s.main || !publisher.OwnedBy(s.main, s.authority) {
+func (s *Server) WithBudgetAdmin(budget *providertransport.BudgetService, publisher *recovery.ReadPublisher, compare func(string, string) (int, error)) error {
+	if compare == nil || budget == nil || budget.DB != s.main || budget.Ledger == nil || budget.Ledger.DB != s.main || !publisher.OwnedBy(s.main, s.authority) {
 		return errors.New("http_budget_admin_owner_invalid")
 	}
-	s.budgetAdmin = &budgetAdminOwner{budget, publisher}
+	s.budgetAdmin = &budgetAdminOwner{budget, publisher, compare}
 	return nil
 }
 
 func budgetAdminRead(method, path string) bool {
 	return (method == http.MethodGet || method == http.MethodHead) &&
-		(path == "/api/budget" || path == "/api/budget/recovery")
+		(path == "/api/budget" || path == "/api/budget/recovery" || path == "/api/budget/external-costs")
 }
 
 func (s *Server) serveBudgetAdmin(w http.ResponseWriter, r *http.Request, available bool, path, requestID string) {
@@ -52,10 +53,19 @@ func (s *Server) serveBudgetAdmin(w http.ResponseWriter, r *http.Request, availa
 	readStarted := false
 	err := owner.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
 		readStarted = true
-		if path == "/api/budget/recovery" {
+		switch path {
+		case "/api/budget/recovery":
 			return owner.budget.ReadBudgetRecovery(ctx, q)
+		case "/api/budget/external-costs":
+			page, size, valid := externalCostPage(r.URL.RawQuery)
+			if !valid {
+				response.status = http.StatusBadRequest
+				return []byte(`{"error":"Invalid request"}`), nil
+			}
+			return owner.budget.ReadExternalCosts(ctx, q, page, size, owner.compare)
+		default:
+			return owner.budget.ReadBudgetCoverage(ctx, q)
 		}
-		return owner.budget.ReadBudgetCoverage(ctx, q)
 	}, func(body []byte) error {
 		response.header.Set("Cache-Control", "no-store")
 		response.header.Set("X-Content-Type-Options", "nosniff")
@@ -70,4 +80,30 @@ func (s *Server) serveBudgetAdmin(w http.ResponseWriter, r *http.Request, availa
 		}
 		fail()
 	}
+}
+
+func externalCostPage(raw string) (page, size int, valid bool) {
+	page, size = 1, 20
+	for key, values := range honoQueryValues(raw) {
+		if len(values) != 1 {
+			return 0, 0, false
+		}
+		switch key {
+		case "page":
+			n, ok := coerceQueryInteger(values[0], 10000)
+			if !ok {
+				return 0, 0, false
+			}
+			page = int(n)
+		case "pageSize":
+			n, ok := coerceQueryInteger(values[0], 50)
+			if !ok {
+				return 0, 0, false
+			}
+			size = int(n)
+		default:
+			return 0, 0, false
+		}
+	}
+	return page, size, true
 }

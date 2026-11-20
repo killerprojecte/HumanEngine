@@ -1,0 +1,501 @@
+{
+  "receipts": [
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "aa",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture",
+        "status": "known",
+        "amountNanoUsd": 100
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    },
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "a_a",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture",
+        "status": "known",
+        "amountNanoUsd": 100
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    },
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "a-A",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture",
+        "status": "known",
+        "amountNanoUsd": 100
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    },
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "a-a",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture",
+        "status": "known",
+        "amountNanoUsd": 100
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    },
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "AB",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture",
+        "status": "known",
+        "amountNanoUsd": 100
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    },
+    {
+      "schemaVersion": 1,
+      "revision": 2,
+      "receipt": {
+        "id": "AB",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture",
+        "status": "known",
+        "amountNanoUsd": 321
+      },
+      "correctionId": "correct-AB",
+      "recordedAt": "2031-03-15T12:00:01.000Z"
+    }
+  ],
+  "cases": [
+    {
+      "name": "absent-table",
+      "query": "",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [],
+        "total": 0,
+        "page": 1,
+        "pageSize": 20
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "auth",
+      "query": "?unsupported=1",
+      "method": "GET",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "cache-control": "",
+        "x-content-type-options": "",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "head-empty",
+      "query": "",
+      "method": "HEAD",
+      "authorized": true,
+      "status": 200,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "sort-all",
+      "query": "",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "schemaVersion": 1,
+            "revision": 2,
+            "receipt": {
+              "id": "AB",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 321
+            },
+            "correctionId": "correct-AB",
+            "recordedAt": "2031-03-15T12:00:01.000Z"
+          },
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "a_a",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          },
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "a-a",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          },
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "a-A",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          },
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "aa",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "pageSize": 20
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "page-two",
+      "query": "?page=2&pageSize=2",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "a-a",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          },
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "a-A",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          }
+        ],
+        "total": 5,
+        "page": 2,
+        "pageSize": 2
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "coerce",
+      "query": "?page=0x02&pageSize=%20%2B2e0%20",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "a-a",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          },
+          {
+            "schemaVersion": 1,
+            "revision": 1,
+            "receipt": {
+              "id": "a-A",
+              "category": "tool",
+              "currency": "USD",
+              "billingDate": "2031-03-15",
+              "periodStart": "2031-03-14",
+              "periodEnd": "2031-03-15",
+              "sourceId": "fixture",
+              "status": "known",
+              "amountNanoUsd": 100
+            },
+            "correctionId": null,
+            "recordedAt": "2031-03-15T12:00:00.000Z"
+          }
+        ],
+        "total": 5,
+        "page": 2,
+        "pageSize": 2
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "maximum-empty",
+      "query": "?page=10000&pageSize=50",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [],
+        "total": 5,
+        "page": 10000,
+        "pageSize": 50
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "invalid-page",
+      "query": "?page=10001",
+      "method": "GET",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "invalid-size",
+      "query": "?pageSize=51",
+      "method": "GET",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "duplicate",
+      "query": "?page=1&page=1",
+      "method": "GET",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "unknown",
+      "query": "?unknown=1",
+      "method": "GET",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "empty-value",
+      "query": "?page=",
+      "method": "GET",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "invalid-js-number",
+      "query": "?page=0x_1",
+      "method": "GET",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "invalid-head",
+      "query": "?extra=1",
+      "method": "HEAD",
+      "authorized": true,
+      "status": 400,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "eager-corruption",
+      "query": "?pageSize=1",
+      "method": "GET",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    }
+  ]
+}

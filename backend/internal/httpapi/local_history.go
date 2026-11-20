@@ -1,8 +1,6 @@
 package httpapi
 
 import (
-	"strings"
-
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
@@ -35,7 +33,7 @@ func localHistoryBody(runtime *botruntime.Runtime, sceneID, kind string) ([]byte
 				continue
 			}
 			typeValue, _ := part.Get("type")
-			if typeValue == "unsupported" && platformImageMetadata(part) {
+			if typeValue == "unsupported" && platformMetadataKind(part) != "" {
 				continue
 			}
 			out := new(jsjson.Object)
@@ -55,20 +53,4 @@ func localHistoryBody(runtime *botruntime.Runtime, sceneID, kind string) ([]byte
 	_ = result.Set("coverage", "partial")
 	_ = result.Set("reason", "local_history_window")
 	return jsjson.Marshal(result)
-}
-
-func platformImageMetadata(part *jsjson.Object) bool {
-	value, _ := part.Get("description")
-	text, _ := value.(string)
-	raw, ok := strings.CutPrefix(text, "Untrusted platform image metadata: ")
-	if !ok {
-		return false
-	}
-	value, err := jsjson.Parse(raw)
-	metadata, ok := value.(*jsjson.Object)
-	if err != nil || !ok {
-		return false
-	}
-	kind, _ := metadata.Get("kind")
-	return kind == "image" || kind == "mface" || kind == "sticker" || kind == "emoji"
 }

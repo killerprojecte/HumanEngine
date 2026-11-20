@@ -25,7 +25,7 @@ func sceneReadRoute(r *http.Request, path string) (string, string) {
 		return "", ""
 	}
 	switch operation {
-	case "state":
+	case "state", "messages":
 	case "history":
 		sources, explicit := honoQueryValues(r.URL.RawQuery)["source"]
 		if !explicit || sources[0] == "remote" {
@@ -84,6 +84,8 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 	}
 	body := []byte(`{"error":"Scene unavailable"}`)
 	switch operation {
+	case "messages":
+		body, err = sceneMessagesBody(owner.runtime, sceneID)
 	case "history":
 		body, err = localHistoryBody(owner.runtime, sceneID, kind)
 	case "history-remote":

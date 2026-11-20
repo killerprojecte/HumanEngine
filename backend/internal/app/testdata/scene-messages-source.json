@@ -1,0 +1,190 @@
+{
+  "scene": {
+    "id": "fixture",
+    "name": "Fixture",
+    "kind": "group",
+    "adapterId": "fixture",
+    "accountId": "bot",
+    "platformSceneId": "group",
+    "participationEnabled": false,
+    "learningEnabled": false,
+    "proactiveEnabled": false
+  },
+  "messages": [
+    {
+      "sceneId": "fixture",
+      "senderId": "person",
+      "origin": "live",
+      "status": "available",
+      "receivedAt": "2099-01-01T00:00:00.000Z",
+      "sentAt": "2099-01-01T00:00:00.000Z",
+      "id": "text",
+      "parts": [
+        {
+          "type": "text",
+          "text": "Synthetic message"
+        },
+        {
+          "type": "mention",
+          "userId": "other"
+        }
+      ]
+    },
+    {
+      "sceneId": "fixture",
+      "senderId": "person",
+      "origin": "live",
+      "status": "available",
+      "receivedAt": "2099-01-01T00:00:00.000Z",
+      "sentAt": "2099-01-01T00:00:00.000Z",
+      "id": "media",
+      "replyToId": "text",
+      "parts": [
+        {
+          "type": "media",
+          "mediaType": "image",
+          "assetId": "private-reference"
+        },
+        {
+          "type": "unsupported",
+          "description": "Untrusted platform image metadata: {\"kind\":\"mface\"}"
+        },
+        {
+          "type": "unsupported",
+          "description": "Untrusted platform image metadata: {\"kind\":\"unknown\"}"
+        },
+        {
+          "type": "media",
+          "mediaType": "audio",
+          "assetId": "private-audio-reference"
+        }
+      ]
+    },
+    {
+      "sceneId": "fixture",
+      "senderId": "person",
+      "origin": "live",
+      "status": "available",
+      "receivedAt": "2099-01-01T00:00:00.000Z",
+      "sentAt": "2099-01-01T00:00:00.000Z",
+      "id": "recall",
+      "parts": [
+        {
+          "type": "text",
+          "text": "Recalled source"
+        }
+      ]
+    },
+    {
+      "sceneId": "fixture",
+      "senderId": "person",
+      "origin": "live",
+      "status": "available",
+      "receivedAt": "2000-01-01T00:00:00.000Z",
+      "sentAt": "2099-01-01T00:00:00.000Z",
+      "id": "expired",
+      "parts": [
+        {
+          "type": "text",
+          "text": "Expired source"
+        }
+      ]
+    }
+  ],
+  "recall": "recall",
+  "cases": [
+    {
+      "method": "GET",
+      "path": "/api/scenes/fixture/messages",
+      "authorized": true,
+      "status": 200,
+      "body": [
+        {
+          "sceneId": "fixture",
+          "senderId": "person",
+          "origin": "live",
+          "status": "available",
+          "receivedAt": "2099-01-01T00:00:00.000Z",
+          "sentAt": "2099-01-01T00:00:00.000Z",
+          "id": "text",
+          "parts": [
+            {
+              "type": "text",
+              "text": "Synthetic message"
+            },
+            {
+              "type": "mention",
+              "userId": "other"
+            }
+          ]
+        },
+        {
+          "sceneId": "fixture",
+          "senderId": "person",
+          "origin": "live",
+          "status": "available",
+          "receivedAt": "2099-01-01T00:00:00.000Z",
+          "sentAt": "2099-01-01T00:00:00.000Z",
+          "id": "media",
+          "replyToId": "text",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image",
+              "mediaUrl": "/api/scenes/fixture/messages/media/media/0",
+              "mediaKind": "sticker"
+            },
+            {
+              "type": "unsupported",
+              "description": "Untrusted platform image metadata: {\"kind\":\"unknown\"}"
+            },
+            {
+              "type": "media",
+              "mediaType": "audio"
+            }
+          ]
+        },
+        {
+          "sceneId": "fixture",
+          "senderId": "person",
+          "origin": "live",
+          "status": "recalled",
+          "receivedAt": "2099-01-01T00:00:00.000Z",
+          "sentAt": "2099-01-01T00:00:00.000Z",
+          "id": "recall",
+          "parts": []
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/scenes/missing/messages",
+      "authorized": true,
+      "status": 200,
+      "body": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/scenes/fixture/messages",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/scenes/fixture/messages",
+      "authorized": true,
+      "status": 200,
+      "body": ""
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/scenes/fixture/messages",
+      "authorized": false,
+      "status": 401,
+      "body": ""
+    }
+  ]
+}

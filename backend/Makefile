@@ -57,6 +57,7 @@ differential: build plugin-source-check contextual-source-check runtime-producer
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-modelcalls-http.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-router-lifetime.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-scenes-http.mjs --check
+	cd .. && TZ=UTC node --import tsx backend/tests/generate-scene-messages.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-experience-planner.mjs --check
 	cd .. && TZ=UTC node backend/tests/check-meme-oracles.mjs
 	cd .. && TZ=UTC node backend/tests/check-experience-oracles.mjs

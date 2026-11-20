@@ -69,11 +69,7 @@ func (r *Runtime) Snapshot(id string) (Snapshot, error) {
 		return Snapshot{}, code("scene_missing")
 	}
 	v := r.trimPublished(s)
-	recalled := make([]string, 0, len(v.recalled))
-	for id := range v.recalled {
-		recalled = append(recalled, id)
-	}
-	rows, err := r.services.Authority.ProjectDisplay(v.scene, bodyRows(v.history), recalled)
+	rows, err := r.projectViewMessages(v)
 	if err != nil {
 		return Snapshot{}, err
 	}

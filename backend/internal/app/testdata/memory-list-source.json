@@ -1,0 +1,211 @@
+{
+  "records": [
+    {
+      "key": "legacy",
+      "value": {
+        "id": "legacy",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "scene",
+          "personId": "person"
+        },
+        "status": "active",
+        "kind": "fact",
+        "content": "Legacy",
+        "learnedAt": "2026-01-01T00:00:00.000Z"
+      }
+    },
+    {
+      "key": "invalidated",
+      "value": {
+        "id": "raw-id",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "scene",
+          "personId": "person"
+        },
+        "status": "invalidated",
+        "kind": "fact",
+        "content": "Revoked",
+        "learnedAt": "2025-01-01T00:00:00.000Z",
+        "revision": {
+          "version": 1
+        }
+      }
+    },
+    {
+      "key": "internal",
+      "value": {
+        "id": "internal",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "scene",
+          "personId": "person"
+        },
+        "status": "active",
+        "kind": "summary",
+        "internalUse": "synthetic-private",
+        "content": "must not appear"
+      }
+    },
+    {
+      "key": "public",
+      "value": {
+        "id": "public",
+        "scope": {
+          "kind": "sharedPublicKnowledge"
+        },
+        "status": "superseded",
+        "kind": "term",
+        "content": "Public",
+        "learnedAt": "2026-01-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "states": [
+    {
+      "id": "raw-id",
+      "version": 7,
+      "deletionEpoch": 2,
+      "deleted": 1
+    }
+  ],
+  "cases": [
+    {
+      "name": "empty",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": [],
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "all-statuses-storage-order",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": [
+        {
+          "id": "public",
+          "scope": {
+            "kind": "sharedPublicKnowledge"
+          },
+          "status": "superseded",
+          "kind": "term",
+          "content": "Public",
+          "learnedAt": "2026-01-01T00:00:00.000Z",
+          "revision": {
+            "version": 0,
+            "deletionEpoch": 0
+          }
+        },
+        {
+          "id": "raw-id",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "scene",
+            "personId": "person"
+          },
+          "status": "invalidated",
+          "kind": "fact",
+          "content": "Revoked",
+          "learnedAt": "2025-01-01T00:00:00.000Z",
+          "revision": {
+            "version": 7,
+            "deletionEpoch": 2
+          }
+        },
+        {
+          "id": "legacy",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "scene",
+            "personId": "person"
+          },
+          "status": "active",
+          "kind": "fact",
+          "content": "Legacy",
+          "learnedAt": "2026-01-01T00:00:00.000Z",
+          "revision": {
+            "version": 0,
+            "deletionEpoch": 0
+          }
+        }
+      ],
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "head",
+      "method": "HEAD",
+      "authorized": true,
+      "status": 200,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "unauthorized",
+      "method": "GET",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "cache-control": "",
+        "content-type": "application/json",
+        "x-content-type-options": ""
+      }
+    },
+    {
+      "name": "unauthorized-head",
+      "method": "HEAD",
+      "authorized": false,
+      "status": 401,
+      "body": null,
+      "headers": {
+        "cache-control": "",
+        "content-type": "application/json",
+        "x-content-type-options": ""
+      }
+    },
+    {
+      "name": "malformed-row",
+      "method": "GET",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "malformed-head",
+      "method": "HEAD",
+      "authorized": true,
+      "status": 503,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    }
+  ]
+}

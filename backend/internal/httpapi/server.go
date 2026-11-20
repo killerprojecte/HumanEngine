@@ -32,6 +32,7 @@ type Server struct {
 	logStatus           *logStatusOwner
 	learningAdmin       *learningAdminOwner
 	memoryDelete        *memoryservice.Service
+	memoryAdminRead     *memoryservice.AdminRead
 	retainedPublisher   *recovery.ReadPublisher
 	runtimeStatus       *runtimeStatusOwner
 	usage               *usageview.Store
@@ -247,6 +248,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if s.experience != nil && experiencePath(path) {
 		s.serveExperience(w, r, available, id)
+		return
+	}
+	if s.memoryAdminRead != nil && path == memoryDeletePrefix && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
+		s.serveMemoryAdminRead(w, r, available, id)
 		return
 	}
 	if s.memoryDelete != nil && memoryDeletePath(path) && !memoryDeleteUnmigrated(r) {

@@ -273,6 +273,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	}
 	for _, bind := range []func() error{
 		func() error { return app.HTTP.WithMemoryDelete(app.Semantic.Memory) },
+		func() error { return app.HTTP.WithMemoryAdminRead(app.readPublisher) },
 		func() error { return app.HTTP.WithMemes(app.Engine) },
 		func() error { return app.HTTP.WithLearningAdmin(app.Learning.Coordinator, app.readPublisher) },
 		func() error { return app.HTTP.WithRetainedLogs(app.readPublisher) },

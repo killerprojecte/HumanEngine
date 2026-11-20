@@ -166,7 +166,24 @@ func (s *Store) Read(ctx context.Context, fn func(*Reader) error) error {
 	if s.session != nil || s.maintenance != nil {
 		return fn(s.reader())
 	}
-	return s.authority.Publish(ctx, s.main, func(conn *sql.Conn) ([]byte, error) {
+	return s.authority.Publish(ctx, s.main, s.publicationRead(ctx, func(r *Reader) ([]byte, error) {
+		return nil, fn(r)
+	}), func([]byte) error { return nil })
+}
+
+// BindPublishedRead binds the native assertion reader to this installation's
+// read publisher. The owner checks lifetime and recovery readiness on each read.
+func (s *Store) BindPublishedRead(publisher *recovery.ReadPublisher) (func(context.Context, func(*Reader) ([]byte, error), func([]byte) error) error, error) {
+	if !s.OwnedBy(s.main, s.authority) || !publisher.OwnedBy(s.main, s.authority) {
+		return nil, errors.New("assertion_published_read_binding")
+	}
+	return func(ctx context.Context, fn func(*Reader) ([]byte, error), emit func([]byte) error) error {
+		return publisher.Publish(ctx, s.publicationRead(ctx, fn), emit)
+	}, nil
+}
+
+func (s *Store) publicationRead(ctx context.Context, fn func(*Reader) ([]byte, error)) func(*sql.Conn) ([]byte, error) {
+	return func(conn *sql.Conn) ([]byte, error) {
 		var active atomic.Bool
 		active.Store(true)
 		defer active.Store(false)
@@ -200,8 +217,8 @@ func (s *Store) Read(ctx context.Context, fn func(*Reader) error) error {
 			}
 			return conn.QueryContext(ctx, q, bind(args)...)
 		}}
-		return nil, fn(r)
-	}, func([]byte) error { return nil })
+		return fn(r)
+	}
 }
 func (s *Store) exec(q string, args ...any) error {
 	if e := s.requireTransaction(); e != nil {

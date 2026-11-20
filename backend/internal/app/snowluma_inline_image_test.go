@@ -159,8 +159,8 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 			}
 		}
 	}
-	links := map[string]map[int]int{id("1"): {0: 200}, id("2"): {0: 200, 2: 200}, id("3"): {0: 503}, id("5"): {0: 415}}
-	assertLinks(links, id("4"))
+	links := map[string]map[int]int{id("1"): {0: 200}, id("2"): {0: 200, 2: 200}, id("3"): {0: 503}, id("4"): {0: 503}, id("5"): {0: 415}}
+	assertLinks(links)
 
 	check(scene, id("3"), 503, true)
 	blocked := check(scene, id("4"), 503, true)

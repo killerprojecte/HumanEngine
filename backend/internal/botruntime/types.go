@@ -171,13 +171,22 @@ type HookResult struct {
 }
 
 // InlineImageAdapter belongs to one native ingress generation. Read decodes
-// the retained locator in memory; Links only recognizes linkable source syntax.
+// the retained locator in memory; Classify only recognizes retained source syntax.
 // Current rejects a stopped generation.
 type InlineImageAdapter struct {
-	Read    func(context.Context, Scene, string) ([]byte, error)
-	Links   func(Scene, string) bool
-	Current func() bool
+	Read     func(context.Context, Scene, string) ([]byte, error)
+	Classify func(Scene, string) NativeImageLink
+	Current  func() bool
 }
+
+// NativeImageLink distinguishes the browser-only direct path from inline bytes
+// also available to the model image path.
+type NativeImageLink uint8
+
+const (
+	NativeImageInline NativeImageLink = iota + 1
+	NativeImageBrowserDirect
+)
 
 // GuardedImageRead is prepared by an adapter from an exact native locator.
 type GuardedImageRead func(context.Context, func(context.Context) error) ([]byte, error)

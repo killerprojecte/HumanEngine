@@ -75,7 +75,16 @@ func TestOpaqueVisionNativeApplication(t *testing.T) {
 	adapter := &botruntime.Adapter{
 		InlineImage: &botruntime.InlineImageAdapter{
 			Current: func() bool { return true },
-			Links:   func(_ botruntime.Scene, locator string) bool { return strings.HasPrefix(file(locator), "base64://") },
+			Classify: func(_ botruntime.Scene, locator string) botruntime.NativeImageLink {
+				switch value := file(locator); {
+				case strings.HasPrefix(value, "base64://"):
+					return botruntime.NativeImageInline
+				case strings.HasPrefix(value, "https:"):
+					return botruntime.NativeImageBrowserDirect
+				default:
+					return 0
+				}
+			},
 			Read: func(context.Context, botruntime.Scene, string) ([]byte, error) {
 				inlineReads.Add(1)
 				return bytes.Clone(original), nil

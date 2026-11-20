@@ -127,8 +127,8 @@ func (s *Sender) prepareImageToken(scene botruntime.Scene, reference string) bot
 }
 
 func opaqueImageToken(media *jsjson.Object, file string) string {
-	// Public locators must observe source direct-first ordering. Until the
-	// bounded public owner is composed, do not "refresh" them instead.
+	// Direct locators are never opaque tokens. The browser owns direct HTTP(S);
+	// model images still accept only inline bytes and supported opaque tokens.
 	if directImageLocator(file) {
 		return ""
 	}

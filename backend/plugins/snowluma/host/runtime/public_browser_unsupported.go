@@ -8,6 +8,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 )
 
+const publicBrowserImageSupported = false
+
 func (*Sender) readPublicBrowserImage(context.Context, string, func(context.Context) error) ([]byte, error) {
 	return nil, botruntime.ErrDisplayImageUnavailable
 }

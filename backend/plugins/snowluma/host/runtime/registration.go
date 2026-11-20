@@ -60,9 +60,9 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 	}
 	life := s.life
 	adapter.InlineImage = &botruntime.InlineImageAdapter{
-		Current: func() bool { return life.Err() == nil },
-		Read:    readInlineImage,
-		Links:   linkInlineImage,
+		Current:  func() bool { return life.Err() == nil },
+		Read:     readInlineImage,
+		Classify: classifyRetainedImage,
 	}
 	adapter.BrowserImage = s.readBrowserImage
 	adapter.PrepareImageToken = s.prepareImageToken

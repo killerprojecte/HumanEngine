@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -95,7 +96,12 @@ func assertRetainedBrowserImageProof(t *testing.T, availableLocator, heldLocator
 		return &botruntime.Adapter{
 			InlineImage: &botruntime.InlineImageAdapter{
 				Current: func() bool { return true },
-				Links:   func(botruntime.Scene, string) bool { return false },
+				Classify: func(_ botruntime.Scene, asset string) botruntime.NativeImageLink {
+					if strings.HasPrefix(availableLocator, "https:") && (asset == availableAsset || asset == heldAsset) {
+						return botruntime.NativeImageBrowserDirect
+					}
+					return 0
+				},
 				Read: func(context.Context, botruntime.Scene, string) ([]byte, error) {
 					return nil, errors.New("selected fixture source is not inline")
 				},
@@ -147,6 +153,37 @@ func assertRetainedBrowserImageProof(t *testing.T, availableLocator, heldLocator
 			t.Fatalf("browser image row %d: code=%d wanted=%d bytes=%d MIME=%q", n, res.Code, status, res.Body.Len(), res.Header().Get("Content-Type"))
 		}
 	}
+	assertNoReadLinks := func(want bool) {
+		t.Helper()
+		before := actions.Load()
+		preview := appRequest(t, app, "GET", scope+"/messages", nil).([]any)
+		for _, row := range preview {
+			id := field(row, "id")
+			parts := field(row, "parts").([]any)
+			if field(parts[0], "assetId") != nil {
+				t.Fatal("preview exposed private locator")
+			}
+			linked := field(parts[0], "mediaUrl") != nil
+			if linked != (want && (id == snow.MessageID(scene.ID, "1") || id == snow.MessageID(scene.ID, "2"))) {
+				t.Fatalf("unexpected preview link for %v", id)
+			}
+		}
+		for _, surface := range []string{"/history?source=local", "/history"} {
+			history := appRequest(t, app, "GET", scope+surface, nil)
+			for _, row := range field(history, "items").([]any) {
+				id := field(row, "id")
+				parts := field(row, "parts").([]any)
+				linked := field(parts[0], "mediaUrl") != nil
+				if linked != (want && (id == snow.MessageID(scene.ID, "1") || id == snow.MessageID(scene.ID, "2"))) {
+					t.Fatalf("unexpected history link for %v", id)
+				}
+			}
+		}
+		if actions.Load() != before {
+			t.Fatal("browser listing read image bytes")
+		}
+	}
+	assertNoReadLinks(strings.HasPrefix(availableLocator, "https:"))
 	check(1, 401, false)
 	check(3, 404, true)
 	check(1, 200, true)

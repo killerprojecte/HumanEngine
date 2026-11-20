@@ -27,7 +27,7 @@ func TestInlineImageActualSource(t *testing.T) {
 	}
 	for _, c := range fixture.Cases {
 		t.Run(c.Name, func(t *testing.T) {
-			if linked := linkInlineImage(fixture.Scene, c.Asset); linked != (c.Name != "empty") {
+			if linked := (classifyRetainedImage(fixture.Scene, c.Asset) == botruntime.NativeImageInline); linked != (c.Name != "empty") {
 				t.Fatalf("inline link classification = %t", linked)
 			}
 			image, err := readInlineImage(context.Background(), fixture.Scene, c.Asset)
@@ -63,12 +63,12 @@ func TestInlineImageLinkReadsOnlyCanonicalPrefix(t *testing.T) {
 		asset(scene.ID, "audio", "base64://YQ=="),
 		asset("ob:s:other", "image", "base64://YQ=="),
 	} {
-		if linkInlineImage(scene, candidate) {
+		if classifyRetainedImage(scene, candidate) != 0 {
 			t.Fatal("noncanonical inline image got a link")
 		}
 	}
 	large := asset(scene.ID, "image", "base64://"+strings.Repeat("YQ==", 4096))
-	if !linkInlineImage(scene, large[:len(large)-1]+"!") {
+	if classifyRetainedImage(scene, large[:len(large)-1]+"!") != botruntime.NativeImageInline {
 		t.Fatal("classification scanned the tail; only the authorized fetch owns full validation")
 	}
 }

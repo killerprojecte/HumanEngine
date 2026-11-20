@@ -147,9 +147,10 @@ func (f *snowTokenFixture) assertImages(t *testing.T, ctx context.Context, app *
 	default:
 	}
 	for _, row := range appRequest(t, app, "GET", path+"/messages", nil).([]any) {
+		linked := field(row, "id") == id(6)
 		for _, part := range field(row, "parts").([]any) {
-			if field(part, "assetId") != nil || field(part, "mediaUrl") != nil {
-				t.Fatal("private token or unresolved public source appeared in preview")
+			if field(part, "assetId") != nil || (field(part, "mediaUrl") != nil) != linked {
+				t.Fatal("preview did not expose only the retained direct browser link")
 			}
 		}
 	}

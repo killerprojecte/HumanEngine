@@ -25,16 +25,26 @@ type inlineImageParts [4]uint64
 type nativeImageBinding struct {
 	generation *InlineImageAdapter
 	parts      inlineImageParts
+	direct     *inlineImageParts
 }
 
 // DisplayImageLinks is the private link proof for one selected browser row.
 type DisplayImageLinks struct {
 	Managed bool
 	inline  *inlineImageParts
+	direct  *inlineImageParts
 }
 
 func (l DisplayImageLinks) InlineAt(index int) bool {
-	return l.inline != nil && uint(index) <= 255 && l.inline[index/64]&(1<<(index%64)) != 0
+	return l.inline.at(index)
+}
+
+func (l DisplayImageLinks) BrowserAt(index int) bool {
+	return l.inline.at(index) || l.direct.at(index)
+}
+
+func (parts *inlineImageParts) at(index int) bool {
+	return parts != nil && uint(index) <= 255 && parts[index/64]&(1<<(index%64)) != 0
 }
 
 type browserImageLinker struct {
@@ -51,7 +61,7 @@ func (l *browserImageLinker) links(proof *displayMediaScene) DisplayImageLinks {
 	if proof.native == nil {
 		return DisplayImageLinks{Managed: true}
 	}
-	if proof.native.parts == (inlineImageParts{}) {
+	if proof.native.parts == (inlineImageParts{}) && proof.native.direct == nil {
 		return DisplayImageLinks{}
 	}
 	if !l.checked {
@@ -64,7 +74,7 @@ func (l *browserImageLinker) links(proof *displayMediaScene) DisplayImageLinks {
 		}
 	}
 	if l.current == proof.native.generation {
-		return DisplayImageLinks{inline: &proof.native.parts}
+		return DisplayImageLinks{inline: &proof.native.parts, direct: proof.native.direct}
 	}
 	return DisplayImageLinks{}
 }
@@ -120,8 +130,17 @@ func (r *Runtime) bindNativeImage(scene Scene, message *Object, owner *Adapter) 
 		if native == nil {
 			native = &nativeImageBinding{generation: owner.InlineImage}
 		}
-		if i <= 255 && owner.InlineImage.Links(scene, asset) {
+		if i > 255 {
+			continue
+		}
+		switch owner.InlineImage.Classify(scene, asset) {
+		case NativeImageInline:
 			native.parts[i/64] |= 1 << (i % 64)
+		case NativeImageBrowserDirect:
+			if native.direct == nil {
+				native.direct = new(inlineImageParts)
+			}
+			native.direct[i/64] |= 1 << (i % 64)
 		}
 	}
 	if native == nil {

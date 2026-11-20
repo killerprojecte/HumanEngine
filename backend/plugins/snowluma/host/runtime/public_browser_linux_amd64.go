@@ -9,6 +9,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
 )
 
+const publicBrowserImageSupported = true
+
 func (s *Sender) readPublicBrowserImage(ctx context.Context, locator string, before func(context.Context) error) ([]byte, error) {
 	done, ok := s.work.Start()
 	if !ok {

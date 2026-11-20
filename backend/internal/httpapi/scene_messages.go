@@ -52,7 +52,7 @@ func presentSceneMessage(row *jsjson.Object, links botruntime.DisplayImageLinks)
 			mediaType, _ := part.Get("mediaType")
 			mime, _ := mediaType.(string)
 			if available && (mime == "image" || len(mime) >= len("image/") && strings.EqualFold(mime[:len("image/")], "image/")) {
-				linked := links.InlineAt(i)
+				linked := links.BrowserAt(i)
 				if !linked && links.Managed && i <= 255 {
 					value, _ := part.Get("assetId")
 					asset, _ := value.(string)

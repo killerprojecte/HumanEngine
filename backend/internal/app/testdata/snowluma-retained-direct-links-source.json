@@ -1,0 +1,203 @@
+{
+  "node": "v24.22.1",
+  "scene": {
+    "id": "fixture/group",
+    "name": "Fixture",
+    "kind": "group",
+    "adapterId": "snowluma",
+    "accountId": "42",
+    "platformSceneId": "104",
+    "participationEnabled": false,
+    "learningEnabled": false,
+    "proactiveEnabled": false
+  },
+  "locators": [
+    [
+      {
+        "type": "text",
+        "data": {
+          "text": "prefix"
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "url": "https://public.fixture.invalid/direct?a=signed-synthetic"
+        }
+      }
+    ],
+    [
+      {
+        "type": "mface",
+        "data": {
+          "url": "https://public.fixture.invalid/sticker",
+          "file_id": "sticker-token"
+        }
+      }
+    ],
+    [
+      {
+        "type": "image",
+        "data": {
+          "url": "http://127.0.0.1/blocked"
+        }
+      }
+    ],
+    [
+      {
+        "type": "image",
+        "data": {
+          "file": "base64://YQ=="
+        }
+      }
+    ],
+    [
+      {
+        "type": "image",
+        "data": {
+          "file": "opaque-fixture-token"
+        }
+      }
+    ]
+  ],
+  "rows": [
+    {
+      "surface": "messages",
+      "items": [
+        {
+          "id": "fixture/message:1",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "text",
+              "text": "prefix"
+            },
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A1/media/1",
+              "mediaKind": "image"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:2",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A2/media/0",
+              "mediaKind": "sticker"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:3",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A3/media/0",
+              "mediaKind": "image"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:4",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A4/media/0",
+              "mediaKind": "image"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:5",
+          "origin": "live",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A5/media/0",
+              "mediaKind": "image"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "surface": "history?source=local",
+      "items": [
+        {
+          "id": "fixture/message:1",
+          "origin": "history",
+          "parts": [
+            {
+              "type": "text",
+              "text": "prefix"
+            },
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A1/media/1",
+              "mediaKind": "image"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:2",
+          "origin": "history",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A2/media/0",
+              "mediaKind": "sticker"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:3",
+          "origin": "history",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A3/media/0",
+              "mediaKind": "image"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:4",
+          "origin": "history",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A4/media/0",
+              "mediaKind": "image"
+            }
+          ]
+        },
+        {
+          "id": "fixture/message:5",
+          "origin": "history",
+          "parts": [
+            {
+              "type": "media",
+              "mediaType": "image/unknown",
+              "mediaUrl": "/api/scenes/fixture%2Fgroup/messages/fixture%2Fmessage%3A5/media/0",
+              "mediaKind": "image"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

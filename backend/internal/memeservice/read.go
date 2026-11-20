@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsstring"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"golang.org/x/text/unicode/norm"
 	"math"
 	"sort"
@@ -239,30 +240,57 @@ type Original struct {
 	Path, ContentType string
 	Bytes             float64
 	Hash              string
+	epoch             uint64
+}
+
+var ErrOriginalUnavailable = errors.New("meme_not_available")
+
+func (s *Service) scopedOriginal(p *scope, c Context, id string, available bool) (Original, error) {
+	a, err := p.asset(id)
+	if err != nil {
+		return Original{}, err
+	}
+	ok, err := p.visible(c, a, available)
+	if err != nil {
+		return Original{}, err
+	}
+	if !ok {
+		return Original{}, ErrOriginalUnavailable
+	}
+	epoch, deleting := s.epoch(id)
+	if deleting {
+		return Original{}, ErrOriginalUnavailable
+	}
+	format := str(get(a, "format"))
+	path, err := s.file(id, format)
+	return Original{path, "image/" + format, num(get(a, "bytes")), content(a), epoch}, err
 }
 
 func (s *Service) original(ctx context.Context, c Context, id string, available bool) (out Original, e error) {
 	e = s.transaction(ctx, func(p *scope) error {
-		a, e := p.asset(id)
-		if e != nil {
-			return e
-		}
-		ok, e := p.visible(c, a, available)
-		if e != nil {
-			return e
-		}
-		_, deleting := s.epoch(id)
-		if !ok || deleting {
-			return errors.New("meme_not_available")
-		}
-		out.Path, e = s.file(id, str(get(a, "format")))
-		out.ContentType = "image/" + str(get(a, "format"))
-		out.Bytes = num(get(a, "bytes"))
-		out.Hash = content(a)
+		out, e = s.scopedOriginal(p, c, id, available)
 		return e
 	})
 	return
 }
+
+// OriginalWithSession qualifies a managed image with the source-owner reads
+// in one witness. The caller must read and decode the file after this session.
+func (s *Service) OriginalWithSession(ctx context.Context, ws *recovery.WriteSession, c Context, id string) (out Original, e error) {
+	e = s.withSession(ctx, ws, func(p *scope) error {
+		out, e = s.scopedOriginal(p, c, id, true)
+		return e
+	})
+	return
+}
+
+// OriginalCurrent checks the in-memory deletion barrier; it is not a substitute
+// for verifying the durable qualification witness at publication.
+func (s *Service) OriginalCurrent(id string, original Original) bool {
+	epoch, deleting := s.epoch(id)
+	return !deleting && epoch == original.epoch
+}
+
 func (s *Service) Original(ctx context.Context, c Context, id string) (Original, error) {
 	return s.original(ctx, c, id, true)
 }

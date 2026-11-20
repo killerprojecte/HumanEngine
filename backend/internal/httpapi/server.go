@@ -108,6 +108,11 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	sceneRead := operation != "" && s.runtimeStatus != nil
 	learningAdmin := s.learningAdmin != nil && learningAdminPath(path)
 	simulation := s.runtimeStatus != nil && simulationsPath(path)
+	var mediaRequest sceneMediaRequest
+	var sceneMedia bool
+	if !sceneRead && s.runtimeStatus != nil && s.memes != nil {
+		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
+	}
 	id := r.Header.Get("X-Request-ID")
 	if simulation || learningAdmin || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
@@ -163,7 +168,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if s.memes != nil && memePath(path) {
+		if sceneMedia || s.memes != nil && memePath(path) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -204,6 +209,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	}
 	if simulation {
 		s.serveSimulations(w, r, available, id, path)
+		return
+	}
+	if sceneMedia {
+		s.serveSceneMedia(w, r, available, id, mediaRequest)
 		return
 	}
 	if sceneRead {

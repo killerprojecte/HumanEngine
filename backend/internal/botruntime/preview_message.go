@@ -46,7 +46,14 @@ func (r *Runtime) PreviewMessage(sceneID, messageID string, reads ReadAuthority)
 }
 
 func retainedMessage(history *messageBlock, id string, simulation bool, cutoff float64) *Object {
-	var selected *Object
+	if record := retainedRecord(history, id, simulation, cutoff); record != nil {
+		return record.body
+	}
+	return nil
+}
+
+func retainedRecord(history *messageBlock, id string, simulation bool, cutoff float64) *messageRecord {
+	var selected *messageRecord
 	retained := 0
 	for b := history; b != nil; b = b.previous {
 		for i := len(b.records) - 1; i >= 0; i-- {
@@ -59,7 +66,7 @@ func retainedMessage(history *messageBlock, id string, simulation bool, cutoff f
 			}
 			retained++
 			if idOf(record.body) == id {
-				selected = record.body
+				selected = record
 			}
 		}
 	}

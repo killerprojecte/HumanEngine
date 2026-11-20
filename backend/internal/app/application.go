@@ -151,8 +151,8 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		return app, err
 	}
 
-	// Public safe Meme has no remote-image/vision-history owner; don't import the
-	// private media graph or bind an API absent from the accepted service.
+	// Managed display uses this same scene-bound Meme owner; remote image and
+	// model vision sources are not composed here.
 	app.Engine.Runtime.Observe(app.observeRuntime)
 	app.composeRules(owners)
 	memory, err := app.composeMemory(ctx, owners, config.settings, collator)

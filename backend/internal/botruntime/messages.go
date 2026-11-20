@@ -11,9 +11,10 @@ const messageBlockWidth = 32
 
 type recordRetention struct{ discarded atomic.Bool }
 type messageRecord struct {
-	retention  *recordRetention
-	body       *Object
-	receivedAt float64
+	retention    *recordRetention
+	body         *Object
+	receivedAt   float64
+	managedMedia *managedMediaScene
 }
 type messageBlock struct {
 	previous *messageBlock
@@ -66,7 +67,11 @@ func bodyRecords(root *messageBlock) []*messageRecord {
 	return r
 }
 func (r *Runtime) appendMessageLocked(s *sceneState, m *Object) {
-	record := &messageRecord{body: m, receivedAt: r.date(str(get(m, "receivedAt"))), retention: &recordRetention{}}
+	r.appendBoundMessageLocked(s, m, nil)
+}
+
+func (r *Runtime) appendBoundMessageLocked(s *sceneState, m *Object, managed *managedMediaScene) {
+	record := &messageRecord{body: m, receivedAt: r.date(str(get(m, "receivedAt"))), retention: &recordRetention{}, managedMedia: managed}
 	s.parsedBodies++
 	s.byID[idOf(m)] = record
 	s.byBody[m] = record
@@ -86,7 +91,7 @@ func (r *Runtime) replaceRecordLocked(s *sceneState, old, next *Object) {
 		at = r.date(str(get(next, "receivedAt")))
 		s.parsedBodies++
 	}
-	record := &messageRecord{body: next, receivedAt: at, retention: previous.retention}
+	record := &messageRecord{body: next, receivedAt: at, retention: previous.retention, managedMedia: previous.managedMedia}
 	delete(s.byBody, old)
 	s.byBody[next] = record
 	s.byID[idOf(next)] = record

@@ -3,10 +3,19 @@
 // WTF-8 representation documented by jsjson, preserving lone UTF-16 surrogates.
 package jsstring
 
-import "github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+import (
+	"strings"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+)
 
 type codePointRange struct {
 	first, last rune
+}
+
+// Trim removes only ECMAScript whitespace and line terminators.
+func Trim(value string) string {
+	return strings.TrimFunc(value, func(r rune) bool { return inRanges(r, whitespaceRanges[:]) })
 }
 
 type lowercaseMapping struct {

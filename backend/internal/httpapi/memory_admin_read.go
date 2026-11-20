@@ -20,7 +20,7 @@ func (s *Server) WithMemoryAdminRead(publisher *recovery.ReadPublisher) error {
 	return nil
 }
 
-func (s *Server) serveMemoryAdminRead(w http.ResponseWriter, r *http.Request, available bool, requestID string) {
+func (s *Server) serveMemoryAdminRead(w http.ResponseWriter, r *http.Request, available bool, requestID string, page bool) {
 	ctx := r.Context()
 	head := r.Method == http.MethodHead
 	response := newPublicationResponse(w.Header(), head)
@@ -40,11 +40,24 @@ func (s *Server) serveMemoryAdminRead(w http.ResponseWriter, r *http.Request, av
 		fail()
 		return
 	}
-	readStarted, err := s.memoryAdminRead.PublishList(ctx, func(body []byte) error {
+	enqueue := func(body []byte) error {
 		response.header.Set("Cache-Control", "no-store")
 		response.header.Set("X-Content-Type-Options", "nosniff")
 		return response.enqueue(ctx, body)
-	})
+	}
+	var readStarted bool
+	var err error
+	if page {
+		query := memoryPageQuery(honoQueryValues(r.URL.RawQuery))
+		readStarted, err = s.memoryAdminRead.PublishPage(ctx, query, func(invalid bool, body []byte) error {
+			if invalid {
+				response.status = http.StatusBadRequest
+			}
+			return enqueue(body)
+		})
+	} else {
+		readStarted, err = s.memoryAdminRead.PublishList(ctx, enqueue)
+	}
 	if response.accepted {
 		err = errors.Join(err, response.drain(ctx, w))
 	}

@@ -60,6 +60,65 @@
         "content": "Public",
         "learnedAt": "2026-01-01T00:00:00.000Z"
       }
+    },
+    {
+      "key": "dotless",
+      "value": {
+        "id": "dotless",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "scene",
+          "personId": "dotless"
+        },
+        "status": "disputed",
+        "kind": "claim",
+        "content": "I",
+        "learnedAt": "2026-01-01T00:00:00.000Z",
+        "validFrom": "2090-01-01T00:00:00Z"
+      }
+    },
+    {
+      "key": "dotted",
+      "value": {
+        "id": "dotted",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "scene",
+          "personId": "dotted"
+        },
+        "status": "active",
+        "kind": "experience",
+        "content": "İ",
+        "learnedAt": "2026-01-01T00:00:00.000Z"
+      }
+    },
+    {
+      "key": "numeric-10",
+      "value": {
+        "id": "numeric-10",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "numeric"
+        },
+        "status": "active",
+        "kind": "fact",
+        "content": "Ten",
+        "learnedAt": "10"
+      }
+    },
+    {
+      "key": "numeric-2",
+      "value": {
+        "id": "numeric-2",
+        "scope": {
+          "kind": "scene",
+          "sceneId": "numeric"
+        },
+        "status": "active",
+        "kind": "fact",
+        "content": "Two",
+        "learnedAt": "2"
+      }
     }
   ],
   "states": [
@@ -74,6 +133,7 @@
     {
       "name": "empty",
       "method": "GET",
+      "path": "/api/memories",
       "authorized": true,
       "status": 200,
       "body": [],
@@ -86,9 +146,73 @@
     {
       "name": "all-statuses-storage-order",
       "method": "GET",
+      "path": "/api/memories",
       "authorized": true,
       "status": 200,
       "body": [
+        {
+          "id": "numeric-2",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "numeric"
+          },
+          "status": "active",
+          "kind": "fact",
+          "content": "Two",
+          "learnedAt": "2",
+          "revision": {
+            "version": 0,
+            "deletionEpoch": 0
+          }
+        },
+        {
+          "id": "numeric-10",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "numeric"
+          },
+          "status": "active",
+          "kind": "fact",
+          "content": "Ten",
+          "learnedAt": "10",
+          "revision": {
+            "version": 0,
+            "deletionEpoch": 0
+          }
+        },
+        {
+          "id": "dotted",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "scene",
+            "personId": "dotted"
+          },
+          "status": "active",
+          "kind": "experience",
+          "content": "İ",
+          "learnedAt": "2026-01-01T00:00:00.000Z",
+          "revision": {
+            "version": 0,
+            "deletionEpoch": 0
+          }
+        },
+        {
+          "id": "dotless",
+          "scope": {
+            "kind": "scene",
+            "sceneId": "scene",
+            "personId": "dotless"
+          },
+          "status": "disputed",
+          "kind": "claim",
+          "content": "I",
+          "learnedAt": "2026-01-01T00:00:00.000Z",
+          "validFrom": "2090-01-01T00:00:00Z",
+          "revision": {
+            "version": 0,
+            "deletionEpoch": 0
+          }
+        },
         {
           "id": "public",
           "scope": {
@@ -143,8 +267,806 @@
       }
     },
     {
+      "name": "stable-equal-dates",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:scene&limit=2",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "dotted",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotted"
+            },
+            "status": "active",
+            "kind": "experience",
+            "content": "İ",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "dotless",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotless"
+            },
+            "status": "disputed",
+            "kind": "claim",
+            "content": "I",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "validFrom": "2090-01-01T00:00:00Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 4,
+        "page": 1,
+        "limit": 2,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "page-two",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:scene&limit=2&page=0x2",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "legacy",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Legacy",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "raw-id",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "status": "invalidated",
+            "kind": "fact",
+            "content": "Revoked",
+            "learnedAt": "2025-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 7,
+              "deletionEpoch": 2
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 4,
+        "page": 2,
+        "limit": 2,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "clamped-page",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:scene&limit=1&page=9007199254740991",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "raw-id",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "status": "invalidated",
+            "kind": "fact",
+            "content": "Revoked",
+            "learnedAt": "2025-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 7,
+              "deletionEpoch": 2
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 4,
+        "page": 4,
+        "limit": 1,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "clamped-empty",
+      "method": "GET",
+      "path": "/api/memories/page?q=absent&page=999",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [],
+        "total": 7,
+        "matched": 0,
+        "page": 1,
+        "limit": 20,
+        "personIds": []
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "all-inactive-facets",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:scene&status=invalidated",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "raw-id",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "status": "invalidated",
+            "kind": "fact",
+            "content": "Revoked",
+            "learnedAt": "2025-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 7,
+              "deletionEpoch": 2
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 1,
+        "page": 1,
+        "limit": 20,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "public-person-empty",
+      "method": "GET",
+      "path": "/api/memories/page?scene=public&person=dotted",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [],
+        "total": 7,
+        "matched": 0,
+        "page": 1,
+        "limit": 20,
+        "personIds": []
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "person-kind-status",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:scene&person=%EF%BB%BFdotless&kind=claim&status=disputed",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "dotless",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotless"
+            },
+            "status": "disputed",
+            "kind": "claim",
+            "content": "I",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "validFrom": "2090-01-01T00:00:00Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 1,
+        "page": 1,
+        "limit": 20,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "turkish",
+      "method": "GET",
+      "path": "/api/memories/page?locale=tr&scene=scene:scene&q=%C4%B1",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "dotless",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotless"
+            },
+            "status": "disputed",
+            "kind": "claim",
+            "content": "I",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "validFrom": "2090-01-01T00:00:00Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 1,
+        "page": 1,
+        "limit": 20,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "azeri",
+      "method": "GET",
+      "path": "/api/memories/page?locale=az-Latn-AZ&scene=scene:scene&q=%C4%B1",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "dotless",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotless"
+            },
+            "status": "disputed",
+            "kind": "claim",
+            "content": "I",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "validFrom": "2090-01-01T00:00:00Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 1,
+        "page": 1,
+        "limit": 20,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "locale-alias",
+      "method": "GET",
+      "path": "/api/memories/page?locale=iw&scene=scene:scene",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "dotted",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotted"
+            },
+            "status": "active",
+            "kind": "experience",
+            "content": "İ",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "dotless",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotless"
+            },
+            "status": "disputed",
+            "kind": "claim",
+            "content": "I",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "validFrom": "2090-01-01T00:00:00Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "legacy",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Legacy",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "raw-id",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "person"
+            },
+            "status": "invalidated",
+            "kind": "fact",
+            "content": "Revoked",
+            "learnedAt": "2025-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 7,
+              "deletionEpoch": 2
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 4,
+        "page": 1,
+        "limit": 20,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "case-fold-default",
+      "method": "GET",
+      "path": "/api/memories/page?locale=EN-us&scene=scene:scene&q=i",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "dotted",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotted"
+            },
+            "status": "active",
+            "kind": "experience",
+            "content": "İ",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "dotless",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "scene",
+              "personId": "dotless"
+            },
+            "status": "disputed",
+            "kind": "claim",
+            "content": "I",
+            "learnedAt": "2026-01-01T00:00:00.000Z",
+            "validFrom": "2090-01-01T00:00:00Z",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 2,
+        "page": 1,
+        "limit": 20,
+        "personIds": [
+          "dotted",
+          "dotless",
+          "person"
+        ]
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "default-digit-sort",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:numeric",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "numeric-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "numeric"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Two",
+            "learnedAt": "2",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "numeric-10",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "numeric"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Ten",
+            "learnedAt": "10",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 2,
+        "page": 1,
+        "limit": 20,
+        "personIds": []
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "locale-extension-numeric",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:numeric&locale=en-u-kn",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "numeric-10",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "numeric"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Ten",
+            "learnedAt": "10",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "numeric-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "numeric"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Two",
+            "learnedAt": "2",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 2,
+        "page": 1,
+        "limit": 20,
+        "personIds": []
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "locale-extension-no-search",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:numeric&locale=en-u-co-search",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "items": [
+          {
+            "id": "numeric-2",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "numeric"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Two",
+            "learnedAt": "2",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          },
+          {
+            "id": "numeric-10",
+            "scope": {
+              "kind": "scene",
+              "sceneId": "numeric"
+            },
+            "status": "active",
+            "kind": "fact",
+            "content": "Ten",
+            "learnedAt": "10",
+            "revision": {
+              "version": 0,
+              "deletionEpoch": 0
+            }
+          }
+        ],
+        "total": 7,
+        "matched": 2,
+        "page": 1,
+        "limit": 20,
+        "personIds": []
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "unsupported-locale",
+      "method": "GET",
+      "path": "/api/memories/page?locale=zz",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-locale",
+      "method": "GET",
+      "path": "/api/memories/page?locale=not_a_locale",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-extlang",
+      "method": "GET",
+      "path": "/api/memories/page?locale=zh-yue",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-duplicate-extension",
+      "method": "GET",
+      "path": "/api/memories/page?locale=en-u-kn-u-co-emoji",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-limit",
+      "method": "GET",
+      "path": "/api/memories/page?limit=101",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "invalid-scene",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "duplicate-query",
+      "method": "GET",
+      "path": "/api/memories/page?limit=2&limit=101",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "page-head",
+      "method": "HEAD",
+      "path": "/api/memories/page?locale=en-US",
+      "authorized": true,
+      "status": 200,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "page-unauthorized",
+      "method": "GET",
+      "path": "/api/memories/page?locale=not_a_locale",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "cache-control": "",
+        "content-type": "application/json",
+        "x-content-type-options": ""
+      }
+    },
+    {
       "name": "head",
       "method": "HEAD",
+      "path": "/api/memories",
       "authorized": true,
       "status": 200,
       "body": null,
@@ -157,6 +1079,7 @@
     {
       "name": "unauthorized",
       "method": "GET",
+      "path": "/api/memories",
       "authorized": false,
       "status": 401,
       "body": {
@@ -171,6 +1094,7 @@
     {
       "name": "unauthorized-head",
       "method": "HEAD",
+      "path": "/api/memories",
       "authorized": false,
       "status": 401,
       "body": null,
@@ -183,6 +1107,7 @@
     {
       "name": "malformed-row",
       "method": "GET",
+      "path": "/api/memories",
       "authorized": true,
       "status": 503,
       "body": {
@@ -198,9 +1123,41 @@
     {
       "name": "malformed-head",
       "method": "HEAD",
+      "path": "/api/memories",
       "authorized": true,
       "status": 503,
       "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "off-page-corrupted-row",
+      "method": "GET",
+      "path": "/api/memories/page?scene=scene:numeric&limit=1",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "content-type": "application/json",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "schema-invalid-before-rows",
+      "method": "GET",
+      "path": "/api/memories/page?limit=101",
+      "authorized": true,
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
       "headers": {
         "cache-control": "no-store",
         "content-type": "application/json",

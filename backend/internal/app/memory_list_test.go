@@ -21,18 +21,18 @@ func TestMemoryAdminListActualSource(t *testing.T) {
 			Version, DeletionEpoch, Deleted int
 		}
 		Cases []struct {
-			Name, Method string
-			Authorized   bool
-			Status       int
-			Body         any
-			Headers      map[string]string
+			Name, Method, Path string
+			Authorized         bool
+			Status             int
+			Body               any
+			Headers            map[string]string
 		}
 	}
 	data, err := os.ReadFile("testdata/memory-list-source.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(data, &fixture); err != nil || len(fixture.Cases) != 7 {
+	if err = json.Unmarshal(data, &fixture); err != nil || len(fixture.Cases) != 32 {
 		t.Fatalf("memory list oracle: %d %v", len(fixture.Cases), err)
 	}
 	options := applicationOptions(t)
@@ -78,7 +78,7 @@ func TestMemoryAdminListActualSource(t *testing.T) {
 			insert("malformed", "{")
 		}
 		t.Run(c.Name, func(t *testing.T) {
-			req := httptest.NewRequest(c.Method, "/api/memories", nil)
+			req := httptest.NewRequest(c.Method, c.Path, nil)
 			const suppliedID = "12345678-1234-4123-8123-123456789012"
 			req.Header.Set("X-Request-ID", suppliedID)
 			sourceFixtureAuth(req, c.Authorized)

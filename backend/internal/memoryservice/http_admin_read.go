@@ -56,14 +56,20 @@ func adminRecords(r *assertions.Reader) ([]any, error) {
 }
 
 // PublishList materializes the admin-only body under one recovery publication.
-func (a *AdminRead) PublishList(ctx context.Context, emit func([]byte) error) (readStarted bool, err error) {
-	err = a.publish(ctx, func(r *assertions.Reader) ([]byte, error) {
-		readStarted = true
+func (a *AdminRead) PublishList(ctx context.Context, emit func([]byte) error) (bool, error) {
+	return a.publishBody(ctx, func(r *assertions.Reader) ([]byte, error) {
 		records, err := adminRecords(r)
 		if err != nil {
 			return nil, err
 		}
 		return jsjson.Marshal(records)
+	}, emit)
+}
+
+func (a *AdminRead) publishBody(ctx context.Context, read func(*assertions.Reader) ([]byte, error), emit func([]byte) error) (readStarted bool, err error) {
+	err = a.publish(ctx, func(r *assertions.Reader) ([]byte, error) {
+		readStarted = true
+		return read(r)
 	}, emit)
 	return
 }

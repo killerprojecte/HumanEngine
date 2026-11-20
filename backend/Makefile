@@ -60,6 +60,7 @@ differential: build plugin-source-check contextual-source-check runtime-producer
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-router-lifetime.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-learning-admin.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-memory-list.mjs --check
+	cd .. && TZ=UTC node backend/tests/generate-requested-locale.mjs --check
 	cd .. && HE_SOURCE_ROOT="$$PWD" TZ=UTC node --import tsx backend/tests/generate-scenes-http.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-scene-messages.mjs --check
 	cd .. && TZ=UTC node --import tsx backend/tests/generate-simulations.mjs --check

@@ -118,7 +118,7 @@ def main():
     lib=work/'libhumanengineicu.a'; commands.append(build_archive(ar, objects, lib))
     cflags=' '.join(flags[-2:]+['-DU_STATIC_IMPLEMENTATION=1'])
     ldflags=str(lib)+' -lstdc++ -lm -lpthread'
-    (work/'env.sh').write_text('export CGO_ENABLED=1\nexport CGO_CFLAGS='+shlex.quote(cflags)+'\nexport CGO_LDFLAGS='+shlex.quote(ldflags)+'\n')
+    (work/'env.sh').write_text('export CGO_ENABLED=1\nexport CGO_CFLAGS='+shlex.quote(cflags)+'\nexport CGO_CXXFLAGS='+shlex.quote(cflags)+'\nexport CGO_LDFLAGS='+shlex.quote(ldflags)+'\n')
     report={'node':'v24.22.1','archiveSHA256':ARCHIVE,'sourceManifestSHA256':MANIFEST,'dataSHA256':DATA,
             'compiler':subprocess.check_output([cxx,'--version'],text=True),'archiveTool':subprocess.check_output([ar,'--version'],text=True),
             'commands':commands,'staticArchiveSHA256':sha(lib),'elapsedSeconds':round(time.monotonic()-start,2)}

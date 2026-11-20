@@ -32,7 +32,7 @@ func (r *Runtime) PreviewMessage(sceneID, messageID string, reads ReadAuthority)
 	if v.recalled[messageID] {
 		recalled = append(recalled, messageID)
 	}
-	rows, err := reads.ProjectDisplay(v.scene, []*Object{cloneJSON(selected).(*Object)}, recalled)
+	rows, err := reads.ProjectDisplay(v.scene, []*Object{selected}, recalled)
 	if err != nil {
 		return nil, err
 	}

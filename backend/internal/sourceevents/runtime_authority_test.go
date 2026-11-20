@@ -437,3 +437,38 @@ func TestRuntimeObserveBranchIdentityOrdering(t *testing.T) {
 		t.Fatal("edit skipped enrollment check", e)
 	}
 }
+
+func TestProjectDisplayOwnsNestedValuesAndPreservesInputOnRecall(t *testing.T) {
+	_, a := runtimeFixture(t, Options{})
+	scene := botruntime.Scene{SceneRef: dispatch.SceneRef{ID: "isolated", Kind: "simulation"}}
+	input := runtimeObject(t, `{"id":"x","sceneId":"isolated","status":"available","origin":"simulation","parts":[{"type":"text","text":"original"}]}`)
+	part := func(row *jsjson.Object) *jsjson.Object {
+		parts, _ := row.Get("parts")
+		return parts.([]any)[0].(*jsjson.Object)
+	}
+	projected, err := a.ProjectDisplay(scene, []*jsjson.Object{input}, nil)
+	if err != nil || len(projected) != 1 {
+		t.Fatalf("first projection: %v, %v", projected, err)
+	}
+	if err := part(projected[0]).Set("text", "changed"); err != nil {
+		t.Fatal(err)
+	}
+	if text, _ := part(input).Get("text"); text != "original" {
+		t.Fatalf("projected mutation reached input: %v", text)
+	}
+	recalled, err := a.ProjectDisplay(scene, []*jsjson.Object{input}, []string{"x"})
+	if err != nil || len(recalled) != 1 {
+		t.Fatalf("recall projection: %v, %v", recalled, err)
+	}
+	status, _ := recalled[0].Get("status")
+	parts, _ := recalled[0].Get("parts")
+	if status != "recalled" || len(parts.([]any)) != 0 {
+		t.Fatalf("recalled result not redacted: %v, %v", status, parts)
+	}
+	if status, _ := input.Get("status"); status != "available" {
+		t.Fatalf("recall projection mutated input: %v", status)
+	}
+	if text, _ := part(input).Get("text"); text != "original" {
+		t.Fatalf("recall projection mutated nested input: %v", text)
+	}
+}

@@ -57,8 +57,35 @@ func (a *dispatchAuthority) PromptAuthority(s botruntime.Scene, tools []*botrunt
 	return obj("scope", "synthetic:"+s.ID, "tools", values), a.Ready()
 }
 func (a *dispatchAuthority) ProjectDisplay(_ botruntime.Scene, rows []*botruntime.Object, _ []string) ([]*botruntime.Object, error) {
-	return rows, a.Ready()
+	if err := a.Ready(); err != nil {
+		return nil, err
+	}
+	out := make([]*botruntime.Object, len(rows))
+	for i, row := range rows {
+		out[i] = cloneDisplayValue(row).(*botruntime.Object)
+	}
+	return out, nil
 }
+
+func cloneDisplayValue(value any) any {
+	switch value := value.(type) {
+	case *botruntime.Object:
+		out := obj()
+		for _, member := range value.Members() {
+			_ = out.Set(member.Key, cloneDisplayValue(member.Value))
+		}
+		return out
+	case []any:
+		out := make([]any, len(value))
+		for i, child := range value {
+			out[i] = cloneDisplayValue(child)
+		}
+		return out
+	default:
+		return value
+	}
+}
+
 func (a *dispatchAuthority) RouteIngress(context.Context, botruntime.Scene, *botruntime.Object) error {
 	return a.Ready()
 }

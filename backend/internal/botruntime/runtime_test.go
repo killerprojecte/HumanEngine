@@ -124,13 +124,16 @@ func (a *testAuthority) ProjectDisplay(s Scene, rows []*Object, _ []string) ([]*
 	if e := a.Ready(); e != nil {
 		return nil, e
 	}
-	for _, m := range rows {
+	out := make([]*Object, len(rows))
+	for i, row := range rows {
+		m := cloneJSON(row).(*Object)
+		out[i] = m
 		if recalled, _ := a.IsRecalled(s, idOf(m)); recalled {
 			_ = m.Set("parts", []any{})
 			_ = m.Set("status", "recalled")
 		}
 	}
-	return rows, nil
+	return out, nil
 }
 
 type testClock struct {

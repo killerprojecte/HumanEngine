@@ -68,22 +68,15 @@ func (r *Runtime) Snapshot(id string) (Snapshot, error) {
 		return Snapshot{}, code("scene_missing")
 	}
 	v := r.trimPublished(s)
-	copyRows := bodyRows(v.history)
-	for i, m := range copyRows {
-		copyRows[i] = cloneJSON(m).(*Object)
+	recalled := make([]string, 0, len(v.recalled))
+	for id := range v.recalled {
+		recalled = append(recalled, id)
 	}
-	{
-		recalled := []string{}
-		for id := range v.recalled {
-			recalled = append(recalled, id)
-		}
-		var err error
-		copyRows, err = r.services.Authority.ProjectDisplay(v.scene, copyRows, recalled)
-		if err != nil {
-			return Snapshot{}, err
-		}
+	rows, err := r.services.Authority.ProjectDisplay(v.scene, bodyRows(v.history), recalled)
+	if err != nil {
+		return Snapshot{}, err
 	}
-	return Snapshot{v.scene, copyRows, append([]TopicView{}, v.topics...), v.active, v.deferred, v.pending, v.waiting, append([]string{}, v.protected...), v.closed}, nil
+	return Snapshot{v.scene, rows, append([]TopicView{}, v.topics...), v.active, v.deferred, v.pending, v.waiting, append([]string{}, v.protected...), v.closed}, nil
 }
 func (r *Runtime) date(s string) float64 {
 	ms, ok, err := r.services.Dates.ParseMillis(s)

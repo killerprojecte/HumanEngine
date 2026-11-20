@@ -85,6 +85,8 @@ type ReadAuthority interface {
 	ValidateSources(Scene, []*Object, []string) (bool, error)
 	IsRecalled(Scene, string) (bool, error)
 	PromptAuthority(Scene, []*Object) (any, error)
+	// ProjectDisplay does not mutate or retain the input. Returned rows and
+	// their nested values are owned by the caller.
 	ProjectDisplay(Scene, []*Object, []string) ([]*Object, error)
 }
 type Authority interface {

@@ -6,9 +6,9 @@ import (
 )
 
 func (r *Runtime) selectWindow(key string, rows []*Object, options promptcache.Options, authority any, required []string) ([]*Object, error) {
-	entries := []promptcache.Entry{}
-	for _, m := range rows {
-		entries = append(entries, promptcache.Entry{ID: idOf(m), Value: m})
+	entries := make([]promptcache.Entry, len(rows))
+	for i, m := range rows {
+		entries[i] = promptcache.Entry{ID: idOf(m), Value: m}
 	}
 	r.cacheMu.Lock()
 	selected, err := r.windows.Select(key, entries, options, authority, required)
@@ -16,9 +16,9 @@ func (r *Runtime) selectWindow(key string, rows []*Object, options promptcache.O
 	if err != nil {
 		return nil, err
 	}
-	out := []*Object{}
-	for _, m := range selected {
-		out = append(out, m.Value.(*Object))
+	out := make([]*Object, len(selected))
+	for i, m := range selected {
+		out[i] = m.Value.(*Object)
 	}
 	return out, nil
 }
@@ -27,8 +27,8 @@ func (r *Runtime) prepareTicket(key string, rows []*Object, p *replyplan.Context
 		r.boundaries.Delete(key)
 		return nil, nil
 	}
-	entries := []promptcache.Entry{}
-	for _, m := range rows {
+	entries := make([]promptcache.Entry, len(rows))
+	for i, m := range rows {
 		var value any = m
 		if evidence {
 			value = obj("id", "message:"+idOf(m), "value", m)
@@ -37,7 +37,7 @@ func (r *Runtime) prepareTicket(key string, rows []*Object, p *replyplan.Context
 		if e != nil {
 			return nil, e
 		}
-		entries = append(entries, promptcache.Entry{ID: idOf(m), Value: projected})
+		entries[i] = promptcache.Entry{ID: idOf(m), Value: projected}
 	}
 	return r.boundaries.Prepare(key, entries, authority)
 }
@@ -46,9 +46,9 @@ func (r *Runtime) layout(user *Object, name string, cfg Settings, ticket *prompt
 		_ = user.Set("contextLayout", name)
 	}
 	if ticket != nil {
-		indexes := []any{}
-		for _, i := range ticket.ContextCacheBoundaries {
-			indexes = append(indexes, float64(i))
+		indexes := make([]any, len(ticket.ContextCacheBoundaries))
+		for i, boundary := range ticket.ContextCacheBoundaries {
+			indexes[i] = float64(boundary)
 		}
 		_ = user.Set("contextCacheBoundaries", indexes)
 	}

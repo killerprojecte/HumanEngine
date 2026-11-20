@@ -30,10 +30,17 @@ func appendRecord(root *messageBlock, record *messageRecord) *messageBlock {
 		return &messageBlock{rows: []*Object{record.body}, records: []*messageRecord{record}, count: 1}
 	}
 	if len(root.rows) < messageBlockWidth {
-		return &messageBlock{root.previous, append(append([]*Object{}, root.rows...), record.body), append(append([]*messageRecord{}, root.records...), record), root.count + 1}
+		return &messageBlock{root.previous, appendRecordValue(root.rows, record.body), appendRecordValue(root.records, record), root.count + 1}
 	}
 	return &messageBlock{root, []*Object{record.body}, []*messageRecord{record}, root.count + 1}
 }
+func appendRecordValue[T any](previous []T, next T) []T {
+	out := make([]T, len(previous)+1)
+	copy(out, previous)
+	out[len(previous)] = next
+	return out
+}
+
 func bodyRows(root *messageBlock) []*Object {
 	if root == nil {
 		return []*Object{}

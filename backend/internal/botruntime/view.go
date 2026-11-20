@@ -68,9 +68,8 @@ func (r *Runtime) Snapshot(id string) (Snapshot, error) {
 		return Snapshot{}, code("scene_missing")
 	}
 	v := r.trimPublished(s)
-	rows := bodyRows(v.history)
-	copyRows := make([]*Object, len(rows))
-	for i, m := range rows {
+	copyRows := bodyRows(v.history)
+	for i, m := range copyRows {
 		copyRows[i] = cloneJSON(m).(*Object)
 	}
 	{

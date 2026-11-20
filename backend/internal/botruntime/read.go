@@ -7,12 +7,27 @@ import (
 
 func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (any, error) {
 	c, s := t.context, t.state
+	var requested []string
+	var inputErr error
+	if name == "messages.get" {
+		var v any
+		v, inputErr = schemaValue(get(contractTool(name), "inputSchema"), input)
+		if inputErr == nil {
+			requested = stringsOf(get(v, "ids"))
+		}
+	}
 	s.mu.Lock()
 	if c.Mode == "real" {
 		r.trimLocked(s, false)
 		r.publishLocked(s)
 	}
-	rows := append([]*Object{}, s.messages...)
+	var rows []*Object
+	var cached map[string]*Object
+	if name == "messages.get" {
+		cached = cachedMessagesByID(s.messages, requested)
+	} else {
+		rows = append([]*Object{}, s.messages...)
+	}
 	s.mu.Unlock()
 	var adapter *Adapter
 	if a, ok := r.adapters.Load(c.Scene.AdapterID); ok {
@@ -21,11 +36,9 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 	result := obj("items", []any{}, "coverage", "partial", "reason", "bounded_cache")
 	items := []*Object{}
 	if name == "messages.get" {
-		v, err := schemaValue(get(contractTool(name), "inputSchema"), input)
-		if err != nil {
-			return nil, err
+		if inputErr != nil {
+			return nil, inputErr
 		}
-		requested := stringsOf(get(v, "ids"))
 		for _, id := range requested {
 			c.AddDependency(id)
 			if recalled, err := r.recalled(s, id); err != nil {
@@ -33,14 +46,7 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 			} else if recalled {
 				continue
 			}
-			var cached *Object
-			for _, m := range rows {
-				if idOf(m) == id {
-					cached = m
-					break
-				}
-			}
-			if cached != nil {
+			if cached := cached[id]; cached != nil {
 				m := cached.Clone()
 				_ = m.Set("origin", "history")
 				items = append(items, m)
@@ -135,4 +141,27 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 	}
 	_ = result.Set("items", selected)
 	return result, nil
+}
+
+// cachedMessagesByID snapshots the first cached row for each requested ID.
+func cachedMessagesByID(rows []*Object, ids []string) map[string]*Object {
+	matches := make(map[string]*Object, len(ids))
+	for _, id := range ids {
+		matches[id] = nil
+	}
+	remaining := len(matches)
+	if remaining == 0 {
+		return matches
+	}
+	for _, row := range rows {
+		id := idOf(row)
+		if value, requested := matches[id]; requested && value == nil {
+			matches[id] = row
+			remaining--
+			if remaining == 0 {
+				break
+			}
+		}
+	}
+	return matches
 }

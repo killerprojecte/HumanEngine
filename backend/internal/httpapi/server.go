@@ -101,8 +101,9 @@ func (s *Server) ServeUnavailable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available bool) {
+	path := habitRoutingPath(r)
 	id := r.Header.Get("X-Request-ID")
-	if (s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r))) || (s.logStatus != nil && logStatusPath(habitRoutingPath(r))) {
+	if (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -119,20 +120,20 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	if (s.logStatus != nil && logStatusPath(habitRoutingPath(r))) || (s.retainedPublisher != nil && retainedLogsPath(habitRoutingPath(r))) || (s.runtimeStatus != nil && statusPath(habitRoutingPath(r))) || (s.usage != nil && usagePath(habitRoutingPath(r))) || (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
+	if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if (s.configuration != nil && configurationPath(habitRoutingPath(r))) || (s.sceneConfiguration != nil && sceneConfigurationPath(habitRoutingPath(r))) {
+	if (s.configuration != nil && configurationPath(path)) || (s.sceneConfiguration != nil && sceneConfigurationPath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r)) {
+	if s.memoryDelete != nil && memoryDeletePath(path) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r)) {
+		if s.memoryDelete != nil && memoryDeletePath(path) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -140,7 +141,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if (s.logStatus != nil && logStatusPath(habitRoutingPath(r))) || (s.retainedPublisher != nil && retainedLogsPath(habitRoutingPath(r))) || (s.runtimeStatus != nil && statusPath(habitRoutingPath(r))) || (s.usage != nil && usagePath(habitRoutingPath(r))) || (s.providerReads != nil && providerReadPath(habitRoutingPath(r))) || (s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r))) || (s.modelCalls != nil && modelCallsPath(habitRoutingPath(r))) || (s.plugins != nil && pluginPath(habitRoutingPath(r))) {
+		if (s.logStatus != nil && logStatusPath(path)) || (s.retainedPublisher != nil && retainedLogsPath(path)) || (s.runtimeStatus != nil && statusPath(path)) || (s.usage != nil && usagePath(path)) || (s.providerReads != nil && providerReadPath(path)) || (s.diagnostics != nil && diagnosticsPath(path)) || (s.modelCalls != nil && modelCallsPath(path)) || (s.plugins != nil && pluginPath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -148,7 +149,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if (s.configuration != nil && configurationPath(habitRoutingPath(r))) || (s.sceneConfiguration != nil && sceneConfigurationPath(habitRoutingPath(r))) {
+		if (s.configuration != nil && configurationPath(path)) || (s.sceneConfiguration != nil && sceneConfigurationPath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -156,7 +157,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if s.memes != nil && memePath(habitRoutingPath(r)) {
+		if s.memes != nil && memePath(path) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -164,7 +165,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 			}
 			return
 		}
-		if s.experience != nil && experiencePath(habitRoutingPath(r)) {
+		if s.experience != nil && experiencePath(path) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -183,59 +184,59 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		authenticationError(401, "Authentication required")
 		return
 	}
-	if s.logStatus != nil && logStatusPath(habitRoutingPath(r)) {
+	if s.logStatus != nil && logStatusPath(path) {
 		s.serveLogStatus(w, r, available, id)
 		return
 	}
-	if s.retainedPublisher != nil && retainedLogsPath(habitRoutingPath(r)) {
+	if s.retainedPublisher != nil && retainedLogsPath(path) {
 		s.serveRetainedLogs(w, r, available, id)
 		return
 	}
-	if s.runtimeStatus != nil && statusPath(habitRoutingPath(r)) {
+	if s.runtimeStatus != nil && statusPath(path) {
 		s.serveRuntimeStatus(w, r, available, id)
 		return
 	}
-	if s.usage != nil && usagePath(habitRoutingPath(r)) {
+	if s.usage != nil && usagePath(path) {
 		s.serveUsage(w, r, available, id)
 		return
 	}
-	if s.providerReads != nil && providerReadPath(habitRoutingPath(r)) {
+	if s.providerReads != nil && providerReadPath(path) {
 		s.serveProviderReads(w, r, available, id)
 		return
 	}
-	if s.sceneConfiguration != nil && sceneConfigurationPath(habitRoutingPath(r)) {
+	if s.sceneConfiguration != nil && sceneConfigurationPath(path) {
 		s.serveSceneConfiguration(w, r, available, id)
 		return
 	}
-	if s.plugins != nil && pluginPath(habitRoutingPath(r)) {
+	if s.plugins != nil && pluginPath(path) {
 		s.servePlugins(w, r, available, id)
 		return
 	}
-	if s.modelCalls != nil && modelCallsPath(habitRoutingPath(r)) {
+	if s.modelCalls != nil && modelCallsPath(path) {
 		s.serveModelCalls(w, r, available, id)
 		return
 	}
-	if s.diagnostics != nil && diagnosticsPath(habitRoutingPath(r)) {
+	if s.diagnostics != nil && diagnosticsPath(path) {
 		s.serveDiagnostics(w, r, available, id)
 		return
 	}
-	if s.configuration != nil && configurationPath(habitRoutingPath(r)) {
+	if s.configuration != nil && configurationPath(path) {
 		s.serveConfiguration(w, r, available, id)
 		return
 	}
-	if s.memes != nil && memePath(habitRoutingPath(r)) {
+	if s.memes != nil && memePath(path) {
 		s.serveMemes(w, r, available, id)
 		return
 	}
-	if s.experience != nil && experiencePath(habitRoutingPath(r)) {
+	if s.experience != nil && experiencePath(path) {
 		s.serveExperience(w, r, available, id)
 		return
 	}
-	if s.memoryDelete != nil && memoryDeletePath(habitRoutingPath(r)) && !memoryDeleteUnmigrated(r) {
+	if s.memoryDelete != nil && memoryDeletePath(path) && !memoryDeleteUnmigrated(r) {
 		s.serveMemoryDelete(w, r, available, id)
 		return
 	}
-	if s.habits != nil && habitPath(habitRoutingPath(r)) {
+	if s.habits != nil && habitPath(path) {
 		s.serveHabits(w, r, available, id)
 		return
 	}

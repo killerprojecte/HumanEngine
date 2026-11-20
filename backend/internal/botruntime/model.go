@@ -31,13 +31,16 @@ func (m *PolicyModels) Start(ctx context.Context, request ModelRequest, settle f
 		return
 	}
 	request.Messages = expanded
-	toolNames := []string{}
-	for _, tool := range request.Tools {
-		toolNames = append(toolNames, str(get(tool, "name")))
+	toolNames := make([]string, len(request.Tools))
+	for i, tool := range request.Tools {
+		toolNames[i] = str(get(tool, "name"))
 	}
 	images := false
 	for _, message := range expanded {
-		images = images || len(array(get(message, "images"))) > 0
+		if len(array(get(message, "images"))) > 0 {
+			images = true
+			break
+		}
 	}
 	go func() {
 		result, err := m.policy.Run(ctx, modelservice.Request{Role: request.Role, ToolNames: toolNames, HasImages: images}, func(attemptCtx context.Context, attempt modelservice.Attempt, done func(any, error)) {

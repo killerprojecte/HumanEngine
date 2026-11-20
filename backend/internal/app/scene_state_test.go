@@ -15,7 +15,7 @@ func TestSceneStateHTTPContract(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer app.Shutdown(context.Background())
-	scene := map[string]any{"id": "fixture", "adapterId": "fixture", "accountId": "bot", "platformSceneId": "group", "kind": "group", "name": "fixture"}
+	scene := map[string]any{"id": "fixture", "adapterId": "fixture", "accountId": "bot", "platformSceneId": "group", "kind": "group", "name": "fixture", "participationEnabled": false, "learningEnabled": false, "proactiveEnabled": false}
 	appRequest(t, app, "PUT", "/api/scenes/fixture", scene)
 	for _, tc := range []struct {
 		method, path, token string

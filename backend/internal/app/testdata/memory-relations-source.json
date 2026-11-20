@@ -1,0 +1,1312 @@
+{
+  "node": "v24.22.1",
+  "timezone": "UTC",
+  "sourceHashes": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/memory/interfaces/relation-routes.ts": "3d979c97ff0dbc0e427eec4f55beae15c628c0eca423067c323de3756f162ced",
+    "src/memory/relations/candidates.ts": "b2b64530301888f43e666e926f33258d11b8359e984d1da34b9278e373243dc3"
+  },
+  "scenes": [
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "local",
+      "kind": "group",
+      "platformSceneId": "local"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "foreign",
+      "kind": "private",
+      "platformSceneId": "foreign"
+    },
+    {
+      "adapterId": "fixture",
+      "accountId": "fixture",
+      "name": "Synthetic",
+      "learningEnabled": true,
+      "participationEnabled": false,
+      "proactiveEnabled": false,
+      "id": "simulation",
+      "kind": "simulation",
+      "platformSceneId": "simulation"
+    }
+  ],
+  "names": {
+    "identity:local:subject": {
+      "senderDisplayName": " ‪Local subject‬\n ",
+      "senderPlatformId": "PRIVATE_PLATFORM"
+    },
+    "identity:local:speaker": {
+      "senderDisplayName": "Reporting speaker"
+    },
+    "identity:local:nameless": {
+      "senderDisplayName": "⁦\t⁩"
+    },
+    "identity:foreign:subject": {
+      "senderDisplayName": "Foreign subject"
+    }
+  },
+  "proposals": [
+    {
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "botUserId": "bot",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "message-0",
+            "senderId": "subject",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidate": {
+        "kind": "claim",
+        "content": "Synthetic assertion 0",
+        "epistemicKind": "explicit",
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "message-0"
+        },
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "message-0",
+            "senderId": "subject"
+          }
+        ],
+        "relations": [
+          {
+            "predicate": "participates_in",
+            "personId": "subject",
+            "target": {
+              "kind": "new",
+              "entityKind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": []
+          }
+        ]
+      },
+      "ids": [
+        "entity-0",
+        "relation-0"
+      ],
+      "auto": true
+    },
+    {
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "botUserId": "bot",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "message-1",
+            "senderId": "speaker",
+            "available": true,
+            "isBot": false,
+            "mentions": [
+              {
+                "partIndex": 2,
+                "userId": "subject"
+              }
+            ]
+          }
+        ]
+      },
+      "candidate": {
+        "kind": "claim",
+        "content": "Synthetic assertion 1",
+        "epistemicKind": "explicit",
+        "subject": {
+          "kind": "mentioned",
+          "personId": "subject",
+          "sourceMessageId": "message-1",
+          "mentionPartIndex": 2
+        },
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "message-1",
+            "senderId": "speaker"
+          }
+        ],
+        "relations": [
+          {
+            "predicate": "participates_in",
+            "personId": "subject",
+            "target": {
+              "kind": "new",
+              "entityKind": "event",
+              "title": "Synthetic title 1"
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "Only if the day changes"
+            ],
+            "occurredAt": "2025-01-01T00:00:00Z",
+            "validFrom": "2025-01-01T00:00:00Z"
+          }
+        ]
+      },
+      "ids": [
+        "entity-1",
+        "relation-1"
+      ],
+      "auto": false
+    },
+    {
+      "context": {
+        "sceneId": "local",
+        "simulation": false,
+        "provenance": "source-only",
+        "botUserId": "bot",
+        "sourceEvidence": [
+          {
+            "sceneId": "local",
+            "messageId": "message-2",
+            "senderId": "nameless",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidate": {
+        "kind": "claim",
+        "content": "Synthetic assertion 2",
+        "epistemicKind": "explicit",
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "message-2"
+        },
+        "sources": [
+          {
+            "sceneId": "local",
+            "messageId": "message-2",
+            "senderId": "nameless"
+          }
+        ],
+        "relations": [
+          {
+            "predicate": "participates_in",
+            "personId": "nameless",
+            "target": {
+              "kind": "new",
+              "entityKind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": []
+          }
+        ]
+      },
+      "ids": [
+        "entity-2",
+        "relation-2"
+      ],
+      "auto": false
+    },
+    {
+      "context": {
+        "sceneId": "foreign",
+        "simulation": false,
+        "provenance": "source-only",
+        "botUserId": "bot",
+        "sourceEvidence": [
+          {
+            "sceneId": "foreign",
+            "messageId": "message-3",
+            "senderId": "subject",
+            "available": true,
+            "isBot": false
+          }
+        ]
+      },
+      "candidate": {
+        "kind": "claim",
+        "content": "Synthetic assertion 3",
+        "epistemicKind": "explicit",
+        "subject": {
+          "kind": "self",
+          "sourceMessageId": "message-3"
+        },
+        "sources": [
+          {
+            "sceneId": "foreign",
+            "messageId": "message-3",
+            "senderId": "subject"
+          }
+        ],
+        "relations": [
+          {
+            "predicate": "participates_in",
+            "personId": "subject",
+            "target": {
+              "kind": "new",
+              "entityKind": "plan",
+              "title": "Synthetic title 3"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": []
+          }
+        ]
+      },
+      "ids": [
+        "entity-3",
+        "relation-3"
+      ],
+      "auto": false
+    }
+  ],
+  "times": {
+    "createdAt": "2025-02-01T00:00:00.000Z",
+    "reviewedAt": "2025-02-02T00:00:00.000Z"
+  },
+  "cases": [
+    {
+      "name": "unauthorized",
+      "path": "/api/memory-relations?sceneId=local&unknown=1",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "cacheControl": "",
+      "noSniff": ""
+    },
+    {
+      "name": "unauthorized-head",
+      "path": "/api/memory-relations?sceneId=local",
+      "authorized": false,
+      "method": "HEAD",
+      "status": 401,
+      "body": null,
+      "cacheControl": "",
+      "noSniff": ""
+    },
+    {
+      "name": "listing",
+      "path": "/api/memory-relations?sceneId=local",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          {
+            "id": "relation-1",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 1",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-1",
+              "kind": "event",
+              "title": "Synthetic title 1"
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "Only if the day changes"
+            ],
+            "occurredAt": "2025-01-01T00:00:00Z",
+            "validFrom": "2025-01-01T00:00:00Z",
+            "epistemicKind": "reported",
+            "status": "candidate",
+            "admission": "candidate",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "mentioned",
+                "sources": [
+                  {
+                    "messageId": "message-1",
+                    "senderId": "speaker",
+                    "senderName": "Reporting speaker"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          {
+            "id": "relation-2",
+            "version": 2,
+            "assertionContent": "Synthetic assertion 2",
+            "personId": "nameless",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-2",
+              "kind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "rejected",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-2",
+                    "senderId": "nameless"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "head",
+      "path": "/api/memory-relations?sceneId=local",
+      "method": "HEAD",
+      "status": 200,
+      "body": null,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "head-invalid",
+      "path": "/api/memory-relations?sceneId=local&limit=41",
+      "method": "HEAD",
+      "status": 400,
+      "body": null,
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "person",
+      "path": "/api/memory-relations?sceneId=local&personId=subject",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          {
+            "id": "relation-1",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 1",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-1",
+              "kind": "event",
+              "title": "Synthetic title 1"
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "Only if the day changes"
+            ],
+            "occurredAt": "2025-01-01T00:00:00Z",
+            "validFrom": "2025-01-01T00:00:00Z",
+            "epistemicKind": "reported",
+            "status": "candidate",
+            "admission": "candidate",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "mentioned",
+                "sources": [
+                  {
+                    "messageId": "message-1",
+                    "senderId": "speaker",
+                    "senderName": "Reporting speaker"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "person-case-sensitive",
+      "path": "/api/memory-relations?sceneId=local&personId=Subject",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "candidate",
+      "path": "/api/memory-relations?sceneId=local&status=candidate",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-1",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 1",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-1",
+              "kind": "event",
+              "title": "Synthetic title 1"
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "Only if the day changes"
+            ],
+            "occurredAt": "2025-01-01T00:00:00Z",
+            "validFrom": "2025-01-01T00:00:00Z",
+            "epistemicKind": "reported",
+            "status": "candidate",
+            "admission": "candidate",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "mentioned",
+                "sources": [
+                  {
+                    "messageId": "message-1",
+                    "senderId": "speaker",
+                    "senderName": "Reporting speaker"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "accepted",
+      "path": "/api/memory-relations?sceneId=local&status=accepted",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "rejected",
+      "path": "/api/memory-relations?sceneId=local&status=rejected",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-2",
+            "version": 2,
+            "assertionContent": "Synthetic assertion 2",
+            "personId": "nameless",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-2",
+              "kind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "rejected",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-2",
+                    "senderId": "nameless"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "limited",
+      "path": "/api/memory-relations?sceneId=local&limit=0x1",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "limited"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "limit-exponent",
+      "path": "/api/memory-relations?sceneId=local&limit=+2e0",
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          {
+            "id": "relation-1",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 1",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-1",
+              "kind": "event",
+              "title": "Synthetic title 1"
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "Only if the day changes"
+            ],
+            "occurredAt": "2025-01-01T00:00:00Z",
+            "validFrom": "2025-01-01T00:00:00Z",
+            "epistemicKind": "reported",
+            "status": "candidate",
+            "admission": "candidate",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "mentioned",
+                "sources": [
+                  {
+                    "messageId": "message-1",
+                    "senderId": "speaker",
+                    "senderName": "Reporting speaker"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "limited"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "hidden-backing-keeps-graph-coverage",
+      "path": "/api/memory-relations?sceneId=local&limit=1",
+      "hide": true,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [],
+        "coverage": "limited"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "visible-backing-restored",
+      "path": "/api/memory-relations?sceneId=local&limit=1",
+      "hide": false,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "limited"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "missing-required",
+      "path": "/api/memory-relations",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "empty-person",
+      "path": "/api/memory-relations?sceneId=local&personId=",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "strict",
+      "path": "/api/memory-relations?sceneId=local&unknown=1",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "duplicate",
+      "path": "/api/memory-relations?sceneId=local&sceneId=foreign",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "duplicate-limit",
+      "path": "/api/memory-relations?sceneId=local&limit=1&limit=2",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "invalid-status",
+      "path": "/api/memory-relations?sceneId=local&status=ACCEPTED",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "invalid-limit",
+      "path": "/api/memory-relations?sceneId=local&limit=2.5",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "limit-bounds",
+      "path": "/api/memory-relations?sceneId=local&limit=41",
+      "status": 400,
+      "body": {
+        "error": "Invalid request"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "private-scene",
+      "path": "/api/memory-relations?sceneId=foreign",
+      "status": 200,
+      "body": {
+        "sceneId": "foreign",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-3",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 3",
+            "personId": "subject",
+            "personName": "Foreign subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-3",
+              "kind": "plan",
+              "title": "Synthetic title 3"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "candidate",
+            "admission": "candidate",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-3",
+                    "senderId": "subject",
+                    "senderName": "Foreign subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "missing-scene",
+      "path": "/api/memory-relations?sceneId=missing",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "simulation",
+      "path": "/api/memory-relations?sceneId=simulation",
+      "status": 404,
+      "body": {
+        "error": "Scene unavailable"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "disabled",
+      "path": "/api/memory-relations?sceneId=local",
+      "enabled": false,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": false,
+        "items": [],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "reenabled",
+      "path": "/api/memory-relations?sceneId=local",
+      "enabled": true,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          {
+            "id": "relation-1",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 1",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-1",
+              "kind": "event",
+              "title": "Synthetic title 1"
+            },
+            "polarity": "negative",
+            "modality": "possible",
+            "temporalScope": "past",
+            "conditions": [
+              "Only if the day changes"
+            ],
+            "occurredAt": "2025-01-01T00:00:00Z",
+            "validFrom": "2025-01-01T00:00:00Z",
+            "epistemicKind": "reported",
+            "status": "candidate",
+            "admission": "candidate",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "mentioned",
+                "sources": [
+                  {
+                    "messageId": "message-1",
+                    "senderId": "speaker",
+                    "senderName": "Reporting speaker"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          {
+            "id": "relation-2",
+            "version": 2,
+            "assertionContent": "Synthetic assertion 2",
+            "personId": "nameless",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-2",
+              "kind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "rejected",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-2",
+                    "senderId": "nameless"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "after-recall",
+      "path": "/api/memory-relations?sceneId=local",
+      "recall": true,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-0",
+            "version": 1,
+            "assertionContent": "Synthetic assertion 0",
+            "personId": "subject",
+            "personName": "Local subject",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-0",
+              "kind": "plan",
+              "title": "Synthetic title 0"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "accepted",
+            "admission": "automatic",
+            "autoReason": "self_explicit_no_visible_conflict",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-0",
+                    "senderId": "subject",
+                    "senderName": "Local subject"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          },
+          {
+            "id": "relation-2",
+            "version": 2,
+            "assertionContent": "Synthetic assertion 2",
+            "personId": "nameless",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-2",
+              "kind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "rejected",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-2",
+                    "senderId": "nameless"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    },
+    {
+      "name": "after-delete",
+      "path": "/api/memory-relations?sceneId=local",
+      "delete": true,
+      "status": 200,
+      "body": {
+        "sceneId": "local",
+        "enabled": true,
+        "items": [
+          {
+            "id": "relation-2",
+            "version": 2,
+            "assertionContent": "Synthetic assertion 2",
+            "personId": "nameless",
+            "predicate": "participates_in",
+            "target": {
+              "id": "entity-2",
+              "kind": "plan",
+              "title": "Synthetic title 2"
+            },
+            "polarity": "positive",
+            "modality": "asserted",
+            "temporalScope": "current",
+            "conditions": [],
+            "epistemicKind": "explicit",
+            "status": "rejected",
+            "admission": "reviewed",
+            "createdAt": "2025-02-01T00:00:00.000Z",
+            "reviewedAt": "2025-02-02T00:00:00.000Z",
+            "sourceGroups": [
+              {
+                "witnessKind": "self",
+                "sources": [
+                  {
+                    "messageId": "message-2",
+                    "senderId": "nameless"
+                  }
+                ],
+                "parentCount": 0
+              }
+            ]
+          }
+        ],
+        "coverage": "complete"
+      },
+      "cacheControl": "no-store",
+      "noSniff": "nosniff"
+    }
+  ]
+}

@@ -45,7 +45,7 @@ func NewSchemas() (*Schemas, error) {
 	components, _ := document.(*jsjson.Object).Get("components")
 	orderedDefinitions, _ := components.(*jsjson.Object).Get("schemas")
 	s := &Schemas{root: root, compiled: map[string]*jsonschema.Schema{}, orderedDefinitions: orderedDefinitions.(*jsjson.Object)}
-	for _, name := range []string{"Settings", "ModelConfig", "Scene", "MemoryCreate", "MemoryPatch"} {
+	for _, name := range []string{"Settings", "ModelConfig", "Scene", "MemoryCreate", "MemoryPatch", "MemoryRelationView"} {
 		compiled, err := compiler.Compile("https://humanengine.invalid/contract.json#/components/schemas/" + name)
 		if err != nil {
 			return nil, err
@@ -201,6 +201,13 @@ func (s *Schemas) Parse(name string, input []byte) (map[string]any, error) {
 	return s.parseValue(name, parsed)
 }
 
+// ValidateMemoryRelationView applies the source response schema to the
+// already-projected object without an additional wire serialization or parse.
+func (s *Schemas) ValidateMemoryRelationView(view *jsjson.Object) error {
+	_, err := s.parseValue("MemoryRelationView", view)
+	return err
+}
+
 func (s *Schemas) parseValue(name string, parsed any) (map[string]any, error) {
 	converted, err := validationValue(parsed)
 	if err != nil {
@@ -230,6 +237,10 @@ func refine(name string, v map[string]any) error {
 	fail := func() error { return fmt.Errorf("invalid %s configuration", name) }
 	number := func(key string) float64 { return v[key].(float64) }
 	switch name {
+	case "MemoryRelationView":
+		if number("version") > 9007199254740991 {
+			return fail()
+		}
 	case "Settings":
 		if !validTimeZone(v["timezone"].(string)) {
 			return fail()

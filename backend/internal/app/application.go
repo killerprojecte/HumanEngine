@@ -289,6 +289,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		func() error { return app.HTTP.WithMemoryCreate(app.queueManualMemoryIndex) },
 		func() error { return app.HTTP.WithMemes(app.Engine) },
 		func() error { return app.HTTP.WithLearningAdmin(app.Learning.Coordinator, app.readPublisher) },
+		func() error { return app.HTTP.WithEmbeddingIndexRead(app.Learning.Owner, app.readPublisher) },
 		func() error { return app.HTTP.WithBudgetAdmin(owners.Budgets, app.readPublisher, owners.Compare) },
 		func() error { return app.HTTP.WithRetainedLogs(app.readPublisher) },
 		func() error {

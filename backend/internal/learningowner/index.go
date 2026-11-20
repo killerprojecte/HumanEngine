@@ -116,38 +116,54 @@ func selectEncoder(config *Object) (*selectedEncoder, error) {
 	}
 	return selected, nil
 }
-func readIndexState(query indexQuery, checkEmpty bool) (out indexState, err error) {
-	rows, e := query("SELECT key,value FROM config WHERE key IN ('models','embedding.active','embedding.rebuild','embedding.incompatible')")
-	if e != nil {
-		return out, e
+func readIndexValues(query indexQuery) (out indexState, models []byte, err error) {
+	rows, err := query("SELECT key,value FROM config WHERE key IN ('models','embedding.active','embedding.rebuild','embedding.incompatible')")
+	if err != nil {
+		return out, nil, err
 	}
-	values := map[string]any{}
+	defer func() { err = errors.Join(err, rows.Close()) }()
 	for rows.Next() {
 		var key, raw string
-		if e = rows.Scan(&key, &raw); e != nil {
-			rows.Close()
-			return out, e
+		if err = rows.Scan(&key, &raw); err != nil {
+			return out, nil, err
 		}
-		v, e := jsjson.Parse(raw)
-		if e != nil {
-			rows.Close()
-			return out, e
+		if key == "models" {
+			models = []byte(raw)
+			continue
 		}
-		values[key] = v
+		value, err := jsjson.Parse(raw)
+		if err != nil {
+			return out, nil, err
+		}
+		switch key {
+		case "embedding.active":
+			out.active = indexObject(value)
+		case "embedding.rebuild":
+			out.job = indexObject(value)
+		case "embedding.incompatible":
+			out.incompatible, _ = value.(string)
+		}
 	}
-	e = errors.Join(rows.Err(), rows.Close())
+	return out, models, rows.Err()
+}
+func readIndexState(query indexQuery, checkEmpty bool) (out indexState, err error) {
+	out, models, e := readIndexValues(query)
 	if e != nil {
 		return out, e
 	}
-	out.active = indexObject(values["embedding.active"])
-	out.job = indexObject(values["embedding.rebuild"])
-	out.incompatible, _ = values["embedding.incompatible"].(string)
-	out.selected, e = selectEncoder(indexObject(values["models"]))
+	var config any
+	if models != nil {
+		config, e = jsjson.Parse(string(models))
+		if e != nil {
+			return out, e
+		}
+	}
+	out.selected, e = selectEncoder(indexObject(config))
 	if e != nil && !checkEmpty {
 		return out, e
 	}
 	if checkEmpty {
-		rows, e = query("SELECT EXISTS(SELECT id FROM memories) OR EXISTS(SELECT id FROM vector_spaces)")
+		rows, e := query("SELECT EXISTS(SELECT id FROM memories) OR EXISTS(SELECT id FROM vector_spaces)")
 		if e != nil {
 			return out, e
 		}
@@ -186,21 +202,27 @@ func (o *Owner) initializeIndex(ctx context.Context) error {
 			return e
 		}
 		o.indexBootstrap = state.empty
-		if str(state.job, "state") == "running" {
-			lease, _ := get(state.job, "leaseUntil").(float64)
-			if lease <= float64(o.d.Now().UnixMilli()) {
-				_ = state.job.Set("state", "paused")
-				reason := "lease_expired"
-				if get(state.job, "requiresRetryConfirmation") == true {
-					reason = "lease_expired_uncertain_request"
-				}
-				_ = state.job.Set("error", reason)
-				return saveIndexValue(ws, "embedding.rebuild", state.job)
-			}
-		}
-		return nil
+		return o.expireIndexLease(ws, state.job)
 	})
 }
+
+func (o *Owner) expireIndexLease(ws *recovery.WriteSession, job *Object) error {
+	if str(job, "state") != "running" {
+		return nil
+	}
+	lease, _ := get(job, "leaseUntil").(float64)
+	if lease > float64(o.d.Now().UnixMilli()) {
+		return nil
+	}
+	_ = job.Set("state", "paused")
+	reason := "lease_expired"
+	if get(job, "requiresRetryConfirmation") == true {
+		reason = "lease_expired_uncertain_request"
+	}
+	_ = job.Set("error", reason)
+	return saveIndexValue(ws, "embedding.rebuild", job)
+}
+
 func indexUsable(s indexState, a *Object) bool {
 	return a != nil && s.active != nil && str(s.active, "generationId") == str(a, "generationId") && s.incompatible != str(a, "generationId") && s.selected != nil && s.selected.revision == str(a, "encoderRevision")
 }

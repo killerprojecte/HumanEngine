@@ -1,0 +1,1225 @@
+{
+  "node": "v24.22.1",
+  "sources": {
+    "src/api.ts": "ad4b1abf9d71081a103ead76bde9b9b12bda02b982573968795eac79261fecae",
+    "src/admin.ts": "1c0075c91a98be05189c36c347f16bcd3f285d8ebc2afb50c2b6af7628a5969c",
+    "src/engine.ts": "e880e6ad003d4906b25435b066b66f0486ebfa0711c2994a3c1d402aac6aa025",
+    "src/embedding-index.ts": "78f460b094f84bef9b484df9e14307b33652e02ac2551ae0acd770bfc4eb2deb",
+    "src/memory.ts": "c3add464f834af563a606172b0897dfffc65f9be073d9ccaca0d5c1ac66dff71",
+    "src/config-read-values.ts": "87adb541bbbc9fbaa9e0eab2d2c22802dd890713300bc6d63911a271ec772188",
+    "src/schema.ts": "eaf6cbcaa380595c241990a1b3e069412db876fc95c0fedf831f9d538377261a",
+    "src/memory/lifecycle/proof-invalidation.ts": "89b08b2002228436e34e64f03bedaa8a1e3ffc6d583e8fd8ebc585a3cbd6ca35"
+  },
+  "scene": {
+    "id": "s",
+    "name": "Synthetic",
+    "kind": "group",
+    "adapterId": "fixture",
+    "accountId": "fixture",
+    "platformSceneId": "s",
+    "learningEnabled": true,
+    "participationEnabled": false,
+    "proactiveEnabled": false
+  },
+  "records": [
+    {
+      "id": "indexed",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic indexed",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "pending",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic pending",
+      "kind": "fact",
+      "status": "disputed",
+      "origin": "manual",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z",
+      "validUntil": "2026-01-02T00:00:00.000Z"
+    },
+    {
+      "id": "future",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic future",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z",
+      "validFrom": "2099-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "private",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s",
+        "personId": "person"
+      },
+      "content": "Synthetic private",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "internal",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic internal",
+      "kind": "fact",
+      "status": "active",
+      "origin": "manual",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z",
+      "internalUse": "synthetic"
+    },
+    {
+      "id": "quarantined",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic quarantined",
+      "kind": "fact",
+      "status": "active",
+      "origin": "learned",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z",
+      "lineageStatus": "quarantined"
+    },
+    {
+      "id": "unverified",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic unverified",
+      "kind": "fact",
+      "status": "active",
+      "origin": "learned",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "old",
+      "scope": {
+        "kind": "scene",
+        "sceneId": "s"
+      },
+      "content": "Synthetic old",
+      "kind": "fact",
+      "status": "superseded",
+      "origin": "manual",
+      "confidence": 0.8,
+      "importance": "medium",
+      "sources": [],
+      "learnedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "spaces": [
+    [
+      "space-active",
+      {
+        "generation": "active"
+      }
+    ],
+    [
+      "space-prior",
+      {
+        "generation": "prior"
+      }
+    ],
+    [
+      "space-staging",
+      {
+        "generation": "staging"
+      }
+    ],
+    [
+      "space-legacy",
+      {}
+    ],
+    [
+      "space-null",
+      {
+        "generation": null
+      }
+    ]
+  ],
+  "vectors": [
+    [
+      "indexed",
+      "space-active"
+    ],
+    [
+      "unverified",
+      "space-active"
+    ],
+    [
+      "pending",
+      "space-prior"
+    ],
+    [
+      "pending",
+      "space-staging"
+    ],
+    [
+      "private",
+      "space-legacy"
+    ],
+    [
+      "private",
+      "space-null"
+    ]
+  ],
+  "proposal": {
+    "context": {
+      "sceneId": "s",
+      "simulation": false,
+      "provenance": "source-only",
+      "sourceEvidence": [
+        {
+          "sceneId": "s",
+          "messageId": "fixture-message",
+          "senderId": "fixture-person",
+          "available": true,
+          "isBot": false,
+          "origin": "live"
+        }
+      ]
+    },
+    "candidate": {
+      "content": "Synthetic supported fact",
+      "kind": "fact",
+      "sources": [
+        {
+          "sceneId": "s",
+          "messageId": "fixture-message",
+          "senderId": "fixture-person"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "empty",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "unconfigured",
+        "coverage": {
+          "eligible": 0,
+          "indexed": 0,
+          "pending": 0
+        },
+        "retained": {
+          "generations": 0,
+          "vectors": 0
+        }
+      },
+      "stored": null,
+      "learned": null,
+      "learnedVector": 0
+    },
+    {
+      "name": "native-width",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "models",
+          "value": {
+            "providers": [
+              {
+                "id": "p",
+                "name": "Synthetic",
+                "protocol": "openai-chat",
+                "baseUrl": "https://例え.テスト:443/a/../路径"
+              }
+            ],
+            "models": [
+              {
+                "id": "m",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "embedding"
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "role": "embedding",
+                "orderedModelIds": [
+                  "m"
+                ],
+                "timeoutMs": 1000
+              }
+            ]
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "needs_rebuild",
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "02f8a202159e6c637ad74d94c3d798d80f3236656e716dd4e51acb4658ba5e5b"
+        },
+        "coverage": {
+          "eligible": 0,
+          "indexed": 0,
+          "pending": 0
+        },
+        "retained": {
+          "generations": 0,
+          "vectors": 0
+        }
+      },
+      "stored": null,
+      "learned": null,
+      "learnedVector": 0
+    },
+    {
+      "name": "operational-metadata-not-fingerprint",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "models",
+          "value": {
+            "providers": [
+              {
+                "id": "p",
+                "name": "Synthetic",
+                "protocol": "openai-chat",
+                "baseUrl": "https://例え.テスト:443/a/../路径",
+                "credentialEnv": "SYNTHETIC",
+                "timeoutMs": 1500
+              }
+            ],
+            "models": [
+              {
+                "id": "m",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "embedding"
+                ],
+                "embeddingBatchSize": 7
+              }
+            ],
+            "routes": [
+              {
+                "role": "embedding",
+                "orderedModelIds": [
+                  "m"
+                ],
+                "timeoutMs": 1000
+              }
+            ]
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "needs_rebuild",
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "02f8a202159e6c637ad74d94c3d798d80f3236656e716dd4e51acb4658ba5e5b"
+        },
+        "coverage": {
+          "eligible": 0,
+          "indexed": 0,
+          "pending": 0
+        },
+        "retained": {
+          "generations": 0,
+          "vectors": 0
+        }
+      },
+      "stored": null,
+      "learned": null,
+      "learnedVector": 0
+    },
+    {
+      "name": "explicit-width",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "models",
+          "value": {
+            "providers": [
+              {
+                "id": "p",
+                "name": "Synthetic",
+                "protocol": "openai-chat",
+                "baseUrl": "https://例え.テスト:443/a/../路径"
+              }
+            ],
+            "models": [
+              {
+                "id": "m",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "embedding"
+                ],
+                "embeddingDimensions": 2
+              }
+            ],
+            "routes": [
+              {
+                "role": "embedding",
+                "orderedModelIds": [
+                  "m"
+                ],
+                "timeoutMs": 1000
+              }
+            ]
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "needs_rebuild",
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "requestedDimensions": 2
+        },
+        "coverage": {
+          "eligible": 0,
+          "indexed": 0,
+          "pending": 0
+        },
+        "retained": {
+          "generations": 0,
+          "vectors": 0
+        }
+      },
+      "stored": null,
+      "learned": null,
+      "learnedVector": 0
+    },
+    {
+      "name": "ready",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "embedding.active",
+          "value": {
+            "generationId": "active",
+            "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+            "modelId": "m",
+            "dimensions": 2,
+            "spaceId": "space-active"
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "ready",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "requestedDimensions": 2
+        },
+        "coverage": {
+          "eligible": 5,
+          "indexed": 2,
+          "pending": 3
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 5
+        }
+      },
+      "stored": null,
+      "learned": "active",
+      "learnedVector": 1
+    },
+    {
+      "name": "incompatible",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "embedding.incompatible",
+          "value": "active"
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "needs_rebuild",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "requestedDimensions": 2
+        },
+        "coverage": {
+          "eligible": 5,
+          "indexed": 0,
+          "pending": 5
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 5
+        }
+      },
+      "stored": null,
+      "learned": "active",
+      "learnedVector": 1
+    },
+    {
+      "name": "invalid-endpoint",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "embedding.incompatible"
+        },
+        {
+          "key": "models",
+          "value": {
+            "providers": [
+              {
+                "id": "p",
+                "name": "Synthetic",
+                "protocol": "openai-chat",
+                "baseUrl": "https://synthetic.invalid/private?key=never-expose"
+              }
+            ],
+            "models": [
+              {
+                "id": "m",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "embedding"
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "role": "embedding",
+                "orderedModelIds": [
+                  "m"
+                ],
+                "timeoutMs": 1000
+              }
+            ]
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "unconfigured",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "coverage": {
+          "eligible": 5,
+          "indexed": 0,
+          "pending": 5
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 5
+        }
+      },
+      "stored": null,
+      "learned": "active",
+      "learnedVector": 1
+    },
+    {
+      "name": "different-encoder",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "models",
+          "value": {
+            "providers": [
+              {
+                "id": "p",
+                "name": "Synthetic",
+                "protocol": "openai-chat",
+                "baseUrl": "https://例え.テスト:443/a/../路径"
+              }
+            ],
+            "models": [
+              {
+                "id": "m",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "embedding"
+                ],
+                "embeddingDimensions": 4
+              }
+            ],
+            "routes": [
+              {
+                "role": "embedding",
+                "orderedModelIds": [
+                  "m"
+                ],
+                "timeoutMs": 1000
+              }
+            ]
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "needs_rebuild",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "e2e88e5579c1d42f5f086c4ac9938564a2eaa0fd9f67d73782c19060995cf187",
+          "requestedDimensions": 4
+        },
+        "coverage": {
+          "eligible": 5,
+          "indexed": 0,
+          "pending": 5
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 5
+        }
+      },
+      "stored": null,
+      "learned": "active",
+      "learnedVector": 1
+    },
+    {
+      "name": "first-model-only",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [
+        {
+          "key": "models",
+          "value": {
+            "providers": [
+              {
+                "id": "p",
+                "name": "Synthetic",
+                "protocol": "openai-chat",
+                "baseUrl": "https://例え.テスト:443/a/../路径"
+              }
+            ],
+            "models": [
+              {
+                "id": "plain",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "text"
+                ]
+              },
+              {
+                "id": "m",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "embedding"
+                ]
+              }
+            ],
+            "routes": [
+              {
+                "role": "embedding",
+                "orderedModelIds": [
+                  "plain",
+                  "m"
+                ],
+                "timeoutMs": 1000
+              }
+            ]
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "unconfigured",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "coverage": {
+          "eligible": 5,
+          "indexed": 0,
+          "pending": 5
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 5
+        }
+      },
+      "stored": null,
+      "learned": "active",
+      "learnedVector": 1
+    },
+    {
+      "name": "unauthorized-expired",
+      "method": "GET",
+      "auth": false,
+      "at": 1800000030000,
+      "set": [
+        {
+          "key": "models",
+          "value": {
+            "providers": [
+              {
+                "id": "p",
+                "name": "Synthetic",
+                "protocol": "openai-chat",
+                "baseUrl": "https://例え.テスト:443/a/../路径"
+              }
+            ],
+            "models": [
+              {
+                "id": "m",
+                "providerId": "p",
+                "apiModelName": "向量",
+                "displayName": "Synthetic",
+                "capabilities": [
+                  "embedding"
+                ],
+                "embeddingDimensions": 2
+              }
+            ],
+            "routes": [
+              {
+                "role": "embedding",
+                "orderedModelIds": [
+                  "m"
+                ],
+                "timeoutMs": 1000
+              }
+            ]
+          }
+        },
+        {
+          "key": "embedding.rebuild",
+          "value": {
+            "id": "fixture-job",
+            "state": "running",
+            "modelId": "m",
+            "encoderRevision": "old",
+            "total": 3,
+            "processed": 1,
+            "requiresRetryConfirmation": false,
+            "expectedActive": "old",
+            "dimensions": 2,
+            "spaceId": "space-active",
+            "attemptId": "attempt",
+            "ownerId": "other-process",
+            "leaseUntil": 1800000030000
+          }
+        }
+      ],
+      "status": 401,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "",
+        "x-content-type-options": ""
+      },
+      "body": {
+        "error": "Authentication required"
+      },
+      "stored": {
+        "id": "fixture-job",
+        "state": "running",
+        "modelId": "m",
+        "encoderRevision": "old",
+        "total": 3,
+        "processed": 1,
+        "requiresRetryConfirmation": false,
+        "expectedActive": "old",
+        "dimensions": 2,
+        "spaceId": "space-active",
+        "attemptId": "attempt",
+        "ownerId": "other-process",
+        "leaseUntil": 1800000030000
+      },
+      "learned": "active",
+      "learnedVector": 1
+    },
+    {
+      "name": "peer-running",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000029999,
+      "set": [],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "ready",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "requestedDimensions": 2
+        },
+        "job": {
+          "id": "fixture-job",
+          "state": "running",
+          "modelId": "m",
+          "encoderRevision": "old",
+          "total": 3,
+          "processed": 1,
+          "requiresRetryConfirmation": false,
+          "expectedActive": "old",
+          "dimensions": 2,
+          "spaceId": "space-active",
+          "attemptId": "attempt",
+          "ownerId": "other-process",
+          "leaseUntil": 1800000030000
+        },
+        "coverage": {
+          "eligible": 4,
+          "indexed": 1,
+          "pending": 3
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 4
+        }
+      },
+      "stored": {
+        "id": "fixture-job",
+        "state": "running",
+        "modelId": "m",
+        "encoderRevision": "old",
+        "total": 3,
+        "processed": 1,
+        "requiresRetryConfirmation": false,
+        "expectedActive": "old",
+        "dimensions": 2,
+        "spaceId": "space-active",
+        "attemptId": "attempt",
+        "ownerId": "other-process",
+        "leaseUntil": 1800000030000
+      },
+      "learned": "invalidated",
+      "learnedVector": 0
+    },
+    {
+      "name": "normal-expiry",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000030000,
+      "set": [],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "ready",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "requestedDimensions": 2
+        },
+        "job": {
+          "id": "fixture-job",
+          "state": "paused",
+          "modelId": "m",
+          "encoderRevision": "old",
+          "total": 3,
+          "processed": 1,
+          "requiresRetryConfirmation": false,
+          "expectedActive": "old",
+          "dimensions": 2,
+          "spaceId": "space-active",
+          "attemptId": "attempt",
+          "ownerId": "other-process",
+          "leaseUntil": 1800000030000,
+          "error": "lease_expired"
+        },
+        "coverage": {
+          "eligible": 4,
+          "indexed": 1,
+          "pending": 3
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 4
+        }
+      },
+      "stored": {
+        "id": "fixture-job",
+        "state": "paused",
+        "modelId": "m",
+        "encoderRevision": "old",
+        "total": 3,
+        "processed": 1,
+        "requiresRetryConfirmation": false,
+        "expectedActive": "old",
+        "dimensions": 2,
+        "spaceId": "space-active",
+        "attemptId": "attempt",
+        "ownerId": "other-process",
+        "leaseUntil": 1800000030000,
+        "error": "lease_expired"
+      },
+      "learned": "invalidated",
+      "learnedVector": 0
+    },
+    {
+      "name": "uncertain-head-expiry",
+      "method": "HEAD",
+      "auth": true,
+      "at": 1800000030000,
+      "set": [
+        {
+          "key": "embedding.rebuild",
+          "value": {
+            "id": "fixture-job",
+            "state": "running",
+            "modelId": "m",
+            "encoderRevision": "old",
+            "total": 3,
+            "processed": 1,
+            "requiresRetryConfirmation": true,
+            "expectedActive": "old",
+            "dimensions": 2,
+            "spaceId": "space-active",
+            "attemptId": "attempt",
+            "ownerId": "other-process",
+            "leaseUntil": 1800000030000
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": null,
+      "stored": {
+        "id": "fixture-job",
+        "state": "paused",
+        "modelId": "m",
+        "encoderRevision": "old",
+        "total": 3,
+        "processed": 1,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "old",
+        "dimensions": 2,
+        "spaceId": "space-active",
+        "attemptId": "attempt",
+        "ownerId": "other-process",
+        "leaseUntil": 1800000030000,
+        "error": "lease_expired_uncertain_request"
+      },
+      "learned": "invalidated",
+      "learnedVector": 0
+    },
+    {
+      "name": "uncertain-paused",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000030000,
+      "set": [],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "ready",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "requestedDimensions": 2
+        },
+        "job": {
+          "id": "fixture-job",
+          "state": "paused",
+          "modelId": "m",
+          "encoderRevision": "old",
+          "total": 3,
+          "processed": 1,
+          "requiresRetryConfirmation": true,
+          "expectedActive": "old",
+          "dimensions": 2,
+          "spaceId": "space-active",
+          "attemptId": "attempt",
+          "ownerId": "other-process",
+          "leaseUntil": 1800000030000,
+          "error": "lease_expired_uncertain_request"
+        },
+        "coverage": {
+          "eligible": 4,
+          "indexed": 1,
+          "pending": 3
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 4
+        }
+      },
+      "stored": {
+        "id": "fixture-job",
+        "state": "paused",
+        "modelId": "m",
+        "encoderRevision": "old",
+        "total": 3,
+        "processed": 1,
+        "requiresRetryConfirmation": true,
+        "expectedActive": "old",
+        "dimensions": 2,
+        "spaceId": "space-active",
+        "attemptId": "attempt",
+        "ownerId": "other-process",
+        "leaseUntil": 1800000030000,
+        "error": "lease_expired_uncertain_request"
+      },
+      "learned": "invalidated",
+      "learnedVector": 0
+    },
+    {
+      "name": "missing-lease-expiry",
+      "method": "GET",
+      "auth": true,
+      "at": 1800000030000,
+      "set": [
+        {
+          "key": "embedding.rebuild",
+          "value": {
+            "id": "fixture-job",
+            "state": "running",
+            "modelId": "m",
+            "encoderRevision": "old",
+            "total": 3,
+            "processed": 1,
+            "requiresRetryConfirmation": false,
+            "expectedActive": "old",
+            "dimensions": 2,
+            "spaceId": "space-active",
+            "attemptId": "attempt",
+            "ownerId": "other-process"
+          }
+        }
+      ],
+      "status": 200,
+      "headers": {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff"
+      },
+      "body": {
+        "state": "ready",
+        "active": {
+          "generationId": "active",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "modelId": "m",
+          "dimensions": 2,
+          "spaceId": "space-active"
+        },
+        "selected": {
+          "modelId": "m",
+          "encoderRevision": "88ced135cca922f17b8f62adbf49757eb0ae642c40ff10761dd7df17ae4b9b40",
+          "requestedDimensions": 2
+        },
+        "job": {
+          "id": "fixture-job",
+          "state": "paused",
+          "modelId": "m",
+          "encoderRevision": "old",
+          "total": 3,
+          "processed": 1,
+          "requiresRetryConfirmation": false,
+          "expectedActive": "old",
+          "dimensions": 2,
+          "spaceId": "space-active",
+          "attemptId": "attempt",
+          "ownerId": "other-process",
+          "error": "lease_expired"
+        },
+        "coverage": {
+          "eligible": 4,
+          "indexed": 1,
+          "pending": 3
+        },
+        "retained": {
+          "generations": 3,
+          "vectors": 4
+        }
+      },
+      "stored": {
+        "id": "fixture-job",
+        "state": "paused",
+        "modelId": "m",
+        "encoderRevision": "old",
+        "total": 3,
+        "processed": 1,
+        "requiresRetryConfirmation": false,
+        "expectedActive": "old",
+        "dimensions": 2,
+        "spaceId": "space-active",
+        "attemptId": "attempt",
+        "ownerId": "other-process",
+        "error": "lease_expired"
+      },
+      "learned": "invalidated",
+      "learnedVector": 0
+    }
+  ]
+}

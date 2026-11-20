@@ -46,10 +46,7 @@ func (s *Service) indexableByIDs(ctx context.Context, st *assertions.Store, ids 
 			if e != nil {
 				return e
 			}
-			if record == nil || truthy(value(record, "internalUse")) || (text(record, "status") != "active" && text(record, "status") != "disputed") || (text(record, "origin") != "manual" && text(record, "lineageStatus") != "verified") {
-				continue
-			}
-			ok, e := a.Supported(record)
+			ok, e := indexable(record, a)
 			if e != nil {
 				return e
 			}
@@ -61,6 +58,43 @@ func (s *Service) indexableByIDs(ctx context.Context, st *assertions.Store, ids 
 	})
 	return
 }
+
+// IndexCoverage classifies the current records inside the caller's published
+// snapshot. Index membership never changes which records are eligible.
+func (s *Service) IndexCoverage(r *assertions.Reader, indexedIDs map[string]struct{}) (eligible, indexed int, err error) {
+	a, err := assertionauthority.New(r, s.d.Authority)
+	if err != nil {
+		return 0, 0, err
+	}
+	records, err := r.All()
+	if err != nil {
+		return 0, 0, err
+	}
+	for _, raw := range records {
+		record := object(raw)
+		ok, err := indexable(record, a)
+		if err != nil {
+			return 0, 0, err
+		}
+		if ok {
+			eligible++
+			if _, found := indexedIDs[text(record, "id")]; found {
+				indexed++
+			}
+		}
+	}
+	return eligible, indexed, nil
+}
+
+func indexable(record *Object, authority *assertionauthority.Authority) (bool, error) {
+	status := text(record, "status")
+	if record == nil || truthy(value(record, "internalUse")) || (status != "active" && status != "disputed") ||
+		(text(record, "origin") != "manual" && text(record, "lineageStatus") != "verified") {
+		return false, nil
+	}
+	return authority.Supported(record)
+}
+
 func (s *Service) IndexInSession(ctx context.Context, ws *recovery.WriteSession, id, space string, vector []float64) error {
 	st := s.d.Assertions.WithSession(ws)
 	return st.Read(ctx, func(r *assertions.Reader) error {

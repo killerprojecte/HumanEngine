@@ -14,6 +14,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/learningowner"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelcalls"
@@ -33,6 +34,7 @@ type Server struct {
 	manualMemoryIndex   func(context.Context, string, string)
 	logStatus           *logStatusOwner
 	learningAdmin       *learningAdminOwner
+	embeddingIndexRead  learningowner.IndexAdminRead
 	budgetAdmin         *budgetAdminOwner
 	memoryDelete        *memoryservice.Service
 	memoryAdminRead     *memoryservice.AdminRead
@@ -125,6 +127,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 	sceneID, operation := sceneReadRoute(r, path)
 	sceneRead := operation != "" && s.runtimeStatus != nil
 	learningAdmin := s.learningAdmin != nil && learningAdminPath(path)
+	embeddingIndex := s.embeddingIndexRead != nil && path == embeddingIndexPath && (r.Method == http.MethodGet || r.Method == http.MethodHead)
 	budgetAdmin := s.budgetAdmin != nil && budgetAdminPath(r.Method, path)
 	memoryIdentities := s.memoryAdminRead != nil && (r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodPost) && path == "/api/memory-identities"
 	relationID, reviewRelation := memoryRelationReviewPath(r.Method, path)
@@ -147,7 +150,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		mediaRequest, sceneMedia = sceneMediaRoute(r.Method, path)
 	}
 	id := r.Header.Get("X-Request-ID")
-	if simulation || learningAdmin || budgetAdmin || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || workspacePin || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions" || r.Method == http.MethodPost && strings.HasPrefix(path, "/api/models/") && strings.HasSuffix(path, "/probe"))) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
+	if simulation || embeddingIndex || learningAdmin || budgetAdmin || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || workspacePin || commitmentRead || (s.configuration != nil && (path == "/api/rules" || path == "/api/persona/versions" || r.Method == http.MethodPost && strings.HasPrefix(path, "/api/models/") && strings.HasSuffix(path, "/probe"))) || (s.memoryDelete != nil && memoryDeletePath(path)) || (s.logStatus != nil && logStatusPath(path)) {
 		// Source requestIdFor assigns a fresh UUID, never trusting a caller's ID.
 		b := make([]byte, 16)
 		_, _ = rand.Read(b)
@@ -172,12 +175,12 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
-	if memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+	if embeddingIndex || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 		w.Header().Del("Cache-Control")
 		w.Header().Del("X-Content-Type-Options")
 	}
 	authenticationError := func(status int, message string) {
-		if memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
+		if embeddingIndex || memoryKnowledge || memoryRelations || reviewRelation || memoryPeople || memoryIdentities || memoryHistory || assertionHistory || workspaceEpisodes || memorySemantics || workspaceWorkingSet || workspacePin || commitmentRead || (s.memoryDelete != nil && memoryDeletePath(path)) {
 			if r.Method == "HEAD" {
 				w.WriteHeader(status)
 			} else {
@@ -242,6 +245,10 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available boo
 		} else {
 			s.serveBudgetAdmin(w, r, available, path, id)
 		}
+		return
+	}
+	if embeddingIndex {
+		s.serveEmbeddingIndex(w, r, available, id)
 		return
 	}
 	if learningAdmin {

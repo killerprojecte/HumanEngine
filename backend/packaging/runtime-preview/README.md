@@ -109,8 +109,7 @@ acceptance. Default Go migration CI remains a separate gate.
 ## Opt-in hosted Chromium smoke
 
 The browser smoke activates only on an existing `feat/refactor-golang` push
-whose before/after diff changes `browser_smoke.py`, `browser-requirements.txt`
-or `.github/workflows/golang-package-preview.yml`. Pull requests, ordinary
+whose before/after diff changes `browser_smoke.py` or `browser-requirements.txt`. Pull requests, ordinary
 pushes and manual runs do not install or start Chromium. This branch-local push
 path does not require the workflow to exist on the default branch. The existing job builds the real preview image and
 launches it against only disposable synthetic data. In addition to the normal

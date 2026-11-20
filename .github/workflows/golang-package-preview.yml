@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Detect an explicit browser proof change
-        id: browser
+      - name: Detect focused package proofs
+        id: proofs
         if: github.event_name == 'push' && github.ref == 'refs/heads/feat/refactor-golang'
         env:
           BEFORE: ${{ github.event.before }}
@@ -30,22 +30,26 @@ jobs:
             exit 1
           fi
           if [[ "$BEFORE" == 0000000000000000000000000000000000000000 ]]; then
-            echo "run=false" >> "$GITHUB_OUTPUT"
+            printf 'browser=false\nrestore=false\n' >> "$GITHUB_OUTPUT"
             exit 0
           fi
           if ! git cat-file -e "$BEFORE^{commit}"; then
             git fetch --no-tags --depth=1 origin "$BEFORE"
           fi
-          changed=0
-          git diff --quiet "$BEFORE" "$GITHUB_SHA" -- \
-            .github/workflows/golang-package-preview.yml \
-            backend/packaging/runtime-preview/browser_smoke.py \
-            backend/packaging/runtime-preview/browser-requirements.txt || changed=$?
-          case "$changed" in
-            0) echo "run=false" >> "$GITHUB_OUTPUT" ;;
-            1) echo "run=true" >> "$GITHUB_OUTPUT" ;;
-            *) exit "$changed" ;;
-          esac
+          detect() {
+            local key="$1" changed=0
+            shift
+            git diff --quiet "$BEFORE" "$GITHUB_SHA" -- "$@" || changed=$?
+            case "$changed" in
+              0) echo "$key=false" >> "$GITHUB_OUTPUT" ;;
+              1) echo "$key=true" >> "$GITHUB_OUTPUT" ;;
+              *) return "$changed" ;;
+            esac
+          }
+          detect browser backend/packaging/runtime-preview/browser_smoke.py \
+            backend/packaging/runtime-preview/browser-requirements.txt
+          detect restore backend/packaging/runtime-preview/migration_drill.py \
+            backend/packaging/runtime-preview/test_migration_drill.py
       - name: Check acceptance driver and Compose configuration
         env:
           HUMANENGINE_ADMIN_TOKEN: synthetic-package-token
@@ -55,25 +59,44 @@ jobs:
       - name: Build opt-in candidate (no push)
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
       - name: Select Python for the opt-in browser smoke
-        if: steps.browser.outputs.run == 'true'
+        if: steps.proofs.outputs.browser == 'true'
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
       - name: Install the pinned host Playwright driver
-        if: steps.browser.outputs.run == 'true'
+        if: steps.proofs.outputs.browser == 'true'
         run: |
           python -m venv "$RUNNER_TEMP/humanengine-browser-venv"
           py="$RUNNER_TEMP/humanengine-browser-venv/bin/python"
           "$py" -m pip install --require-hashes --only-binary :all: -r backend/packaging/runtime-preview/browser-requirements.txt
       - name: Exercise actual packaged startup, HTTP, drain and V1 lifecycle
         env:
-          RUN_BROWSER_SMOKE: ${{ steps.browser.outputs.run == 'true' }}
+          RUN_BROWSER_SMOKE: ${{ steps.proofs.outputs.browser == 'true' }}
         run: |
           if [ "$RUN_BROWSER_SMOKE" = true ]; then
             "$RUNNER_TEMP/humanengine-browser-venv/bin/python" backend/packaging/runtime-preview/acceptance.py --browser-smoke --evidence "$RUNNER_TEMP/package-evidence"
           else
             python3 backend/packaging/runtime-preview/acceptance.py --evidence "$RUNNER_TEMP/package-evidence"
           fi
+      - name: Check out exact TypeScript origin for the optional restore proof
+        if: steps.proofs.outputs.restore == 'true'
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: 39d8deb8922684298bab8ecb139be04555e8474a
+          path: .migration-legacy
+          persist-credentials: false
+      - name: Verify packaged migration and restore (no push)
+        if: steps.proofs.outputs.restore == 'true'
+        run: |
+          legacy=.migration-legacy
+          revision=$(git -C "$legacy" rev-parse HEAD)
+          docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts:local "$legacy"
+          docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts-tools:local "$legacy"
+          python3 backend/packaging/runtime-preview/migration_drill.py \
+            --ts-image humanengine-drill-ts:local \
+            --ts-tools-image humanengine-drill-ts-tools:local \
+            --go-image humanengine-go-preview:local --go-revision "$GITHUB_SHA" \
+            --evidence "$RUNNER_TEMP/package-evidence/migration-drill.json"
       - name: Preserve synthetic acceptance evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,0 +1,471 @@
+{
+  "today": "2031-03-15",
+  "older": "2031-03-14",
+  "restoreID": "12345678-1234-4234-8234-123456789012",
+  "settings": {
+    "budgetExperimentEnabled": true,
+    "budgetMode": "best_effort",
+    "budgetDailyUsd": 2.0000000001
+  },
+  "attempts": [
+    {
+      "id": "settled",
+      "day": "2031-03-15",
+      "lane": "foreground",
+      "state": "settled",
+      "known": 2011,
+      "held": 0,
+      "overrun": false,
+      "unbounded": false
+    },
+    {
+      "id": "carry",
+      "day": "2031-03-14",
+      "lane": "maintenance",
+      "state": "unknown",
+      "known": 7,
+      "held": 4500,
+      "overrun": false,
+      "unbounded": false
+    },
+    {
+      "id": "partial",
+      "day": "2031-03-15",
+      "lane": "realtime",
+      "state": "partial",
+      "known": 127,
+      "held": 350,
+      "overrun": true,
+      "unbounded": false
+    },
+    {
+      "id": "reserved",
+      "day": "2031-03-15",
+      "lane": "foreground",
+      "state": "reserved",
+      "known": 0,
+      "held": 660,
+      "overrun": false,
+      "unbounded": false
+    },
+    {
+      "id": "started",
+      "day": "2031-03-14",
+      "lane": "foreground",
+      "state": "started",
+      "known": 0,
+      "held": 0,
+      "overrun": false,
+      "unbounded": false
+    }
+  ],
+  "receipts": [
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "current",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture-cost",
+        "status": "known",
+        "amountNanoUsd": 12345
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    },
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "past",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-14",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture-cost",
+        "status": "known",
+        "amountNanoUsd": 300
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    },
+    {
+      "schemaVersion": 1,
+      "revision": 1,
+      "receipt": {
+        "id": "unknown",
+        "category": "tool",
+        "currency": "USD",
+        "billingDate": "2031-03-15",
+        "periodStart": "2031-03-14",
+        "periodEnd": "2031-03-15",
+        "sourceId": "fixture-cost",
+        "status": "unknown"
+      },
+      "correctionId": null,
+      "recordedAt": "2031-03-15T12:00:00.000Z"
+    }
+  ],
+  "cases": [
+    {
+      "name": "unauthenticated",
+      "route": "coverage",
+      "method": "GET",
+      "authorized": false,
+      "status": 401,
+      "body": {
+        "error": "Authentication required"
+      },
+      "headers": {
+        "cache-control": "",
+        "x-content-type-options": "",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "unauthenticated-head",
+      "route": "recovery",
+      "method": "HEAD",
+      "authorized": false,
+      "status": 401,
+      "body": null,
+      "headers": {
+        "cache-control": "",
+        "x-content-type-options": "",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "empty-disabled",
+      "route": "coverage",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "currency": "USD",
+        "externalKnownNanoUsd": 0,
+        "externalUnknownReceipts": 0,
+        "windowStart": "2031-03-15",
+        "knownNanoUsd": 0,
+        "heldNanoUsd": 0,
+        "carriedNanoUsd": 0,
+        "unresolvedNanoUsd": 0,
+        "admissionExposureNanoUsd": 0,
+        "remainingNanoUsd": 1000000000,
+        "laneExposureNanoUsd": {
+          "foreground": 0,
+          "realtime": 0,
+          "maintenance": 0
+        },
+        "overrunAttempts": 0,
+        "unboundedAttempts": 0,
+        "externalCosts": {
+          "currency": "USD",
+          "windowStart": "2031-03-15",
+          "knownTodayNanoUsd": 0,
+          "knownAllTimeNanoUsd": 0,
+          "unknownReceipts": 0,
+          "knownReceipts": 0,
+          "coverage": "known_imported_only"
+        },
+        "admissionHold": false,
+        "restorationCoverage": "none",
+        "enabled": false,
+        "mode": "strict",
+        "estimateKind": "verified_contract_required",
+        "amountUnit": "nanoUSD",
+        "usdPerNano": 1e-9,
+        "knownUsd": 0,
+        "heldUsd": 0,
+        "remainingUsd": 1,
+        "partialAttempts": 0,
+        "unknownAttempts": 0,
+        "pendingAttempts": 0,
+        "coverage": "settled"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "no-restoration",
+      "route": "recovery",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "held": false,
+        "restorationCoverage": "none"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "head-coverage",
+      "route": "coverage",
+      "method": "HEAD",
+      "authorized": true,
+      "status": 200,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "spend-held-disabled",
+      "route": "coverage",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "currency": "USD",
+        "externalKnownNanoUsd": 0,
+        "externalUnknownReceipts": 0,
+        "windowStart": "2031-03-15",
+        "knownNanoUsd": 2138,
+        "heldNanoUsd": 1010,
+        "carriedNanoUsd": 4500,
+        "unresolvedNanoUsd": 4850,
+        "admissionExposureNanoUsd": 7648,
+        "remainingNanoUsd": 999992352,
+        "laneExposureNanoUsd": {
+          "foreground": 2671,
+          "realtime": 477,
+          "maintenance": 4500
+        },
+        "overrunAttempts": 1,
+        "unboundedAttempts": 0,
+        "externalCosts": {
+          "currency": "USD",
+          "windowStart": "2031-03-15",
+          "knownTodayNanoUsd": 0,
+          "knownAllTimeNanoUsd": 0,
+          "unknownReceipts": 0,
+          "knownReceipts": 0,
+          "coverage": "known_imported_only"
+        },
+        "admissionHold": true,
+        "restorationCoverage": "unknown",
+        "restorationId": "12345678-1234-4234-8234-123456789012",
+        "enabled": false,
+        "mode": "strict",
+        "estimateKind": "verified_contract_required",
+        "amountUnit": "nanoUSD",
+        "usdPerNano": 1e-9,
+        "knownUsd": 0.000002138,
+        "heldUsd": 0.00000101,
+        "remainingUsd": 0.999992352,
+        "partialAttempts": 1,
+        "unknownAttempts": 1,
+        "pendingAttempts": 2,
+        "coverage": "pending"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "restoration-held",
+      "route": "recovery",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "restoreId": "12345678-1234-4234-8234-123456789012",
+        "held": true,
+        "restorationCoverage": "unknown"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "restoration-acknowledged",
+      "route": "recovery",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "restoreId": "12345678-1234-4234-8234-123456789012",
+        "held": false,
+        "restorationCoverage": "manually_acknowledged"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "head-recovery",
+      "route": "recovery",
+      "method": "HEAD",
+      "authorized": true,
+      "status": 200,
+      "body": null,
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "external-known-unbounded",
+      "route": "coverage",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "currency": "USD",
+        "externalKnownNanoUsd": 12345,
+        "externalUnknownReceipts": 0,
+        "windowStart": "2031-03-15",
+        "knownNanoUsd": 14483,
+        "heldNanoUsd": 1010,
+        "carriedNanoUsd": 4500,
+        "unresolvedNanoUsd": 4850,
+        "admissionExposureNanoUsd": 19993,
+        "remainingNanoUsd": 1999980008,
+        "laneExposureNanoUsd": {
+          "foreground": 2671,
+          "realtime": 477,
+          "maintenance": 4500
+        },
+        "overrunAttempts": 1,
+        "unboundedAttempts": 1,
+        "externalCosts": {
+          "currency": "USD",
+          "windowStart": "2031-03-15",
+          "knownTodayNanoUsd": 12345,
+          "knownAllTimeNanoUsd": 12645,
+          "unknownReceipts": 0,
+          "knownReceipts": 2,
+          "coverage": "known_imported_only"
+        },
+        "admissionHold": false,
+        "restorationCoverage": "manually_acknowledged",
+        "restorationId": "12345678-1234-4234-8234-123456789012",
+        "enabled": true,
+        "mode": "best_effort",
+        "estimateKind": "best_effort_not_hard_limit",
+        "amountUnit": "nanoUSD",
+        "usdPerNano": 1e-9,
+        "knownUsd": 0.000014483,
+        "heldUsd": 0.00000101,
+        "remainingUsd": 1.999980008,
+        "partialAttempts": 1,
+        "unknownAttempts": 1,
+        "pendingAttempts": 2,
+        "coverage": "unbounded"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "external-unknown-overshadows-unbounded",
+      "route": "coverage",
+      "method": "GET",
+      "authorized": true,
+      "status": 200,
+      "body": {
+        "currency": "USD",
+        "externalKnownNanoUsd": 12345,
+        "externalUnknownReceipts": 1,
+        "windowStart": "2031-03-15",
+        "knownNanoUsd": 14483,
+        "heldNanoUsd": 1010,
+        "carriedNanoUsd": 4500,
+        "unresolvedNanoUsd": 4850,
+        "admissionExposureNanoUsd": 19993,
+        "remainingNanoUsd": 0,
+        "laneExposureNanoUsd": {
+          "foreground": 2671,
+          "realtime": 477,
+          "maintenance": 4500
+        },
+        "overrunAttempts": 1,
+        "unboundedAttempts": 1,
+        "externalCosts": {
+          "currency": "USD",
+          "windowStart": "2031-03-15",
+          "knownTodayNanoUsd": 12345,
+          "knownAllTimeNanoUsd": 12645,
+          "unknownReceipts": 1,
+          "knownReceipts": 2,
+          "coverage": "incomplete"
+        },
+        "admissionHold": false,
+        "restorationCoverage": "manually_acknowledged",
+        "restorationId": "12345678-1234-4234-8234-123456789012",
+        "enabled": true,
+        "mode": "best_effort",
+        "estimateKind": "best_effort_not_hard_limit",
+        "amountUnit": "nanoUSD",
+        "usdPerNano": 1e-9,
+        "knownUsd": 0.000014483,
+        "heldUsd": 0.00000101,
+        "remainingUsd": 0,
+        "partialAttempts": 1,
+        "unknownAttempts": 1,
+        "pendingAttempts": 2,
+        "coverage": "external_incomplete"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "malformed-restoration",
+      "route": "recovery",
+      "method": "GET",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    },
+    {
+      "name": "malformed-coverage",
+      "route": "coverage",
+      "method": "GET",
+      "authorized": true,
+      "status": 503,
+      "body": {
+        "error": "Request failed; inspect server diagnostics",
+        "requestId": "<request-id>"
+      },
+      "headers": {
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "content-type": "application/json"
+      }
+    }
+  ]
+}

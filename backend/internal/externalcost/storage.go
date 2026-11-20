@@ -30,6 +30,19 @@ func (r Receipt) ID() string {
 	id, _ := v.(*jsjson.Object).Get("id")
 	return id.(string)
 }
+
+// Spend reads already validated accounting metadata without re-encoding a receipt.
+func (r Receipt) Spend() (billingDate string, amountNanoUSD int64, known bool) {
+	value, _ := r.value.Get("receipt")
+	input := value.(*jsjson.Object)
+	status, _ := input.Get("status")
+	if status != "known" {
+		return "", 0, false
+	}
+	date, _ := input.Get("billingDate")
+	amount, _ := input.Get("amountNanoUsd")
+	return date.(string), int64(amount.(float64)), true
+}
 func (r Receipt) Revision() int { v, _ := r.value.Get("revision"); return int(v.(float64)) }
 func (r Receipt) JSON() string {
 	if r.value == nil {

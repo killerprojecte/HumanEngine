@@ -63,25 +63,14 @@ func (s *BudgetService) settings(ctx context.Context) (*jsjson.Object, error) {
 		return nil, e
 	}
 	defer tx.Rollback()
-	held, e := readRestoredHold(ctx, tx)
+	hold, e := readRestoredHold(ctx, tx)
 	if e != nil {
 		return nil, e
 	}
-	if held {
+	if hold.Held {
 		return nil, errors.New("budget_restore_accounting_hold")
 	}
-	var encoded string
-	e = tx.QueryRowContext(ctx, "SELECT value FROM config WHERE key='settings'").Scan(&encoded)
-	if e == sql.ErrNoRows {
-		encoded = "{}"
-	} else if e != nil {
-		return nil, e
-	}
-	raw, e := jsjson.Parse(encoded)
-	if e != nil {
-		return nil, e
-	}
-	settings, e := settingsstore.ParseBudgetSettings(raw)
+	settings, e := readBudgetSettings(ctx, tx)
 	if e != nil {
 		return nil, e
 	}
@@ -91,24 +80,44 @@ func (s *BudgetService) settings(ctx context.Context) (*jsjson.Object, error) {
 	return settings, nil
 }
 
+type budgetReadQuery interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+}
+
+func readBudgetSettings(ctx context.Context, q budgetReadQuery) (*jsjson.Object, error) {
+	var encoded string
+	e := q.QueryRowContext(ctx, "SELECT value FROM config WHERE key='settings'").Scan(&encoded)
+	if e == sql.ErrNoRows {
+		encoded = "{}"
+	} else if e != nil {
+		return nil, e
+	}
+	raw, e := jsjson.Parse(encoded)
+	if e != nil {
+		return nil, e
+	}
+	return settingsstore.ParseBudgetSettings(raw)
+}
+
 var restoredUUID = regexp.MustCompile(`(?i)^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
 
-func readRestoredHold(ctx context.Context, tx *sql.Tx) (bool, error) {
-	invalid := func() (bool, error) { return false, errors.New("recovery_model_hold_invalid") }
+func readRestoredHold(ctx context.Context, q budgetReadQuery) (BudgetRecovery, error) {
+	invalid := func() (BudgetRecovery, error) { return BudgetRecovery{}, errors.New("recovery_model_hold_invalid") }
 	var kind string
-	e := tx.QueryRowContext(ctx, "SELECT type FROM sqlite_master WHERE name='recovery_model_hold'").Scan(&kind)
+	e := q.QueryRowContext(ctx, "SELECT type FROM sqlite_master WHERE name='recovery_model_hold'").Scan(&kind)
 	if e == sql.ErrNoRows {
-		return false, nil
+		return BudgetRecovery{RestorationCoverage: "none"}, nil
 	}
 	if e != nil {
-		return false, e
+		return BudgetRecovery{}, e
 	}
 	if kind != "table" {
 		return invalid()
 	}
-	rows, e := tx.QueryContext(ctx, "PRAGMA table_xinfo(recovery_model_hold)")
+	rows, e := q.QueryContext(ctx, "PRAGMA table_xinfo(recovery_model_hold)")
 	if e != nil {
-		return false, e
+		return BudgetRecovery{}, e
 	}
 	names := []string{}
 	for rows.Next() {
@@ -117,30 +126,30 @@ func readRestoredHold(ctx context.Context, tx *sql.Tx) (bool, error) {
 		var defaultValue any
 		if e = rows.Scan(&cid, &name, &typ, &notnull, &defaultValue, &pk, &hidden); e != nil {
 			rows.Close()
-			return false, e
+			return BudgetRecovery{}, e
 		}
 		names = append(names, name)
 	}
 	e = rows.Err()
 	rows.Close()
 	if e != nil {
-		return false, e
+		return BudgetRecovery{}, e
 	}
 	if strings.Join(names, ",") != "id,restore_id,status" {
 		return invalid()
 	}
-	rows, e = tx.QueryContext(ctx, "SELECT id,restore_id,status FROM recovery_model_hold LIMIT 2")
+	rows, e = q.QueryContext(ctx, "SELECT id,restore_id,status FROM recovery_model_hold LIMIT 2")
 	if e != nil {
-		return false, e
+		return BudgetRecovery{}, e
 	}
 	defer rows.Close()
 	count := 0
-	held := false
+	var result BudgetRecovery
 	for rows.Next() {
 		var id any
 		var restoreID, status any
 		if e = rows.Scan(&id, &restoreID, &status); e != nil {
-			return false, e
+			return BudgetRecovery{}, e
 		}
 		count++
 		idValue, ok := id.(int64)
@@ -149,15 +158,20 @@ func readRestoredHold(ctx context.Context, tx *sql.Tx) (bool, error) {
 		if !ok || idValue != 1 || !okText || !restoredUUID.MatchString(text) || !okState || (state != "held" && state != "manually_acknowledged") {
 			return invalid()
 		}
-		held = state == "held"
+		result.RestoreID = text
+		result.Held = state == "held"
+		result.RestorationCoverage = state
+		if result.Held {
+			result.RestorationCoverage = "unknown"
+		}
 	}
 	if e = rows.Err(); e != nil {
-		return false, e
+		return BudgetRecovery{}, e
 	}
 	if count != 1 {
 		return invalid()
 	}
-	return held, nil
+	return result, nil
 }
 func settingsPolicy(settings *jsjson.Object) (BudgetPolicy, error) {
 	number := func(k string) float64 { v, _ := settings.Get(k); return v.(float64) }

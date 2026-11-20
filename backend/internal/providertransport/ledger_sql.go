@@ -272,6 +272,7 @@ type BudgetCoverage struct {
 	ExternalKnownNanoUSD, ExternalUnknownReceipts, KnownNanoUSD, HeldNanoUSD, CarriedNanoUSD, UnresolvedNanoUSD, AdmissionExposureNanoUSD, RemainingNanoUSD int64
 	LaneExposureNanoUSD                                                                                                                                     map[string]int64
 	OverrunAttempts, UnboundedAttempts                                                                                                                      int64
+	externalKnownAllTime, externalKnownReceipts                                                                                                             int64
 }
 
 // These four indexed projections preserve globally carried liabilities without
@@ -318,29 +319,21 @@ func (l *SQLLedger) coverage(ctx context.Context, c *sql.Conn, p BudgetPolicy) (
 	if err != nil {
 		return
 	}
-	var externalAllTime int64
 	for _, receipt := range receipts {
-		var r struct {
-			Receipt struct {
-				Status, BillingDate string
-				AmountNanoUSD       int64
-			}
+		date, amount, known := receipt.Spend()
+		if !known {
+			v.ExternalUnknownReceipts++
+			continue
 		}
-		if err = json.Unmarshal([]byte(receipt.JSON()), &r); err != nil {
+		v.externalKnownReceipts++
+		v.externalKnownAllTime, err = budgetSum(v.externalKnownAllTime, amount)
+		if err != nil {
 			return
 		}
-		if r.Receipt.Status != "known" {
-			v.ExternalUnknownReceipts++
-		} else {
-			externalAllTime, err = budgetSum(externalAllTime, r.Receipt.AmountNanoUSD)
+		if date == v.WindowStart {
+			v.ExternalKnownNanoUSD, err = budgetSum(v.ExternalKnownNanoUSD, amount)
 			if err != nil {
 				return
-			}
-			if r.Receipt.BillingDate == v.WindowStart {
-				v.ExternalKnownNanoUSD, err = budgetSum(v.ExternalKnownNanoUSD, r.Receipt.AmountNanoUSD)
-				if err != nil {
-					return
-				}
 			}
 		}
 	}
@@ -716,6 +709,8 @@ func (v BudgetAttemptView) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(out)
 }
-func (v BudgetCoverage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]any{"currency": v.Currency, "windowStart": v.WindowStart, "externalKnownNanoUsd": v.ExternalKnownNanoUSD, "externalUnknownReceipts": v.ExternalUnknownReceipts, "knownNanoUsd": v.KnownNanoUSD, "heldNanoUsd": v.HeldNanoUSD, "carriedNanoUsd": v.CarriedNanoUSD, "unresolvedNanoUsd": v.UnresolvedNanoUSD, "admissionExposureNanoUsd": v.AdmissionExposureNanoUSD, "remainingNanoUsd": v.RemainingNanoUSD, "laneExposureNanoUsd": v.LaneExposureNanoUSD, "overrunAttempts": v.OverrunAttempts, "unboundedAttempts": v.UnboundedAttempts})
+func (v BudgetCoverage) MarshalJSON() ([]byte, error) { return json.Marshal(v.wire()) }
+
+func (v BudgetCoverage) wire() map[string]any {
+	return map[string]any{"currency": v.Currency, "windowStart": v.WindowStart, "externalKnownNanoUsd": v.ExternalKnownNanoUSD, "externalUnknownReceipts": v.ExternalUnknownReceipts, "knownNanoUsd": v.KnownNanoUSD, "heldNanoUsd": v.HeldNanoUSD, "carriedNanoUsd": v.CarriedNanoUSD, "unresolvedNanoUsd": v.UnresolvedNanoUSD, "admissionExposureNanoUsd": v.AdmissionExposureNanoUSD, "remainingNanoUsd": v.RemainingNanoUSD, "laneExposureNanoUsd": v.LaneExposureNanoUSD, "overrunAttempts": v.OverrunAttempts, "unboundedAttempts": v.UnboundedAttempts}
 }

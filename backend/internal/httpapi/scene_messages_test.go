@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
@@ -18,7 +20,7 @@ func TestManagedPreviewURLKeepsOriginalPartIndex(t *testing.T) {
 		t.Fatal(err)
 	}
 	message := row.(*jsjson.Object)
-	presentSceneMessage(message, true)
+	presentSceneMessage(message, botruntime.DisplayImageLinks{Managed: true})
 	raw, err := jsjson.Stringify(message)
 	if err != nil {
 		t.Fatal(err)

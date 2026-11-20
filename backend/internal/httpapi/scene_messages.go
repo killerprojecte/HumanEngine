@@ -9,21 +9,20 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
-func sceneMessagesBody(runtime *botruntime.Runtime, sceneID string, managedEnabled bool) ([]byte, error) {
-	rows, managed, err := runtime.PreviewMessages(sceneID, managedEnabled)
+func sceneMessagesBody(runtime *botruntime.Runtime, sceneID string, mediaEnabled bool) ([]byte, error) {
+	rows, links, err := runtime.PreviewMessages(sceneID, mediaEnabled)
 	if err != nil {
 		return nil, err
 	}
 	messages := make([]any, len(rows))
 	for i, row := range rows {
-		_, proof := managed[i]
-		presentSceneMessage(row, proof)
+		presentSceneMessage(row, links[i])
 		messages[i] = row
 	}
 	return jsjson.Marshal(messages)
 }
 
-func presentSceneMessage(row *jsjson.Object, managed bool) {
+func presentSceneMessage(row *jsjson.Object, links botruntime.DisplayImageLinks) {
 	status, _ := row.Get("status")
 	origin, _ := row.Get("origin")
 	available := status == "available" && origin != "simulation"
@@ -32,6 +31,7 @@ func presentSceneMessage(row *jsjson.Object, managed bool) {
 	// The display projector owns this copy; compact without reallocating.
 	public := parts[:0]
 	var mediaBase string
+	var unavailableBase bool
 	for i := 0; i < len(parts); i++ {
 		value := parts[i]
 		part, ok := value.(*jsjson.Object)
@@ -52,18 +52,19 @@ func presentSceneMessage(row *jsjson.Object, managed bool) {
 			mediaType, _ := part.Get("mediaType")
 			mime, _ := mediaType.(string)
 			if available && (mime == "image" || len(mime) >= len("image/") && strings.EqualFold(mime[:len("image/")], "image/")) {
-				if managed && i <= 255 {
+				linked := links.InlineAt(i)
+				if !linked && links.Managed && i <= 255 {
 					value, _ := part.Get("assetId")
-					if asset, ok := value.(string); ok && botruntime.IsManagedImageAssetID(asset) {
-						if mediaBase == "" {
-							mediaBase = sceneMediaBase(row)
-							if mediaBase == "" {
-								managed = false
-							}
-						}
-						if managed {
-							_ = part.Set("mediaUrl", mediaBase+strconv.Itoa(i))
-						}
+					asset, _ := value.(string)
+					linked = botruntime.IsManagedImageAssetID(asset)
+				}
+				if linked && !unavailableBase {
+					if mediaBase == "" {
+						mediaBase = sceneMediaBase(row)
+						unavailableBase = mediaBase == ""
+					}
+					if mediaBase != "" {
+						_ = part.Set("mediaUrl", mediaBase+strconv.Itoa(i))
 					}
 				}
 				mediaKind := "image"

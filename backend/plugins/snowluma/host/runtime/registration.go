@@ -62,6 +62,7 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 	adapter.InlineImage = &botruntime.InlineImageAdapter{
 		Current: func() bool { return life.Err() == nil },
 		Read:    readInlineImage,
+		Links:   linkInlineImage,
 	}
 	adapter.Transport = dispatch.AbortContainedAdapter(&dispatch.Adapter{Send: func(scene dispatch.SceneRef, segment dispatch.Segment, signal *dispatch.Signal, before func() error) *dispatch.Future[dispatch.Receipt] {
 		result := dispatch.NewFuture[dispatch.Receipt]()

@@ -434,7 +434,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-	}, unexpectedMedia)
+	}, unexpectedMedia, false)
 	// Reconfigure while enabled: old generation must physically close before its
 	// replacement is installed, and the stored token survives omitted secret input.
 	t.Log("stage: beginning hot configuration with physical runtime retirement")

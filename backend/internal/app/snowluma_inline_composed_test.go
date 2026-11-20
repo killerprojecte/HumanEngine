@@ -93,6 +93,15 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 			switch request.Action {
 			case "get_login_info":
 				data = map[string]any{"user_id": 42}
+			case "get_group_msg_history":
+				messages := []any{}
+				for _, id := range []int{2, 900} {
+					messages = append(messages, map[string]any{
+						"message_type": "group", "group_id": 100, "user_id": 7, "message_id": id, "time": time.Now().Unix(),
+						"message": []any{map[string]any{"type": "image", "data": map[string]any{"base64": "YQ=="}}},
+					})
+				}
+				data = map[string]any{"messages": messages}
 			case "get_msg", "get_image":
 				unexpected <- request.Action
 			}
@@ -156,7 +165,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		if err := socket.Write(ctx, websocket.MessageText, raw); err != nil {
 			t.Fatal(err)
 		}
-	}, unexpected)
+	}, unexpected, true)
 	if err := first.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
 	}

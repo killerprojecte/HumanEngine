@@ -29,7 +29,7 @@ func sameHistoryScene(a, b botruntime.Scene) bool {
 		a.AccountID == b.AccountID && a.PlatformSceneID == b.PlatformSceneID
 }
 
-func (o *runtimeStatusOwner) remoteHistory(ctx context.Context, id string, scene botruntime.Scene, observed *recovery.Gate, managedEnabled bool) (botruntime.BrowserHistory, error) {
+func (o *runtimeStatusOwner) remoteHistory(ctx context.Context, id string, scene botruntime.Scene, observed *recovery.Gate, mediaEnabled bool) (botruntime.BrowserHistory, error) {
 	// Source prefers the registered transport's display metadata. The persisted
 	// scene still owns the binding, even when runtime registration is older.
 	if registered, ok := o.runtime.RegisteredScene(scene.ID); ok && sameHistoryScene(registered, scene) {
@@ -59,15 +59,14 @@ func (o *runtimeStatusOwner) remoteHistory(ctx context.Context, id string, scene
 	if err != nil {
 		return botruntime.BrowserHistory{}, err
 	}
-	return o.runtime.BrowserRemoteHistory(scene, page, managedEnabled)
+	return o.runtime.BrowserRemoteHistory(scene, page, mediaEnabled)
 }
 
 func browserHistoryBody(page botruntime.BrowserHistory) ([]byte, error) {
 	rows := page.Items
 	items := make([]any, 0, len(rows))
 	for _, row := range rows {
-		_, managed := page.Managed[row]
-		presentSceneMessage(row, managed)
+		presentSceneMessage(row, page.ImageLinks[row])
 		// Strict source Message.parse only exposes listed fields.
 		message := new(jsjson.Object)
 		for _, k := range []string{"id", "sceneId", "senderId", "senderDisplayName", "senderAvatarUrl", "senderPlatformId", "sentAt", "receivedAt", "origin", "replyToId", "status"} {

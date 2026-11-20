@@ -171,9 +171,11 @@ type HookResult struct {
 }
 
 // InlineImageAdapter belongs to one native ingress generation. Read decodes
-// the retained locator in memory; Current rejects a stopped generation.
+// the retained locator in memory; Links only recognizes linkable source syntax.
+// Current rejects a stopped generation.
 type InlineImageAdapter struct {
 	Read    func(context.Context, Scene, string) ([]byte, error)
+	Links   func(Scene, string) bool
 	Current func() bool
 }
 

@@ -17,7 +17,56 @@ func IsManagedImageAssetID(asset string) bool { return managedImageID.MatchStrin
 
 type displayMediaScene struct {
 	kind, adapter, account, platform string
-	native                           *InlineImageAdapter
+	native                           *nativeImageBinding
+}
+
+type inlineImageParts [4]uint64
+
+type nativeImageBinding struct {
+	generation *InlineImageAdapter
+	parts      inlineImageParts
+}
+
+// DisplayImageLinks is the private link proof for one selected browser row.
+type DisplayImageLinks struct {
+	Managed bool
+	inline  *inlineImageParts
+}
+
+func (l DisplayImageLinks) InlineAt(index int) bool {
+	return l.inline != nil && uint(index) <= 255 && l.inline[index/64]&(1<<(index%64)) != 0
+}
+
+type browserImageLinker struct {
+	runtime *Runtime
+	scene   Scene
+	current *InlineImageAdapter
+	checked bool
+}
+
+func (l *browserImageLinker) links(proof *displayMediaScene) DisplayImageLinks {
+	if proof == nil || !proof.matches(l.scene) {
+		return DisplayImageLinks{}
+	}
+	if proof.native == nil {
+		return DisplayImageLinks{Managed: true}
+	}
+	if proof.native.parts == (inlineImageParts{}) {
+		return DisplayImageLinks{}
+	}
+	if !l.checked {
+		l.checked = true
+		if current, ok := l.runtime.adapters.Load(l.scene.AdapterID); ok {
+			generation := current.(*Adapter).InlineImage
+			if generation != nil && generation.Current() {
+				l.current = generation
+			}
+		}
+	}
+	if l.current == proof.native.generation {
+		return DisplayImageLinks{inline: &proof.native.parts}
+	}
+	return DisplayImageLinks{}
 }
 
 func (m *displayMediaScene) matches(scene Scene) bool {
@@ -62,12 +111,23 @@ func (r *Runtime) bindNativeImage(scene Scene, message *Object, owner *Adapter) 
 	if current != owner {
 		return nil
 	}
-	for _, part := range array(get(message, "parts")) {
-		if strings.HasPrefix(imageAsset(part), "ob:media:") {
-			return &displayMediaScene{scene.Kind, scene.AdapterID, scene.AccountID, scene.PlatformSceneID, owner.InlineImage}
+	var native *nativeImageBinding
+	for i, part := range array(get(message, "parts")) {
+		asset := imageAsset(part)
+		if !strings.HasPrefix(asset, "ob:media:") {
+			continue
+		}
+		if native == nil {
+			native = &nativeImageBinding{generation: owner.InlineImage}
+		}
+		if i <= 255 && owner.InlineImage.Links(scene, asset) {
+			native.parts[i/64] |= 1 << (i % 64)
 		}
 	}
-	return nil
+	if native == nil {
+		return nil
+	}
+	return &displayMediaScene{scene.Kind, scene.AdapterID, scene.AccountID, scene.PlatformSceneID, native}
 }
 
 // DisplayImageSource captures a private retained record and its adapter.
@@ -109,7 +169,7 @@ func (r *Runtime) DisplayImage(sceneID, messageID string, partIndex int) *Displa
 	}
 	asset := imageAsset(parts[partIndex])
 	if owner := record.displayMedia.native; owner != nil {
-		if owner != adapter.InlineImage || !owner.Current() || !strings.HasPrefix(asset, "ob:media:") {
+		if owner.generation != adapter.InlineImage || !owner.generation.Current() || !strings.HasPrefix(asset, "ob:media:") {
 			return nil
 		}
 	} else if !IsManagedImageAssetID(asset) {

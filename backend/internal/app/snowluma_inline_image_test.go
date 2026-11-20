@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/core"
 )
 
-func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, app *Application, emit func(any), unexpected <-chan string) func() {
+func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, app *Application, emit func(any), unexpected <-chan string, checkRemote bool) func() {
 	t.Helper()
 	raw, err := os.ReadFile("testdata/managed-display-image-source.json")
 	if err != nil {
@@ -33,12 +34,12 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 		t.Fatal(err)
 	}
 
-	ingress := func(id int, kind string, data map[string]any) {
+	ingress := func(id int, kind string, data map[string]any, rest ...any) {
 		t.Helper()
 		emit(map[string]any{
 			"self_id": 42, "post_type": "message", "message_type": "group", "group_id": 100,
 			"user_id": 7, "message_id": id, "time": time.Now().Unix(),
-			"message": []any{map[string]any{"type": kind, "data": data}},
+			"message": append([]any{map[string]any{"type": kind, "data": data}}, rest...),
 		})
 	}
 	const adapter, account, peerID = "snowluma", "42", "100"
@@ -66,22 +67,26 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 			}
 		}
 	}
-	check := func(sceneID, messageID string, wantStatus int, authorized bool) {
+	checkURL := func(path string, wantStatus int, authorized bool) {
 		t.Helper()
-		path := "/api/scenes/" + url.PathEscape(sceneID) + "/messages/" + url.PathEscape(messageID) + "/media/0"
 		req := httptest.NewRequest("GET", path, nil)
 		sourceFixtureAuth(req, authorized)
 		res := httptest.NewRecorder()
 		app.ServeHTTP(res, req)
 		if res.Code != wantStatus {
-			t.Fatalf("media %q: status %d want %d: %s", messageID, res.Code, wantStatus, res.Body)
+			t.Fatalf("media %q: status %d want %d: %s", path, res.Code, wantStatus, res.Body)
 		}
 		if wantStatus == 200 && (!bytes.Equal(res.Body.Bytes(), png) || res.Header().Get("Content-Type") != "image/png") {
 			t.Fatalf("original bytes or verified content type differed: len=%d mime=%q", res.Body.Len(), res.Header().Get("Content-Type"))
 		}
 	}
+	check := func(sceneID, messageID string, wantStatus int, authorized bool) {
+		t.Helper()
+		checkURL("/api/scenes/"+url.PathEscape(sceneID)+"/messages/"+url.PathEscape(messageID)+"/media/0", wantStatus, authorized)
+	}
 	ingress(1, "image", map[string]any{"base64": source.Base64})
-	ingress(2, "mface", map[string]any{"file": "DATA:image/JPEG;base64," + source.Base64})
+	ingress(2, "mface", map[string]any{"file": "DATA:image/JPEG;base64," + source.Base64},
+		map[string]any{"type": "image", "data": map[string]any{"base64": source.Base64}})
 	ingress(3, "image", map[string]any{"file": "base64://YQ==\n"})
 	ingress(4, "image", map[string]any{"url": "https://untrusted.invalid/fixture", "file": "image-token"})
 	ingress(5, "image", map[string]any{"base64": "YQ=="})
@@ -94,25 +99,67 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 	}
 	check(scene, id("1"), 200, true)
 	check(scene, id("2"), 200, true)
-	assertUnlinked := func(surface string, rows []any) {
+	path := "/api/scenes/" + url.PathEscape(scene)
+	assertLinks := func(expected map[string]map[int]int, mustSee ...string) {
 		t.Helper()
-		if len(rows) != 5 {
-			t.Fatalf("%s did not show all five retained inbound rows: %d", surface, len(rows))
-		}
-		for _, row := range rows {
-			parts, _ := field(row, "parts").([]any)
-			for _, part := range parts {
-				if field(part, "assetId") != nil || field(part, "mediaUrl") != nil {
-					t.Fatalf("%s exposed a private locator or unsupported inbound link", surface)
+		for _, surface := range []string{"/messages", "/history?source=local", "/history"} {
+			body := appRequest(t, app, "GET", path+surface, nil)
+			rows, isPreview := body.([]any)
+			if !isPreview {
+				rows, _ = field(body, "items").([]any)
+			}
+			seen := make(map[string]bool)
+			for _, row := range rows {
+				messageID := field(row, "id").(string)
+				expectedParts := expected[messageID]
+				parts, _ := field(row, "parts").([]any)
+				found := 0
+				for _, part := range parts {
+					if field(part, "assetId") != nil {
+						t.Fatalf("%s leaked private media reference", surface)
+					}
+					link, ok := field(part, "mediaUrl").(string)
+					if !ok {
+						continue
+					}
+					u, err := url.Parse(link)
+					base := "/api/scenes/" + scene + "/messages/" + messageID + "/media/"
+					if err != nil || u.IsAbs() || u.Host != "" || u.RawQuery != "" || len(u.Path) <= len(base) || u.Path[:len(base)] != base {
+						t.Fatalf("%s minted invalid media link %q", surface, link)
+					}
+					index, err := strconv.Atoi(u.Path[len(base):])
+					status := expectedParts[index]
+					if err != nil || status == 0 {
+						t.Fatalf("%s linked unexpected part %q[%d]", surface, messageID, index)
+					}
+					if messageID == id("2") && index == 0 && field(part, "mediaKind") != "sticker" {
+						t.Fatalf("%s lost compacted sticker metadata", surface)
+					}
+					found++
+					checkURL(link, status, true)
+				}
+				if found != len(expectedParts) {
+					t.Fatalf("%s linked %d parts for %s; want %d", surface, found, messageID, len(expectedParts))
+				}
+				seen[messageID] = true
+			}
+			if checkRemote && expected != nil && surface == "/history" && !seen[id("900")] {
+				t.Fatal("default history did not include unlinked remote-only inline image")
+			}
+			for message := range expected {
+				if !seen[message] {
+					t.Fatalf("%s did not include expected row %q", surface, message)
+				}
+			}
+			for _, message := range mustSee {
+				if !seen[message] {
+					t.Fatalf("%s did not retain the expected row %q", surface, message)
 				}
 			}
 		}
 	}
-	path := "/api/scenes/" + url.PathEscape(scene)
-	assertUnlinked("preview", appRequest(t, app, "GET", path+"/messages", nil).([]any))
-	history := appRequest(t, app, "GET", path+"/history?source=local", nil)
-	rows, _ := field(history, "items").([]any)
-	assertUnlinked("local history", rows)
+	links := map[string]map[int]int{id("1"): {0: 200}, id("2"): {0: 200, 2: 200}, id("3"): {0: 503}, id("5"): {0: 415}}
+	assertLinks(links, id("4"))
 
 	check(scene, id("3"), 503, true)
 	check(scene, id("4"), 404, true)
@@ -125,6 +172,7 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 	}
 	wait(id("666"), "available")
 	check(scene, id("666"), 404, true)
+	assertLinks(links, id("4"), id("666"))
 
 	root, release, err := app.Engine.RootContext(ctx)
 	if err != nil {
@@ -149,6 +197,8 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 	}
 	assertRevoked("recall", captured)
 	check(scene, id("1"), 404, true)
+	delete(links, id("1"))
+	assertLinks(links, id("4"), id("666"))
 
 	ingress(6, "image", map[string]any{"base64": source.Base64})
 	edited := wait(id("6"), "available")
@@ -189,13 +239,16 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 		appRequest(t, app, "PUT", "/api/scenes/"+url.PathEscape(scene), json.RawMessage(wire))
 		if next == remapped {
 			check(scene, id("2"), 404, true)
+			assertLinks(nil)
 		}
 	}
 	check(scene, id("2"), 200, true)
+	assertLinks(links, id("6"))
 	return func() {
 		t.Helper()
 		wait(id("2"), "available")
 		check(scene, id("2"), 404, true)
+		assertLinks(nil, id("2"), id("666"))
 		select {
 		case action := <-unexpected:
 			t.Fatalf("inline display attempted adapter fallback %s", action)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
@@ -64,6 +65,7 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 	}
 	var exists bool
 	var kind string
+	var scene botruntime.Scene
 	var observed recovery.Gate
 	err = owner.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
 		var err error
@@ -75,6 +77,9 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 			return nil, q.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM scenes WHERE id=?)", sqlID).Scan(&exists)
 		case "history":
 			return nil, q.QueryRowContext(ctx, "SELECT COALESCE((SELECT json_extract(value,'$.kind') FROM scenes WHERE id=?),'')", sqlID).Scan(&kind)
+		case "history-remote":
+			scene, err = browserScene(ctx, q, sqlID)
+			return nil, err
 		}
 		return nil, nil
 	}, func([]byte) error { return nil })
@@ -86,11 +91,24 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 	switch operation {
 	case "messages":
 		body, err = sceneMessagesBody(owner.runtime, sceneID)
-	case "history":
-		body, err = localHistoryBody(owner.runtime, sceneID, kind)
-	case "history-remote":
-		response.status = 503
-		body = []byte(`{"error":"This API has not yet migrated to the Go preview"}`)
+	case "history", "history-remote":
+		body = []byte(`{"items":[],"coverage":"unavailable","reason":"real_scene_required"}`)
+		if operation == "history" {
+			if kind != "" && kind != "simulation" {
+				var rows []*botruntime.Object
+				rows, err = owner.runtime.LocalHistory(sceneID)
+				if err == nil {
+					reason := "local_history_window"
+					body, err = browserHistoryBody(botruntime.BrowserHistory{Items: rows, Coverage: "partial", Reason: &reason})
+				}
+			}
+		} else if scene.ID == sceneID && scene.Kind != "" && scene.Kind != "simulation" {
+			var result botruntime.BrowserHistory
+			result, err = owner.remoteHistory(ctx, sqlID, scene, &observed)
+			if err == nil {
+				body, err = browserHistoryBody(result)
+			}
+		}
 	case "history-invalid":
 		response.status = 400
 		body = []byte(`{"error":"Invalid request"}`)

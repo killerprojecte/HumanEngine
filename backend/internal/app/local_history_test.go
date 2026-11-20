@@ -71,11 +71,4 @@ func TestLocalHistoryActualSource(t *testing.T) {
 			}
 		})
 	}
-	remote := httptest.NewRequest("GET", "/api/scenes/fixture/history", nil)
-	remote.Header.Set("Authorization", "Bearer synthetic-token")
-	response := httptest.NewRecorder()
-	app.ServeHTTP(response, remote)
-	if response.Code != 503 {
-		t.Fatalf("remote history advertised as ready: %d", response.Code)
-	}
 }

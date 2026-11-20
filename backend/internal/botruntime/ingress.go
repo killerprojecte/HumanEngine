@@ -9,19 +9,24 @@ import (
 func (r *Runtime) normalize(m *Object, scene Scene) *Object {
 	out := cloneJSON(m).(*Object)
 	if v, ok := r.adapters.Load(scene.AdapterID); ok {
-		bot := v.(*Adapter).BotUserID
-		if bot != "" {
-			if get(out, "senderId") == bot {
-				_ = out.Set("senderId", "bot")
-			}
-			for _, p := range array(get(out, "parts")) {
-				if get(p, "type") == "mention" && get(p, "userId") == bot {
-					_ = p.(*Object).Set("userId", "bot")
-				}
-			}
-		}
+		NormalizeOwnedBotIdentity(out, v.(*Adapter).BotUserID)
 	}
 	return out
+}
+
+// NormalizeOwnedBotIdentity rewrites the sender and mentions of the platform bot.
+func NormalizeOwnedBotIdentity(out *Object, bot string) {
+	if bot == "" {
+		return
+	}
+	if get(out, "senderId") == bot {
+		_ = out.Set("senderId", "bot")
+	}
+	for _, p := range array(get(out, "parts")) {
+		if get(p, "type") == "mention" && get(p, "userId") == bot {
+			_ = p.(*Object).Set("userId", "bot")
+		}
+	}
 }
 func (r *Runtime) Ingest(ctx context.Context, sceneID string, message *Object, schedule bool) (string, error) {
 	scene, ok := r.RegisteredScene(sceneID)
@@ -394,7 +399,7 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 		}, nil
 	}
 	apply := func() error {
-			var abort []*dispatch.Signal
+		var abort []*dispatch.Signal
 		s.mu.Lock()
 		next := map[string]bool{}
 		for k, v := range s.recalled {

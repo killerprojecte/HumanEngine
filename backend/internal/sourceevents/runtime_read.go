@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"slices"
 	"sync/atomic"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
@@ -268,6 +269,37 @@ func (r *runtimeReads) ProjectDisplay(scene botruntime.Scene, messages []*jsjson
 		return nil, err
 	}
 	return out, nil
+}
+
+// ProjectRemoteHistory checks recall in one authority snapshot, keeps only the
+// latest 30 eligible adapter rows, then copies and presents those rows.
+func (r *runtimeReads) ProjectRemoteHistory(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled map[string]bool, bot string) ([]*jsjson.Object, error) {
+	out := make([]*jsjson.Object, 0, min(len(messages), botruntime.BrowserHistoryWindow))
+	err := r.read(func(v *View) error {
+		for i := len(messages) - 1; i >= 0 && len(out) < botruntime.BrowserHistoryWindow; i-- {
+			m := messages[i]
+			id := str(m, "id")
+			if str(m, "sceneId") != scene.ID || locallyRecalled[id] {
+				continue
+			}
+			recalled, err := recalledAt(v, scene.ID, id)
+			if err != nil {
+				return err
+			}
+			if !recalled {
+				out = append(out, cloneRuntimeJSON(m).(*jsjson.Object))
+			}
+		}
+		slices.Reverse(out)
+		for _, m := range out {
+			botruntime.NormalizeOwnedBotIdentity(m, bot)
+			if err := presentRuntimeMessage(v, m); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return out, err
 }
 
 // SceneParticipationEnabled reads the persisted row on every live eligibility

@@ -8,9 +8,9 @@ func (r *Runtime) LocalHistory(sceneID string) ([]*Object, error) {
 		return []*Object{}, nil
 	}
 	v := r.trimPublished(s)
-	rows := make([]*Object, 0, 30)
-	for block := v.history; block != nil && len(rows) < 30; block = block.previous {
-		for i := len(block.rows) - 1; i >= 0 && len(rows) < 30; i-- {
+	rows := make([]*Object, 0, BrowserHistoryWindow)
+	for block := v.history; block != nil && len(rows) < BrowserHistoryWindow; block = block.previous {
+		for i := len(block.rows) - 1; i >= 0 && len(rows) < BrowserHistoryWindow; i-- {
 			rows = append(rows, block.rows[i])
 		}
 	}

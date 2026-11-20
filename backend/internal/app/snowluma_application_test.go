@@ -41,6 +41,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	defer cancel()
 	connections := make(chan *websocket.Conn, 8)
 	sent := make(chan map[string]any, 8)
+	historyRequests := make(chan map[string]any, 8)
 	closed := make(chan struct{}, 8)
 	var writes sync.Mutex
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +57,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		defer func() { closed <- struct{}{} }()
 		connections <- socket
 		sentCount := 10
+		browserHistory := true
 		for {
 			_, raw, err := socket.Read(ctx)
 			if err != nil {
@@ -76,6 +78,14 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 				data = map[string]any{"message_id": sentCount}
 			case "get_group_msg_history", "get_friend_msg_history":
 				data = map[string]any{"messages": []any{}}
+				if browserHistory {
+					browserHistory = false
+					historyRequests <- request
+					data = map[string]any{"messages": []any{map[string]any{
+						"message_type": "group", "group_id": 99, "user_id": 42, "message_id": 987, "time": time.Now().Unix() - 60,
+						"message": []any{map[string]any{"type": "at", "data": map[string]any{"qq": "42"}}},
+					}}}
+				}
 			}
 			response, _ := json.Marshal(map[string]any{"echo": request["echo"], "status": "ok", "retcode": 0, "data": data})
 			writes.Lock()
@@ -253,6 +263,27 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		t.Fatal("seed ingress completion barrier", ctx.Err())
 	}
 	assertSeedIdle()
+	history := appRequest(t, application, http.MethodGet, "/api/scenes/"+url.PathEscape(sceneID)+"/history", nil)
+	items, ok := field(history, "items").([]any)
+	if field(history, "coverage") != "partial" || !ok || len(items) != 2 ||
+		field(items[0], "id") != snow.MessageID(sceneID, "987") || field(items[1], "id") != snow.MessageID(sceneID, "1") {
+		t.Fatal("browser did not combine actual Snow history and local ingress:", history)
+	}
+	parts, ok := field(items[0], "parts").([]any)
+	if field(items[0], "senderId") != "bot" || !ok || len(parts) != 1 || field(parts[0], "userId") != "bot" {
+		t.Fatal("browser did not normalize installed Snow adapter bot identity:", items[0])
+	}
+	select {
+	case request := <-historyRequests:
+		params, _ := request["params"].(map[string]any)
+		if request["action"] != "get_group_msg_history" || params["count"] != float64(30) || params["group_id"] != "99" {
+			t.Fatal("wrong Snow platform history request", request)
+		}
+	default:
+		t.Fatal("browser did not contact the installed Snow adapter")
+	}
+	assertSeedIdle()
+	t.Log("browser history round-trip through installed SnowLuma verified")
 	t.Log("stage: held seed false-idle gate rejected; actual Ping/Pong joined disabled ingress")
 	select {
 	case unexpected := <-sent:

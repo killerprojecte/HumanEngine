@@ -91,6 +91,8 @@ type ReadAuthority interface {
 }
 type Authority interface {
 	ReadAuthority
+	// ProjectRemoteHistory filters the scoped platform page before its display bound.
+	ProjectRemoteHistory(Scene, []*Object, map[string]bool, string) ([]*Object, error)
 	// RouteIngress discovers the scene and observes identity before admission.
 	RouteIngress(context.Context, Scene, *Object) error
 	Observe(context.Context, Scene, *Object, *Object) (status string, trusted *Object, err error)

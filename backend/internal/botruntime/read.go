@@ -79,7 +79,7 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 			return nil, code("runtime_invalid_tool_input")
 		}
 		if c.Mode == "real" && adapter != nil && adapter.History != nil {
-			out, err := trackedWithin(r, ctx, func(settle func(*Object, error)) { adapter.History(ctx, c.Scene, int(limit), settle) })
+			out, err := r.adapterHistory(ctx, adapter, c.Scene, int(limit))
 			if err != nil {
 				return nil, err
 			}
@@ -142,6 +142,12 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 	}
 	_ = result.Set("items", selected)
 	return result, nil
+}
+
+func (r *Runtime) adapterHistory(ctx context.Context, adapter *Adapter, scene Scene, limit int) (*Object, error) {
+	return trackedWithin(r, ctx, func(settle func(*Object, error)) {
+		adapter.History(ctx, scene, limit, settle)
+	})
 }
 
 // findCached returns the first cached row for id in the immutable snapshot.

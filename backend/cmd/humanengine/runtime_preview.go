@@ -65,6 +65,7 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 	// Raw plugin stderr is deliberately not forwarded: it may contain credentials.
 	options.Diagnostics = io.Discard
 	options.AdminToken = os.Getenv("HUMANENGINE_ADMIN_TOKEN")
+	options.SecureCookies = os.Getenv("HUMANENGINE_SECURE_COOKIES") == "true"
 	application, err := app.Open(ctx, options)
 	if err != nil {
 		// Open may return a partial owner after unsuccessful physical drain. Never

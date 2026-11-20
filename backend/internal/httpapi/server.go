@@ -29,6 +29,7 @@ import (
 )
 
 type Server struct {
+	browserSessions     *browserSessions
 	logStatus           *logStatusOwner
 	learningAdmin       *learningAdminOwner
 	memoryDelete        *memoryservice.Service
@@ -103,6 +104,15 @@ func (s *Server) ServeUnavailable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request, available bool) {
+	// Like the source Nitro gateway, session operations need no live Engine
+	// or recovery connection. Cookie-authenticated API requests still go
+	// through ordinary authentication and the availability check below.
+	if s.browserSessions != nil {
+		r = s.browserSessions.admit(w, r, s.token)
+		if r == nil {
+			return
+		}
+	}
 	path := habitRoutingPath(r)
 	sceneID, operation := sceneReadRoute(r, path)
 	sceneRead := operation != "" && s.runtimeStatus != nil

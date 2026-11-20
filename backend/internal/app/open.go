@@ -45,6 +45,7 @@ type Owners struct {
 }
 
 type Options struct {
+	SecureCookies bool
 	// Per-open private constructor injection. Nil preserves the concrete owner path.
 	relationExposurePort                                              func(*Application, Owners) (*memoryservice.ExposurePort, error)
 	Installation                                                      installation.Options

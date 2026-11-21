@@ -281,11 +281,14 @@ func (s *Service) AdminList(ctx context.Context) (out []*Object, e error) {
 	e = s.transaction(ctx, func(p *scope) error { var e error; out, e = p.assets(); return e })
 	return
 }
-func (s *Service) RecognizeBytes(ctx context.Context, c Context, b []byte) (out *Object, e error) {
+func (s *Service) RecognizeBytes(ctx context.Context, c Context, b []byte) (*Object, error) {
 	if len(b) == 0 || len(b) > 64*1024*1024 {
 		return nil, errors.New("image_size_limit")
 	}
-	hash := digest(b)
+	return s.recognizeHash(ctx, c, digest(b))
+}
+
+func (s *Service) recognizeHash(ctx context.Context, c Context, hash string) (out *Object, e error) {
 	e = s.transaction(ctx, func(p *scope) error {
 		all, e := p.candidates(c, "contentHash", hash)
 		if e != nil {

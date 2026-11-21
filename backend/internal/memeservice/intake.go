@@ -115,7 +115,7 @@ func (s *Service) intake(ctx context.Context, c Context, b []byte, source *Objec
 		return nil, e
 	}
 	hash := digest(b)
-	found, e := s.RecognizeBytes(context.WithoutCancel(ctx), c, b)
+	found, e := s.recognizeHash(context.WithoutCancel(ctx), c, hash)
 	if e != nil {
 		return nil, e
 	}

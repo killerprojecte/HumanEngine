@@ -153,40 +153,35 @@ messages to `reply.validate`, initialized validity to false, and aborted on miss
 approval, false, or another topic-version change. `replyer.go`/`turn.go` had no
 retained-draft owner. That is not the requested cancellation-only model.
 
-The current Go delta retains a complete outgoing draft in `retained_draft.go`. Send directly
-when there is no new same-topic message; only new same-topic ingress triggers
-Planner context refresh. Give the Planner that exact previous draft;
-its decision about that draft is cancellation, not rewriting/re-generating it.
-After a normally completed review round, absence of explicit cancellation starts
-sending the retained draft. Review has an independent Planner budget, not the
-remaining Replyer generation deadline. Record provider failure or deadline expiry
-as a failed review, not approval. In that case, release the unchanged draft only
-if its hard send eligibility still holds; do not loop indefinitely waiting for
-model approval. Specify draft identity, ownership, review generation and the
-single-send transition before implementation. Temporary state may survive the
-original model generation but must not automatically replay after restart.
+The Go runtime now retains the completed draft in the current send guard
+(`botruntime/retained_draft.go`). It keeps the exact operation ID and a copy of
+the segments, keyed to the turn's draft ID. If there is no new eligible
+same-topic ingress, it proceeds through the ordinary send eligibility checks
+without another model call. Otherwise it takes one review snapshot and gives
+the Planner the unchanged draft on an independent, hard Planner deadline.
+Only a valid `reply.cancel` for that draft cancels it; another arrival cannot
+start another review or regenerate the reply. A provider error or review
+timeout is not approval: the unchanged draft proceeds only if current send
+eligibility still holds. No draft is written for restart replay.
 
-Repeated unrelated ingress must not discard or indefinitely restart the same
-completed draft. Arrivals after the review snapshot belong to the next round.
-Recalling unrelated recent messages or unselected candidates must not discard a
-draft; recalled quoted targets or explicitly referenced required evidence still
-invalidate it. Explicit cancellation must address the exact draft identity. Source
-recall, revoked permissions, scene shutdown and uncertain transport outcomes are
-separate lifecycle/authority events, not approval defaults to bypass. Already
-sent/unknown segments must never be replayed after interruption or restart.
+`TestRetainedDraftOneReviewAndIndependentBudget` asserts exact segment payloads,
+one Replyer generation, and zero or one review for these paths, including
+wrong-draft cancellation, further ingress during review, timeout/provider
+failure, recall, scene cancellation and authority errors.
+`TestRetainedDraftRecallOnlyReferencesAtCompletedBoundary` distinguishes unrelated
+recall from cited evidence and quoted targets. The retained-draft transmit
+timeout and ingress-during-send tests cover unknown receipts without replay and
+in-flight multi-segment completion; the grounding-repair test covers the
+original generation deadline. The dispatch-facing tests separately check
+late authority loss after async adapter preparation, unknown transmission
+on cancellation, and ordered edits not upgrading old snapshots.
 
-Landing points: `botruntime/send.go`, `replyer.go`, `turn.go`, ingress/admission,
-turn cleanup and `dispatch`; replace the source validation tool/prompt contract
-and regenerate `generate-bot-runtime-fixtures.mjs` intentionally.
-Reuse `TestActualRuntimeTurnOracle` (especially staleValidation),
-`TestTransmitGateRechecksAfterAsyncAdapterPreparation`,
-`TestCancelUnknownTransmissionNeverRetriesOrLosesProtection` and
-`TestOrderedEditsNeverUpgradeOldSnapshot`.
-New fixtures must cover draft-before-interruption, review without cancellation,
-explicit cancellation, repeated ingress during review, independent review timeout
-and provider failure, partial send, unknown receipt, recall/permission change and
-shutdown. Assert exact payload
-preservation and at-most-once physical transmission, not only final status.
+These focused fixtures do not prove all cross-product combinations. In
+particular, a controlled installed-adapter run should still exercise a
+partially acknowledged multi-segment draft across disconnect/reconnect or
+process shutdown, with recall or policy change between segments. Verify exact
+payloads and physical send counts, including no replay of any sent or unknown
+segment, rather than inferring this from the final status alone.
 
 ## P2: coverage closure and integration
 

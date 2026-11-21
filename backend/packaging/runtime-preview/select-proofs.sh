@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ $GITHUB_EVENT_NAME != push || $GITHUB_REF != refs/heads/feat/refactor-golang ]]; then
-  printf 'browser=false\nrestore=false\n'
+  printf 'browser=false\nrestore=false\ncompose=false\n'
   exit
 fi
 
@@ -11,13 +11,13 @@ if [[ ! $BEFORE =~ ^[0-9a-f]{40}$ ]]; then
   exit 1
 fi
 if [[ $BEFORE == 0000000000000000000000000000000000000000 ]]; then
-  printf 'browser=false\nrestore=false\n'
+  printf 'browser=false\nrestore=false\ncompose=false\n'
   exit
 fi
 
 trailers=$(git show -s --format='%(trailers:only)' "$GITHUB_SHA")
 if grep -Fx 'HumanEngine-Package-Proofs: all' <<< "$trailers" > /dev/null; then
-  printf 'browser=true\nrestore=true\n'
+  printf 'browser=true\nrestore=true\ncompose=true\n'
   exit
 fi
 
@@ -38,3 +38,4 @@ detect() {
 root=backend/packaging/runtime-preview
 detect browser "$root/browser_smoke.py" "$root/browser-requirements.txt"
 detect restore "$root/migration_drill.py" "$root/test_migration_drill.py"
+detect compose "$root/compose-rehearsal.yaml" "$root/compose_rehearsal.py" "$root/test_compose_rehearsal.py"

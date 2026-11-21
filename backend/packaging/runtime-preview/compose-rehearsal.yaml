@@ -1,0 +1,42 @@
+# Disposable production-like envelope for the already-built Go preview image.
+services:
+  humanengine:
+    image: ${HE_COMPOSE_IMAGE:?Set the tested local preview image}
+    platform: linux/amd64
+    init: true
+    restart: unless-stopped
+    ports:
+      - target: 3000
+        published: '0'
+        host_ip: 127.0.0.1
+    environment:
+      HUMANENGINE_ADMIN_TOKEN: ${HUMANENGINE_ADMIN_TOKEN:?Set a synthetic test token}
+      HUMANENGINE_LOG_DIR: /app/data/logs
+    command:
+      - --runtime-preview
+      - --database
+      - /app/data/humanengine.sqlite
+      - --authority
+      - /app/authority
+      - --listen
+      - 0.0.0.0:3000
+      - --plugin-root
+      - /app/plugins
+      - --ui-root
+      - /opt/humanengine/ui
+      - --image-library
+      - /opt/humanengine/lib/libvips-cpp.so.8.18.7
+    volumes:
+      - rehearsal-data:/app/data
+      - rehearsal-authority:/app/authority
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+volumes:
+  rehearsal-data:
+  rehearsal-authority:

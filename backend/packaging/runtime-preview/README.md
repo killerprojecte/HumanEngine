@@ -110,7 +110,7 @@ acceptance. Default Go migration CI remains a separate gate.
 
 The browser smoke activates only on an existing `feat/refactor-golang` push
 whose before/after diff changes `browser_smoke.py` or `browser-requirements.txt`, or
-whose exact head commit opts into both proofs below. Pull requests and manual runs
+whose exact head commit opts into all focused proofs below. Pull requests and manual runs
 do not install or start Chromium. This branch-local push
 path does not require the workflow to exist on the default branch. The existing job builds the real preview image and
 launches it against only disposable synthetic data. In addition to the normal
@@ -131,7 +131,23 @@ category and never the exception text. The existing
 browser versions and sanitized action/status receipts in `result.json`. Opted-in
 runs do not retain container logs, screenshots, traces, HTML or request bodies.
 
-## Run both proofs on one exact candidate
+## Disposable Compose rehearsal
+
+The test-only Compose envelope runs the same built image with init, read-only root,
+a 64 MiB noexec/nosuid temp filesystem, dropped capabilities, and the existing 30s
+stop grace. It uses internal port 3000 on an ephemeral loopback host port and
+separate disposable volumes at the canonical data and authority paths. It runs
+real `docker compose stop` during an admitted settings write, checks drain and
+clean exit, and creates a new container on the same volumes to check persistence.
+
+```sh
+python3 backend/packaging/runtime-preview/compose_rehearsal.py --evidence /tmp/compose-rehearsal.json
+```
+
+Only changes to the Compose rehearsal fixture, driver or test opt into this
+additional hosted step. The ordinary package proof is unchanged.
+
+## Run all focused proofs on one exact candidate
 
 For a push to the existing `feat/refactor-golang` branch that already matches the
 workflow paths, add this Git trailer to the final candidate commit, separated
@@ -143,7 +159,7 @@ HumanEngine-Package-Proofs: all
 
 The workflow reads only the pushed head commit's trailers, not earlier commits
 or commit-body prose. It runs Chromium and the migration/restore drill against
-the same built image, and saves both sanitized receipts. This does not publish
+the same built image, and saves sanitized browser, restore, and Compose receipts. This does not publish
 the image or change startup defaults. Pushes without the trailer retain the
 separate diff-based triggers.
 

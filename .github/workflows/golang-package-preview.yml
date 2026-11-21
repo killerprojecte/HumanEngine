@@ -71,6 +71,11 @@ jobs:
             --ts-tools-image humanengine-drill-ts-tools:local \
             --go-image humanengine-go-preview:local --go-revision "$GITHUB_SHA" \
             --evidence "$RUNNER_TEMP/package-evidence/migration-drill.json"
+      - name: Rehearse actual Compose stop and cold reopen
+        if: steps.proofs.outputs.compose == 'true'
+        run: |
+          python3 backend/packaging/runtime-preview/compose_rehearsal.py \
+            --evidence "$RUNNER_TEMP/package-evidence/compose-rehearsal.json"
       - name: Preserve synthetic acceptance evidence
         if: always()
         uses: actions/upload-artifact@v4

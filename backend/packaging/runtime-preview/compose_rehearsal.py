@@ -39,6 +39,7 @@ def run(report):
     acceptance.TOKEN = "synthetic-" + uuid4().hex
     image_id = report["image"]
     # A unique tag names this exact already-built local image for Compose.
+    report["phase"] = "compose-image-tag"
     docker("image", "tag", image_id, tag)
     env = dict(os.environ, HE_COMPOSE_IMAGE=tag, HUMANENGINE_ADMIN_TOKEN=acceptance.TOKEN)
     compose = ["docker", "compose", "--env-file", "/dev/null", "--project-name", project,
@@ -51,14 +52,18 @@ def run(report):
     def inspect(container):
         return json.loads(docker("inspect", container))[0]
 
-    def boot():
+    def boot(stage):
+        report["phase"] = f"{stage}-up"
         call("up", "--detach", "--no-build", "--pull", "never")
+        report["phase"] = f"{stage}-container-image"
         cid = call("ps", "-q", "humanengine")
         assert cid and inspect(cid)["Image"] == image_id
+        report["phase"] = f"{stage}-readiness"
         def ready():
             assert inspect(cid)["State"]["Running"], "Compose runtime stopped before readiness"
             return '"code":"server.listening"' in docker("logs", cid)
         wait_for(ready, "Compose runtime ready")
+        report["phase"] = f"{stage}-envelope"
         return cid, *assert_envelope(inspect(cid))
 
     def assert_drained(cid):
@@ -67,8 +72,9 @@ def run(report):
         assert '"code":"app.drained"' in docker("logs", cid)
 
     try:
-        report["phase"] = "compose-start"
-        first, port, mounts = boot()
+        report["phase"] = "compose-config"
+        call("config", "--quiet")
+        first, port, mounts = boot("compose-start")
         report["checks"].append("installed-compose-envelope")
         report["phase"] = "admit-write-and-compose-stop"
         settings = request(port, "GET", "/api/settings")
@@ -97,7 +103,8 @@ def run(report):
         report["checks"].append("compose-stop-admitted-write-committed-exit-zero-within-grace")
         report["phase"] = "cold-reopen"
         call("rm", "--force", "humanengine")
-        second, port, reopened = boot()
+        second, port, reopened = boot("cold-reopen")
+        report["phase"] = "cold-reopen-persistence"
         assert second != first and mounts == reopened
         assert request(port, "GET", "/api/settings")["debugModelIO"] is expected
         docker("exec", second, "sh", "-ec",

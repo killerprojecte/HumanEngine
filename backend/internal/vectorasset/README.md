@@ -55,19 +55,17 @@ compilation inherits CGO build flags. Runtime receives a clean environment.
 
 ## Lifecycle
 
-Each Store gets a new 0700 temporary directory and exclusively created 0600
-library file. Embedded bytes are checked, written, flushed and closed before
-loading. Every physical connection loads under an Asset.Use read lease. Close
-uses the exclusive lease so it cannot remove a file during dlopen. Store closes
-the authority and main pool, then removes only its own extraction. Startup
-failure cleans that extraction without deleting main or durable authority data.
-Linux loaded mappings survive unlink. Already checked-out SQL connections still
-belong to their caller and must be closed/returned normally.
+Each Store owns a private Linux memfd. Embedded bytes are hash-verified, then
+written and sealed before SQLite loads from the process descriptor. A noexec
+or unavailable temporary directory is not involved. Every physical connection
+loads under an Asset.Use read lease; Close waits for the loader and closes only
+this owner's descriptor after the authority and main pool close. The kernel
+reclaims it on process exit. The executable retains embedded attribution, and
+package/source-free distributions retain the readable license and manifest.
 
-No shared cache, sibling-directory reaping, runtime download or resource cap is
-introduced. TMPDIR must permit native shared-library mapping; loader/noexec
-failures return an error without fallback. Crashes can leave a private temp
-directory, which ordinary OS temporary cleanup handles.
+No shared cache, runtime download, writable executable directory, or fallback
+is introduced. Linux requires memfd sealing and the existing process descriptor
+filesystem for native loading.
 
 ## Source-free proof scope
 

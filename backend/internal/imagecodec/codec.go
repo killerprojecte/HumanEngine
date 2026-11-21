@@ -31,6 +31,7 @@ var initialization struct {
 	sync.Mutex
 	attempted bool
 	err       error
+	library   *os.File // Owns the descriptor pathname while libvips remains mapped.
 }
 
 type Compressor struct{ ready bool }
@@ -50,7 +51,11 @@ func New(path string) (*Compressor, error) {
 		return nil, fmt.Errorf("native_image_library_snapshot: %w", sealErr)
 	}
 	sealed := os.NewFile(uintptr(fd), "sealed-libvips")
-	defer sealed.Close()
+	defer func() {
+		if sealed != nil {
+			sealed.Close()
+		}
+	}()
 	h := sha256.New()
 	_, e = io.Copy(h, sealed)
 	if e != nil {
@@ -69,6 +74,11 @@ func New(path string) (*Compressor, error) {
 		defer C.free(unsafe.Pointer(p))
 		if C.he_init(p) != 0 {
 			initialization.err = fmt.Errorf("native_image_library: %s", C.GoString(C.he_error()))
+		} else {
+			// glibc caches the exact dlopen pathname. Do not let an unrelated
+			// native library reuse this descriptor while libvips remains loaded.
+			initialization.library = sealed
+			sealed = nil
 		}
 	}
 	if initialization.err != nil {

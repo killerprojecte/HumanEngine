@@ -1,8 +1,10 @@
 import copy
+import subprocess
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from compose_rehearsal import assert_envelope
+from compose_rehearsal import assert_envelope, run
 
 
 class ComposeRehearsalTests(unittest.TestCase):
@@ -35,6 +37,21 @@ class ComposeRehearsalTests(unittest.TestCase):
                 current[path[-1]] = value
                 with self.assertRaises(AssertionError):
                     assert_envelope(wrong)
+
+    def test_startup_failure_phase_distinguishes_config_up_and_image(self):
+        for command, expected in (("config", "compose-config"), ("up", "compose-start-up"),
+                                  ("ps", "compose-start-container-image")):
+            with self.subTest(command=command):
+                report = {"image": "sha256:fixture"}
+                def compose(argv, **kwargs):
+                    if command in argv:
+                        raise subprocess.CalledProcessError(1, argv, stderr="not for evidence")
+                    return ""
+                with patch("compose_rehearsal.docker"), \
+                        patch("compose_rehearsal.subprocess.check_output", side_effect=compose):
+                    with self.assertRaises(subprocess.CalledProcessError):
+                        run(report)
+                self.assertEqual(report["phase"], expected)
 
     def test_workflow_keeps_compose_opt_in_after_ordinary_package_acceptance(self):
         workflow = (Path(__file__).resolve().parents[3] /

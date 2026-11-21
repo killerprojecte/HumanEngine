@@ -6,11 +6,13 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
-	"path/filepath"
+	"strings"
 	"testing"
+
+	"golang.org/x/sys/unix"
 )
 
-func TestExtractPrivateVerifiedAssetAndCleanup(t *testing.T) {
+func TestExtractSealedVerifiedAssetAndCleanup(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv("TMPDIR", root)
 	a, err := Extract()
@@ -32,22 +34,20 @@ func TestExtractPrivateVerifiedAssetAndCleanup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, entry := range []struct {
-		path string
-		mode os.FileMode
-	}{{path, 0600}, {filepath.Dir(path), 0700}} {
-		info, e := os.Stat(entry.path)
-		if e != nil || info.Mode().Perm() != entry.mode {
-			t.Fatalf("private mode: %v %v", info, e)
-		}
+	if !strings.HasPrefix(path, "/proc/self/fd/") {
+		t.Fatalf("unexpected library path: %s", path)
 	}
-	for name, want := range map[string]string{"LICENSE-MIT": License, "manifest.json": Manifest} {
-		got, err := os.ReadFile(filepath.Join(filepath.Dir(path), name))
-		if err != nil || string(got) != want || len(got) == 0 {
-			t.Fatalf("attribution %s: %v", name, err)
-		}
+	const wantSeals = unix.F_SEAL_WRITE | unix.F_SEAL_GROW | unix.F_SEAL_SHRINK | unix.F_SEAL_SEAL
+	if seals, err := unix.FcntlInt(a.file.Fd(), unix.F_GET_SEALS, 0); err != nil || seals != wantSeals {
+		t.Fatalf("library is not sealed: %#x %v", seals, err)
 	}
-	// A second owner never borrows the first extraction or removes its files.
+	if entries, err := os.ReadDir(root); err != nil || len(entries) != 0 {
+		t.Fatalf("library wrote a filesystem asset: %v %v", entries, err)
+	}
+	if License == "" || Manifest == "" {
+		t.Fatal("missing embedded attribution")
+	}
+	// A second owner never borrows the first descriptor.
 	b, err := Extract()
 	if err != nil {
 		t.Fatal(err)

@@ -7,6 +7,6 @@ import (
 	"runtime"
 )
 
-func bundledBytes() ([]byte, error) {
+func Extract() (*Asset, error) {
 	return nil, fmt.Errorf("sqlite_vec_bundle_unavailable: target %s/%s requires a verified bundled_sqlite_vec asset", runtime.GOOS, runtime.GOARCH)
 }

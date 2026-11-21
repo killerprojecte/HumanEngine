@@ -262,8 +262,8 @@ native-image-check:
 	$(PYTHON) tests/check-image-trace-test.py
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-image-codec-fixtures.mjs --check
 	cd .. && HUMANENGINE_SOURCE_ROOT="$$PWD" node --import tsx backend/tests/generate-image-boundary-fixtures.mjs --check
-	HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_RUN_LARGE_IMAGE_BOUNDARY=1 VIPS_CONCURRENCY=1 go test -race -tags sqlite_fts5 ./internal/imagecodec ./internal/memeservice
-	go vet -tags sqlite_fts5 ./internal/imagecodec ./internal/memeservice ./cmd/imagecodec-probe
+	HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_RUN_LARGE_IMAGE_BOUNDARY=1 VIPS_CONCURRENCY=1 go test -race -tags sqlite_fts5,bundled_sqlite_vec ./internal/imagecodec ./internal/memeservice
+	go vet -tags sqlite_fts5,bundled_sqlite_vec ./internal/imagecodec ./internal/memeservice ./cmd/imagecodec-probe
 	@mkdir -p "$(IMAGE_PROOF_ROOT)" && out=$$(mktemp -d "$(IMAGE_PROOF_ROOT)/run.XXXXXXXX") && \
 	  HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_IMAGE_REQUIRE_TRACE=1 HUMANENGINE_IMAGE_PROOF_DIR="$$out/proof" sh tests/image-source-free.sh
 

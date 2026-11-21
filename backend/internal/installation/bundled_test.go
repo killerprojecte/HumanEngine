@@ -7,12 +7,13 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
-	"github.com/killerprojecte/HumanEngine/backend/internal/vectorasset"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
+	"github.com/killerprojecte/HumanEngine/backend/internal/vectorasset"
 )
 
 func TestBundledInstallationLifecycle(t *testing.T) { testBundledInstallation(t) }
@@ -35,26 +36,15 @@ func TestBundledInstallationSourceFree(t *testing.T) {
 func testBundledInstallation(t *testing.T) {
 	ctx := context.Background()
 	root := t.TempDir()
-	extractions := filepath.Join(root, "extractions")
-	if e := os.Mkdir(extractions, 0700); e != nil {
-		t.Fatal(e)
-	}
-	t.Setenv("TMPDIR", extractions)
+	// A genuine SQLite open and physical reconnect must not need an executable
+	// temporary directory (this path cannot host even a regular file).
+	t.Setenv("TMPDIR", "/dev/null")
+	baseline := bundledVectorFDs(t)
 	options := Options{Database: filepath.Join(root, "data", "main.sqlite"), AuthorityDirectory: filepath.Join(root, "authority"), SourceTimezone: "UTC"}
 	for restart := 0; restart < 2; restart++ {
 		s, e := OpenBundled(ctx, options)
 		if e != nil {
 			t.Fatal(e)
-		}
-		assets, err := os.ReadDir(extractions)
-		if err != nil || len(assets) != 1 {
-			t.Fatalf("extraction: %v %v", assets, err)
-		}
-		for name, want := range map[string]string{"LICENSE-MIT": vectorasset.License, "manifest.json": vectorasset.Manifest} {
-			got, err := os.ReadFile(filepath.Join(extractions, assets[0].Name(), name))
-			if err != nil || string(got) != want || len(got) == 0 {
-				t.Fatalf("runtime attribution %s: %v", name, err)
-			}
 		}
 		// The test never supplies an extension path or accesses fixture/source files.
 		if s.VectorVersion != "v"+vectorasset.Version {
@@ -107,20 +97,34 @@ func testBundledInstallation(t *testing.T) {
 		if e = s.Close(); e != nil {
 			t.Fatal(e)
 		}
-		entries, e := os.ReadDir(extractions)
-		if e != nil || len(entries) != 0 {
-			t.Fatal("extracted library not cleaned", entries, e)
+		if got := bundledVectorFDs(t); got != baseline {
+			t.Fatalf("close leaked bundled descriptors: %d vs %d", got, baseline)
 		}
 	}
-	// Failure before startup must also clean this owner's extraction.
+	// Invalid startup still must fail without a filesystem extraction.
 	bad := options
 	bad.SourceTimezone = ""
 	if s, e := OpenBundled(ctx, bad); e == nil {
 		s.Close()
 		t.Fatal("unconfigured parser accepted")
 	}
-	entries, e := os.ReadDir(extractions)
-	if e != nil || len(entries) != 0 {
-		t.Fatal("failed startup leaked extraction", entries, e)
+	if got := bundledVectorFDs(t); got != baseline {
+		t.Fatalf("failed open leaked bundled descriptors: %d vs %d", got, baseline)
 	}
+}
+
+func bundledVectorFDs(t *testing.T) int {
+	t.Helper()
+	const descriptorDir = "/proc/self/fd"
+	entries, err := os.ReadDir(descriptorDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	count := 0
+	for _, entry := range entries {
+		if target, _ := os.Readlink(filepath.Join(descriptorDir, entry.Name())); target == "/memfd:humanengine-sqlite-vec (deleted)" {
+			count++
+		}
+	}
+	return count
 }

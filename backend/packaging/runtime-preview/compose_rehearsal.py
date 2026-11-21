@@ -41,7 +41,8 @@ def run(report):
     # A unique tag names this exact already-built local image for Compose.
     report["phase"] = "compose-image-tag"
     docker("image", "tag", image_id, tag)
-    env = dict(os.environ, HE_COMPOSE_IMAGE=tag, HUMANENGINE_ADMIN_TOKEN=acceptance.TOKEN)
+    env = dict(os.environ, HE_COMPOSE_IMAGE=tag, HE_COMPOSE_PORT="0",
+               HUMANENGINE_ADMIN_TOKEN=acceptance.TOKEN)
     compose = ["docker", "compose", "--env-file", "/dev/null", "--project-name", project,
                "--file", str(CONFIG)]
 

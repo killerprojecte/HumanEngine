@@ -1,4 +1,5 @@
-# Disposable production-like envelope for the already-built Go preview image.
+# Explicit local-image candidate. The disposable hosted rehearsal uses this same file.
+name: humanengine-go-local
 services:
   humanengine:
     image: ${HE_COMPOSE_IMAGE:?Set the tested local preview image}
@@ -7,10 +8,10 @@ services:
     restart: unless-stopped
     ports:
       - target: 3000
-        published: '0'
+        published: "${HE_COMPOSE_PORT:-3001}"
         host_ip: 127.0.0.1
     environment:
-      HUMANENGINE_ADMIN_TOKEN: ${HUMANENGINE_ADMIN_TOKEN:?Set a synthetic test token}
+      HUMANENGINE_ADMIN_TOKEN: ${HUMANENGINE_ADMIN_TOKEN:?Set the local administration token}
       HUMANENGINE_LOG_DIR: /app/data/logs
     command:
       - --runtime-preview
@@ -27,8 +28,8 @@ services:
       - --image-library
       - /opt/humanengine/lib/libvips-cpp.so.8.18.7
     volumes:
-      - rehearsal-data:/app/data
-      - rehearsal-authority:/app/authority
+      - local-data:/app/data
+      - local-authority:/app/authority
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
@@ -38,5 +39,5 @@ services:
       - no-new-privileges:true
     stop_grace_period: 30s
 volumes:
-  rehearsal-data:
-  rehearsal-authority:
+  local-data:
+  local-authority:

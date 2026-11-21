@@ -44,6 +44,8 @@ class ComposeRehearsalTests(unittest.TestCase):
             with self.subTest(command=command):
                 report = {"image": "sha256:fixture"}
                 def compose(argv, **kwargs):
+                    self.assertEqual(kwargs["env"]["HE_COMPOSE_PORT"], "0")
+                    self.assertTrue(argv[argv.index("--project-name") + 1].startswith("he-rehearsal-"))
                     if command in argv:
                         raise subprocess.CalledProcessError(1, argv, stderr="not for evidence")
                     return ""

@@ -131,21 +131,49 @@ category and never the exception text. The existing
 browser versions and sanitized action/status receipts in `result.json`. Opted-in
 runs do not retain container logs, screenshots, traces, HTML or request bodies.
 
-## Disposable Compose rehearsal
+## Opt-in local-image Compose profile
 
-The test-only Compose envelope runs the same built image with init, read-only root,
-a 64 MiB noexec/nosuid temp filesystem, dropped capabilities, and the existing 30s
-stop grace. It uses internal port 3000 on an ephemeral loopback host port and
-separate disposable volumes at the canonical data and authority paths. It runs
-real `docker compose stop` during an admitted settings write, checks drain and
-clean exit, and creates a new container on the same volumes to check persistence.
+Use this separate profile to try an already built Linux amd64 candidate on
+disposable data. It does not change root Compose or the interactive preview's
+project, volumes or `main.sqlite` file. It is not a published image, a production
+migration, or permission to open live data.
+
+Export `HUMANENGINE_ADMIN_TOKEN` from your local secret store or shell session
+before starting. Use a separate token for this candidate; do not put it on the
+command line or in version control. Use `config --quiet` to validate without
+printing the resolved environment.
+
+```sh
+export HE_COMPOSE_IMAGE=humanengine-go-preview:local
+docker compose -f backend/packaging/runtime-preview/compose-rehearsal.yaml config --quiet
+docker compose -f backend/packaging/runtime-preview/compose-rehearsal.yaml up -d --no-build --pull never
+```
+
+Open **http://127.0.0.1:3001** and log in. Set `HE_COMPOSE_PORT` to another
+available loopback port if needed, and use the same explicit `--project-name`
+on every command if you need another isolated installation. The default project
+`humanengine-go-local` keeps data and authority in two independent named volumes;
+this profile does not mount local plugins. The database path is
+`/app/data/humanengine.sqlite`. For a migration experiment use only cold disposable
+copies of matching data and authority, following the drill below.
+
+Use `docker compose` with the same file and project to `stop` the candidate,
+then check `ps -a` and `logs humanengine` for exit 0 and `app.drained`.
+The 30-second Compose grace period can forcibly end an unfinished drain;
+do not treat such a stop as clean or delete volumes. After a clean stop, starting
+again with the same project retains both volumes.
+
+The hosted rehearsal uses this exact file with an ephemeral loopback port and a
+unique project and image tag. It inspects the real container envelope, stops
+during an admitted settings write, checks drain and clean exit, and creates a
+new container on the same volumes to verify persistence.
 
 ```sh
 python3 backend/packaging/runtime-preview/compose_rehearsal.py --evidence /tmp/compose-rehearsal.json
 ```
 
-Only changes to the Compose rehearsal fixture, driver or test opt into this
-additional hosted step. The ordinary package proof is unchanged.
+Changes to the shared Compose file, driver or test opt into this additional
+hosted step. The ordinary package proof is unchanged.
 
 ## Run all focused proofs on one exact candidate
 

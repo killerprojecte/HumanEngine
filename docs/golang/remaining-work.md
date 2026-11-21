@@ -176,12 +176,13 @@ original generation deadline. The dispatch-facing tests separately check
 late authority loss after async adapter preparation, unknown transmission
 on cancellation, and ordered edits not upgrading old snapshots.
 
-These focused fixtures do not prove all cross-product combinations. In
-particular, a controlled installed-adapter run should still exercise a
-partially acknowledged multi-segment draft across disconnect/reconnect or
-process shutdown, with recall or policy change between segments. Verify exact
-payloads and physical send counts, including no replay of any sent or unknown
-segment, rather than inferring this from the final status alone.
+The [installed SnowLuma test at `4c81311`](https://github.com/killerprojecte/HumanEngine/actions/runs/44900131187/job/136834087916)
+covers a three-segment draft across a real loopback WebSocket disconnect and
+reconnect: the first segment is acknowledged, the second is transmitted but its
+receipt is unknown, and the third is not sent. No old segment is replayed and a
+fresh message succeeds on the replacement connection. Combining a partial ACK
+with process shutdown or with recall/policy changes between segments remains
+unproven. Check exact payloads and physical send counts in those cases.
 
 ## P2: coverage closure and integration
 
@@ -203,22 +204,18 @@ segment, rather than inferring this from the final status alone.
   against actual plugin consumers. The tagged outbound WebRead transport and
   disable tests do not enable its default admission or prove public browser
   upgrade behavior.
-- **Plugin API V1/V2 badge acceptance:** `app/pages/plugins.vue` contains
-  `V{{ plugin.apiVersion ?? 1 }}` and `pluginmanager.Manager.List` emits version
-  metadata; `httpapi/plugin_typing_test.go` checks V2 metadata for typing-delay.
-  These are source-level observations, not rendered UI acceptance. Add a named
-  Plugin API badge check covering one V1 local plugin and one V2 builtin through
-  the real list API and UI: correct V1/V2 label, legacy omitted-field V1 fallback,
-  independence from the plugin's own release version, and stable display across
-  enable/disable/reload. Run contract checks and capture the actual rendered list;
-  do not mark the mixed-version UI check complete from metadata alone.
-- **Live graph:** verify media ingestion/history/cache, workspace/semantic and
-  Experience tools, proactive timers, settings effects and source-wide recall
-  ordering against current code and actual-source fixtures. Several historical
-  scope gaps have since gained implementations; enumerate missing connections
-  rather than re-porting modules merely because an old document says pending.
-  Include real controlled platform ingress/send/reconnect coverage separately
-  from synthetic protocol fixtures, with no unrequested external sends.
+- **Plugin API V1/V2 badge acceptance:** the packaged
+  [Chromium proof at `72a1d2f`](https://github.com/killerprojecte/HumanEngine/actions/runs/44876648329/job/136762697079)
+  checked rendered V1 badges for two local plugins and a V2 badge for a
+  built-in through the real list API. This is focused browser evidence, not
+  browser coverage for every package commit or arbitrary plugins.
+- **Live graph:** see [the native application scope](../../backend/internal/app/SCOPE.md)
+  for installed known-only SnowLuma intake, stored tag reuse, the group proactive
+  timer, same-writer recall including habits and read-only Experience feedback.
+  Keep automatic sticker analysis, broader history/cache integration,
+  workspace/semantic exposure, Experience writes/trials and remaining startup
+  and settings effects separate. Controlled third-party platform acceptance is
+  distinct from loopback protocol fixtures; do not send unrequested traffic.
 
 ## P3: cutover gates, independent of package CI
 

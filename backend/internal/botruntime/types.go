@@ -217,6 +217,8 @@ type Services struct {
 	TypingDelay dispatch.TypingDelay
 	// PromptBreakpoints is the real model configuration's capability decision.
 	PromptBreakpoints func(role string) bool
+	// FilterUnrecalled synchronously compacts caller-owned rows in source order.
+	FilterUnrecalled func(Scene, []*Object) ([]*Object, error)
 }
 type Event struct {
 	// FailureCode is a closed, non-sensitive diagnostic category. Cause is for

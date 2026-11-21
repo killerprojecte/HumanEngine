@@ -39,7 +39,7 @@ func NewRuntime(main *sql.DB, a *recovery.Authority, memes *memeservice.Service,
 		return func() error { _, e := memes.RecallWithSession(ctx, ws, scene.ID, id); return e }, nil
 	})
 	modelPort := &RuntimeModels{Native: models, Read: read}
-	runtime, e := botruntime.New(settings, botruntime.Services{Models: modelPort, Authority: configured, Policy: policy, Dates: dates, Compare: compare})
+	runtime, e := botruntime.New(settings, botruntime.Services{Models: modelPort, Authority: configured, FilterUnrecalled: configured.FilterUnrecalled, Policy: policy, Dates: dates, Compare: compare})
 	if e != nil {
 		return nil, e
 	}

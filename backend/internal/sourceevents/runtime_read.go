@@ -79,6 +79,29 @@ func (r *runtimeReads) IsRecalled(scene botruntime.Scene, id string) (recalled b
 	err = r.read(func(v *View) error { var e error; recalled, e = recalledAt(v, scene.ID, id); return e })
 	return
 }
+
+// FilterUnrecalled compacts a private candidate slice in one fresh read. It
+// preserves the exact recall lookup, caller order, and duplicate rows.
+func (r *RuntimeAuthority) FilterUnrecalled(scene botruntime.Scene, rows []*jsjson.Object) ([]*jsjson.Object, error) {
+	kept := rows[:0]
+	err := r.read(func(v *View) error {
+		for _, row := range rows {
+			recalled, err := recalledAt(v, scene.ID, str(row, "id"))
+			if err != nil {
+				return err
+			}
+			if !recalled {
+				kept = append(kept, row)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return kept, nil
+}
+
 func currentRuntimeSource(v *View, message *jsjson.Object) (bool, error) {
 	if str(message, "origin") == "simulation" {
 		return true, nil

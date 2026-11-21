@@ -97,6 +97,34 @@ func (r *Runtime) recalled(s *sceneState, id string) (bool, error) {
 }
 
 func (r *Runtime) unrecalled(s *sceneState, messages []*Object) ([]*Object, error) {
+	if batch := r.services.FilterUnrecalled; batch != nil {
+		before := s.view.Load()
+		rows := make([]*Object, 0, len(messages))
+		for _, m := range messages {
+			if !before.recalled[idOf(m)] {
+				rows = append(rows, m)
+			}
+		}
+		if len(rows) == 0 {
+			return rows, nil
+		}
+		rows, err := batch(before.scene, rows)
+		if err != nil {
+			return nil, err
+		}
+		// A local recall may publish after the durable snapshot is taken.
+		after := s.view.Load()
+		if after != before {
+			kept := rows[:0]
+			for _, m := range rows {
+				if !after.recalled[idOf(m)] {
+					kept = append(kept, m)
+				}
+			}
+			rows = kept
+		}
+		return rows, nil
+	}
 	out := make([]*Object, 0, len(messages))
 	for _, m := range messages {
 		recalled, err := r.recalled(s, idOf(m))

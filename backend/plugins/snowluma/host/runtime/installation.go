@@ -31,7 +31,7 @@ type Installation struct {
 }
 
 // InstallPrepared accepts the configuration/startup plan produced by the bound
-// guest. It performs only the requested transport IO and source registration
+// first-party SnowLuma reactor. It performs only the requested transport IO and source registration
 // order. The application binds it through Manager with actual generation-scoped
 // Receive/history/profile and original-file authority ports.
 // A nonnil owner is returned even on connect failure so Manager can drain it.
@@ -67,7 +67,7 @@ func InstallPrepared(ctx context.Context, host *plugins.WASMHost, guestID string
 		port, _ := get(config, "eventPort").(float64)
 		http, err = transport.NewHTTP(transport.HTTPConfig{URL: str(config, "url"), AccountID: str(config, "accountId"), Token: str(plan, "token"), EventToken: str(plan, "eventToken"), EventHost: str(config, "eventHost"), EventPath: str(config, "eventPath"), EventPort: int(port)}, host, guestID, callbacks)
 	case "websocket":
-		ws, err = transport.NewWS(transport.WSConfig{URL: str(config, "url"), AccountID: str(config, "accountId"), Token: str(plan, "token")}, host, guestID, callbacks)
+		ws, err = transport.NewBuiltinWS(transport.WSConfig{URL: str(config, "url"), AccountID: str(config, "accountId"), Token: str(plan, "token")}, host, guestID, callbacks)
 	default:
 		return nil, errors.New("invalid_guest_startup_transport")
 	}

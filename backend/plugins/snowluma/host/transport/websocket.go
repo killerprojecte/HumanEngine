@@ -36,26 +36,38 @@ type wsPending struct {
 	socket      *websocket.Conn
 	result      chan wsResult
 	transmitted bool
+	imageReply  bool
 }
 
 // WS owns physical IO and correlation only. Response and event business decisions
 // execute in the exact bound guest instance, not a movable plugin ID.
 type WS struct {
-	mu              sync.Mutex
-	config          WSConfig
-	callbacks       HTTPCallbacks
-	guest           func(context.Context, []byte) ([]byte, error)
-	life            context.Context
-	cancel          context.CancelFunc
-	work            quiescence.Group
-	socket          *websocket.Conn
-	connecting      *connectAttempt
-	reconnect       *wsTimer
-	pending         map[string]*wsPending
-	ready, disposed bool
+	mu                sync.Mutex
+	config            WSConfig
+	callbacks         HTTPCallbacks
+	guest             func(context.Context, []byte) ([]byte, error)
+	life              context.Context
+	cancel            context.CancelFunc
+	work              quiescence.Group
+	socket            *websocket.Conn
+	connecting        *connectAttempt
+	reconnect         *wsTimer
+	pending           map[string]*wsPending
+	ready, disposed   bool
+	builtinImageReply bool
 }
 
 func NewWS(config WSConfig, host *plugins.WASMHost, id string, callbacks HTTPCallbacks) (*WS, error) {
+	return newWS(config, host, id, callbacks, false)
+}
+
+// NewBuiltinWS binds the first-party SnowLuma reactor. Its known-echo policy
+// returns the original data unchanged on success. Alternate guests must use NewWS.
+func NewBuiltinWS(config WSConfig, host *plugins.WASMHost, id string, callbacks HTTPCallbacks) (*WS, error) {
+	return newWS(config, host, id, callbacks, true)
+}
+
+func newWS(config WSConfig, host *plugins.WASMHost, id string, callbacks HTTPCallbacks, builtinImageReply bool) (*WS, error) {
 	guest, err := host.BindCall(id)
 	if err != nil {
 		return nil, err
@@ -70,7 +82,7 @@ func NewWS(config WSConfig, host *plugins.WASMHost, id string, callbacks HTTPCal
 		config.Reconnect = 100 * time.Millisecond
 	}
 	life, cancel := context.WithCancel(context.Background())
-	return &WS{config: config, callbacks: callbacks, guest: guest, life: life, cancel: cancel, pending: map[string]*wsPending{}}, nil
+	return &WS{config: config, callbacks: callbacks, guest: guest, life: life, cancel: cancel, pending: map[string]*wsPending{}, builtinImageReply: builtinImageReply}, nil
 }
 func (w *WS) status(status string) {
 	if w.callbacks.Status != nil {
@@ -324,18 +336,7 @@ func (w *WS) readLoop(socket *websocket.Conn) {
 		ready := w.ready
 		w.mu.Unlock()
 		if pending != nil {
-			decision, err := w.decide(wsObject("operation", "receive", "event", event, "knownEcho", true))
-			if err != nil {
-				pending.result <- wsResult{err: err}
-				continue
-			}
-			code, hasError := decision.Get("error")
-			if hasError {
-				pending.result <- wsResult{err: failure(code.(string), false)}
-			} else {
-				data, _ := decision.Get("data")
-				pending.result <- wsResult{value: data}
-			}
+			pending.result <- w.reply(event, echoText, pending.imageReply)
 			continue
 		}
 		if ready && w.callbacks.Receive != nil {
@@ -345,6 +346,48 @@ func (w *WS) readLoop(socket *websocket.Conn) {
 		}
 	}
 }
+func (w *WS) reply(event *jsjson.Object, echo string, imageReply bool) wsResult {
+	policyEvent := event
+	if imageReply {
+		// The reactor qualifies only echo, status and retcode. Do not send the
+		// already parsed (potentially large) data through WASM just to echo it.
+		policyEvent = new(jsjson.Object)
+		for _, key := range [...]string{"echo", "status", "retcode"} {
+			if value, exists := event.Get(key); exists {
+				_ = policyEvent.Set(key, value)
+			}
+		}
+	}
+	decision, err := w.decide(wsObject("operation", "receive", "event", policyEvent, "knownEcho", true))
+	if err != nil {
+		return wsResult{err: err}
+	}
+	code, hasError := decision.Get("error")
+	if !imageReply {
+		if hasError {
+			return wsResult{err: failure(code.(string), false)}
+		}
+		data, _ := decision.Get("data")
+		return wsResult{value: data}
+	}
+	kind, _ := decision.Get("kind")
+	returnedEcho, _ := decision.Get("echo")
+	if returnedEcho == echo {
+		if kind == "response_error" && hasError {
+			if code, ok := code.(string); ok {
+				return wsResult{err: failure(code, false)}
+			}
+		}
+		if kind == "response" && !hasError {
+			if _, synthesized := decision.Get("data"); !synthesized {
+				data, _ := event.Get("data")
+				return wsResult{value: data}
+			}
+		}
+	}
+	return wsResult{err: failure("invalid_guest_response", false)}
+}
+
 func (w *WS) Action(ctx context.Context, name string, params *jsjson.Object) (any, error) {
 	return w.action(ctx, name, params, false, nil)
 }
@@ -425,7 +468,7 @@ func (w *WS) actionPrepared(ctx context.Context, name string, params *jsjson.Obj
 	if ctx.Err() != nil {
 		return nil, failure("socket_send_failed", false)
 	}
-	pending := &wsPending{socket: socket, result: make(chan wsResult, 1)}
+	pending := &wsPending{socket: socket, result: make(chan wsResult, 1), imageReply: w.builtinImageReply && name == "get_image"}
 	w.mu.Lock()
 	if w.disposed || w.socket != socket || (!bootstrap && !w.ready) {
 		w.mu.Unlock()

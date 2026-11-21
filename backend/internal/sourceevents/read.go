@@ -218,11 +218,13 @@ func (v *View) Registered(sceneID, messageID string) (*Metadata, error) {
 	}
 	return v.HeadMetadata(h.Metadata.Identity)
 }
-func (v *View) Current(ref Ref, i Identity) (Eligibility, error) { return v.eligibility(ref, i, false) }
-func (v *View) Historical(ref Ref, i Identity) (Eligibility, error) {
-	return v.eligibility(ref, i, true)
+func (v *View) Current(ref Ref, i Identity) (Eligibility, error) {
+	return v.eligibility(ref, i, false, nil)
 }
-func (v *View) eligibility(ref Ref, i Identity, historical bool) (Eligibility, error) {
+func (v *View) Historical(ref Ref, i Identity) (Eligibility, error) {
+	return v.eligibility(ref, i, true, nil)
+}
+func (v *View) eligibility(ref Ref, i Identity, historical bool, verifiedHead *Head) (Eligibility, error) {
 	if !ref.Valid() || !i.Valid() {
 		return Eligibility{}, ErrInvalid
 	}
@@ -241,9 +243,14 @@ func (v *View) eligibility(ref Ref, i Identity, historical bool) (Eligibility, e
 	if revoked {
 		return no("recalled")
 	}
-	head, e := v.head(i)
-	if e != nil {
-		return Eligibility{}, e
+	// Only a stable publication can reuse the exact head already parsed
+	// for the body hash. Ordered writer/maintenance views re-read it.
+	head := verifiedHead
+	if head == nil || !v.stable {
+		head, e = v.head(i)
+		if e != nil {
+			return Eligibility{}, e
+		}
 	}
 	if head == nil {
 		return no("missing")

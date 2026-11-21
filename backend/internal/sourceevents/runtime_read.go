@@ -156,7 +156,7 @@ func currentRuntimeSource(v *View, message *jsjson.Object) (bool, error) {
 	if head.Metadata.Ref != ref {
 		return false, nil
 	}
-	eligible, err := v.Current(head.Metadata.Ref, identity)
+	eligible, err := v.eligibility(ref, identity, false, head)
 	return eligible.Eligible, err
 }
 func (r *runtimeReads) ValidateSources(scene botruntime.Scene, messages []*jsjson.Object, dependencies []string) (valid bool, err error) {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/coder/websocket"
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
@@ -21,6 +22,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -45,6 +47,9 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	unexpectedMedia := make(chan string, 8)
 	closed := make(chan struct{}, 8)
 	var writes sync.Mutex
+	var sentCount atomic.Int64
+	sentCount.Store(10)
+	var dropNextAck atomic.Bool
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer synthetic" {
 			http.Error(w, "synthetic credential missing", 401)
@@ -57,7 +62,6 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		defer socket.CloseNow()
 		defer func() { closed <- struct{}{} }()
 		connections <- socket
-		sentCount := 10
 		browserHistory := true
 		for {
 			_, raw, err := socket.Read(ctx)
@@ -74,9 +78,13 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 			case "get_login_info":
 				data = map[string]any{"user_id": 42}
 			case "send_group_msg":
+				id := sentCount.Add(1)
 				sent <- request
-				sentCount++
-				data = map[string]any{"message_id": sentCount}
+				if dropNextAck.Swap(false) {
+					// EOF after the action was read from the wire, without its echo/ACK.
+					return
+				}
+				data = map[string]any{"message_id": id}
 			case "get_image", "get_msg":
 				unexpectedMedia <- action
 			case "get_group_msg_history", "get_friend_msg_history":
@@ -192,9 +200,13 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		t.Fatal(ctx.Err())
 	}
 	sceneID := snow.SceneID("snowluma", "42", "group", "99")
-	ingress := func(id int) {
+	ingress := func(id int, marker ...string) {
 		t.Helper()
-		body, _ := json.Marshal(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": 99, "user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{map[string]any{"type": "text", "data": map[string]any{"text": "Please reply to this synthetic request."}}}})
+		text := "Please reply to this synthetic request."
+		if len(marker) != 0 {
+			text = marker[0]
+		}
+		body, _ := json.Marshal(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": 99, "user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{map[string]any{"type": "text", "data": map[string]any{"text": text}}}})
 		writes.Lock()
 		e := socket.Write(ctx, websocket.MessageText, body)
 		writes.Unlock()
@@ -306,7 +318,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	_ = saved.Set("learningEnabled", true)
 	wire, _ = jsjson.Marshal(saved)
 	appRequest(t, application, http.MethodPut, "/api/scenes/"+url.PathEscape(sceneID), json.RawMessage(wire))
-	waitIdle := func(receipt string) {
+	waitIdle := func(receipt string) botruntime.Snapshot {
 		t.Helper()
 		for {
 			snapshot, e := application.Engine.Runtime.Snapshot(sceneID)
@@ -314,7 +326,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 				t.Fatal(e)
 			}
 			if snapshot.Active == 0 && snapshot.Pending == 0 && snapshot.Waiting == 0 {
-				found := false
+				found := receipt == ""
 				for _, message := range snapshot.Messages {
 					if field(message, "id") == snow.MessageID(sceneID, receipt) {
 						found = true
@@ -323,7 +335,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 				if !found {
 					t.Fatalf("wire send lacks actual committed Runtime receipt %s", receipt)
 				}
-				return
+				return snapshot
 			}
 			select {
 			case <-ctx.Done():
@@ -452,6 +464,92 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		t.Fatal("replacement generation missing")
 	}
 	verifyRetiredInline()
+	t.Log("stage: wire-transmitted send loses ACK, then fresh socket sends only fresh ingress")
+	targetedIngress := func(id int) {
+		t.Helper()
+		marker := fmt.Sprintf("Synthetic reconnect event %d.", id)
+		appRequest(t, application, http.MethodPut, "/api/plugins/snow-model/config", map[string]any{"media": false, "targetText": marker})
+		ingress(id, marker)
+	}
+	assertNextWireReply := func(want string) {
+		t.Helper()
+		select {
+		case request := <-sent:
+			params := request["params"].(map[string]any)
+			for _, item := range params["message"].([]any) {
+				part := item.(map[string]any)
+				if part["type"] == "reply" && fmt.Sprint(part["data"].(map[string]any)["id"]) == want {
+					return
+				}
+			}
+			t.Fatalf("expected wire reply to fresh event %s, got %v", want, request)
+		case <-ctx.Done():
+			t.Fatal("missing wire reply", ctx.Err())
+		}
+	}
+	assertReceiptSet := func(snapshot botruntime.Snapshot, fresh bool) {
+		t.Helper()
+		want := map[string]bool{snow.MessageID(sceneID, "11"): true, snow.MessageID(sceneID, "12"): true}
+		if fresh {
+			want[snow.MessageID(sceneID, "14")] = true
+		}
+		for _, row := range snapshot.Messages {
+			if field(row, "senderId") != "bot" {
+				continue
+			}
+			id, _ := field(row, "id").(string)
+			if !want[id] {
+				t.Fatalf("unexpected, unacknowledged or duplicate receipt: %s", id)
+			}
+			delete(want, id)
+		}
+		if len(want) != 0 {
+			t.Fatalf("missing acknowledged receipts: %v", want)
+		}
+	}
+	dropNextAck.Store(true)
+	targetedIngress(4)
+	assertNextWireReply("4")
+	select {
+	case <-closed:
+	case <-ctx.Done():
+		t.Fatal("peer did not physically disconnect after reading send")
+	}
+	assertReceiptSet(waitIdle(""), false)
+	select {
+	case socket = <-connections:
+	case <-ctx.Done():
+		t.Fatal("Snow transport did not reconnect")
+	}
+	for {
+		statuses, err := application.Engine.Runtime.AdapterStatuses(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(statuses) == 1 && statuses[0].Status == "connected" {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			t.Fatal("replacement login did not become connected")
+		case <-time.After(time.Millisecond):
+		}
+	}
+	if err := socket.Ping(ctx); err != nil {
+		t.Fatal("replacement socket barrier", err)
+	}
+	select {
+	case replay := <-sent:
+		t.Fatal("unknown send was replayed after reconnect", replay)
+	default:
+	}
+	targetedIngress(5)
+	assertNextWireReply("5")
+	assertReceiptSet(waitIdle("14"), true)
+	if sentCount.Load() != 14 {
+		t.Fatal("unexpected number of sends after reconnect", sentCount.Load())
+	}
+
 	snowAdmin("/api/plugins/snowluma/enabled", map[string]any{"enabled": false})
 	assertSnowStatus("")
 	assertPolicyUnloaded()

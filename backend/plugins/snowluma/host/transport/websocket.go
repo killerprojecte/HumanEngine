@@ -187,7 +187,7 @@ func (w *WS) open(ctx context.Context) error {
 	}
 	socket, _, err := websocket.Dial(call, u.Href(false), &websocket.DialOptions{HTTPClient: &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, HTTPHeader: headers, CompressionMode: websocket.CompressionContextTakeover, CompressionThreshold: 1})
 	if err != nil {
-		w.scheduleReconnect(nil)
+		w.scheduleReconnect()
 		return failure("connection_failed", false)
 	}
 	socket.SetReadLimit(8 * 1024 * 1024)
@@ -243,10 +243,10 @@ func (w *WS) stopReconnectLocked() {
 		}
 	}
 }
-func (w *WS) scheduleReconnect(socket *websocket.Conn) {
+func (w *WS) scheduleReconnect() {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	if w.disposed || (socket != nil && w.socket != socket) || w.reconnect != nil {
+	if w.disposed || w.socket != nil || w.reconnect != nil {
 		return
 	}
 	done, ok := w.work.Start()
@@ -257,13 +257,27 @@ func (w *WS) scheduleReconnect(socket *websocket.Conn) {
 	w.reconnect = owner
 	owner.timer = time.AfterFunc(w.config.Reconnect, func() {
 		defer owner.done()
-		w.mu.Lock()
-		if w.reconnect != owner || w.disposed {
+		for {
+			w.mu.Lock()
+			if w.reconnect != owner || w.disposed {
+				w.mu.Unlock()
+				return
+			}
+			attempt := w.connecting
+			if attempt == nil {
+				w.reconnect = nil
+				w.mu.Unlock()
+				break
+			}
 			w.mu.Unlock()
-			return
+			// Joining the old attempt can report success for a socket that
+			// already closed. Keep this retry until the attempt releases it.
+			select {
+			case <-attempt.done:
+			case <-w.life.Done():
+				return
+			}
 		}
-		w.reconnect = nil
-		w.mu.Unlock()
 		if err := w.Connect(w.life); err != nil {
 			w.report("reconnect_failed", err)
 		}
@@ -277,6 +291,7 @@ func (w *WS) readLoop(socket *websocket.Conn) {
 			w.mu.Unlock()
 			return
 		}
+		w.socket = nil
 		w.ready = false
 		for echo, p := range w.pending {
 			if p.socket == socket {
@@ -288,7 +303,7 @@ func (w *WS) readLoop(socket *websocket.Conn) {
 		w.mu.Unlock()
 		if !disposed {
 			w.status("disconnected")
-			w.scheduleReconnect(socket)
+			w.scheduleReconnect()
 		}
 	}()
 	for {

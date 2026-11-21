@@ -1,6 +1,6 @@
 // Synthetic model IO only. No adapter, source authority or send implementation.
 export default {
- manifest:{id:'snow-model',name:'Snow synthetic model',version:'1',capabilities:['model-protocol'],configSchema:{type:'object',properties:{media:{type:'boolean'}}}},
+ manifest:{id:'snow-model',name:'Snow synthetic model',version:'1',capabilities:['model-protocol'],configSchema:{type:'object',properties:{media:{type:'boolean'},targetText:{type:'string'}}}},
  setup(ctx){let serial=0
   ctx.registerModelProtocol('deterministic','Synthetic Snow replies',{async complete(context,messages,tools){
    context.signal.throwIfAborted();serial++;const names=tools.map(t=>t.name),data={}
@@ -14,7 +14,11 @@ export default {
       p.type==='text'?p.text==='Synthetic Snow reply.':p.type==='media'&&p.mediaType==='image'&&typeof p.assetId==='string'&&p.assetId.length>0))
     return call('reply.validate',{valid})
    }
-   if(names.includes('participation.decide'))return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[data.messages[0].id]})
+   if(names.includes('participation.decide')){
+    const target=ctx.config.targetText?data.messages.find(m=>m.parts?.some(p=>p.type==='text'&&p.text===ctx.config.targetText)):data.messages[0]
+    if(!target)throw Error('synthetic_snow_target_not_visible')
+    return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[target.id]})
+   }
    const receipts=messages.filter(m=>m.role==='tool').flatMap(m=>{try{const v=JSON.parse(m.content);return Array.isArray(v)?v:[v]}catch{return[]}})
    const media=receipts.find(v=>v.toolName==='memes.search'&&Array.isArray(v.value?.items))
    if(names.includes('reply.plan')){

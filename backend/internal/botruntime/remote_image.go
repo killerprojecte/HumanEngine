@@ -51,16 +51,16 @@ func (r *Runtime) RemoteDisplayImage(scene Scene, messageID string, part int) *D
 	return &DisplayImageSource{runtime: r, scene: scene, adapter: adapter, remote: &remoteImage{messageID, part}}
 }
 
-func (m *DisplayImageSource) FetchRemote(ctx context.Context, before func(context.Context) error) error {
+func (m *DisplayImageSource) FetchRemote(ctx context.Context, before func(context.Context) error) (bool, error) {
 	id, part := m.remote.messageID, m.remote.part
 	out, err := trackedWithin(m.runtime, ctx, func(settle func(*Object, error)) {
 		m.adapter.BrowserMessage(ctx, m.scene, id, before, settle)
 	})
 	if err != nil {
-		return err
+		return false, err
 	}
 	if !m.Current() {
-		return ErrDisplayImageUnavailable
+		return false, ErrDisplayImageUnavailable
 	}
 	for _, raw := range array(get(out, "items")) {
 		row, ok := raw.(*Object)
@@ -70,14 +70,14 @@ func (m *DisplayImageSource) FetchRemote(ctx context.Context, before func(contex
 		parts := array(get(row, "parts"))
 		if part < len(parts) {
 			asset, class := remoteImagePart(m.adapter, m.scene, parts[part])
-			if class != 0 {
+			if class != 0 && asset != m.assetID {
 				m.assetID, m.inline = asset, class == NativeImageInline
-				return nil
+				return true, nil
 			}
 		}
 		break
 	}
-	return ErrDisplayImageUnavailable
+	return false, nil
 }
 
 func remoteImageRow(row *Object) bool {

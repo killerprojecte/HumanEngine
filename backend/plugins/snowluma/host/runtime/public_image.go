@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pinnedhop"
 	"github.com/killerprojecte/HumanEngine/backend/internal/publicip"
@@ -196,3 +197,8 @@ func publicImageIOError(ctx context.Context) error {
 type publicImageHTTPStatus int
 
 func (status publicImageHTTPStatus) Error() string { return fmt.Sprintf("public_http_%d", int(status)) }
+
+// Only a typed upstream 403 marks a remote locator eligible for exact refresh.
+func (status publicImageHTTPStatus) Is(target error) bool {
+	return status == http.StatusForbidden && target == botruntime.ErrBrowserImageLocatorExpired
+}

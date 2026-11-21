@@ -47,17 +47,24 @@ func (s *Service) readRemoteDisplayImage(ctx context.Context, sceneID, messageID
 			return nil, out.VerifyPublication(call, conn)
 		}, func([]byte) error { return nil })
 	}
-	if err := out.source.FetchRemote(ctx, before); err != nil {
+	found, err := out.source.FetchRemote(ctx, before)
+	if err != nil {
 		return nil, err
 	}
-	// The request proof itself never enters the runtime or durable store.
-	if out.source.IsInline() {
-		if err := before(ctx); err != nil {
-			return nil, err
+	if !found {
+		return nil, ErrDisplayImageUnavailable
+	}
+	out.Bytes, err = readRemoteImageBytes(ctx, out.source, before)
+	if errors.Is(err, botruntime.ErrBrowserImageLocatorExpired) && ctx.Err() == nil {
+		// Only this request-local, unversioned exact-message proof can switch
+		// to a different locator. Both calls retain the original authority.
+		replaced, refreshErr := out.source.FetchRemote(ctx, before)
+		if refreshErr != nil {
+			return nil, refreshErr
 		}
-		out.Bytes, err = out.source.InlineBytes(ctx)
-	} else {
-		out.Bytes, err = out.source.BrowserImageBytes(ctx, before)
+		if replaced {
+			out.Bytes, err = readRemoteImageBytes(ctx, out.source, before)
+		}
 	}
 	if err != nil {
 		return nil, err
@@ -67,6 +74,16 @@ func (s *Service) readRemoteDisplayImage(ctx context.Context, sceneID, messageID
 		return nil, err
 	}
 	return out, nil
+}
+
+func readRemoteImageBytes(ctx context.Context, source *botruntime.DisplayImageSource, before func(context.Context) error) ([]byte, error) {
+	if source.IsInline() {
+		if err := before(ctx); err != nil {
+			return nil, err
+		}
+		return source.InlineBytes(ctx)
+	}
+	return source.BrowserImageBytes(ctx, before)
 }
 
 func remoteImageScene(ws *recovery.WriteSession, id string) (scene botruntime.Scene, err error) {

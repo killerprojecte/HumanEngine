@@ -8,6 +8,7 @@ import (
 )
 
 var ErrDisplayImageUnavailable = errors.New("image_unavailable")
+var ErrBrowserImageLocatorExpired = errors.New("browser_image_locator_expired")
 
 var managedImageID = regexp.MustCompile("^[0-9a-f]{64}$")
 

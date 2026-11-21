@@ -120,3 +120,21 @@ func errorString(err error) string {
 	}
 	return err.Error()
 }
+
+func TestPublicBrowserLocatorExpiryIsOnlyTypedUpstream403(t *testing.T) {
+	for _, err := range []error{
+		publicImageHTTPStatus(http.StatusNotFound),
+		publicImageHTTPStatus(http.StatusGone),
+		errors.New("public_http_403"),
+		botruntime.ErrDisplayImageUnavailable,
+		context.Canceled,
+	} {
+		if errors.Is(err, botruntime.ErrBrowserImageLocatorExpired) {
+			t.Fatalf("unqualified error triggered exact refresh: %v", err)
+		}
+	}
+	err := publicImageHTTPStatus(http.StatusForbidden)
+	if err.Error() != "public_http_403" || !errors.Is(err, botruntime.ErrBrowserImageLocatorExpired) {
+		t.Fatalf("upstream 403 did not preserve its error and qualify refresh: %v", err)
+	}
+}

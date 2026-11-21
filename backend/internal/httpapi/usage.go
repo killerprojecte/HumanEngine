@@ -65,7 +65,7 @@ func (s *Server) serveUsage(w http.ResponseWriter, r *http.Request, available bo
 	}, func(body []byte) error {
 		response.header.Set("Cache-Control", "no-store")
 		response.header.Set("X-Content-Type-Options", "nosniff")
-		return response.enqueue(r.Context(), body)
+		return response.enqueueOwnedBytes(r.Context(), body)
 	})
 	if response.accepted {
 		err = errors.Join(err, response.drain(r.Context(), w))

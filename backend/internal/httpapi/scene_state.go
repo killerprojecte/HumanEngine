@@ -136,7 +136,7 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 	}, func(data []byte) error {
 		response.header.Set("Cache-Control", "no-store")
 		response.header.Set("X-Content-Type-Options", "nosniff")
-		return response.enqueue(ctx, data)
+		return response.enqueueOwnedBytes(ctx, data)
 	})
 	if response.accepted {
 		err = response.drain(ctx, w)

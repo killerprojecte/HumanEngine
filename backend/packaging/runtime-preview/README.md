@@ -144,12 +144,21 @@ command line or in version control. Use `config --quiet` to validate without
 printing the resolved environment.
 
 ```sh
-export HE_COMPOSE_IMAGE=humanengine-go-preview:local
-docker compose -f backend/packaging/runtime-preview/compose-rehearsal.yaml config --quiet
-docker compose -f backend/packaging/runtime-preview/compose-rehearsal.yaml up -d --no-build --pull never
+# From the repository root, build the exact clean candidate checkout.
+rev=$(git rev-parse --verify HEAD)
+export HE_COMPOSE_IMAGE="humanengine-go-local:$rev"
+test -z "$(git status --porcelain)" &&
+  docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$rev" \
+    -f backend/packaging/runtime-preview/Dockerfile -t "$HE_COMPOSE_IMAGE" .
+
+# This check also applies if the revision-tagged image was already built locally.
+test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$HE_COMPOSE_IMAGE")" = "$rev" &&
+  docker compose -f backend/packaging/runtime-preview/compose-rehearsal.yaml config --quiet &&
+  docker compose -f backend/packaging/runtime-preview/compose-rehearsal.yaml up -d --no-build --pull never
 ```
 
-Open **http://127.0.0.1:3001** and log in. Set `HE_COMPOSE_PORT` to another
+Open **http://127.0.0.1:3002**. The interactive preview still defaults to 3001.
+Set `HE_COMPOSE_PORT` to another
 available loopback port if needed, and use the same explicit `--project-name`
 on every command if you need another isolated installation. The default project
 `humanengine-go-local` keeps data and authority in two independent named volumes;

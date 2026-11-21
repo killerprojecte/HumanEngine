@@ -31,7 +31,9 @@ jobs:
         run: |
           python3 -m unittest discover -s backend/packaging/runtime-preview -p 'test_*.py' -v
           docker compose -f backend/packaging/runtime-preview/compose.yaml config --quiet
-          docker compose --env-file /dev/null -f backend/packaging/runtime-preview/compose-rehearsal.yaml config --quiet
+          set -o pipefail
+          env -u HE_COMPOSE_PORT docker compose --env-file /dev/null -f backend/packaging/runtime-preview/compose-rehearsal.yaml config --format json |
+            python3 -c 'import json, sys; c = json.load(sys.stdin); p, = c["services"]["humanengine"]["ports"]; assert c["name"] == "humanengine-go-local" and p["host_ip"] == "127.0.0.1" and int(p["published"]) == 3002'
       - name: Build opt-in candidate (no push)
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
       - name: Select Python for the opt-in browser smoke

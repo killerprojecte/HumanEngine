@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     ports:
       - target: 3000
-        published: "${HE_COMPOSE_PORT:-3001}"
+        published: "${HE_COMPOSE_PORT:-3002}"
         host_ip: 127.0.0.1
     environment:
       HUMANENGINE_ADMIN_TOKEN: ${HUMANENGINE_ADMIN_TOKEN:?Set the local administration token}

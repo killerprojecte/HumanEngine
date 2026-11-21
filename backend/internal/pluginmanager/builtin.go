@@ -125,7 +125,7 @@ func (m *Manager) startBuiltin(ctx context.Context, id string, i *item, revision
 	if id != "typing-delay" {
 		return m.startBoundBuiltin(ctx, id, i, revision, config, life, callGuest)
 	}
-	remove, err := m.runtime.InstallTypingDelay(typinghost.Delay(typinghost.Ports{Life: life, Config: config, BeginWork: m.work.Start, Current: func() bool { return current(m, i, revision) }, Lifetime: lifetime, CallGuest: callGuest}))
+	remove, err := m.runtime.InstallTypingDelay(life, typinghost.Delay(typinghost.Ports{Life: life, Config: config, BeginWork: m.work.Start, Current: func() bool { return current(m, i, revision) }, Lifetime: lifetime, CallGuest: callGuest}))
 	if err != nil {
 		return err
 	}

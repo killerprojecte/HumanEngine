@@ -170,6 +170,22 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 		c.stage.Store(nil)
 		ctx = c.root
 	}
+	var typing dispatch.TypingDelay
+	var typingLife context.Context
+	if c.Mode != "simulation" {
+		typing, typingLife = r.typingDelay()
+	}
+	if typingLife != nil {
+		// The exact generation owns this whole send, including time spent
+		// between segment waits. Retiring it does not abort the whole turn.
+		operation, cancelOperation := context.WithCancelCause(ctx)
+		stop := context.AfterFunc(typingLife, func() { cancelOperation(context.Cause(typingLife)) })
+		defer func() { stop(); cancelOperation(nil) }()
+		if typingLife.Err() != nil {
+			cancelOperation(context.Cause(typingLife))
+		}
+		ctx = operation
+	}
 	r.operationMu.Lock()
 	if !r.closed.Load() {
 		op := &receiptOperation{key: key, owner: t, receipts: []dispatch.Receipt{}}
@@ -234,7 +250,7 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 				t.state.mu.Unlock()
 			}
 		}
-		if err != nil && c.Signal().Aborted() && len(observed) == 0 {
+		if err != nil && (c.Signal().Aborted() || typingLife != nil && typingLife.Err() != nil) && len(observed) == 0 {
 			appendReceipt(dispatch.Receipt{Status: dispatch.Cancelled, Detail: ptr("context_cancelled")})
 			err = nil
 		}
@@ -249,13 +265,27 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 			appendReceipt(dispatch.Receipt{Status: dispatch.Cancelled})
 			return observed, nil
 		}
+		if typingLife != nil && typingLife.Err() != nil {
+			appendReceipt(dispatch.Receipt{Status: dispatch.Cancelled, Detail: ptr("context_cancelled")})
+			return observed, nil
+		}
 		hookContext := ctx
 		var phase *stage
+		var stopHook func() bool
 		if coreDraft {
 			phase = r.newPhase(t, t.settings.ReplyerTimeoutMS, true)
 			hookContext = phase
+			if typingLife != nil {
+				stopHook = context.AfterFunc(ctx, func() { phase.abort(context.Cause(ctx)) })
+				if ctx.Err() != nil {
+					phase.abort(context.Cause(ctx))
+				}
+			}
 		}
 		result, e := trackedWithin(r, hookContext, func(settle func(HookResult, error)) { hook.Run(hookContext, cloneSegments(segments), c, settle) })
+		if stopHook != nil {
+			stopHook()
+		}
 		if phase != nil {
 			phase.close()
 		}
@@ -353,11 +383,14 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 			}()
 			return future
 		}}
-
-	typing := r.typingDelay()
-	if c.Mode == "simulation" {
-		typing = nil
+	if typingLife != nil {
+		// Actual adapter callbacks recheck after potentially blocking source
+		// reads, not just at logical submission or asynchronous cancellation.
+		guard.CaptureTransmitGuard = func() func() bool {
+			return func() bool { return typingLife.Err() == nil }
+		}
 	}
+
 	for i, segment := range segments {
 		segmentServices := services
 		// Capture this exact segment, so a retained asynchronous transmit callback
@@ -366,6 +399,9 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 			return r.dispatchRead(func() (bool, error) {
 				if valid, checkErr := r.eligibleSignal(c, d.Signal); checkErr != nil || !valid {
 					return valid, checkErr
+				}
+				if typingLife != nil && typingLife.Err() != nil {
+					return false, nil
 				}
 				return r.outgoingEligible(c, []dispatch.Segment{segment})
 			})

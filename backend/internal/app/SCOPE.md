@@ -1,8 +1,8 @@
 # Native application composition checkpoint
 
-This package composes actual native owners for integration and explicit future
-runtime-preview use. The command entry point is unchanged: `--read-only-preview`
-remains read-only, and the default command does not start this application.
+This package composes native owners for integration and opt-in runtime preview.
+The writable `--runtime-preview` launcher runs this graph on a test installation.
+`--read-only-preview` remains read-only, and TypeScript remains the default backend.
 This is not a claim of complete TypeScript Engine compatibility.
 
 ## Composed and exercised
@@ -50,15 +50,23 @@ This is not a claim of complete TypeScript Engine compatibility.
   changing settings and tool availability, concurrent turns, execution-time send
   effects, first matching delivery ownership, current learning flags and current
   image extensions. Completion diagnostics do not add a sending authorization gate.
-- Experience lifecycle and planner context gate/capture, actual HTTP administration,
+- Experience lifecycle and Planner context gate/capture, HTTP administration,
   retained source recall, same-writer invalidation and physical callback drain.
+  The experimental read-only `experience.outcomes` tool exposes persisted outcomes
+  for the current scene when enabled. Model-read and personalization gates apply,
+  and recalled sources no longer contribute outcomes.
 - The source default `learningEnabled=false` scene update is a normal successful
   HTTP path. Experience pause precedes runtime scene registration; semantic
   configuration precedes ordinary-learning, semantic, contextual and media-task
   cancellation. The application owns these effects once, avoiding duplicate epochs.
-- Contextual proposal owner and keyed media-task lifetime are real owned services,
-  with edit/recall/scene cancellation and physical shutdown joins. No media-ingest
-  producer is currently installed in this graph, so this is not media processing.
+- The contextual proposal owner and keyed media-task owner handle edit, recall,
+  scene cancellation and physical shutdown. Live SnowLuma inline sticker intake
+  uses the media-task owner for known-only admission.
+- Runtime recall runs Experience, memory, Meme and habits preparations in that
+  order under the same durable source write.
+- The installed proactive timer checks persisted group-scene settings and submits
+  through the existing Runtime. Shutdown stops the timer before draining Runtime
+  and joins accepted proactive work before closing storage.
 - Async structured logs retain request/scene/turn/stage identifiers and controlled
   failure codes. Raw internal errors are not serialized into plugin events or logs.
 - Startup failure cleanup, uncancelled held HTTP shutdown, accepted runtime/provider
@@ -67,18 +75,16 @@ This is not a claim of complete TypeScript Engine compatibility.
 
 ## Remaining application boundaries
 
-- No runtime command launcher is exposed yet. A future explicit runtime-preview
-  option must define installation/configuration inputs without changing read-only
-  preview semantics or silently selecting this graph as the default backend.
+- The writable launcher and packaged Compose profile are opt-in previews, not
+  production cutover. A redistributable native image and production release
+  acceptance remain open.
 - Remaining source model tools, complete prompt/manual-rule composition and all
-  exposure domains are not all wired. Workspace and semantic
-  exposure guards are not implied by the composed memory, identity, commitment
-  and historical guards. Contextual `learning.propose` is now a model
-  tool in this bounded graph, without those remaining exposure domains. Complete
-  Experience model-facing tools are also outstanding.
-- Runtime recall composes existing Experience, memory, and Meme preparations
-  under the same durable source write. Full source-wide ordering (including
-  habits), proactive scene timers, and all Engine startup hooks remain open.
+  exposure domains are not all wired. Workspace and semantic exposure guards
+  are not implied by the composed memory, identity, commitment and historical
+  guards. Contextual `learning.propose` is available in this bounded graph.
+  Experience proposal writes and starting trials are not provided by
+  `experience.outcomes`. The installed recall and proactive paths do not establish
+  parity for all Engine startup hooks.
 - Four real built-in WASM artifacts are built and required by the native test
   profile, but this graph's V1 integration does not prove all four built-ins have
   their complete product capabilities installed. Native OneBot and full SnowLuma
@@ -92,8 +98,10 @@ This is not a claim of complete TypeScript Engine compatibility.
 - Live non-bot SnowLuma inline stickers can enter the known-only sticker
   library. Personalization and model-read must be enabled; known-only intake
   does not require scene learning. The exact retained source qualifies inside
-  the existing sticker writer. Automatic analysis, locator binding and URL or
-  history intake are not part of this path.
+  the existing sticker writer. When matching inline bytes already have a visible
+  library analysis, Planner and Replyer can reuse its tags without a new vision
+  call. Automatic analysis of new stickers, locator binding and URL or history
+  intake are not part of this path.
 - The existing async Logger is used; complete source log retention/status/delivery
   route equivalence is not claimed. Independent read publication still preserves
   recovery checks; no constant-time cross-connection audit performance claim is made.
@@ -112,9 +120,22 @@ profile and are not counted as default behavioral passes. The earlier native r4
 identity nested-publication timeout is retained as failure evidence; its standalone
 three-file repair passed source/Identity race/vet (51529) and was published separately.
 
-These results belong to those exact frozen inputs. A new assembly on the latest
-public plugin-directory layout requires its own merged compile/native graph check.
-Package test durations are not HTTP latency or migration performance benchmarks.
+These results belong to those exact frozen inputs. Later hosted checks provide
+separate evidence for specific commits:
+
+- [Packaged startup, browser and restore proof](https://github.com/killerprojecte/HumanEngine/actions/runs/44869249075/job/136739818326)
+  at `7be4fdb`; [operator Compose stop and cold reopen](https://github.com/killerprojecte/HumanEngine/actions/runs/44871923338/job/136748143118)
+  at `2d2d747`.
+- [Native group timer and same-writer habits recall](https://github.com/killerprojecte/HumanEngine/actions/runs/44905802376/job/136850987588)
+  at `6f190dd`.
+- [Native known-only SnowLuma sticker intake](https://github.com/killerprojecte/HumanEngine/actions/runs/44910828071/job/136866073463)
+  at `212c381`; [stored tag reuse](https://github.com/killerprojecte/HumanEngine/actions/runs/44915559364/job/136880292740)
+  at `387df11`.
+- [Native read-only Experience outcomes](https://github.com/killerprojecte/HumanEngine/actions/runs/44920561620/job/136895455296)
+  at `b6f6a4b`.
+
+These checks do not establish full parity or repeat every packaging scenario at
+each commit. Package test durations are not request latency benchmarks.
 
 ## Contextual learning tool composition (bounded application graph)
 
@@ -133,8 +154,9 @@ semantic/workspace exposure domains remain uncomposed. Knowledge composition and
 separate focused evidence are described below.
 Pending recall, changed-scope, typed commitment learning and concurrent-writer races
 are not established by this fixture. No synthetic native replacement of guest logic
-is introduced. A writable launcher, installation packaging/configuration and OS-signal
-stop lifecycle remain separate work; --read-only-preview and HTTP 101 are unchanged.
+is introduced. This fixture did not exercise the writable launcher, installation
+packaging/configuration or OS-signal stop. It did not change HTTP 101 or
+`--read-only-preview`.
 
 ## Relation receipt and contextual entity composition
 
@@ -148,8 +170,8 @@ commitment state, matching source order.
 
 The relation fixture exercises real proposal admission, model selection, contextual
 existing-entity reuse and SQL persistence; this does not establish semantic, workspace
-exposure parity; knowledge has its own bounded integration below. Native platform coverage and the separate writable
-launcher remain outside this batch.
+exposure parity; knowledge has its own bounded integration below. This fixture
+did not exercise native platform coverage or the writable launcher.
 
 ## SnowLuma builtin installation candidate
 
@@ -176,8 +198,8 @@ about 83–85s, enable 53–55s and hot configuration 56–58s. Disable complete
 milliseconds, with no policy/runtime guest retained. API closure does not claim
 immediate RSS reclamation. Disk compilation-cache optimization requires a separate
 owner/lifetime review and actual cold/warm measurements. Increasing the test's
-setup budget does not resolve this production cost. The command entry point is
-unchanged and does not activate a default server.
+setup budget does not resolve this production cost. This checkpoint did not
+change the command entry point or activate a default server.
 
 
 ## Qualified knowledge graph composition
@@ -204,6 +226,7 @@ The real-owner tests additionally cover original/copy/foreign-turn receipts, del
 entity anchors, expired/foreign read authority, same-writer uncommitted flag checks and
 rollback. Source-side oracles cover fourteen receipt scenarios, but this does not claim
 all have native counterparts: native reentry/out-of-order coverage and native-model
-memory-anchor/Discover coverage remain separate gaps. Semantic/workspace tools, full
-platform validation, writable launcher/installation packaging and OS-signal stop
-integration remain outside this batch. HTTP 101 and --read-only-preview are unchanged.
+memory-anchor/Discover coverage remain separate gaps. This fixture does not cover
+semantic/workspace tools, full platform validation, writable launcher and
+installation packaging, or OS-signal stop. It did not change HTTP 101 or
+`--read-only-preview`.

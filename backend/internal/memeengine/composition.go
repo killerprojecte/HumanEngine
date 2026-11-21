@@ -37,7 +37,7 @@ func NewRuntime(main *sql.DB, a *recovery.Authority, memes *memeservice.Service,
 	}
 	configured := authority.AppendRecallPreparation(func(ctx context.Context, ws *recovery.WriteSession, _ botruntime.ReadAuthority, scene botruntime.Scene, id string) (func() error, error) {
 		return func() error { _, e := memes.RecallWithSession(ctx, ws, scene.ID, id); return e }, nil
-	})
+	}).AppendRecallPreparation(habits.RuntimeRecallPreparation())
 	modelPort := &RuntimeModels{Native: models, Read: read}
 	runtime, e := botruntime.New(settings, botruntime.Services{Models: modelPort, Authority: configured, FilterUnrecalled: configured.FilterUnrecalled, Policy: policy, Dates: dates, Compare: compare})
 	if e != nil {

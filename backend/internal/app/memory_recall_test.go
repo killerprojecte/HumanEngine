@@ -3,10 +3,13 @@ package app
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
+	"github.com/killerprojecte/HumanEngine/backend/internal/habitservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memorymanual"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
 func TestInstalledRuntimeRecallRedactsMemoryAndRetiresReceipt(t *testing.T) {
@@ -44,6 +47,39 @@ func TestInstalledRuntimeRecallRedactsMemoryAndRetiresReceipt(t *testing.T) {
 	if _, err := memory.UpdateGuarded(ctx, id, lock, guard); err != nil {
 		t.Fatal(err)
 	}
+	independent := msg.Clone()
+	_ = independent.Set("id", "another-source")
+	if _, err := app.Engine.Runtime.Ingest(ctx, scene, independent, false); err != nil {
+		t.Fatal(err)
+	}
+	habitEvidence := func(messageID string) *jsjson.Object {
+		return memoryToolObject("sceneId", scene, "messageId", messageID, "senderId", "synthetic-person",
+			"timestamp", float64(time.Now().UnixMilli()), "direction", float64(1))
+	}
+	if err := app.Engine.Habits.TransactionWithSession(ctx, func(_ *habitservice.Service, ws *recovery.WriteSession) error {
+		for _, rule := range []struct {
+			id      string
+			sources []any
+		}{
+			{"recalled-only", []any{habitEvidence(source)}},
+			{"independent-proof", []any{habitEvidence(source), habitEvidence("another-source")}},
+		} {
+			row := memoryToolObject("id", rule.id, "sceneId", scene, "kind", "sceneRule",
+				"content", "Synthetic learned rule", "evidenceVersion", float64(2), "sources", rule.sources,
+				"weight", float64(.05), "confidence", float64(.3), "status", "active", "locked", false,
+				"learnedAt", time.Now().UTC().Format(time.RFC3339Nano))
+			raw, err := jsjson.Stringify(row)
+			if err != nil {
+				return err
+			}
+			if _, err := ws.Exec("INSERT INTO habits VALUES(?,?,?)", rule.id, rule.id, raw); err != nil {
+				return err
+			}
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
 	if err := app.Engine.Runtime.Recall(ctx, scene, source); err != nil {
 		t.Fatal(err)
 	}
@@ -68,5 +104,21 @@ func TestInstalledRuntimeRecallRedactsMemoryAndRetiresReceipt(t *testing.T) {
 	eligible, err := memory.IndexableByIDs(ctx, []string{id})
 	if err != nil || len(eligible) != 0 {
 		t.Fatalf("recalled assertion remained indexable: %d %v", len(eligible), err)
+	}
+	// Check the persisted records rather than the current-evidence read guard.
+	for _, rule := range []struct{ id, status, survivor string }{
+		{"recalled-only", "invalidated", ""},
+		{"independent-proof", "active", "another-source"},
+	} {
+		var raw string
+		if err := db.QueryRowContext(ctx, "SELECT value FROM habits WHERE id=?", rule.id).Scan(&raw); err != nil {
+			t.Fatal(err)
+		}
+		row := object(raw)
+		proofs := field(row, "sources").([]any)
+		if field(row, "status") != rule.status || (rule.survivor == "" && len(proofs) != 0) ||
+			(rule.survivor != "" && (len(proofs) != 1 || field(proofs[0], "messageId") != rule.survivor)) {
+			t.Fatalf("habit recall did not persist %s outcome: %s", rule.id, raw)
+		}
 	}
 }

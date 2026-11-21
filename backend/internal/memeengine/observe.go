@@ -50,33 +50,29 @@ func IsStickerSource(message *Object, assetID string) bool {
 			continue
 		}
 		meta := obj(parts[i+1])
-		prefix := "Untrusted platform image metadata: "
-		description := str(get(meta, "description"))
-		if get(meta, "type") != "unsupported" || !strings.HasPrefix(description, prefix) {
-			continue
-		}
-		v, e := jsjson.Parse(strings.TrimPrefix(description, prefix))
-		if e != nil {
-			continue
-		}
-		o := obj(v)
-		if o == nil {
-			continue
-		}
-		kind, has := o.Get("kind")
-		if !has {
-			continue
-		}
-		switch jsString(kind) {
-		case "mface", "sticker", "emoji":
+		if get(meta, "type") == "unsupported" && IsStickerMetadata(str(get(meta, "description"))) {
 			return true
 		}
-		if kind == "image" {
-			sub, has := o.Get("subtype")
-			if has && (jsString(sub) == "1" || jsString(sub) == "7") {
-				return true
-			}
-		}
+	}
+	return false
+}
+
+func IsStickerMetadata(description string) bool {
+	data, found := strings.CutPrefix(description, "Untrusted platform image metadata: ")
+	if !found {
+		return false
+	}
+	v, e := jsjson.Parse(data)
+	if e != nil {
+		return false
+	}
+	kind := get(obj(v), "kind")
+	switch jsString(kind) {
+	case "mface", "sticker", "emoji":
+		return true
+	case "image":
+		sub := jsString(get(obj(v), "subtype"))
+		return sub == "1" || sub == "7"
 	}
 	return false
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/imagecodec"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -71,7 +72,17 @@ func (s *Service) epoch(id string) (uint64, bool) {
 
 // Intake preserves the source's intentional file-before-SQL partial outcome:
 // cancellation, withdrawal, or SQL failure after write leaves bytes on disk.
-func (s *Service) Intake(ctx context.Context, c Context, b []byte, source *Object, knownOnly bool, codec *imagecodec.Compressor) (out *Object, e error) {
+func (s *Service) Intake(ctx context.Context, c Context, b []byte, source *Object, knownOnly bool, codec *imagecodec.Compressor) (*Object, error) {
+	return s.intake(ctx, c, b, source, knownOnly, codec, nil)
+}
+
+// IntakeRetainedKnown publishes only after the exact retained source is checked
+// with the existing writer. It never enters the shared analysis machinery.
+func (s *Service) IntakeRetainedKnown(ctx context.Context, c Context, b []byte, source *Object, codec *imagecodec.Compressor, qualify func(*recovery.WriteSession) error) (*Object, error) {
+	return s.intake(ctx, c, b, source, true, codec, qualify)
+}
+
+func (s *Service) intake(ctx context.Context, c Context, b []byte, source *Object, knownOnly bool, codec *imagecodec.Compressor, qualify func(*recovery.WriteSession) error) (out *Object, e error) {
 	// Own immutable snapshots across asynchronous work; caller mutation cannot
 	// turn a validated old byte buffer into a different event or file.
 	b = append([]byte(nil), b...)
@@ -210,6 +221,11 @@ func (s *Service) Intake(ctx context.Context, c Context, b []byte, source *Objec
 		}
 		if !present {
 			set(a, "sources", append(sources, source))
+		}
+		if qualify != nil {
+			if e = qualify(p.ws); e != nil {
+				return e
+			}
 		}
 		if e = p.write(a); e != nil {
 			return e

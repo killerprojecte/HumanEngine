@@ -144,18 +144,19 @@ type Extension struct {
 	Tools        []*Object
 	// ToolsForTurn mirrors source dynamic extension.tools getters. It must return
 	// fresh definitions, may read published configuration, and must not perform I/O.
-	ToolsForTurn       func(*TurnContext) []*Object
-	ContextPrompt      func(*TurnContext) (string, error)
-	ContextData        func(*TurnContext) (any, error)
-	PlannerContextData func(*TurnContext, []*Object) (any, error)
-	DescribeImages     func(context.Context, *TurnContext, []*Object, func(any, error))
-	Execute            func(context.Context, string, any, *TurnContext, func(any, error))
-	Delivered          func(string, any, *TurnContext, any) (any, error)
-	ContextSelected    func(*TurnContext, *Object) error
-	Received           func(*Object, Scene) error
-	Edited             func(*Object, *Object, Scene) error
-	PrepareRecall      func(string, string) (func() error, error)
-	Recalled           func(string, string) error
+	ToolsForTurn         func(*TurnContext) []*Object
+	ContextPrompt        func(*TurnContext) (string, error)
+	ContextData          func(*TurnContext) (any, error)
+	PlannerContextData   func(*TurnContext, []*Object) (any, error)
+	DescribeImages       func(context.Context, *TurnContext, []*Object, func(any, error))
+	Execute              func(context.Context, string, any, *TurnContext, func(any, error))
+	Delivered            func(string, any, *TurnContext, any) (any, error)
+	ContextSelected      func(*TurnContext, *Object) error
+	NativeInlineReceived func(NativeInlineObservation)
+	Received             func(*Object, Scene) error
+	Edited               func(*Object, *Object, Scene) error
+	PrepareRecall        func(string, string) (func() error, error)
+	Recalled             func(string, string) error
 	// Scoped hooks receive fixed reads of the recall transaction, never SQL.
 	PrepareRecallScoped func(ReadAuthority, string, string) (func() error, error)
 	RecalledScoped      func(ReadAuthority, string, string) error

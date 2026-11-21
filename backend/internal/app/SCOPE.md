@@ -89,6 +89,11 @@ This is not a claim of complete TypeScript Engine compatibility.
   and cannot borrow historical, managed, URL, or V1 image transport. Historical
   image transport, private media cache/fetch, and unresolved HTTP 101 behavior
   remain excluded.
+- Live non-bot SnowLuma inline stickers can enter the known-only sticker
+  library. Personalization and model-read must be enabled; known-only intake
+  does not require scene learning. The exact retained source qualifies inside
+  the existing sticker writer. Automatic analysis, locator binding and URL or
+  history intake are not part of this path.
 - The existing async Logger is used; complete source log retention/status/delivery
   route equivalence is not claimed. Independent read publication still preserves
   recovery checks; no constant-time cross-connection audit performance claim is made.

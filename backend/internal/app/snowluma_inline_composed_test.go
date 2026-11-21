@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/coder/websocket"
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/ingressrouting"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
@@ -216,8 +218,22 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	verifyRetired := assertSnowLumaInlineImageActualIngress(t, ctx, app, emit, unexpected, true)
 	scene := snow.SceneID("snowluma", "42", "group", "100")
+	appRequest(t, app, "PUT", "/api/scenes/"+url.PathEscape(scene), map[string]any{
+		"id": scene, "adapterId": "snowluma", "accountId": "42", "platformSceneId": "100",
+		"kind": "group", "name": "Sticker Intake Fixture", "participationEnabled": false,
+		"learningEnabled": false, "proactiveEnabled": false,
+	})
+	verifyRetired := assertSnowLumaInlineImageActualIngress(t, ctx, app, emit, unexpected, true, func(part *botruntime.DisplayImageSource) {
+		assertNativeStickerIntake(t, ctx, app, scene)
+		if err := app.Engine.IntakeNativeSticker(ctx, part); !errors.Is(err, botruntime.ErrDisplayImageUnavailable) {
+			t.Fatalf("native intake accepted an exact proof captured before recall: %v", err)
+		}
+	})
+	var vision int
+	if err := owners.Main.QueryRowContext(ctx, "SELECT count(*) FROM model_calls WHERE role='vision'").Scan(&vision); err != nil || vision != 0 {
+		t.Fatalf("known-only intake attempted vision: count %d, err %v", vision, err)
+	}
 	messageID := snow.MessageID(scene, "901")
 	getRemote := func(id string, authorized bool) *httptest.ResponseRecorder {
 		path := "/api/scenes/" + url.PathEscape(scene) + "/messages/" + url.PathEscape(id) + "/media/0"
@@ -316,8 +332,10 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	if err := first.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
 	}
-	second, _ := activate(2)
+	second, currentSocket := activate(2)
 	defer second.CloseAndWait(context.Background())
 	verifyRetired()
 	verifyTokenRetired()
+	socket = currentSocket
+	assertNativeStickerPersonalization(t, ctx, app, emit, scene, mediaTokens.encoded)
 }

@@ -156,7 +156,7 @@ func (r *Runtime) acceptDisplay(s *sceneState, m *Object, schedule, received boo
 		return "", nil
 	}
 	s.lastTouched = r.services.Clock.Now()
-	r.appendBoundMessageLocked(s, m, media)
+	record := r.appendBoundMessageLocked(s, m, media)
 	r.trimLocked(s, true)
 	r.publishLocked(s)
 	scene := s.scene
@@ -167,6 +167,14 @@ func (r *Runtime) acceptDisplay(s *sceneState, m *Object, schedule, received boo
 	}
 	if get(m, "senderId") == "bot" {
 		return "", nil
+	}
+	if media != nil && media.native != nil && media.native.parts != (inlineImageParts{}) &&
+		get(m, "origin") == "live" && get(m, "status") == "available" && get(m, "sourceEventRegistrationLimited") != true {
+		for _, ext := range r.exts() {
+			if ext.NativeInlineReceived != nil {
+				ext.NativeInlineReceived(NativeInlineObservation{r, s, scene, record})
+			}
+		}
 	}
 	if !r.config().TopicAdmissionEnabled {
 		s.mu.Lock()

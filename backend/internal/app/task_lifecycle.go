@@ -2,10 +2,10 @@ package app
 
 import "github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 
-// MediaTasks is the real keyed cancellation/physical-work owner. The safe graph
-// has no media ingest producer yet; enabling one requires Accept registration.
+// MediaTasks owns the cancellation and physical lifetime of native sticker intake.
 func (a *Application) mediaTaskExtension() *botruntime.Extension {
 	return &botruntime.Extension{
+		NativeInlineReceived: a.observeNativeSticker,
 		Edited: func(_ *botruntime.Object, message *botruntime.Object, scene botruntime.Scene) error {
 			id, _ := message.Get("id")
 			text, _ := id.(string)

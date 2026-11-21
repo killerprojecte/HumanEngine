@@ -70,7 +70,7 @@ func (r *Runtime) appendMessageLocked(s *sceneState, m *Object) {
 	r.appendBoundMessageLocked(s, m, nil)
 }
 
-func (r *Runtime) appendBoundMessageLocked(s *sceneState, m *Object, managed *displayMediaScene) {
+func (r *Runtime) appendBoundMessageLocked(s *sceneState, m *Object, managed *displayMediaScene) *messageRecord {
 	record := &messageRecord{body: m, receivedAt: r.date(str(get(m, "receivedAt"))), retention: &recordRetention{}, displayMedia: managed}
 	s.parsedBodies++
 	s.byID[idOf(m)] = record
@@ -83,6 +83,7 @@ func (r *Runtime) appendBoundMessageLocked(s *sceneState, m *Object, managed *di
 		s.historyIDs.Set(idOf(m), record.receivedAt)
 		s.historyEarliest = math.Min(s.historyEarliest, record.receivedAt)
 	}
+	return record
 }
 func (r *Runtime) replaceRecordLocked(s *sceneState, old, next *Object) {
 	previous := s.byBody[old]

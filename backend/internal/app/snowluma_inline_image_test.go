@@ -14,12 +14,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memeengine"
 	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/core"
 )
 
-func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, app *Application, emit func(any), unexpected <-chan string, checkRemote bool) func() {
+func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, app *Application, emit func(any), unexpected <-chan string, checkRemote bool, revokedIntake ...func(*botruntime.DisplayImageSource)) func() {
 	t.Helper()
 	raw, err := os.ReadFile("testdata/managed-display-image-source.json")
 	if err != nil {
@@ -196,8 +197,18 @@ func assertSnowLumaInlineImageActualIngress(t *testing.T, ctx context.Context, a
 	if err != nil {
 		t.Fatal(err)
 	}
+	var pending *botruntime.DisplayImageSource
+	if len(revokedIntake) != 0 {
+		pending = app.Engine.Runtime.DisplayImage(scene, id("1"), 0)
+		if pending == nil {
+			t.Fatal("could not capture exact native source before recall")
+		}
+	}
 	emit(map[string]any{"post_type": "notice", "notice_type": "group_recall", "self_id": 42, "group_id": 100, "message_id": 1, "user_id": 7, "operator_id": 7, "time": time.Now().Unix()})
 	wait(id("1"), "recalled")
+	if pending != nil {
+		revokedIntake[0](pending)
+	}
 	assertRevoked := func(operation string, held *memeengine.DisplayImage) {
 		t.Helper()
 		published := false

@@ -58,6 +58,25 @@ class MigrationDrillTests(unittest.TestCase):
             self.assertIn("restore-old-backup", out.getvalue())
             self.assertNotIn("private fixture detail", receipt + out.getvalue())
 
+    def test_restored_data_requires_replayed_flag_and_terminal_deletion(self):
+        for initial in (False, True):
+            with self.subTest(initial=initial):
+                drill = Drill(argparse.Namespace(), {})
+                with patch.object(drill, "has_memory", return_value=False) as has_memory, \
+                        patch.object(drill, "setting", return_value=not initial) as setting:
+                    drill.verify_restored_data(initial, "synthetic-id")
+                    has_memory.assert_called_once_with("synthetic-id")
+                    setting.return_value = initial
+                    with self.assertRaises(RuntimeError):
+                        drill.verify_restored_data(initial, "synthetic-id")
+                    self.assertEqual(drill.phase, "verify-restored-configuration")
+                    has_memory.return_value = True
+                    setting.reset_mock()
+                    with self.assertRaises(RuntimeError):
+                        drill.verify_restored_data(initial, "synthetic-id")
+                    self.assertEqual(drill.phase, "verify-restored-terminal-deletion")
+                    setting.assert_not_called()
+
     def test_selector_is_independent(self):
         workflow = (HERE.parents[2] / ".github/workflows/golang-package-preview.yml").read_text()
         proof = workflow.split("- name: Detect focused package proofs\n", 1)[1]

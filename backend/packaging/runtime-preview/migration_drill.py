@@ -128,6 +128,12 @@ class Drill:
     def has_memory(self, memory_id):
         return any(row["id"] == memory_id for row in self.api("GET", "/api/memories"))
 
+    def verify_restored_data(self, initial, memory_id):
+        self.phase = "verify-restored-terminal-deletion"
+        require(not self.has_memory(memory_id), "post-backup terminal deletion did not reconcile")
+        self.phase = "verify-restored-configuration"
+        require(self.setting() is (not initial), "post-backup debugModelIO flag did not replay")
+
     def record(self, label):
         self.report["checks"].append(label)
 
@@ -208,9 +214,7 @@ try {
                   authority="restore-authority")
         self.phase = "start-go-on-restored-data"
         self.start("go", data="restored", authority="restore-authority")
-        self.phase = "verify-restored-data"
-        require(self.setting() is initial and not self.has_memory(memory_id),
-                "old settings or post-backup terminal deletion did not reconcile")
+        self.verify_restored_data(initial, memory_id)
         self.phase = "verify-restored-model-hold"
         hold = self.api("GET", "/api/budget/recovery")
         require(hold.get("held") is True and hold.get("restorationCoverage") == "unknown"
@@ -220,7 +224,7 @@ try {
         self.phase = "verify-restored-database-path"
         self.tool("sh", "-ec", "test ! -e /drill/restored/main.sqlite",
                   authority="restore-authority")
-        self.record("restore-current-authority-replayed-terminal-deletion-and-held-models")
+        self.record("restore-current-authority-replayed-configuration-and-terminal-deletion-and-held-models")
 
     def cleanup(self):
         if self.owner is not None:

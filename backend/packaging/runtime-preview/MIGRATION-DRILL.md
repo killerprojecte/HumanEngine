@@ -48,8 +48,10 @@ That is the rollback check, not a restore. Separate cold restore clones the
 **current** authority at its original absolute in-container pathname, inspects
 the known prior/current states read-only, and runs the original restore script
 into a new destination. Opening the restored data with Go must not resurrect the
-deleted assertion and must keep managed model work held. The prior setting
-should remain: this authority is not a full write-ahead replication stream.
+deleted assertion, must replay the updated `debugModelIO` flag, and must keep
+managed model work held. This flag is recorded by a typed
+`configuration_flags` authority event. Its replay does not imply that ordinary
+post-backup writes are recovered: the authority is not a full replication log.
 No recovery acknowledgement or model call is issued.
 
 Only exact source/image IDs and completed outcome names are emitted. Container

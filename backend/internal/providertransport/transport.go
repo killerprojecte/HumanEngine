@@ -202,7 +202,11 @@ func (c *Client) Request(ctx context.Context, r Request) (result map[string]any,
 			if first {
 				code = "provider_stream_interrupted"
 			}
-			err = safe(code)
+			if stream != nil {
+				err = modelservice.BuiltinStreamFailure(code, stream.Code)
+			} else {
+				err = safe(code)
+			}
 		}
 	}()
 	requestLimit := r.ImageRequestLimit

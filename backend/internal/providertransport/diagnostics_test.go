@@ -29,13 +29,18 @@ func (f diagnosticFunc) CaptureLazy(ctx context.Context, project func() (modeldi
 
 func diagnosticModels(t *testing.T, handler http.HandlerFunc) *NativeModels {
 	t.Helper()
+	return diagnosticModelsObserved(t, handler, nil)
+}
+
+func diagnosticModelsObserved(t *testing.T, handler http.HandlerFunc, observe func(modelservice.Event)) *NativeModels {
+	t.Helper()
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 	client, p := nativeTestClient(server)
 	p.ID = "p"
 	client.Credentials = testCredentials("actual-attempt-secret")
 	retries, timeout := float64(1), float64(1000)
-	policy, e := modelservice.New(modelservice.Config{Providers: []modelservice.Provider{{ID: "p", Protocol: p.Protocol, RetryCount: &retries, TimeoutMS: &timeout}}, Models: []modelservice.Model{{ID: "m", ProviderID: "p", APIModelName: "synthetic", Capabilities: []string{"text"}}}, Routes: []modelservice.Route{{Role: "replyer", OrderedModelIDs: []string{"m"}}}}, modelservice.Options{})
+	policy, e := modelservice.New(modelservice.Config{Providers: []modelservice.Provider{{ID: "p", Protocol: p.Protocol, RetryCount: &retries, TimeoutMS: &timeout}}, Models: []modelservice.Model{{ID: "m", ProviderID: "p", APIModelName: "synthetic", Capabilities: []string{"text"}}}, Routes: []modelservice.Route{{Role: "replyer", OrderedModelIDs: []string{"m"}}}}, modelservice.Options{Observe: observe})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -201,5 +206,45 @@ func TestDiagnosticDisabledSkipsUnencodableNativeProjection(t *testing.T) {
 	}
 	if rows := store.Rows(); len(rows) != 1 {
 		t.Fatal("enabled capture missing", rows)
+	}
+}
+
+func TestActualStreamFailurePreservesOnlySafeCauseInPolicyDiagnostic(t *testing.T) {
+	const secret = "raw-provider-secret"
+	for _, tc := range []struct {
+		outer, prefix string
+	}{
+		{outer: "provider_stream_invalid"},
+		{outer: "provider_stream_interrupted", prefix: "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"partial\"}}]}\n\n"},
+	} {
+		t.Run(tc.outer, func(t *testing.T) {
+			var calls atomic.Int32
+			var failures []modelservice.Event
+			m := diagnosticModelsObserved(t, func(w http.ResponseWriter, _ *http.Request) {
+				calls.Add(1)
+				w.Header().Set("Content-Type", "text/event-stream")
+				fmt.Fprint(w, tc.prefix+"data: malformed-"+secret+"\n\n")
+			}, func(e modelservice.Event) {
+				if e.Kind == "failed" {
+					failures = append(failures, e)
+				}
+			})
+			_, err := m.Complete(t.Context(), diagnosticRequest())
+			if closeErr := m.CloseAndWait(t.Context()); closeErr != nil {
+				t.Fatal(closeErr)
+			}
+			me, ok := err.(*modelservice.ModelError)
+			if !ok || me.Code != tc.outer || me.Retryable || !modelservice.StopsFallback(me) {
+				t.Fatalf("unexpected terminal classification: %v", err)
+			}
+			const causeCode = "provider_stream_invalid_json"
+			cause := errors.Unwrap(err)
+			if cause == nil || cause.Error() != causeCode || errors.Unwrap(cause) != nil {
+				t.Fatalf("cause was not exactly the sanitized code: %v", cause)
+			}
+			if calls.Load() != 1 || len(failures) != 1 || failures[0].Code != tc.outer || failures[0].StreamCauseCode != causeCode {
+				t.Fatalf("observable failure changed: calls=%d events=%+v", calls.Load(), failures)
+			}
+		})
 	}
 }

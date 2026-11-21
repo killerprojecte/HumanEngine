@@ -105,9 +105,8 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		cap := int(config.settings["budgetMaxOutputTokens"].(float64))
 		client.MaxOutputTokens = &cap
 	}
-	app.models, err = modelConfiguration(config.models, client, modelservice.Options{Scheduler: sched, Observe: func(e modelservice.Event) {
-		emit(options.Logs, observability.Event{Level: "info", Module: "model", Code: "model." + e.Kind, Message: e.Kind, Fields: map[string]any{"modelId": e.ModelID, "attempt": e.Attempt, "reason": e.Code}})
-	}})
+	modelOptions := modelservice.Options{Scheduler: sched, Observe: app.observeModel}
+	app.models, err = modelConfiguration(config.models, client, modelOptions)
 	if err != nil {
 		return app, err
 	}
@@ -123,9 +122,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 			cap := int(settings["budgetMaxOutputTokens"].(float64))
 			nextClient.MaxOutputTokens = &cap
 		}
-		next, e := modelConfiguration(models, &nextClient, modelservice.Options{Scheduler: sched, Observe: func(event modelservice.Event) {
-			emit(options.Logs, observability.Event{Level: "info", Module: "model", Code: "model." + event.Kind, Message: event.Kind, Fields: map[string]any{"modelId": event.ModelID, "attempt": event.Attempt, "reason": event.Code}})
-		}})
+		next, e := modelConfiguration(models, &nextClient, modelOptions)
 		if e != nil {
 			return nil, e
 		}
@@ -496,6 +493,14 @@ func emit(logs observability.Emitter, event observability.Event) {
 	if logs != nil {
 		_ = logs.Emit(event)
 	}
+}
+
+func (a *Application) observeModel(e modelservice.Event) {
+	fields := map[string]any{"modelId": e.ModelID, "attempt": e.Attempt, "reason": e.Code}
+	if e.StreamCauseCode != "" {
+		fields["causeCode"] = e.StreamCauseCode
+	}
+	emit(a.options.Logs, observability.Event{Level: "info", Module: "model", Code: "model." + e.Kind, Message: e.Kind, Fields: fields})
 }
 
 func (a *Application) observeRuntime(e botruntime.Event) {

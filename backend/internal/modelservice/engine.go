@@ -29,14 +29,15 @@ type Attempt struct {
 	FirstContent func()
 }
 type Event struct {
-	Kind        string  `json:"kind"`
-	ModelID     string  `json:"modelId,omitempty"`
-	Index       int     `json:"index,omitempty"`
-	Attempt     int     `json:"attempt,omitempty"`
-	MaxAttempts int     `json:"maxAttempts,omitempty"`
-	TimeoutMS   float64 `json:"timeoutMs,omitempty"`
-	DelayMS     float64 `json:"delayMs,omitempty"`
-	Code        string  `json:"code,omitempty"`
+	Kind            string  `json:"kind"`
+	ModelID         string  `json:"modelId,omitempty"`
+	Index           int     `json:"index,omitempty"`
+	Attempt         int     `json:"attempt,omitempty"`
+	MaxAttempts     int     `json:"maxAttempts,omitempty"`
+	TimeoutMS       float64 `json:"timeoutMs,omitempty"`
+	DelayMS         float64 `json:"delayMs,omitempty"`
+	Code            string  `json:"code,omitempty"`
+	StreamCauseCode string  `json:"-"`
 }
 type Options struct {
 	Clock     Clock
@@ -249,16 +250,19 @@ func (p *Policy) run(ctx context.Context, request Request, invoke Invocation) (a
 			failures = failures[1:]
 		}
 		failures = append(failures, err)
-		code := "provider_request_failed"
+		event := Event{Kind: "failed", ModelID: row.ModelID, Index: row.Index, Code: "provider_request_failed"}
 		lastStatus = nil
 		if e, ok := err.(*ModelError); ok {
 			retryable = retryable && e.Retryable
 			lastStatus = e.Status
-			code = e.Code
+			event.Code = e.Code
+			if cause, ok := e.cause.(streamCause); ok {
+				event.StreamCauseCode = string(cause)
+			}
 		} else {
 			retryable = false
 		}
-		p.emit(Event{Kind: "failed", ModelID: row.ModelID, Index: row.Index, Code: code})
+		p.emit(event)
 		if StopsFallback(err) {
 			return nil, err
 		}

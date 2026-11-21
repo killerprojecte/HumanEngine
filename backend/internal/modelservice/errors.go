@@ -80,6 +80,22 @@ func BuiltinNetworkFailure(code, ownCauseCode string, cause error) *ModelError {
 	}
 	return withCause(NewError("provider_request_failed", nil, transient(code) || transient(ownCauseCode)), cause)
 }
+
+type streamCause string
+
+func (e streamCause) Error() string { return string(e) }
+
+// BuiltinStreamFailure retains only core wire classifications, never the error
+// message or provider payload.
+func BuiltinStreamFailure(code, causeCode string) *ModelError {
+	e := NewError(code, nil, false)
+	switch causeCode {
+	case "invalid_provider_stream", "incomplete_model_response", "provider_response_too_large", "provider_stream_error", "provider_stream_invalid_json", "provider_stream_protocol_mismatch", "provider_stream_event_mismatch", "provider_stream_upstream_error", "provider_stream_transport_error", "provider_stream_invalid_utf8":
+		e.cause = streamCause(causeCode)
+	}
+	return e
+}
+
 func IsReadAdmissionCode(code string) bool {
 	return code == "memory_read_disabled" || code == "memory_read_revoked" || code == "personalization_disabled"
 }

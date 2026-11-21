@@ -1,18 +1,13 @@
 # Go migration remaining work and handoff
 
-Documentation reviewed at Go head `5b7f012d`; implementation/CI checkpoint:
-`58e48dc6d3727abc68c3bcc4b1917b54f69acbb9` (2026-11-11).
-The frozen compatibility oracle remains master
-`24fe8a773d87f2f09996e259fca46524c2c02928`, as recorded in
-`backend/compatibility/baseline.json`. The newer legacy behavior references below
-are intentional deltas, not a silent replacement of that frozen oracle.
-Handoff updated: 2026-11-17. This document is a work plan, not a completion claim.
+Status reviewed at Go head `13e8510`. The frozen compatibility oracle remains
+master `24fe8a773d87f2f09996e259fca46524c2c02928`, as recorded in
+`backend/compatibility/baseline.json`. Newer legacy references are intentional
+behavior changes, not replacements for that baseline. This is not a cutover claim.
 
-[Exact-baseline CI 43051645297](https://github.com/killerprojecte/HumanEngine/actions/runs/43051645297)
-passed the compatibility job: default race/vet, actual-source differential checks,
-WASM/bundle, SQLite/source-free proofs, native ICU, native image and numeric
-compatibility. This establishes those tested boundaries, not whole-product parity.
-No application tests or builds were rerun for this documentation-only handoff.
+Historical [baseline CI 43051645297](https://github.com/killerprojecte/HumanEngine/actions/runs/43051645297)
+passed the compatibility job. This documents those tested boundaries, not
+whole-product parity. No behavioral tests were rerun for this documentation update.
 
 ## Current executable truth
 
@@ -23,11 +18,12 @@ restart and duplicate-writer tests. It is not merely a collection of packages.
 `--read-only-preview` remains read-only; the normal command still refuses to
 replace production. See [runtime preview](../../backend/docs/runtime-preview.md).
 
-Docker, package startup and the session/WebSocket gateway remain on the existing
-production path. Unsupported API operations still return 503; HTTP 101 parity is
-not established. Existing coverage/SCOPE entries describe historical checkpoints:
-claims such as “no launcher” or “only read-only” are superseded by the code above,
-not evidence that every other historical gap remains open or has been closed.
+Production startup remains unchanged. Hosted package tests exercise the opt-in
+Go image with read-only repository permissions; they do not publish or deploy
+it. There is no source-backed public TypeScript browser WebSocket/HTTP 101
+contract to port: the logs UI polls HTTP. Outbound optional WebRead HTTP 101
+handling and physical disable are separately tested under the tagged candidate;
+WebRead remains disabled in the default build.
 
 The native application already assembles real installation/recovery, providers,
 Planner/Replyer/send, V1 host, memory/knowledge/relation/commitment owners, learning,
@@ -38,55 +34,37 @@ package suite.
 
 ## Delivery order
 
-1. **P0: publish a reproducible packaged preview vertical slice** below, without
-   changing production default startup.
-2. **P1: land the three updated runtime behavior contracts** below in TS and Go,
-   with explicit changed-behavior fixtures rather than treating old bugs as parity.
-   These can proceed alongside P0, but must precede production cutover.
-3. **P2: close API/platform/plugin and live-owner coverage gaps** using a named
-   compatibility matrix and real-boundary tests.
-4. **P3: whole-installation migration, restore, load and cutover acceptance** on
-   one exact integrated commit. Package CI alone cannot authorize this step.
+1. **P0: requalify the packaged preview and rollback rehearsal** on the exact
+   integrated release candidate. Keep the production default unchanged.
+2. **P1: retain regression coverage for the three implemented runtime changes**
+   below, separately from the frozen baseline. The follow-up quote and typing
+   generation cases are covered by the Go regressions in `35e7556` and `13e8510`.
+3. **P2: close the remaining platform and plugin acceptance gaps** with named
+   real-boundary tests.
+4. **P3: qualify broader migration, restore and load** before any cutover.
 
-Every implementation PR should name the specific boundary it closes, its source
-or new-product contract, commands actually run, remaining omissions and exact SHA.
-Do not replace missing behavior with permissive callbacks, invented protective
-caps, silent truncation or an automatic replay of uncertain effects.
+For each change, record its source or product contract, commands actually run,
+remaining omissions and exact SHA.
 
-## P0: next executable vertical slice
+## P0: hosted evidence and remaining package gate
 
 The [opt-in Docker/Compose recipe and acceptance driver](../../backend/packaging/runtime-preview/README.md)
-are on this branch. They do not replace the existing production image. The
-packaged gate must pass on the actual candidate before this slice is accepted.
+exercise the actual packaged application, not a health stub. Two hosted runs
+closed distinct synthetic boundaries on different commits:
 
-**Outcome:** a clean machine can build and launch an opt-in native runtime-preview
-image, write and reread one authenticated settings/model configuration operation,
-stop during an accepted slow HTTP request, restart the same disposable
-installation, and reject a second writer. The existing production image/default
-must remain unchanged in this slice. It is not an all-API or platform release.
+- [44836458981](https://github.com/killerprojecte/HumanEngine/actions/runs/44836458981)
+  at `de94427`: real same-origin Nuxt/Chromium login, dashboard, settings write,
+  reload and logout against the package, alongside the normal package smoke.
+- [44849902431](https://github.com/killerprojecte/HumanEngine/actions/runs/44849902431)
+  at `9e53c0e6`: actual TS → Go → TS on a disposable matching data/authority
+  pair, plus old-backup restore checks for flags, deletion and hold.
 
-Concrete work:
-
-- Extend packaging alongside `Dockerfile`/`compose.yaml`, not by silently replacing
-  their entrypoint. Package the command, pinned ICU/data, libvips distribution and
-  licenses, sqlite-vec, all builtin WASM artifacts, and the V1 worker/Node runtime
-  layout required by `backend/plugins` and `internal/plugins`.
-- Use `backend/cmd/humanengine/runtime_preview.go` preflight and `app.Open` as the
-  actual entry boundary. Define explicit database/authority/plugin mounts,
-  locale/timezone inputs and admin-token environment input. Do not embed secrets.
-- Reuse `runtime_preview_native_test.go` and the application/installation writer
-  lease tests to drive the packaged binary, not a health stub. Verify HTTP auth,
-  a real persisted write/read, SIGTERM while a request body is held, physical
-  owner drain, restart/reopen and different-port duplicate-writer rejection.
-- Prove zero enabled V1 plugins starts no Node process; prove an enabled fixture
-  plugin loads from the packaged layout. Record missing optional platform behavior
-  explicitly. No real chat messages or paid provider calls in acceptance fixtures.
-
-Acceptance artifact: reproducible build recipe, dependency/license inventory,
-source-free packaged trace, exact image/commit identity, commands and no-skip test
-results. CI prerequisites below are necessary but do not substitute for this new
-packaged trace. Resolve packaging defects before widening the slice to live
-platform ingress or switching production startup.
+Neither certifies the current head. Run the required gates on one exact
+integrated candidate and retain the image/commit identity and evidence. Browser
+and restore rehearsals are scoped opt-in jobs, not coverage on ordinary pushes.
+Do not publish a distributable image until the independent
+[native image redistribution gate](../../backend/internal/imagecodec/distribution/RELEASE-GATES.md)
+is closed.
 
 ## P1: updated runtime semantics implemented in the Go candidate
 
@@ -212,29 +190,24 @@ preservation and at-most-once physical transmission, not only final status.
 
 ## P2: coverage closure and integration
 
-- **REST/UI/session transport:** inventory frozen OpenAPI operations against
-  `internal/httpapi`, actual `app` constructors and frontend calls. Mark each as
-  implemented/tested, unsupported or intentionally changed, including auth,
-  pagination, errors, writes and streaming. Add real TCP fixtures for gaps.
-  Audit session/WebSocket upgrade, HTTP 101, disconnect/cancel and reconnect
-  semantics separately. Do not call partial admin-route coverage complete.
-  The Go preview supports authenticated `GET/HEAD /api/scenes/{id}/state`
-  and the explicit `GET/HEAD /api/scenes/{id}/history?source=local` slice.
-  Local history reads at most 30 retained rows before ownership-safe display
-  projection, preserves order and redacted recalls, and does not contact the
-  platform. Missing or simulated scenes return unavailable. Media references
-  remain private and no image URLs are emitted until the bytes route lands.
-  Missing `source` still means remote, and remote history returns 503, so this
-  operation is partial. Do not report remote history, media or HTTP 101 as migrated.
-  Regenerate/check `backend/tests/generate-local-history.mjs` with
-  `node --import tsx`; the Go installed-app differential case compares the
-  captured TypeScript bodies for bounded, expired, recalled and invalid inputs.
+- **REST/UI/session transport:** retain exact endpoint and frontend coverage
+  rather than inferring parity from OpenAPI or package tests. The authenticated
+  Go browser supports scene state, message preview, local retained history and
+  default remote history (`TestLocalHistoryActualSource`,
+  `TestRemoteHistoryActualSource`). Implemented image scopes are managed outgoing
+  originals, retained native SnowLuma inline images and opaque-token inline
+  results, and qualified retained direct public HTTP(S) originals
+  (`TestManagedDisplayImageActualSource`, `TestSnowLumaInlineImageComposed`,
+  `TestTokenImageNativeApplicationProof`, `TestDirectPublicImageNativeApplicationProof`).
+  Later scoped proofs cover a retained opaque token returning a public HTTP(S)
+  URL, remote SnowLuma history inline or opaque originals, and direct-URL 403
+  fallback to an independent retained token. These do not establish arbitrary
+  adapter coverage, retries for other statuses or complete vision parity.
 - **V1/V2 and builtins:** retain lazy shared Node, actual isolate unload, original
-  callback/protocol identity and physical drain. Audit all tool/cache/send/model/
-  adapter capabilities against actual plugin consumers. Four WASM manifests do
-  not establish all four complete products. `app/web_read_disabled.go` still
-  rejects default admission; the isolated `web_read_candidate` path cannot be
-  promoted before its transport/HTTP 101 and shutdown semantics are accepted.
+  callback/protocol identity and physical drain. Verify remaining capabilities
+  against actual plugin consumers. The tagged outbound WebRead transport and
+  disable tests do not enable its default admission or prove public browser
+  upgrade behavior.
 - **Plugin API V1/V2 badge acceptance:** `app/pages/plugins.vue` contains
   `V{{ plugin.apiVersion ?? 1 }}` and `pluginmanager.Manager.List` emits version
   metadata; `httpapi/plugin_typing_test.go` checks V2 metadata for typing-delay.
@@ -255,9 +228,10 @@ preservation and at-most-once physical transmission, not only final status.
 ## P3: cutover gates, independent of package CI
 
 Use disposable copies with matching authority; never test migration by opening
-production data with the candidate. Establish fresh install, existing-data open,
-old backup restore, corruption/intent-ACK gaps, cancellation and restart behavior
-through the complete packaged application. Preserve credentials, IDs, UTF-16/JSON
+production data with the candidate. Extend the proven synthetic round trip and
+old-backup cases to broader data, failure and rollback coverage: fresh install,
+existing-data open, corruption/intent-ACK gaps, cancellation and restart through
+the complete packaged application. Preserve credentials, IDs, UTF-16/JSON
 semantics, media, source tombstones and no restart replay. Document operator
 rollback/recovery behavior and its limits before selecting the Go default.
 

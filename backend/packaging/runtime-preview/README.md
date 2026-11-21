@@ -109,8 +109,9 @@ acceptance. Default Go migration CI remains a separate gate.
 ## Opt-in hosted Chromium smoke
 
 The browser smoke activates only on an existing `feat/refactor-golang` push
-whose before/after diff changes `browser_smoke.py` or `browser-requirements.txt`. Pull requests, ordinary
-pushes and manual runs do not install or start Chromium. This branch-local push
+whose before/after diff changes `browser_smoke.py` or `browser-requirements.txt`, or
+whose exact head commit opts into both proofs below. Pull requests and manual runs
+do not install or start Chromium. This branch-local push
 path does not require the workflow to exist on the default branch. The existing job builds the real preview image and
 launches it against only disposable synthetic data. In addition to the normal
 HTTP and lifecycle checks, a sandboxed, host-side Chromium page uses the real
@@ -129,6 +130,22 @@ category and never the exception text. The existing
 `go-package-preview-evidence` artifact contains the OCI image ID, revision,
 browser versions and sanitized action/status receipts in `result.json`. Opted-in
 runs do not retain container logs, screenshots, traces, HTML or request bodies.
+
+## Run both proofs on one exact candidate
+
+For a push to the existing `feat/refactor-golang` branch that already matches the
+workflow paths, add this Git trailer to the final candidate commit, separated
+from the commit body by a blank line:
+
+```text
+HumanEngine-Package-Proofs: all
+```
+
+The workflow reads only the pushed head commit's trailers, not earlier commits
+or commit-body prose. It runs Chromium and the migration/restore drill against
+the same built image, and saves both sanitized receipts. This does not publish
+the image or change startup defaults. Pushes without the trailer retain the
+separate diff-based triggers.
 
 ## Rehearse engine rollback only on a disposable clone
 

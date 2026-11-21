@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
-import textwrap
 import unittest
 from unittest.mock import patch
 
@@ -79,10 +78,8 @@ class MigrationDrillTests(unittest.TestCase):
 
     def test_selector_is_independent(self):
         workflow = (HERE.parents[2] / ".github/workflows/golang-package-preview.yml").read_text()
-        proof = workflow.split("- name: Detect focused package proofs\n", 1)[1]
-        proof = proof.split("        run: |\n", 1)[1].split("      - name:", 1)[0]
-        proof = textwrap.dedent(proof)
-        self.assertIn("github.event_name == 'push' && github.ref == 'refs/heads/feat/refactor-golang'", workflow)
+        selector = HERE / "select-proofs.sh"
+        self.assertIn(f"bash backend/packaging/runtime-preview/{selector.name}", workflow)
         self.assertIn(f"ref: {TS_REVISION}", workflow)
         self.assertLess(workflow.index("Exercise actual packaged startup"),
                         workflow.index("Verify packaged migration and restore"))
@@ -95,14 +92,15 @@ class MigrationDrillTests(unittest.TestCase):
             git("config", "user.email", "fixture@invalid")
             git("commit", "--allow-empty", "-qm", "base")
             base = git("rev-parse", "HEAD")
-            output = Path(temp) / "output"
+            branch = "refs/heads/feat/refactor-golang"
 
-            def select(before):
-                output.unlink(missing_ok=True)
-                subprocess.run(["bash", "-e", "-o", "pipefail", "-c", proof], cwd=temp,
-                               env=dict(os.environ, BEFORE=before, GITHUB_OUTPUT=str(output),
-                                        GITHUB_SHA=git("rev-parse", "HEAD")), check=True)
-                return dict(line.split("=") for line in output.read_text().splitlines())
+            def select(before, *, sha=None, event="push", ref=branch):
+                output = subprocess.check_output(
+                    ["bash", selector], cwd=temp, text=True,
+                    env=dict(os.environ, BEFORE=before, GITHUB_EVENT_NAME=event,
+                             GITHUB_REF=ref, GITHUB_SHA=sha or git("rev-parse", "HEAD")),
+                )
+                return dict(line.split("=") for line in output.splitlines())
 
             files = {"browser_smoke.py": (True, False), "browser-requirements.txt": (True, False),
                      "migration_drill.py": (False, True), "test_migration_drill.py": (False, True),
@@ -131,6 +129,25 @@ class MigrationDrillTests(unittest.TestCase):
             git("commit", "-qm", "both proofs")
             self.assertEqual(select(base), {"browser": "true", "restore": "true"})
             self.assertEqual(select("0" * 40), {"browser": "false", "restore": "false"})
+
+            base = git("rev-parse", "HEAD")
+            git("commit", "--allow-empty", "-qm",
+                "Candidate\n\nHumanEngine-Package-Proofs: all")
+            selected = git("rev-parse", "HEAD")
+            git("commit", "--allow-empty", "-qm",
+                "Ordinary commit\n\nHumanEngine-Package-Proofs: all\n"
+                "This is an example, not an opt-in.\n\nAnother paragraph.")
+            off = {"browser": "false", "restore": "false"}
+            self.assertEqual(select(base, sha=selected), {"browser": "true", "restore": "true"})
+            self.assertEqual(select(base), off)
+            for event, ref, before in [
+                ("pull_request", branch, ""),
+                ("workflow_dispatch", branch, ""),
+                ("push", "refs/heads/master", base),
+                ("push", branch, "0" * 40),
+            ]:
+                with self.subTest(event=event, ref=ref, before=before):
+                    self.assertEqual(select(before, sha=selected, event=event, ref=ref), off)
 
 
 if __name__ == "__main__":

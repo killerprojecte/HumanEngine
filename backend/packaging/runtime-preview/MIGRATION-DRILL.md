@@ -55,10 +55,10 @@ post-backup writes are recovered: the authority is not a full replication log.
 No recovery acknowledgement or model call is issued.
 
 Only exact source/image IDs and completed outcome names are emitted. Container
-logs, data, tokens and request/response bodies are not saved. The hosted package job runs this drill only when a push to the existing
-`feat/refactor-golang` branch changes `migration_drill.py` or its test. It reuses
-the Go image after ordinary HTTP/package acceptance; it does not activate Chrome
-unless that separate proof's script or driver lock is changed too. PRs, ordinary
-pushes and manual runs do not build the TypeScript image for this drill. Passing proves only this Linux/amd64
+logs, data, tokens and request/response bodies are not saved. The hosted package job runs this drill when a push to the existing
+`feat/refactor-golang` branch changes `migration_drill.py` or its test, or opts
+into [both proofs at the exact head](README.md#run-both-proofs-on-one-exact-candidate).
+It reuses the Go image after HTTP/package acceptance. PRs and manual runs do
+not build the TypeScript image for this drill. Passing proves only this Linux/amd64
 synthetic path, not arbitrary historical schemas, media/secret restoration,
 post-backup ledger replay for all event kinds, production rollout, or all APIs.

@@ -238,6 +238,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	}
 	app.registerKnowledgeCapture()
 	app.registerContextualTool(memory)
+	app.Engine.Runtime.AddExtension(app.experienceOutcomesExtension(memory.snapshot))
 	if err = app.composeSemanticMemory(owners, memory); err != nil {
 		return app, err
 	}

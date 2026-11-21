@@ -19,6 +19,8 @@ type sendGuard struct {
 	decision              *Object
 	admitted              map[string]bool
 	ordinarySources       []*Object
+	supportingQuotes      []*Object
+	quoteReferences       map[string]string
 	evidence              []*Object
 	extensionDependencies []string
 	draft                 *retainedDraft

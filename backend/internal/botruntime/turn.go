@@ -22,6 +22,7 @@ type turnFrame struct {
 	manualContext         string
 	projection            *replyplan.ContextProjection
 	imageContext          []any
+	quoteCandidates       []*Object
 	learned               []any
 	extensionDependencies []string
 	decision              *Object

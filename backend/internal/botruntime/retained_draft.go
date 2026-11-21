@@ -32,6 +32,11 @@ func (r *Runtime) retainDraft(t *turn, g *sendGuard, operationID string, segment
 			targets = append(targets, *segment.ReplyToID)
 		}
 	}
+	for _, target := range targets {
+		if quote := g.quoteReferences[target]; quote != "" {
+			addReference(quote)
+		}
+	}
 	cited := map[string]bool{}
 	for _, fact := range array(get(g.plan, "facts")) {
 		for _, id := range stringsOf(get(fact, "evidenceIds")) {
@@ -43,6 +48,13 @@ func (r *Runtime) retainDraft(t *turn, g *sendGuard, operationID string, segment
 	}
 	ordinary := map[string]bool{}
 	for _, message := range g.ordinarySources {
+		id := idOf(message)
+		ordinary[id] = true
+		if cited["message:"+id] {
+			addReference(id)
+		}
+	}
+	for _, message := range g.supportingQuotes {
 		id := idOf(message)
 		ordinary[id] = true
 		if cited["message:"+id] {

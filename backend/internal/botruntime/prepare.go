@@ -139,12 +139,25 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 	current := filterMessages(recent, func(m *Object) bool { return contains(topicIDs, idOf(m)) })
 	priority := []string{}
 	missingQuotes := []string{}
+	var recentIDs map[string]bool
 	for i := len(current) - 1; i >= 0; i-- {
 		id := str(get(current[i], "replyToId"))
 		if id != "" {
 			priority = append(priority, id)
-			if !contains(ids(recent), id) {
-				missingQuotes = append(missingQuotes, id)
+			if c.Mode == "real" && len(missingQuotes) < 4 {
+				if recentIDs == nil {
+					recentIDs = messageIDs(recent)
+				}
+				if !recentIDs[id] {
+					recentIDs[id] = true
+					recalled, err := r.recalled(s, id)
+					if err != nil {
+						return err
+					}
+					if !recalled {
+						missingQuotes = append(missingQuotes, id)
+					}
+				}
 			}
 		}
 	}
@@ -155,13 +168,9 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 		priority = append(priority, idOf(recent[i]))
 	}
 	c.ImagePriorityIDs = unique(priority)
-	images := append([]*Object{}, recent...)
+	images := recent[:len(recent):len(recent)]
 	if c.Mode == "real" && len(missingQuotes) > 0 {
-		requested := unique(missingQuotes)
-		if len(requested) > 4 {
-			requested = requested[:4]
-		}
-		output, e := r.read(t, c.root, "messages.get", obj("ids", stringArray(requested)))
+		output, e := r.readWithRequestedTracking(t, c.root, "messages.get", obj("ids", stringArray(missingQuotes)), false)
 		if e != nil {
 			return e
 		}
@@ -217,6 +226,7 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 	f.manualContext = manualContext
 	f.projection = projection
 	f.imageContext = imageContext
+	f.quoteCandidates = images
 	f.learned = learned
 	f.extensionDependencies = extensionDependencies
 	f.proceed = true

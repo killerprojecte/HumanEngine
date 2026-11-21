@@ -6,6 +6,10 @@ import (
 )
 
 func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (any, error) {
+	return r.readWithRequestedTracking(t, ctx, name, input, true)
+}
+
+func (r *Runtime) readWithRequestedTracking(t *turn, ctx context.Context, name string, input any, trackRequestedIDs bool) (any, error) {
 	c, s := t.context, t.state
 	var requested []string
 	var inputErr error
@@ -41,7 +45,9 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 		}
 		cached := cachedMessages(history, requested)
 		for i, id := range requested {
-			c.AddDependency(id)
+			if trackRequestedIDs {
+				c.AddDependency(id)
+			}
 			if recalled, err := r.recalled(s, id); err != nil {
 				return nil, err
 			} else if recalled {
@@ -55,6 +61,13 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 				out, e := trackedWithin(r, ctx, func(settle func(*Object, error)) { adapter.GetMessage(ctx, c.Scene, id, settle) })
 				if e != nil {
 					return nil, e
+				}
+				if !trackRequestedIDs {
+					current, _ := r.adapters.Load(c.Scene.AdapterID)
+					binding, exists := r.RegisteredScene(c.Scene.ID)
+					if current != adapter || !exists || !sameMediaScene(binding, c.Scene) {
+						continue
+					}
 				}
 				for _, value := range array(get(out, "items")) {
 					m, ok := value.(*Object)

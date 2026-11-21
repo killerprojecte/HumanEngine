@@ -26,6 +26,11 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 	targets := f.targets
 	replyerRecent := f.replyerRecent
 	plannerKey := f.plannerKey
+	botQuotes, supportingQuotes, err := r.planQuoteEvidence(c, replyerRecent, f.quoteCandidates)
+	if err != nil {
+		return err
+	}
+
 	grounding := NewGrounding()
 	for _, m := range replyerRecent {
 		grounding.AddFeedbackSource(idOf(m), rawParts(m))
@@ -57,6 +62,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 	reads := replyplan.PlannerReadTools(allTools)
 	evidence := []*Object{}
 	for _, m := range replyerRecent {
+		evidence = append(evidence, obj("id", "message:"+idOf(m), "value", m))
+	}
+	for _, m := range supportingQuotes {
 		evidence = append(evidence, obj("id", "message:"+idOf(m), "value", m))
 	}
 	for i, v := range learned {
@@ -311,8 +319,9 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			related = append(related, id)
 		}
 	}
+	composition, quoteReferences := composeQuotedMessages(selectedMessages, botQuotes)
 	t.sendMu.Lock()
-	t.guard = &sendGuard{plan: plan, grounding: grounding, recipients: recipients, projection: projection, decision: decision, admitted: admitted, ordinarySources: append([]*Object{}, replyerRecent...), evidence: planned.Evidence, extensionDependencies: append([]string{}, f.extensionDependencies...)}
+	t.guard = &sendGuard{plan: plan, grounding: grounding, recipients: recipients, projection: projection, decision: decision, admitted: admitted, ordinarySources: append([]*Object{}, replyerRecent...), evidence: planned.Evidence, supportingQuotes: supportingQuotes, quoteReferences: quoteReferences, extensionDependencies: append([]string{}, f.extensionDependencies...)}
 	t.sendMu.Unlock()
 	brief, err := r.services.Policy.BuildReplyBrief(plan, planned.Evidence, actionReceipts, imageContext, related)
 	if err != nil {
@@ -329,7 +338,7 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 	if cfg.PromptContextWindowEnabled {
 		layout = "messages"
 	}
-	packed := r.services.Policy.PackReplyEvidence(replyplan.PackReplyEvidenceInput{Brief: brief, ContextLayout: layout, UpstreamOmissions: upstream, Envelope: obj("now", iso(r.services.Clock.Now()), "timezone", cfg.Timezone, "sceneKind", c.Scene.Kind, "messages", objects(selectedMessages)), Serialize: func(v replyplan.ReadonlyJSON) (string, error) {
+	packed := r.services.Policy.PackReplyEvidence(replyplan.PackReplyEvidenceInput{Brief: brief, ContextLayout: layout, UpstreamOmissions: upstream, Envelope: obj("now", iso(r.services.Clock.Now()), "timezone", cfg.Timezone, "sceneKind", c.Scene.Kind, "messages", objects(composition)), Serialize: func(v replyplan.ReadonlyJSON) (string, error) {
 		return v.ProjectedStringify(projection, []string{"now"})
 	}, Budget: replyplan.SelectionBudget{Mode: "bytes", Limit: cfg.ReplyEvidenceMaxBytes}})
 	status, _ := packed.Get("status").String()

@@ -22,6 +22,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability/logdelivery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
+	"github.com/killerprojecte/HumanEngine/backend/internal/proactiveowner"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
@@ -65,6 +66,7 @@ type Options struct {
 	LogRegistry *logdelivery.Registry
 	ownsLogs    bool
 
+	proactiveClock       proactiveowner.Clock
 	preparedImageLibrary string
 	preparedImage        *imagecodec.Compressor
 }

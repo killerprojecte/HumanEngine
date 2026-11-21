@@ -24,6 +24,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
+	"github.com/killerprojecte/HumanEngine/backend/internal/proactiveowner"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
@@ -62,6 +63,7 @@ type Application struct {
 	Semantic            *memoryservice.SemanticRuntime
 	Learning            *learningowner.Runtime
 	Maintenance         *workingset.Maintenance
+	proactive           *proactiveowner.Owner
 	models              *providertransport.NativeModels
 	readPublisher       *recovery.ReadPublisher
 	requests            quiescence.Group
@@ -359,6 +361,9 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err = app.restorePlugins(ctx, owners); err != nil {
 		return app, err
 	}
+	if err = app.startProactive(); err != nil {
+		return app, err
+	}
 	app.Maintenance.Start()
 	emit(options.Logs, observability.Event{Level: "info", Module: "app", Code: "app.safe_graph_started", Message: "Safe native application graph started; remaining migration scope is explicit"})
 	return app, nil
@@ -379,6 +384,9 @@ func (a *Application) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.HTTP.ServeHTTP(w, r)
 }
 func (a *Application) drainProducers(ctx context.Context) error {
+	if a.proactive != nil {
+		a.proactive.Close()
+	}
 	// Stop plugin producers first. Accepted HTTP is then joined before sealing
 	// owner callbacks that a committed settings request can still invoke.
 	stages := []struct {
@@ -412,6 +420,12 @@ func (a *Application) drainProducers(ctx context.Context) error {
 			name  string
 			close func(context.Context) error
 		}{"runtime", a.Engine.Runtime.CloseAndWait})
+	}
+	if a.proactive != nil {
+		stages = append(stages, struct {
+			name  string
+			close func(context.Context) error
+		}{"proactive", a.proactive.CloseAndWait})
 	}
 	if a.ExperienceBinding != nil {
 		stages = append(stages, struct {

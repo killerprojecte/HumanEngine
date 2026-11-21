@@ -9,10 +9,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 )
 
-// VisibleInRuntimeScope is the synchronous validation used by send/recall.
-// DomainSourceCurrent only uses fixed SELECTs; no session escapes this callback.
-func (s *Service) VisibleInRuntimeScope(sources *sourceevents.Store, reads botruntime.ReadAuthority, c Context, id string) (valid bool, err error) {
-	err = sources.UseRuntimeReadScope(reads, func(read sourceevents.RuntimeReadScope) error {
+func (s *Service) runtimeRead(sources *sourceevents.Store, reads botruntime.ReadAuthority, fn func(sourceevents.RuntimeReadScope, *scope) error) error {
+	return sources.UseRuntimeReadScope(reads, func(read sourceevents.RuntimeReadScope) error {
 		if e := read.CheckBinding(s.main, s.authority); e != nil {
 			return e
 		}
@@ -26,6 +24,14 @@ func (s *Service) VisibleInRuntimeScope(sources *sourceevents.Store, reads botru
 		if e != nil {
 			return e
 		}
+		return fn(read, &scope{reader: reader, proof: proof, owner: s})
+	})
+}
+
+// VisibleInRuntimeScope is the synchronous validation used by send/recall.
+// DomainSourceCurrent only uses fixed SELECTs; no session escapes this callback.
+func (s *Service) VisibleInRuntimeScope(sources *sourceevents.Store, reads botruntime.ReadAuthority, c Context, id string) (valid bool, err error) {
+	err = s.runtimeRead(sources, reads, func(read sourceevents.RuntimeReadScope, p *scope) error {
 		rows, e := read.Query("SELECT value FROM meme_assets WHERE id=?", id)
 		if e != nil {
 			return e
@@ -47,8 +53,29 @@ func (s *Service) VisibleInRuntimeScope(sources *sourceevents.Store, reads botru
 		if e != nil {
 			return e
 		}
-		p := scope{reader: reader, proof: proof, owner: s}
 		valid, e = p.visible(c, a, true)
+		return e
+	})
+	return
+}
+
+// AnalyzedContentInRuntimeScope selects the same exact-byte asset as recognition.
+// A later guard supplies its ID to validate that same output, never a substitute.
+func (s *Service) AnalyzedContentInRuntimeScope(sources *sourceevents.Store, reads botruntime.ReadAuthority, c Context, hash, id string) (out *Object, err error) {
+	err = s.runtimeRead(sources, reads, func(read sourceevents.RuntimeReadScope, p *scope) error {
+		key, value := "contentHash", hash
+		if id != "" {
+			key, value = "id", id
+		}
+		query, args := assetCandidatesQuery(c, key, value)
+		all, e := decodeAssetRows(read.Query(query, args...))
+		if e != nil {
+			return e
+		}
+		match, e := p.matchContent(c, hash, all)
+		if e == nil && yes(get(match, "analyzed")) {
+			out = match
+		}
 		return e
 	})
 	return

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+	"github.com/killerprojecte/HumanEngine/backend/internal/modelread"
 	"github.com/killerprojecte/HumanEngine/backend/internal/providertransport"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 	"github.com/killerprojecte/HumanEngine/backend/internal/visioncontext"
@@ -85,6 +86,18 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 		Parts: []visioncontext.Part{{Type: "media", MediaType: "image", AssetID: strconv.Itoa(partIndex), Index: partIndex}},
 	}
 	withRoute := router.Policy.HasConfiguredRoute("vision")
+	var ticket *modelread.Ticket
+	var library *visioncontext.Library
+	var storedGuard func(botruntime.ReadAuthority) (bool, error)
+	if source.IsInline() && IsStickerMetadata(source.InlinePartMetadata(partIndex)) {
+		library = &visioncontext.Library{
+			Recognize: func(call context.Context, image []byte, _ visioncontext.Candidate) (string, bool, error) {
+				description, guard, err := s.storedInlineSticker(call, turn, source, image, ticket)
+				storedGuard = guard
+				return description, guard != nil, err
+			},
+		}
+	}
 	result, err := visioncontext.Describe(ctx, new(visioncontext.Turn), visioncontext.Config{
 		SceneID: turn.Scene.ID, Mode: turn.Mode, Timezone: turn.Timezone(), VisionRoute: withRoute, Uncached: true,
 	}, []*visioncontext.Message{candidate}, nil, visioncontext.Ports{
@@ -96,8 +109,31 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			if !source.IsInline() {
 				return source.BrowserImageBytes(call, require)
 			}
-			if err := require(call); err != nil {
-				return nil, err
+			if library == nil {
+				if err := require(call); err != nil {
+					return nil, err
+				}
+			} else {
+				if !s.TurnRead.ValidContext(call, turn) {
+					return nil, errors.New("memory_read_revoked")
+				}
+				err := s.Sources.WithRuntimeReads(call, func(reads botruntime.ReadAuthority) error {
+					valid, err := validate(reads)
+					if err != nil {
+						return err
+					}
+					if !valid {
+						return errors.New("memory_read_revoked")
+					}
+					ticket, err = s.TurnRead.CapturePersonalizationScoped(reads, turn.Scene.ID)
+					return err
+				})
+				if err != nil {
+					return nil, err
+				}
+				if ticket == nil && !withRoute {
+					return nil, errors.New("route_not_configured")
+				}
 			}
 			return source.InlineBytes(call)
 		},
@@ -126,9 +162,16 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			defer response.Release()
 			return response.Text, nil
 		},
-	}, nil)
+	}, library)
 	if err != nil {
 		return nil, err
+	}
+	if storedGuard != nil && len(result.Images) == 1 && result.Images[0].FramePolicy == "stored_library_observation" {
+		value, err := result.Project()
+		if err == nil {
+			turn.AddScopedValidation(storedGuard)
+		}
+		return value, err
 	}
 	if withRoute {
 		if err := require(ctx); err != nil {

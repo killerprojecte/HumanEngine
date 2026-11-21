@@ -20,6 +20,27 @@ func (p *RuntimePolicy) AllowedScoped(reads botruntime.ReadAuthority, sceneID st
 }
 
 func (p *RuntimePolicy) permissionAllowedScoped(reads botruntime.ReadAuthority, sceneID string, requirePersonal bool) (allowed bool, err error) {
+	enabled, _, personal, err := p.sceneStateScoped(reads, sceneID)
+	return enabled && (!requirePersonal || personal), err
+}
+
+// CapturePersonalizationScoped pins the exact scene policy in the caller's
+// already-held source publication. No independent snapshot is opened.
+func (p *RuntimePolicy) CapturePersonalizationScoped(reads botruntime.ReadAuthority, sceneID string) (*Ticket, error) {
+	enabled, revision, personal, err := p.sceneStateScoped(reads, sceneID)
+	if err != nil || !enabled || !personal {
+		return nil, err
+	}
+	ticket := &Ticket{owner: p.Policy, scene: sceneID, revision: revision, personalization: true}
+	ticket.self = ticket
+	return ticket, nil
+}
+
+func (p *RuntimePolicy) ValidatePersonalizationScoped(reads botruntime.ReadAuthority, ticket *Ticket) (bool, error) {
+	return p.validScoped(reads, ticket)
+}
+
+func (p *RuntimePolicy) sceneStateScoped(reads botruntime.ReadAuthority, sceneID string) (enabled bool, revision float64, personal bool, err error) {
 	err = p.sources.UseRuntimeReadScope(reads, func(scope sourceevents.RuntimeReadScope) error {
 		if e := scope.CheckBinding(p.main, p.authority); e != nil {
 			return e
@@ -44,8 +65,7 @@ func (p *RuntimePolicy) permissionAllowedScoped(reads botruntime.ReadAuthority, 
 		if e = rows.Err(); e != nil {
 			return e
 		}
-		enabled, _, personal, e := sceneState(scene)
-		allowed = e == nil && enabled && (!requirePersonal || personal)
+		enabled, revision, personal, e = sceneState(scene)
 		return e
 	})
 	return

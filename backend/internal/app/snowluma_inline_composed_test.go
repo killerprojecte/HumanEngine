@@ -338,4 +338,5 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	verifyTokenRetired()
 	socket = currentSocket
 	assertNativeStickerPersonalization(t, ctx, app, emit, scene, mediaTokens.encoded)
+	assertNativeStickerTagReuse(t, ctx, app, emit, scene, mediaTokens.encoded)
 }

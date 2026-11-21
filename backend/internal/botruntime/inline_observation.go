@@ -28,11 +28,7 @@ func (o NativeInlineObservation) Select(accept func(string) bool) []*DisplayImag
 		for available != 0 {
 			index := word*64 + bits.TrailingZeros64(available)
 			available &= available - 1
-			if index+1 == len(parts) {
-				continue
-			}
-			meta := parts[index+1]
-			if get(meta, "type") != "unsupported" || !accept(str(get(meta, "description"))) {
+			if metadata := inlinePartMetadata(parts, index); metadata == "" || !accept(metadata) {
 				continue
 			}
 			if source := o.runtime.captureInlineObservation(o.state, o.scene, o.record, index); source != nil {
@@ -41,6 +37,23 @@ func (o NativeInlineObservation) Select(accept func(string) bool) []*DisplayImag
 		}
 	}
 	return selected
+}
+
+// InlinePartMetadata reads only the exact retained part and its adjacent
+// platform metadata. Projection or later rows are not consulted.
+func (m *DisplayImageSource) InlinePartMetadata(index int) string {
+	return inlinePartMetadata(array(get(m.record.body, "parts")), index)
+}
+
+func inlinePartMetadata(parts []any, index int) string {
+	if index+1 >= len(parts) {
+		return ""
+	}
+	meta := parts[index+1]
+	if get(meta, "type") != "unsupported" {
+		return ""
+	}
+	return str(get(meta, "description"))
 }
 
 // captureInlineObservation binds an exact already-accepted record and its

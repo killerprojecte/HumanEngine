@@ -113,6 +113,10 @@ func (p *scope) assets() ([]*Object, error) {
 }
 func (p *scope) queryAssets(query string, args ...any) ([]*Object, error) {
 	rows, e := p.ws.Query(query, args...)
+	return decodeAssetRows(rows, e)
+}
+
+func decodeAssetRows(rows assertions.Rows, e error) ([]*Object, error) {
 	if e != nil {
 		return nil, e
 	}
@@ -137,6 +141,11 @@ func (p *scope) queryAssets(query string, args ...any) ([]*Object, error) {
 
 // Match narrowing occurs in SQL before JSON decoding and source qualification.
 func (p *scope) candidates(c Context, key, value string) ([]*Object, error) {
+	query, args := assetCandidatesQuery(c, key, value)
+	return p.queryAssets(query, args...)
+}
+
+func assetCandidatesQuery(c Context, key, value string) (string, []any) {
 	where := "(json_extract(value,'$.shared')=1 AND json_extract(value,'$.privacyReviewed')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0)"
 	args := []any{}
 	if !c.Simulation {
@@ -150,7 +159,7 @@ func (p *scope) candidates(c Context, key, value string) ([]*Object, error) {
 		where = "COALESCE(json_extract(value,'$.contentHash'),id)=? AND " + where
 		args = append([]any{value}, args...)
 	}
-	return p.queryAssets("SELECT value FROM meme_assets WHERE "+where, args...)
+	return "SELECT value FROM meme_assets WHERE " + where, args
 }
 func (p *scope) asset(id string) (*Object, error) {
 	rows, e := p.ws.Query("SELECT value FROM meme_assets WHERE id=?", id)
@@ -294,30 +303,40 @@ func (s *Service) recognizeHash(ctx context.Context, c Context, hash string) (ou
 		if e != nil {
 			return e
 		}
-		for _, a := range all {
-			if content(a) != hash {
-				continue
-			}
-			ok, e := p.visible(c, a, false)
-			if e != nil {
-				return e
-			}
-			if ok {
-				if out == nil {
-					out = sanitize(a)
-				}
-				for _, v := range arr(get(a, "sources")) {
-					if str(get(obj(v), "sceneId")) == c.SceneID {
-						out = sanitize(a)
-						return nil
-					}
-				}
-			}
+		match, e := p.matchContent(c, hash, all)
+		if match != nil {
+			out = sanitize(match)
 		}
-		return nil
+		return e
 	})
 	return
 }
+
+func (p *scope) matchContent(c Context, hash string, assets []*Object) (*Object, error) {
+	var first *Object
+	for _, asset := range assets {
+		if content(asset) != hash {
+			continue
+		}
+		visible, err := p.visible(c, asset, false)
+		if err != nil {
+			return first, err
+		}
+		if !visible {
+			continue
+		}
+		if first == nil {
+			first = asset
+		}
+		for _, source := range arr(get(asset, "sources")) {
+			if str(get(obj(source), "sceneId")) == c.SceneID {
+				return asset, nil
+			}
+		}
+	}
+	return first, nil
+}
+
 func (s *Service) RecordUsage(ctx context.Context, c Context, id string) error {
 	return s.transaction(ctx, func(p *scope) error {
 		if e := p.allow(c); e != nil {

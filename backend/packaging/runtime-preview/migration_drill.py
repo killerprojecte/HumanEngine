@@ -46,6 +46,7 @@ class Drill:
         self.env = dict(os.environ, HUMANENGINE_ADMIN_TOKEN=uuid4().hex + uuid4().hex)
         self.owner = None
         self.volume = False
+        self.phase = "verify-images"
 
     def image(self, image, revision):
         image_id, label = docker(
@@ -136,12 +137,14 @@ class Drill:
             "ts_tools": self.image(self.args.ts_tools_image, TS_REVISION),
             "go": self.image(self.args.go_image, self.args.go_revision),
         }
+        self.phase = "initialize-fixture"
         docker("volume", "create", self.name)
         self.volume = True
         self.tool("sh", "-ec",
                   "mkdir /drill/live /drill/authority /drill/restore-authority; "
                   "chown 1000:1000 /drill /drill/live /drill/authority /drill/restore-authority",
                   setup=True)
+        self.phase = "seed-typescript"
         self.start("ts")
         initial = self.setting()
         memory = self.api("POST", "/api/memories", {
@@ -151,10 +154,12 @@ class Drill:
         memory_id = memory["id"]
         require(self.has_memory(memory_id), "TS seed assertion missing")
         self.stop()
+        self.phase = "backup-typescript-data"
         self.tool("node", "--import", "tsx", "scripts/backup.ts",
                   DATABASE, "/app/data/media", "/drill/old-backup", data="live")
         self.record("ts-seed-and-authoritative-old-backup")
 
+        self.phase = "update-in-go"
         self.start("go")
         require(self.has_memory(memory_id) and self.setting() is initial, "Go did not read TS state")
         require(self.setting(not initial) is not initial, "Go settings write not visible")
@@ -163,14 +168,17 @@ class Drill:
         self.stop()
         self.record("go-wrote-setting-and-terminal-deletion-then-drained")
 
+        self.phase = "reopen-latest-in-typescript"
         self.start("ts")
         require(self.setting() is not initial and not self.has_memory(memory_id),
                 "TS does not recognize latest Go installation")
         self.stop()
         self.record("ts-rollback-reopened-latest-pair")
 
+        self.phase = "copy-current-authority"
         self.tool("sh", "-ec", "test ! -e /drill/live/main.sqlite; "
                   "cp -a /drill/authority/. /drill/restore-authority/")
+        self.phase = "verify-old-and-current-heads"
         self.tool("node", "--import", "tsx", "--input-type=module", "-e", """
 import Database from 'better-sqlite3'
 import {metadata, RecoveryAuthority, sameHead} from './src/memory/recovery/ledger.ts'
@@ -194,16 +202,22 @@ try {
   old.close()
 }
 """, memory_id, authority="restore-authority")
+        self.phase = "restore-old-backup"
         self.tool("node", "--import", "tsx", "scripts/restore.ts",
                   "/drill/old-backup", "/drill/restored", AUTHORITY,
                   authority="restore-authority")
+        self.phase = "start-go-on-restored-data"
         self.start("go", data="restored", authority="restore-authority")
+        self.phase = "verify-restored-data"
         require(self.setting() is initial and not self.has_memory(memory_id),
                 "old settings or post-backup terminal deletion did not reconcile")
+        self.phase = "verify-restored-model-hold"
         hold = self.api("GET", "/api/budget/recovery")
         require(hold.get("held") is True and hold.get("restorationCoverage") == "unknown"
                 and hold.get("restoreId"), "restored model admission is not held")
+        self.phase = "drain-restored-go"
         self.stop()
+        self.phase = "verify-restored-database-path"
         self.tool("sh", "-ec", "test ! -e /drill/restored/main.sqlite",
                   authority="restore-authority")
         self.record("restore-current-authority-replayed-terminal-deletion-and-held-models")
@@ -230,7 +244,8 @@ def main():
         drill.run()
         report["status"] = "passed"
     except (RuntimeError, ValueError, TypeError, KeyError, subprocess.SubprocessError):
-        print("Packaged migration drill failed; see completed check names in evidence.")
+        report["failure_phase"] = drill.phase
+        print(f"Packaged migration drill failed in phase: {drill.phase}")
     finally:
         drill.cleanup()
         with Path(args.evidence).open("x") as evidence:

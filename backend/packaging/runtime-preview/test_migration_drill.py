@@ -1,4 +1,7 @@
 import argparse
+import io
+import json
+from contextlib import redirect_stdout
 import os
 from pathlib import Path
 import subprocess
@@ -7,7 +10,7 @@ import textwrap
 import unittest
 from unittest.mock import patch
 
-from migration_drill import AUTHORITY, DATABASE, Drill, TS_REVISION
+from migration_drill import AUTHORITY, DATABASE, Drill, TS_REVISION, main
 
 HERE = Path(__file__).resolve().parent
 
@@ -34,6 +37,26 @@ class MigrationDrillTests(unittest.TestCase):
             args = docker.call_args.args
             self.assertIn(drill.mount(AUTHORITY, "restore-authority"), args)
             self.assertNotIn(drill.mount(AUTHORITY, "authority"), args)
+
+    def test_failure_evidence_reports_fixed_phase_without_error_details(self):
+        with tempfile.TemporaryDirectory() as temp:
+            evidence = Path(temp) / "evidence.json"
+            args = ["drill", "--ts-image", "ts", "--ts-tools-image", "tools",
+                    "--go-image", "go", "--go-revision", "a" * 40,
+                    "--evidence", str(evidence)]
+
+            def fail(drill):
+                drill.phase = "restore-old-backup"
+                drill.record("ts-rollback-reopened-latest-pair")
+                raise RuntimeError("private fixture detail")
+
+            with patch("sys.argv", args), patch.object(Drill, "run", fail), redirect_stdout(io.StringIO()) as out:
+                self.assertTrue(main())
+            receipt = evidence.read_text()
+            self.assertEqual(json.loads(receipt)["failure_phase"], "restore-old-backup")
+            self.assertEqual(json.loads(receipt)["checks"], ["ts-rollback-reopened-latest-pair"])
+            self.assertIn("restore-old-backup", out.getvalue())
+            self.assertNotIn("private fixture detail", receipt + out.getvalue())
 
     def test_selector_is_independent(self):
         workflow = (HERE.parents[2] / ".github/workflows/golang-package-preview.yml").read_text()

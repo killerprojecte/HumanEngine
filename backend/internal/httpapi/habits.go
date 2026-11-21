@@ -49,7 +49,11 @@ func habitTryDecode(s string, uri bool) string {
 	})
 }
 func habitRoutingPath(r *http.Request) string {
-	return habitTryDecode(strings.ReplaceAll(r.URL.EscapedPath(), "%25", "%2525"), true)
+	escaped := r.URL.EscapedPath()
+	if strings.IndexByte(escaped, '%') < 0 {
+		return escaped
+	}
+	return habitTryDecode(strings.ReplaceAll(escaped, "%25", "%2525"), true)
 }
 
 func habitRoute(r *http.Request) (string, bool) {

@@ -1,6 +1,6 @@
 // Synthetic model IO only. No adapter, source authority or send implementation.
 export default {
- manifest:{id:'snow-model',name:'Snow synthetic model',version:'1',capabilities:['model-protocol'],configSchema:{type:'object',properties:{media:{type:'boolean'},targetText:{type:'string'}}}},
+ manifest:{id:'snow-model',name:'Snow synthetic model',version:'1',capabilities:['model-protocol'],configSchema:{type:'object',properties:{media:{type:'boolean'},targetText:{type:'string'},partial:{type:'boolean'}}}},
  setup(ctx){let serial=0
   ctx.registerModelProtocol('deterministic','Synthetic Snow replies',{async complete(context,messages,tools){
    context.signal.throwIfAborted();serial++;const names=tools.map(t=>t.name),data={}
@@ -30,7 +30,9 @@ export default {
     if(messages.some(m=>m.role==='tool'))return response([])
     const parts=[{type:'text',text:'Synthetic Snow reply.'}]
     if(ctx.config.media){const asset=data.plan?.assets?.[0]?.assetId;if(!asset)throw Error('synthetic_plan_asset_missing');parts.push({type:'media',assetId:asset,mediaType:'image'})}
-    return call('messages.send',{operationId:'snow-send',segments:[{replyToId:data.plan?.targetMessageIds?.[0]??data.planContract?.targetMessageIds?.[0],parts}]})
+    const replyToId=data.plan?.targetMessageIds?.[0]??data.planContract?.targetMessageIds?.[0]
+    const segments=ctx.config.partial?[1,2,3].map(n=>({replyToId,parts:[{type:'text',text:'Synthetic Snow partial segment '+n+'.'}]})):[{replyToId,parts}]
+    return call('messages.send',{operationId:'snow-send',segments})
    }
    throw Error('unexpected_snow_stage:'+names.join(','))
   }})

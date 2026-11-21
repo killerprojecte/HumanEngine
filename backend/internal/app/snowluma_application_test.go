@@ -49,7 +49,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	var writes sync.Mutex
 	var sentCount atomic.Int64
 	sentCount.Store(10)
-	var dropNextAck atomic.Bool
+	var dropAckAt atomic.Int64
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer synthetic" {
 			http.Error(w, "synthetic credential missing", 401)
@@ -80,7 +80,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 			case "send_group_msg":
 				id := sentCount.Add(1)
 				sent <- request
-				if dropNextAck.Swap(false) {
+				if dropAckAt.CompareAndSwap(id, 0) {
 					// EOF after the action was read from the wire, without its echo/ACK.
 					return
 				}
@@ -464,34 +464,48 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		t.Fatal("replacement generation missing")
 	}
 	verifyRetiredInline()
-	t.Log("stage: wire-transmitted send loses ACK, then fresh socket sends only fresh ingress")
-	targetedIngress := func(id int) {
+	t.Log("stage: first segment acknowledged, second loses ACK, third never transmits")
+	partialTurn := make(chan botruntime.Event, 1)
+	application.Engine.Runtime.Observe(func(e botruntime.Event) {
+		application.observeRuntime(e)
+		if e.SceneID == sceneID && e.Stage == "turn" {
+			select {
+			case partialTurn <- e:
+			default:
+			}
+		}
+	})
+	defer application.Engine.Runtime.Observe(application.observeRuntime)
+	targetedIngress := func(id int, partial bool) {
 		t.Helper()
 		marker := fmt.Sprintf("Synthetic reconnect event %d.", id)
-		appRequest(t, application, http.MethodPut, "/api/plugins/snow-model/config", map[string]any{"media": false, "targetText": marker})
+		appRequest(t, application, http.MethodPut, "/api/plugins/snow-model/config", map[string]any{"media": false, "targetText": marker, "partial": partial})
 		ingress(id, marker)
 	}
-	assertNextWireReply := func(want string) {
+	assertNextWireReply := func(want, text string) {
 		t.Helper()
 		select {
 		case request := <-sent:
 			params := request["params"].(map[string]any)
-			for _, item := range params["message"].([]any) {
-				part := item.(map[string]any)
-				if part["type"] == "reply" && fmt.Sprint(part["data"].(map[string]any)["id"]) == want {
-					return
-				}
+			parts := params["message"].([]any)
+			if request["action"] != "send_group_msg" || fmt.Sprint(params["group_id"]) != "99" || len(parts) != 2 {
+				t.Fatalf("wrong synthetic send envelope: %v", request)
 			}
-			t.Fatalf("expected wire reply to fresh event %s, got %v", want, request)
+			reply, body := parts[0].(map[string]any), parts[1].(map[string]any)
+			if reply["type"] != "reply" || fmt.Sprint(reply["data"].(map[string]any)["id"]) != want ||
+				body["type"] != "text" || body["data"].(map[string]any)["text"] != text {
+				t.Fatalf("expected quote %s with exact draft segment %q, got %v", want, text, request)
+			}
 		case <-ctx.Done():
 			t.Fatal("missing wire reply", ctx.Err())
 		}
 	}
 	assertReceiptSet := func(snapshot botruntime.Snapshot, fresh bool) {
 		t.Helper()
-		want := map[string]bool{snow.MessageID(sceneID, "11"): true, snow.MessageID(sceneID, "12"): true}
+		first := snow.MessageID(sceneID, "13")
+		want := map[string]bool{snow.MessageID(sceneID, "11"): true, snow.MessageID(sceneID, "12"): true, first: true}
 		if fresh {
-			want[snow.MessageID(sceneID, "14")] = true
+			want[snow.MessageID(sceneID, "15")] = true
 		}
 		for _, row := range snapshot.Messages {
 			if field(row, "senderId") != "bot" {
@@ -501,21 +515,37 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 			if !want[id] {
 				t.Fatalf("unexpected, unacknowledged or duplicate receipt: %s", id)
 			}
+			if id == first {
+				parts := field(row, "parts").([]any)
+				if len(parts) != 1 || field(parts[0], "text") != "Synthetic Snow partial segment 1." {
+					t.Fatalf("first acknowledged segment did not retain its exact payload: %v", row)
+				}
+			}
 			delete(want, id)
 		}
 		if len(want) != 0 {
 			t.Fatalf("missing acknowledged receipts: %v", want)
 		}
 	}
-	dropNextAck.Store(true)
-	targetedIngress(4)
-	assertNextWireReply("4")
+	dropAckAt.Store(14)
+	targetedIngress(4, true)
+	assertNextWireReply("4", "Synthetic Snow partial segment 1.")
+	assertNextWireReply("4", "Synthetic Snow partial segment 2.")
 	select {
 	case <-closed:
 	case <-ctx.Done():
 		t.Fatal("peer did not physically disconnect after reading send")
 	}
-	assertReceiptSet(waitIdle(""), false)
+	select {
+	case e := <-partialTurn:
+		if e.Status != "partial" || e.Reason != "delivery_unknown" || e.Counts["sentSegments"] != 1 ||
+			e.Counts["unknownSegments"] != 1 || e.Counts["failedSegments"] != 0 || e.Counts["cancelledSegments"] != 0 {
+			t.Fatalf("wrong installed turn receipt: %+v", e)
+		}
+	case <-ctx.Done():
+		t.Fatal("missing completed partial turn receipt")
+	}
+	assertReceiptSet(waitIdle("13"), false)
 	select {
 	case socket = <-connections:
 	case <-ctx.Done():
@@ -540,13 +570,13 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	}
 	select {
 	case replay := <-sent:
-		t.Fatal("unknown send was replayed after reconnect", replay)
+		t.Fatal("old draft segment was transmitted on replacement socket", replay)
 	default:
 	}
-	targetedIngress(5)
-	assertNextWireReply("5")
-	assertReceiptSet(waitIdle("14"), true)
-	if sentCount.Load() != 14 {
+	targetedIngress(5, false)
+	assertNextWireReply("5", "Synthetic Snow reply.")
+	assertReceiptSet(waitIdle("15"), true)
+	if sentCount.Load() != 15 {
 		t.Fatal("unexpected number of sends after reconnect", sentCount.Load())
 	}
 

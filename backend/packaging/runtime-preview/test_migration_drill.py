@@ -101,6 +101,7 @@ class MigrationDrillTests(unittest.TestCase):
                 patch.object(drill, "verify_unicode_memory", side_effect=verify_unicode), \
                 patch.object(drill, "run_snowluma_credential") as snowluma, \
                 patch.object(drill, "run_media_restore") as media, \
+                patch.object(drill, "run_source_recall_restore") as source_recall, \
                 patch.object(drill, "has_memory", side_effect=[True, True, False, False]), \
                 patch.object(drill, "setting", side_effect=[False, False, True, True]), \
                 patch.object(drill, "verify_restored_data"), patch.object(drill, "prove_credential", side_effect=prove), \
@@ -111,6 +112,7 @@ class MigrationDrillTests(unittest.TestCase):
             drill.run()
             snowluma.assert_called_once_with()
             media.assert_called_once_with()
+            source_recall.assert_called_once_with()
         self.assertEqual(seen, [
             ("seed-and-probe-typescript-credential", False),
             ("probe-go-credential", False),
@@ -236,6 +238,48 @@ class MigrationDrillTests(unittest.TestCase):
         self.assertEqual(drill.report["checks"][-2], "corrupt-media-backup-refused-without-publication-or-authority-change")
         self.assertEqual(drill.report["checks"][-1], "restore-replayed-go-media-deletion-and-retained-exact-original")
 
+    def test_recall_uses_one_isolated_mock_and_unmodified_protected_settings(self):
+        drill = Drill(argparse.Namespace(), {"checks": [], "images": {"ts_tools": "tools"}})
+        trace = []
+        seeded = {"scene": "synthetic", "ids": ["withdrawn", "independent"]}
+
+        def docker(*args, **kwargs):
+            trace.append(("docker", args))
+            return ""
+
+        def api(method, route, body=None):
+            trace.append(("api", (method, route, body)))
+            return {"ok": True, "held": True}
+
+        def tool(*args, **kwargs):
+            trace.append(("tool", args, kwargs))
+
+        def probe(_script, payload, **_kwargs):
+            trace.append(("probe", payload["phase"]))
+            return seeded
+
+        with patch("migration_drill.docker", side_effect=docker), \
+                patch.object(drill, "start", side_effect=lambda owner, **kw: trace.append((owner, kw))), \
+                patch.object(drill, "stop", side_effect=lambda: trace.append(("stop",))), \
+                patch.object(drill, "tool", side_effect=tool), patch.object(drill, "api", side_effect=api), \
+                patch.object(drill, "seed_snowluma_credential"), patch.object(drill, "probe_receipt", side_effect=probe), \
+                patch.object(drill, "verify_source_recall") as durable:
+            drill.run_source_recall_restore()
+            durable.assert_called_once_with(seeded, "recall-restore-authority")
+        calls = [item[1] for item in trace if item[0] == "docker"]
+        self.assertIn("--network", calls[0])
+        self.assertEqual(calls[0][calls[0].index("--network") + 1], "none")
+        self.assertEqual(calls[-1], ("rm", "-f", drill.name + "-recall"))
+        self.assertEqual([item[1]["network"] for item in trace if item[0] in ("ts", "go")],
+                         ["container:" + drill.name + "-recall"] * 4)
+        backup = next(i for i, call in enumerate(trace) if call[0] == "tool" and "scripts/backup.ts" in call[1])
+        self.assertEqual(trace[backup - 1], ("stop",))
+        self.assertFalse(any(row[0] == "api" and row[1][0] != "GET" for row in trace[backup:]))
+        self.assertEqual([step[1] for step in trace if step[0] == "probe"],
+                         ["seed", "before", "recall", "after", "after"])
+        self.assertEqual(drill.report["checks"],
+                         ["go-cold-source-recall-persisted-through-rollback-and-old-restore"])
+
     def test_failure_evidence_reports_fixed_phase_without_error_details(self):
         with tempfile.TemporaryDirectory() as temp:
             evidence = Path(temp) / "evidence.json"
@@ -304,6 +348,7 @@ class MigrationDrillTests(unittest.TestCase):
             files = {
                 "browser_smoke.py": "browser", "browser-requirements.txt": "browser",
                 "migration_drill.py": "restore", "test_migration_drill.py": "restore",
+                "recall_fixture.cjs": "restore",
                 "compose-rehearsal.yaml": "compose", "compose_rehearsal.py": "compose",
                 "test_compose_rehearsal.py": "compose", "ordinary.py": None,
             }

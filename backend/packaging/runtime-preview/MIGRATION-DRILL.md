@@ -93,9 +93,19 @@ A restore from the unmodified backup using that same authority must then remove
 the deleted row and physical file, retain the other original unchanged, and
 leave model admission held when Go opens the restored data.
 
+A final independent pair leaves the synthetic SnowLuma connector enabled across
+backup and all four runtime opens, with revision tracking enabled before backup.
+The loopback action mock owns a private Docker network namespace with no
+external networking. TypeScript seeds two signed source messages. Before any
+fresh ingress in Go, a signed group recall withdraws only the exact target from
+remote history. TypeScript rollback and Go cold reopen after restoring the older
+backup must still return only the independent source. The drill verifies both
+source tombstones and surviving revision heads, plus the typed revocation in the
+copied authority. Restored model admission must remain held.
+
 Only exact source/image IDs and completed outcome names are emitted. Container
 logs, data, tokens and request/response bodies are not saved. The hosted package job runs this drill when a push to the existing
-`feat/refactor-golang` branch changes `migration_drill.py` or its test, or opts
+`feat/refactor-golang` branch changes `migration_drill.py`, its test or `recall_fixture.cjs`, or opts
 into [both proofs at the exact head](README.md#run-both-proofs-on-one-exact-candidate).
 It reuses the Go image after HTTP/package acceptance. PRs and manual runs do
 not build the TypeScript image for this drill. Passing proves only this Linux/amd64

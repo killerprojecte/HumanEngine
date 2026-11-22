@@ -250,7 +250,7 @@ class Drill:
                "--user", user, *mounts, "--entrypoint", args[0],
                self.report["images"]["ts_tools"], *args[1:])
 
-    def start(self, engine, data="live", authority="authority"):
+    def start(self, engine, data="live", authority="authority", network="none"):
         require(self.owner is None, "overlapping server owners")
         self.owner = engine
         self.port = "3000" if engine == "ts" else "3001"
@@ -261,7 +261,7 @@ class Drill:
                      "--ui-root", "/opt/humanengine/ui", "--image-library",
                      "/opt/humanengine/lib/libvips-cpp.so.8.18.7", "--locale", "en-US",
                      "--source-timezone", "UTC"]
-        docker("run", "-d", "--name", self.name, "--network", "none",
+        docker("run", "-d", "--name", self.name, "--network", network,
                "--mount", self.mount("/app/data", data),
                "--mount", self.mount(AUTHORITY, authority),
                "-e", "HUMANENGINE_ADMIN_TOKEN", self.report["images"][engine], *flags,
@@ -528,6 +528,7 @@ try {
         self.record("restore-current-authority-replayed-configuration-and-terminal-deletion-and-held-models")
         self.run_snowluma_credential()
         self.run_media_restore()
+        self.run_source_recall_restore()
 
     def run_snowluma_credential(self):
         # Enablement changes are security-state mutations. This pair must not
@@ -624,6 +625,101 @@ assert.equal(hash('/drill/media-live/media/' + retained + '.png'), retainedHash)
                   "check-media", *media_ids, authority=restore_authority)
         self.record("restore-replayed-go-media-deletion-and-retained-exact-original")
 
+    def run_source_recall_restore(self):
+        self.phase = "initialize-source-recall-fixture"
+        self.tool("sh", "-ec", "mkdir /drill/recall-live /drill/recall-authority /drill/recall-restore-authority; "
+                  "chown 1000:1000 /drill/recall-live /drill/recall-authority /drill/recall-restore-authority",
+                  setup=True)
+        script = Path(__file__).with_name("recall_fixture.cjs").read_text()
+        name = self.name + "-recall"
+        timestamp = int(time.time())
+        docker("run", "-d", "--name", name, "--network", "none", "--entrypoint", "node",
+               "-e", "HE_RECALL_MOCK", self.report["images"]["ts_tools"], "-e", script, "mock",
+               env={**self.env, "HE_RECALL_MOCK": json.dumps(dict(actionPort=SNOW_ACTION_PORT,
+                    token=self.snow_token, timestamp=timestamp))})
+        paths = dict(data="recall-live", authority="recall-authority")
+        network = "container:" + name
+
+        def probe(phase):
+            return self.probe_receipt(script, dict(phase=phase, eventPort=SNOW_EVENT_PORT,
+                                      eventToken=self.snow_event_token, timestamp=timestamp), timeout=25)
+
+        try:
+            self.phase = "source-recall-action-mock-ready"
+            for _ in range(50):
+                ready = docker("exec", name, "node", "-e", "fetch('http://127.0.0.1:"
+                               f"{SNOW_ACTION_PORT}/ready').then(r=>{{if(!r.ok)process.exitCode=1}})"
+                               ".catch(()=>process.exitCode=1)", check=False)
+                if ready is not None:
+                    break
+                time.sleep(0.1)
+            else:
+                raise RuntimeError("synthetic OneBot action mock did not start")
+            self.phase = "typescript-source-recall-seed"
+            self.start("ts", **paths, network=network)
+            settings = self.api("GET", "/api/settings")
+            settings["sourceEventRevisionsEnabled"] = True
+            self.api("PUT", "/api/settings", settings)
+            self.seed_snowluma_credential()
+            require(self.api("PUT", "/api/plugins/snowluma/enabled", {"enabled": True}).get("ok") is True,
+                    "synthetic SnowLuma was not enabled")
+            seeded = probe("seed")
+            self.stop()
+
+            # Connector config/enablement and scene flags stay unchanged from here on.
+            self.phase = "backup-before-source-recall"
+            self.tool("node", "--import", "tsx", "scripts/backup.ts", DATABASE,
+                      "/app/data/media", "/drill/recall-backup", **paths)
+            self.phase = "go-cold-source-recall"
+            self.start("go", **paths, network=network)
+            require(probe("before") == seeded and probe("recall") == seeded,
+                    "source recall did not withdraw its exact target")
+            self.stop()
+            self.phase = "typescript-reopen-source-recall"
+            self.start("ts", **paths, network=network)
+            require(probe("after") == seeded, "TypeScript reopened recalled source")
+            self.stop()
+            restore = "recall-restore-authority"
+            self.phase = "restore-old-source-backup"
+            self.tool("sh", "-ec", "cp -a /app/authority/. /drill/recall-restore-authority/",
+                      authority=paths["authority"])
+            self.tool("node", "--import", "tsx", "scripts/restore.ts", "/drill/recall-backup",
+                      "/drill/recall-restored", AUTHORITY, authority=restore)
+            self.phase = "verify-durable-source-recall"
+            self.verify_source_recall(seeded, restore)
+            self.phase = "go-reopen-restored-source-recall"
+            self.start("go", data="recall-restored", authority=restore, network=network)
+            require(probe("after") == seeded, "Go restored recalled source")
+            require(self.api("GET", "/api/budget/recovery").get("held") is True,
+                    "model admission unexpectedly allowed after source restore")
+            self.stop()
+            self.record("go-cold-source-recall-persisted-through-rollback-and-old-restore")
+        finally:
+            docker("rm", "-f", name, check=False)
+
+    def verify_source_recall(self, seeded, authority):
+        self.tool("node", "--input-type=module", "-e", """
+import assert from 'node:assert/strict'
+import Database from 'better-sqlite3'
+const {scene,ids} = JSON.parse(process.argv[1])
+for (const [dir, recalled] of [['recall-backup',false],['recall-live',true],['recall-restored',true]]) {
+  const db = new Database('/drill/' + dir + '/humanengine.sqlite', {readonly:true,fileMustExist:true})
+  try {
+    for (const table of ['recall_tombstones','source_event_tombstones']) {
+      const rows = db.prepare('SELECT message_id FROM ' + table + ' WHERE scene_id=?').pluck().all(scene)
+      assert.deepEqual(rows, recalled ? ids.slice(0,1) : [])
+    }
+    const heads = db.prepare('SELECT message_id FROM source_event_heads WHERE scene_id=?').pluck().all(scene).sort()
+    assert.deepEqual(heads, (recalled ? ids.slice(1) : [...ids]).sort())
+  } finally { db.close() }
+}
+const db = new Database('/app/authority/authority.sqlite', {readonly:true,fileMustExist:true})
+try {
+  const rows = db.prepare("SELECT payload FROM revocations ORDER BY sequence").pluck().all().map(JSON.parse)
+  assert.deepEqual(rows.filter(row => row.kind === 'source'), [{kind:'source',sceneId:scene,messageId:ids[0]}])
+} finally { db.close() }
+""", json.dumps(seeded), authority=authority)
+
     def refuse_corrupt_media_backup(self, media_id, authority):
         self.tool("node", "--import", "tsx", "--input-type=module", "-e", r"""
 import assert from 'node:assert/strict'
@@ -676,6 +772,7 @@ assert.equal(hash(readFileSync(good + media)), originalHash)
         if self.owner is not None:
             docker("rm", "-f", self.name, check=False)
         if self.volume:
+            docker("rm", "-f", self.name + "-recall", check=False)
             docker("rm", "-f", self.name + "-tool", check=False)
             docker("volume", "rm", self.name, check=False)
 

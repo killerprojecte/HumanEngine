@@ -15,6 +15,8 @@ AUTHORITY = "/app/authority"
 PROVIDER = "migration-credential-fixture"
 MODEL = "migration-text-fixture"
 PROVIDER_PORT = 41273
+SNOW_ACTION_PORT = 41274
+SNOW_EVENT_PORT = 41275
 NODE_REQUEST = """
 const {method,path,body} = JSON.parse(require('fs').readFileSync(0, 'utf8'));
 fetch('http://127.0.0.1:' + process.argv[1] + path, {
@@ -74,6 +76,47 @@ run().catch(() => process.exitCode = 1);
 """
 
 
+NODE_SNOWLUMA_LOGIN = """
+const http = require('node:http');
+const fs = require('node:fs');
+async function run() {
+  const {sentinel, actionPort} = JSON.parse(fs.readFileSync(0, 'utf8'));
+  let received = 0, matched = 0;
+  const mock = http.createServer((req, res) => {
+    received++;
+    req.resume();
+    if (req.method !== 'POST' || req.url !== '/get_login_info' ||
+        req.headers.authorization !== 'Bearer ' + sentinel) {
+      res.writeHead(400).end();
+      return;
+    }
+    matched++;
+    res.writeHead(200, {'Content-Type':'application/json'}).end(JSON.stringify({
+      status:'ok', retcode:0, data:{user_id:42}
+    }));
+  });
+  const toggle = async enabled => {
+    const response = await fetch('http://127.0.0.1:' + process.argv[1] + '/api/plugins/snowluma/enabled', {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json',
+        Authorization:'Bearer ' + process.env.HUMANENGINE_ADMIN_TOKEN},
+      body: JSON.stringify({enabled}), signal: AbortSignal.timeout(20000)
+    });
+    return [response.status, (await response.json())?.ok === true];
+  };
+  await new Promise((resolve, reject) =>
+    mock.once('error', reject).listen(actionPort, '127.0.0.1', resolve));
+  try {
+    let enableStatus, enabledOK, disableStatus, disabledOK;
+    try { [enableStatus, enabledOK] = await toggle(true); }
+    finally { [disableStatus, disabledOK] = await toggle(false); }
+    console.log(JSON.stringify({enableStatus, enabledOK, disableStatus, disabledOK, received, matched}));
+  } finally { mock.closeAllConnections(); mock.close(); }
+}
+run().catch(() => process.exitCode = 1);
+"""
+
+
 def docker(*args, body=None, env=None, check=True, timeout=90):
     # Neither a child exception nor its raw output belongs in the receipt.
     result = subprocess.run(["docker", *args], input=body, env=env, text=True,
@@ -95,6 +138,8 @@ class Drill:
         self.name = "he-migration-" + uuid4().hex
         self.env = dict(os.environ, HUMANENGINE_ADMIN_TOKEN=uuid4().hex + uuid4().hex)
         self.sentinel = uuid4().hex + uuid4().hex
+        self.snow_token = uuid4().hex + uuid4().hex
+        self.snow_event_token = uuid4().hex + uuid4().hex
         self.owner = None
         self.volume = False
         self.phase = "verify-images"
@@ -177,19 +222,58 @@ class Drill:
         require(provider.get("credentialConfigured") is True and not provider.get("credentialEnv")
                 and "credentials" not in models and self.sentinel not in json.dumps(models),
                 "stored credential not available as write-only configuration")
-        raw = docker("exec", "-i", self.name, "node", "-e", NODE_CREDENTIAL_PROBE, self.port,
-                     body=json.dumps(dict(sentinel=self.sentinel, model=MODEL, providerPort=PROVIDER_PORT)),
-                     timeout=15)
-        try:
-            outcome = json.loads(raw)
-        except (TypeError, ValueError):
-            raise RuntimeError("invalid synthetic probe receipt") from None
+        outcome = self.probe_receipt(NODE_CREDENTIAL_PROBE, {
+            "sentinel": self.sentinel, "model": MODEL, "providerPort": PROVIDER_PORT,
+        }, timeout=15)
         calls = 0 if held else 1
         require(outcome == {
             "status": 200, "ok": not held, "denied": held, "text": True,
             "detail": "budget_restore_accounting_hold" if held else "text_response_received",
             "received": calls, "matched": calls,
         }, "synthetic credential probe did not match expected wire outcome")
+
+    def probe_receipt(self, script, body, timeout):
+        raw = docker("exec", "-i", self.name, "node", "-e", script, self.port,
+                     body=json.dumps(body), timeout=timeout)
+        try:
+            return json.loads(raw)
+        except (TypeError, ValueError):
+            raise RuntimeError("invalid synthetic probe receipt") from None
+
+    def verify_snowluma_disabled(self):
+        config = self.api("GET", "/api/plugins/snowluma/config")
+        plugin = next((row for row in self.api("GET", "/api/plugins")
+                       if row.get("id") == "snowluma"), {})
+        flags = plugin.get("configuredSecrets", {})
+        serialized = json.dumps([config, plugin])
+        require(plugin.get("enabled") is False and flags.get("token") is True
+                and flags.get("eventToken") is True and config.get("transport") == "http"
+                and config.get("accountId") == "42" and config.get("eventHost") == "127.0.0.1"
+                and config.get("eventPort") == SNOW_EVENT_PORT
+                and config.get("url") == f"http://127.0.0.1:{SNOW_ACTION_PORT}"
+                and not (set(config) & {"token", "eventToken", "credentialEnv", "eventCredentialEnv"})
+                and self.snow_token not in serialized and self.snow_event_token not in serialized,
+                "SnowLuma disabled configuration did not preserve both write-only credentials")
+
+    def seed_snowluma_credential(self):
+        row = next((row for row in self.api("GET", "/api/plugins")
+                    if row.get("id") == "snowluma"), {})
+        require(row.get("enabled") is False, "SnowLuma must be disabled before fixture setup")
+        self.api("PUT", "/api/plugins/snowluma/config", {
+            "transport": "http", "url": f"http://127.0.0.1:{SNOW_ACTION_PORT}",
+            "accountId": "42", "eventHost": "127.0.0.1", "eventPort": SNOW_EVENT_PORT,
+            "token": self.snow_token, "eventToken": self.snow_event_token,
+        })
+
+    def prove_snowluma_login(self):
+        self.verify_snowluma_disabled()
+        outcome = self.probe_receipt(NODE_SNOWLUMA_LOGIN, {
+            "sentinel": self.snow_token, "actionPort": SNOW_ACTION_PORT,
+        }, timeout=45)
+        require(outcome == {"enableStatus": 200, "disableStatus": 200,
+                            "enabledOK": True, "disabledOK": True, "received": 1, "matched": 1},
+                "SnowLuma login did not use its stored credential exactly once")
+        self.verify_snowluma_disabled()
 
     def stop(self):
         docker("kill", "--signal=TERM", self.name)
@@ -328,6 +412,27 @@ try {
         self.tool("sh", "-ec", "test ! -e /drill/restored/main.sqlite",
                   authority="restore-authority")
         self.record("restore-current-authority-replayed-configuration-and-terminal-deletion-and-held-models")
+        self.run_snowluma_credential()
+
+    def run_snowluma_credential(self):
+        # Enablement changes are security-state mutations. This pair must not
+        # advance the authority used by the independent positive old restore.
+        self.phase = "initialize-snowluma-fixture"
+        self.tool("sh", "-ec",
+                  "mkdir /drill/snow-live /drill/snow-authority; "
+                  "chown 1000:1000 /drill/snow-live /drill/snow-authority", setup=True)
+        for engine, leg in (("ts", "initial-typescript"), ("go", "go-reopen"),
+                            ("ts", "rollback-typescript")):
+            self.phase = f"snowluma-{leg}-startup"
+            self.start(engine, data="snow-live", authority="snow-authority")
+            if leg == "initial-typescript":
+                self.phase = "snowluma-seed-credential"
+                self.seed_snowluma_credential()
+            self.phase = f"snowluma-{leg}-login"
+            self.prove_snowluma_login()
+            self.phase = f"snowluma-{leg}-drain"
+            self.stop()
+            self.record(f"snowluma-{leg}-matched-login-wire-and-disabled")
 
     def cleanup(self):
         if self.owner is not None:

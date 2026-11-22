@@ -64,6 +64,17 @@ the synthetic stored secret during restore. Restored Go must report the
 credential configured, return the exact accounting-hold denial from the same
 model probe, and send no provider request. No recovery acknowledgement is issued.
 
+After that positive restore check, a separate fresh data/authority pair
+exercises SnowLuma's stored HTTP action credential across TS→Go→TS.
+Each owner starts with SnowLuma disabled, sees both write-only credential flags,
+temporarily enables the connector, and must send exactly one matching bearer
+to a loopback mock login. The owner disables the connector again before it is
+stopped. This does not exercise event authentication: the event credential is
+checked only as a configured flag, and no events are sent. The restored pair
+is never used for this connector test. Plugin configuration and enablement are
+security-state changes; take a fresh backed-up data snapshot after those
+changes, even if the connector ends disabled again.
+
 Only exact source/image IDs and completed outcome names are emitted. Container
 logs, data, tokens and request/response bodies are not saved. The hosted package job runs this drill when a push to the existing
 `feat/refactor-golang` branch changes `migration_drill.py` or its test, or opts

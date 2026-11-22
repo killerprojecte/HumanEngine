@@ -86,6 +86,7 @@ class MigrationDrillTests(unittest.TestCase):
 
         with patch("migration_drill.docker"), patch.object(drill, "image"), patch.object(drill, "tool"), \
                 patch.object(drill, "start"), patch.object(drill, "stop"), \
+                patch.object(drill, "run_snowluma_credential") as snowluma, \
                 patch.object(drill, "has_memory", side_effect=[True, True, False, False]), \
                 patch.object(drill, "setting", side_effect=[False, False, True, True]), \
                 patch.object(drill, "verify_restored_data"), patch.object(drill, "prove_credential", side_effect=prove), \
@@ -94,12 +95,45 @@ class MigrationDrillTests(unittest.TestCase):
                     {"held": True, "restorationCoverage": "unknown", "restoreId": "fixture-restore"},
                 ]):
             drill.run()
+            snowluma.assert_called_once_with()
         self.assertEqual(seen, [
             ("seed-and-probe-typescript-credential", False),
             ("probe-go-credential", False),
             ("probe-rollback-typescript-credential", False),
             ("probe-restored-model-hold", True),
         ])
+
+    def test_snowluma_lane_keeps_a_separate_pair_and_never_enables_restored_data(self):
+        drill = Drill(argparse.Namespace(), {"checks": []})
+        events = []
+
+        with patch.object(drill, "tool") as setup, \
+                patch.object(drill, "start", side_effect=lambda engine, **paths: events.append((engine, paths))), \
+                patch.object(drill, "stop", side_effect=lambda: events.append("stop")), \
+                patch.object(drill, "seed_snowluma_credential", side_effect=lambda: events.append("seed")), \
+                patch.object(drill, "prove_snowluma_login", side_effect=lambda: events.append("login")):
+            drill.run_snowluma_credential()
+        self.assertTrue(setup.call_args.kwargs["setup"])
+        self.assertIn("mkdir /drill/snow-live /drill/snow-authority", setup.call_args.args[-1])
+        paths = {"data": "snow-live", "authority": "snow-authority"}
+        self.assertEqual(events, [("ts", paths), "seed", "login", "stop",
+                                  ("go", paths), "login", "stop", ("ts", paths), "login", "stop"])
+        self.assertEqual(len(drill.report["checks"]), 3)
+
+    def test_snowluma_login_requires_exact_good_wire_and_both_flag_checks(self):
+        drill = Drill(argparse.Namespace(), {})
+        good = dict(enableStatus=200, disableStatus=200, enabledOK=True, disabledOK=True,
+                    received=1, matched=1)
+        with patch.object(drill, "verify_snowluma_disabled") as disabled, \
+                patch.object(drill, "probe_receipt", return_value=good) as probe:
+            drill.prove_snowluma_login()
+            self.assertEqual(disabled.call_count, 2)
+            self.assertEqual(probe.call_args.args[1]["sentinel"], drill.snow_token)
+            self.assertNotIn(drill.snow_event_token, json.dumps(probe.call_args.args[1]))
+            for bad in (dict(good, received=2), dict(good, matched=0), dict(good, disabledOK=False)):
+                probe.return_value = bad
+                with self.assertRaisesRegex(RuntimeError, "stored credential exactly once"):
+                    drill.prove_snowluma_login()
 
     def test_failure_evidence_reports_fixed_phase_without_error_details(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -162,6 +162,7 @@ type DisplayImageSource struct {
 	assetID     string
 	inline      bool
 	guardedRead GuardedImageRead
+	visionPart  uint8
 }
 
 func (r *Runtime) retainedDisplayImageRow(sceneID, messageID string) DisplayImageSource {
@@ -254,7 +255,7 @@ func (c *TurnContext) NativeVisionSources(message *Object, visit func(*DisplayIm
 				image.guardedRead = prepare(source.scene, asset)
 			}
 			if inline || image.guardedRead != nil {
-				image.inline, image.assetID = inline, asset
+				image.inline, image.assetID, image.visionPart = inline, asset, uint8(i)
 				visit(&image, i)
 			}
 		}
@@ -274,7 +275,7 @@ func (m *DisplayImageSource) IsInline() bool { return m.inline }
 
 func (m *DisplayImageSource) BrowserImageBytes(ctx context.Context, before func(context.Context) error) ([]byte, error) {
 	if m.guardedRead != nil {
-		return m.guardedRead(ctx, before)
+		return m.visionOriginalBytes(ctx, before)
 	}
 	if read := m.adapter.BrowserImage; read != nil {
 		return read(ctx, m.scene, m.assetID, before)

@@ -139,6 +139,7 @@ func (r *Runtime) Close() {
 	r.windows.Clear()
 	r.cacheMu.Unlock()
 	r.boundaries.Clear()
+	r.visionOriginals.clear()
 	r.operationMu.Lock()
 	for _, e := range r.operations.Entries() {
 		// Active turns still own unsettled receipts. Their final outcome

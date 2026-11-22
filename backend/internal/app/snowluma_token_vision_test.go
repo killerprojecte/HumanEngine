@@ -27,6 +27,9 @@ type opaqueVisionTestBarrier struct {
 	entered, release chan struct{}
 	once             sync.Once
 	direct, batch    bool
+	cacheProbe       bool
+	fresh            atomic.Bool
+	reads            func() int32
 	setAvailable     func(bool)
 }
 
@@ -35,18 +38,23 @@ func (b *opaqueVisionTestBarrier) releaseHeld() { b.once.Do(func() { close(b.rel
 // The actual bundled Sender transport is covered independently. This arm
 // drives the app and native model wire without compiling a WASM instance.
 func TestOpaqueVisionNativeApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, false, false)
+	testGuardedNativeVisionApplication(t, false, false, false)
 }
 
 func TestDirectURLVisionNativeApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, true, false)
+	testGuardedNativeVisionApplication(t, true, false, false)
 }
 
 func TestCurrentNativeVisionBatchApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, true, true)
+	testGuardedNativeVisionApplication(t, true, true, false)
 }
 
-func testGuardedNativeVisionApplication(t *testing.T, direct, batch bool) {
+func TestNativeVisionOriginalCacheApplication(t *testing.T) {
+	t.Run("direct", func(t *testing.T) { testGuardedNativeVisionApplication(t, true, false, true) })
+	t.Run("opaque", func(t *testing.T) { testGuardedNativeVisionApplication(t, false, false, true) })
+}
+
+func testGuardedNativeVisionApplication(t *testing.T, direct, batch, cacheProbe bool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
@@ -58,7 +66,7 @@ func testGuardedNativeVisionApplication(t *testing.T, direct, batch bool) {
 		t.Fatal(err)
 	}
 	defer app.Shutdown(context.Background())
-	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{}), direct: direct, batch: batch}
+	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{}), direct: direct, batch: batch, cacheProbe: cacheProbe}
 	defer barrier.releaseHeld()
 	root, release, err := app.Engine.RootContext(ctx)
 	if err != nil {
@@ -92,11 +100,12 @@ func testGuardedNativeVisionApplication(t *testing.T, direct, batch bool) {
 		return value
 	}
 	var tokenCalls, directCalls, inlineReads atomic.Int32
+	barrier.reads = func() int32 { return tokenCalls.Load() + directCalls.Load() }
 	var batchMu sync.Mutex
 	var batchReads []int
 	batchPrefix := "https://vision.invalid/batch/"
 	batchData := map[int][]byte{}
-	if batch {
+	if batch || cacheProbe {
 		for i := 1; i <= 5; i++ {
 			pixels := image.NewNRGBA(image.Rect(0, 0, 2, 2))
 			pixels.SetNRGBA(0, 0, color.NRGBA{R: uint8(i * 30), A: 255})
@@ -152,7 +161,7 @@ func testGuardedNativeVisionApplication(t *testing.T, direct, batch bool) {
 					close(barrier.entered)
 					<-barrier.release
 				}
-				if direct && scene.PlatformSceneID == "104" {
+				if !cacheProbe && direct && scene.PlatformSceneID == "104" {
 					hold()
 				}
 				if err := guard(call); err != nil {
@@ -162,9 +171,12 @@ func testGuardedNativeVisionApplication(t *testing.T, direct, batch bool) {
 					directCalls.Add(1)
 				} else {
 					tokenCalls.Add(1)
-					if scene.PlatformSceneID == "104" {
-						hold()
-					}
+				}
+				if scene.PlatformSceneID == "104" && (cacheProbe || !direct) {
+					hold() // Remote IO has completed; pause before the bytes reach the cache.
+				}
+				if cacheProbe && scene.PlatformSceneID == "102" && barrier.fresh.Load() {
+					return bytes.Clone(batchData[1]), nil
 				}
 				return bytes.Clone(original), nil
 			}
@@ -223,6 +235,14 @@ func testGuardedNativeVisionApplication(t *testing.T, direct, batch bool) {
 			defer batchMu.Unlock()
 			if !slices.Equal(batchReads, []int{2, 3, 4, 5}) {
 				t.Errorf("batch source order/budget: %v", batchReads)
+			}
+		}
+		if cacheProbe {
+			wantInline = 0
+			if direct {
+				wantDirect = 4
+			} else {
+				wantToken = 4
 			}
 		}
 		if tokens, urls, inline := tokenCalls.Load(), directCalls.Load(), inlineReads.Load(); tokens != wantToken || urls != wantDirect || inline != wantInline {

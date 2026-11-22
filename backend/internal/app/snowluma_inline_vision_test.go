@@ -52,6 +52,7 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	calls := make(chan actualCall, 8)
 	var visionCalls atomic.Int32
 	batch := len(tokenTest) != 0 && tokenTest[0].batch
+	cacheProbe := len(tokenTest) != 0 && tokenTest[0].cacheProbe
 	wantVision := int32(1)
 	if batch {
 		wantVision = 3
@@ -76,8 +77,12 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	}))
 	t.Cleanup(provider.Close)
 	t.Cleanup(func() {
-		if count := visionCalls.Load(); count != wantVision {
-			t.Errorf("expected %d authorized model image requests, saw %d", wantVision, count)
+		want := wantVision
+		if cacheProbe {
+			want += 2
+		}
+		if count := visionCalls.Load(); count != want {
+			t.Errorf("expected %d authorized model image requests, saw %d", want, count)
 		}
 	})
 	models := json.RawMessage(fmt.Sprintf(`{"providers":[{"id":"vision-fixture","name":"Synthetic vision","protocol":"openai-chat","baseUrl":%q,"retryCount":0,"timeoutMs":15000}],"models":[{"id":"vision","displayName":"Vision","providerId":"vision-fixture","apiModelName":"vision-synthetic","capabilities":["text","vision"]},{"id":"planner","displayName":"Planner","providerId":"vision-fixture","apiModelName":"planner-synthetic","capabilities":["text","tools"]}],"routes":[{"role":"vision","orderedModelIds":["vision"],"timeoutMs":15000},{"role":"planner","orderedModelIds":["planner"],"timeoutMs":15000}]}`, provider.URL+"/v1"))
@@ -91,38 +96,41 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	if err := json.Unmarshal(raw, &fixture); err != nil {
 		t.Fatal(err)
 	}
+	emitImage := func(group, id int, data map[string]any) {
+		at := time.Now().Unix()
+		if group == 102 && batch {
+			at += int64(id - 6)
+		} else if id == 2 {
+			at-- // make fixture priority independent of clock granularity
+		}
+		emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7,
+			"message_id": id, "time": at, "message": []any{map[string]any{"type": "image", "data": data}}})
+	}
+	locator := func(group int) map[string]any {
+		if tokenTest[0].direct {
+			return map[string]any{"url": "https://vision.invalid/original.png"}
+		}
+		return map[string]any{"file": "opaque-" + fmt.Sprint(group)}
+	}
 	begin := func(group int) (*botruntime.TurnHandle, string) {
 		t.Helper()
 		sceneID := snow.SceneID("snowluma", "42", "group", fmt.Sprint(group))
-		emitImage := func(id int, data map[string]any) {
-			at := time.Now().Unix()
-			if group == 102 && batch {
-				at += int64(id - 6)
-			} else if id == 2 {
-				at-- // make fixture priority independent of clock granularity
-			}
-			emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7,
-				"message_id": id, "time": at, "message": []any{map[string]any{"type": "image", "data": data}}})
-		}
+
 		count := 1
 		if group == 102 && batch {
 			count = 5
 			for id := 1; id <= count; id++ {
-				emitImage(id, map[string]any{"url": fmt.Sprintf("https://vision.invalid/batch/%d", id)})
+				emitImage(group, id, map[string]any{"url": fmt.Sprintf("https://vision.invalid/batch/%d", id)})
 			}
 		} else if len(tokenTest) == 0 {
-			emitImage(1, map[string]any{"base64": fixture.Base64})
+			emitImage(group, 1, map[string]any{"base64": fixture.Base64})
 		} else {
-			if group == 102 {
+			if group == 102 && !cacheProbe {
 				// The newest guarded image outranks the older ready-inline image.
-				emitImage(2, map[string]any{"base64": fixture.Base64})
+				emitImage(group, 2, map[string]any{"base64": fixture.Base64})
 				count++
 			}
-			if tokenTest[0].direct {
-				emitImage(1, map[string]any{"url": "https://vision.invalid/original.png"})
-			} else {
-				emitImage(1, map[string]any{"file": "opaque-" + fmt.Sprint(group)})
-			}
+			emitImage(group, 1, locator(group))
 		}
 		wait, cancel := context.WithTimeout(ctx, 8*time.Second)
 		defer cancel()
@@ -186,8 +194,8 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 			return botruntime.TurnResult{}
 		}
 	}
-	good, _ := begin(102)
-	for range int(wantVision) {
+	awaitImage := func() string {
+		t.Helper()
 		vision := awaitCall("vision-synthetic")
 		var actualImage string
 		for _, message := range vision.Messages {
@@ -212,6 +220,12 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 		if _, err := png.Decode(bytes.NewReader(data)); err != nil {
 			t.Fatalf("upstream inline image could not be decoded: %v", err)
 		}
+		return actualImage
+	}
+	good, goodScene := begin(102)
+	firstImage := ""
+	for range int(wantVision) {
+		firstImage = awaitImage()
 	}
 	decision := awaitCall("planner-synthetic")
 	found := false
@@ -242,18 +256,6 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 		t.Fatalf("first vision turn failed: %+v", final)
 	}
 
-	counter.block.Store(true)
-	late, sceneID := begin(103)
-	defer func() {
-		if counter.block.Swap(false) {
-			close(counter.release)
-		}
-	}()
-	select {
-	case <-counter.entered:
-	case <-time.After(8 * time.Second):
-		t.Fatal("late vision request did not reach serialized wire barrier")
-	}
 	recall := func(group int, sceneID string) {
 		t.Helper()
 		emit(map[string]any{"post_type": "notice", "notice_type": "group_recall", "self_id": 42,
@@ -272,6 +274,49 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 				t.Fatal("native recall did not commit at wire barrier")
 			}
 		}
+	}
+
+	if cacheProbe {
+		runExisting := func() string {
+			t.Helper()
+			snapshot, err := app.Engine.Runtime.Snapshot(goodScene)
+			if err != nil {
+				t.Fatal(err)
+			}
+			handle, err := app.Engine.Runtime.Run(goodScene, snapshot.Topics[0].ID, false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			image := awaitImage()
+			awaitCall("planner-synthetic")
+			if final := awaitDone(handle); final.Reason != "decision_silent" {
+				t.Fatalf("repeat vision turn failed: %+v", final)
+			}
+			return image
+		}
+		barrier := tokenTest[0]
+		if image := runExisting(); image != firstImage || barrier.reads() != 1 {
+			t.Fatal("same retained original did not reuse its bytes independently of the model")
+		}
+		recall(102, goodScene)
+		barrier.fresh.Store(true)
+		emitImage(102, 3, locator(102))
+		if image := runExisting(); image == firstImage || barrier.reads() != 2 {
+			t.Fatal("replacement record with the same locator reused withdrawn bytes")
+		}
+	}
+
+	counter.block.Store(true)
+	late, sceneID := begin(103)
+	defer func() {
+		if counter.block.Swap(false) {
+			close(counter.release)
+		}
+	}()
+	select {
+	case <-counter.entered:
+	case <-time.After(8 * time.Second):
+		t.Fatal("late vision request did not reach serialized wire barrier")
 	}
 	recall(103, sceneID)
 	counter.block.Store(false)

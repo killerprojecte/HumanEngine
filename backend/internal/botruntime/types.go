@@ -264,6 +264,7 @@ type Runtime struct {
 	cacheMu                       sync.Mutex
 	windows                       promptcache.Windows
 	boundaries                    promptcache.Boundaries
+	visionOriginals               visionOriginalCache
 	closed                        atomic.Bool
 	lastReply                     atomic.Int64
 	operationFirst, operationLast *receiptOperation

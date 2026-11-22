@@ -48,6 +48,7 @@ type Application struct {
 	RelationExposure    *memoryservice.RelationExposure
 	KnowledgeExposure   *memoryservice.KnowledgeExposure
 	WorkspaceSelections *memoryservice.WorkspaceSelectionTracker
+	EpisodeExposure     *memoryservice.StateExposure
 	Contextual          *contextuallearning.Proposals
 	MediaTasks          *mediatasks.Owner
 	Experience          *experienceservice.Service
@@ -234,6 +235,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err = app.composeIdentityMemory(owners); err != nil {
 		return app, err
 	}
+	app.registerEpisodeCapture()
 	app.registerKnowledgeCapture()
 	if err = app.composeHabitProposal(owners); err != nil {
 		return app, err
@@ -243,6 +245,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err = app.composeSemanticMemory(owners, memory); err != nil {
 		return app, err
 	}
+	app.registerEpisodeTool(memory.snapshot)
 	app.registerStateMemoryTools(memory)
 	app.registerRelationTool(memory)
 	effects, err := NewNativeSettingsEffects(memory.projections, memory.workspace, app.Maintenance, app, app.Diagnostics, options.Logs)

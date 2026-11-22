@@ -43,6 +43,10 @@ func (a *Application) composeModelMemory(o Owners, memory *memoryOwners) error {
 	}
 	a.MemoryExposure = exposure
 	a.WorkspaceSelections = tracker
+	a.EpisodeExposure, err = memoryservice.NewEpisodeExposure(port, tracker)
+	if err != nil {
+		return err
+	}
 	// Shadow retrieval is a diagnostic-only read owner. It is not used for
 	// relation admission and does not grant relation exposure to the model.
 	shadow, err := relations.New(o.Main, o.Authority, assertions.Options{DateParser: o.Dates}, relations.Options{

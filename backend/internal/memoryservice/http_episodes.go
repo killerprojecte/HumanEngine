@@ -63,7 +63,7 @@ func (s *Service) BindEpisodesAdminRead(publisher *recovery.ReadPublisher, schem
 			}
 			if initial.real && initial.enabled {
 				var err error
-				page, err = s.prepareAdminEpisodes(ctx, *q, initial.commitments)
+				page, err = s.prepareEpisodes(ctx, *q, initial.commitments)
 				if err != nil {
 					return true, err
 				}
@@ -121,7 +121,7 @@ type workspaceCandidates struct {
 	selections                        []workingset.Selection
 }
 
-func (s *Service) prepareAdminEpisodes(ctx context.Context, q EpisodesQuery, allowPlans bool) (*Object, error) {
+func (s *Service) prepareEpisodes(ctx context.Context, q EpisodesQuery, allowPlans bool) (*Object, error) {
 	input, err := s.prepareWorkspaceCandidates(ctx, q, true, allowPlans, nil)
 	if err != nil {
 		return nil, err

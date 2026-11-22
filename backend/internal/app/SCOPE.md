@@ -46,6 +46,11 @@ This is not a claim of complete TypeScript Engine compatibility.
   Clone/foreign/scope rejection, recall invalidation, restart/no replay and physical
   shutdown are checked. These are synthetic protocol/platform inputs, not proof of
   a live third-party platform connection.
+- `memory.episodes` exposes a bounded whole qualified page without using the
+  HTTP admin projection. Exact scoped experience and plan entries are checked
+  at delivery, and unknown occurrence times stay unknown. Selection counts only
+  retained backing assertions; this read does not grant ordinary memory parents
+  or derived learning. `memory.workingSet` remains separate.
 - Dynamic tool getters run at source operation boundaries. Runtime tests cover
   changing settings and tool availability, concurrent turns, execution-time send
   effects, first matching delivery ownership, current learning flags and current

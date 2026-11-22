@@ -9,8 +9,12 @@ export default {
     const sent = [], modelIDs = [], sourceReceipts = [], habitReceipts = [], proposalReceipts = []
     let habitFeedback, habitCalls=0, habitTool, habitProposal, proposalCalls=0, proposalTool
     let memorySourceTarget, lastSourceAlias, memorySourceCalls = 0
+    let episodesMode, episodeBarrier
+    const episodeReads=[],episodeBundles=[],episodeAds=[]
     const message = () => ({id:source,sceneId:scene.id,senderId:habitFeedback||habitProposal?'synthetic-feedback-'+sourceSerial:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:habitProposal?.text||sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
-    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts,habitCalls,habitTool,habitReceipts,proposalCalls,proposalTool,proposalReceipts}))
+    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts,habitCalls,habitTool,habitReceipts,proposalCalls,proposalTool,proposalReceipts,episodeReads,episodeBundles,episodeAds}))
+    ctx.registerAdminAction('episode-mode',input=>{episodesMode=input.mode;return {ok:true}})
+    ctx.registerAdminAction('episode-hold-send',input=>{episodeBarrier=input;return {ok:true}})
     ctx.registerAdminAction('habit-proposal', input => {habitProposal=input;return {ok:true}})
     ctx.registerAdminAction('habit-feedback', input => {habitFeedback=input;return {ok:true}})
     ctx.registerAdminAction('source-memory', input => {memorySourceTarget=input.id;return {ok:true}})
@@ -24,6 +28,8 @@ export default {
         start(){api.status('connected');if(!ctx.config.receivedMarker||!fs.existsSync(ctx.config.receivedMarker)){if(ctx.config.receivedMarker)fs.writeFileSync(ctx.config.receivedMarker,'received');api.receive(message(),scene,false)}},
         async send(scope,segment,signal,beforeTransmit){
           if(ctx.config.beforeArrived){fs.writeFileSync(ctx.config.beforeArrived,'ready');while(!fs.existsSync(ctx.config.beforeResume))await new Promise(resolve=>setTimeout(resolve,1))}
+          const barrier=episodeBarrier
+          if(barrier){episodeBarrier=undefined;fs.writeFileSync(barrier.arrived,'ready');while(!fs.existsSync(barrier.resume)){signal.throwIfAborted();await new Promise(resolve=>setTimeout(resolve,1))}}
           signal.throwIfAborted();beforeTransmit?.();sent.push({scope,segment})
           return {status:'sent',messageId:api.messageId(scope,'sent-'+sent.length)}
         },
@@ -45,6 +51,22 @@ export default {
         const call=(name,args)=>response([{id:'synthetic-call-'+modelCalls,name,arguments:args}])
         if(names.includes('participation.decide'))return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[((habitFeedback||habitProposal) && data.messages.find(m=>m.senderId==='synthetic-feedback-'+sourceSerial)||data.messages[0]).id]})
         const receipts=request.messages.filter(m=>m.role==='tool').flatMap(m=>{try{const v=JSON.parse(m.content);return Array.isArray(v)?v:[v]}catch{return []}})
+        if(names.includes('reply.plan')&&episodesMode){
+          const plan={targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Answer the synthetic experience request.',constraints:[],facts:[],assets:[],emoji:[],expressionGoals:[],actions:[]}
+          const episode=receipts.filter(v=>v.toolName==='memory.episodes')
+          if(!episode.length){
+            episodeAds.push(names.includes('memory.episodes'))
+            if(!names.includes('memory.episodes'))return call('reply.plan',{...plan,action:'noReply'})
+            const args=episodesMode==='person'?{personId:'synthetic-user'}:{}
+            if(episodesMode==='selected')return response([1,2].map(i=>({id:'episode-'+modelCalls+'-'+i,name:'memory.episodes',arguments:args})))
+            return call('memory.episodes',args)
+          }
+          episodeReads.push(episode.map(v=>v.value))
+          const selected=episode.filter(v=>v.value.length).map(v=>v.id)
+          const id=data.planContract.targetMessageIds[0]
+          if(episodesMode==='selected')plan.actions=[{toolName:'learning.propose',arguments:{content:'Episode state cannot authorize derived learning.',kind:'fact',epistemicKind:'explicit',sourceMessageIds:[id]}}]
+          return call('reply.plan',{...plan,action:'reply',deliveryTool:'messages.send',stateEvidenceIds:selected})
+        }
         if(memorySourceTarget && names.includes('reply.plan')){
           const receipt=receipts.find(v=>v.toolName==='memory.source')
           const person=receipts.find(v=>v.toolName==='memory.person')
@@ -88,6 +110,8 @@ export default {
           return [{toolName:'habits.feedback',arguments:{id:habitFeedback.alias,direction:habitFeedback.direction,sourceMessageIds:[habitFeedback.sourceAlias??data.planContract.targetMessageIds[0]]}}]
         })():identityReceipt?[{toolName:'habits.propose',arguments:{kind:'sceneRule',content:'Must not derive a rule from identity states.',sourceMessageIds:[data.planContract.targetMessageIds[0]]}}]:[]})
         if(names.includes('messages.send')){
+          if(episodesMode&&!request.messages.some(m=>m.role==='tool'))
+            episodeBundles.push({evidence:data.evidence,actions:data.actionReceipts,coverage:data.memoryEvidenceCoverage})
           if(!request.messages.some(m=>m.role==='tool')&&habitProposal)
             proposalReceipts.push(...(data.actionReceipts??[]).filter(r=>r.toolName==='habits.propose'))
           if(!request.messages.some(m=>m.role==='tool')&&habitFeedback)

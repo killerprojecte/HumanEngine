@@ -2,12 +2,12 @@ import fs from 'node:fs'
 // Synthetic protocol and transport only. The test uses the real native Engine,
 // source authority, scheduler, planner, reply validation and dispatch owners.
 export default {
-  manifest: {id:'runtime-fixture',name:'Native runtime bridge fixture',version:'1',configSchema:{type:'object',properties:{memoryMode:{type:'boolean'},timestamp:{type:'string'},receivedMarker:{type:'string'},plannerArrived:{type:'string'},plannerResume:{type:'string'},beforeArrived:{type:'string'},beforeResume:{type:'string'}}},capabilities:['adapter','model-protocol']},
+  manifest: {id:'runtime-fixture',name:'Native runtime bridge fixture',version:'1',configSchema:{type:'object',properties:{memoryMode:{type:'boolean'},timestamp:{type:'string'},followupText:{type:'string'},receivedMarker:{type:'string'},plannerArrived:{type:'string'},plannerResume:{type:'string'},beforeArrived:{type:'string'},beforeResume:{type:'string'}}},capabilities:['adapter','model-protocol']},
   setup(ctx) {
     try {
     let api, scene, source, disposed = 0, modelCalls = 0, sourceSerial = 1
     const sent = [], modelIDs = []
-    const message = () => ({id:source,sceneId:scene.id,senderId:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:'I prefer concise replies.'}]})
+    const message = () => ({id:source,sceneId:scene.id,senderId:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
     ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs}))
     ctx.registerAdminAction('new-source',()=>{source=api.messageId(scene,'source-'+(++sourceSerial));api.receive(message(),scene,false);return {ok:true}})
     ctx.registerAdminAction('edit',()=>api.edit({...message(),parts:[{type:'text',text:'Please reply to the edited synthetic request.'}]},scene,{editId:'synthetic-edit-2',order:{kind:'platform_sequence',sequence:2}}))

@@ -367,6 +367,10 @@ func (c *mixedLoadPausedConn) Write(b []byte) (int, error) {
 }
 
 func serveMixedLoadModel(w http.ResponseWriter, r *http.Request, entered chan<- struct{}, release <-chan struct{}, decisions, plans, sends *atomic.Int32) error {
+	return serveMixedLoadModelTo(w, r, entered, release, decisions, plans, sends, "")
+}
+
+func serveMixedLoadModelTo(w http.ResponseWriter, r *http.Request, entered chan<- struct{}, release <-chan struct{}, decisions, plans, sends *atomic.Int32, targetText string) error {
 	var req struct {
 		Model    string
 		Messages []struct{ Role, Content string }
@@ -402,11 +406,27 @@ func serveMixedLoadModel(w http.ResponseWriter, r *http.Request, entered chan<- 
 		case <-r.Context().Done():
 			return r.Context().Err()
 		}
-		var rows []struct{ ID string }
+		var rows []struct {
+			ID    string
+			Parts []struct{ Text string }
+		}
 		if json.Unmarshal(data["messages"], &rows) != nil || len(rows) == 0 {
 			return fmt.Errorf("missing participation targets")
 		}
-		args = map[string]any{"action": "reply", "reasonCode": "fixture", "targetMessageIds": []string{rows[0].ID}}
+		selected := rows[0].ID
+		if targetText != "" {
+			selected = ""
+			for _, row := range rows {
+				if slices.ContainsFunc(row.Parts, func(part struct{ Text string }) bool { return part.Text == targetText }) {
+					selected = row.ID
+					break
+				}
+			}
+			if selected == "" {
+				return fmt.Errorf("missing expected participation target")
+			}
+		}
+		args = map[string]any{"action": "reply", "reasonCode": "fixture", "targetMessageIds": []string{selected}}
 	case slices.Contains(names, "reply__plan"):
 		name = "reply__plan"
 		plans.Add(1)
@@ -419,6 +439,13 @@ func serveMixedLoadModel(w http.ResponseWriter, r *http.Request, entered chan<- 
 		name = "messages__send"
 		sends.Add(1)
 		args = map[string]any{"operationId": "mixed-load-send", "segments": []any{map[string]any{"parts": []any{map[string]any{"type": "text", "text": "Synthetic mixed-load reply."}}}}}
+		if targetText != "" {
+			var plan struct{ TargetMessageIDs []string }
+			if json.Unmarshal(data["plan"], &plan) != nil || len(plan.TargetMessageIDs) != 1 {
+				return fmt.Errorf("missing expected delivery target")
+			}
+			args.(map[string]any)["segments"].([]any)[0].(map[string]any)["replyToId"] = plan.TargetMessageIDs[0]
+		}
 	default:
 		return fmt.Errorf("unexpected fixture model stage")
 	}

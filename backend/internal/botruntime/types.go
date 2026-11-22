@@ -360,7 +360,8 @@ type TurnContext struct {
 	validations          []func(ReadAuthority) (bool, error)
 	sources              []*Object
 	sourceTimes          []float64
-	ImagePriorityIDs     []string // turn-owned; extension callbacks must not mutate
+	ImagePriorityIDs     []string        // turn-owned; extension callbacks must not mutate
+	managedVisionQuotes  map[string]bool // current real inbound quote targets only
 	deferMemoryExposure  atomic.Bool
 }
 

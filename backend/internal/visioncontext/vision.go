@@ -69,6 +69,7 @@ type Ports struct {
 	AddDependency       func(string)
 	AddSourceValidation func(Candidate)
 	Observe             func(Candidate, Observation)
+	Admit               func(context.Context, Candidate) (bool, error) // qualify only when a budget slot is available
 	// ReportError receives the original error for internal diagnostics only. It
 	// must not log image bytes, descriptions or unsanitized external messages.
 	ReportError func(operation string, err error)
@@ -326,6 +327,15 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		if !t.budget[key] && len(t.budget) >= 4 {
 			out.Omitted = append(out.Omitted, Omitted{c.Message.ID, "image_budget_exhausted"})
 			continue
+		}
+		if p.Admit != nil && cfg.Mode == "real" {
+			admitted, e := p.Admit(ctx, c)
+			if e != nil {
+				return out, e
+			}
+			if !admitted {
+				continue
+			}
 		}
 		t.budget[key] = true
 		seen[key] = true

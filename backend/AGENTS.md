@@ -8,6 +8,7 @@ This branch implements the user-requested Go backend migration; it supersedes th
 - Do not introduce protective resource caps or silent truncation. Distinguish existing product policy and intrinsic protocol widths from new admission limits.
 - V1 uses a lazy shared Node process with unloadable worker isolates. Zero enabled V1 plugins means no Node process. Disabling the last V1 plugin exits that process.
 - V2 builtin business logic executes in distributed WASM modules. A manifest or native callback wrapper alone is not a completed migration.
+- Changes to a pinned WASM input must update that input pin, the rebuilt guest, and its artifact manifest in the same commit. Run the existing pinned build recipe and verify the bundled guest before pushing.
 - Run gofmt, Go race tests/vet, actual WASM execution, source-free bundle tests, Node/Go differential tests and affected frontend checks. Keep generated REST types generated from source schemas.
 - Use only synthetic fixtures. Never commit live databases, keys, chat content or credentials. If a publication step is blocked, leave it blocked rather than bypassing it.
 - Progress commits belong only on feat/refactor-golang. An implementation checkpoint is not a declaration of full parity or production readiness.

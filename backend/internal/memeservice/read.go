@@ -265,6 +265,10 @@ func (s *Service) scopedOriginal(p *scope, c Context, id string, available bool)
 	if err != nil {
 		return Original{}, err
 	}
+	return s.scopedOriginalAsset(p, c, id, a, available)
+}
+
+func (s *Service) scopedOriginalAsset(p *scope, c Context, id string, a *Object, available bool) (Original, error) {
 	ok, err := p.visible(c, a, available)
 	if err != nil {
 		return Original{}, err

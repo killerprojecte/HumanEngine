@@ -144,6 +144,12 @@ func (r *Runtime) prepareTurn(t *turn, f *turnFrame, issues *int) error {
 		id := str(get(current[i], "replyToId"))
 		if id != "" {
 			priority = append(priority, id)
+			if c.Mode == "real" && get(current[i], "origin") == "live" && get(current[i], "senderId") != "bot" {
+				if c.managedVisionQuotes == nil {
+					c.managedVisionQuotes = make(map[string]bool)
+				}
+				c.managedVisionQuotes[id] = true
+			}
 			if c.Mode == "real" && len(missingQuotes) < 4 {
 				if recentIDs == nil {
 					recentIDs = messageIDs(recent)

@@ -5,6 +5,9 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+	"weak"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 )
 
 var ErrDisplayImageUnavailable = errors.New("image_unavailable")
@@ -19,6 +22,7 @@ func IsManagedImageAssetID(asset string) bool { return managedImageID.MatchStrin
 type displayMediaScene struct {
 	kind, adapter, account, platform string
 	native                           *nativeImageBinding
+	receiptOwner                     weak.Pointer[dispatch.Adapter] // an actual platform ACK, never a generated ID
 }
 
 type inlineImageParts [4]uint64
@@ -147,22 +151,23 @@ func (r *Runtime) bindNativeImage(scene Scene, message *Object, owner *Adapter) 
 	if native == nil {
 		return nil
 	}
-	return &displayMediaScene{scene.Kind, scene.AdapterID, scene.AccountID, scene.PlatformSceneID, native}
+	return &displayMediaScene{kind: scene.Kind, adapter: scene.AdapterID, account: scene.AccountID, platform: scene.PlatformSceneID, native: native}
 }
 
 // DisplayImageSource captures a private retained record and its adapter.
 // Its raw parts are never returned by a browser preview.
 type DisplayImageSource struct {
-	runtime     *Runtime
-	state       *sceneState
-	scene       Scene
-	adapter     *Adapter
-	record      *messageRecord
-	remote      *remoteImage
-	assetID     string
-	inline      bool
-	guardedRead GuardedImageRead
-	visionPart  uint8
+	runtime       *Runtime
+	state         *sceneState
+	scene         Scene
+	adapter       *Adapter
+	record        *messageRecord
+	remote        *remoteImage
+	assetID       string
+	inline        bool
+	guardedRead   GuardedImageRead
+	visionPart    uint8
+	quotedManaged bool
 }
 
 func (r *Runtime) retainedDisplayImageRow(sceneID, messageID string) DisplayImageSource {
@@ -263,6 +268,27 @@ func (c *TurnContext) NativeVisionSources(message *Object, visit func(*DisplayIm
 	}
 }
 
+// QuotedManagedVisionSources only borrows the exact recent retained body.
+// A remote history clone or unacknowledged segment cannot acquire the marker.
+func (c *TurnContext) QuotedManagedVisionSources(message *Object, visit func(*DisplayImageSource, int)) {
+	id := idOf(message)
+	if get(message, "senderId") != "bot" || !c.managedVisionQuotes[id] {
+		return
+	}
+	source := c.owner.runtime.retainedDisplayImageRow(c.Scene.ID, id)
+	if source.record == nil || source.record.body != message || !source.IsManaged() ||
+		source.adapter.Transport == nil || source.record.displayMedia.receiptOwner.Value() != source.adapter.Transport {
+		return
+	}
+	for i, part := range array(get(message, "parts")) {
+		if asset := managedAsset(part); asset != "" {
+			image := source
+			image.assetID, image.quotedManaged = asset, true
+			visit(&image, i)
+		}
+	}
+}
+
 type receiptImageSourceContextKey struct{}
 
 type localImageReceipt struct {
@@ -332,6 +358,9 @@ func (m *DisplayImageSource) Current() bool {
 	}
 	adapter, _ := r.adapters.Load(m.scene.AdapterID)
 	if adapter != m.adapter || !m.IsManaged() && !m.adapter.InlineImage.Current() {
+		return false
+	}
+	if generation := m.adapter.InlineImage; m.quotedManaged && generation != nil && !generation.Current() {
 		return false
 	}
 	cfg := r.config()

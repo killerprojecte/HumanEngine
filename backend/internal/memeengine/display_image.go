@@ -109,14 +109,15 @@ func (s *Service) ReadDisplayImage(ctx context.Context, sceneID, messageID strin
 	return out, nil
 }
 
+const maxManagedOriginalBytes = 64 * 1024 * 1024
+
 func readManagedImage(path string) ([]byte, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-	const max = 64 * 1024 * 1024
-	return io.ReadAll(io.LimitReader(file, max+1))
+	return io.ReadAll(io.LimitReader(file, maxManagedOriginalBytes+1))
 }
 
 // VerifyPublication runs before the owned byte response is accepted. All file

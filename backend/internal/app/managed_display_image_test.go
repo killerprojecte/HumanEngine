@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -130,7 +131,7 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	const scene, foreign = "fixture:scene", "fixture:other"
 	saveScene(scene, "group")
 	saveScene(foreign, "other")
-	ingest := func(sceneID, messageID, senderID, mediaID string) string {
+	ingest := func(sceneID, messageID, senderID, mediaID string, quote ...string) string {
 		t.Helper()
 		part := map[string]any{"type": "text", "text": "Please reply to this synthetic request."}
 		if mediaID != "" {
@@ -139,11 +140,15 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 				part["mediaUrl"] = "https://untrusted.invalid/preview-image"
 			}
 		}
-		raw, err := json.Marshal(map[string]any{
+		value := map[string]any{
 			"id": messageID, "sceneId": sceneID, "senderId": senderID,
 			"origin": "live", "status": "available", "sentAt": "2099-01-01T00:00:00.000Z",
 			"receivedAt": "2099-01-01T00:00:00.000Z", "parts": []any{part},
-		})
+		}
+		if len(quote) != 0 {
+			value["replyToId"] = quote[0]
+		}
+		raw, err := json.Marshal(value)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -303,6 +308,122 @@ func TestManagedDisplayImageActualSource(t *testing.T) {
 	}
 	included(true)
 	outgoing := sendManaged("first")
+	t.Run("current quote requires a visible physically acknowledged original", func(t *testing.T) {
+		const label = "fixture-visible-acked-meme"
+		imageTags := field(asset, "tags").(*jsjson.Object).Clone()
+		_ = imageTags.Set("emotion", []any{label})
+		tagsWire, err := jsjson.Marshal(imageTags)
+		if err != nil {
+			t.Fatal(err)
+		}
+		appRequest(t, app, "PATCH", assetPath, map[string]any{"tags": json.RawMessage(tagsWire)})
+		lookupScene := func() *jsjson.Object {
+			t.Helper()
+			for _, row := range appRequest(t, app, "GET", "/api/scenes", nil).([]any) {
+				if field(row, "id") == scene {
+					return row.(*jsjson.Object)
+				}
+			}
+			t.Fatal("missing fixture scene")
+			return nil
+		}
+		saved := lookupScene()
+		change := saved.Clone()
+		_ = change.Set("memoryReadEnabled", true)
+		_ = change.Set("personalizationEnabled", true)
+		writeScene := func(value *jsjson.Object) {
+			raw, err := jsjson.Marshal(value)
+			if err != nil {
+				t.Fatal(err)
+			}
+			appRequest(t, app, "PUT", "/api/scenes/"+url.PathEscape(scene), json.RawMessage(raw))
+		}
+		writeScene(change)
+		defer writeScene(saved)
+		requests := make(chan string, 12)
+		provider := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var request struct {
+				Model    string
+				Messages []struct {
+					Role    string
+					Content json.RawMessage
+				}
+			}
+			if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+				http.Error(w, "bad fixture request", 400)
+				return
+			}
+			if request.Model != "quote-planner" {
+				requests <- request.Model
+				http.Error(w, "quoted stored label must not send pixels", 400)
+				return
+			}
+			for _, message := range request.Messages {
+				if message.Role == "user" {
+					requests <- string(message.Content)
+				}
+			}
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"choices":[{"finish_reason":"tool_calls","message":{"role":"assistant","tool_calls":[{"id":"decide","type":"function","function":{"name":"participation__decide","arguments":%q}}]}}]}`, `{"action":"silent","reasonCode":"fixture"}`)
+		}))
+		defer provider.Close()
+		models := fmt.Sprintf(`{"providers":[{"id":"qp","name":"Fixture","protocol":"openai-chat","baseUrl":%q,"retryCount":0,"timeoutMs":10000}],"models":[{"id":"qp","displayName":"Planner","providerId":"qp","apiModelName":"quote-planner","capabilities":["text","tools"]},{"id":"qv","displayName":"Vision","providerId":"qp","apiModelName":"forbidden-vision","capabilities":["text","vision"]}],"routes":[{"role":"planner","orderedModelIds":["qp"],"timeoutMs":10000},{"role":"vision","orderedModelIds":["qv"],"timeoutMs":10000}]}`, provider.URL+"/v1")
+		appRequest(t, app, "PUT", "/api/models", json.RawMessage(models))
+		defer appRequest(t, app, "PUT", "/api/models", json.RawMessage(cms))
+		checkQuote := func(message, target string, want bool) {
+			t.Helper()
+			topic := ingest(scene, message, "person", "", target)
+			h, err := runtime.Run(scene, topic, false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			select {
+			case <-h.Done:
+				if r := h.Wait(); r.Status != "skipped" || r.Reason != "decision_silent" {
+					t.Fatalf("quoted-source turn did not settle: %+v", r)
+				}
+			case <-ctx.Done():
+				t.Fatal(ctx.Err())
+			}
+			select {
+			case prompt := <-requests:
+				if prompt == "forbidden-vision" {
+					t.Fatal("managed quote sent pixels to the VLM")
+				}
+				got := strings.Contains(prompt, label) && strings.Contains(prompt, "stored_library_observation")
+				if got != want {
+					t.Fatalf("managed quote %s described=%t, want %t", message, got, want)
+				}
+			default:
+				t.Fatal("quoted-source turn did not reach Planner")
+			}
+		}
+		ingest(scene, "unproven-quote-image", "bot", id)
+		checkQuote("quote-forged", "unproven-quote-image", false)
+		disabled(true)
+		checkQuote("quote-disabled", outgoing, false)
+		disabled(false)
+		included(true) // disabling an asset drops inclusion, even after re-enable
+		checkQuote("quote-acked", outgoing, true)
+		noVision, err := jsjson.Parse(models)
+		if err != nil {
+			t.Fatal(err)
+		}
+		cfg := noVision.(*jsjson.Object)
+		routes, _ := cfg.Get("routes")
+		_ = cfg.Set("routes", routes.([]any)[:1])
+		wire, err := jsjson.Marshal(cfg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		appRequest(t, app, "PUT", "/api/models", json.RawMessage(wire))
+		checkQuote("quote-without-vision-route", outgoing, true)
+		select {
+		case unexpected := <-requests:
+			t.Fatalf("additional model wire: %s", unexpected)
+		default:
+		}
+	})
 	included(false)
 	check("proposed", "GET", scene, outgoing, "1", true)
 	included(true)

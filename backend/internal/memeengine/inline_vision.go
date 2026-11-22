@@ -82,6 +82,7 @@ type nativeVisionCandidate struct {
 	source   *botruntime.DisplayImageSource
 	sticker  bool
 	ticket   *modelread.Ticket
+	stored   string
 	validate func(botruntime.ReadAuthority) (bool, error)
 	require  func(context.Context) error
 }
@@ -112,7 +113,7 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			continue
 		}
 		var row *visioncontext.Message
-		turn.NativeVisionSources(message, func(source *botruntime.DisplayImageSource, index int) {
+		visit := func(source *botruntime.DisplayImageSource, index int) {
 			native := &nativeVisionCandidate{
 				source:  source,
 				sticker: source.IsInline() && IsStickerMetadata(source.InlinePartMetadata(index)),
@@ -123,8 +124,15 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			native.require = func(call context.Context) error {
 				return s.withNativeVisionRead(call, turn, native, nil)
 			}
-			if native.sticker && library == nil {
+			if (native.sticker || source.IsManaged()) && library == nil {
 				library = &visioncontext.Library{
+					Lookup: func(c visioncontext.Candidate) (string, bool, error) {
+						stored := nativeCandidate(c).stored
+						return stored, stored != "", nil
+					},
+					AddLookupValidation: func(c visioncontext.Candidate, _ string) {
+						turn.AddScopedValidation(nativeCandidate(c).validate)
+					},
 					CanRecognize: func(c visioncontext.Candidate) (bool, error) {
 						return nativeCandidate(c).sticker, nil
 					},
@@ -150,7 +158,9 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			row.Parts = append(row.Parts, visioncontext.Part{
 				Type: "media", MediaType: "image", AssetID: source.AssetID(), Index: index, Reference: native,
 			})
-		})
+		}
+		turn.NativeVisionSources(message, visit)
+		turn.QuotedManagedVisionSources(message, visit)
 	}
 	if len(candidates) == 0 {
 		return nil, nil
@@ -177,11 +187,20 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			}
 			return true, nil
 		},
+		Admit: func(call context.Context, c visioncontext.Candidate) (bool, error) {
+			native := nativeCandidate(c)
+			if !native.source.IsManaged() {
+				return true, nil
+			}
+			return s.admitQuotedManaged(call, turn, native)
+		},
 		AddDependency: turn.AddDependency,
 		AddSourceValidation: func(c visioncontext.Candidate) {
 			native := nativeCandidate(c)
 			selected = append(selected, native)
-			turn.AddScopedValidation(native.validate)
+			if !native.source.IsManaged() {
+				turn.AddScopedValidation(native.validate)
+			}
 		},
 		Observe: func(c visioncontext.Candidate, observation visioncontext.Observation) {
 			if observation.Status == "described" && observation.FramePolicy == "first_frame_only" {
@@ -191,6 +210,9 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 		ReadImage: func(call context.Context, c visioncontext.Candidate) ([]byte, error) {
 			native := nativeCandidate(c)
 			source := native.source
+			if source.IsManaged() { // Stored-label-only: never forward these pixels to a VLM.
+				return nil, ErrDisplayImageUnavailable
+			}
 			if !source.IsInline() {
 				return source.BrowserImageBytes(call, native.require)
 			}

@@ -2,9 +2,11 @@ package botruntime
 
 import (
 	"context"
+	"sync"
+	"weak"
+
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/replyplan"
-	"sync"
 )
 
 type GroundingError struct{ Code string }
@@ -484,6 +486,9 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 							// A scene may have been remapped while this physical send
 							// was pending. The receipt belongs to its dispatch target.
 							managed = bindManagedReceipt(c.Scene, m)
+							if managed != nil && receipt.MessageID != nil && id != "" {
+								managed.receiptOwner = weak.Make(receipt.AckOwner())
+							}
 						}
 						r.appendBoundMessageLocked(s, m, managed)
 					}

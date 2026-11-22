@@ -42,7 +42,13 @@ type Receipt struct {
 	MessageID *string `json:"messageId,omitempty"`
 	Detail    *string `json:"detail,omitempty"`
 	failure   *Failure
+	ackOwner  *Adapter
 }
+
+// AckOwner is the exact transport selected by physical dispatch. It is never
+// serialized or supplied by the adapter's response.
+func (r Receipt) AckOwner() *Adapter { return r.ackOwner }
+
 type ErrorContext struct {
 	Operation string `json:"operation,omitempty"`
 	Stage     string `json:"stage,omitempty"`
@@ -364,6 +370,9 @@ func sendOnce(services Services, context *TurnContext, segment Segment, guard Gu
 			return nil
 		})
 	}, signal)
+	if receipt.Status == Sent && receipt.MessageID != nil {
+		receipt.ackOwner = adapter
+	}
 	return receipt
 }
 

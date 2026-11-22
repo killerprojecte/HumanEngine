@@ -28,6 +28,10 @@ func (syntheticCredentials) Resolve(context.Context, providertransport.Provider)
 }
 func nativeImageFixture(t *testing.T) (memeFixture, *Service, *imagecodec.Compressor, Context, *Object, []byte, *Object) {
 	t.Helper()
+	return nativeImageFixtureWithLearning(t, true)
+}
+func nativeImageFixtureWithLearning(t *testing.T, learning bool) (memeFixture, *Service, *imagecodec.Compressor, Context, *Object, []byte, *Object) {
+	t.Helper()
 	path := os.Getenv("HE_IMAGE_LIBRARY")
 	if path == "" {
 		t.Skip("HE_IMAGE_LIBRARY required for actual pixel/model lifecycle")
@@ -37,7 +41,7 @@ func nativeImageFixture(t *testing.T) (memeFixture, *Service, *imagecodec.Compre
 		t.Fatal(e)
 	}
 	f, s := newTestService(t)
-	saveMemeScene(t, f, fields("id", "s", "adapterId", "a", "accountId", "b", "learningEnabled", true))
+	saveMemeScene(t, f, fields("id", "s", "adapterId", "a", "accountId", "b", "learningEnabled", learning))
 	source := fields("sceneId", "s", "messageId", "m", "senderId", "p")
 	ev := copyObject(source)
 	set(ev, "available", true)

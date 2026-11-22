@@ -228,9 +228,13 @@ connection. Policy changes between segments remain a separate case.
 - **Live graph:** see [the native application scope](../../backend/internal/app/SCOPE.md)
   for installed known-only SnowLuma intake, stored tag reuse, the group proactive
   timer, same-writer recall including habits and read-only Experience feedback.
-  Keep automatic sticker analysis, broader history/cache integration,
-  workspace/semantic exposure, Experience writes/trials and remaining startup
-  and settings effects separate. Controlled third-party platform acceptance is
+  The installed inline proof labels fresh authorized SnowLuma sticker pixels
+  with scene learning off and a configured native vision route. It sends no source text or persona,
+  passes a live original source through the model and write boundaries, and
+  never includes or shares the resulting sticker automatically. URL/history
+  and locator analysis, broader history/cache integration, workspace/semantic
+  exposure, Experience writes/trials and remaining startup/settings effects
+  are separate gaps. Controlled third-party platform acceptance is
   distinct from loopback protocol fixtures; do not send unrequested traffic.
 
 ## P3: cutover gates, independent of package CI

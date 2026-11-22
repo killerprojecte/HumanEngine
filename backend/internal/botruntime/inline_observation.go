@@ -20,6 +20,9 @@ func (m *DisplayImageSource) InlineObservationIdentity() (sceneID, messageID, se
 	return m.scene.ID, idOf(m.record.body), str(get(m.record.body, "senderId"))
 }
 
+// InlineObservationLearningEnabled reports the scene setting at acceptance.
+func (m *DisplayImageSource) InlineObservationLearningEnabled() bool { return m.scene.LearningEnabled }
+
 // Select visits only proven inline parts with adjacent platform metadata.
 func (o NativeInlineObservation) Select(accept func(string) bool) []*DisplayImageSource {
 	parts := array(get(o.record.body, "parts"))

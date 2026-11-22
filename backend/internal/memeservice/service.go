@@ -36,6 +36,7 @@ type Service struct {
 	thumbnailWaiters    []chan struct{}
 	analyses            map[string]*analysisTask
 	observations        map[string]*observationTask
+	retainedAnalyses    map[string]*retainedAnalysis
 	observationFailures map[string]int64
 	failureOrder        []string
 	deletingContent     map[string]deleteBarrier

@@ -100,8 +100,13 @@ This is not a claim of complete TypeScript Engine compatibility.
   does not require scene learning. The exact retained source qualifies inside
   the existing sticker writer. When matching inline bytes already have a visible
   library analysis, Planner and Replyer can reuse its tags without a new vision
-  call. Automatic analysis of new stickers, locator binding and URL or history
-  intake are not part of this path.
+  call. With scene learning off and a configured native vision route, a fresh
+  owned inline sticker can receive image-only labels without becoming included
+  or shared. Identical authorized images coalesce only within the same scene;
+  an exact current original must qualify at model send and label commit.
+  The live scene must still have learning off at model dispatch and label
+  commit. A disabling update cancels outstanding scene media work.
+  Locator binding and URL or history intake are not part of this path.
 - The existing async Logger is used; complete source log retention/status/delivery
   route equivalence is not claimed. Independent read publication still preserves
   recovery checks; no constant-time cross-connection audit performance claim is made.

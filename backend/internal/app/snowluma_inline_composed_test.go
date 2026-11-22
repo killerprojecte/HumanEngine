@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -339,4 +340,33 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	socket = currentSocket
 	assertNativeStickerPersonalization(t, ctx, app, emit, scene, mediaTokens.encoded)
 	assertNativeStickerTagReuse(t, ctx, app, emit, scene, mediaTokens.encoded)
+	assetID, calls := assertAutomaticStickerAnalysisHeldRecall(t, ctx, app, emit, scene)
+	if err := second.CloseAndWait(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := app.Shutdown(ctx); err != nil {
+		t.Fatal(err)
+	}
+	reopened, err := Open(ctx, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reopened.Shutdown(context.Background())
+	asset, err := reopened.Engine.Memes.AdminGet(ctx, assetID)
+	if err != nil || field(asset, "analyzed") != true || field(asset, "knownOnly") != true ||
+		field(asset, "available") != false || field(asset, "shared") != false ||
+		!reflect.DeepEqual(field(field(asset, "tags"), "intent"), []any{"verified-automatic-label"}) {
+		t.Fatalf("tag-only disposition was not restored: %v", err)
+	}
+	appRequest(t, reopened, "PUT", "/api/scenes/"+url.PathEscape(scene), map[string]any{
+		"id": scene, "adapterId": "snowluma", "accountId": "42", "platformSceneId": "100",
+		"kind": "group", "name": "Automatic Sticker Fixture", "participationEnabled": false,
+		"learningEnabled": true, "proactiveEnabled": false, "memoryReadEnabled": true, "personalizationEnabled": true,
+	})
+	if err := reopened.Shutdown(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if calls.Load() != 4 {
+		t.Fatal("reopening or re-enabling learning unexpectedly scheduled analysis")
+	}
 }

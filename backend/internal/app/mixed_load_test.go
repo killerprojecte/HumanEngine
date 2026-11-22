@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -54,19 +55,18 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 	}()
 	server := httptest.NewServer(a)
 	defer server.Close()
-	client := server.Client()
-	request := func(method, path string, body any) (json.RawMessage, error) {
+	requestAt := func(target *httptest.Server, method, path string, body any) (json.RawMessage, error) {
 		raw, err := json.Marshal(body)
 		if err != nil {
 			return nil, err
 		}
-		req, err := http.NewRequestWithContext(ctx, method, server.URL+path, bytes.NewReader(raw))
+		req, err := http.NewRequestWithContext(ctx, method, target.URL+path, bytes.NewReader(raw))
 		if err != nil {
 			return nil, err
 		}
 		sourceFixtureAuth(req, true)
 		req.Header.Set("Content-Type", "application/json")
-		resp, err := client.Do(req)
+		resp, err := target.Client().Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -76,6 +76,9 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 			err = fmt.Errorf("%s %s: status %d", method, path, resp.StatusCode)
 		}
 		return value, err
+	}
+	request := func(method, path string, body any) (json.RawMessage, error) {
+		return requestAt(server, method, path, body)
 	}
 	call := func(method, path string, body any) json.RawMessage {
 		t.Helper()
@@ -129,7 +132,38 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 	}
 	scene["participationEnabled"] = true
 	scene["learningEnabled"] = false
+	scene["name"] = strings.Repeat("synthetic-scene-", 512)
 	call("PUT", scenePath, scene)
+	expectedScenes := call("GET", "/api/scenes", nil)
+	if len(expectedScenes) <= 4096 {
+		t.Fatal("scene response must exceed net/http output buffering")
+	}
+
+	// Pause the first socket write on a dedicated listener for one request,
+	// below the application and net/http response buffering.
+	slow := httptest.NewUnstartedServer(a)
+	paused := &mixedLoadPausedListener{Listener: slow.Listener, entered: make(chan struct{}), release: make(chan struct{})}
+	slow.Listener = paused
+	slow.Start()
+	defer slow.Close()
+	releaseTCP := sync.OnceFunc(func() { close(paused.release) })
+	defer releaseTCP()
+	type response struct {
+		body json.RawMessage
+		err  error
+	}
+	slowDone := make(chan response, 1)
+	go func() {
+		body, err := requestAt(slow, "GET", "/api/scenes", nil)
+		slowDone <- response{body, err}
+	}()
+	select {
+	case <-paused.entered:
+	case result := <-slowDone:
+		t.Fatalf("response bypassed TCP write barrier: %v", result.err)
+	case <-ctx.Done():
+		t.Fatal("scene publication did not reach TCP write", ctx.Err())
+	}
 	call("POST", plugin+"actions/new-source", map[string]any{})
 	select {
 	case <-entered:
@@ -139,6 +173,12 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 	_, source, _ := inspect()
 	if source == seed || source == "" {
 		t.Fatal("missing fresh source ID")
+	}
+	settings["groupTurnCooldownMs"] = 1
+	call("PUT", "/api/settings", settings)
+	var observed struct{ GroupTurnCooldownMs int }
+	if err := json.Unmarshal(call("GET", "/api/settings", nil), &observed); err != nil || observed.GroupTurnCooldownMs != 1 {
+		t.Fatalf("concurrent settings write not visible: %d %v", observed.GroupTurnCooldownMs, err)
 	}
 	heldView, err := a.Engine.Runtime.Snapshot(sceneID)
 	if err != nil || heldView.Active != 1 {
@@ -183,6 +223,8 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 	if plans.Load() != 0 || sends.Load() != 0 {
 		t.Fatal("held planner was not isolated")
 	}
+	// The fixture adapter acknowledges its first send as message "sent-1".
+	receiptID := fmt.Sprintf("%s:%x", sceneID, sha256.Sum256([]byte("sent-1")))
 	turnStart := time.Now()
 	unblock()
 	for {
@@ -190,7 +232,7 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if view.Active == 0 && view.Pending == 0 && view.Waiting == 0 && slices.ContainsFunc(view.Messages, func(row *jsjson.Object) bool { return field(row, "senderId") == "bot" }) {
+		if view.Active == 0 && view.Pending == 0 && view.Waiting == 0 && slices.ContainsFunc(view.Messages, func(row *jsjson.Object) bool { return field(row, "senderId") == "bot" && field(row, "id") == receiptID }) {
 			break
 		}
 		select {
@@ -204,6 +246,21 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 	if len(dispatched) != 1 || decisions.Load() != 1 || plans.Load() != 1 || sends.Load() != 1 {
 		t.Fatalf("unexpected physical calls or sends: decide=%d plan=%d send=%d wire sends=%d", decisions.Load(), plans.Load(), sends.Load(), len(dispatched))
 	}
+	select {
+	case result := <-slowDone:
+		t.Fatalf("scene response completed before TCP release: %v", result.err)
+	default:
+	}
+	releaseTCP()
+	select {
+	case result := <-slowDone:
+		if result.err != nil || !bytes.Equal(result.body, expectedScenes) {
+			t.Fatalf("accepted scene response changed while paused: bytes=%d want=%d error=%v", len(result.body), len(expectedScenes), result.err)
+		}
+	case <-ctx.Done():
+		t.Fatal("accepted scene response did not drain", ctx.Err())
+	}
+
 	// 100 Continue gives a deterministic admitted HTTP/body-reader witness.
 	conn, err := net.Dial("tcp", strings.TrimPrefix(server.URL, "http://"))
 	if err != nil {
@@ -275,14 +332,38 @@ func TestInstalledApplicationSyntheticMixedLoad(t *testing.T) {
 		t.Fatalf("durable completed model attempts=%d: %v", completed, err)
 	}
 	var flag bool
-	if err = db.QueryRowContext(ctx, `SELECT json_extract(value,'$.debugModelIO') FROM config WHERE key='settings'`).Scan(&flag); err != nil || !flag {
-		t.Fatalf("drain did not persist accepted settings write: %v %v", flag, err)
+	var cooldown int
+	if err = db.QueryRowContext(ctx, `SELECT json_extract(value,'$.debugModelIO'), json_extract(value,'$.groupTurnCooldownMs') FROM config WHERE key='settings'`).Scan(&flag, &cooldown); err != nil || !flag || cooldown != 1 {
+		t.Fatalf("settings did not persist across drain: debug=%v cooldown=%d err=%v", flag, cooldown, err)
 	}
 	for i, times := range samples {
 		slices.Sort(times)
-		t.Logf("4 concurrent TCP clients while participation provider held, %s: n=%d p50=%s p95=%s p99=%s max=%s", paths[i], len(times), times[(len(times)+1)/2-1], times[(len(times)*95+99)/100-1], times[(len(times)*99+99)/100-1], times[len(times)-1])
+		t.Logf("4 concurrent TCP clients while participation provider held, %s: n=%d median=%s range=%s..%s", paths[i], len(times), (times[(len(times)-1)/2]+times[len(times)/2])/2, times[0], times[len(times)-1])
 	}
 	t.Logf("one live turn: fixture release to retained send + idle = %s; provider calls=%d; dispatches=1; durable heads=%d", turnFinish, completed, heads)
+}
+
+type mixedLoadPausedListener struct {
+	net.Listener
+	entered, release chan struct{}
+}
+
+func (l *mixedLoadPausedListener) Accept() (net.Conn, error) {
+	c, err := l.Listener.Accept()
+	if err != nil {
+		return nil, err
+	}
+	return &mixedLoadPausedConn{Conn: c, beforeWrite: sync.OnceFunc(func() { close(l.entered); <-l.release })}, nil
+}
+
+type mixedLoadPausedConn struct {
+	net.Conn
+	beforeWrite func()
+}
+
+func (c *mixedLoadPausedConn) Write(b []byte) (int, error) {
+	c.beforeWrite()
+	return c.Conn.Write(b)
 }
 
 func serveMixedLoadModel(w http.ResponseWriter, r *http.Request, entered chan<- struct{}, release <-chan struct{}, decisions, plans, sends *atomic.Int32) error {

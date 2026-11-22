@@ -205,7 +205,8 @@ def run(report, snow_fixture=None):
             report["admitted_remote_history_at_stop"] = run_snow_fixture(
                 snow_fixture, gateway, acceptance.TOKEN, start_snow, stop_overlap, stop_snow)
             report["checks"].extend(("compose-snow-partial-ack-drained-cold-reopen-no-replay",
-                                     "compose-overlap-held-snow-history-and-admitted-setting-drained"))
+                                     "compose-overlap-held-snow-history-and-admitted-setting-drained",
+                                     "compose-overlap-native-model-peer-closed-without-replay"))
     finally:
         try:
             call("down", "--volumes")

@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -136,7 +137,33 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	})
 	target, partial := "", false
 	var controls sync.Mutex
+	const heldInput = "Synthetic independent model shutdown witness."
+	var heldCalls atomic.Int32
+	modelOnWire := make(chan struct{})
+	modelPeerClosed := make(chan struct{})
 	mux.HandleFunc("/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
+		wire, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if bytes.Contains(wire, []byte(heldInput)) {
+			if heldCalls.Add(1) != 1 {
+				t.Error("held model request repeated")
+				http.Error(w, "replayed model request", http.StatusInternalServerError)
+				return
+			}
+			if !bytes.Contains(wire, []byte("participation__decide")) {
+				t.Error("held request was not the independent scene's planner invocation")
+			}
+			close(modelOnWire)
+			// Never produce a response. Only the actual caller's HTTP teardown
+			// should close this context before the longer provider timeout.
+			<-r.Context().Done()
+			close(modelPeerClosed)
+			return
+		}
+		r.Body = io.NopCloser(bytes.NewReader(wire))
 		controls.Lock()
 		text, split := target, partial
 		controls.Unlock()
@@ -218,7 +245,11 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	if v1 {
 		admin("/api/plugins/snow-model/enabled", map[string]any{"enabled": true})
 	}
-	admin("/api/models", json.RawMessage(fmt.Sprintf(`{"providers":[{"id":"p","name":"Synthetic","protocol":%q,"baseUrl":%q,"retryCount":0,"timeoutMs":10000}],"models":[{"id":"m","displayName":"Synthetic","providerId":"p","apiModelName":"synthetic","capabilities":["text","tools"]}],"routes":[{"role":"planner","orderedModelIds":["m"],"timeoutMs":10000},{"role":"replyer","orderedModelIds":["m"],"timeoutMs":10000}]}`, protocol, modelURL)))
+	modelTimeout := 10000
+	if process.HistoryAtStop != nil {
+		modelTimeout = 60000
+	}
+	admin("/api/models", json.RawMessage(fmt.Sprintf(`{"providers":[{"id":"p","name":"Synthetic","protocol":%q,"baseUrl":%q,"retryCount":0,"timeoutMs":%d}],"models":[{"id":"m","displayName":"Synthetic","providerId":"p","apiModelName":"synthetic","capabilities":["text","tools"]}],"routes":[{"role":"planner","orderedModelIds":["m"],"timeoutMs":%d},{"role":"replyer","orderedModelIds":["m"],"timeoutMs":%d}]}`, protocol, modelURL, modelTimeout, modelTimeout, modelTimeout)))
 	admin("/api/plugins/snowluma/config", map[string]any{"url": "ws://" + peer + "/snow", "accountId": "42", "token": "synthetic-snow-stop"})
 	admin("/api/plugins/snowluma/enabled", map[string]any{"enabled": true})
 	waitConnection := func(timeout time.Duration) *websocket.Conn {
@@ -232,9 +263,21 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		}
 	}
 	socket := waitConnection(30 * time.Second)
-	scene := snow.SceneID("snowluma", "42", "group", "99")
+	registerGroup := func(id string) string {
+		scene := snow.SceneID("snowluma", "42", "group", id)
+		path := "/api/scenes/" + url.PathEscape(scene)
+		admin(path, map[string]any{"id": scene, "kind": "group", "adapterId": "snowluma", "accountId": "42", "platformSceneId": id, "name": "Synthetic Stop Fixture", "participationEnabled": true, "learningEnabled": false, "proactiveEnabled": false})
+		return scene
+	}
+	scene := registerGroup("99")
 	scenePath := "/api/scenes/" + url.PathEscape(scene)
-	admin(scenePath, map[string]any{"id": scene, "kind": "group", "adapterId": "snowluma", "accountId": "42", "platformSceneId": "99", "name": "Synthetic Stop Fixture", "participationEnabled": true, "learningEnabled": false, "proactiveEnabled": false})
+	emit := func(group, id int, text string) {
+		t.Helper()
+		body, _ := json.Marshal(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{map[string]any{"type": "text", "data": map[string]any{"text": text}}}})
+		if err := socket.Write(ctx, websocket.MessageText, body); err != nil {
+			t.Fatal(err)
+		}
+	}
 	ingress := func(id int, split bool) {
 		t.Helper()
 		text := fmt.Sprintf("Synthetic stop fixture event %d.", id)
@@ -245,10 +288,7 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 			target, partial = text, split
 			controls.Unlock()
 		}
-		body, _ := json.Marshal(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": 99, "user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{map[string]any{"type": "text", "data": map[string]any{"text": text}}}})
-		if err := socket.Write(ctx, websocket.MessageText, body); err != nil {
-			t.Fatal(err)
-		}
+		emit(99, id, text)
 	}
 	expectSend := func(connection, number, reply int, text string) {
 		t.Helper()
@@ -293,7 +333,18 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		err    error
 	}
 	var pending chan historyResult
+	var modelScene string
 	if process.HistoryAtStop != nil {
+		modelScene = registerGroup("100")
+		emit(100, 3, heldInput)
+		select {
+		case <-modelOnWire:
+		case <-time.After(10 * time.Second):
+			t.Fatal("independent planner request did not reach the native model HTTP peer")
+		}
+		if err := json.Unmarshal(request(http.MethodGet, "/api/scenes/"+url.PathEscape(modelScene)+"/state", nil), &held); err != nil || held.ActiveTasks != 1 {
+			t.Fatalf("independent planner request was not held in its scene: %+v, %v", held, err)
+		}
 		mu.Lock()
 		historyWitness = true
 		mu.Unlock()
@@ -322,8 +373,20 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		default:
 		}
 	}
+	if pending != nil {
+		select {
+		case <-modelPeerClosed:
+			t.Fatal("native model HTTP peer closed before shutdown")
+		default:
+		}
+	}
 	logs := process.Stop()
 	if pending != nil {
+		select {
+		case <-modelPeerClosed:
+		case <-time.After(5 * time.Second):
+			t.Fatal("SIGTERM left the native model HTTP peer open")
+		}
 		result := <-pending // doRequest already has a deadline
 		if result.err != nil {
 			t.Fatal(result.err)
@@ -365,7 +428,7 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	waitPeerClose(1)
 	// A separate trace check asserts the old process's classification; remote
 	// history below remains authoritative only for ACKed platform messages.
-	var terminals int
+	var terminals, modelCleanups int
 	wantCounts := map[string]int{"sentSegments": 1, "unknownSegments": 1, "failedSegments": 0, "cancelledSegments": 0}
 	for _, line := range strings.Split(logs, "\n") {
 		_, flat, _ := strings.Cut(line, " | ")
@@ -373,7 +436,13 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 			Code, SceneID, Message, FailureCode string
 			Counts                              map[string]int
 		}
-		if json.Unmarshal([]byte(flat), &event) != nil || event.SceneID != scene || !strings.HasPrefix(event.Code, "runtime.turn.") {
+		if json.Unmarshal([]byte(flat), &event) != nil {
+			continue
+		}
+		if event.SceneID == modelScene && event.Code == "runtime.turn_cleanup.completed" {
+			modelCleanups++
+		}
+		if event.SceneID != scene || !strings.HasPrefix(event.Code, "runtime.turn.") {
 			continue
 		}
 		terminals++
@@ -386,6 +455,9 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		t.Fatalf("expected exactly one terminal turn receipt, got %d", terminals)
 	}
 
+	if modelScene != "" && modelCleanups != 1 {
+		t.Fatalf("independent model scene cleanup receipts = %d, want 1", modelCleanups)
+	}
 	process = start()
 	// Restored adapter login can compile the bundled guest before HTTP listens.
 	socket = waitConnection(4 * time.Minute)
@@ -419,6 +491,9 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	}
 	process.Stop()
 	waitPeerClose(2)
+	if modelScene != "" && heldCalls.Load() != 1 {
+		t.Fatalf("held model wire calls after cold reopen = %d, want 1", heldCalls.Load())
+	}
 	mu.Lock()
 	defer mu.Unlock()
 	if sendCount != 3 || connectionID != 2 || len(transmissions) != 0 || len(acked) != 2 {

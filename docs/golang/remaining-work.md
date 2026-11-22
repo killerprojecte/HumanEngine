@@ -264,12 +264,13 @@ on stated hardware/data sizes. First-open/external-change linear audits and
 historically slow SnowLuma WASM compilation require actual measurement; previous
 package durations and green race tests are not performance acceptance.
 
-The focused Compose rehearsal overlaps an authenticated settings write and a
-real SnowLuma history lookup with an already-transmitted unacknowledged send.
-It checks history before and after restart, setting persistence, clean drain
+The focused Compose rehearsal overlaps an authenticated settings write,
+a real SnowLuma history lookup, and a separate scene's native planner HTTP
+request with an already-transmitted unacknowledged send. It checks history
+before and after restart, setting persistence, model peer closure, clean drain
 and no replay; the pending history lookup's shutdown outcome is recorded
 separately, not treated as a stable status-code promise. The independent
-model/learning overlap and the broader load measurements above remain open.
+learning overlap and the broader load measurements above remain open.
 
 Switch production startup only after P0-P2 and this gate pass on one exact head,
 with the API/platform matrix, reproducible release assets and rollout/recovery

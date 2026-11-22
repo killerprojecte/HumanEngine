@@ -194,8 +194,12 @@ before SIGTERM. The unfinished history lookup currently returns HTTP 503 during
 connector shutdown; remote history works again after cold reopen. The PUT body
 is released at the observed HTTP-drain stage and its committed value must
 survive cold reopen.
-This arm covers HTTP history/settings and send shutdown together; it does not
-hold an independent model or learning operation across SIGTERM.
+A separate scene also holds one real native planner HTTP request to the local
+synthetic provider, without a response. The fixture observes the wire request
+before stop, its HTTP context closing and scene cleanup during drain, and no
+replay of the held model request or unacknowledged send after cold reopen. This
+does not simulate a remote
+provider's inference lifecycle or cover an independent learning operation.
 The fixture uses the disposable Linux runner's private Compose bridge gateway
 without changing the service network, image, or volumes. The reusable fixture
 is optional for local invocations of the driver.

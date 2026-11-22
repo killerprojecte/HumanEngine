@@ -75,10 +75,18 @@ jobs:
             --ts-tools-image humanengine-drill-ts-tools:local \
             --go-image humanengine-go-preview:local --go-revision "$GITHUB_SHA" \
             --evidence "$RUNNER_TEMP/package-evidence/migration-drill.json"
+      - uses: actions/setup-go@v6
+        if: steps.proofs.outputs.compose == 'true'
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
       - name: Rehearse actual Compose stop and cold reopen
         if: steps.proofs.outputs.compose == 'true'
         run: |
+          (cd backend && CGO_ENABLED=0 go test -buildvcs=false -c \
+            -o "$RUNNER_TEMP/snow-stop-fixture" ./internal/testsupport/snowstop)
           python3 backend/packaging/runtime-preview/compose_rehearsal.py \
+            --snow-fixture "$RUNNER_TEMP/snow-stop-fixture" \
             --evidence "$RUNNER_TEMP/package-evidence/compose-rehearsal.json"
       - name: Preserve synthetic acceptance evidence
         if: always()

@@ -175,13 +175,18 @@ again with the same project retains both volumes.
 The hosted rehearsal uses this exact file with an ephemeral loopback port and a
 unique project and image tag. It inspects the real container envelope, stops
 during an admitted settings write, checks drain and clean exit, and creates a
-new container on the same volumes to verify persistence.
+new container on the same volumes to verify persistence. Hosted Compose also
+runs the synthetic SnowLuma wire fixture: the second send is physically received
+without an ACK when Compose stops, and the new container never replays it.
+The fixture uses the disposable Linux runner's private Compose bridge gateway
+without changing the service network, image, or volumes. The reusable fixture
+is optional for local invocations of the driver.
 
 ```sh
 python3 backend/packaging/runtime-preview/compose_rehearsal.py --evidence /tmp/compose-rehearsal.json
 ```
 
-Changes to the shared Compose file, driver or test opt into this additional
+Changes to the shared Compose file, driver, or SnowLuma fixture opt into this additional
 hosted step. The ordinary package proof is unchanged.
 
 ## Run all focused proofs on one exact candidate

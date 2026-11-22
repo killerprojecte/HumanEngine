@@ -1,10 +1,11 @@
 import copy
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from compose_rehearsal import assert_envelope, run
+from compose_rehearsal import assert_envelope, bridge_gateway, run, run_snow_fixture
 
 
 class ComposeRehearsalTests(unittest.TestCase):
@@ -55,6 +56,35 @@ class ComposeRehearsalTests(unittest.TestCase):
                         run(report)
                 self.assertEqual(report["phase"], expected)
 
+    def test_snow_uses_private_gateway_of_its_own_bridge(self):
+        network = {"Driver": "bridge", "Labels": {"com.docker.compose.project": "fixture"},
+                   "IPAM": {"Config": [{"Gateway": "172.20.0.1"}, {"Gateway": "fd00::1"}]}}
+        self.assertEqual(bridge_gateway("fixture", network), "172.20.0.1")
+        with self.assertRaises(AssertionError):
+            bridge_gateway("other", network)
+        network["IPAM"]["Config"][0]["Gateway"] = "127.0.0.1"
+        with self.assertRaises(AssertionError):
+            bridge_gateway("fixture", network)
+
+    def test_snow_host_protocol_orders_two_process_lifetimes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            binary = Path(folder, "fixture")
+            binary.write_text("""#!/usr/bin/env python3
+import json, os
+assert os.environ["HE_COMPOSE_FIXTURE_BIND"] == "172.20.0.1"
+assert os.environ["HUMANENGINE_ADMIN_TOKEN"] == "synthetic"
+for phase, expected in [("start", "first"), ("stop", "partial"),
+                        ("start", "second"), ("stop", "drained")]:
+    print(json.dumps(phase), flush=True)
+    assert json.loads(input()) == expected
+print("PASS")
+""")
+            binary.chmod(0o700)
+            addresses = iter(("first", "second"))
+            logs = iter(("partial", "drained"))
+            run_snow_fixture(binary, "172.20.0.1", "synthetic",
+                             lambda: next(addresses), lambda: next(logs))
+
     def test_workflow_keeps_compose_opt_in_after_ordinary_package_acceptance(self):
         workflow = (Path(__file__).resolve().parents[3] /
                     ".github/workflows/golang-package-preview.yml").read_text()
@@ -64,6 +94,7 @@ class ComposeRehearsalTests(unittest.TestCase):
         self.assertIn("if: steps.proofs.outputs.compose == 'true'", step)
         self.assertIn("compose_rehearsal.py", step)
         self.assertNotIn("docker build", step)
+        self.assertIn("--snow-fixture", step)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Exercise real Compose stop and reopen on one disposable preview project."""
 import argparse
+import ipaddress
 import json
 import os
+import select
 from pathlib import Path
 import socket
 import subprocess
@@ -33,7 +35,37 @@ def assert_envelope(inspect):
     return int(ports[0]["HostPort"]), mounts
 
 
-def run(report):
+def bridge_gateway(project, network):
+    assert network["Driver"] == "bridge"
+    assert network["Labels"]["com.docker.compose.project"] == project
+    addresses = [ipaddress.ip_address(row["Gateway"]) for row in network["IPAM"]["Config"]
+                 if row.get("Gateway")]
+    gateway, = (address for address in addresses if address.version == 4)
+    assert gateway.is_private and not gateway.is_loopback
+    return str(gateway)
+
+
+def run_snow_fixture(binary, gateway, token, start, stop):
+    env = dict(os.environ, HE_COMPOSE_FIXTURE_BIND=gateway, HUMANENGINE_ADMIN_TOKEN=token)
+    with subprocess.Popen([binary, "-test.run=^TestComposeSnowLumaPartialACK$", "-test.timeout=5m"],
+                          env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL, bufsize=0) as peer:
+        try:
+            for phase, action in (("start", start), ("stop", stop), ("start", start), ("stop", stop)):
+                readable, _, _ = select.select([peer.stdout], [], [], 70)
+                assert readable, f"Snow fixture did not reach {phase}"
+                line = peer.stdout.readline()
+                assert line and json.loads(line) == phase, f"unexpected Snow fixture phase, expected {phase}"
+                payload = json.dumps(action()).encode() + b"\n"
+                peer.stdin.write(payload)
+            stdout, _ = peer.communicate(timeout=30)
+            assert peer.returncode == 0 and stdout.strip() == b"PASS", "Snow fixture failed final assertions"
+        finally:
+            if peer.poll() is None:
+                peer.kill()
+
+
+def run(report, snow_fixture=None):
     tag = "he-compose-" + uuid4().hex
     project = "he-rehearsal-" + uuid4().hex
     acceptance.TOKEN = "synthetic-" + uuid4().hex
@@ -110,9 +142,39 @@ def run(report):
         assert request(port, "GET", "/api/settings")["debugModelIO"] is expected
         docker("exec", second, "sh", "-ec",
                "test -f /app/data/humanengine.sqlite && test ! -e /app/data/main.sqlite")
-        call("stop", "humanengine")
-        assert_drained(second)
         report["checks"].append("fresh-container-reopened-canonical-data-and-authority")
+        if snow_fixture is None:
+            call("stop", "humanengine")
+            assert_drained(second)
+        else:
+            report["phase"] = "snow-partial-ack-fixture-network"
+            network = json.loads(docker("network", "inspect", project + "_default"))[0]
+            gateway = bridge_gateway(project, network)
+            current = None
+
+            def start_snow():
+                nonlocal current
+                if current is None:
+                    current, current_port = second, port
+                else:
+                    call("rm", "--force", "humanengine")
+                    previous = current
+                    current, current_port, reopened = boot("snow-cold-reopen")
+                    assert current != previous and reopened == mounts
+                report["phase"] = "snow-partial-ack-wire-and-history"
+                return f"127.0.0.1:{current_port}"
+
+            def stop_snow():
+                report["phase"] = "snow-compose-stop"
+                began = time.monotonic()
+                call("stop", "humanengine")
+                assert time.monotonic() - began <= 30, "Compose exceeded its shutdown grace"
+                assert_drained(current)
+                report["phase"] = "snow-post-stop-peer-and-trace"
+                return docker("logs", current)
+
+            run_snow_fixture(snow_fixture, gateway, acceptance.TOKEN, start_snow, stop_snow)
+            report["checks"].append("compose-snow-partial-ack-drained-cold-reopen-no-replay")
     finally:
         try:
             call("down", "--volumes")
@@ -124,12 +186,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", default="humanengine-go-preview:local")
     parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--snow-fixture", type=Path)
     args = parser.parse_args()
     report = {"status": "failed", "phase": "resolve-image", "checks": []}
     try:
         image = json.loads(docker("image", "inspect", args.image))[0]
         report.update(image=image["Id"], revision=image["Config"]["Labels"]["org.opencontainers.image.revision"])
-        run(report)
+        run(report, args.snow_fixture)
         report["status"] = "passed"
         report.pop("phase")
     except (AssertionError, OSError, KeyError, ValueError, subprocess.SubprocessError):

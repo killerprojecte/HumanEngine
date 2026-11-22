@@ -105,7 +105,7 @@ func TestTokenImageActualSource(t *testing.T) {
 	for _, c := range fixture.TokenCases {
 		t.Run(c.Name, func(t *testing.T) {
 			wantOpaque := c.GoLimited != "no-refresh" && c.GoLimited != "no-path-token"
-			if opaque := (new(Sender).prepareImageToken(fixture.Scene, c.Asset) != nil); opaque != wantOpaque {
+			if opaque := (new(Sender).prepareVisionImage(fixture.Scene, c.Asset) != nil); opaque != wantOpaque {
 				t.Fatalf("vision token eligibility = %t, want %t", opaque, wantOpaque)
 			}
 			lookups := 0
@@ -181,5 +181,31 @@ func TestOpaqueBrowserLinkUsesSelectedNativeToken(t *testing.T) {
 				t.Fatalf("class=%d want %d", got, fixture.want)
 			}
 		})
+	}
+}
+
+func TestPrepareVisionURLOnly(t *testing.T) {
+	scene := botruntime.Scene{SceneRef: dispatch.SceneRef{AdapterID: "snowluma", AccountID: "42", Kind: "group", PlatformSceneID: "99"}}
+	scene.ID = snow.SceneID(scene.AdapterID, scene.AccountID, scene.Kind, scene.PlatformSceneID)
+	asset := func(id, fileID string) string {
+		media := obj("sceneId", id, "type", "image", "file", "https://vision.invalid/original.png")
+		if fileID != "" {
+			_ = media.Set("fileId", fileID)
+		}
+		wire, err := jsjson.Marshal(media)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return "ob:media:" + base64.RawURLEncoding.EncodeToString(wire)
+	}
+	sender := new(Sender)
+	if got := sender.prepareVisionImage(scene, asset(scene.ID, "")); (got != nil) != publicBrowserImageSupported {
+		t.Fatal("URL-only vision must use only the supported guarded public transport")
+	}
+	if sender.prepareVisionImage(scene, asset(scene.ID, "platform-token")) != nil {
+		t.Fatal("browser token refresh leaked into vision eligibility")
+	}
+	if sender.prepareVisionImage(scene, asset("other-scene", "")) != nil {
+		t.Fatal("foreign native locator admitted")
 	}
 }

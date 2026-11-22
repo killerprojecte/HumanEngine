@@ -21,6 +21,8 @@ import (
 type opaqueVisionTestBarrier struct {
 	entered, release chan struct{}
 	once             sync.Once
+	direct           bool
+	setAvailable     func(bool)
 }
 
 func (b *opaqueVisionTestBarrier) releaseHeld() { b.once.Do(func() { close(b.release) }) }
@@ -28,6 +30,15 @@ func (b *opaqueVisionTestBarrier) releaseHeld() { b.once.Do(func() { close(b.rel
 // The actual bundled Sender transport is covered independently. This arm
 // drives the app and native model wire without compiling a WASM instance.
 func TestOpaqueVisionNativeApplication(t *testing.T) {
+	testGuardedNativeVisionApplication(t, false)
+}
+
+func TestDirectURLVisionNativeApplication(t *testing.T) {
+	testGuardedNativeVisionApplication(t, true)
+}
+
+func testGuardedNativeVisionApplication(t *testing.T, direct bool) {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 	counter := &inlineVisionCounter{entered: make(chan struct{}), release: make(chan struct{})}
@@ -38,7 +49,7 @@ func TestOpaqueVisionNativeApplication(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer app.Shutdown(context.Background())
-	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{})}
+	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{}), direct: direct}
 	defer barrier.releaseHeld()
 	root, release, err := app.Engine.RootContext(ctx)
 	if err != nil {
@@ -71,7 +82,7 @@ func TestOpaqueVisionNativeApplication(t *testing.T) {
 		value, _ := field(body, "file").(string)
 		return value
 	}
-	var tokenCalls, inlineReads atomic.Int32
+	var tokenCalls, directCalls, inlineReads atomic.Int32
 	adapter := &botruntime.Adapter{
 		InlineImage: &botruntime.InlineImageAdapter{
 			Current: func() bool { return true },
@@ -79,6 +90,8 @@ func TestOpaqueVisionNativeApplication(t *testing.T) {
 				switch value := file(locator); {
 				case strings.HasPrefix(value, "base64://"):
 					return botruntime.NativeImageInline
+				case strings.HasPrefix(value, "opaque-"):
+					return botruntime.NativeImageBrowserOpaque
 				case strings.HasPrefix(value, "https:"):
 					return botruntime.NativeImageBrowserDirect
 				default:
@@ -90,18 +103,29 @@ func TestOpaqueVisionNativeApplication(t *testing.T) {
 				return bytes.Clone(original), nil
 			},
 		},
-		PrepareImageToken: func(scene botruntime.Scene, locator string) botruntime.GuardedImageRead {
-			if file(locator) != "opaque-"+scene.PlatformSceneID {
+		PrepareVisionImage: func(scene botruntime.Scene, locator string) botruntime.GuardedImageRead {
+			value := file(locator)
+			if value != "opaque-"+scene.PlatformSceneID && (!direct || value != "https://vision.invalid/original.png") {
 				return nil
 			}
 			return func(call context.Context, guard func(context.Context) error) ([]byte, error) {
+				hold := func() {
+					close(barrier.entered)
+					<-barrier.release
+				}
+				if direct && scene.PlatformSceneID == "104" {
+					hold()
+				}
 				if err := guard(call); err != nil {
 					return nil, err
 				}
-				tokenCalls.Add(1)
-				if scene.PlatformSceneID == "104" {
-					close(barrier.entered)
-					<-barrier.release
+				if direct {
+					directCalls.Add(1)
+				} else {
+					tokenCalls.Add(1)
+					if scene.PlatformSceneID == "104" {
+						hold()
+					}
 				}
 				return bytes.Clone(original), nil
 			}
@@ -109,6 +133,15 @@ func TestOpaqueVisionNativeApplication(t *testing.T) {
 	}
 	runtime := app.Engine.Runtime
 	runtime.AddAdapter("snowluma", adapter)
+	if direct {
+		barrier.setAvailable = func(available bool) {
+			if available {
+				runtime.AddAdapter("snowluma", adapter)
+			} else {
+				runtime.RemoveAdapter("snowluma")
+			}
+		}
+	}
 	emit := func(event any) {
 		t.Helper()
 		wire, err := json.Marshal(event)
@@ -140,8 +173,12 @@ func TestOpaqueVisionNativeApplication(t *testing.T) {
 		}
 	}
 	t.Cleanup(func() {
-		if tokens, inline := tokenCalls.Load(), inlineReads.Load(); tokens != 3 || inline != 0 {
-			t.Errorf("wrong priority or extra IO (token=%d inline=%d; want only three permitted tokens)", tokens, inline)
+		wantToken, wantDirect := int32(3), int32(0)
+		if direct {
+			wantToken, wantDirect = 0, 2
+		}
+		if tokens, urls, inline := tokenCalls.Load(), directCalls.Load(), inlineReads.Load(); tokens != wantToken || urls != wantDirect || inline != 0 {
+			t.Errorf("wrong priority or extra IO: token=%d URL=%d inline=%d; want %d/%d/0", tokens, urls, inline, wantToken, wantDirect)
 		}
 	})
 	assertInlineVisionModel(t, ctx, app, emit, counter, barrier)

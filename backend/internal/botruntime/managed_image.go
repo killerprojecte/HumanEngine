@@ -153,15 +153,15 @@ func (r *Runtime) bindNativeImage(scene Scene, message *Object, owner *Adapter) 
 // DisplayImageSource captures a private retained record and its adapter.
 // Its raw parts are never returned by a browser preview.
 type DisplayImageSource struct {
-	runtime   *Runtime
-	state     *sceneState
-	scene     Scene
-	adapter   *Adapter
-	record    *messageRecord
-	remote    *remoteImage
-	assetID   string
-	inline    bool
-	tokenRead GuardedImageRead
+	runtime     *Runtime
+	state       *sceneState
+	scene       Scene
+	adapter     *Adapter
+	record      *messageRecord
+	remote      *remoteImage
+	assetID     string
+	inline      bool
+	guardedRead GuardedImageRead
 }
 
 func (r *Runtime) retainedDisplayImageRow(sceneID, messageID string) DisplayImageSource {
@@ -239,19 +239,20 @@ func (c *TurnContext) NativeVisionSource(message *Object) (*DisplayImageSource, 
 			get(source.record.body, "senderId") == "bot" {
 			return nil, 0
 		}
-		mask := DisplayImageLinks{inline: &source.record.displayMedia.native.parts}
+		native := source.record.displayMedia.native
+		mask := DisplayImageLinks{inline: &native.parts, browser: native.browser}
 		retained := array(get(source.record.body, "parts"))
-		prepare := source.adapter.PrepareImageToken
+		prepare := source.adapter.PrepareVisionImage
 		for i := first; i < min(len(parts), len(retained), 256); i++ {
 			asset := imageAsset(retained[i])
 			if !strings.HasPrefix(asset, "ob:media:") || asset != imageAsset(parts[i]) {
 				continue
 			}
 			inline := mask.InlineAt(i)
-			if !inline && prepare != nil {
-				source.tokenRead = prepare(source.scene, asset)
+			if !inline && prepare != nil && mask.BrowserAt(i) {
+				source.guardedRead = prepare(source.scene, asset)
 			}
-			if inline || source.tokenRead != nil {
+			if inline || source.guardedRead != nil {
 				source.inline, source.assetID = inline, asset
 				return &source, i
 			}
@@ -272,8 +273,8 @@ func (m *DisplayImageSource) InlineBytes(ctx context.Context) ([]byte, error) {
 func (m *DisplayImageSource) IsInline() bool { return m.inline }
 
 func (m *DisplayImageSource) BrowserImageBytes(ctx context.Context, before func(context.Context) error) ([]byte, error) {
-	if m.tokenRead != nil {
-		return m.tokenRead(ctx, before)
+	if m.guardedRead != nil {
+		return m.guardedRead(ctx, before)
 	}
 	if read := m.adapter.BrowserImage; read != nil {
 		return read(ctx, m.scene, m.assetID, before)

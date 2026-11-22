@@ -142,17 +142,24 @@ func inlineTokenContinuation(_ context.Context, source string) ([]byte, error) {
 	return image, err
 }
 
-func (s *Sender) prepareImageToken(scene botruntime.Scene, reference string) botruntime.GuardedImageRead {
-	// Canonical direct locators cannot refresh. Inspect only the prefix so a
-	// malformed/unsupported inline payload doesn't need a full descriptor read.
-	if directImageLocator(imageFilePrefix(scene, reference)) {
-		return nil
-	}
+func (s *Sender) prepareVisionImage(scene botruntime.Scene, reference string) botruntime.GuardedImageRead {
 	media, err := nativeImageDescriptor(scene, reference)
 	if err != nil {
 		return nil
 	}
-	token := opaqueImageToken(media, str(media, "file"))
+	file := str(media, "file")
+	if publicImageLocator(file) {
+		// URL-only originals share the guarded browser transport, not its
+		// expired-locator refresh. A second locator does not qualify here.
+		id, present := media.Get("fileId")
+		if !publicBrowserImageSupported || (present && id != "") {
+			return nil
+		}
+		return func(ctx context.Context, before func(context.Context) error) ([]byte, error) {
+			return s.readPublicBrowserImage(ctx, file, before)
+		}
+	}
+	token := opaqueImageToken(media, file)
 	if token == "" {
 		return nil
 	}
@@ -164,8 +171,7 @@ func (s *Sender) prepareImageToken(scene botruntime.Scene, reference string) bot
 }
 
 func opaqueImageToken(media *jsjson.Object, file string) string {
-	// Direct locators are never opaque tokens. The browser owns direct HTTP(S);
-	// model images still accept only inline bytes and supported opaque tokens.
+	// Direct locators are never opaque tokens; their transport is independent.
 	if directImageLocator(file) {
 		return ""
 	}

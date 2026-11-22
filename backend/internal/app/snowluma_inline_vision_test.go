@@ -102,11 +102,15 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 			emitImage(1, map[string]any{"base64": fixture.Base64})
 		} else {
 			if group == 102 {
-				// The newest opaque image outranks the older ready-inline image.
+				// The newest guarded image outranks the older ready-inline image.
 				emitImage(2, map[string]any{"base64": fixture.Base64})
 				count++
 			}
-			emitImage(1, map[string]any{"file": "opaque-" + fmt.Sprint(group)})
+			if tokenTest[0].direct {
+				emitImage(1, map[string]any{"url": "https://vision.invalid/original.png"})
+			} else {
+				emitImage(1, map[string]any{"file": "opaque-" + fmt.Sprint(group)})
+			}
 		}
 		wait, cancel := context.WithTimeout(ctx, 8*time.Second)
 		defer cancel()
@@ -250,12 +254,19 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 		select {
 		case <-barrier.entered:
 		case <-time.After(8 * time.Second):
-			t.Fatal("token request did not reach its guarded adapter boundary")
+			t.Fatal("image request did not reach its guarded adapter boundary")
 		}
-		recall(104, sceneID)
+		if barrier.setAvailable != nil {
+			barrier.setAvailable(false)
+		} else {
+			recall(104, sceneID)
+		}
 		barrier.releaseHeld()
 		if final := awaitDone(held); final.Status != "cancelled" {
-			t.Fatalf("held token recall did not cancel the image turn: %+v", final)
+			t.Fatalf("held image revocation did not cancel the image turn: %+v", final)
+		}
+		if barrier.setAvailable != nil {
+			barrier.setAvailable(true)
 		}
 
 		routerWithoutVision, err := jsjson.ParseBytes(models)

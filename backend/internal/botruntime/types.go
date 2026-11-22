@@ -180,8 +180,7 @@ type InlineImageAdapter struct {
 	Current  func() bool
 }
 
-// NativeImageLink distinguishes the browser-only direct path from inline bytes
-// also available to the model image path.
+// NativeImageLink classifies the transport and byte source of a retained locator.
 type NativeImageLink uint8
 
 const (
@@ -203,9 +202,10 @@ type Adapter struct {
 	BrowserMessage func(context.Context, Scene, string, func(context.Context) error, func(*Object, error))
 	InlineImage    *InlineImageAdapter
 	// BrowserImage is bound only to the active adapter, never to retained proof.
-	BrowserImage      func(context.Context, Scene, string, func(context.Context) error) ([]byte, error)
-	PrepareImageToken func(Scene, string) GuardedImageRead
-	Dispose           func()
+	BrowserImage func(context.Context, Scene, string, func(context.Context) error) ([]byte, error)
+	// PrepareVisionImage binds an exact native original without browser refresh.
+	PrepareVisionImage func(Scene, string) GuardedImageRead
+	Dispose            func()
 }
 type Services struct {
 	Models      Models

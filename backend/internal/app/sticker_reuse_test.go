@@ -37,7 +37,13 @@ func assertNativeStickerTagReuse(t *testing.T, ctx context.Context, app *Applica
 		}
 		appRequest(t, app, "PATCH", "/api/memes/"+assetID, map[string]any{"tags": json.RawMessage(wire)})
 	}
-	setEmotion("fixture-stored-happiness")
+	const tag = "fixture-stored-happiness"
+	setEmotion(tag)
+	assertStickerReuseRequests(t, ctx, app, emit, scene, png, tag, setEmotion)
+}
+
+func assertStickerReuseRequests(t *testing.T, ctx context.Context, app *Application, emit func(any), scene, png, tag string, setEmotion func(string)) *atomic.Int32 {
+	t.Helper()
 	configureScene := func(participation bool) {
 		appRequest(t, app, "PUT", "/api/scenes/"+url.PathEscape(scene), map[string]any{
 			"id": scene, "adapterId": "snowluma", "accountId": "42", "platformSceneId": "100",
@@ -62,7 +68,7 @@ func assertNativeStickerTagReuse(t *testing.T, ctx context.Context, app *Applica
 			return
 		}
 		r.Body = io.NopCloser(bytes.NewReader(raw))
-		hit := bytes.Contains(raw, []byte("fixture-stored-happiness")) && bytes.Contains(raw, []byte("stored_library_observation"))
+		hit := bytes.Contains(raw, []byte(tag)) && bytes.Contains(raw, []byte("stored_library_observation"))
 		switch {
 		case bytes.Contains(raw, []byte(`"model":"sticker-vision"`)):
 			vision.Add(1)
@@ -81,7 +87,7 @@ func assertNativeStickerTagReuse(t *testing.T, ctx context.Context, app *Applica
 			}
 		}
 	}))
-	defer server.Close()
+	t.Cleanup(server.Close)
 	setRoutes := func(withVision bool) {
 		routes := `{"role":"planner","orderedModelIds":["sp"],"timeoutMs":10000},{"role":"replyer","orderedModelIds":["sr"],"timeoutMs":10000}`
 		if withVision {
@@ -133,10 +139,15 @@ func assertNativeStickerTagReuse(t *testing.T, ctx context.Context, app *Applica
 			return botruntime.TurnResult{}
 		}
 	}
-	for _, cfg := range []struct {
+	cases := []struct {
 		id     int
 		vision bool
-	}{{961, true}, {962, false}} {
+	}{{961, true}, {962, false}}
+	if setEmotion == nil {
+		cases = cases[:1]
+		cases[0].id = 982
+	}
+	for _, cfg := range cases {
 		final := await(start(cfg.id, cfg.vision))
 		for _, stage := range []string{"planner", "planner", "replyer"} {
 			select {
@@ -151,6 +162,9 @@ func assertNativeStickerTagReuse(t *testing.T, ctx context.Context, app *Applica
 	}
 	if got := vision.Load(); got != 0 {
 		t.Fatalf("same sticker caused %d repeat vision calls", got)
+	}
+	if setEmotion == nil {
+		return &vision
 	}
 	revoke.Store(true)
 	held := start(963, false)
@@ -172,4 +186,5 @@ func assertNativeStickerTagReuse(t *testing.T, ctx context.Context, app *Applica
 		t.Fatalf("stale stored evidence reached another provider call: %+v", c)
 	default:
 	}
+	return &vision
 }

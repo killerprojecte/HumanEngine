@@ -30,7 +30,7 @@ import (
 // This composition exercises the exact bundled guest and HTTP path without
 // recompiling transient manager policy guests for configuration or replacement.
 func TestSnowLumaInlineImageComposed(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 	var owners Owners
 	options := applicationOptions(t)
@@ -46,27 +46,32 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer app.Shutdown(context.Background())
-	repository, err := ingressrouting.NewSQLiteRepository(owners.Main, owners.Authority)
-	if err != nil {
-		t.Fatal(err)
-	}
-	identity, err := ingressrouting.New(repository)
-	if err != nil {
-		t.Fatal(err)
-	}
 	const guest = "snowluma-inline-composed"
 	artifact, err := plugins.BuiltinArtifact("snowluma")
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("compile and instantiate pinned SnowLuma guest")
-	if err := app.WASM.Enable(ctx, guest, artifact); err != nil {
-		t.Fatal(err)
+	bind := func(target *Application) (snowhost.EngineIngress, func(context.Context, []byte) ([]byte, error)) {
+		t.Helper()
+		repository, err := ingressrouting.NewSQLiteRepository(owners.Main, owners.Authority)
+		if err != nil {
+			t.Fatal(err)
+		}
+		identity, err := ingressrouting.New(repository)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log("compile and instantiate pinned SnowLuma guest")
+		if err := target.WASM.Enable(ctx, guest, artifact); err != nil {
+			t.Fatal(err)
+		}
+		call, err := target.WASM.BindCall(guest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return snowhost.EngineIngress{Engine: target.Engine, Compare: owners.Compare, Identity: identity}, call
 	}
-	call, err := app.WASM.BindCall(guest)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ingress, call := bind(app)
 	settings := appRequest(t, app, "GET", "/api/settings", nil).(*jsjson.Object)
 	_ = settings.Set("sourceEventRevisionsEnabled", true)
 	wire, err := jsjson.Marshal(settings)
@@ -171,19 +176,18 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ingress := snowhost.EngineIngress{Engine: app.Engine, Compare: owners.Compare, Identity: identity}
-	factory := snowhost.Factory(snowhost.InstallationPorts{
-		Registry: app.snowRegistry, Sender: snowhost.Ports{ReadOriginal: snowhost.OriginalReader(app.Engine)},
-		BuildReceive: ingress.ReceiverFactory(func() {}, time.Now), Stopped: app.snowStopped,
-		Error: func(code string, err error) { t.Logf("native fixture transport %s: %v", code, err) },
-	}, func(string) (string, bool) { return "", false })
-	activate := func(revision uint64) (pluginmanager.BuiltinLifetime, *websocket.Conn) {
+	activate := func(target *Application, revision uint64) (pluginmanager.BuiltinLifetime, *websocket.Conn) {
 		t.Helper()
 		t.Logf("connect authenticated native generation %d", revision)
+		factory := snowhost.Factory(snowhost.InstallationPorts{
+			Registry: target.snowRegistry, Sender: snowhost.Ports{ReadOriginal: snowhost.OriginalReader(target.Engine)},
+			BuildReceive: ingress.ReceiverFactory(func() {}, time.Now), Stopped: target.snowStopped,
+			Error: func(code string, err error) { t.Logf("native fixture transport %s: %v", code, err) },
+		}, func(string) (string, bool) { return "", false })
 		life, stop := context.WithCancel(ctx)
 		t.Cleanup(stop)
 		owner, err := factory(ctx, pluginmanager.BuiltinRuntimeInput{
-			ID: guest, Revision: revision, Config: config, Life: life, Host: app.WASM, CallGuest: call,
+			ID: guest, Revision: revision, Config: config, Life: life, Host: target.WASM, CallGuest: call,
 			Current: func() bool { return life.Err() == nil },
 			Secret: func(_ context.Context, key string) (string, bool, error) {
 				if key == "token" {
@@ -206,7 +210,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 			return nil, nil
 		}
 	}
-	first, socket := activate(1)
+	first, socket := activate(app, 1)
 	defer first.CloseAndWait(context.Background())
 	t.Log("exercise native ingress and original-byte browser route")
 	emit := func(event any) {
@@ -333,14 +337,14 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	if err := first.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
 	}
-	second, currentSocket := activate(2)
+	second, currentSocket := activate(app, 2)
 	defer second.CloseAndWait(context.Background())
 	verifyRetired()
 	verifyTokenRetired()
 	socket = currentSocket
 	assertNativeStickerPersonalization(t, ctx, app, emit, scene, mediaTokens.encoded)
 	assertNativeStickerTagReuse(t, ctx, app, emit, scene, mediaTokens.encoded)
-	assetID, calls := assertAutomaticStickerAnalysisHeldRecall(t, ctx, app, emit, scene)
+	assetID, png, calls := assertAutomaticStickerAnalysisHeldRecall(t, ctx, app, emit, scene)
 	if err := second.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
 	}
@@ -358,6 +362,19 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		!reflect.DeepEqual(field(field(asset, "tags"), "intent"), []any{"verified-automatic-label"}) {
 		t.Fatalf("tag-only disposition was not restored: %v", err)
 	}
+	ingress, call = bind(reopened)
+	third, currentSocket := activate(reopened, 3)
+	defer third.CloseAndWait(context.Background())
+	socket = currentSocket
+	visionCalls := assertStickerReuseRequests(t, ctx, reopened, emit, scene, png, "verified-automatic-label", nil)
+	asset, err = reopened.Engine.Memes.AdminGet(ctx, assetID)
+	if err != nil || field(asset, "analyzed") != true || field(asset, "knownOnly") != true ||
+		field(asset, "available") != false || field(asset, "shared") != false || field(asset, "privacyReviewed") != false {
+		t.Fatalf("cold duplicate changed stored sticker disposition: %v", err)
+	}
+	if err := third.CloseAndWait(ctx); err != nil {
+		t.Fatal(err)
+	}
 	appRequest(t, reopened, "PUT", "/api/scenes/"+url.PathEscape(scene), map[string]any{
 		"id": scene, "adapterId": "snowluma", "accountId": "42", "platformSceneId": "100",
 		"kind": "group", "name": "Automatic Sticker Fixture", "participationEnabled": false,
@@ -366,7 +383,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	if err := reopened.Shutdown(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if calls.Load() != 4 {
+	if calls.Load() != 4 || visionCalls.Load() != 0 {
 		t.Fatal("reopening or re-enabling learning unexpectedly scheduled analysis")
 	}
 }

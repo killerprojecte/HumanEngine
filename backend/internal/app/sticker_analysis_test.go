@@ -26,7 +26,7 @@ import (
 
 // Run last: the explicit media-owner drain makes absence of a late write
 // observable without sleeping or adding a product hook.
-func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context, app *Application, emit func(any), scene string) (string, *atomic.Int32) {
+func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context, app *Application, emit func(any), scene string) (string, string, *atomic.Int32) {
 	t.Helper()
 	const sourceMarker = "exclusive-recalled-sticker-caption"
 	const personaMarker = "exclusive-sticker-persona-marker"
@@ -89,7 +89,7 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 	appRequest(t, app, "PUT", "/api/models", json.RawMessage(fmt.Sprintf(`{"providers":[{"id":"auto-sticker-fixture","name":"Fixture","protocol":"openai-chat","baseUrl":%q,"retryCount":0,"timeoutMs":10000}],"models":[{"id":"auto","displayName":"Vision","providerId":"auto-sticker-fixture","apiModelName":"native-auto-sticker","capabilities":["text","vision"]}],"routes":[{"role":"vision","orderedModelIds":["auto"],"timeoutMs":10000}]}`, server.URL+"/v1")))
 	wait, cancel := context.WithTimeout(ctx, 8*time.Second)
 	defer cancel()
-	emitSticker := func(id int, red uint8) string {
+	emitSticker := func(id int, red uint8) (string, string) {
 		t.Helper()
 		img := image.NewNRGBA(image.Rect(0, 0, 7, 6))
 		img.SetNRGBA(2, 3, color.NRGBA{red, 134, 216, 255})
@@ -97,12 +97,13 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 		if err := png.Encode(&b, img); err != nil {
 			t.Fatal(err)
 		}
+		encoded := base64.StdEncoding.EncodeToString(b.Bytes())
 		emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": 100,
 			"user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{
 				map[string]any{"type": "text", "data": map[string]any{"text": sourceMarker}},
-				map[string]any{"type": "mface", "data": map[string]any{"base64": base64.StdEncoding.EncodeToString(b.Bytes())}},
+				map[string]any{"type": "mface", "data": map[string]any{"base64": encoded}},
 			}})
-		return snow.MessageID(scene, strconv.Itoa(id))
+		return snow.MessageID(scene, strconv.Itoa(id)), encoded
 	}
 	awaitAsset := func(sourceID string, analyzed bool) *jsjson.Object {
 		t.Helper()
@@ -142,7 +143,7 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 			t.Fatal("new exact sticker was admitted but did not invoke the configured automatic image-only analyzer")
 		}
 	}
-	positive := emitSticker(978, 41)
+	positive, positivePNG := emitSticker(978, 41)
 	awaitAsset(positive, false)
 	awaitPixels()
 	labeled := awaitAsset(positive, true)
@@ -155,7 +156,7 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 	}
 	// Turning learning on must not let an in-flight off-lane answer become
 	// the first canonical analysis of a now contextual asset.
-	heldID := emitSticker(980, 87)
+	heldID, _ := emitSticker(980, 87)
 	heldAsset := field(awaitAsset(heldID, false), "id").(string)
 	awaitPixels()
 	logs := app.options.Diagnostics.(*applicationLogBuffer)
@@ -176,7 +177,7 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 	}
 
 	// A newly admitted learning-on asset keeps its first contextual analysis.
-	onID := emitSticker(981, 115)
+	onID, _ := emitSticker(981, 115)
 	fresh := awaitAsset(onID, false)
 	if field(fresh, "analyzed") != false || calls.Load() != 2 {
 		t.Fatal("learning-on intake must not preempt first contextual analysis")
@@ -195,7 +196,7 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 		t.Fatal("first manual contextual selection no longer grants the fixture's eligible disposition")
 	}
 	setLearning(false)
-	sourceID := emitSticker(979, 23)
+	sourceID, _ := emitSticker(979, 23)
 	assetID := field(awaitAsset(sourceID, false), "id").(string)
 	awaitPixels()
 	root, closeRoot, err := app.Engine.RootContext(ctx)
@@ -233,5 +234,5 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 		field(current, "shared") == true || field(current, "privacyReviewed") == true || bytes.Contains(raw, []byte("revoked-proposal")) {
 		t.Fatalf("revoked last source published an inference or triggered another provider request (calls=%d)", calls.Load())
 	}
-	return field(labeled, "id").(string), &calls
+	return field(labeled, "id").(string), positivePNG, &calls
 }

@@ -10,7 +10,7 @@ import time
 from urllib.parse import parse_qs, unquote, urlsplit
 from uuid import uuid4
 
-from acceptance import docker, request, wait_for
+from acceptance import docker, wait_for
 
 GROUP = 901
 NAME = "Synthetic dense group"
@@ -24,7 +24,7 @@ ACTION_PORT, EVENT_PORT = 41274, 41275
 
 
 @contextmanager
-def peer(name, image, port):
+def peer(name, image, port, request):
     sidecar = name + "-chat-peer"
     script = Path(__file__).with_name("browser_chat_fixture.cjs").read_text()
     params = dict(group=GROUP, name=NAME, local=LOCAL, remote=REMOTE,

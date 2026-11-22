@@ -248,7 +248,7 @@ def main():
             import browser_chat_fixture
             import browser_smoke
             report["browser"] = {"status": "failed", "failed_phase": "dense-chat-fixture"}
-            with browser_chat_fixture.peer(restarted, image["Id"], port) as chat_history:
+            with browser_chat_fixture.peer(restarted, image["Id"], port, request) as chat_history:
                 report["browser"].pop("failed_phase")
                 browser_smoke.run(port, TOKEN, report["browser"], usage_start, chat_history)
             assert not node_pids(restarted), "browser caused a Node runtime inside the image"

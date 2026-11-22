@@ -381,7 +381,38 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 	}
 	s.ingress.Lock()
 	defer s.ingress.Unlock()
-	scene := s.view.Load().scene
+	return r.recallScene(ctx, s.view.Load().scene, id, s)
+}
+
+// RecallScene handles a transport-qualified real scene even before its first
+// live message in this process. Serialize with transport ingress; an absent
+// in-memory scene does not prevent the durable source recall.
+func (r *Runtime) RecallScene(ctx context.Context, scene Scene, id string) error {
+	done, admitted := r.beginOperation()
+	if !admitted {
+		return code("runtime_closed")
+	}
+	defer done()
+	if scene.Kind == "simulation" || r.services.Authority == nil {
+		return code("runtime_real_recall_required")
+	}
+	registration, err := r.sceneRegistration(scene)
+	if err != nil {
+		return err
+	}
+	registration.mu.Lock()
+	defer registration.mu.Unlock()
+	s := r.state(scene.ID)
+	if s != nil {
+		s.ingress.Lock()
+		defer s.ingress.Unlock()
+		scene = s.view.Load().scene
+	}
+	return r.recallScene(ctx, scene, id, s)
+}
+
+func (r *Runtime) recallScene(ctx context.Context, scene Scene, id string, s *sceneState) error {
+	sceneID := scene.ID
 	prepare := func(authority ReadAuthority) (func() error, error) {
 		callbacks := []func() error{}
 		for _, e := range r.exts() {
@@ -421,6 +452,9 @@ func (r *Runtime) Recall(ctx context.Context, sceneID, id string) error {
 		}, nil
 	}
 	apply := func() error {
+		if s == nil {
+			return nil
+		}
 		var abort []*dispatch.Signal
 		s.mu.Lock()
 		next := map[string]bool{}

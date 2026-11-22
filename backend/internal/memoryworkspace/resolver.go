@@ -282,16 +282,21 @@ func (r *Resolver) resolve(ctx workingset.Context, refs []workingset.Reference, 
 		for _, group := range arr(get(plan, "requiredProposalGroups")) {
 			evidence = append(evidence, arr(group)...)
 		}
+		if len(evidence) == 0 {
+			continue
+		}
+		// Every occurrence protects its own assertion, but references the same
+		// plan qualified in this exact read scope.
+		qualified, e := r.planKey(plan)
+		if e != nil {
+			return nil, e
+		}
 		for _, item := range evidence {
 			reference := get(item, "qualificationRef")
 			if reference == nil {
 				reference = get(item, "backing")
 			}
 			key := refKey(reference)
-			qualified, e := r.planKey(plan)
-			if e != nil {
-				return nil, e
-			}
 			dependencies[key] = append(dependencies[key], obj("ref", get(plan, "ref"), "mutationVersion", get(plan, "mutationVersion"), "lifecycle", get(plan, "lifecycle"), "qualification", qualified))
 			if protections[key] != "needs_review_commitment" {
 				protections[key] = protection

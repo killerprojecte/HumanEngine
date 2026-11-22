@@ -97,7 +97,7 @@ func TestQueriesIngressRecallAndLateModelAreIndependent(t *testing.T) {
 			if _, e := r.Ingest(context.Background(), "scene", fixtureMessage("scene", "fresh", "Fresh unrelated input."), false); e != nil {
 				t.Fatal(e)
 			}
-			if e := r.Recall(context.Background(), "scene", "source"); e != nil {
+			if e := r.RecallScene(context.Background(), fixtureScene(false), "source"); e != nil {
 				t.Fatal(e)
 			}
 			result := awaitTurn(t, h)
@@ -667,5 +667,33 @@ func TestOldSimulationCleanupCannotDeleteReplacementOwner(t *testing.T) {
 	view, err := r.Snapshot(scene.ID)
 	if err != nil || len(view.Messages) != 1 || view.Active != 0 {
 		t.Fatalf("replacement state: %+v %v", view, err)
+	}
+}
+
+func TestTransportRecallPersistsWithoutWarmingScene(t *testing.T) {
+	ctx := t.Context()
+	r, a, _ := testRuntime(t, ModelFunc(func(_ context.Context, _ ModelRequest, _ func(Completion, error)) {
+		t.Error("cold recall started a model")
+	}))
+	scene := fixtureScene(false)
+	var prepared, recalled, policy int
+	r.AddExtension(&Extension{
+		SceneChanged: func(Scene) { policy++ },
+		PrepareRecallScoped: func(_ ReadAuthority, sceneID, id string) (func() error, error) {
+			if sceneID != scene.ID || id != "source" {
+				t.Fatal("wrong transport source")
+			}
+			prepared++
+			return func() error { recalled++; return nil }, nil
+		},
+	})
+	if err := r.RecallScene(ctx, scene, "source"); err != nil {
+		t.Fatal(err)
+	}
+	if r.state(scene.ID) != nil || prepared != 1 || recalled != 1 || policy != 0 {
+		t.Fatalf("cold recall hydrated or reconfigured scene: prepared=%d, recalled=%d, policy=%d", prepared, recalled, policy)
+	}
+	if yes, err := a.IsRecalled(scene, "source"); !yes || err != nil {
+		t.Fatalf("cold recall was not durable: %t, %v", yes, err)
 	}
 }

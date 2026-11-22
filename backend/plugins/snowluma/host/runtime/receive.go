@@ -13,7 +13,7 @@ type ReceivePorts struct {
 	Recalled        func(context.Context, string, string) (bool, error)
 	ObserveProfiles func(context.Context, *jsjson.Object, *jsjson.Object) error
 	Ingest          func(context.Context, *jsjson.Object, *jsjson.Object) error
-	Recall          func(context.Context, string, string) error
+	Recall          func(context.Context, *jsjson.Object, string) error
 	Now             func() time.Time
 }
 type Receiver struct {
@@ -88,10 +88,11 @@ func (r *Receiver) Receive(ctx context.Context, raw string) error {
 			return r.ports.Ingest(ctx, message, scene)
 		case "recall":
 			event, ok := get(decision, "recall").(*jsjson.Object)
-			if !ok {
+			scene, hasScene := get(decision, "scene").(*jsjson.Object)
+			if !ok || !hasScene || str(event, "sceneId") != str(scene, "id") {
 				return errors.New("invalid_guest_ingress_recall")
 			}
-			return r.ports.Recall(ctx, str(event, "sceneId"), str(event, "messageId"))
+			return r.ports.Recall(ctx, scene, str(event, "messageId"))
 		default:
 			return errors.New("invalid_guest_ingress_step")
 		}

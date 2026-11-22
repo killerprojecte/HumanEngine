@@ -76,13 +76,17 @@ func (e EngineIngress) ingest(ctx context.Context, owner *botruntime.Adapter, me
 	_, err = e.Engine.Runtime.IngestNativeMedia(root, owner, scene, message, true)
 	return err
 }
-func (e EngineIngress) Recall(ctx context.Context, scene, id string) error {
+func (e EngineIngress) Recall(ctx context.Context, ref *jsjson.Object, id string) error {
 	root, release, err := e.Engine.RootContext(ctx)
 	if err != nil {
 		return err
 	}
 	defer release()
-	return e.Engine.Runtime.Recall(root, scene, id)
+	scene, err := sceneRef(ref)
+	if err != nil {
+		return err
+	}
+	return e.Engine.Runtime.RecallScene(root, botruntime.Scene{SceneRef: scene}, id)
 }
 func (e EngineIngress) Recalled(ctx context.Context, scene, id string) (recalled bool, err error) {
 	root, release, err := e.Engine.RootContext(ctx)

@@ -269,6 +269,18 @@ func (s *Service) List(ctx context.Context, c Context, person string) ([]*Object
 func (s *Service) ListByIDs(ctx context.Context, c Context, ids []string) ([]*Object, error) {
 	return s.list(ctx, c, memoryread.Input{SceneID: c.SceneID, Simulation: c.Simulation, IDs: append([]string{}, ids...)})
 }
+
+// CurrentModelSourceRecord revalidates one already prepared identifier-only
+// receipt. The read checks scope, applicability and live proofs without running
+// a second global support refresh or registering content exposure.
+func (s *Service) CurrentModelSourceRecord(ctx context.Context, c Context, id string) (*Object, error) {
+	rows, err := s.read(ctx, s.d.Assertions, memoryread.Input{SceneID: c.SceneID, Simulation: c.Simulation, IDs: []string{id}})
+	if err != nil || len(rows) == 0 {
+		return nil, err
+	}
+	return rows[0], nil
+}
+
 func (s *Service) list(ctx context.Context, c Context, input memoryread.Input) ([]*Object, error) {
 	if e := ready(ctx, s.d.Assertions); e != nil {
 		return nil, e

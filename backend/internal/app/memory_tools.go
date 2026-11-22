@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"math"
@@ -58,7 +59,8 @@ func (a *Application) composeModelMemory(o Owners, memory *memoryOwners) error {
 		return err
 	}
 	base := botruntime.Extension{
-		Tools: []*jsjson.Object{memoryToolObject("name", "memory.search", "description", "Search current-scene memories and safe shared public knowledge.", "inputSchema", memoryToolObject("type", "object", "properties", memoryToolObject("query", memoryToolObject("type", "string", "maxLength", float64(500))), "required", []any{"query"}, "additionalProperties", false)), memoryToolObject("name", "memory.person", "description", "Read person memory from this scene only.", "inputSchema", memoryToolObject("type", "object", "properties", memoryToolObject("personId", memoryToolObject("type", "string")), "required", []any{"personId"}, "additionalProperties", false))},
+		Tools: []*jsjson.Object{memoryToolObject("name", "memory.search", "description", "Search current-scene memories and safe shared public knowledge.", "inputSchema", memoryToolObject("type", "object", "properties", memoryToolObject("query", memoryToolObject("type", "string", "maxLength", float64(500))), "required", []any{"query"}, "additionalProperties", false)), memoryToolObject("name", "memory.person", "description", "Read person memory from this scene only.", "inputSchema", memoryToolObject("type", "object", "properties", memoryToolObject("personId", memoryToolObject("type", "string")), "required", []any{"personId"}, "additionalProperties", false)),
+			memoryToolObject("name", "memory.source", "description", "Read source identifiers for a memory accessible in this scene. Missing originals are not reconstructed.", "inputSchema", memoryToolObject("type", "object", "properties", memoryToolObject("memoryId", memoryToolObject("type", "string")), "required", []any{"memoryId"}, "additionalProperties", false))},
 		Execute: func(ctx context.Context, name string, input any, c *botruntime.TurnContext, done func(any, error)) {
 			value, err := a.executeMemoryTool(ctx, name, input, c, memory, shadow)
 			done(value, err)
@@ -66,6 +68,9 @@ func (a *Application) composeModelMemory(o Owners, memory *memoryOwners) error {
 		// ModelMemoryExposure invokes this only after the selected original objects
 		// have actually committed. Experience must never observe a prepared page.
 		Delivered: func(name string, value any, c *botruntime.TurnContext, input any) (any, error) {
+			if name == "memory.source" {
+				return a.deliverMemorySource(context.Background(), c, input, value)
+			}
 			if name == "memory.person" || name == "memory.search" {
 				if err := a.ExperienceHints.DeliveredTool(c, name, input, value); err != nil {
 					return nil, err
@@ -79,6 +84,9 @@ func (a *Application) composeModelMemory(o Owners, memory *memoryOwners) error {
 }
 
 func (a *Application) executeMemoryTool(ctx context.Context, name string, input any, c *botruntime.TurnContext, memory *memoryOwners, shadow *relations.Service) (any, error) {
+	if name == "memory.source" {
+		return a.readMemorySource(ctx, c, input, false)
+	}
 	if name != "memory.person" && name != "memory.search" {
 		return nil, errors.New("runtime_unknown_tool")
 	}
@@ -149,18 +157,11 @@ func (a *Application) trackModelMemory(ctx context.Context, c *botruntime.TurnCo
 	if !allowed {
 		filtered := make([]*jsjson.Object, 0, len(records))
 		for _, record := range records {
-			kind, _ := record.Get("kind")
-			if kind != "fact" && kind != "claim" && kind != "term" {
-				continue
+			visible, err := nonPersonalModelMemory(record)
+			if err != nil {
+				return nil, err
 			}
-			raw, _ := record.Get("scope")
-			scope, ok := raw.(*jsjson.Object)
-			if !ok {
-				return nil, errors.New("memory_record_scope_invalid")
-			}
-			scopeKind, _ := scope.Get("kind")
-			person, _ := scope.Get("personId")
-			if scopeKind != "scene" || !memoryValueTruthy(person) {
+			if visible {
 				filtered = append(filtered, record)
 			}
 		}
@@ -179,6 +180,103 @@ func (a *Application) trackModelMemory(ctx context.Context, c *botruntime.TurnCo
 	}
 	committed, err := a.MemoryExposure.Commit(ctx, c, selected)
 	return memoryToolArray(committed), err
+}
+
+func nonPersonalModelMemory(record *jsjson.Object) (bool, error) {
+	kind, _ := record.Get("kind")
+	if kind != "fact" && kind != "claim" && kind != "term" {
+		return false, nil
+	}
+	raw, _ := record.Get("scope")
+	scope, ok := raw.(*jsjson.Object)
+	if !ok {
+		return false, errors.New("memory_record_scope_invalid")
+	}
+	scopeKind, _ := scope.Get("kind")
+	person, _ := scope.Get("personId")
+	return scopeKind != "scene" || !memoryValueTruthy(person), nil
+}
+
+func (a *Application) readMemorySource(ctx context.Context, c *botruntime.TurnContext, input any, delivery bool) (*jsjson.Object, error) {
+	personal := false
+	if c.Mode == "real" {
+		ticket, err := a.Engine.TurnRead.Begin(ctx, c)
+		if err != nil {
+			return nil, err
+		}
+		personal = ticket.PersonalizationEnabled()
+	}
+	args, ok := input.(*jsjson.Object)
+	if !ok {
+		return nil, errors.New("memory_tool_arguments_invalid")
+	}
+	raw, _ := args.Get("memoryId")
+	id, ok := raw.(string)
+	if !ok {
+		return nil, errors.New("memory_tool_arguments_invalid")
+	}
+	scope := memoryservice.Context{SceneID: c.Scene.ID, Simulation: c.Mode == "simulation"}
+	var record *jsjson.Object
+	var err error
+	if delivery {
+		record, err = a.Semantic.Memory.CurrentModelSourceRecord(ctx, scope, id)
+	} else {
+		var records []*jsjson.Object
+		records, err = a.Semantic.Memory.ListByIDs(ctx, scope, []string{id})
+		if len(records) != 0 {
+			record = records[0]
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	if record != nil {
+		if c.Mode != "real" {
+			personal, err = a.Engine.TurnRead.PersonalizationAllowed(ctx, c.Scene.ID)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if !personal {
+			personal, err = nonPersonalModelMemory(record)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if personal {
+			sources, _ := record.Get("sources")
+			return memoryToolObject("sources", sources, "note", "Identifiers only; use messages.get for available originals"), nil
+		}
+	}
+	return memoryToolObject("error", "Memory unavailable"), nil
+}
+
+func (a *Application) deliverMemorySource(ctx context.Context, c *botruntime.TurnContext, input, prepared any) (any, error) {
+	// Unlike content exposure, this receipt must not book an assertion or bind
+	// it as learning evidence. Requalify just the scoped original identifiers.
+	if field, _ := prepared.(*jsjson.Object).Get("error"); field != nil {
+		if c.Mode != "real" {
+			return prepared, nil
+		}
+		_, err := a.Engine.TurnRead.Begin(ctx, c)
+		return prepared, err
+	}
+	current, err := a.readMemorySource(ctx, c, input, true)
+	if err != nil {
+		return nil, err
+	}
+	want, err := jsjson.Marshal(prepared)
+	if err != nil {
+		return nil, err
+	}
+	got, err := jsjson.Marshal(current)
+	if err != nil {
+		return nil, err
+	}
+	if !bytes.Equal(want, got) {
+		return nil, errors.New("planner_context_ineligible")
+	}
+	return prepared, nil
 }
 
 func memoryValueTruthy(value any) bool {

@@ -6,9 +6,11 @@ export default {
   setup(ctx) {
     try {
     let api, scene, source, disposed = 0, modelCalls = 0, sourceSerial = 1
-    const sent = [], modelIDs = []
+    const sent = [], modelIDs = [], sourceReceipts = []
+    let memorySourceTarget, lastSourceAlias, memorySourceCalls = 0
     const message = () => ({id:source,sceneId:scene.id,senderId:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
-    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs}))
+    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts}))
+    ctx.registerAdminAction('source-memory', input => {memorySourceTarget=input.id;return {ok:true}})
     ctx.registerAdminAction('new-source',()=>{source=api.messageId(scene,'source-'+(++sourceSerial));api.receive(message(),scene,false);return {ok:true}})
     ctx.registerAdminAction('edit',()=>api.edit({...message(),parts:[{type:'text',text:'Please reply to the edited synthetic request.'}]},scene,{editId:'synthetic-edit-2',order:{kind:'platform_sequence',sequence:2}}))
     ctx.registerAdminAction('recall',()=>{api.recall(scene,source);return api.isRecalled(scene,source)})
@@ -40,6 +42,24 @@ export default {
         const call=(name,args)=>response([{id:'synthetic-call-'+modelCalls,name,arguments:args}])
         if(names.includes('participation.decide'))return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[data.messages[0].id]})
         const receipts=request.messages.filter(m=>m.role==='tool').flatMap(m=>{try{const v=JSON.parse(m.content);return Array.isArray(v)?v:[v]}catch{return []}})
+        if(memorySourceTarget && names.includes('reply.plan')){
+          const receipt=receipts.find(v=>v.toolName==='memory.source')
+          const person=receipts.find(v=>v.toolName==='memory.person')
+          if(!receipt){
+            if(!names.includes('memory.source'))throw Error('missing_memory_source_tool')
+            const anchor=receipts.find(v=>v.toolName==='fixture.memoryAnchor')
+            if(memorySourceTarget==='anchor'&&!anchor)return call('fixture.memoryAnchor',{})
+            if(memorySourceTarget==='person'&&!person)return call('memory.person',{personId:'synthetic-user'})
+            const id=person?.value[0]?.id??anchor?.value.memoryId??(memorySourceTarget==='prior'?lastSourceAlias:memorySourceTarget)
+            if(person)lastSourceAlias=id
+            memorySourceCalls++
+            return call('memory.source',{memoryId:id})
+          }
+          if(person&&JSON.stringify(receipt.value.sources)!==JSON.stringify(person.value[0]?.sources))
+            throw Error('source_fixture_not_original_references')
+          sourceReceipts.push(receipt.value)
+          if(memorySourceTarget==='prior')throw Error('fixture_prior_reference_finished')
+        }
         const memoryReceipt=receipts.find(v=>v.toolName==='memory.person'&&Array.isArray(v.value))
         if(ctx.config.memoryMode&&names.includes('reply.plan')&&!memoryReceipt)return call('memory.person',{personId:'synthetic-user'})
         if(ctx.config.memoryMode&&memoryReceipt?.value.length===0)throw Error('synthetic_memory_missing')

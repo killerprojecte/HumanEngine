@@ -16,10 +16,11 @@ type retainedAnalysisMember struct {
 }
 
 type retainedAnalysis struct {
-	cancel  context.CancelFunc
-	done    chan struct{}
-	members map[*retainedAnalysisMember]struct{}
-	err     error
+	contextual bool
+	cancel     context.CancelFunc
+	done       chan struct{}
+	members    map[*retainedAnalysisMember]struct{}
+	err        error
 }
 
 // AnalyzeRetainedSticker labels admitted, exact retained pixels without
@@ -27,6 +28,18 @@ type retainedAnalysis struct {
 // the qualification for its own original occurrence; that capability cannot
 // be borrowed by a different scene or by a contextual/admin analysis.
 func (s *Service) AnalyzeRetainedSticker(ctx context.Context, c Context, asset, source *Object, models *providertransport.NativeModels, codec *imagecodec.Compressor, current func(context.Context, *recovery.WriteSession) (bool, error)) error {
+	return s.analyzeRetainedSticker(ctx, c, asset, source, models, codec, current, nil)
+}
+
+// LearnRetainedSticker uses the same retained-pixel owner as the tag-only lane.
+// It anchors the prompt to its exact donor rather than accepting replacement
+// evidence from a different occurrence of the same sticker.
+func (s *Service) LearnRetainedSticker(ctx context.Context, c Context, asset, source *Object, models *providertransport.NativeModels, codec *imagecodec.Compressor, current func(context.Context, *recovery.WriteSession) (bool, error), selection func(context.Context) (*SelectionContext, error)) error {
+	return s.analyzeRetainedSticker(ctx, c, asset, source, models, codec, current, selection)
+}
+
+func (s *Service) analyzeRetainedSticker(ctx context.Context, c Context, asset, source *Object, models *providertransport.NativeModels, codec *imagecodec.Compressor, current func(context.Context, *recovery.WriteSession) (bool, error), selection func(context.Context) (*SelectionContext, error)) error {
+	contextual := selection != nil
 	id := str(get(asset, "id"))
 	hash := content(asset)
 	if id != identity(c.SceneID, hash) {
@@ -40,9 +53,10 @@ func (s *Service) AnalyzeRetainedSticker(ctx context.Context, c Context, asset, 
 	member := &retainedAnalysisMember{ctx, copyObject(source), current}
 	s.mu.Lock()
 	task := s.retainedAnalyses[key]
-	for task != nil && len(task.members) == 0 {
+	for task != nil && (len(task.members) == 0 || task.contextual || contextual) {
 		// The last departure irreversibly canceled this task. Do not attach
 		// new evidence or overlap a replacement with its physical drain.
+		// Contextual tasks never substitute a second donor or inherit an off-lane result.
 		s.mu.Unlock()
 		select {
 		case <-task.done:
@@ -62,7 +76,7 @@ func (s *Service) AnalyzeRetainedSticker(ctx context.Context, c Context, asset, 
 			return err
 		}
 		signal, cancel := context.WithCancel(root)
-		task = &retainedAnalysis{cancel: cancel, done: make(chan struct{}), members: map[*retainedAnalysisMember]struct{}{member: {}}}
+		task = &retainedAnalysis{contextual: contextual, cancel: cancel, done: make(chan struct{}), members: map[*retainedAnalysisMember]struct{}{member: {}}}
 		if s.retainedAnalyses == nil {
 			s.retainedAnalyses = make(map[string]*retainedAnalysis)
 		}
@@ -106,6 +120,13 @@ func (s *Service) AnalyzeRetainedSticker(ctx context.Context, c Context, asset, 
 			if !router.Policy.HasConfiguredRoute("vision") {
 				return
 			}
+			options := AnalyzeOptions{retained: eligible}
+			if contextual {
+				options.Selection, task.err = selection(signal)
+				if task.err != nil {
+					return
+				}
+			}
 			signal = providertransport.WithFinalModelReadGuard(signal, func(call context.Context) error {
 				return s.transaction(call, func(p *scope) error {
 					current, err := p.asset(id)
@@ -115,7 +136,7 @@ func (s *Service) AnalyzeRetainedSticker(ctx context.Context, c Context, asset, 
 					return eligible(p, current)
 				})
 			})
-			_, task.err = s.analyzeOnce(signal, c, asset, router, codec, AnalyzeOptions{retained: eligible})
+			_, task.err = s.analyzeOnce(signal, c, asset, router, codec, options)
 		}()
 	} else {
 		task.members[member] = struct{}{}
@@ -160,7 +181,7 @@ func (s *Service) qualifyRetainedAnalysis(ctx context.Context, p *scope, sceneID
 	if err != nil {
 		return err
 	}
-	if get(scene, "learningEnabled") != false {
+	if get(scene, "learningEnabled") != task.contextual {
 		return errors.New("model_read_revoked")
 	}
 	s.mu.Lock()

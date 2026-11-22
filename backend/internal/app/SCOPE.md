@@ -114,9 +114,14 @@ This is not a claim of complete TypeScript Engine compatibility.
   owned inline sticker can receive image-only labels without becoming included
   or shared. Identical authorized images coalesce only within the same scene;
   an exact current original must qualify at model send and label commit.
-  The live scene must still have learning off at model dispatch and label
-  commit. A disabling update cancels outstanding scene media work.
-  Locator binding and URL or history intake are not part of this path.
+  With learning on, the retained analysis owner uses the persona and up to
+  eight canonical, local text rows ending at the exact donor occurrence. It
+  applies the existing automatic selection and sharing criteria; another copy
+  of the image cannot replace that donor's prompt. The model dispatch and
+  write require the original read permission, current source and learning mode.
+  Learned expression hints are not included in this bounded background path.
+  A disabling update cancels outstanding scene media work. Locator binding,
+  URL or history intake, and foreground/background coalescing are excluded.
 - The existing async Logger is used; complete source log retention/status/delivery
   route equivalence is not claimed. Independent read publication still preserves
   recovery checks; no constant-time cross-connection audit performance claim is made.

@@ -43,7 +43,7 @@ func (s *Service) IntakeNativeSticker(ctx context.Context, part *botruntime.Disp
 		}
 		return nil
 	})
-	if err != nil || part.InlineObservationLearningEnabled() || get(asset, "analyzed") == true || get(asset, "knownOnly") != true || get(asset, "shared") == true {
+	if err != nil || get(asset, "analyzed") == true || get(asset, "knownOnly") != true || get(asset, "shared") == true {
 		return err
 	}
 	ctx, release, err := s.RootContext(ctx)
@@ -51,15 +51,41 @@ func (s *Service) IntakeNativeSticker(ctx context.Context, part *botruntime.Disp
 		return err
 	}
 	defer release()
-	return s.Memes.AnalyzeRetainedSticker(ctx, c, asset, source, s.Models, s.Codec, func(call context.Context, ws *recovery.WriteSession) (valid bool, err error) {
+	var validateContext func(botruntime.ReadAuthority) (bool, error)
+	qualify := func(call context.Context, ws *recovery.WriteSession) (valid bool, err error) {
 		if !s.Read.ValidInSession(call, ticket, ws) {
 			return false, nil
 		}
 		err = s.Sources.WithSession(ws).WithRuntimeReads(call, func(reads botruntime.ReadAuthority) error {
 			var err error
 			valid, err = s.currentInlineVision(reads, scene, part)
+			if err == nil && valid && validateContext != nil {
+				valid, err = validateContext(reads)
+			}
 			return err
 		})
 		return valid, err
+	}
+	if !part.InlineObservationLearningEnabled() {
+		return s.Memes.AnalyzeRetainedSticker(ctx, c, asset, source, s.Models, s.Codec, qualify)
+	}
+	return s.Memes.LearnRetainedSticker(ctx, c, asset, source, s.Models, s.Codec, qualify, func(call context.Context) (*memeservice.SelectionContext, error) {
+		var rows []botruntime.InlineStickerText
+		if err := s.Sources.WithRuntimeReads(call, func(reads botruntime.ReadAuthority) error {
+			var err error
+			rows, validateContext, err = part.InlineStickerContext(reads)
+			return err
+		}); err != nil {
+			return nil, err
+		}
+		persona, err := s.persona(call)
+		if err != nil {
+			return nil, err
+		}
+		messages := make([]any, 0, len(rows))
+		for _, row := range rows {
+			messages = append(messages, fields("isBot", row.IsBot, "text", prefix(row.Text, 2000)))
+		}
+		return &memeservice.SelectionContext{Persona: persona, SourceContext: messages, SourceContextKnown: true}, nil
 	})
 }

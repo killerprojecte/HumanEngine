@@ -3,6 +3,7 @@ package botruntime
 import (
 	"context"
 	"math/bits"
+	"strings"
 )
 
 type NativeInlineObservation struct {
@@ -101,4 +102,70 @@ func (m *DisplayImageSource) ReadInlineObservation(ctx context.Context) ([]byte,
 		return nil, ErrDisplayImageUnavailable
 	}
 	return bytes, nil
+}
+
+type InlineStickerText struct {
+	IsBot bool
+	Text  string
+}
+
+// InlineStickerContext projects the bounded retained context ending at the
+// exact sticker occurrence. New messages cannot replace the donor's context.
+// The returned validator keeps the same projected sources tied to the prompt.
+func (m *DisplayImageSource) InlineStickerContext(reads ReadAuthority) ([]InlineStickerText, func(ReadAuthority) (bool, error), error) {
+	if get(m.record.body, "sourceEventRegistrationLimited") == true {
+		return nil, nil, ErrDisplayImageUnavailable
+	}
+	v := m.runtime.trimPublished(m.state)
+	var selected [8]*messageRecord
+	at := len(selected)
+	found := false
+	for b := v.history; b != nil && at != 0; b = b.previous {
+		for i := len(b.records) - 1; i >= 0 && at != 0; i-- {
+			record := b.records[i]
+			found = found || record == m.record
+			if !found || v.recalled[idOf(record.body)] || get(record.body, "sceneId") != m.scene.ID ||
+				get(record.body, "origin") != "live" || get(record.body, "status") != "available" {
+				continue
+			}
+			at--
+			selected[at] = record
+		}
+	}
+	if selected[len(selected)-1] != m.record {
+		return nil, nil, ErrDisplayImageUnavailable
+	}
+	records := selected[at:]
+	rows := make([]*Object, len(records))
+	for i, record := range records {
+		rows[i] = record.body
+	}
+	valid := func(reads ReadAuthority) (bool, error) {
+		v := m.state.view.Load()
+		r := m.runtime
+		cutoff := r.services.Clock.Now() - r.lifetime(r.config())
+		for _, record := range records {
+			if record.retention.discarded.Load() || record.receivedAt < cutoff || v.recalled[idOf(record.body)] {
+				return false, nil
+			}
+		}
+		return reads.ValidateSources(m.scene, rows, nil)
+	}
+	if ok, err := valid(reads); err != nil || !ok {
+		if err != nil {
+			return nil, nil, err
+		}
+		return nil, nil, ErrDisplayImageUnavailable
+	}
+	text := make([]InlineStickerText, 0, len(rows))
+	for _, row := range rows {
+		var parts []string
+		for _, part := range array(get(row, "parts")) {
+			if get(part, "type") == "text" {
+				parts = append(parts, str(get(part, "text")))
+			}
+		}
+		text = append(text, InlineStickerText{get(row, "senderId") == "bot", strings.Join(parts, " ")})
+	}
+	return text, valid, nil
 }

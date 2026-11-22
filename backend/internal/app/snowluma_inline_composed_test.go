@@ -428,7 +428,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	if err := reopened.Shutdown(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if calls.Load() != 4 || visionCalls.Load() != 0 {
+	if calls.Load() != 5 || visionCalls.Load() != 0 {
 		t.Fatal("reopening or re-enabling learning unexpectedly scheduled analysis")
 	}
 }

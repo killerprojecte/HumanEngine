@@ -64,7 +64,7 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 		arrived <- raw
 		tag := "verified-automatic-label"
 		w.Header().Set("Content-Type", "application/json")
-		if number == 2 || number == 4 {
+		if number == 2 || number == 5 {
 			gate := (<-chan struct{})(release)
 			if number == 2 {
 				gate = transition
@@ -77,10 +77,10 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 			}
 			tag = "revoked-proposal"
 		}
-		if number == 3 {
-			tag = "verified-manual-contextual-label"
+		if number == 3 || number == 4 {
+			tag = "verified-automatic-contextual-label"
 		}
-		content := fmt.Sprintf(`{"appearance":[],"style":[],"subject":[],"emotion":[],"intent":[%q],"tone":[],"intensity":[],"memeMeaning":[],"ocr":"","selection":{"usable":true,"shareable":true,"confidence":0.99,"containsPersonalData":false,"sourceSpecific":false,"containsRealPerson":false}}`, tag)
+		content := fmt.Sprintf(`{"appearance":[],"style":[],"subject":[],"emotion":[],"intent":[%q],"tone":[],"intensity":[],"memeMeaning":[],"ocr":"","selection":{"usable":true,"shareable":%t,"confidence":0.99,"containsPersonalData":false,"sourceSpecific":false,"containsRealPerson":false}}`, tag, number != 3)
 		_ = json.NewEncoder(w).Encode(map[string]any{"choices": []any{map[string]any{"finish_reason": "stop", "message": map[string]any{"content": content}}}})
 	}))
 	t.Cleanup(server.Close)
@@ -100,7 +100,7 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 		encoded := base64.StdEncoding.EncodeToString(b.Bytes())
 		emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": 100,
 			"user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{
-				map[string]any{"type": "text", "data": map[string]any{"text": sourceMarker}},
+				map[string]any{"type": "text", "data": map[string]any{"text": sourceMarker + "-" + strconv.Itoa(id)}},
 				map[string]any{"type": "mface", "data": map[string]any{"base64": encoded}},
 			}})
 		return snow.MessageID(scene, strconv.Itoa(id)), encoded
@@ -176,29 +176,43 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 		t.Fatalf("learning-on transition published tag-only work: calls=%d err=%v", calls.Load(), err)
 	}
 
-	// A newly admitted learning-on asset keeps its first contextual analysis.
-	onID, _ := emitSticker(981, 115)
-	fresh := awaitAsset(onID, false)
-	if field(fresh, "analyzed") != false || calls.Load() != 2 {
-		t.Fatal("learning-on intake must not preempt first contextual analysis")
-	}
-	manual := appRequest(t, app, "POST", "/api/memes/"+url.PathEscape(field(fresh, "id").(string))+"/analyze", map[string]any{"sceneId": scene})
-	select {
-	case raw := <-arrived:
-		if !bytes.Contains(raw, []byte(personaMarker)) || !bytes.Contains(raw, []byte(sourceMarker)) {
-			t.Fatal("manual analyzer did not retain contextual policy")
+	// A distinct learning-on sticker performs its first contextual analysis
+	// automatically, even while participation is disabled.
+	awaitContextual := func(donor int) {
+		t.Helper()
+		select {
+		case raw := <-arrived:
+			if !bytes.Contains(raw, []byte("data:image/png;base64,")) ||
+				!bytes.Contains(raw, []byte(personaMarker)) || !bytes.Contains(raw, []byte(sourceMarker+"-"+strconv.Itoa(donor))) {
+				t.Fatal("automatic contextual analysis did not include exact pixels and isolated selection context")
+			}
+		case <-wait.Done():
+			t.Fatal("learning-on background owner did not call the configured native model")
 		}
-	default:
-		t.Fatal("manual analyzer did not call the provider")
 	}
-	if calls.Load() != 3 || field(manual, "analyzed") != true || field(manual, "knownOnly") != false ||
-		field(manual, "available") != true || field(manual, "shared") != true {
-		t.Fatal("first manual contextual selection no longer grants the fixture's eligible disposition")
+	onID, _ := emitSticker(981, 115)
+	awaitContextual(981)
+	learned := awaitAsset(onID, true)
+	tagsWire, err = jsjson.Marshal(field(learned, "tags"))
+	if err != nil || calls.Load() != 3 || !bytes.Contains(tagsWire, []byte("verified-automatic-contextual-label")) ||
+		field(learned, "knownOnly") != false || field(learned, "available") != true ||
+		field(learned, "shared") != false || field(learned, "privacyReviewed") != false ||
+		field(learned, "selectionOrigin") != "automatic" || field(learned, "sharingOrigin") != "automatic" {
+		t.Fatal("contextual automatic selection did not grant the fixture's local-only disposition")
 	}
-	setLearning(false)
+	warmID, _ := emitSticker(984, 115)
+	if warm := awaitAsset(warmID, true); field(warm, "id") != field(learned, "id") {
+		t.Fatal("same exact pixels did not reuse the analyzed contextual asset")
+	}
+	sharedID, _ := emitSticker(983, 164)
+	awaitContextual(983)
+	shared := awaitAsset(sharedID, true)
+	if calls.Load() != 4 || field(shared, "available") != true || field(shared, "shared") != true || field(shared, "privacyReviewed") != true {
+		t.Fatal("known-context generic sticker did not receive the explicit share disposition")
+	}
 	sourceID, _ := emitSticker(979, 23)
 	assetID := field(awaitAsset(sourceID, false), "id").(string)
-	awaitPixels()
+	awaitContextual(979)
 	root, closeRoot, err := app.Engine.RootContext(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -230,9 +244,11 @@ func assertAutomaticStickerAnalysisHeldRecall(t *testing.T, ctx context.Context,
 	if err != nil {
 		t.Fatal(err)
 	}
-	if calls.Load() != 4 || len(sources) != 0 || field(current, "analyzed") == true || field(current, "available") == true ||
+	if calls.Load() != 5 || len(sources) != 0 || field(current, "analyzed") == true || field(current, "available") == true ||
 		field(current, "shared") == true || field(current, "privacyReviewed") == true || bytes.Contains(raw, []byte("revoked-proposal")) {
 		t.Fatalf("revoked last source published an inference or triggered another provider request (calls=%d)", calls.Load())
 	}
+	t.Logf("native sticker provider calls after owner drain: %d (2 off, 3 contextual; warmed duplicate adds 0)", calls.Load())
+	setLearning(false) // Restore the tag-only fixture state for the cold reopen.
 	return field(labeled, "id").(string), positivePNG, &calls
 }

@@ -68,6 +68,7 @@ type Ports struct {
 	CompleteCandidate   func(context.Context, Candidate, []ChatMessage) (string, error)
 	AddDependency       func(string)
 	AddSourceValidation func(Candidate)
+	Observe             func(Candidate, Observation)
 	// ReportError receives the original error for internal diagnostics only. It
 	// must not log image bytes, descriptions or unsanitized external messages.
 	ReportError func(operation string, err error)
@@ -386,6 +387,9 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			}
 		}
 		appendObs := func(o Observation) {
+			if p.Observe != nil {
+				p.Observe(c, o)
+			}
 			out.Images = append(out.Images, Image{c.Message.ID, o})
 			if o.FramePolicy == "stored_library_observation" {
 				out.FramePolicy = "per_image"

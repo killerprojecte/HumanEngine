@@ -23,6 +23,7 @@ type continuationState struct {
 	releaseRouter func()
 	routerError   error
 	visionStarted bool
+	visionReplay  []nativeVisionReplay
 	closed        bool
 	messages      map[*Object]*providertransport.Message
 }
@@ -36,6 +37,7 @@ func (s *continuationState) ReleaseTurnState() error {
 	s.closed = true
 	messages := s.messages
 	s.messages = nil
+	s.visionReplay = nil
 	releaseRouter := s.releaseRouter
 	s.releaseRouter = nil
 	s.mu.Unlock()

@@ -46,13 +46,16 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	type actualCall struct {
 		Model    string `json:"model"`
 		Messages []struct {
+			Role    string          `json:"role"`
 			Content json.RawMessage `json:"content"`
 		} `json:"messages"`
 	}
 	calls := make(chan actualCall, 8)
-	var visionCalls atomic.Int32
+	var visionCalls, plannerCalls atomic.Int32
 	batch := len(tokenTest) != 0 && tokenTest[0].batch
 	cacheProbe := len(tokenTest) != 0 && tokenTest[0].cacheProbe
+	plannerProbe := len(tokenTest) != 0 && tokenTest[0].plannerProbe
+	const replayID = "1" // provider projection of the native message id
 	wantVision := int32(1)
 	if batch {
 		wantVision = 3
@@ -70,6 +73,25 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 			index := visionCalls.Add(1)
 			fmt.Fprintf(w, `{"choices":[{"finish_reason":"stop","message":{"role":"assistant","content":"Synthetic visual observation %d"}}]}`, index)
 		case "planner-synthetic":
+			if plannerProbe {
+				tool := "participation__decide"
+				var args any = map[string]any{"action": "reply", "reasonCode": "fixture", "targetMessageIds": []string{replayID}}
+				phase := plannerCalls.Add(1)
+				switch phase {
+				case 1:
+				case 2, 3:
+					tool, args = "messages__get", map[string]any{"ids": []string{replayID}}
+				case 4:
+					<-r.Context().Done()
+					return
+				default:
+					http.Error(w, "unexpected extra planner call", 400)
+					return
+				}
+				arguments, _ := json.Marshal(args)
+				fmt.Fprintf(w, `{"choices":[{"finish_reason":"tool_calls","message":{"role":"assistant","tool_calls":[{"id":"planner-fixture-%d","type":"function","function":{"name":%q,"arguments":%q}}]}}]}`, phase, tool, arguments)
+				return
+			}
 			fmt.Fprint(w, `{"choices":[{"finish_reason":"tool_calls","message":{"role":"assistant","tool_calls":[{"id":"decide","type":"function","function":{"name":"participation__decide","arguments":"{\"action\":\"silent\",\"reasonCode\":\"fixture\"}"}}]}}]}`)
 		default:
 			http.Error(w, "wrong model", 400)
@@ -125,7 +147,7 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 		} else if len(tokenTest) == 0 {
 			emitImage(group, 1, map[string]any{"base64": fixture.Base64})
 		} else {
-			if group == 102 && !cacheProbe {
+			if group == 102 && !cacheProbe && !plannerProbe {
 				// The newest guarded image outranks the older ready-inline image.
 				emitImage(group, 2, map[string]any{"base64": fixture.Base64})
 				count++
@@ -252,6 +274,57 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 			previous = index
 		}
 	}
+	if plannerProbe {
+		awaitCall("planner-synthetic") // request that asks the exact message tool
+		for range 2 {
+			continuation := awaitCall("planner-synthetic")
+			got := 0
+			for i := len(continuation.Messages) - 1; i >= 0; i-- {
+				message := continuation.Messages[i]
+				if message.Role != "tool" {
+					continue
+				}
+				var content string
+				if err := json.Unmarshal(message.Content, &content); err != nil {
+					t.Fatal(err)
+				}
+				var receipt struct {
+					ToolName string
+					Value    struct {
+						ImageContext []struct {
+							Images []struct {
+								MessageID, Status, Description string
+							}
+						}
+					}
+				}
+				if err := json.Unmarshal([]byte(content), &receipt); err != nil {
+					t.Fatal(err)
+				}
+				if receipt.ToolName != "messages.get" {
+					t.Fatalf("wrong Planner receipt: %s", receipt.ToolName)
+				}
+				for _, projected := range receipt.Value.ImageContext {
+					for _, image := range projected.Images {
+						if image.MessageID != replayID || image.Status != "described" || image.Description != "Synthetic visual observation 1" {
+							t.Fatalf("wrong Planner tool image observation: %+v", image)
+						}
+						got++
+					}
+				}
+				break // test the newest actual tool receipt, not any prior one
+			}
+			if got != 1 || tokenTest[0].reads() != 1 || visionCalls.Load() != 1 {
+				t.Fatalf("Planner receipt replay: descriptions=%d reads=%d VLM=%d", got, tokenTest[0].reads(), visionCalls.Load())
+			}
+		}
+		app.Engine.Runtime.Cancel(goodScene)
+		if final := awaitDone(good); final.Status != "cancelled" {
+			t.Fatalf("held Planner probe did not cancel: %+v", final)
+		}
+		return
+	}
+
 	if final := awaitDone(good); final.Status != "skipped" || final.Reason != "decision_silent" {
 		t.Fatalf("first vision turn failed: %+v", final)
 	}

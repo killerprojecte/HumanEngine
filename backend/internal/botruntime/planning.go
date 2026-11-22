@@ -21,6 +21,7 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 	manualContext := f.manualContext
 	projection := f.projection
 	imageContext := f.imageContext
+	canReplayImages := len(imageContext) != 0
 	learned := f.learned
 	decision := f.decision
 	targets := f.targets
@@ -156,9 +157,14 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 			defer done()
 			previous := c.deferMemoryExposure.Load()
 			c.deferMemoryExposure.Store(true)
+			isHistory := strings.HasPrefix(name, "messages.")
+			replayImages := canReplayImages && name == "messages.get"
+			if replayImages {
+				ctx = context.WithValue(ctx, receiptImageSourceContextKey{}, &localImageReceipt{})
+			}
 			output, e := r.executeTool(t, ctx, name, args)
 			c.deferMemoryExposure.Store(previous)
-			if e == nil && strings.HasPrefix(name, "messages.") {
+			if e == nil && isHistory {
 				grounding.ObserveCoreHistory(output, c.Scene.ID, c.Mode)
 				observations := []any{}
 				rows := []*Object{}
@@ -179,12 +185,27 @@ func (r *Runtime) planTurn(t *turn, f *turnFrame, issues *int) error {
 						}
 					}
 				}
+				imageContext = append(imageContext, observations...)
+				if e == nil && replayImages && len(receiptImageSources(ctx).byRow) != 0 {
+					for _, extension := range r.exts() {
+						if extension.ReplayImages == nil {
+							continue
+						}
+						v, err := trackedWithin(r, ctx, func(done func(any, error)) { extension.ReplayImages(ctx, c, rows, done) })
+						if err != nil {
+							e = err
+							break
+						}
+						if truthy(v) {
+							observations = append(observations, v)
+						}
+					}
+				}
 				if o, ok := output.(*Object); ok {
 					o = o.Clone()
 					_ = o.Set("imageContext", observations)
 					output = o
 				}
-				imageContext = append(imageContext, observations...)
 			}
 			var event Event
 			if e == nil {

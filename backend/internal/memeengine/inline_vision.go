@@ -19,6 +19,65 @@ func (s *Service) inlineVision(modelPort *RuntimeModels) func(context.Context, *
 	}
 }
 
+type nativeVisionReplay struct {
+	id          string
+	source      *botruntime.DisplayImageSource
+	observation visioncontext.Observation
+}
+
+func (s *Service) visionReceipt(modelPort *RuntimeModels) func(context.Context, *botruntime.TurnContext, []*Object, func(any, error)) {
+	return func(ctx context.Context, turn *botruntime.TurnContext, rows []*Object, settle func(any, error)) {
+		state := turn.OwnedExtensionState(modelPort, func() any { return &continuationState{} }).(*continuationState)
+		state.mu.Lock()
+		entries := state.visionReplay
+		state.mu.Unlock()
+		value, err := s.replayNativeVision(ctx, turn, rows, entries)
+		settle(value, err)
+	}
+}
+
+func (s *Service) replayNativeVision(ctx context.Context, turn *botruntime.TurnContext, rows []*Object, entries []nativeVisionReplay) (any, error) {
+	if len(entries) == 0 {
+		return nil, nil
+	}
+	var matched []nativeVisionReplay
+	for _, row := range rows {
+		for _, replay := range entries {
+			if replay.source.MatchesImageReceipt(ctx, row) &&
+				!slices.ContainsFunc(matched, func(other nativeVisionReplay) bool { return other.source == replay.source }) {
+				matched = append(matched, replay)
+			}
+		}
+	}
+	if len(matched) == 0 {
+		return nil, nil
+	}
+	if ctx.Err() != nil || !s.TurnRead.ValidContext(ctx, turn) {
+		return nil, visioncontext.ErrCancelled
+	}
+	result := visioncontext.Result{
+		Trust: "untrusted_image_descriptions", FramePolicy: "first_frame_only",
+		Images: make([]visioncontext.Image, 0, len(matched)),
+	}
+	err := s.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error {
+		for _, replay := range matched {
+			valid, err := s.currentInlineVision(reads, turn.Scene.ID, replay.source)
+			if err != nil {
+				return err
+			}
+			if !valid {
+				return visioncontext.ErrCancelled
+			}
+			result.Images = append(result.Images, visioncontext.Image{MessageID: replay.id, Observation: replay.observation})
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.Project()
+}
+
 type nativeVisionCandidate struct {
 	source   *botruntime.DisplayImageSource
 	sticker  bool
@@ -106,6 +165,7 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 
 	withRoute := router.Policy.HasConfiguredRoute("vision")
 	var selected []*nativeVisionCandidate
+	var observations []nativeVisionReplay
 	result, err := visioncontext.Describe(ctx, new(visioncontext.Turn), visioncontext.Config{
 		SceneID: turn.Scene.ID, Mode: turn.Mode, Timezone: turn.Timezone(), VisionRoute: withRoute, PriorityIDs: turn.ImagePriorityIDs,
 	}, candidates, nil, visioncontext.Ports{
@@ -122,6 +182,11 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			native := nativeCandidate(c)
 			selected = append(selected, native)
 			turn.AddScopedValidation(native.validate)
+		},
+		Observe: func(c visioncontext.Candidate, observation visioncontext.Observation) {
+			if observation.Status == "described" && observation.FramePolicy == "first_frame_only" {
+				observations = append(observations, nativeVisionReplay{c.Message.ID, nativeCandidate(c).source, observation})
+			}
 		},
 		ReadImage: func(call context.Context, c visioncontext.Candidate) ([]byte, error) {
 			native := nativeCandidate(c)
@@ -188,7 +253,15 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 			return nil, err
 		}
 	}
-	return result.Project()
+	value, err := result.Project()
+	if err == nil && len(observations) != 0 {
+		state.mu.Lock()
+		if !state.closed {
+			state.visionReplay = observations
+		}
+		state.mu.Unlock()
+	}
+	return value, err
 }
 
 func (native *nativeVisionCandidate) check(reads botruntime.ReadAuthority) error {

@@ -263,6 +263,28 @@ func (c *TurnContext) NativeVisionSources(message *Object, visit func(*DisplayIm
 	}
 }
 
+type receiptImageSourceContextKey struct{}
+
+type localImageReceipt struct {
+	byRow map[*Object]*Object
+}
+
+func receiptImageSources(ctx context.Context) *localImageReceipt {
+	proofs, _ := ctx.Value(receiptImageSourceContextKey{}).(*localImageReceipt)
+	return proofs
+}
+
+// MatchesImageReceipt identifies the exact retained body the read owner used;
+// a remote row with equal IDs or locators never owns that proof.
+func (m *DisplayImageSource) MatchesImageReceipt(ctx context.Context, row *Object) bool {
+	if proofs := receiptImageSources(ctx); proofs == nil || proofs.byRow[row] != m.record.body {
+		return false
+	}
+	parts := array(get(row, "parts"))
+	i := int(m.visionPart)
+	return i < len(parts) && imageAsset(parts[i]) == m.assetID
+}
+
 func (m *DisplayImageSource) IsManaged() bool {
 	return m.remote == nil && m.record.displayMedia.native == nil
 }

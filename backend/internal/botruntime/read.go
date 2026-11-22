@@ -11,6 +11,7 @@ func (r *Runtime) read(t *turn, ctx context.Context, name string, input any) (an
 
 func (r *Runtime) readWithRequestedTracking(t *turn, ctx context.Context, name string, input any, trackRequestedIDs bool) (any, error) {
 	c, s := t.context, t.state
+	proofs := receiptImageSources(ctx)
 	var requested []string
 	var inputErr error
 	if name == "messages.get" {
@@ -57,6 +58,12 @@ func (r *Runtime) readWithRequestedTracking(t *turn, ctx context.Context, name s
 				m := cached.Clone()
 				_ = m.Set("origin", "history")
 				items = append(items, m)
+				if proofs != nil {
+					if proofs.byRow == nil {
+						proofs.byRow = make(map[*Object]*Object)
+					}
+					proofs.byRow[m] = cached
+				}
 			} else if c.Mode == "real" && adapter != nil && adapter.GetMessage != nil {
 				out, e := trackedWithin(r, ctx, func(settle func(*Object, error)) { adapter.GetMessage(ctx, c.Scene, id, settle) })
 				if e != nil {
@@ -107,6 +114,7 @@ func (r *Runtime) readWithRequestedTracking(t *turn, ctx context.Context, name s
 				copy := m.Clone()
 				_ = copy.Set("origin", "history")
 				items = append(items, copy)
+
 			}
 		}
 		if name == "messages.byUser" {
@@ -144,7 +152,14 @@ func (r *Runtime) readWithRequestedTracking(t *turn, ctx context.Context, name s
 				return nil, err
 			}
 			if !recalled {
-				selected = append(selected, r.normalize(m, c.Scene))
+				row := r.normalize(m, c.Scene)
+				if proofs != nil {
+					if body := proofs.byRow[m]; body != nil {
+						delete(proofs.byRow, m)
+						proofs.byRow[row] = body
+					}
+				}
+				selected = append(selected, row)
 			}
 		}
 	}

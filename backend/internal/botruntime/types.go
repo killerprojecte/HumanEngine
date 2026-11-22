@@ -144,11 +144,13 @@ type Extension struct {
 	Tools        []*Object
 	// ToolsForTurn mirrors source dynamic extension.tools getters. It must return
 	// fresh definitions, may read published configuration, and must not perform I/O.
-	ToolsForTurn         func(*TurnContext) []*Object
-	ContextPrompt        func(*TurnContext) (string, error)
-	ContextData          func(*TurnContext) (any, error)
-	PlannerContextData   func(*TurnContext, []*Object) (any, error)
-	DescribeImages       func(context.Context, *TurnContext, []*Object, func(any, error))
+	ToolsForTurn       func(*TurnContext) []*Object
+	ContextPrompt      func(*TurnContext) (string, error)
+	ContextData        func(*TurnContext) (any, error)
+	PlannerContextData func(*TurnContext, []*Object) (any, error)
+	DescribeImages     func(context.Context, *TurnContext, []*Object, func(any, error))
+	// ReplayImages is receipt-only; its output is not appended to the Replyer aggregate.
+	ReplayImages         func(context.Context, *TurnContext, []*Object, func(any, error))
 	Execute              func(context.Context, string, any, *TurnContext, func(any, error))
 	Delivered            func(string, any, *TurnContext, any) (any, error)
 	ContextSelected      func(*TurnContext, *Object) error

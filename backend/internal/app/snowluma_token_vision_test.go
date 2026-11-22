@@ -28,6 +28,7 @@ type opaqueVisionTestBarrier struct {
 	once             sync.Once
 	direct, batch    bool
 	cacheProbe       bool
+	plannerProbe     bool
 	fresh            atomic.Bool
 	reads            func() int32
 	setAvailable     func(bool)
@@ -38,23 +39,27 @@ func (b *opaqueVisionTestBarrier) releaseHeld() { b.once.Do(func() { close(b.rel
 // The actual bundled Sender transport is covered independently. This arm
 // drives the app and native model wire without compiling a WASM instance.
 func TestOpaqueVisionNativeApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, false, false, false)
+	testGuardedNativeVisionApplication(t, false, false, false, false)
 }
 
 func TestDirectURLVisionNativeApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, true, false, false)
+	testGuardedNativeVisionApplication(t, true, false, false, false)
 }
 
 func TestCurrentNativeVisionBatchApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, true, true, false)
+	testGuardedNativeVisionApplication(t, true, true, false, false)
 }
 
 func TestNativeVisionOriginalCacheApplication(t *testing.T) {
-	t.Run("direct", func(t *testing.T) { testGuardedNativeVisionApplication(t, true, false, true) })
-	t.Run("opaque", func(t *testing.T) { testGuardedNativeVisionApplication(t, false, false, true) })
+	t.Run("direct", func(t *testing.T) { testGuardedNativeVisionApplication(t, true, false, true, false) })
+	t.Run("opaque", func(t *testing.T) { testGuardedNativeVisionApplication(t, false, false, true, false) })
 }
 
-func testGuardedNativeVisionApplication(t *testing.T, direct, batch, cacheProbe bool) {
+func TestNativeVisionPlannerReceiptReplay(t *testing.T) {
+	testGuardedNativeVisionApplication(t, true, false, false, true)
+}
+
+func testGuardedNativeVisionApplication(t *testing.T, direct, batch, cacheProbe, plannerProbe bool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
@@ -66,7 +71,7 @@ func testGuardedNativeVisionApplication(t *testing.T, direct, batch, cacheProbe 
 		t.Fatal(err)
 	}
 	defer app.Shutdown(context.Background())
-	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{}), direct: direct, batch: batch, cacheProbe: cacheProbe}
+	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{}), direct: direct, batch: batch, cacheProbe: cacheProbe, plannerProbe: plannerProbe}
 	defer barrier.releaseHeld()
 	root, release, err := app.Engine.RootContext(ctx)
 	if err != nil {
@@ -244,6 +249,9 @@ func testGuardedNativeVisionApplication(t *testing.T, direct, batch, cacheProbe 
 			} else {
 				wantToken = 4
 			}
+		}
+		if plannerProbe {
+			wantToken, wantDirect, wantInline = 0, 1, 0
 		}
 		if tokens, urls, inline := tokenCalls.Load(), directCalls.Load(), inlineReads.Load(); tokens != wantToken || urls != wantDirect || inline != wantInline {
 			t.Errorf("wrong priority or extra IO: token=%d URL=%d inline=%d; want %d/%d/%d", tokens, urls, inline, wantToken, wantDirect, wantInline)

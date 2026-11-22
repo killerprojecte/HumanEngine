@@ -52,6 +52,6 @@ func NewRuntime(main *sql.DB, a *recovery.Authority, memes *memeservice.Service,
 	engine.TurnRead = read
 	engine.installOutgoing()
 	runtime.AddExtension(engine.ComposeExtension(base))
-	runtime.AddExtension(&botruntime.Extension{DescribeImages: engine.inlineVision(modelPort)})
+	runtime.AddExtension(&botruntime.Extension{DescribeImages: engine.inlineVision(modelPort), ReplayImages: engine.visionReceipt(modelPort)})
 	return engine, nil
 }

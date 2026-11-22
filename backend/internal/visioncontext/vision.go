@@ -59,11 +59,13 @@ type Library struct {
 // Ports are bound to the real turn authority by the composition owner. Complete
 // must release its provider completion ownership after copying the returned text.
 type Ports struct {
+	// Recalled may be omitted when SourceAvailable owns candidate recall.
 	Recalled            func(sceneID, messageID string) (bool, error)
 	SourceAvailable     func(Candidate) (bool, error)
 	ReadImage           func(context.Context, Candidate) ([]byte, error)
 	ImageDataURL        func(context.Context, []byte) (string, error)
 	Complete            func(context.Context, []ChatMessage) (string, error)
+	CompleteCandidate   func(context.Context, Candidate, []ChatMessage) (string, error)
 	AddDependency       func(string)
 	AddSourceValidation func(Candidate)
 	// ReportError receives the original error for internal diagnostics only. It
@@ -200,7 +202,7 @@ var ErrCancelled = errors.New("request_cancelled")
 
 func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cache *Cache, p Ports, lib *Library) (Result, error) {
 	out := Result{Trust: "untrusted_image_descriptions", FramePolicy: "first_frame_only", Images: []Image{}, Omitted: []Omitted{}}
-	if t == nil || p.Recalled == nil || p.SourceAvailable == nil || p.ReadImage == nil || p.ImageDataURL == nil || p.Complete == nil || p.AddDependency == nil || p.AddSourceValidation == nil {
+	if t == nil || p.SourceAvailable == nil || p.ReadImage == nil || p.ImageDataURL == nil || (p.Complete == nil && p.CompleteCandidate == nil) || p.AddDependency == nil || p.AddSourceValidation == nil {
 		return out, errors.New("vision_context_composition_required")
 	}
 	models := func() (any, error) {
@@ -250,6 +252,12 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 		t.budget = map[string]bool{}
 		t.results = map[string]Observation{}
 	}
+	recalled := func(c Candidate) (bool, error) {
+		if p.Recalled == nil {
+			return false, nil
+		}
+		return p.Recalled(cfg.SceneID, c.Message.ID)
+	}
 	ranked := []Candidate{}
 	order := map[*Message]int{}
 	for i, m := range messages {
@@ -284,7 +292,7 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 	seen := map[string]bool{}
 	for _, c := range ranked {
 		if cfg.Mode == "real" && ctx.Err() == nil {
-			recalled, e := p.Recalled(cfg.SceneID, c.Message.ID)
+			recalled, e := recalled(c)
 			if e != nil {
 				return out, e
 			}
@@ -334,7 +342,7 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			if ctx.Err() != nil {
 				return false, nil
 			}
-			recalled, e := p.Recalled(cfg.SceneID, c.Message.ID)
+			recalled, e := recalled(c)
 			if e != nil || recalled {
 				return false, e
 			}
@@ -498,7 +506,12 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 				if e != nil {
 					return Observation{}, e
 				}
-				description, e = p.Complete(ctx, []ChatMessage{{Role: "system", Content: SystemPrompt}, {Role: "user", Content: content, Images: []string{url}}})
+				wire := []ChatMessage{{Role: "system", Content: SystemPrompt}, {Role: "user", Content: content, Images: []string{url}}}
+				if p.CompleteCandidate != nil {
+					description, e = p.CompleteCandidate(ctx, c, wire)
+				} else {
+					description, e = p.Complete(ctx, wire)
+				}
 				if e != nil {
 					return Observation{}, e
 				}
@@ -523,6 +536,9 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 			return Observation{Status: "described", Description: description, FramePolicy: policy}, nil
 		}()
 		if e != nil {
+			if errors.Is(e, ErrCancelled) {
+				return out, e
+			}
 			if p.ReportError != nil {
 				p.ReportError(operation, e)
 			}

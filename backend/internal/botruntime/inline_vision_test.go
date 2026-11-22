@@ -11,7 +11,7 @@ func TestInlineVisionSkipsOrdinaryPartsBeforeRuntimeLookup(t *testing.T) {
 		obj("type", "media", "mediaType", "image/png", "assetId", "managed-other-owner"),
 		obj("type", "media", "mediaType", "audio", "assetId", "ob:media:audio"),
 	})
-	if image, _ := turn.NativeVisionSource(message); image != nil {
+	turn.NativeVisionSources(message, func(*DisplayImageSource, int) {
 		t.Fatal("ordinary parts cannot select native vision input")
-	}
+	})
 }

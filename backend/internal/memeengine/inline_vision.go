@@ -3,7 +3,7 @@ package memeengine
 import (
 	"context"
 	"errors"
-	"strconv"
+	"slices"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/modelread"
@@ -19,26 +19,24 @@ func (s *Service) inlineVision(modelPort *RuntimeModels) func(context.Context, *
 	}
 }
 
-func (s *Service) selectInlineVision(turn *botruntime.TurnContext, messages []*Object) (*botruntime.DisplayImageSource, *Object, int) {
-	for _, id := range turn.ImagePriorityIDs {
-		for _, message := range messages {
-			if get(message, "id") != id {
-				continue
-			}
-			if source, index := turn.NativeVisionSource(message); source != nil {
-				return source, message, index
-			}
-		}
-	}
-	return nil, nil, 0
+type nativeVisionCandidate struct {
+	source   *botruntime.DisplayImageSource
+	sticker  bool
+	ticket   *modelread.Ticket
+	validate func(botruntime.ReadAuthority) (bool, error)
+	require  func(context.Context) error
+}
+
+func nativeCandidate(candidate visioncontext.Candidate) *nativeVisionCandidate {
+	return candidate.Part.Reference.(*nativeVisionCandidate)
 }
 
 func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeModels, turn *botruntime.TurnContext, messages []*Object) (any, error) {
 	if turn.Mode != "real" {
 		return nil, nil
 	}
-	// RuntimeModels.BeginTurn created this state before any prompt work. Once
-	// the first eligible source is claimed, planner history tools do not scan.
+	// The initial eligible native callback owns the budget. Planner history
+	// callbacks cannot add remote or older sources to this batch.
 	state := turn.OwnedExtensionState(modelPort, func() any { return &continuationState{} }).(*continuationState)
 	state.mu.Lock()
 	router := state.router
@@ -47,11 +45,57 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 	if started {
 		return nil, nil
 	}
-	source, message, partIndex := s.selectInlineVision(turn, messages)
-	if source == nil {
+	var candidates []*visioncontext.Message
+	var library *visioncontext.Library
+	for _, message := range messages {
+		id := str(get(message, "id"))
+		if !slices.Contains(turn.ImagePriorityIDs, id) {
+			continue
+		}
+		var row *visioncontext.Message
+		turn.NativeVisionSources(message, func(source *botruntime.DisplayImageSource, index int) {
+			native := &nativeVisionCandidate{
+				source:  source,
+				sticker: source.IsInline() && IsStickerMetadata(source.InlinePartMetadata(index)),
+				validate: func(reads botruntime.ReadAuthority) (bool, error) {
+					return s.currentInlineVision(reads, turn.Scene.ID, source)
+				},
+			}
+			native.require = func(call context.Context) error {
+				return s.withNativeVisionRead(call, turn, native, nil)
+			}
+			if native.sticker && library == nil {
+				library = &visioncontext.Library{
+					CanRecognize: func(c visioncontext.Candidate) (bool, error) {
+						return nativeCandidate(c).sticker, nil
+					},
+					Recognize: func(call context.Context, image []byte, c visioncontext.Candidate) (string, bool, error) {
+						native := nativeCandidate(c)
+						if native.ticket == nil {
+							return "", false, nil
+						}
+						description, guard, err := s.storedInlineSticker(call, turn, native.source, image, native.ticket)
+						if guard != nil {
+							turn.AddScopedValidation(guard)
+						}
+						return description, guard != nil, err
+					},
+				}
+			}
+			if row == nil {
+				row = &visioncontext.Message{
+					ID: id, SceneID: turn.Scene.ID, Status: "available", SentAt: str(get(message, "sentAt")),
+				}
+				candidates = append(candidates, row)
+			}
+			row.Parts = append(row.Parts, visioncontext.Part{
+				Type: "media", MediaType: "image", AssetID: source.AssetID(), Index: index, Reference: native,
+			})
+		})
+	}
+	if len(candidates) == 0 {
 		return nil, nil
 	}
-	id := str(get(message, "id"))
 	state.mu.Lock()
 	if state.visionStarted || state.closed {
 		state.mu.Unlock()
@@ -60,87 +104,50 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 	state.visionStarted = true
 	state.mu.Unlock()
 
-	validate := func(reads botruntime.ReadAuthority) (bool, error) {
-		return s.currentInlineVision(reads, turn.Scene.ID, source)
-	}
-	require := func(call context.Context) error {
-		if call.Err() != nil {
-			return errors.New("request_cancelled")
-		}
-		if !s.TurnRead.ValidContext(call, turn) {
-			return errors.New("memory_read_revoked")
-		}
-		return s.Sources.WithRuntimeReads(call, func(reads botruntime.ReadAuthority) error {
-			valid, err := validate(reads)
-			if err != nil {
-				return err
-			}
-			if !valid {
-				return errors.New("memory_read_revoked")
-			}
-			return nil
-		})
-	}
-	candidate := &visioncontext.Message{
-		ID: id, SceneID: turn.Scene.ID, Status: "available", SentAt: str(get(message, "sentAt")),
-		Parts: []visioncontext.Part{{Type: "media", MediaType: "image", AssetID: strconv.Itoa(partIndex), Index: partIndex}},
-	}
 	withRoute := router.Policy.HasConfiguredRoute("vision")
-	var ticket *modelread.Ticket
-	var library *visioncontext.Library
-	var storedGuard func(botruntime.ReadAuthority) (bool, error)
-	if source.IsInline() && IsStickerMetadata(source.InlinePartMetadata(partIndex)) {
-		library = &visioncontext.Library{
-			Recognize: func(call context.Context, image []byte, _ visioncontext.Candidate) (string, bool, error) {
-				description, guard, err := s.storedInlineSticker(call, turn, source, image, ticket)
-				storedGuard = guard
-				return description, guard != nil, err
-			},
-		}
-	}
+	var selected []*nativeVisionCandidate
 	result, err := visioncontext.Describe(ctx, new(visioncontext.Turn), visioncontext.Config{
-		SceneID: turn.Scene.ID, Mode: turn.Mode, Timezone: turn.Timezone(), VisionRoute: withRoute, Uncached: true,
-	}, []*visioncontext.Message{candidate}, nil, visioncontext.Ports{
-		Recalled:            func(string, string) (bool, error) { return !source.Current(), nil },
-		SourceAvailable:     func(visioncontext.Candidate) (bool, error) { return source.Current(), nil },
-		AddDependency:       turn.AddDependency,
-		AddSourceValidation: func(visioncontext.Candidate) { turn.AddScopedValidation(validate) },
-		ReadImage: func(call context.Context, _ visioncontext.Candidate) ([]byte, error) {
-			if !source.IsInline() {
-				return source.BrowserImageBytes(call, require)
+		SceneID: turn.Scene.ID, Mode: turn.Mode, Timezone: turn.Timezone(), VisionRoute: withRoute, PriorityIDs: turn.ImagePriorityIDs,
+	}, candidates, nil, visioncontext.Ports{
+		// Current includes original-row recall and adapter generation. Loss of
+		// that authority is not an ordinary per-image media or VLM failure.
+		SourceAvailable: func(c visioncontext.Candidate) (bool, error) {
+			if !nativeCandidate(c).source.Current() {
+				return false, visioncontext.ErrCancelled
 			}
-			if library == nil {
-				if err := require(call); err != nil {
-					return nil, err
-				}
-			} else {
-				if !s.TurnRead.ValidContext(call, turn) {
-					return nil, errors.New("memory_read_revoked")
-				}
-				err := s.Sources.WithRuntimeReads(call, func(reads botruntime.ReadAuthority) error {
-					valid, err := validate(reads)
-					if err != nil {
-						return err
-					}
-					if !valid {
-						return errors.New("memory_read_revoked")
-					}
-					ticket, err = s.TurnRead.CapturePersonalizationScoped(reads, turn.Scene.ID)
+			return true, nil
+		},
+		AddDependency: turn.AddDependency,
+		AddSourceValidation: func(c visioncontext.Candidate) {
+			native := nativeCandidate(c)
+			selected = append(selected, native)
+			turn.AddScopedValidation(native.validate)
+		},
+		ReadImage: func(call context.Context, c visioncontext.Candidate) ([]byte, error) {
+			native := nativeCandidate(c)
+			source := native.source
+			if !source.IsInline() {
+				return source.BrowserImageBytes(call, native.require)
+			}
+			var capture func(botruntime.ReadAuthority) error
+			if native.sticker {
+				capture = func(reads botruntime.ReadAuthority) (err error) {
+					native.ticket, err = s.TurnRead.CapturePersonalizationScoped(reads, turn.Scene.ID)
 					return err
-				})
-				if err != nil {
-					return nil, err
 				}
-				if ticket == nil && !withRoute {
-					return nil, errors.New("route_not_configured")
-				}
+			}
+			if err := s.withNativeVisionRead(call, turn, native, capture); err != nil {
+				return nil, err
+			}
+			if native.sticker && native.ticket == nil && !withRoute {
+				return nil, errors.New("route_not_configured")
 			}
 			return source.InlineBytes(call)
 		},
 		ImageDataURL: func(call context.Context, image []byte) (string, error) {
 			return s.Codec.Compress(call, image, providertransport.ImageUploadLimits{}, true)
 		},
-		Complete: func(call context.Context, messages []visioncontext.ChatMessage) (string, error) {
+		CompleteCandidate: func(call context.Context, c visioncontext.Candidate, messages []visioncontext.ChatMessage) (string, error) {
 			wire := make([]*providertransport.Message, len(messages))
 			for i, msg := range messages {
 				body := map[string]any{"role": msg.Role, "content": msg.Content}
@@ -153,7 +160,7 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 				}
 				wire[i] = &providertransport.Message{Visible: body}
 			}
-			response, err := router.Complete(providertransport.WithFinalModelReadGuard(call, require), providertransport.CompletionRequest{
+			response, err := router.Complete(providertransport.WithFinalModelReadGuard(call, nativeCandidate(c).require), providertransport.CompletionRequest{
 				Role: "vision", NativeOnly: true, Messages: wire,
 			})
 			if err != nil {
@@ -166,19 +173,45 @@ func (s *Service) describeInlineVision(ctx context.Context, modelPort *RuntimeMo
 	if err != nil {
 		return nil, err
 	}
-	if storedGuard != nil && len(result.Images) == 1 && result.Images[0].FramePolicy == "stored_library_observation" {
-		value, err := result.Project()
-		if err == nil {
-			turn.AddScopedValidation(storedGuard)
+	if len(selected) != 0 {
+		if !s.TurnRead.ValidContext(ctx, turn) {
+			return nil, visioncontext.ErrCancelled
 		}
-		return value, err
-	}
-	if withRoute {
-		if err := require(ctx); err != nil {
+		if err := s.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error {
+			for _, native := range selected {
+				if err := native.check(reads); err != nil {
+					return err
+				}
+			}
+			return nil
+		}); err != nil {
 			return nil, err
 		}
 	}
 	return result.Project()
+}
+
+func (native *nativeVisionCandidate) check(reads botruntime.ReadAuthority) error {
+	valid, err := native.validate(reads)
+	if err == nil && !valid {
+		err = visioncontext.ErrCancelled
+	}
+	return err
+}
+
+func (s *Service) withNativeVisionRead(call context.Context, turn *botruntime.TurnContext, native *nativeVisionCandidate, capture func(botruntime.ReadAuthority) error) error {
+	if call.Err() != nil || !s.TurnRead.ValidContext(call, turn) {
+		return visioncontext.ErrCancelled
+	}
+	return s.Sources.WithRuntimeReads(call, func(reads botruntime.ReadAuthority) error {
+		if err := native.check(reads); err != nil {
+			return err
+		}
+		if capture != nil {
+			return capture(reads)
+		}
+		return nil
+	})
 }
 
 func (s *Service) currentInlineVision(reads botruntime.ReadAuthority, sceneID string, source *botruntime.DisplayImageSource) (bool, error) {

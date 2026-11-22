@@ -5,6 +5,11 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"image"
+	"image/color"
+	"image/png"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -21,7 +26,7 @@ import (
 type opaqueVisionTestBarrier struct {
 	entered, release chan struct{}
 	once             sync.Once
-	direct           bool
+	direct, batch    bool
 	setAvailable     func(bool)
 }
 
@@ -30,14 +35,18 @@ func (b *opaqueVisionTestBarrier) releaseHeld() { b.once.Do(func() { close(b.rel
 // The actual bundled Sender transport is covered independently. This arm
 // drives the app and native model wire without compiling a WASM instance.
 func TestOpaqueVisionNativeApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, false)
+	testGuardedNativeVisionApplication(t, false, false)
 }
 
 func TestDirectURLVisionNativeApplication(t *testing.T) {
-	testGuardedNativeVisionApplication(t, true)
+	testGuardedNativeVisionApplication(t, true, false)
 }
 
-func testGuardedNativeVisionApplication(t *testing.T, direct bool) {
+func TestCurrentNativeVisionBatchApplication(t *testing.T) {
+	testGuardedNativeVisionApplication(t, true, true)
+}
+
+func testGuardedNativeVisionApplication(t *testing.T, direct, batch bool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
@@ -49,7 +58,7 @@ func testGuardedNativeVisionApplication(t *testing.T, direct bool) {
 		t.Fatal(err)
 	}
 	defer app.Shutdown(context.Background())
-	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{}), direct: direct}
+	barrier := &opaqueVisionTestBarrier{entered: make(chan struct{}), release: make(chan struct{}), direct: direct, batch: batch}
 	defer barrier.releaseHeld()
 	root, release, err := app.Engine.RootContext(ctx)
 	if err != nil {
@@ -83,6 +92,21 @@ func testGuardedNativeVisionApplication(t *testing.T, direct bool) {
 		return value
 	}
 	var tokenCalls, directCalls, inlineReads atomic.Int32
+	var batchMu sync.Mutex
+	var batchReads []int
+	batchPrefix := "https://vision.invalid/batch/"
+	batchData := map[int][]byte{}
+	if batch {
+		for i := 1; i <= 5; i++ {
+			pixels := image.NewNRGBA(image.Rect(0, 0, 2, 2))
+			pixels.SetNRGBA(0, 0, color.NRGBA{R: uint8(i * 30), A: 255})
+			var b bytes.Buffer
+			if err := png.Encode(&b, pixels); err != nil {
+				t.Fatal(err)
+			}
+			batchData[i] = b.Bytes()
+		}
+	}
 	adapter := &botruntime.Adapter{
 		InlineImage: &botruntime.InlineImageAdapter{
 			Current: func() bool { return true },
@@ -105,6 +129,21 @@ func testGuardedNativeVisionApplication(t *testing.T, direct bool) {
 		},
 		PrepareVisionImage: func(scene botruntime.Scene, locator string) botruntime.GuardedImageRead {
 			value := file(locator)
+			if tail, ok := strings.CutPrefix(value, batchPrefix); batch && ok && scene.PlatformSceneID == "102" {
+				id, _ := strconv.Atoi(tail)
+				return func(call context.Context, guard func(context.Context) error) ([]byte, error) {
+					if err := guard(call); err != nil {
+						return nil, err
+					}
+					batchMu.Lock()
+					batchReads = append(batchReads, id)
+					batchMu.Unlock()
+					if id == 3 {
+						return nil, errors.New("synthetic media failure")
+					}
+					return bytes.Clone(batchData[id]), nil
+				}
+			}
 			if value != "opaque-"+scene.PlatformSceneID && (!direct || value != "https://vision.invalid/original.png") {
 				return nil
 			}
@@ -177,8 +216,17 @@ func testGuardedNativeVisionApplication(t *testing.T, direct bool) {
 		if direct {
 			wantToken, wantDirect = 0, 2
 		}
-		if tokens, urls, inline := tokenCalls.Load(), directCalls.Load(), inlineReads.Load(); tokens != wantToken || urls != wantDirect || inline != 0 {
-			t.Errorf("wrong priority or extra IO: token=%d URL=%d inline=%d; want %d/%d/0", tokens, urls, inline, wantToken, wantDirect)
+		wantInline := int32(1) // older inline is now read; identical bytes reuse the turn observation
+		if batch {
+			wantDirect, wantInline = 1, 0 // the positive batch uses its own adapter fixture
+			batchMu.Lock()
+			defer batchMu.Unlock()
+			if !slices.Equal(batchReads, []int{2, 3, 4, 5}) {
+				t.Errorf("batch source order/budget: %v", batchReads)
+			}
+		}
+		if tokens, urls, inline := tokenCalls.Load(), directCalls.Load(), inlineReads.Load(); tokens != wantToken || urls != wantDirect || inline != wantInline {
+			t.Errorf("wrong priority or extra IO: token=%d URL=%d inline=%d; want %d/%d/%d", tokens, urls, inline, wantToken, wantDirect, wantInline)
 		}
 	})
 	assertInlineVisionModel(t, ctx, app, emit, counter, barrier)

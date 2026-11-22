@@ -217,13 +217,13 @@ func (r *Runtime) DisplayImage(sceneID, messageID string, partIndex int) *Displa
 	return &source
 }
 
-// NativeVisionSource uses one retained lookup only for a live row with a native
+// NativeVisionSources uses one retained lookup only for a live row with a native
 // image locator, then preserves original part order within that row.
-func (c *TurnContext) NativeVisionSource(message *Object) (*DisplayImageSource, int) {
+func (c *TurnContext) NativeVisionSources(message *Object, visit func(*DisplayImageSource, int)) {
 	sceneID := c.Scene.ID
 	if get(message, "sceneId") != sceneID || get(message, "origin") != "live" ||
 		get(message, "senderId") == "bot" || get(message, "status") != "available" {
-		return nil, 0
+		return
 	}
 	parts := array(get(message, "parts"))
 	for first := 0; first < min(len(parts), 256); first++ {
@@ -232,12 +232,12 @@ func (c *TurnContext) NativeVisionSource(message *Object) (*DisplayImageSource, 
 		}
 		id := idOf(message)
 		if !c.hasRecentSource(id) {
-			return nil, 0
+			return
 		}
 		source := c.owner.runtime.retainedDisplayImageRow(sceneID, id)
 		if source.record == nil || source.IsManaged() || get(source.record.body, "origin") != "live" ||
 			get(source.record.body, "senderId") == "bot" {
-			return nil, 0
+			return
 		}
 		native := source.record.displayMedia.native
 		mask := DisplayImageLinks{inline: &native.parts, browser: native.browser}
@@ -249,17 +249,17 @@ func (c *TurnContext) NativeVisionSource(message *Object) (*DisplayImageSource, 
 				continue
 			}
 			inline := mask.InlineAt(i)
+			image := source
 			if !inline && prepare != nil && mask.BrowserAt(i) {
-				source.guardedRead = prepare(source.scene, asset)
+				image.guardedRead = prepare(source.scene, asset)
 			}
-			if inline || source.guardedRead != nil {
-				source.inline, source.assetID = inline, asset
-				return &source, i
+			if inline || image.guardedRead != nil {
+				image.inline, image.assetID = inline, asset
+				visit(&image, i)
 			}
 		}
-		break
+		return
 	}
-	return nil, 0
 }
 
 func (m *DisplayImageSource) IsManaged() bool {

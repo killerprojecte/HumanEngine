@@ -176,13 +176,47 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// A published topic does not mean ingress finished its participation check.
+	// Wait for that actual receiver callback before the manual model probe
+	// enables participation, or ingress can also schedule an automatic turn.
+	type probeEvent struct {
+		Kind    string `json:"post_type"`
+		Group   int    `json:"group_id"`
+		Message int    `json:"message_id"`
+	}
+	isVisionProbe := func(event probeEvent) bool {
+		return event.Kind == "message" && event.Group >= 102 && event.Group <= 105
+	}
+	type completedProbe struct {
+		event probeEvent
+		err   error
+	}
+	received := make(chan completedProbe, 1)
 	activate := func(target *Application, revision uint64) (pluginmanager.BuiltinLifetime, *websocket.Conn) {
 		t.Helper()
 		t.Logf("connect authenticated native generation %d", revision)
+		buildReceive := ingress.ReceiverFactory(func() {}, time.Now)
 		factory := snowhost.Factory(snowhost.InstallationPorts{
 			Registry: target.snowRegistry, Sender: snowhost.Ports{ReadOriginal: snowhost.OriginalReader(target.Engine)},
-			BuildReceive: ingress.ReceiverFactory(func() {}, time.Now), Stopped: target.snowStopped,
-			Error: func(code string, err error) { t.Logf("native fixture transport %s: %v", code, err) },
+			BuildReceive: func(sender *snowhost.Sender) (func(context.Context, string) error, error) {
+				receive, err := buildReceive(sender)
+				if err != nil {
+					return nil, err
+				}
+				return func(call context.Context, raw string) error {
+					err := receive(call, raw)
+					var event probeEvent
+					if json.Unmarshal([]byte(raw), &event) == nil && isVisionProbe(event) {
+						select {
+						case received <- completedProbe{event, err}:
+						case <-call.Done():
+						}
+					}
+					return err
+				}, nil
+			},
+			Stopped: target.snowStopped,
+			Error:   func(code string, err error) { t.Logf("native fixture transport %s: %v", code, err) },
 		}, func(string) (string, bool) { return "", false })
 		life, stop := context.WithCancel(ctx)
 		t.Cleanup(stop)
@@ -221,6 +255,17 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		}
 		if err := socket.Write(ctx, websocket.MessageText, raw); err != nil {
 			t.Fatal(err)
+		}
+		var probe probeEvent
+		if err := json.Unmarshal(raw, &probe); err == nil && isVisionProbe(probe) {
+			select {
+			case complete := <-received:
+				if complete.event != probe || complete.err != nil {
+					t.Fatalf("native probe ingress mismatch: %+v, %v", complete.event, complete.err)
+				}
+			case <-ctx.Done():
+				t.Fatal(ctx.Err())
+			}
 		}
 	}
 	scene := snow.SceneID("snowluma", "42", "group", "100")

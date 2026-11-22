@@ -51,6 +51,11 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	}
 	calls := make(chan actualCall, 8)
 	var visionCalls atomic.Int32
+	batch := len(tokenTest) != 0 && tokenTest[0].batch
+	wantVision := int32(1)
+	if batch {
+		wantVision = 3
+	}
 	provider := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var call actualCall
 		if r.URL.Path != "/v1/chat/completions" || json.NewDecoder(r.Body).Decode(&call) != nil {
@@ -61,8 +66,8 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 		w.Header().Set("Content-Type", "application/json")
 		switch call.Model {
 		case "vision-synthetic":
-			visionCalls.Add(1)
-			fmt.Fprint(w, `{"choices":[{"finish_reason":"stop","message":{"role":"assistant","content":"Synthetic visual observation"}}]}`)
+			index := visionCalls.Add(1)
+			fmt.Fprintf(w, `{"choices":[{"finish_reason":"stop","message":{"role":"assistant","content":"Synthetic visual observation %d"}}]}`, index)
 		case "planner-synthetic":
 			fmt.Fprint(w, `{"choices":[{"finish_reason":"tool_calls","message":{"role":"assistant","tool_calls":[{"id":"decide","type":"function","function":{"name":"participation__decide","arguments":"{\"action\":\"silent\",\"reasonCode\":\"fixture\"}"}}]}}]}`)
 		default:
@@ -71,8 +76,8 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	}))
 	t.Cleanup(provider.Close)
 	t.Cleanup(func() {
-		if count := visionCalls.Load(); count != 1 {
-			t.Errorf("expected exactly one authorized model image request, saw %d", count)
+		if count := visionCalls.Load(); count != wantVision {
+			t.Errorf("expected %d authorized model image requests, saw %d", wantVision, count)
 		}
 	})
 	models := json.RawMessage(fmt.Sprintf(`{"providers":[{"id":"vision-fixture","name":"Synthetic vision","protocol":"openai-chat","baseUrl":%q,"retryCount":0,"timeoutMs":15000}],"models":[{"id":"vision","displayName":"Vision","providerId":"vision-fixture","apiModelName":"vision-synthetic","capabilities":["text","vision"]},{"id":"planner","displayName":"Planner","providerId":"vision-fixture","apiModelName":"planner-synthetic","capabilities":["text","tools"]}],"routes":[{"role":"vision","orderedModelIds":["vision"],"timeoutMs":15000},{"role":"planner","orderedModelIds":["planner"],"timeoutMs":15000}]}`, provider.URL+"/v1"))
@@ -91,14 +96,21 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 		sceneID := snow.SceneID("snowluma", "42", "group", fmt.Sprint(group))
 		emitImage := func(id int, data map[string]any) {
 			at := time.Now().Unix()
-			if id == 2 {
+			if group == 102 && batch {
+				at += int64(id - 6)
+			} else if id == 2 {
 				at-- // make fixture priority independent of clock granularity
 			}
 			emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7,
 				"message_id": id, "time": at, "message": []any{map[string]any{"type": "image", "data": data}}})
 		}
 		count := 1
-		if len(tokenTest) == 0 {
+		if group == 102 && batch {
+			count = 5
+			for id := 1; id <= count; id++ {
+				emitImage(id, map[string]any{"url": fmt.Sprintf("https://vision.invalid/batch/%d", id)})
+			}
+		} else if len(tokenTest) == 0 {
 			emitImage(1, map[string]any{"base64": fixture.Base64})
 		} else {
 			if group == 102 {
@@ -175,29 +187,31 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 		}
 	}
 	good, _ := begin(102)
-	vision := awaitCall("vision-synthetic")
-	var actualImage string
-	for _, message := range vision.Messages {
-		var parts []struct {
-			Type  string
-			Image struct{ URL string } `json:"image_url"`
-		}
-		if json.Unmarshal(message.Content, &parts) != nil {
-			continue
-		}
-		for _, part := range parts {
-			if part.Type == "image_url" {
-				actualImage = part.Image.URL
+	for range int(wantVision) {
+		vision := awaitCall("vision-synthetic")
+		var actualImage string
+		for _, message := range vision.Messages {
+			var parts []struct {
+				Type  string
+				Image struct{ URL string } `json:"image_url"`
+			}
+			if json.Unmarshal(message.Content, &parts) != nil {
+				continue
+			}
+			for _, part := range parts {
+				if part.Type == "image_url" {
+					actualImage = part.Image.URL
+				}
 			}
 		}
-	}
-	encoded, ok := strings.CutPrefix(actualImage, "data:image/png;base64,")
-	data, err := base64.StdEncoding.DecodeString(encoded)
-	if !ok || err != nil {
-		t.Fatalf("upstream did not receive a PNG data URL: %v", err)
-	}
-	if _, err := png.Decode(bytes.NewReader(data)); err != nil {
-		t.Fatalf("upstream inline image could not be decoded: %v", err)
+		encoded, ok := strings.CutPrefix(actualImage, "data:image/png;base64,")
+		data, err := base64.StdEncoding.DecodeString(encoded)
+		if !ok || err != nil {
+			t.Fatalf("upstream did not receive a PNG data URL: %v", err)
+		}
+		if _, err := png.Decode(bytes.NewReader(data)); err != nil {
+			t.Fatalf("upstream inline image could not be decoded: %v", err)
+		}
 	}
 	decision := awaitCall("planner-synthetic")
 	found := false
@@ -206,6 +220,23 @@ func assertInlineVisionModel(t *testing.T, ctx context.Context, app *Application
 	}
 	if !found {
 		t.Fatal("predecision request omitted vision observation")
+	}
+	if batch {
+		var prompt []byte
+		for _, message := range decision.Messages {
+			prompt = append(prompt, message.Content...)
+		}
+		previous := -1
+		for _, expected := range []string{
+			"Synthetic visual observation 1", "image_description_unavailable",
+			"Synthetic visual observation 2", "Synthetic visual observation 3", "image_budget_exhausted",
+		} {
+			index := bytes.Index(prompt, []byte(expected))
+			if index <= previous {
+				t.Fatalf("missing or out-of-order projected vision result: %s", expected)
+			}
+			previous = index
+		}
 	}
 	if final := awaitDone(good); final.Status != "skipped" || final.Reason != "decision_silent" {
 		t.Fatalf("first vision turn failed: %+v", final)

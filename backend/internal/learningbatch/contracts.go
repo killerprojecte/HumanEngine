@@ -89,10 +89,11 @@ func (s *schemas) parseCandidate(v *Object, name string, sourceOnly bool) (*Obje
 		}
 	}
 	projected := native(v)
-	if e := s.compiled[name].Validate(projected); e != nil {
+	compiled := s.compiled[name]
+	if e := compiled.Validate(projected); e != nil {
 		return nil, e
 	}
-	if e := validateLengths(s.raw[name], projected); e != nil {
+	if e := validateLengths(s.raw[name], compiled, projected); e != nil {
 		return nil, e
 	}
 	if strings.HasPrefix(name, "candidate") {
@@ -166,25 +167,22 @@ func withoutLengths(v any) any {
 		return v
 	}
 }
-func validateLengths(schema map[string]any, v any) error {
-	for _, kind := range []string{"oneOf", "anyOf"} {
-		if branches, ok := schema[kind].([]any); ok {
-			for _, branch := range branches {
-				s := branch.(map[string]any)
-				c := jsonschema.NewCompiler()
-				if e := c.AddResource("https://learning.invalid/branch", withoutLengths(s)); e != nil {
-					return e
-				}
-				compiled, e := c.Compile("https://learning.invalid/branch")
-				if e != nil {
-					return e
-				}
-				if compiled.Validate(v) == nil && validateLengths(s, v) == nil {
-					return nil
-				}
+
+// The compiled tree mirrors the embedded 2020-12 schema with only string
+// lengths removed. Visit its child validators in the same raw branch order.
+func validateLengths(raw map[string]any, compiled *jsonschema.Schema, v any) error {
+	kind, children := "oneOf", compiled.OneOf
+	if children == nil {
+		kind, children = "anyOf", compiled.AnyOf
+	}
+	if children != nil {
+		branches := raw[kind].([]any)
+		for i, child := range children {
+			if child.Validate(v) == nil && validateLengths(branches[i].(map[string]any), child, v) == nil {
+				return nil
 			}
-			return errors.New("invalid_candidate")
 		}
+		return errors.New("invalid_candidate")
 	}
 	switch x := v.(type) {
 	case string:
@@ -192,25 +190,25 @@ func validateLengths(schema map[string]any, v any) error {
 		if e != nil {
 			return e
 		}
-		if min, ok := schema["minLength"].(float64); ok && float64(n) < min {
+		if min, ok := raw["minLength"].(float64); ok && float64(n) < min {
 			return errors.New("invalid_candidate")
 		}
-		if max, ok := schema["maxLength"].(float64); ok && float64(n) > max {
+		if max, ok := raw["maxLength"].(float64); ok && float64(n) > max {
 			return errors.New("invalid_candidate")
 		}
 	case map[string]any:
-		props, _ := schema["properties"].(map[string]any)
+		props, _ := raw["properties"].(map[string]any)
 		for k, v := range x {
 			if sub, ok := props[k].(map[string]any); ok {
-				if e := validateLengths(sub, v); e != nil {
+				if e := validateLengths(sub, compiled.Properties[k], v); e != nil {
 					return e
 				}
 			}
 		}
 	case []any:
-		if sub, ok := schema["items"].(map[string]any); ok {
+		if sub, ok := raw["items"].(map[string]any); ok {
 			for _, v := range x {
-				if e := validateLengths(sub, v); e != nil {
+				if e := validateLengths(sub, compiled.Items2020, v); e != nil {
 					return e
 				}
 			}

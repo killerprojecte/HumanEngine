@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from migration_drill import AUTHORITY, DATABASE, Drill, TS_REVISION, main
+from migration_drill import AUTHORITY, DATABASE, MODEL, PROVIDER, PROVIDER_PORT, Drill, TS_REVISION, main
 
 HERE = Path(__file__).resolve().parent
 
@@ -36,6 +36,70 @@ class MigrationDrillTests(unittest.TestCase):
             args = docker.call_args.args
             self.assertIn(drill.mount(AUTHORITY, "restore-authority"), args)
             self.assertNotIn(drill.mount(AUTHORITY, "authority"), args)
+
+    def test_stored_credential_uses_write_only_mutation_and_isolated_probe(self):
+        drill = Drill(argparse.Namespace(), {})
+        drill.port = "3001"
+        config = {"providers": [{"id": PROVIDER, "credentialConfigured": True}]}
+        accepted = dict(status=200, ok=True, denied=False, text=True,
+                        detail="text_response_received", received=1, matched=1)
+        denied = dict(status=200, ok=False, denied=True, text=True,
+                      detail="budget_restore_accounting_hold", received=0, matched=0)
+        with patch.object(drill, "api", return_value=config) as api, \
+                patch("migration_drill.docker", return_value=json.dumps(accepted)) as docker:
+            drill.seed_credential()
+            method, path, write = api.call_args.args
+            self.assertEqual((method, path), ("PUT", "/api/models"))
+            self.assertEqual(write["credentials"], {PROVIDER: {"action": "set", "value": drill.sentinel}})
+            self.assertNotIn("credentialEnv", write["providers"][0])
+            drill.prove_credential()
+            api.assert_called_with("GET", "/api/models")
+            args, kwargs = docker.call_args
+            self.assertEqual(args[:5], ("exec", "-i", drill.name, "node", "-e"))
+            self.assertEqual(args[-1], drill.port)
+            self.assertNotIn(drill.sentinel, " ".join(args))
+            self.assertEqual(json.loads(kwargs["body"]),
+                             dict(sentinel=drill.sentinel, model=MODEL, providerPort=PROVIDER_PORT))
+            docker.return_value = json.dumps(denied)
+            drill.prove_credential(held=True)
+            docker.return_value = json.dumps(dict(denied, received=1))
+            with self.assertRaisesRegex(RuntimeError, "expected wire outcome"):
+                drill.prove_credential(held=True)
+            docker.return_value = drill.sentinel
+            with self.assertRaisesRegex(RuntimeError, "^invalid synthetic probe receipt$") as e:
+                drill.prove_credential()
+            self.assertIsNone(e.exception.__cause__)
+            self.assertNotIn(drill.sentinel, str(e.exception))
+            api.return_value = dict(config, credentials=drill.sentinel)
+            docker.reset_mock()
+            with self.assertRaisesRegex(RuntimeError, "write-only configuration"):
+                drill.prove_credential()
+            docker.assert_not_called()
+
+    def test_probes_cover_live_reopens_and_held_restore(self):
+        drill = Drill(argparse.Namespace(ts_image="ts", ts_tools_image="tools", go_image="go",
+                                        go_revision="rev"), {"checks": []})
+        seen = []
+
+        def prove(held=False):
+            seen.append((drill.phase, held))
+
+        with patch("migration_drill.docker"), patch.object(drill, "image"), patch.object(drill, "tool"), \
+                patch.object(drill, "start"), patch.object(drill, "stop"), \
+                patch.object(drill, "has_memory", side_effect=[True, True, False, False]), \
+                patch.object(drill, "setting", side_effect=[False, False, True, True]), \
+                patch.object(drill, "verify_restored_data"), patch.object(drill, "prove_credential", side_effect=prove), \
+                patch.object(drill, "api", side_effect=[
+                    {"id": "fixture-memory"}, {}, {"ok": True},
+                    {"held": True, "restorationCoverage": "unknown", "restoreId": "fixture-restore"},
+                ]):
+            drill.run()
+        self.assertEqual(seen, [
+            ("seed-and-probe-typescript-credential", False),
+            ("probe-go-credential", False),
+            ("probe-rollback-typescript-credential", False),
+            ("probe-restored-model-hold", True),
+        ])
 
     def test_failure_evidence_reports_fixed_phase_without_error_details(self):
         with tempfile.TemporaryDirectory() as temp:

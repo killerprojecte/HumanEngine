@@ -12,6 +12,9 @@ from uuid import uuid4
 TS_REVISION = "39d8deb8922684298bab8ecb139be04555e8474a"
 DATABASE = "/app/data/humanengine.sqlite"
 AUTHORITY = "/app/authority"
+PROVIDER = "migration-credential-fixture"
+MODEL = "migration-text-fixture"
+PROVIDER_PORT = 41273
 NODE_REQUEST = """
 const {method,path,body} = JSON.parse(require('fs').readFileSync(0, 'utf8'));
 fetch('http://127.0.0.1:' + process.argv[1] + path, {
@@ -21,6 +24,53 @@ fetch('http://127.0.0.1:' + process.argv[1] + path, {
   signal: AbortSignal.timeout(5000)
 }).then(async r => console.log(JSON.stringify([r.status, await r.json()])))
   .catch(() => process.exitCode = 1);
+"""
+
+NODE_CREDENTIAL_PROBE = """
+const http = require('node:http');
+const fs = require('node:fs');
+async function run() {
+  const {sentinel, model, providerPort} = JSON.parse(fs.readFileSync(0, 'utf8'));
+  let received = 0, matched = 0;
+  const mock = http.createServer(async (req, res) => {
+    received++;
+    try {
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      const {model: requested} = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      if (req.method !== 'POST' || req.url !== '/v1/chat/completions' ||
+          req.headers.authorization !== 'Bearer ' + sentinel || requested !== model) {
+        res.writeHead(400).end();
+        return;
+      }
+      matched++;
+      res.writeHead(200, {'Content-Type':'application/json'}).end(JSON.stringify({
+        choices:[{message:{role:'assistant',content:'OK'},finish_reason:'stop'}],
+        usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}
+      }));
+    } catch { res.writeHead(400).end(); }
+  });
+  await new Promise((resolve, reject) =>
+    mock.once('error', reject).listen(providerPort, '127.0.0.1', resolve));
+  try {
+    const response = await fetch('http://127.0.0.1:' + process.argv[1] +
+      '/api/models/' + encodeURIComponent(model) + '/probe', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json',
+        Authorization:'Bearer ' + process.env.HUMANENGINE_ADMIN_TOKEN},
+      body: JSON.stringify({capability:'text'}), signal: AbortSignal.timeout(8000)
+    });
+    const data = await response.json();
+    const detail = data?.detail;
+    console.log(JSON.stringify({
+      status: response.status, ok: data?.ok === true, denied: data?.ok === false,
+      text: data?.capability === 'text',
+      detail: ['text_response_received','budget_restore_accounting_hold'].includes(detail)
+        ? detail : 'unexpected_probe_result', received, matched
+    }));
+  } finally { mock.closeAllConnections(); mock.close(); }
+}
+run().catch(() => process.exitCode = 1);
 """
 
 
@@ -44,6 +94,7 @@ class Drill:
         self.report = report
         self.name = "he-migration-" + uuid4().hex
         self.env = dict(os.environ, HUMANENGINE_ADMIN_TOKEN=uuid4().hex + uuid4().hex)
+        self.sentinel = uuid4().hex + uuid4().hex
         self.owner = None
         self.volume = False
         self.phase = "verify-images"
@@ -109,6 +160,37 @@ class Drill:
         require(status == 200, f"{self.owner} {method} {path.split('/')[2]} returned {status}")
         return data
 
+    def seed_credential(self):
+        self.api("PUT", "/api/models", {
+            "providers": [{"id": PROVIDER, "name": "Migration fixture",
+                           "protocol": "openai-chat", "baseUrl": f"http://127.0.0.1:{PROVIDER_PORT}/v1",
+                           "timeoutMs": 3000, "retryCount": 0}],
+            "models": [{"id": MODEL, "providerId": PROVIDER, "displayName": "Fixture",
+                        "apiModelName": MODEL, "capabilities": ["text"], "streaming": False}],
+            "routes": [],
+            "credentials": {PROVIDER: {"action": "set", "value": self.sentinel}},
+        })
+
+    def prove_credential(self, held=False):
+        models = self.api("GET", "/api/models")
+        provider = next((row for row in models["providers"] if row["id"] == PROVIDER), {})
+        require(provider.get("credentialConfigured") is True and not provider.get("credentialEnv")
+                and "credentials" not in models and self.sentinel not in json.dumps(models),
+                "stored credential not available as write-only configuration")
+        raw = docker("exec", "-i", self.name, "node", "-e", NODE_CREDENTIAL_PROBE, self.port,
+                     body=json.dumps(dict(sentinel=self.sentinel, model=MODEL, providerPort=PROVIDER_PORT)),
+                     timeout=15)
+        try:
+            outcome = json.loads(raw)
+        except (TypeError, ValueError):
+            raise RuntimeError("invalid synthetic probe receipt") from None
+        calls = 0 if held else 1
+        require(outcome == {
+            "status": 200, "ok": not held, "denied": held, "text": True,
+            "detail": "budget_restore_accounting_hold" if held else "text_response_received",
+            "received": calls, "matched": calls,
+        }, "synthetic credential probe did not match expected wire outcome")
+
     def stop(self):
         docker("kill", "--signal=TERM", self.name)
         require(docker("wait", self.name, timeout=120) == "0", f"{self.owner} exit not clean")
@@ -159,6 +241,10 @@ class Drill:
         })
         memory_id = memory["id"]
         require(self.has_memory(memory_id), "TS seed assertion missing")
+        self.phase = "seed-and-probe-typescript-credential"
+        self.seed_credential()
+        self.prove_credential()
+        self.record("typescript-stored-credential-matched-provider-wire")
         self.stop()
         self.phase = "backup-typescript-data"
         self.tool("node", "--import", "tsx", "scripts/backup.ts",
@@ -168,6 +254,10 @@ class Drill:
         self.phase = "update-in-go"
         self.start("go")
         require(self.has_memory(memory_id) and self.setting() is initial, "Go did not read TS state")
+        self.phase = "probe-go-credential"
+        self.prove_credential()
+        self.record("go-reopened-credential-matched-provider-wire")
+        self.phase = "update-in-go"
         require(self.setting(not initial) is not initial, "Go settings write not visible")
         require(self.api("DELETE", "/api/memories/" + memory_id)["ok"] is True and
                 not self.has_memory(memory_id), "Go terminal memory deletion failed")
@@ -178,6 +268,9 @@ class Drill:
         self.start("ts")
         require(self.setting() is not initial and not self.has_memory(memory_id),
                 "TS does not recognize latest Go installation")
+        self.phase = "probe-rollback-typescript-credential"
+        self.prove_credential()
+        self.record("rollback-typescript-credential-matched-provider-wire")
         self.stop()
         self.record("ts-rollback-reopened-latest-pair")
 
@@ -187,8 +280,15 @@ class Drill:
         self.phase = "verify-old-and-current-heads"
         self.tool("node", "--import", "tsx", "--input-type=module", "-e", """
 import Database from 'better-sqlite3'
+import {readFileSync, lstatSync} from 'node:fs'
 import {metadata, RecoveryAuthority, sameHead} from './src/memory/recovery/ledger.ts'
 const open = path => new Database(path, {readonly: true, fileMustExist: true})
+const manifest = JSON.parse(readFileSync('/drill/old-backup/manifest.json', 'utf8'))
+const keyRecord = manifest.files.filter(record => record.path === '.secrets.key')
+const key = lstatSync('/drill/old-backup/.secrets.key')
+if (keyRecord.length !== 1 || keyRecord[0].bytes !== 32 || !key.isFile() ||
+    key.size !== 32 || (key.mode & 0o077) !== 0)
+  throw new Error('synthetic backup credential key manifest missing')
 const old = open('/drill/old-backup/humanengine.sqlite')
 const live = open('/drill/live/humanengine.sqlite')
 const authority = new RecoveryAuthority('/app/authority')
@@ -219,6 +319,9 @@ try {
         hold = self.api("GET", "/api/budget/recovery")
         require(hold.get("held") is True and hold.get("restorationCoverage") == "unknown"
                 and hold.get("restoreId"), "restored model admission is not held")
+        self.phase = "probe-restored-model-hold"
+        self.prove_credential(held=True)
+        self.record("restored-credential-configured-model-hold-blocked-all-wire")
         self.phase = "drain-restored-go"
         self.stop()
         self.phase = "verify-restored-database-path"

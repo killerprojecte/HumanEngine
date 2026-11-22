@@ -38,6 +38,12 @@ tools run without container networking; requests are real authenticated TCP over
 in-container loopback. Default non-root image users run both servers; the tool
 volume initializer only creates owned empty folders. No ports, production
 mounts, local plugin directory, credentials, or model settings are imported.
+The driver generates one disposable provider credential and sends it via the
+admin API's write-only mutation. A short-lived Node mock listens on loopback
+inside the current server container, independent of the engine and unreachable
+from other containers. Authenticated text probes must transmit exactly one
+matching synthetic bearer on initial TS, reopened Go, and rollback TS. Only
+the credentialConfigured marker is exposed by the model configuration read.
 
 The TS runtime synthesizes one persisted assertion over HTTP. The driver waits
 for each server's SIGTERM exit (and Go’s real drain receipt) before another
@@ -52,7 +58,11 @@ deleted assertion, must replay the updated `debugModelIO` flag, and must keep
 managed model work held. This flag is recorded by a typed
 `configuration_flags` authority event. Its replay does not imply that ordinary
 post-backup writes are recovered: the authority is not a full replication log.
-No recovery acknowledgement or model call is issued.
+The old backup must contain the secret-key manifest entry and a regular private
+32-byte key file; the pinned restore tool validates the manifest and decrypts
+the synthetic stored secret during restore. Restored Go must report the
+credential configured, return the exact accounting-hold denial from the same
+model probe, and send no provider request. No recovery acknowledgement is issued.
 
 Only exact source/image IDs and completed outcome names are emitted. Container
 logs, data, tokens and request/response bodies are not saved. The hosted package job runs this drill when a push to the existing
@@ -60,5 +70,5 @@ logs, data, tokens and request/response bodies are not saved. The hosted package
 into [both proofs at the exact head](README.md#run-both-proofs-on-one-exact-candidate).
 It reuses the Go image after HTTP/package acceptance. PRs and manual runs do
 not build the TypeScript image for this drill. Passing proves only this Linux/amd64
-synthetic path, not arbitrary historical schemas, media/secret restoration,
+synthetic path, not arbitrary historical schemas, media restoration or rotated secrets,
 post-backup ledger replay for all event kinds, production rollout, or all APIs.

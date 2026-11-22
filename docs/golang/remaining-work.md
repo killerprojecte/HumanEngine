@@ -265,12 +265,14 @@ historically slow SnowLuma WASM compilation require actual measurement; previous
 package durations and green race tests are not performance acceptance.
 
 The focused Compose rehearsal overlaps an authenticated settings write,
-a real SnowLuma history lookup, and a separate scene's native planner HTTP
-request with an already-transmitted unacknowledged send. It checks history
-before and after restart, setting persistence, model peer closure, clean drain
-and no replay; the pending history lookup's shutdown outcome is recorded
-separately, not treated as a stable status-code promise. The independent
-learning overlap and the broader load measurements above remain open.
+a real SnowLuma history lookup, a separate scene's native planner HTTP request,
+and a learning-only scene's contextual sticker vision request with an already
+transmitted unacknowledged send. It checks history before and after restart,
+setting persistence, closure of both provider requests, clean drain and no
+replay. The held sticker stays unanalysed; a different sticker learns after
+restart. The pending history lookup's shutdown outcome is recorded separately,
+not treated as a stable status-code promise. Ordinary text-memory learning
+overlap and the broader load measurements above remain open.
 
 Switch production startup only after P0-P2 and this gate pass on one exact head,
 with the API/platform matrix, reproducible release assets and rollout/recovery

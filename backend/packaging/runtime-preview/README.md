@@ -198,8 +198,11 @@ A separate scene also holds one real native planner HTTP request to the local
 synthetic provider, without a response. The fixture observes the wire request
 before stop, its HTTP context closing and scene cleanup during drain, and no
 replay of the held model request or unacknowledged send after cold reopen. This
-does not simulate a remote
-provider's inference lifecycle or cover an independent learning operation.
+does not simulate a remote provider's inference lifecycle. An independent
+learning-only scene also holds a contextual sticker vision request. The fixture
+confirms the exact admitted asset stays unanalysed and unselected through stop
+and cold reopen; a different sticker then learns normally on the same provider.
+This covers contextual sticker learning, not ordinary text-memory processing.
 The fixture uses the disposable Linux runner's private Compose bridge gateway
 without changing the service network, image, or volumes. The reusable fixture
 is optional for local invocations of the driver.

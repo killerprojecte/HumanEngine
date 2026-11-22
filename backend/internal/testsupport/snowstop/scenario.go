@@ -169,6 +169,10 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		controls.Unlock()
 		serveSnowStopModel(t, w, r, text, split)
 	})
+	stickers := stickerPeer{oldArrived: make(chan struct{}), oldClosed: make(chan struct{})}
+	mux.HandleFunc("/sticker/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
+		stickers.serve(t, w, r)
+	})
 	listener, err := net.Listen("tcp4", net.JoinHostPort(bind, "0"))
 	if err != nil {
 		t.Fatal(err)
@@ -249,7 +253,20 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	if process.HistoryAtStop != nil {
 		modelTimeout = 60000
 	}
-	admin("/api/models", json.RawMessage(fmt.Sprintf(`{"providers":[{"id":"p","name":"Synthetic","protocol":%q,"baseUrl":%q,"retryCount":0,"timeoutMs":%d}],"models":[{"id":"m","displayName":"Synthetic","providerId":"p","apiModelName":"synthetic","capabilities":["text","tools"]}],"routes":[{"role":"planner","orderedModelIds":["m"],"timeoutMs":%d},{"role":"replyer","orderedModelIds":["m"],"timeoutMs":%d}]}`, protocol, modelURL, modelTimeout, modelTimeout, modelTimeout)))
+	routing := map[string][]any{
+		"providers": {map[string]any{"id": "p", "name": "Synthetic", "protocol": protocol, "baseUrl": modelURL, "retryCount": 0, "timeoutMs": modelTimeout}},
+		"models":    {map[string]any{"id": "m", "displayName": "Synthetic", "providerId": "p", "apiModelName": "synthetic", "capabilities": []string{"text", "tools"}}},
+		"routes": {
+			map[string]any{"role": "planner", "orderedModelIds": []string{"m"}, "timeoutMs": modelTimeout},
+			map[string]any{"role": "replyer", "orderedModelIds": []string{"m"}, "timeoutMs": modelTimeout},
+		},
+	}
+	if process.HistoryAtStop != nil {
+		routing["providers"] = append(routing["providers"], map[string]any{"id": "sticker", "name": "Sticker", "protocol": "openai-chat", "baseUrl": "http://" + peer + "/sticker/v1", "retryCount": 0, "timeoutMs": modelTimeout})
+		routing["models"] = append(routing["models"], map[string]any{"id": "sticker", "displayName": "Sticker Vision", "providerId": "sticker", "apiModelName": "native-sticker-witness", "capabilities": []string{"text", "vision"}})
+		routing["routes"] = append(routing["routes"], map[string]any{"role": "vision", "orderedModelIds": []string{"sticker"}, "timeoutMs": modelTimeout})
+	}
+	admin("/api/models", routing)
 	admin("/api/plugins/snowluma/config", map[string]any{"url": "ws://" + peer + "/snow", "accountId": "42", "token": "synthetic-snow-stop"})
 	admin("/api/plugins/snowluma/enabled", map[string]any{"enabled": true})
 	waitConnection := func(timeout time.Duration) *websocket.Conn {
@@ -271,11 +288,35 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	}
 	scene := registerGroup("99")
 	scenePath := "/api/scenes/" + url.PathEscape(scene)
-	emit := func(group, id int, text string) {
+	emitParts := func(group, id int, parts []any) {
 		t.Helper()
-		body, _ := json.Marshal(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{map[string]any{"type": "text", "data": map[string]any{"text": text}}}})
+		body, _ := json.Marshal(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": parts})
 		if err := socket.Write(ctx, websocket.MessageText, body); err != nil {
 			t.Fatal(err)
+		}
+	}
+	emit := func(group, id int, text string) {
+		t.Helper()
+		emitParts(group, id, []any{map[string]any{"type": "text", "data": map[string]any{"text": text}}})
+	}
+	stickerScene := snow.SceneID("snowluma", "42", "group", "101")
+	sticker := func(raw []byte) stickerState {
+		t.Helper()
+		var state stickerState
+		path := stickerAssetPath(stickerScene, raw)
+		if err := json.Unmarshal(request(http.MethodGet, path, nil), &state); err != nil {
+			t.Fatal(err)
+		}
+		if path != "/api/memes/"+state.ID || !bytes.Equal(raw, request(http.MethodGet, path+"/file", nil)) {
+			t.Fatal("meme API did not retain the exact sticker bytes")
+		}
+		return state
+	}
+	assertUnlearned := func(raw []byte) {
+		t.Helper()
+		state := sticker(raw)
+		if !state.unlearned() {
+			t.Fatal("unanswered contextual sticker mutated durable tags or selection")
 		}
 	}
 	ingress := func(id int, split bool) {
@@ -334,6 +375,7 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	}
 	var pending chan historyResult
 	var modelScene string
+	var oldSticker []byte
 	if process.HistoryAtStop != nil {
 		modelScene = registerGroup("100")
 		emit(100, 3, heldInput)
@@ -344,6 +386,26 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		}
 		if err := json.Unmarshal(request(http.MethodGet, "/api/scenes/"+url.PathEscape(modelScene)+"/state", nil), &held); err != nil || held.ActiveTasks != 1 {
 			t.Fatalf("independent planner request was not held in its scene: %+v, %v", held, err)
+		}
+		stickerScenePath := "/api/scenes/" + url.PathEscape(stickerScene)
+		admin(stickerScenePath, map[string]any{
+			"id": stickerScene, "kind": "group", "adapterId": "snowluma", "accountId": "42", "platformSceneId": "101",
+			"name": "Synthetic Sticker Scene", "participationEnabled": false, "proactiveEnabled": false,
+			"learningEnabled": true, "memoryReadEnabled": true, "personalizationEnabled": true,
+		})
+		var parts []any
+		oldSticker, parts = stickerParts(t, oldStickerDonor, 59)
+		emitParts(101, 4, parts)
+		select {
+		case <-stickers.oldArrived:
+		case <-time.After(10 * time.Second):
+			t.Fatal("contextual sticker model did not reach its local provider")
+		}
+		assertUnlearned(oldSticker)
+		sourceWire := request(http.MethodGet, stickerScenePath+"/history?source=local", nil)
+		sourceID := snow.MessageID(stickerScene, "4")
+		if !bytes.Contains(sourceWire, []byte(sourceID)) || !bytes.Contains(sourceWire, []byte(oldStickerDonor)) {
+			t.Fatal("the held sticker could not be tied to the admitted source scene message")
 		}
 		mu.Lock()
 		historyWitness = true
@@ -367,6 +429,9 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		case <-time.After(5 * time.Second):
 			t.Fatal("history GET did not reach the real SnowLuma connector")
 		}
+		if err := json.Unmarshal(request(http.MethodGet, scenePath+"/state", nil), &held); err != nil || held.ActiveTasks != 1 {
+			t.Fatalf("Snow send was not still held after admitting the other work: %+v, %v", held, err)
+		}
 		select {
 		case result := <-pending:
 			t.Fatalf("remote history completed before stop: status=%d err=%v", result.status, result.err)
@@ -377,6 +442,8 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		select {
 		case <-modelPeerClosed:
 			t.Fatal("native model HTTP peer closed before shutdown")
+		case <-stickers.oldClosed:
+			t.Fatal("contextual sticker model peer closed before shutdown")
 		default:
 		}
 	}
@@ -386,6 +453,11 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		case <-modelPeerClosed:
 		case <-time.After(5 * time.Second):
 			t.Fatal("SIGTERM left the native model HTTP peer open")
+		}
+		select {
+		case <-stickers.oldClosed:
+		case <-time.After(5 * time.Second):
+			t.Fatal("SIGTERM left the contextual sticker model peer open")
 		}
 		result := <-pending // doRequest already has a deadline
 		if result.err != nil {
@@ -489,10 +561,49 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	if got := history(""); !reflect.DeepEqual(got, wantBoth) {
 		t.Fatalf("cold authoritative history after fresh ACK: %v", got)
 	}
+	if oldSticker != nil {
+		assertUnlearned(oldSticker)
+		freshBytes, parts := stickerParts(t, freshStickerDonor, 161)
+		emitParts(101, 5, parts)
+		deadline := time.NewTimer(10 * time.Second)
+		defer deadline.Stop()
+		for {
+			status, wire, err := doRequest(http.MethodGet, stickerAssetPath(stickerScene, freshBytes), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var state stickerState
+			if status == http.StatusOK {
+				if err := json.Unmarshal(wire, &state); err != nil {
+					t.Fatal(err)
+				}
+				if state.Analyzed {
+					state = sticker(freshBytes)
+					var intent []string
+					if err := json.Unmarshal(state.Tags["intent"], &intent); err != nil ||
+						!state.Available || state.Shared || state.PrivacyReviewed ||
+						state.SelectionOrigin == nil || *state.SelectionOrigin != "automatic" ||
+						!slices.Contains(intent, freshStickerTag) {
+						t.Fatal("the fresh sticker did not complete contextual local-only selection")
+					}
+					break
+				}
+			}
+			select {
+			case <-deadline.C:
+				t.Fatalf("new contextual sticker did not finish after cold reopen: HTTP %d, native calls %d", status, stickers.freshCalls.Load())
+			case <-time.After(20 * time.Millisecond):
+			}
+		}
+		assertUnlearned(oldSticker)
+	}
 	process.Stop()
 	waitPeerClose(2)
 	if modelScene != "" && heldCalls.Load() != 1 {
 		t.Fatalf("held model wire calls after cold reopen = %d, want 1", heldCalls.Load())
+	}
+	if oldSticker != nil && (stickers.oldCalls.Load() != 1 || stickers.freshCalls.Load() != 1) {
+		t.Fatalf("unexpected sticker wire counts after restart: old=%d fresh=%d", stickers.oldCalls.Load(), stickers.freshCalls.Load())
 	}
 	mu.Lock()
 	defer mu.Unlock()

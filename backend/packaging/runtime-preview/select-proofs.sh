@@ -36,7 +36,7 @@ detect() {
 }
 
 root=backend/packaging/runtime-preview
-detect browser "$root/browser_smoke.py" "$root/browser-requirements.txt"
+detect browser "$root/browser_smoke.py" "$root/browser_usage_seed.mjs" "$root/browser-requirements.txt"
 detect restore "$root/migration_drill.py" "$root/test_migration_drill.py"
 detect compose "$root/compose-rehearsal.yaml" "$root/compose_rehearsal.py" "$root/test_compose_rehearsal.py" backend/internal/testsupport/snowstop \
   backend/internal/pluginmanager/configuration_operation.go backend/internal/plugins/wasm.go \

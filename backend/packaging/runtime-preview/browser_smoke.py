@@ -1,9 +1,10 @@
 """Opt-in hosted smoke against the installed Go preview, never an API stub."""
+from datetime import timedelta
 from importlib.metadata import version
 import os
 import re
 import subprocess
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 import uuid
 
 
@@ -42,7 +43,74 @@ def host_evidence():
     return result
 
 
-def run(port, token, evidence):
+def assert_usage_today(page, origin, start, expect):
+    zone = "Asia/Taipei"
+    end = start + timedelta(minutes=90)
+
+    def iso(value):
+        return value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+    summary_query = {"start": [iso(start)], "end": [iso(end)]}
+    hourly_query = {**summary_query, "bucket": ["hour"], "timeZone": [zone]}
+
+    def usage_query(response):
+        parts = urlsplit(response.url)
+        if response.request.method == "GET" and response.url.startswith(origin + "/") and parts.path == "/api/usage":
+            return parse_qs(parts.query)
+        return None
+
+    page.get_by_role("link", name="Models", exact=True).click()
+    page.get_by_role("button", name="Usage & costs", exact=True).click()
+    expect(page.get_by_role("heading", name="Usage overview", exact=True)).to_be_visible()
+    page.clock.set_fixed_time(end)
+    page.get_by_role("combobox").click()
+    today_queries = []
+
+    def record_today(response):
+        query = usage_query(response)
+        if query and query.get("start") == summary_query["start"] and query.get("end") == summary_query["end"]:
+            today_queries.append(query)
+
+    page.on("response", record_today)
+    with page.expect_response(lambda r: usage_query(r) == summary_query) as summary, \
+         page.expect_response(lambda r: usage_query(r) == hourly_query) as hourly:
+        page.get_by_role("option", name="Today", exact=True).click()
+
+    def metrics(response):
+        assert response.status == 200
+        assert response.request.all_headers().get("x-humanengine-session") == "1"
+        assert response.header_value("X-Usage-Incomplete") != "true"
+        rows = response.json()
+        assert all((row["modelId"], row["role"]) == ("browser-model", "planner") for row in rows)
+        return sorted((row["day"], row["calls"], row["reportedInputTokens"], row["reportedOutputTokens"])
+                      for row in rows)
+
+    assert metrics(summary.value) == [(start.date().isoformat(), 2, 330, 40)]
+    assert metrics(hourly.value) == [(iso(start), 1, 100, 11),
+                                     (iso(start + timedelta(hours=1)), 1, 230, 29)]
+    calls = page.locator(".usage-stat").filter(has=page.get_by_text("Calls", exact=True))
+    expect(calls.locator(".usage-stat-value")).to_have_text("2")
+    tokens = page.locator(".usage-stat").filter(has=page.get_by_text("Reported token subtotal", exact=True))
+    expect(tokens.locator(".usage-stat-value")).to_have_text("370")
+    expect(tokens).to_contain_text("Input tokens 330")
+    expect(tokens).to_contain_text("Output tokens 40")
+    chart = page.get_by_role("heading", name="Token usage over time", exact=True).locator("xpath=ancestor::section[1]")
+    for label in ("00:00", "01:00"):
+        expect(chart.get_by_text(label, exact=True)).to_be_visible()
+    detail = page.locator("details").filter(has=page.locator("summary", has_text="Time bucket details"))
+    detail.locator("summary").click()
+    rows = detail.locator("tbody tr")
+    expect(rows).to_have_count(2)
+    for index, (label, input_tokens, output_tokens) in enumerate((("00:00", "100", "11"), ("01:00", "230", "29"))):
+        cells = rows.nth(index).get_by_role("cell")
+        expect(cells.nth(0)).to_contain_text(label)
+        expect(cells.nth(1)).to_have_text(input_tokens)
+        expect(cells.nth(2)).to_have_text(output_tokens)
+    page.remove_listener("response", record_today)
+    assert len(today_queries) == 2 and summary_query in today_queries and hourly_query in today_queries
+
+
+def run(port, token, evidence, usage_start):
     # Kept out of normal package runs and out of both runtime images.
     from playwright.sync_api import expect, sync_playwright
 
@@ -57,7 +125,7 @@ def run(port, token, evidence):
             try:
                 if re.fullmatch(r"[0-9]+(?:\.[0-9]+){3}", browser.version):
                     evidence["chromium"] = browser.version
-                context = browser.new_context(locale="en-US", viewport={"width": 1440, "height": 960})
+                context = browser.new_context(locale="en-US", timezone_id="Asia/Taipei", viewport={"width": 1440, "height": 960})
                 external = [0]
 
                 def on_request(route):
@@ -158,6 +226,10 @@ def run(port, token, evidence):
                 expect(typing.get_by_text("V2", exact=True)).to_be_visible()
                 expect(typing).to_contain_text("v0.1.0 · Built-in")
                 outcomes.append({"action": "plugin-api-version-badges", "status": 200})
+
+                phase = "usage-today"
+                assert_usage_today(page, origin, usage_start, expect)
+                outcomes.append({"action": "usage-today-local-day-and-hourly-chart", "status": 200})
 
                 phase = "logout"
                 with page.expect_response(match("DELETE", "/api/auth/session")) as logout:

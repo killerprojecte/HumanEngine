@@ -87,6 +87,18 @@ assert.deepEqual(await echo({proof:'synthetic'}), {input:{proof:'synthetic'},pac
     def test_ready_value_is_returned(self):
         self.assertEqual(acceptance.wait_for(lambda: "ready", "fixture"), "ready")
 
+    def test_browser_usage_seed_mounts_only_the_stopped_main_volume(self):
+        with patch.object(acceptance, "docker") as call:
+            start = acceptance.seed_browser_usage("sha256:tested", "fixture-main")
+        self.assertEqual((start.hour, start.minute, start.second, start.utcoffset().total_seconds()),
+                         (16, 0, 0, 0))
+        args = call.call_args.args
+        self.assertEqual(args[:8], ("run", "--rm", "--network", "none", "--entrypoint",
+                                    "node", "--mount", "type=volume,source=fixture-main,target=/app/data"))
+        self.assertEqual(args[8:11], ("sha256:tested", "--input-type=module", "-e"))
+        self.assertEqual(args[12:], ("/app/data/main.sqlite", start.isoformat(timespec="milliseconds")))
+        self.assertNotIn("/app/authority", args)
+
     def test_http_request_keeps_token_out_of_url_and_checks_status(self):
         with patch.object(acceptance.http.client, "HTTPConnection") as constructor:
             connection = constructor.return_value

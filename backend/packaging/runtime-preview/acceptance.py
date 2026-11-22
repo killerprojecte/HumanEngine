@@ -8,6 +8,7 @@ import argparse
 import http.client
 import json
 import os
+from datetime import datetime, timedelta, timezone
 from http.cookies import SimpleCookie
 import re
 from pathlib import Path
@@ -125,6 +126,18 @@ def read_continue(reader):
             return
 
 
+def seed_browser_usage(image, data_volume):
+    # Yesterday's UTC date keeps the fixture inside retention even on slow
+    # or retried runners; 16:00 UTC is the next day's midnight in Taipei.
+    start = datetime.now(timezone.utc).replace(hour=16, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    seed = Path(__file__).with_name("browser_usage_seed.mjs").read_text()
+    docker("run", "--rm", "--network", "none", "--entrypoint", "node",
+           "--mount", f"type=volume,source={data_volume},target=/app/data",
+           image, "--input-type=module", "-e", seed, "/app/data/main.sqlite",
+           start.isoformat(timespec="milliseconds"))
+    return start
+
+
 def main():
     global TOKEN
     parser = argparse.ArgumentParser()
@@ -225,6 +238,7 @@ def main():
         wait_for(lambda: exited(first), "held-request physical drain")
         assert '"code":"app.drained"' in logs(first)
         report["checks"].append("sigterm-held-http-commits-before-owner-drain")
+        usage_start = seed_browser_usage(image["Id"], volumes[0]) if args.browser_smoke else None
         restarted = start("restart", *volumes, plugin=True)
         port = ready(restarted)
         assert request(port, "GET", "/api/settings")["debugModelIO"] is False
@@ -233,7 +247,7 @@ def main():
         if args.browser_smoke:
             import browser_smoke
             report["browser"] = {}
-            browser_smoke.run(port, TOKEN, report["browser"])
+            browser_smoke.run(port, TOKEN, report["browser"], usage_start)
             assert not node_pids(restarted), "browser caused a Node runtime inside the image"
             report["checks"].append("hosted-chromium-real-ui")
         a, b = "package-fixture-a", "package-fixture-b"

@@ -91,7 +91,7 @@ type Config struct {
 // makes repeated/concurrent calls share the same four-image budget and results.
 type Turn struct {
 	mu      sync.Mutex
-	budget  map[string]bool
+	budget  map[candidatePair]bool
 	results map[string]Observation
 }
 type entry struct {
@@ -155,9 +155,20 @@ func hash(values ...any) (string, error) {
 	}
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(s))), nil
 }
-func pair(c Candidate) string {
-	s, _ := jsjson.Stringify([]any{c.Message.ID, c.Part.AssetID})
-	return s
+
+type candidatePair struct {
+	messageID, assetID string
+	malformed          bool
+}
+
+func pair(c Candidate) candidatePair {
+	messageID, assetID := c.Message.ID, c.Part.AssetID
+	if jsjson.ValidateString(messageID) != nil || jsjson.ValidateString(assetID) != nil {
+		// The old stringify key collapsed malformed Go strings into one
+		// sentinel, distinct from every valid pair (including empty IDs).
+		return candidatePair{malformed: true}
+	}
+	return candidatePair{messageID: messageID, assetID: assetID}
 }
 func trimSlice(s string) (string, error) {
 	u, e := jsjson.UTF16(s)
@@ -249,7 +260,7 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	if t.budget == nil {
-		t.budget = map[string]bool{}
+		t.budget = map[candidatePair]bool{}
 		t.results = map[string]Observation{}
 	}
 	recalled := func(c Candidate) (bool, error) {
@@ -289,7 +300,7 @@ func Describe(ctx context.Context, t *Turn, cfg Config, messages []*Message, cac
 	}
 	sort.SliceStable(ranked, func(i, j int) bool { return rank(ranked[i].Message.ID) < rank(ranked[j].Message.ID) })
 	selected := []Candidate{}
-	seen := map[string]bool{}
+	seen := map[candidatePair]bool{}
 	for _, c := range ranked {
 		if cfg.Mode == "real" && ctx.Err() == nil {
 			recalled, e := recalled(c)

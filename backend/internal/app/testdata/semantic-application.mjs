@@ -53,7 +53,7 @@ export default {
           if(!memory.value[0].page.items.length)throw Error('semantic_empty_fixture')
           const id=data.planContract.targetMessageIds[0]
           planSelections.push({receipt:memory.id,items:memory.value[0].page.items})
-          return call('reply.plan',{action:'reply',deliveryTool:'messages.send',targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Quote attributed declarations without deriving new learning.',constraints:[],facts:[],assets:[],emoji:[],stateEvidenceIds:[memory.id],memorySelections:[],expressionGoals:['Concise response'],actions:[{toolName:'learning.propose',arguments:{content:'Must not persist derived semantic learning.',kind:'fact',epistemicKind:'explicit',subject:{kind:'self',sourceMessageId:id},sourceMessageIds:[id]}}]})
+          return call('reply.plan',{action:'reply',deliveryTool:'messages.send',targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Quote attributed declarations without deriving new learning.',constraints:[],facts:[],assets:[],emoji:[],stateEvidenceIds:[memory.id],memorySelections:[],expressionGoals:['Concise response'],actions:[{toolName:'learning.propose',arguments:{content:'Must not persist derived semantic learning.',kind:'fact',epistemicKind:'explicit',subject:{kind:'self',sourceMessageId:id},sourceMessageIds:[id]}},{toolName:'habits.propose',arguments:{kind:'sceneRule',content:'Must not persist a derived synthetic habit.',sourceMessageIds:[id]}}]})
         }
         if(names.includes('messages.send')){
           if(request.messages.some(m=>m.role==='tool'))return response([])

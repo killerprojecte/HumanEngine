@@ -604,6 +604,9 @@ assert.equal(existsSync('/drill/media-live/media/' + removed + '.png'), false)
 assert.equal(hash('/drill/media-live/media/' + retained + '.png'), retainedHash)
 """, *media_ids, *(sha256(b64decode(png)).hexdigest() for png in MEDIA_PNGS),
                   authority=restore_authority)
+        self.phase = "refuse-corrupt-media-backup"
+        self.refuse_corrupt_media_backup(media_ids[1], restore_authority)
+        self.record("corrupt-media-backup-refused-without-publication-or-authority-change")
         self.phase = "restore-old-media-backup"
         self.tool("node", "--import", "tsx", "scripts/restore.ts",
                   "/drill/media-backup", "/drill/media-restored", AUTHORITY,
@@ -620,6 +623,54 @@ assert.equal(hash('/drill/media-live/media/' + retained + '.png'), retainedHash)
                   'test -f "/drill/media-restored/media/$2.png"',
                   "check-media", *media_ids, authority=restore_authority)
         self.record("restore-replayed-go-media-deletion-and-retained-exact-original")
+
+    def refuse_corrupt_media_backup(self, media_id, authority):
+        self.tool("node", "--import", "tsx", "--input-type=module", "-e", r"""
+import assert from 'node:assert/strict'
+import {spawnSync} from 'node:child_process'
+import {createHash} from 'node:crypto'
+import {cpSync, lstatSync, readFileSync, writeFileSync} from 'node:fs'
+import {RecoveryAuthority} from './src/memory/recovery/ledger.ts'
+
+const [mediaId, authorityPath] = process.argv.slice(1)
+const good = '/drill/media-backup'
+const corrupt = '/drill/media-corrupt-backup'
+const destination = '/drill/media-corrupt-restored'
+const media = '/media/' + mediaId + '.png'
+const hash = bytes => createHash('sha256').update(bytes).digest('hex')
+const authoritySnapshot = () => {
+  const authority = new RecoveryAuthority(authorityPath, undefined, true)
+  try {
+    return {head:authority.head(), bytes:hash(readFileSync(authorityPath + '/authority.sqlite'))}
+  } finally {
+    authority.close()
+  }
+}
+const assertAbsent = () => {
+  for (const path of [destination, destination + '.quarantine'])
+    assert.equal(lstatSync(path, {throwIfNoEntry:false}), undefined)
+}
+assertAbsent()
+cpSync(good, corrupt, {recursive:true, force:false, errorOnExist:true})
+const manifest = readFileSync(good + '/manifest.json')
+const bytes = readFileSync(corrupt + media)
+assert.equal(hash(bytes), JSON.parse(manifest).files.find(file => '/' + file.path === media)?.sha256)
+const originalHash = hash(bytes)
+bytes[bytes.length - 1] ^= 1
+writeFileSync(corrupt + media, bytes)
+assert.notEqual(hash(readFileSync(corrupt + media)), originalHash)
+assert.deepEqual(readFileSync(corrupt + '/manifest.json'), manifest)
+
+const before = authoritySnapshot()
+const attempt = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/restore.ts',
+  corrupt, destination, authorityPath], {encoding:'utf8', timeout:30000})
+assert.equal(attempt.status, 1)
+// The pinned operator CLI intentionally masks exact backup-file failures.
+assert.equal(attempt.stderr.split(/\r?\n/, 1)[0], 'restore_verification_failed')
+assertAbsent()
+assert.deepEqual(authoritySnapshot(), before)
+assert.equal(hash(readFileSync(good + media)), originalHash)
+""", media_id, AUTHORITY, authority=authority)
 
     def cleanup(self):
         if self.owner is not None:

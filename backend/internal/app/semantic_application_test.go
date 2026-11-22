@@ -188,8 +188,13 @@ func TestInstalledSemanticModelReceiptSendAndRevocation(t *testing.T) {
 			return errors.New("actual_semantic_guard_missing")
 		}
 		receipts, _ := field(brief, "actionReceipts").([]any)
-		if len(receipts) != 1 || field(receipts[0], "toolName") != "learning.propose" || field(receipts[0], "status") != "rejected" || field(receipts[0], "reason") != "semantic_read_not_learning_authority" {
-			return errors.New("actual_semantic_learning_rejection_missing")
+		if len(receipts) != 2 {
+			return errors.New("actual_semantic_learning_rejections_missing")
+		}
+		for i, name := range []string{"learning.propose", habitProposalTool} {
+			if field(receipts[i], "toolName") != name || field(receipts[i], "status") != "rejected" || field(receipts[i], "reason") != "semantic_read_not_learning_authority" {
+				return errors.New("actual_semantic_learning_rejection_missing")
+			}
 		}
 		targets, _ := field(field(brief, "plan"), "targetMessageIds").([]any)
 		if len(targets) == 0 {
@@ -227,6 +232,9 @@ func TestInstalledSemanticModelReceiptSendAndRevocation(t *testing.T) {
 	var count int
 	if e = witness.QueryRowContext(ctx, "SELECT count(*) FROM memories WHERE json_extract(value,'$.content')='Must not persist derived semantic learning.'").Scan(&count); e != nil || count != 0 {
 		t.Fatal("semantic-derived learning persisted", count, e)
+	}
+	if e = witness.QueryRowContext(ctx, "SELECT count(*) FROM habits WHERE json_extract(value,'$.content')='Must not persist a derived synthetic habit.'").Scan(&count); e != nil || count != 0 {
+		t.Fatal("semantic-derived habit persisted", count, e)
 	}
 	if len(field(inspect(), "planSelections").([]any)) != 1 {
 		t.Fatal("model did not select original semantic receipt")

@@ -6,11 +6,12 @@ export default {
   setup(ctx) {
     try {
     let api, scene, source, disposed = 0, modelCalls = 0, sourceSerial = 1
-    const sent = [], modelIDs = [], sourceReceipts = [], habitReceipts = []
-    let habitFeedback, habitCalls=0, habitTool
+    const sent = [], modelIDs = [], sourceReceipts = [], habitReceipts = [], proposalReceipts = []
+    let habitFeedback, habitCalls=0, habitTool, habitProposal, proposalCalls=0, proposalTool
     let memorySourceTarget, lastSourceAlias, memorySourceCalls = 0
-    const message = () => ({id:source,sceneId:scene.id,senderId:habitFeedback?'synthetic-feedback-'+sourceSerial:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
-    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts,habitCalls,habitTool,habitReceipts}))
+    const message = () => ({id:source,sceneId:scene.id,senderId:habitFeedback||habitProposal?'synthetic-feedback-'+sourceSerial:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:habitProposal?.text||sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
+    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts,habitCalls,habitTool,habitReceipts,proposalCalls,proposalTool,proposalReceipts}))
+    ctx.registerAdminAction('habit-proposal', input => {habitProposal=input;return {ok:true}})
     ctx.registerAdminAction('habit-feedback', input => {habitFeedback=input;return {ok:true}})
     ctx.registerAdminAction('source-memory', input => {memorySourceTarget=input.id;return {ok:true}})
     ctx.registerAdminAction('new-source',()=>{source=api.messageId(scene,'source-'+(++sourceSerial));api.receive(message(),scene,false);return {ok:true}})
@@ -42,7 +43,7 @@ export default {
         for(const m of request.messages){if(m.role==='assistant'||m.role==='tool')break;if(m.role==='user')Object.assign(data,JSON.parse(m.content))}
         const response=toolCalls=>({text:'',toolCalls,usage:{inputTokens:0,outputTokens:0,totalTokens:0}})
         const call=(name,args)=>response([{id:'synthetic-call-'+modelCalls,name,arguments:args}])
-        if(names.includes('participation.decide'))return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[(habitFeedback && data.messages.find(m=>m.senderId==='synthetic-feedback-'+sourceSerial)||data.messages[0]).id]})
+        if(names.includes('participation.decide'))return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[((habitFeedback||habitProposal) && data.messages.find(m=>m.senderId==='synthetic-feedback-'+sourceSerial)||data.messages[0]).id]})
         const receipts=request.messages.filter(m=>m.role==='tool').flatMap(m=>{try{const v=JSON.parse(m.content);return Array.isArray(v)?v:[v]}catch{return []}})
         if(memorySourceTarget && names.includes('reply.plan')){
           const receipt=receipts.find(v=>v.toolName==='memory.source')
@@ -75,12 +76,20 @@ export default {
           habitFeedback.alias=found?.value.learned?.[0]?.id??found?.value.habitId
           habitFeedback.sourceAlias=found?.value.sourceMessageId
         }
+        if(habitProposal&&names.includes('reply.plan')){
+          proposalCalls++
+          proposalTool=data.actionTools.find(t=>t.name==='habits.propose')
+          const noReply=habitProposal.noReply
+          return call('reply.plan',{action:noReply?'noReply':'reply',...(!noReply&&{deliveryTool:'messages.send'}),targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Apply the explicit scoped synthetic feedback.',constraints:[],facts:[],assets:[],emoji:[],expressionGoals:[],actions:[{toolName:'habits.propose',arguments:{...habitProposal.candidate,sourceMessageIds:[data.planContract.targetMessageIds[0]]}}]})
+        }
         if(names.includes('reply.plan'))return call('reply.plan',{action:'reply',deliveryTool:'messages.send',targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Answer the selected synthetic request.',constraints:[],facts:[],assets:[],emoji:[],stateEvidenceIds:identityReceipt?[identityReceipt.id]:[],memorySelections:memoryReceipt?[{evidenceId:memoryReceipt.id,memoryIds:memoryReceipt.value.map(m=>m.id)}]:[],expressionGoals:['Compose a concise fixture reply.'],actions:habitFeedback?(()=> {
           habitCalls++
           habitTool=data.actionTools.find(t=>t.name==='habits.feedback')
           return [{toolName:'habits.feedback',arguments:{id:habitFeedback.alias,direction:habitFeedback.direction,sourceMessageIds:[habitFeedback.sourceAlias??data.planContract.targetMessageIds[0]]}}]
-        })():[]})
+        })():identityReceipt?[{toolName:'habits.propose',arguments:{kind:'sceneRule',content:'Must not derive a rule from identity states.',sourceMessageIds:[data.planContract.targetMessageIds[0]]}}]:[]})
         if(names.includes('messages.send')){
+          if(!request.messages.some(m=>m.role==='tool')&&habitProposal)
+            proposalReceipts.push(...(data.actionReceipts??[]).filter(r=>r.toolName==='habits.propose'))
           if(!request.messages.some(m=>m.role==='tool')&&habitFeedback)
             habitReceipts.push(...(data.actionReceipts??[]).filter(r=>r.toolName==='habits.feedback'))
           if(request.messages.some(m=>m.role==='tool'))return response([])

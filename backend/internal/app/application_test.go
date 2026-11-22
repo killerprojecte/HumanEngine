@@ -305,9 +305,13 @@ func TestInstalledApplicationConfigurationIngressShutdownAndRestart(t *testing.T
 		t.Fatalf("real memory seed: %+v %v", savedMemory, err)
 	}
 	selectedMemory := make(chan int, 4)
-	app.Engine.Runtime.AddExtension(&botruntime.Extension{ContextSelected: func(c *botruntime.TurnContext, _ *jsjson.Object) error {
+	app.Engine.Runtime.AddExtension(&botruntime.Extension{ContextSelected: func(c *botruntime.TurnContext, brief *jsjson.Object) error {
 		if !app.IdentityExposure.HasExposure(c) {
 			return errors.New("identity_receipt_not_delivered")
+		}
+		receipts, _ := field(brief, "actionReceipts").([]any)
+		if len(receipts) != 1 || field(receipts[0], "toolName") != habitProposalTool || field(receipts[0], "status") != "rejected" || field(receipts[0], "reason") != "identity_read_not_learning_authority" {
+			return errors.New("actual_identity_habit_rejection_missing")
 		}
 		selectedMemory <- len(app.MemoryExposure.ReadExposed(c))
 		return nil

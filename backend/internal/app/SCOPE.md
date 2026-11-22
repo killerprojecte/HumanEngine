@@ -190,7 +190,7 @@ foreign, or earlier-turn references. It also exercises personalization policy,
 and revocation by the actual admin endpoints before tool-result delivery. This
 does not introduce new memory exposure or a separate final-wire source guard.
 
-## Planner habit feedback
+## Planner habit proposals and feedback
 
 The Planner can submit `habits.feedback` as a plan action for a learned hint
 exposed to the current turn. Only cited current live nonbot messages provide
@@ -198,7 +198,12 @@ evidence. The existing habit owner checks the scene learning policy and writes
 the feedback through the same session that checks source and read authority.
 If the update changes a hint already delivered to the Planner, the existing
 validation invalidates the old reply plan; the separate feedback write remains.
-This does not implement model-facing `habits.propose`.
+
+`habits.propose` uses the existing scene rule and expression preference
+writer with the exact cited live source snapshots. It does not require
+personalization or memory reads; a delivered semantic, identity or knowledge
+result cannot serve as authority for a free-form habit. It stays on the
+foreground plan action path and does not change the queued learning pipeline.
 
 ## SnowLuma builtin installation candidate
 

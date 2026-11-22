@@ -85,7 +85,11 @@ disabled. Go verifies both original hashes over the authenticated file API,
 deletes one asset, and drains. TypeScript reopens the latest pair, where the
 deleted original is unavailable and the independent original is byte-identical.
 The earlier backup must contain both original files with matching manifest
-hashes. A separate restore using a copy of the current authority must remove
+hashes. The pinned restore CLI must reject a disposable copy with one byte
+changed in the retained original and no change to the manifest. It must exit
+nonzero with its fixed verification failure, leave neither destination nor
+quarantine, and preserve the cloned authority's audited head and SQLite bytes.
+A restore from the unmodified backup using that same authority must then remove
 the deleted row and physical file, retain the other original unchanged, and
 leave model admission held when Go opens the restored data.
 

@@ -13,7 +13,22 @@ import (
 // FeedbackFromSnapshots resolves only the cited sources, from trusted runtime
 // messages. Model-read authorization, source proof and the mutation share the
 // same owning writer; source IDs and direction are the only model inputs.
-func (s *Service) FeedbackFromSnapshots(ctx context.Context, scene, id string, direction float64, ids []string, messages []*Object, captured bool, events *sourceevents.Store, dates *jsdate.Parser, authorized func(*recovery.WriteSession) bool) (out *Object, err error) {
+func (s *Service) FeedbackFromSnapshots(ctx context.Context, scene, id string, direction float64, ids []string, messages []*Object, captured bool, events *sourceevents.Store, dates *jsdate.Parser, authorized func(*recovery.WriteSession) bool) (*Object, error) {
+	return s.withSnapshotEvidence(ctx, scene, ids, messages, captured, events, dates, authorized, func(bound *Service, c Context, sources []any) (*Object, error) {
+		return bound.feedback(ctx, c, id, direction, sources)
+	})
+}
+
+// ProposeFromSnapshots writes a validated proposal without requiring a model-read
+// ticket: the Planner action's authority is its exact cited live messages.
+func (s *Service) ProposeFromSnapshots(ctx context.Context, scene string, candidate *Object, ids []string, messages []*Object, captured bool, events *sourceevents.Store, dates *jsdate.Parser) (*Object, error) {
+	return s.withSnapshotEvidence(ctx, scene, ids, messages, captured, events, dates, nil, func(bound *Service, c Context, sources []any) (*Object, error) {
+		_ = candidate.Set("sources", sources)
+		return bound.propose(ctx, c, candidate)
+	})
+}
+
+func (s *Service) withSnapshotEvidence(ctx context.Context, scene string, ids []string, messages []*Object, captured bool, events *sourceevents.Store, dates *jsdate.Parser, authorized func(*recovery.WriteSession) bool, mutate func(*Service, Context, []any) (*Object, error)) (out *Object, err error) {
 	cited := make(map[string]*Object, len(ids))
 	unique := make([]string, 0, len(ids))
 	for _, id := range ids {
@@ -32,7 +47,7 @@ func (s *Service) FeedbackFromSnapshots(ctx context.Context, scene, id string, d
 		}
 	}
 	err = s.TransactionWithSession(ctx, func(b *Service, ws *recovery.WriteSession) error {
-		if !authorized(ws) {
+		if authorized != nil && !authorized(ws) {
 			return errors.New("memory_read_revoked")
 		}
 		bound := events.WithSession(ws)
@@ -89,7 +104,7 @@ func (s *Service) FeedbackFromSnapshots(ctx context.Context, scene, id string, d
 			sources = append(sources, obj("sceneId", scene, "messageId", id, "senderId", str(cited[id], "senderId")))
 		}
 		var e error
-		out, e = b.feedback(ctx, c, id, direction, sources)
+		out, e = mutate(b, c, sources)
 		return e
 	})
 	if err != nil {

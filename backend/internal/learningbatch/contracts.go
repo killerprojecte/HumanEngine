@@ -224,3 +224,13 @@ func trim(s string) string {
 		return r == 0xFEFF || r == 0xA0 || r == 0x1680 || (r >= 0x2000 && r <= 0x200A) || r == 0x2028 || r == 0x2029 || r == 0x202F || r == 0x205F || r == 0x3000 || r == ' ' || (r >= 9 && r <= 13)
 	})
 }
+
+// HabitProposalSchema and ParseHabitProposal share the frozen TypeScript
+// contract already compiled by the application-owned learning Runner.
+func (r *Runner) HabitProposalSchema() (*Object, error) {
+	return toObject(r.schemas.raw["habit"])
+}
+
+func (r *Runner) ParseHabitProposal(input *Object) (*Object, error) {
+	return r.schemas.parse(input, "habit")
+}

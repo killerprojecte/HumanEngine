@@ -68,18 +68,19 @@ func (a *Application) habitFeedback(ctx context.Context, o Owners, input any, c 
 		}
 		ids[i] = source
 	}
-	captured := c.HasSourceSnapshots()
-	var messages []*jsjson.Object
-	if captured {
-		messages = c.Sources()
-	} else {
-		snapshot, err := a.Engine.Runtime.Snapshot(c.Scene.ID)
-		if err != nil {
-			return nil, err
-		}
-		messages = snapshot.Messages
+	messages, captured, err := a.habitActionSnapshots(c)
+	if err != nil {
+		return nil, err
 	}
 	return o.Habits.FeedbackFromSnapshots(ctx, c.Scene.ID, id, dir, ids, messages, captured, o.Sources, o.Dates, func(ws *recovery.WriteSession) bool {
 		return a.Engine.TurnRead.ValidInSession(ctx, ticket, ws)
 	})
+}
+
+func (a *Application) habitActionSnapshots(c *botruntime.TurnContext) ([]*jsjson.Object, bool, error) {
+	if c.HasSourceSnapshots() {
+		return c.Sources(), true, nil
+	}
+	snapshot, err := a.Engine.Runtime.Snapshot(c.Scene.ID)
+	return snapshot.Messages, false, err
 }

@@ -225,8 +225,15 @@ class MigrationDrillTests(unittest.TestCase):
         restore = ("tool", ("node", "--import", "tsx", "scripts/restore.ts",
                             "/drill/media-backup", "/drill/media-restored", AUTHORITY), clone)
         self.assertEqual(events[4], backup)
+        corruption, = (index for index, event in enumerate(events)
+                       if event[0] == "tool" and event[1][-2:] == (ids[1], AUTHORITY))
+        self.assertEqual(events[corruption][1][:5], ("node", "--import", "tsx", "--input-type=module", "-e"))
+        self.assertEqual(events[corruption][2], clone)
+        self.assertLess(events.index(backup), corruption)
+        self.assertLess(corruption, events.index(restore))
         self.assertLess(events.index(restore), events.index(("go", dict(clone, data="media-restored"))))
         self.assertEqual(events[-1][2], clone)
+        self.assertEqual(drill.report["checks"][-2], "corrupt-media-backup-refused-without-publication-or-authority-change")
         self.assertEqual(drill.report["checks"][-1], "restore-replayed-go-media-deletion-and-retained-exact-original")
 
     def test_failure_evidence_reports_fixed_phase_without_error_details(self):

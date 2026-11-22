@@ -249,8 +249,11 @@ func TestInstalledKnowledgeLearningModelActions(t *testing.T) {
 			return errors.New("actual_knowledge_guard_missing")
 		}
 		receipts, _ := field(brief, "actionReceipts").([]any)
-		if len(receipts) != 1 {
-			return errors.New("contextual_action_receipt_missing")
+		if len(receipts) != 2 {
+			return errors.New("contextual_action_receipts_missing")
+		}
+		if habit := receipts[1]; field(habit, "toolName") != habitProposalTool || field(habit, "status") != "rejected" || field(habit, "reason") != "knowledge_state_not_freeform_learning_authority" {
+			return errors.New("actual_knowledge_habit_rejection_missing")
 		}
 		receipt := receipts[0]
 		if field(receipt, "toolName") != "learning.propose" {

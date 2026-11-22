@@ -83,7 +83,7 @@ func (a *Application) proposeContextualTool(ctx context.Context, c *botruntime.T
 	if a.IdentityExposure.CaptureGuard(c) != nil {
 		return reject("identity_read_not_learning_authority")
 	}
-	if a.EpisodeExposure.HasExposure(c) {
+	if a.WorkingSetExposure.HasExposure(c) || a.EpisodeExposure.HasExposure(c) {
 		return reject("workspace_read_not_learning_authority")
 	}
 	if a.StateExposures.historical.CaptureGuard(c) != nil || a.StateExposures.history.CaptureGuard(c) != nil || a.StateExposures.timeline.CaptureGuard(c) != nil {

@@ -50,7 +50,11 @@ This is not a claim of complete TypeScript Engine compatibility.
   HTTP admin projection. Exact scoped experience and plan entries are checked
   at delivery, and unknown occurrence times stay unknown. Selection counts only
   retained backing assertions; this read does not grant ordinary memory parents
-  or derived learning. `memory.workingSet` remains separate.
+  or derived learning. `memory.workingSet` uses the same qualification owners and
+  preserves a whole page of current accessibility and protection. A cold-only
+  view can be empty with limited coverage. Pin or protection changes invalidate
+  the exact read at delivery and send; recording a selection does not. Neither
+  tool exposes administrator pin policies or makes accessibility a truth claim.
 - Dynamic tool getters run at source operation boundaries. Runtime tests cover
   changing settings and tool availability, concurrent turns, execution-time send
   effects, first matching delivery ownership, current learning flags and current
@@ -87,7 +91,7 @@ This is not a claim of complete TypeScript Engine compatibility.
   production cutover. A redistributable native image and production release
   acceptance remain open.
 - Remaining source model tools, complete prompt/manual-rule composition and
-  workspace exposure are not all wired. Contextual `learning.propose` uses its
+  broader workspace behaviors remain unverified. Contextual `learning.propose` uses its
   own bounded graph. The Planner proposal action does not activate an Experience
   candidate or start a trial. The installed recall and proactive paths do not
   establish parity for all Engine startup hooks.

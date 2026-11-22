@@ -171,10 +171,7 @@ func (s *Service) projectWorkingSetRows(ctx context.Context, scope *workingset.S
 			ref := object(value(row.row, "ref"))
 			r := commitments.Reference{ID: text(ref, "id"), Version: episodeNumber(ref, "version"), DeletionEpoch: episodeNumber(ref, "deletionEpoch")}
 			a := row.access
-			access := epObj("ref", workingSetRef(a.Ref), "dependencyKey", a.DependencyKey, "state", a.State, "reviewDue", a.ReviewDue,
-				"pinned", a.Pinned, "pinIntent", a.PinIntent, "pinRevision", a.PinRevision, "pinStatus", a.PinStatus,
-				"policyCoverage", a.PolicyCoverage, "metadataRevision", a.MetadataRevision, "contextSelectedCount", a.ContextSelectedCount,
-				"lastSelectedAt", workspaceNullable(a.LastSelectedAt), "protection", workspaceNullable(a.Protection))
+			access := workingSetAccess(a)
 			if a.Ref.Kind == "assertion" {
 				current, err := resolver.AssertionSnapshot(c, workingset.Reference{Kind: "assertion", ID: r.ID, Version: r.Version, DeletionEpoch: r.DeletionEpoch})
 				if err != nil {
@@ -204,6 +201,13 @@ func (s *Service) projectWorkingSetRows(ctx context.Context, scope *workingset.S
 		return nil
 	})
 	return
+}
+
+func workingSetAccess(a workingset.ViewItem) *Object {
+	return epObj("ref", workingSetRef(a.Ref), "dependencyKey", a.DependencyKey, "state", a.State, "reviewDue", a.ReviewDue,
+		"pinned", a.Pinned, "pinIntent", a.PinIntent, "pinRevision", a.PinRevision, "pinStatus", a.PinStatus,
+		"policyCoverage", a.PolicyCoverage, "metadataRevision", a.MetadataRevision, "contextSelectedCount", a.ContextSelectedCount,
+		"lastSelectedAt", workspaceNullable(a.LastSelectedAt), "protection", workspaceNullable(a.Protection))
 }
 
 func workingSetBody(pins workingset.PinList, enabled bool, coverage string, omittedCold int, items []any) *Object {

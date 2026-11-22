@@ -53,18 +53,22 @@ export default {
         const receipts=request.messages.filter(m=>m.role==='tool').flatMap(m=>{try{const v=JSON.parse(m.content);return Array.isArray(v)?v:[v]}catch{return []}})
         if(names.includes('reply.plan')&&episodesMode){
           const plan={targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Answer the synthetic experience request.',constraints:[],facts:[],assets:[],emoji:[],expressionGoals:[],actions:[]}
-          const episode=receipts.filter(v=>v.toolName==='memory.episodes')
+          const tool=episodesMode.startsWith('working-')?'memory.workingSet':'memory.episodes'
+          const episode=receipts.filter(v=>v.toolName===tool)
           if(!episode.length){
-            episodeAds.push(names.includes('memory.episodes'))
-            if(!names.includes('memory.episodes'))return call('reply.plan',{...plan,action:'noReply'})
-            const args=episodesMode==='person'?{personId:'synthetic-user'}:{}
-            if(episodesMode==='selected')return response([1,2].map(i=>({id:'episode-'+modelCalls+'-'+i,name:'memory.episodes',arguments:args})))
-            return call('memory.episodes',args)
+            episodeAds.push(names.includes(tool))
+            if(!names.includes(tool))return call('reply.plan',{...plan,action:'noReply'})
+            const args=episodesMode==='person'?{personId:'synthetic-user'}:
+              episodesMode==='working-cold-only'?{personId:'cold-user'}:
+              episodesMode==='working-include-cold'?{personId:'cold-user',includeCold:true}:
+              episodesMode==='working-second'?{personId:'second',includeCold:true}:{}
+            if(episodesMode==='selected'||episodesMode==='working-selected')return response([1,2].map(i=>({id:'workspace-'+modelCalls+'-'+i,name:tool,arguments:args})))
+            return call(tool,args)
           }
           episodeReads.push(episode.map(v=>v.value))
           const selected=episode.filter(v=>v.value.length).map(v=>v.id)
           const id=data.planContract.targetMessageIds[0]
-          if(episodesMode==='selected')plan.actions=[{toolName:'learning.propose',arguments:{content:'Episode state cannot authorize derived learning.',kind:'fact',epistemicKind:'explicit',sourceMessageIds:[id]}}]
+          if(episodesMode==='selected'||episodesMode==='working-selected')plan.actions=[{toolName:'learning.propose',arguments:{content:'Episode state cannot authorize derived learning.',kind:'fact',epistemicKind:'explicit',sourceMessageIds:[id]}}]
           return call('reply.plan',{...plan,action:'reply',deliveryTool:'messages.send',stateEvidenceIds:selected})
         }
         if(memorySourceTarget && names.includes('reply.plan')){

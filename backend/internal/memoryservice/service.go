@@ -154,19 +154,36 @@ func (s *Service) resolveCommitted(ws *recovery.WriteSession, c workingset.Conte
 
 // ResolveWorkingSet is the actual concrete readonly/write scope adapter used
 // when constructing workingset.Service. It never reenters a publication.
+func workingSetResolver(ctx context.Context, plans *commitments.Store, assertionsStore *assertions.Store, enabled func(commitments.Context) (bool, error), options assertionauthority.Options, scope *workingset.Scope, call func(*memoryworkspace.Resolver) error) error {
+	return plans.ReadWorkingSetCurrent(ctx, scope, assertionsStore, enabled, options, func(read *commitments.ReadService) error {
+		resolver, err := memoryworkspace.NewResolver(read, options.DateParser)
+		if err != nil {
+			return err
+		}
+		return call(resolver)
+	})
+}
 func ResolveWorkingSet(plans *commitments.Store, assertionsStore *assertions.Store, enabled func(commitments.Context) (bool, error), options assertionauthority.Options) func(*workingset.Scope, workingset.Context, []workingset.Reference) ([]workingset.Snapshot, error) {
 	return func(scope *workingset.Scope, c workingset.Context, refs []workingset.Reference) (out []workingset.Snapshot, err error) {
-		err = plans.ReadWorkingSetCurrent(context.Background(), scope, assertionsStore, enabled, options, func(read *commitments.ReadService) error {
-			resolver, e := memoryworkspace.NewResolver(read, options.DateParser)
-			if e != nil {
-				return e
-			}
-			out, e = resolver.Resolve(c, refs)
-			return e
+		err = workingSetResolver(context.Background(), plans, assertionsStore, enabled, options, scope, func(resolver *memoryworkspace.Resolver) error {
+			var err error
+			out, err = resolver.Resolve(c, refs)
+			return err
 		})
 		return
 	}
 }
+func ResolveWorkingSetView(plans *commitments.Store, assertionsStore *assertions.Store, enabled func(commitments.Context) (bool, error), options assertionauthority.Options) func(*workingset.Scope, workingset.Context, []workingset.Reference) (workingset.ViewResolution, error) {
+	return func(scope *workingset.Scope, c workingset.Context, refs []workingset.Reference) (out workingset.ViewResolution, err error) {
+		err = workingSetResolver(context.Background(), plans, assertionsStore, enabled, options, scope, func(resolver *memoryworkspace.Resolver) error {
+			var err error
+			out, err = resolver.ResolveView(c, refs)
+			return err
+		})
+		return
+	}
+}
+
 func (s *Service) unavailable(st *assertions.Store, id string) error {
 	return st.WithWriteSession(func(ws *recovery.WriteSession) error { _, e := s.mutations(ws).InvalidateAssertion(id); return e })
 }

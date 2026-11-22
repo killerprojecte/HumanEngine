@@ -21,6 +21,7 @@ type Ports struct {
 	ObserveReady   func(*Scope) error
 	Enabled        func() bool
 	ResolveCurrent func(*Scope, Context, []Reference) ([]Snapshot, error)
+	ResolveView    func(*Scope, Context, []Reference) (ViewResolution, error)
 	BeforeWrite    func(*recovery.WriteSession) error
 	// ObservePinWrite observes the validated intent before the mandatory durable
 	// append. It cannot replace journaling or enrollment; returning an error aborts.
@@ -229,6 +230,10 @@ func (s *Service) bounded(input []Selection) ([]Selection, bool, error) {
 	return out, len(input) > n, nil
 }
 func (s *Service) resolve(ctx Context, input []Selection) (map[string]Snapshot, []Snapshot, error) {
+	return s.resolveCurrent(ctx, input, nil)
+}
+
+func (s *Service) resolveCurrent(ctx Context, input []Selection, witness *map[string]*jsjson.Object) (map[string]Snapshot, []Snapshot, error) {
 	result := map[string]Snapshot{}
 	ordered := []Snapshot{}
 	if len(input) == 0 {
@@ -244,7 +249,19 @@ func (s *Service) resolve(ctx Context, input []Selection) (map[string]Snapshot, 
 		}
 		refs = append(refs, copy)
 	}
-	snapshots, e := s.ports.ResolveCurrent(s.scope(), ctx, refs)
+	var snapshots []Snapshot
+	var bodies map[string]*jsjson.Object
+	var e error
+	if witness == nil {
+		snapshots, e = s.ports.ResolveCurrent(s.scope(), ctx, refs)
+	} else {
+		if s.ports.ResolveView == nil {
+			return nil, nil, errors.New("working_set_view_witness_owner_required")
+		}
+		var resolved ViewResolution
+		resolved, e = s.ports.ResolveView(s.scope(), ctx, refs)
+		snapshots, bodies = resolved.Snapshots, resolved.CanonicalBodies
+	}
 	if e != nil {
 		return nil, nil, e
 	}
@@ -263,6 +280,16 @@ func (s *Service) resolve(ctx Context, input []Selection) (map[string]Snapshot, 
 		key := SelectionKey(value.Selection())
 		if _, ok = result[key]; ok {
 			return nil, nil, errors.New("working_set_authority_duplicate")
+		}
+		if witness != nil {
+			body := bodies[key]
+			if body == nil {
+				return nil, nil, errors.New("working_set_view_witness_missing")
+			}
+			if *witness == nil {
+				*witness = make(map[string]*jsjson.Object, len(snapshots))
+			}
+			(*witness)[key] = body
 		}
 		result[key] = value
 		ordered = append(ordered, value)
@@ -302,6 +329,10 @@ func (s *Service) View(ctx context.Context, c Context, input []Selection, includ
 	return
 }
 func (s *Service) view(ctx Context, input []Selection, includeCold bool) (ViewResult, error) {
+	return s.viewCurrent(ctx, input, includeCold, nil)
+}
+
+func (s *Service) viewCurrent(ctx Context, input []Selection, includeCold bool, witness *map[string]*jsjson.Object) (ViewResult, error) {
 	out := ViewResult{Items: []ViewItem{}, Coverage: "disabled"}
 	yes, e := s.enabled(ctx)
 	if e != nil || !yes {
@@ -311,7 +342,7 @@ func (s *Service) view(ctx Context, input []Selection, includeCold bool) (ViewRe
 	if e != nil {
 		return out, e
 	}
-	current, _, e := s.resolve(ctx, batch)
+	current, _, e := s.resolveCurrent(ctx, batch, witness)
 	if e != nil {
 		return out, e
 	}

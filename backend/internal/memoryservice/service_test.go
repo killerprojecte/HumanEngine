@@ -137,7 +137,7 @@ func serviceSetup(t *testing.T) (*Service, scopedFixture) {
 	p, e := projections.New(ctx, f.main, f.recovery, func() bool { return true }, projections.AssertionReader(f.store, options), projections.Options{})
 	must(e)
 	flag := func(commitments.Context) (bool, error) { return true, nil }
-	ws, e := workingset.New(ctx, f.main, f.recovery, workingset.Ports{Enabled: func() bool { return true }, ResolveCurrent: ResolveWorkingSet(plans, f.store, flag, options)})
+	ws, e := workingset.New(ctx, f.main, f.recovery, workingset.Ports{Enabled: func() bool { return true }, ResolveCurrent: ResolveWorkingSet(plans, f.store, flag, options), ResolveView: ResolveWorkingSetView(plans, f.store, flag, options)})
 	must(e)
 	s, e := New(Dependencies{Assertions: f.store, Commitments: plans, Relations: relations, Projections: p, WorkingSet: ws, Knowledge: k, Semantic: sem, Notifications: &recordingNotifications{}, Dirty: func() {}, Log: func(level, category, message string) { t.Log(level, category, message) }, CommitmentsEnabled: flag, Authority: options})
 	must(e)

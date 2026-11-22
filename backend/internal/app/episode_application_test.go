@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/assertionproposal"
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/memoryservice"
@@ -21,6 +22,15 @@ import (
 )
 
 func TestInstalledEpisodesWholeReceipt(t *testing.T) {
+	testInstalledWorkspaceWholeReceipt(t, false)
+}
+
+func TestInstalledWorkingSetWholeReceipt(t *testing.T) {
+	testInstalledWorkspaceWholeReceipt(t, true)
+}
+
+func testInstalledWorkspaceWholeReceipt(t *testing.T, working bool) {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 40*time.Second)
 	defer cancel()
 	options := applicationOptions(t)
@@ -79,7 +89,7 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 		req("PUT", scenePath, wire(scene))
 	}
 	sceneFlags(map[string]bool{"learningEnabled": true, "participationEnabled": false})
-	record := func(id, sender, kind, content string, commitment *jsjson.Object) memoryservice.ProposalResult {
+	record := func(id, sender, kind, content string, commitment *jsjson.Object, proposalOptions memoryservice.ProposalOptions) memoryservice.ProposalResult {
 		t.Helper()
 		snapshot, err := app.Engine.Runtime.Snapshot(sceneID)
 		if err != nil {
@@ -101,7 +111,7 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 		if commitment != nil {
 			_ = candidate.Set("commitment", commitment)
 		}
-		out, err := app.Semantic.Memory.Propose(ctx, memoryToolObject("sceneId", sceneID, "simulation", false, "provenance", "source-only", "sourceEvidence", evidence), candidate, memoryservice.ProposalOptions{})
+		out, err := app.Semantic.Memory.Propose(ctx, memoryToolObject("sceneId", sceneID, "simulation", false, "provenance", "source-only", "sourceEvidence", evidence), candidate, proposalOptions)
 		if err != nil || out.Status != "saved" {
 			t.Fatalf("fixture candidate did not save: %+v, %v", out, err)
 		}
@@ -116,14 +126,14 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 		}
 	}
 	source := field(started, "source").(string)
-	first := record(source, "synthetic-user", "experience", "EPISODE_ORIGINAL: I attended one qualified fixture event.", nil)
+	first := record(source, "synthetic-user", "experience", "EPISODE_ORIGINAL: I attended one qualified fixture event.", nil, memoryservice.ProposalOptions{})
 	const secondMessage = "episode-qualified-second"
 	const secondContent = "EPISODE_SECOND: I attended a separate qualified fixture event."
 	ingest(secondMessage, "second", secondContent)
-	second := record(secondMessage, "second", "experience", secondContent, nil)
+	second := record(secondMessage, "second", "experience", secondContent, nil, memoryservice.ProposalOptions{})
 	const planMessage = "episode-qualified-plan"
 	ingest(planMessage, "synthetic-user", "I propose Synthetic full plan with the named participant. Time: 18:00; exact date unknown. Conditions: Only if participants confirm.", memoryToolObject("type", "mention", "userId", "second"))
-	plan := record(planMessage, "synthetic-user", "fact", "Synthetic declaration proposal", memoryToolObject("kind", "propose", "terms", memoryToolObject("kind", "plan", "title", "Synthetic full plan", "participantIds", []any{"synthetic-user", "second"}, "temporalScope", "future", "polarity", "positive", "modality", "asserted", "conditions", []any{"Only if participants confirm"}, "timeQualification", "18:00; exact date unknown")))
+	plan := record(planMessage, "synthetic-user", "fact", "Synthetic declaration proposal", memoryToolObject("kind", "propose", "terms", memoryToolObject("kind", "plan", "title", "Synthetic full plan", "participantIds", []any{"synthetic-user", "second"}, "temporalScope", "future", "polarity", "positive", "modality", "asserted", "conditions", []any{"Only if participants confirm"}, "timeQualification", "18:00; exact date unknown")), memoryservice.ProposalOptions{})
 	if plan.Commitment == nil || plan.Commitment.Status != "saved" {
 		t.Fatalf("qualified plan did not save: %+v", plan.Commitment)
 	}
@@ -138,6 +148,7 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 		}
 	}
 	var detached atomic.Pointer[botruntime.ToolResultGuard]
+	var workingDetached atomic.Pointer[botruntime.ToolResultGuard]
 	var exposed atomic.Bool
 	app.Engine.Runtime.AddExtension(&botruntime.Extension{ContextSelected: func(c *botruntime.TurnContext, _ *jsjson.Object) error {
 		if len(app.MemoryExposure.ReadExposed(c)) != 0 {
@@ -146,9 +157,11 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 		if g := app.EpisodeExposure.CaptureGuard(c); g != nil {
 			detached.CompareAndSwap(nil, g)
 		}
+		if g := app.WorkingSetExposure.CaptureGuard(c); g != nil {
+			workingDetached.CompareAndSwap(nil, g)
+		}
 		return nil
 	}})
-	setSettings(map[string]any{"memoryEpisodesEnabled": true})
 	sceneFlags(map[string]bool{"participationEnabled": true, "memoryReadEnabled": true, "personalizationEnabled": true})
 	inspectList := func(key string) []any { return field(inspect(), key).([]any) }
 	last := func(key string) any {
@@ -207,6 +220,115 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 		}
 		return n
 	}
+	checkGuard := func(guard *botruntime.ToolResultGuard) bool {
+		t.Helper()
+		var active bool
+		err := app.Engine.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error { var e error; active, e = guard.Check(reads); return e })
+		if err != nil {
+			t.Fatal(err)
+		}
+		return active
+	}
+	if working {
+		begin("working-disabled")
+		end()
+		if last("episodeAds") != false || len(inspectList("episodeReads")) != 0 {
+			t.Fatal("disabled working set was advertised or read")
+		}
+		setSettings(map[string]any{"memoryEpisodesEnabled": false, "memoryWorkingSetEnabled": true,
+			"memoryCommitmentsEnabled": true, "memoryCommitmentsAnswerEnabled": true, "memoryColdAfterDays": float64(1)})
+		coldClock := assertionproposal.Runtime{Now: func() string { return time.Now().UTC().Add(-48 * time.Hour).Format(time.RFC3339Nano) }}
+		const coldMessage = "working-set-cold-source"
+		ingest(coldMessage, "cold-user", "I reported the cold fixture experience.")
+		cold := record(coldMessage, "cold-user", "experience", "I reported the cold fixture experience.", nil, memoryservice.ProposalOptions{Runtime: coldClock})
+		workingPage := func(value any) any {
+			t.Helper()
+			states, ok := value.([]any)
+			if !ok || len(states) != 1 || field(states[0], "stateKind") != "working_set" {
+				t.Fatalf("expected one working-set state, got %+v", value)
+			}
+			page := field(states[0], "page")
+			if field(page, "enabled") != true || field(page, "interpretation") != "accessibility_not_truth_or_absence" || field(page, "policies") != nil {
+				t.Fatal("working-set page was not qualified or used the administrator shape")
+			}
+			return page
+		}
+		workingRun := func(mode string) any {
+			t.Helper()
+			before := len(inspectList("episodeReads"))
+			begin(mode)
+			end()
+			if len(inspectList("episodeReads")) != before+1 {
+				t.Fatal("working-set query did not deliver exactly one continuation")
+			}
+			return workingPage(last("episodeReads").([]any)[0])
+		}
+		page := workingRun("working-cold-only")
+		if len(field(page, "items").([]any)) != 0 || field(page, "coverage") != "limited" || field(page, "omittedCold") != float64(1) || count(cold) != 0 {
+			t.Fatalf("all-cold selection was not an empty limited page: %+v", page)
+		}
+		page = workingRun("working-include-cold")
+		coldItems := field(page, "items").([]any)
+		if len(coldItems) != 1 || field(coldItems[0], "kind") != "assertion" || field(field(coldItems[0], "accessibility"), "state") != "cold" || count(cold) != 1 {
+			t.Fatalf("includeCold did not expose and select the exact cold assertion once; items=%d selections=%d", len(coldItems), count(cold))
+		}
+		beforeSecond, beforeCold := count(second), count(cold)
+		beforeSend := len(inspectList("sent"))
+		page = workingRun("working-selected")
+		rows := field(page, "items").([]any)
+		hasPlan := false
+		for _, row := range rows {
+			if field(row, "kind") == "commitment" && field(field(row, "accessibility"), "protection") != nil {
+				hasPlan = true
+			}
+		}
+		reads := last("episodeReads").([]any)
+		kept := field(last("episodeBundles"), "evidence").([]any)
+		actions := field(last("episodeBundles"), "actions").([]any)
+		if !hasPlan || len(reads) != 2 || len(kept) != 2 || len(actions) != 1 || field(actions[0], "reason") != "workspace_read_not_learning_authority" ||
+			count(second) != beforeSecond+1 || count(cold) != beforeCold+1 || app.Contextual.Stats().Accepted != 0 || exposed.Load() || len(inspectList("sent")) != beforeSend+1 {
+			t.Fatalf("working-set selection did not preserve protection, whole receipts or exact authority: plan=%t reads=%d packed=%d selections=%d/%d",
+				hasPlan, len(reads), len(kept), count(second)-beforeSecond, count(cold)-beforeCold)
+		}
+		for _, receipt := range kept {
+			if n := len(field(workingPage(field(receipt, "states")), "items").([]any)); n != len(rows) {
+				t.Fatal("Replyer did not receive the whole qualified working set")
+			}
+		}
+		admin := req("GET", "/api/memory-working-set?sceneId="+url.QueryEscape(sceneID)+"&personId=second&includeCold=true", nil)
+		var selection *jsjson.Object
+		for _, row := range field(admin, "items").([]any) {
+			a := field(row, "accessibility")
+			if field(field(a, "ref"), "id") == field(second.Memory, "id") {
+				selection = memoryToolObject("ref", field(a, "ref"), "dependencyKey", field(a, "dependencyKey"))
+				break
+			}
+		}
+		if selection == nil {
+			t.Fatal("administrator did not receive the exact pin selection")
+		}
+		workingDetached.Store(nil)
+		pinArrived, pinResume := filepath.Join(options.PluginRoot, "pinSendArrived"), filepath.Join(options.PluginRoot, "pinSendResume")
+		releasePin := func() { _ = os.WriteFile(pinResume, []byte("resume"), 0600) }
+		defer releasePin()
+		action("episode-hold-send", map[string]any{"arrived": pinArrived, "resume": pinResume})
+		sent := len(inspectList("sent"))
+		begin("working-second")
+		wait("physical adapter reached pin boundary", func() bool { _, err := os.Stat(pinArrived); return err == nil })
+		guard := workingDetached.Load()
+		if guard == nil || !checkGuard(guard) {
+			t.Fatal("detached working-set guard was invalid before the pin update")
+		}
+		req("POST", "/api/memory-working-set/pin", wire(memoryToolObject(
+			"sceneId", sceneID, "selection", selection, "expectedRevision", float64(0), "pinned", true)))
+		releasePin()
+		end()
+		if len(inspectList("sent")) != sent || checkGuard(guard) {
+			t.Fatal("changed working-set pin was sent or accepted by the detached guard")
+		}
+		return
+	}
+	setSettings(map[string]any{"memoryEpisodesEnabled": true})
 	begin("selected")
 	end()
 	reads := last("episodeReads").([]any)
@@ -240,7 +362,7 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 	budget := field(req("GET", "/api/settings", nil), "replyEvidenceMaxBytes")
 	oversizedContent := "OMITTED_EPISODE " + strings.Repeat("限定内容", 700)
 	ingest("episode-qualified-large", "synthetic-user", "I reported the long experience in this fixture.")
-	oversized := record("episode-qualified-large", "synthetic-user", "experience", oversizedContent, nil)
+	oversized := record("episode-qualified-large", "synthetic-user", "experience", oversizedContent, nil, memoryservice.ProposalOptions{})
 	setSettings(map[string]any{"replyEvidenceMaxBytes": float64(8192)})
 	beforeBundles := len(inspectList("episodeBundles"))
 	begin("person")
@@ -317,16 +439,7 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 	if guard == nil {
 		t.Fatal("missing detached episode guard")
 	}
-	checkGuard := func() bool {
-		t.Helper()
-		var active bool
-		err := app.Engine.Sources.WithRuntimeReads(ctx, func(reads botruntime.ReadAuthority) error { var e error; active, e = guard.Check(reads); return e })
-		if err != nil {
-			t.Fatal(err)
-		}
-		return active
-	}
-	if !checkGuard() {
+	if !checkGuard(guard) {
 		t.Fatal("episode guard was invalid before recall")
 	}
 	if err := app.Engine.Runtime.Recall(ctx, sceneID, source); err != nil {
@@ -334,7 +447,7 @@ func TestInstalledEpisodesWholeReceipt(t *testing.T) {
 	}
 	release()
 	end()
-	if len(inspectList("sent")) != sent || checkGuard() {
+	if len(inspectList("sent")) != sent || checkGuard(guard) {
 		t.Fatal("recalled qualified episode reached the wire")
 	}
 }

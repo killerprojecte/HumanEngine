@@ -82,7 +82,7 @@ func (a *Application) composeMemory(ctx context.Context, o Owners, settings map[
 	workspaceEnabled := func() bool {
 		return snapshot.enabled("memoryWorkingSetEnabled") || snapshot.enabled("memoryEpisodesEnabled")
 	}
-	workspace, err := workingset.New(ctx, o.Main, o.Authority, workingset.Ports{Enabled: workspaceEnabled, ResolveCurrent: memoryservice.ResolveWorkingSet(plans, o.Assertions, commitmentsEnabled, options)})
+	workspace, err := workingset.New(ctx, o.Main, o.Authority, workingset.Ports{Enabled: workspaceEnabled, ResolveCurrent: memoryservice.ResolveWorkingSet(plans, o.Assertions, commitmentsEnabled, options), ResolveView: memoryservice.ResolveWorkingSetView(plans, o.Assertions, commitmentsEnabled, options)})
 	if err != nil {
 		return nil, err
 	}

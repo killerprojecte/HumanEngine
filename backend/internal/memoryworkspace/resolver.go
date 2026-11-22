@@ -163,6 +163,16 @@ func (r *Resolver) planKey(view *Object) (string, error) {
 	return hash(obj("view", view, "heads", heads))
 }
 func (r *Resolver) Resolve(ctx workingset.Context, refs []workingset.Reference) ([]workingset.Snapshot, error) {
+	return r.resolve(ctx, refs, nil)
+}
+
+func (r *Resolver) ResolveView(ctx workingset.Context, refs []workingset.Reference) (workingset.ViewResolution, error) {
+	bodies := make(map[string]*Object, len(refs))
+	snapshots, err := r.resolve(ctx, refs, bodies)
+	return workingset.ViewResolution{Snapshots: snapshots, CanonicalBodies: bodies}, err
+}
+
+func (r *Resolver) resolve(ctx workingset.Context, refs []workingset.Reference, bodies map[string]*Object) ([]workingset.Snapshot, error) {
 	if e := r.read.AssertReady(); e != nil {
 		return nil, e
 	}
@@ -318,6 +328,9 @@ func (r *Resolver) Resolve(ctx workingset.Context, refs []workingset.Reference) 
 			value.Protection = &p
 		}
 		out = append(out, value)
+		if bodies != nil {
+			bodies[workingset.SelectionKey(value.Selection())] = item
+		}
 	}
 	for _, view := range plans {
 		reference := get(view, "ref")
@@ -340,6 +353,9 @@ func (r *Resolver) Resolve(ctx workingset.Context, refs []workingset.Reference) 
 			value.Protection = &p
 		}
 		out = append(out, value)
+		if bodies != nil {
+			bodies[workingset.SelectionKey(value.Selection())] = view
+		}
 	}
 	return out, nil
 }

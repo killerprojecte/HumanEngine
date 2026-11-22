@@ -190,7 +190,10 @@ segment or old replay reaches the peer; one fresh send is acknowledged.
 The stopped process reports one sent and one unknown. A deterministic
 runtime regression also holds the unknown receipt until after shutdown
 seals the runtime, to verify it is classified before the ledger is cleared.
-The packaged Compose variant and recall/policy changes between segments
+The [packaged Compose proof at `0f9c4f9`](https://github.com/killerprojecte/HumanEngine/actions/runs/44996315426/job/137127994651)
+exercised the same wire assertions through real Compose stop and cold reopen
+on the same disposable volumes. This is synthetic delivery evidence, not
+live platform or release acceptance. Recall/policy changes between segments
 remain unproven.
 
 ## P2: coverage closure and integration

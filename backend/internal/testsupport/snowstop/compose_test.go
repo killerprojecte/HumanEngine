@@ -26,6 +26,7 @@ func TestComposeSnowLumaPartialACK(t *testing.T) {
 		return reply
 	}
 	Run(t, bind, os.Getenv("HUMANENGINE_ADMIN_TOKEN"), false, func() Process {
-		return Process{Address: exchange("start"), Stop: func() string { return exchange("stop") }}
+		address := exchange("start")
+		return Process{Address: func() string { return address }, Stop: func() string { return exchange("stop") }}
 	})
 }

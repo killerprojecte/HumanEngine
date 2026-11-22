@@ -22,7 +22,7 @@ import (
 )
 
 type Process struct {
-	Address string
+	Address func() string
 	Stop    func() string // Stop and verify the real owner drain, returning logs.
 }
 
@@ -144,7 +144,8 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	}
 
 	process := start()
-	client := &http.Client{Timeout: 10 * time.Second}
+	address := process.Address()
+	client := &http.Client{}
 	request := func(method, path string, value any) []byte {
 		t.Helper()
 		var body io.Reader
@@ -155,7 +156,14 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 			}
 			body = bytes.NewReader(wire)
 		}
-		req, err := http.NewRequestWithContext(ctx, method, "http://"+process.Address+path, body)
+		timeout := 10 * time.Second
+		// Fresh race builds can take longer on the first bundled SnowLuma load.
+		if method == http.MethodPut && (path == "/api/plugins/snowluma/config" || path == "/api/plugins/snowluma/enabled") {
+			timeout = 4 * time.Minute
+		}
+		requestCtx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+		req, err := http.NewRequestWithContext(requestCtx, method, "http://"+address+path, body)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -318,7 +326,9 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	}
 
 	process = start()
-	socket = waitConnection(30 * time.Second)
+	// Restored adapter login can compile the bundled guest before HTTP listens.
+	socket = waitConnection(4 * time.Minute)
+	address = process.Address()
 	if got := history("?source=local"); len(got) != 0 {
 		t.Fatalf("cold reopen resurrected process-local rows: %v", got)
 	}

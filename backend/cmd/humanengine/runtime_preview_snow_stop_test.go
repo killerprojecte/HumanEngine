@@ -33,7 +33,7 @@ func TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart(t *testing.T) {
 			}
 			snowstop.Run(t, "127.0.0.1", "synthetic-launcher-token", plugin != "", func() snowstop.Process {
 				cmd, logs, done := runtimeCommandWithPlugin(t, args, plugin, os.Getenv("HE_RUNTIME_PREVIEW_BINARY"))
-				return snowstop.Process{Address: runtimeAddress(t, logs, done), Stop: func() string {
+				return snowstop.Process{Address: func() string { return runtimeAddress(t, logs, done) }, Stop: func() string {
 					if err := cmd.Process.Signal(syscall.SIGTERM); err != nil {
 						t.Fatal(err)
 					}

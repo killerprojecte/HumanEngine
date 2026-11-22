@@ -1,0 +1,52 @@
+name: Paired packaged HTTP benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/refactor-golang]
+    paths:
+      - 'backend/packaging/runtime-preview/backend_benchmark.py'
+      - 'backend/packaging/runtime-preview/packaged_benchmark.py'
+      - '.github/workflows/golang-package-benchmark.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  paired-benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the exact Go preview image locally
+        run: |
+          docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-benchmark-go:local .
+      - name: Check out the exact TypeScript behavioral reference
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: 39d8deb8922684298bab8ecb139be04555e8474a
+          path: .benchmark-typescript
+          persist-credentials: false
+      - name: Build exact local TypeScript runtime and fixture images
+        run: |
+          legacy=.benchmark-typescript
+          revision=$(git -C "$legacy" rev-parse HEAD)
+          test "$revision" = 39d8deb8922684298bab8ecb139be04555e8474a
+          docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-benchmark-ts:local "$legacy"
+          docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-benchmark-tools:local "$legacy"
+      - name: Measure actual packaged TS and Go in isolated AB/BA windows
+        run: |
+          python3 backend/packaging/runtime-preview/packaged_benchmark.py \
+            --ts-image humanengine-benchmark-ts:local \
+            --ts-tools-image humanengine-benchmark-tools:local \
+            --go-image humanengine-benchmark-go:local --go-revision "$GITHUB_SHA" \
+            --evidence "$RUNNER_TEMP/humanengine-paired-http.json"
+      - name: Preserve sanitized benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paired-packaged-http-benchmark
+          path: ${{ runner.temp }}/humanengine-paired-http.json
+          if-no-files-found: ignore

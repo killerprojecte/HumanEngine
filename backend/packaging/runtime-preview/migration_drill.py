@@ -250,7 +250,7 @@ class Drill:
                "--user", user, *mounts, "--entrypoint", args[0],
                self.report["images"]["ts_tools"], *args[1:])
 
-    def start(self, engine, data="live", authority="authority", network="none"):
+    def start(self, engine, data="live", authority="authority", network="none", runtime_args=()):
         require(self.owner is None, "overlapping server owners")
         self.owner = engine
         self.port = "3000" if engine == "ts" else "3001"
@@ -261,7 +261,7 @@ class Drill:
                      "--ui-root", "/opt/humanengine/ui", "--image-library",
                      "/opt/humanengine/lib/libvips-cpp.so.8.18.7", "--locale", "en-US",
                      "--source-timezone", "UTC"]
-        docker("run", "-d", "--name", self.name, "--network", network,
+        docker("run", "-d", "--name", self.name, "--network", network, *runtime_args,
                "--mount", self.mount("/app/data", data),
                "--mount", self.mount(AUTHORITY, authority),
                "-e", "HUMANENGINE_ADMIN_TOKEN", self.report["images"][engine], *flags,

@@ -3,15 +3,18 @@ package memeservice
 import (
 	"context"
 	"errors"
-	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
-	"github.com/killerprojecte/HumanEngine/backend/internal/jsstring"
-	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
-	"golang.org/x/text/unicode/norm"
 	"math"
 	"sort"
 	"strings"
 	"time"
 	"unicode"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsstring"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 type PageOptions struct {
@@ -28,74 +31,86 @@ func (s *Service) AdminGet(ctx context.Context, id string) (out *Object, e error
 	e = s.transaction(ctx, func(p *scope) error { var e error; out, e = p.asset(id); return e })
 	return
 }
-func (s *Service) AdminPage(ctx context.Context, o PageOptions) (out Page, e error) {
+
+type pageQuery func(string, ...any) (assertions.Rows, error)
+
+func (s *Service) AdminPage(ctx context.Context, o PageOptions) (out Page, err error) {
+	err = s.transaction(ctx, func(p *scope) error {
+		out, err = readAdminPage(o, func(q string, args ...any) (assertions.Rows, error) {
+			return p.ws.Query(q, args...)
+		})
+		return err
+	})
+	return
+}
+
+func readAdminPage(o PageOptions, queryRows pageQuery) (out Page, e error) {
 	size := 24.0
 	if o.PageSize != nil {
 		size = *o.PageSize
 	}
 	size = math.Max(1, math.Min(96, math.Floor(size)))
 	out.PageSize = size
-	e = s.transaction(ctx, func(p *scope) error {
-		clauses := []string{}
-		args := []any{}
-		if o.Scope == "shared" || o.Scope == "local" {
-			clauses = append(clauses, "json_extract(value,'$.shared') = ?")
-			value := 0
-			if o.Scope == "shared" {
-				value = 1
-			}
-			args = append(args, value)
-		} else if strings.HasPrefix(o.Scope, "scene:") {
-			clauses = append(clauses, "EXISTS (SELECT 1 FROM main.meme_sources s WHERE s.asset_id=a.id AND s.scene_id=?)")
-			args = append(args, strings.TrimPrefix(o.Scope, "scene:"))
+
+	clauses := []string{}
+	args := []any{}
+	if o.Scope == "shared" || o.Scope == "local" {
+		clauses = append(clauses, "json_extract(value,'$.shared') = ?")
+		value := 0
+		if o.Scope == "shared" {
+			value = 1
 		}
-		states := map[string]string{"favorite": "json_extract(value,'$.favorite')=1", "disabled": "json_extract(value,'$.disabled')=1", "unanalyzed": "json_extract(value,'$.analyzed')=0", "known": "json_extract(value,'$.knownOnly')=1 AND json_extract(value,'$.disabled')=0", "available": "json_extract(value,'$.available')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0 AND json_extract(value,'$.disabled')=0 AND json_extract(value,'$.analyzed')=1 AND EXISTS (SELECT 1 FROM main.meme_sources s WHERE s.asset_id=a.id)"}
-		if state := states[o.State]; state != "" {
-			clauses = append(clauses, state)
-		}
-		query := strings.TrimFunc(o.Query, jsSpace)
-		if query != "" {
-			known, e := concepts(query)
-			if e != nil {
-				return e
-			}
-			if len(known) > 0 {
-				marks := []string{}
-				for _, k := range known {
-					marks = append(marks, "?")
-					args = append(args, k)
-				}
-				clauses = append(clauses, "EXISTS (SELECT 1 FROM main.meme_search_concepts c WHERE c.asset_id=a.id AND c.concept IN ("+strings.Join(marks, ",")+"))")
-			} else {
-				clauses = append(clauses, `EXISTS (SELECT 1 FROM json_tree(a.value,'$.tags') tag WHERE tag.type='text' AND tag.value LIKE ? ESCAPE '\')`)
-				args = append(args, "%"+strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(query)+"%")
-			}
-		}
-		where := ""
-		if len(clauses) > 0 {
-			where = " WHERE (" + strings.Join(clauses, ") AND (") + ")"
-		}
-		rows, e := p.ws.Query("SELECT COUNT(*) FROM main.meme_assets a"+where, args...)
+		args = append(args, value)
+	} else if strings.HasPrefix(o.Scope, "scene:") {
+		clauses = append(clauses, "EXISTS (SELECT 1 FROM main.meme_sources s WHERE s.asset_id=a.id AND s.scene_id=?)")
+		args = append(args, strings.TrimPrefix(o.Scope, "scene:"))
+	}
+	states := map[string]string{"favorite": "json_extract(value,'$.favorite')=1", "disabled": "json_extract(value,'$.disabled')=1", "unanalyzed": "json_extract(value,'$.analyzed')=0", "known": "json_extract(value,'$.knownOnly')=1 AND json_extract(value,'$.disabled')=0", "available": "json_extract(value,'$.available')=1 AND COALESCE(json_extract(value,'$.knownOnly'),0)=0 AND json_extract(value,'$.disabled')=0 AND json_extract(value,'$.analyzed')=1 AND EXISTS (SELECT 1 FROM main.meme_sources s WHERE s.asset_id=a.id)"}
+	if state := states[o.State]; state != "" {
+		clauses = append(clauses, state)
+	}
+	query := strings.TrimFunc(o.Query, jsSpace)
+	if query != "" {
+		known, e := concepts(query)
 		if e != nil {
-			return e
+			return out, e
 		}
-		if rows.Next() {
-			e = rows.Scan(&out.Total)
+		if len(known) > 0 {
+			marks := []string{}
+			for _, k := range known {
+				marks = append(marks, "?")
+				args = append(args, k)
+			}
+			clauses = append(clauses, "EXISTS (SELECT 1 FROM main.meme_search_concepts c WHERE c.asset_id=a.id AND c.concept IN ("+strings.Join(marks, ",")+"))")
+		} else {
+			clauses = append(clauses, `EXISTS (SELECT 1 FROM json_tree(a.value,'$.tags') tag WHERE tag.type='text' AND tag.value LIKE ? ESCAPE '\')`)
+			args = append(args, "%"+strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(query)+"%")
 		}
-		rows.Close()
-		if e != nil {
-			return e
-		}
-		page := 1.0
-		if o.Page != nil {
-			page = *o.Page
-		}
-		out.Page = math.Max(1, math.Min(math.Max(1, math.Ceil(float64(out.Total)/size)), math.Floor(page)))
-		out.Items, e = p.queryAssets("SELECT value FROM main.meme_assets a"+where+" ORDER BY rowid DESC LIMIT ? OFFSET ?", append(args, size, (out.Page-1)*size)...)
-		return e
-	})
-	return
+	}
+	where := ""
+	if len(clauses) > 0 {
+		where = " WHERE (" + strings.Join(clauses, ") AND (") + ")"
+	}
+	rows, e := queryRows("SELECT COUNT(*) FROM main.meme_assets a"+where, args...)
+	if e != nil {
+		return out, e
+	}
+	if rows.Next() {
+		e = rows.Scan(&out.Total)
+	}
+	rows.Close()
+	if e != nil {
+		return out, e
+	}
+	page := 1.0
+	if o.Page != nil {
+		page = *o.Page
+	}
+	out.Page = math.Max(1, math.Min(math.Max(1, math.Ceil(float64(out.Total)/size)), math.Floor(page)))
+	out.Items, e = decodeAssetRows(queryRows("SELECT value FROM main.meme_assets a"+where+" ORDER BY rowid DESC LIMIT ? OFFSET ?", append(args, size, (out.Page-1)*size)...))
+	return out, e
 }
+
 func jsSpace(r rune) bool {
 	return r == '\t' || r == '\n' || r == '\v' || r == '\f' || r == '\r' || r == '\u2028' || r == '\u2029' || r == '\ufeff' || unicode.Is(unicode.Zs, r)
 }

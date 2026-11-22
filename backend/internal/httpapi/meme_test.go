@@ -139,3 +139,50 @@ func TestActualMemeHTTPSource(t *testing.T) {
 		})
 	}
 }
+
+func TestMemeCatalogPublicationFiltersOrderAndAuthority(t *testing.T) {
+	server, db, _ := memeHTTP(t)
+	for _, row := range []string{
+		`{"id":"older","knownOnly":true,"disabled":false,"shared":false,"tags":{"intent":["literal%tag"]}}`,
+		`{"id":"shared","knownOnly":true,"disabled":false,"shared":true,"tags":{"intent":["literal%tag"]}}`,
+		`{"id":"newer","knownOnly":true,"disabled":false,"shared":false,"tags":{"intent":["literal%tag"]}}`,
+		`{"id":"other","knownOnly":true,"disabled":false,"shared":false,"tags":{"intent":["literalXtag"]}}`,
+	} {
+		if _, err := db.Exec("INSERT INTO meme_assets VALUES(json_extract(?,'$.id'),?)", row, row); err != nil {
+			t.Fatal(err)
+		}
+	}
+	request := func(path, token string) *httptest.ResponseRecorder {
+		t.Helper()
+		r := httptest.NewRequest("GET", path, nil)
+		r.Header.Set("Authorization", "Bearer "+token)
+		w := httptest.NewRecorder()
+		server.ServeHTTP(w, r)
+		return w
+	}
+	assertPage := func(path string, total, page, size int, first string) {
+		t.Helper()
+		var payload struct {
+			Total, Page, PageSize int
+			Items                 []struct{ ID string }
+		}
+		w := request(path, fixtureToken)
+		if err := json.Unmarshal(w.Body.Bytes(), &payload); err != nil || w.Code != 200 ||
+			payload.Total != total || payload.Page != page || payload.PageSize != size || len(payload.Items) != 1 || payload.Items[0].ID != first {
+			t.Fatalf("invalid catalog publication: %d %s (%v)", w.Code, w.Body.String(), err)
+		}
+	}
+	assertPage("/api/memes?pageSize=1", 4, 1, 1, "other")
+	filtered := "/api/memes?query=literal%25tag&scope=local&state=known&pageSize=1"
+	assertPage(filtered, 2, 1, 1, "newer")
+	assertPage(filtered+"&page=99", 2, 2, 1, "older")
+	if w := request(filtered, "wrong-token"); w.Code != 401 || strings.Contains(w.Body.String(), "newer") {
+		t.Fatalf("catalog auth was bypassed: %d %s", w.Code, w.Body.String())
+	}
+	if _, err := db.Exec("UPDATE recovery_gate SET value=json_set(value,'$.state','quarantined') WHERE id=1"); err != nil {
+		t.Fatal(err)
+	}
+	if w := request(filtered, fixtureToken); w.Code != 503 || !strings.Contains(w.Body.String(), "Request failed; inspect server diagnostics") || strings.Contains(w.Body.String(), "newer") {
+		t.Fatalf("catalog escaped a closed authority: %d %s", w.Code, w.Body.String())
+	}
+}

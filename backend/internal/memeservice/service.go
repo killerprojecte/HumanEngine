@@ -5,13 +5,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"path/filepath"
+	"sync"
+	"time"
+
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertionauthority"
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
-	"path/filepath"
-	"sync"
-	"time"
 )
 
 type Context struct {
@@ -92,21 +93,13 @@ func (s *Service) transaction(ctx context.Context, fn func(*scope) error) error 
 		if e := ws.AssertReady(); e != nil {
 			return e
 		}
-		run := func() error {
-			return s.assertions.WithSession(ws).Read(ctx, func(r *assertions.Reader) error {
-				a, e := assertionauthority.New(r, s.policy)
-				if e != nil {
-					return e
-				}
-				return fn(&scope{ws, r, a, s})
-			})
-		}
-		if capture, _ := ctx.Value(pageCaptureKey{}).(*pageCapture); capture != nil {
-			var e error
-			capture.witness, e = ws.CaptureReadWitness(run)
-			return e
-		}
-		return run()
+		return s.assertions.WithSession(ws).Read(ctx, func(r *assertions.Reader) error {
+			a, e := assertionauthority.New(r, s.policy)
+			if e != nil {
+				return e
+			}
+			return fn(&scope{ws, r, a, s})
+		})
 	})
 }
 func (p *scope) assets() ([]*Object, error) {

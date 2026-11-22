@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
-	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"os"
 	"reflect"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/assertions"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
 func (s *Service) OwnedBy(main *sql.DB, a *recovery.Authority) bool {
@@ -43,31 +45,22 @@ func (s *Service) publishAsset(ctx context.Context, id string, expected *Object,
 	}, emit)
 }
 
-type pageCaptureKey struct{}
-type pageCapture struct{ witness *recovery.ReadWitness }
-
+// PublishPage reads, serializes and enqueues the bounded response from one
+// owning publication snapshot. No intermediate page crosses a write boundary.
 func (s *Service) PublishPage(ctx context.Context, o PageOptions, emit func([]byte) error) error {
-	capture := &pageCapture{}
-	page, e := s.AdminPage(context.WithValue(ctx, pageCaptureKey{}, capture), o)
-	if e != nil {
-		return e
-	}
-	items := make([]any, len(page.Items))
-	for i, v := range page.Items {
-		items[i] = v
-	}
-	body, e := jsjson.Stringify(fields("items", items, "total", float64(page.Total), "page", page.Page, "pageSize", page.PageSize))
-	if e != nil {
-		return e
-	}
 	return s.authority.Publish(ctx, s.main, func(c *sql.Conn) ([]byte, error) {
-		if capture.witness == nil {
-			return nil, errors.New("meme_publication_witness_required")
+		page, err := readAdminPage(o, func(q string, args ...any) (assertions.Rows, error) {
+			return c.QueryContext(ctx, q, args...)
+		})
+		if err != nil {
+			return nil, err
 		}
-		if e := capture.witness.Verify(ctx, c); e != nil {
-			return nil, e
+		items := make([]any, len(page.Items))
+		for i, v := range page.Items {
+			items[i] = v
 		}
-		return []byte(body), nil
+		body, err := jsjson.Stringify(fields("items", items, "total", float64(page.Total), "page", page.Page, "pageSize", page.PageSize))
+		return []byte(body), err
 	}, emit)
 }
 func (s *Service) AdminFile(ctx context.Context, id string) (*Object, []byte, error) {

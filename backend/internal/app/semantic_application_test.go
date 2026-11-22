@@ -1,14 +1,17 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -256,6 +259,61 @@ func TestInstalledSemanticModelReceiptSendAndRevocation(t *testing.T) {
 	}
 	if e = witness.QueryRowContext(ctx, "SELECT count(*) FROM memories WHERE json_extract(value,'$.content')='Must not persist derived semantic learning.'").Scan(&count); e != nil || count != 0 {
 		t.Fatal("revoked learning persisted", count, e)
+	}
+	// Change the committed answer setting after the new turn queried a
+	// nonempty page, but before the reply plan can deliver its result.
+	// The production tool trace is synchronous and runs before settle.
+	previousSelections := len(field(final, "planSelections").([]any))
+	disabled, e := json.Marshal(input)
+	if e != nil {
+		t.Fatal(e)
+	}
+	input["memorySemanticAnswerEnabled"] = true
+	appRequest(t, app, http.MethodPut, "/api/settings", input)
+	revoked := make(chan int, 1)
+	rejected := make(chan string, 1)
+	var held atomic.Bool
+	app.Engine.Runtime.Observe(func(event botruntime.Event) {
+		app.observeRuntime(event)
+		if event.SceneID == sceneID && event.Stage == "planner" && event.Status == "failed" {
+			rejected <- event.FailureCode
+		}
+		if event.SceneID != sceneID || event.Stage != "tool" || event.ToolName != "memory.summaries" ||
+			event.Status != "completed" || event.Counts["results"] == 0 || !held.CompareAndSwap(false, true) {
+			return
+		}
+		request := httptest.NewRequest(http.MethodPut, "/api/settings", bytes.NewReader(disabled)).WithContext(ctx)
+		request.Header.Set("Authorization", "Bearer synthetic-token")
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		app.ServeHTTP(response, request)
+		revoked <- response.Code
+	})
+	appRequest(t, app, http.MethodPost, "/api/plugins/state/actions/new-source", map[string]any{})
+	select {
+	case status := <-revoked:
+		if status != http.StatusOK {
+			t.Fatalf("semantic answer change did not commit: %d", status)
+		}
+	case <-ctx.Done():
+		t.Fatal("missing nonempty semantic query before delivery", ctx.Err())
+	}
+	wait("semantic revocation before receipt delivery", func() bool { return app.Engine.Runtime.ActiveTasks() == 0 })
+	app.Engine.Runtime.Observe(app.observeRuntime)
+	final = inspect()
+	if got := len(field(final, "planSelections").([]any)); got != previousSelections {
+		t.Fatalf("revoked semantic page reached the next Planner request: selections=%d want=%d", got, previousSelections)
+	}
+	if len(field(final, "sent").([]any)) != 1 || field(final, "sendAttempts") != float64(2) {
+		t.Fatal("revoked semantic page reached a physical send attempt")
+	}
+	select {
+	case failure := <-rejected:
+		if failure != "planner_context_ineligible" {
+			t.Fatalf("wrong closed delivery failure: %s", failure)
+		}
+	default:
+		t.Fatal("planner did not reject the revoked receipt")
 	}
 	if e = app.Shutdown(ctx); e != nil {
 		t.Fatal(e)

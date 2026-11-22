@@ -30,12 +30,17 @@ func (a *Application) composeSemanticMemory(o Owners, memory *memoryOwners) erro
 	if e != nil {
 		return e
 	}
+	summaries := []*jsjson.Object{semanticToolDefinition()}
 	a.Engine.Runtime.AddExtension(&botruntime.Extension{
-		ToolsForTurn: func(*botruntime.TurnContext) []*jsjson.Object {
-			if memory.snapshot.enabled("memorySemanticEnabled") && memory.snapshot.enabled("memorySemanticAnswerEnabled") {
-				return []*jsjson.Object{semanticToolDefinition()}
-			}
-			return nil
+		ToolsForTurn: func(turn *botruntime.TurnContext) []*jsjson.Object {
+			// Keep the advertised owner through delivery so a live setting
+			// change cannot bypass SemanticExposure's current policy check.
+			return turn.OwnedExtensionState(summaries[0], func() any {
+				if memory.snapshot.enabled("memorySemanticEnabled") && memory.snapshot.enabled("memorySemanticAnswerEnabled") {
+					return summaries
+				}
+				return []*jsjson.Object(nil)
+			}).([]*jsjson.Object)
 		},
 		Execute: func(ctx context.Context, name string, input any, c *botruntime.TurnContext, done func(any, error)) {
 			if name != "memory.summaries" {

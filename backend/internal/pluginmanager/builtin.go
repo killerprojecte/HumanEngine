@@ -56,12 +56,17 @@ func (m *Manager) RegisterBuiltin(id string) error {
 	return nil
 }
 func (m *Manager) inspectBuiltin(ctx context.Context, i *item, operation string, input, previous *jsjson.Object, requestID string) (plugins.Inspection, error) {
-	manifest, _ := jsjson.Marshal(i.manifest)
-	result := plugins.Inspection{Manifest: manifest, ConfiguredSecrets: json.RawMessage(`{}`)}
 	id, _ := i.manifest.Get("id")
 	m.mu.Lock()
-	policy, bound := m.builtinPolicies[id.(string)]
+	policy := m.builtinPolicies[id.(string)]
 	m.mu.Unlock()
+	return inspectBuiltinPolicy(ctx, i, policy, operation, input, previous, requestID)
+}
+
+func inspectBuiltinPolicy(ctx context.Context, i *item, policy BuiltinPolicy, operation string, input, previous *jsjson.Object, requestID string) (plugins.Inspection, error) {
+	manifest, _ := jsjson.Marshal(i.manifest)
+	result := plugins.Inspection{Manifest: manifest, ConfiguredSecrets: json.RawMessage(`{}`)}
+	bound := policy.Validate != nil
 	if operation == "secrets" {
 		if bound {
 			secrets, e := policy.Secrets(ctx)

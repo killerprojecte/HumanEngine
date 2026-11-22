@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"testing"
 )
 
@@ -33,8 +34,38 @@ func TestBoundWASMCallCannotEnterOrCancelReplacement(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// A cancelled lease and a second live lease share only compiled code
+	// with the enabled guest. Releasing either cannot evict its code.
+	firstLease, err := host.Compile(ctx, artifact)
+	if err != nil {
+		t.Fatal(err)
+	}
+	releaseFirst := sync.OnceFunc(firstLease.Close)
+	defer releaseFirst()
+	secondLease, err := host.Compile(ctx, artifact)
+	if err != nil {
+		t.Fatal(err)
+	}
+	releaseSecond := sync.OnceFunc(secondLease.Close)
+	defer releaseSecond()
+	cancelledLease, cancelLease := context.WithCancel(ctx)
+	cancelLease()
+	if err = firstLease.Enable(cancelledLease, "policy"); !errors.Is(err, context.Canceled) {
+		t.Fatal(err)
+	}
+	releaseFirst()
+	if err = secondLease.Enable(ctx, "policy"); err != nil {
+		t.Fatal(err)
+	}
+	if err = host.Disable(ctx, "policy"); err != nil {
+		t.Fatal(err)
+	}
+	releaseSecond()
 	entered, release, settled := make(chan struct{}), make(chan struct{}), make(chan error, 1)
 	input := []byte(`{"operation":"delay","segment":{"parts":[{"type":"text","text":"hello"}]}}`)
+	if out, e := oldCall(ctx, input); e != nil || string(out) != `{"delayMs":1300}` {
+		t.Fatal("compiled lease evicted active guest", string(out), e)
+	}
 	go func() { close(entered); <-release; _, err := oldCall(ctx, input); settled <- err }()
 	<-entered
 	if err = host.Disable(ctx, "typing-delay"); err != nil {

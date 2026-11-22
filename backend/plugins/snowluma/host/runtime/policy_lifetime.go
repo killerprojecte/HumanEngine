@@ -3,6 +3,7 @@ package snowlumaruntime
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/credentials"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
@@ -21,12 +22,47 @@ type policyGuestHost interface {
 // unloads it before returning. The stable wrapper never captures a retired call.
 // It cannot borrow or retire the enabled adapter's separate guest generation.
 func TransientPolicy(host *plugins.WASMHost, id string, artifact []byte, store *credentials.Store) pluginmanager.BuiltinPolicy {
-	return transientPolicy(host, id, artifact, store)
+	return transientPolicy(host, id, artifact, store, func(ctx context.Context, artifact []byte) (compiledPolicy, error) {
+		return host.Compile(ctx, artifact)
+	})
 }
-func transientPolicy(host policyGuestHost, id string, artifact []byte, store *credentials.Store) pluginmanager.BuiltinPolicy {
+
+type compiledPolicy interface {
+	Enable(context.Context, string) error
+	Close()
+}
+
+func transientPolicy(host policyGuestHost, id string, artifact []byte, store *credentials.Store, compile func(context.Context, []byte) (compiledPolicy, error)) pluginmanager.BuiltinPolicy {
 	artifact = append([]byte(nil), artifact...)
 	gate := make(chan struct{}, 1)
 	gate <- struct{}{}
+	policy := newTransientPolicy(host, id, artifact, store, gate, host.Enable)
+	if compile != nil {
+		policy.Configure = func() (pluginmanager.BuiltinPolicy, func()) {
+			var compiled compiledPolicy
+			scoped := newTransientPolicy(host, id, artifact, store, gate, func(ctx context.Context, id string, artifact []byte) error {
+				if compiled == nil {
+					var err error
+					compiled, err = compile(ctx, artifact)
+					if err != nil {
+						return err
+					}
+				}
+				return compiled.Enable(ctx, id)
+			})
+			return scoped, sync.OnceFunc(func() {
+				if compiled != nil {
+					compiled.Close()
+				}
+			})
+		}
+	}
+	return policy
+}
+
+// The operation lease substitutes only the code loader; both paths use the
+// same gate, fresh module, call binding and physical disable.
+func newTransientPolicy(host policyGuestHost, id string, artifact []byte, store *credentials.Store, gate chan struct{}, enable func(context.Context, string, []byte) error) pluginmanager.BuiltinPolicy {
 	run := func(ctx context.Context, fn func(pluginmanager.BuiltinPolicy) error) (err error) {
 		if err = ctx.Err(); err != nil {
 			return
@@ -42,7 +78,7 @@ func transientPolicy(host policyGuestHost, id string, artifact []byte, store *cr
 		}
 		// Enable physically cleans its own failed initialization. Do not disable an
 		// unrelated existing module if acquiring this reserved name fails.
-		if err = host.Enable(ctx, id, artifact); err != nil {
+		if err = enable(ctx, id, artifact); err != nil {
 			return
 		}
 		defer func() { err = errors.Join(err, host.Disable(context.Background(), id)) }()

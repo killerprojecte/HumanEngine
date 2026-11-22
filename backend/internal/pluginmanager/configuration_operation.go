@@ -7,28 +7,38 @@ import (
 )
 
 type configurationSession struct {
-	validate  func(*jsjson.Object) error
-	prepare   func() (any, error)
-	operation *plugins.ConfigurationOperation
-	close     func()
+	builtinPolicy BuiltinPolicy
+	validate      func(*jsjson.Object) error
+	prepare       func() (any, error)
+	operation     *plugins.ConfigurationOperation
+	close         func()
 }
 
-// beginConfiguration retains one module for all three source phases. Only the
+// beginConfiguration scopes the policy across source phases. V1 retains one
+// module; an opted-in builtin retains only code, not guest state. Only the
 // second validator's newly preserved object is passed to prepare.
 func (m *Manager) beginConfiguration(ctx context.Context, id string, i *item, input, previous *jsjson.Object, requestID string) (*configurationSession, error) {
 	if i.builtin {
-		if _, err := m.inspectBuiltin(ctx, i, "validate", input, previous, requestID); err != nil {
+		m.mu.Lock()
+		policy := m.builtinPolicies[id]
+		m.mu.Unlock()
+		closePolicy := func() {}
+		if policy.Configure != nil {
+			policy, closePolicy = policy.Configure()
+		}
+		if _, err := inspectBuiltinPolicy(ctx, i, policy, "validate", input, previous, requestID); err != nil {
+			closePolicy()
 			return nil, err
 		}
 		var value any
-		return &configurationSession{validate: func(previous *jsjson.Object) error {
-			result, err := m.inspectBuiltin(ctx, i, "validate", input, previous, requestID)
+		return &configurationSession{builtinPolicy: policy, validate: func(previous *jsjson.Object) error {
+			result, err := inspectBuiltinPolicy(ctx, i, policy, "validate", input, previous, requestID)
 			if err != nil {
 				return err
 			}
 			value, err = jsjson.Parse(string(result.Config))
 			return err
-		}, prepare: func() (any, error) { return value, nil }, close: func() {}}, nil
+		}, prepare: func() (any, error) { return value, nil }, close: closePolicy}, nil
 	}
 	raw, err := jsjson.Marshal(input)
 	if err != nil {

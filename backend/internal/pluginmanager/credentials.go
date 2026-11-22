@@ -63,10 +63,8 @@ func credentialPreparation(id string, input, previous *jsjson.Object) (*jsjson.O
 	return config, changes
 }
 
-func (m *Manager) writeBuiltinConfiguration(ctx context.Context, id string, value, previous *jsjson.Object) error {
-	m.mu.Lock()
-	policy, bound := m.builtinPolicies[id]
-	m.mu.Unlock()
+func (m *Manager) writeBuiltinConfiguration(ctx context.Context, id string, value, previous *jsjson.Object, policy BuiltinPolicy) error {
+	bound := policy.Prepare != nil
 	var config *jsjson.Object
 	var changes []credentials.Change
 	var prepareErr error

@@ -1,11 +1,14 @@
 package snowlumaruntime
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 )
 
 type policyLifetimeHost struct {
@@ -63,7 +66,7 @@ func TestTransientPolicyLifetime(t *testing.T) {
 		h := &policyLifetimeHost{call: func(context.Context, []byte) ([]byte, error) {
 			return []byte(`{"kind":"configuration","config":{}}`), nil
 		}}
-		p := transientPolicy(h, "policy", []byte("immutable"), nil)
+		p := transientPolicy(h, "policy", []byte("immutable"), nil, nil)
 		for i := 1; i <= 2; i++ {
 			if e := p.Validate(context.Background(), obj()); e != nil {
 				t.Fatal(e)
@@ -83,7 +86,7 @@ func TestTransientPolicyLifetime(t *testing.T) {
 			}
 			return []byte(`{"kind":"configuration","config":{}}`), nil
 		}}
-		p := transientPolicy(h, "policy", nil, nil)
+		p := transientPolicy(h, "policy", nil, nil, nil)
 		_, changes, e := p.Prepare(context.Background(), obj(), obj())
 		if e != nil || len(changes) != 1 {
 			t.Fatal(changes, e)
@@ -101,7 +104,7 @@ func TestTransientPolicyLifetime(t *testing.T) {
 			<-release
 			return []byte(`{"kind":"configuration"}`), nil
 		}}
-		p := transientPolicy(h, "policy", nil, nil)
+		p := transientPolicy(h, "policy", nil, nil, nil)
 		done := make(chan error, 1)
 		go func() { done <- p.Validate(context.Background(), obj()) }()
 		<-entered
@@ -126,7 +129,7 @@ func TestTransientPolicyLifetime(t *testing.T) {
 			<-ctx.Done()
 			return nil, ctx.Err()
 		}}
-		p := transientPolicy(h, "policy", nil, nil)
+		p := transientPolicy(h, "policy", nil, nil, nil)
 		ctx, cancel := context.WithCancel(context.Background())
 		done := make(chan error, 1)
 		go func() { done <- p.Validate(ctx, obj()) }()
@@ -144,7 +147,7 @@ func TestTransientPolicyLifetime(t *testing.T) {
 		bind := errors.New("bind_failed")
 		drain := errors.New("drain_failed")
 		h := &policyLifetimeHost{bindErr: bind, disableErr: drain}
-		p := transientPolicy(h, "policy", nil, nil)
+		p := transientPolicy(h, "policy", nil, nil, nil)
 		e := p.Validate(context.Background(), obj())
 		if !errors.Is(e, bind) || !errors.Is(e, drain) {
 			t.Fatal(e)
@@ -156,7 +159,7 @@ func TestTransientPolicyLifetime(t *testing.T) {
 	})
 	t.Run("failed acquisition never disables another owner", func(t *testing.T) {
 		h := &policyLifetimeHost{loaded: true, enableErr: errors.New("already_loaded")}
-		p := transientPolicy(h, "policy", nil, nil)
+		p := transientPolicy(h, "policy", nil, nil, nil)
 		if e := p.Validate(context.Background(), obj()); e == nil {
 			t.Fatal("accepted")
 		}
@@ -169,7 +172,7 @@ func TestTransientPolicyLifetime(t *testing.T) {
 		drain := make(chan struct{})
 		draining := make(chan struct{}, 1)
 		h := &policyLifetimeHost{drain: drain, draining: draining, call: func(context.Context, []byte) ([]byte, error) { return []byte(`{"kind":"configuration"}`), nil }}
-		p := transientPolicy(h, "policy", nil, nil)
+		p := transientPolicy(h, "policy", nil, nil, nil)
 		done := make(chan error, 1)
 		go func() { done <- p.Validate(context.Background(), obj()) }()
 		<-draining
@@ -188,4 +191,87 @@ func TestTransientPolicyLifetime(t *testing.T) {
 			t.Fatal(e)
 		}
 	})
+}
+
+type testCompiledPolicy struct {
+	*policyLifetimeHost
+	closes int
+}
+
+func (c *testCompiledPolicy) Enable(ctx context.Context, id string) error {
+	return c.policyLifetimeHost.Enable(ctx, id, nil)
+}
+
+func (c *testCompiledPolicy) Close() { c.closes++ }
+
+func TestConfigureCompiledPolicyUsesFreshGuestsAndReleasesScope(t *testing.T) {
+	for _, classify := range []bool{false, true} {
+		for _, cancelled := range []bool{false, true} {
+			if classify && cancelled {
+				continue
+			}
+			name := "success"
+			if classify {
+				name = "credential-failure"
+			} else if cancelled {
+				name = "cancelled"
+			}
+			t.Run(name, func(t *testing.T) {
+				host := &policyLifetimeHost{call: func(_ context.Context, input []byte) ([]byte, error) {
+					if bytes.Contains(input, []byte(`"failed":true`)) {
+						return []byte(`{"code":"plugin_setup_failed"}`), nil
+					}
+					return []byte(`{"kind":"configuration","config":{}}`), nil
+				}}
+				compiled := &testCompiledPolicy{policyLifetimeHost: host}
+				compiles := 0
+				p := transientPolicy(host, "policy", []byte("immutable"), nil, func(ctx context.Context, wasm []byte) (compiledPolicy, error) {
+					compiles++
+					if string(wasm) != "immutable" {
+						t.Fatal("compiled an unbound artifact")
+					}
+					return compiled, nil
+				})
+				scope, closeScope := p.Configure()
+				defer closeScope()
+				ctx, cancel := context.WithCancel(t.Context())
+				defer cancel()
+				if err := scope.Validate(ctx, obj()); err != nil {
+					t.Fatal(err)
+				}
+				want := 1
+				if cancelled {
+					cancel()
+					if err := scope.Validate(ctx, obj()); !errors.Is(err, context.Canceled) {
+						t.Fatalf("cancelled lease admitted a guest: %v", err)
+					}
+				} else {
+					if err := scope.Validate(ctx, obj()); err != nil {
+						t.Fatal(err)
+					}
+					if _, _, err := scope.Prepare(ctx, obj(), obj()); err != nil {
+						t.Fatal(err)
+					}
+					want = 3
+					if classify {
+						err := scope.CredentialFailure(ctx, errors.New("synthetic diagnostic"))
+						var startup *pluginmanager.StartupError
+						if !errors.As(err, &startup) || startup.Code != "plugin_setup_failed" {
+							t.Fatalf("unexpected failure mapping: %v", err)
+						}
+						want++
+					}
+				}
+				loaded, enables, disables := host.state()
+				if loaded || compiles != 1 || enables != want || disables != want || host.binding != want || compiled.closes != 0 {
+					t.Fatalf("wrong compile/instance ownership: loaded=%v compile=%d enable=%d disable=%d bind=%d close=%d", loaded, compiles, enables, disables, host.binding, compiled.closes)
+				}
+				closeScope()
+				closeScope()
+				if compiled.closes != 1 {
+					t.Fatal("compiled lease did not close exactly once")
+				}
+			})
+		}
+	}
 }

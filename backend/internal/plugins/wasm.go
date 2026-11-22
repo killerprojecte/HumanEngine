@@ -45,7 +45,33 @@ func NewWASMHost(ctx context.Context) (*WASMHost, error) {
 	}
 	return &WASMHost{runtime: runtime, instances: map[string]*wasmInstance{}, closeDone: make(chan struct{})}, nil
 }
+
+// CompiledGuest belongs to one caller scope on this host. Close only after
+// all fresh instances borrowed from it have been disabled and drained.
+type CompiledGuest struct {
+	host *WASMHost
+	code wazero.CompiledModule
+}
+
+func (h *WASMHost) Compile(ctx context.Context, artifact []byte) (*CompiledGuest, error) {
+	code, err := h.runtime.CompileModule(ctx, artifact)
+	if err != nil {
+		return nil, err
+	}
+	return &CompiledGuest{host: h, code: code}, nil
+}
+
+func (c *CompiledGuest) Enable(ctx context.Context, id string) error {
+	return c.host.enable(ctx, id, nil, c.code)
+}
+
+func (c *CompiledGuest) Close() { _ = c.code.Close(context.Background()) }
+
 func (h *WASMHost) Enable(ctx context.Context, id string, artifact []byte) error {
+	return h.enable(ctx, id, artifact, nil)
+}
+
+func (h *WASMHost) enable(ctx context.Context, id string, artifact []byte, borrowed wazero.CompiledModule) error {
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -84,9 +110,13 @@ func (h *WASMHost) Enable(ctx context.Context, id string, artifact []byte) error
 		h.mu.Unlock()
 		// Compilation and guest initialization never hold the registry lock: disable
 		// can cancel either phase, including a guest stuck inside _initialize.
-		instance.compiled, instance.err = h.runtime.CompileModule(loading, artifact)
+		code := borrowed
+		if code == nil {
+			instance.compiled, instance.err = h.runtime.CompileModule(loading, artifact)
+			code = instance.compiled
+		}
 		if instance.err == nil {
-			instance.module, instance.err = h.runtime.InstantiateModule(loading, instance.compiled, wazero.NewModuleConfig().WithName(id).WithStartFunctions("_initialize"))
+			instance.module, instance.err = h.runtime.InstantiateModule(loading, code, wazero.NewModuleConfig().WithName(id).WithStartFunctions("_initialize"))
 		}
 		if instance.err == nil {
 			signatures := map[string]struct{ params, results []api.ValueType }{

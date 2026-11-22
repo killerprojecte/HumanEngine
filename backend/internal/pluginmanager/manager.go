@@ -357,8 +357,11 @@ func (m *Manager) Configure(ctx context.Context, id string, input *jsjson.Object
 	case <-prior:
 		defer func() { operation.close(); finish() }()
 	case <-ctx.Done():
-		// Keep the queue fence ordered after the cancelled operation's predecessor,
-		// but release its inspector now rather than keeping Node while queued.
+		// Keep the queue fence ordered after the cancelled operation's predecessor.
+		// Release builtin code before a successor can leave the queue.
+		if i.builtin {
+			operation.close()
+		}
 		done, _ := m.work.Child()
 		go func() {
 			if done != nil {
@@ -379,7 +382,7 @@ func (m *Manager) Configure(ctx context.Context, id string, input *jsjson.Object
 			var value any
 			value, err = operation.prepare()
 			if err == nil {
-				err = m.writeBuiltinConfiguration(ctx, id, value.(*jsjson.Object), previous)
+				err = m.writeBuiltinConfiguration(ctx, id, value.(*jsjson.Object), previous, operation.builtinPolicy)
 			}
 		} else {
 			err = m.writePreparedConfig(ctx, id, operation.prepare)

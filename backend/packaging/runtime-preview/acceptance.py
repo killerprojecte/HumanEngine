@@ -245,9 +245,12 @@ def main():
         wait_for(lambda: not node_pids(restarted), "disabled V1 startup inspection settled")
         report["checks"].append("restart-persistence")
         if args.browser_smoke:
+            import browser_chat_fixture
             import browser_smoke
-            report["browser"] = {}
-            browser_smoke.run(port, TOKEN, report["browser"], usage_start)
+            report["browser"] = {"status": "failed", "failed_phase": "dense-chat-fixture"}
+            with browser_chat_fixture.peer(restarted, image["Id"], port) as chat_history:
+                report["browser"].pop("failed_phase")
+                browser_smoke.run(port, TOKEN, report["browser"], usage_start, chat_history)
             assert not node_pids(restarted), "browser caused a Node runtime inside the image"
             report["checks"].append("hosted-chromium-real-ui")
         a, b = "package-fixture-a", "package-fixture-b"

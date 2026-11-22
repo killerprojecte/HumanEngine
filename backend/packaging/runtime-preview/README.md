@@ -118,7 +118,7 @@ acceptance. Default Go migration CI remains a separate gate.
 ## Opt-in hosted Chromium smoke
 
 The browser smoke activates only on an existing `feat/refactor-golang` push
-whose before/after diff changes `browser_smoke.py` or `browser-requirements.txt`, or
+whose before/after diff changes the browser smoke, its fixtures or requirements, or
 whose exact head commit opts into all focused proofs below. Pull requests and manual runs
 do not install or start Chromium. This branch-local push
 path does not require the workflow to exist on the default branch. The existing job builds the real preview image and
@@ -137,7 +137,12 @@ evidence, not the lockfile; the exact driver/runner-browser pairing is not
 qualified until the hosted test passes. Launch failures record only a fixed
 category and never the exception text. The existing
 `go-package-preview-evidence` artifact contains the OCI image ID, revision,
-browser versions and sanitized action/status receipts in `result.json`. Opted-in
+browser versions and sanitized action/status receipts in `result.json`. The dense-chat
+arm uses 32 signed synthetic SnowLuma events and verifies the 30-row retained
+window. Chromium must render the local message in the actual transcript while
+the adapter's authenticated remote history request remains held at the private
+loopback peer. Explicit release then adds a remote-only message without losing
+the local one. Neither browser response is stubbed. Opted-in
 runs do not retain container logs, screenshots, traces, HTML or request bodies.
 
 ## Opt-in local-image Compose profile

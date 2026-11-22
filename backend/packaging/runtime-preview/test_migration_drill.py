@@ -347,6 +347,7 @@ class MigrationDrillTests(unittest.TestCase):
 
             files = {
                 "browser_smoke.py": "browser", "browser-requirements.txt": "browser",
+                "browser_chat_fixture.cjs": "browser", "browser_chat_fixture.py": "browser",
                 "migration_drill.py": "restore", "test_migration_drill.py": "restore",
                 "recall_fixture.cjs": "restore",
                 "compose-rehearsal.yaml": "compose", "compose_rehearsal.py": "compose",

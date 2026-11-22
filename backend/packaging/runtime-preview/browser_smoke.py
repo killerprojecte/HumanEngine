@@ -123,7 +123,7 @@ def assert_usage_today(page, origin, start, expect, phase):
     assert len(today_queries) == 2 and summary_query in today_queries and hourly_query in today_queries
 
 
-def run(port, token, evidence, usage_start):
+def run(port, token, evidence, usage_start, chat_history=None):
     # Kept out of normal package runs and out of both runtime images.
     from playwright.sync_api import expect, sync_playwright
 
@@ -246,6 +246,12 @@ def run(port, token, evidence, usage_start):
 
                 assert_usage_today(page, origin, usage_start, expect, usage_phase)
                 outcomes.append({"action": "usage-today-local-day-and-hourly-chart", "status": 200})
+
+                if chat_history is not None:
+                    phase = "dense-chat-local-before-platform"
+                    import browser_chat_fixture
+                    browser_chat_fixture.assert_history(page, origin, expect, chat_history)
+                    outcomes.append({"action": "dense-chat-local-before-platform", "status": 200})
 
                 phase = "logout"
                 with page.expect_response(match("DELETE", "/api/auth/session")) as logout:

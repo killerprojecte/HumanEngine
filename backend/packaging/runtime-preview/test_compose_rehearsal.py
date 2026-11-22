@@ -73,17 +73,20 @@ class ComposeRehearsalTests(unittest.TestCase):
 import json, os
 assert os.environ["HE_COMPOSE_FIXTURE_BIND"] == "172.20.0.1"
 assert os.environ["HUMANENGINE_ADMIN_TOKEN"] == "synthetic"
-for phase, expected in [("start", "first"), ("stop", "partial"),
+for phase, expected in [("start", "first"), ("stop-overlap", "partial"),
                         ("start", "second"), ("stop", "drained")]:
     print(json.dumps(phase), flush=True)
     assert json.loads(input()) == expected
+    if phase == "stop-overlap":
+        print(json.dumps("remote-history-stop-503"), flush=True)
 print("PASS")
 """)
             binary.chmod(0o700)
             addresses = iter(("first", "second"))
             logs = iter(("partial", "drained"))
-            run_snow_fixture(binary, "172.20.0.1", "synthetic",
-                             lambda: next(addresses), lambda: next(logs))
+            self.assertEqual(run_snow_fixture(binary, "172.20.0.1", "synthetic",
+                                              lambda: next(addresses), lambda: next(logs), lambda: next(logs)),
+                             "remote-history-stop-503")
 
     def test_workflow_keeps_compose_opt_in_after_ordinary_package_acceptance(self):
         workflow = (Path(__file__).resolve().parents[3] /

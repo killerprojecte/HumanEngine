@@ -25,8 +25,19 @@ func TestComposeSnowLumaPartialACK(t *testing.T) {
 		}
 		return reply
 	}
+	first := true
 	Run(t, bind, os.Getenv("HUMANENGINE_ADMIN_TOKEN"), false, func() Process {
 		address := exchange("start")
-		return Process{Address: func() string { return address }, Stop: func() string { return exchange("stop") }}
+		process := Process{Address: func() string { return address }, Stop: func() string { return exchange("stop") }}
+		if first {
+			first = false
+			process.Stop = func() string { return exchange("stop-overlap") }
+			process.HistoryAtStop = func(outcome string) {
+				if err := encoder.Encode(outcome); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+		return process
 	})
 }

@@ -187,6 +187,15 @@ during an admitted settings write, checks drain and clean exit, and creates a
 new container on the same volumes to verify persistence. Hosted Compose also
 runs the synthetic SnowLuma wire fixture: the second send is physically received
 without an ACK when Compose stops, and the new container never replays it.
+While that ACK is held, a real remote history GET must deliver a remote-only
+witness and only the first ACKed bot receipt. The peer then withholds a second
+history lookup's ACK, and the authenticated settings PUT receives 100 Continue
+before SIGTERM. The unfinished history lookup currently returns HTTP 503 during
+connector shutdown; remote history works again after cold reopen. The PUT body
+is released at the observed HTTP-drain stage and its committed value must
+survive cold reopen.
+This arm covers HTTP history/settings and send shutdown together; it does not
+hold an independent model or learning operation across SIGTERM.
 The fixture uses the disposable Linux runner's private Compose bridge gateway
 without changing the service network, image, or volumes. The reusable fixture
 is optional for local invocations of the driver.

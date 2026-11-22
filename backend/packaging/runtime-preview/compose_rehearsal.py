@@ -45,24 +45,62 @@ def bridge_gateway(project, network):
     return str(gateway)
 
 
-def run_snow_fixture(binary, gateway, token, start, stop):
+def run_snow_fixture(binary, gateway, token, start, stop_overlap, stop):
     env = dict(os.environ, HE_COMPOSE_FIXTURE_BIND=gateway, HUMANENGINE_ADMIN_TOKEN=token)
     with subprocess.Popen([binary, "-test.run=^TestComposeSnowLumaPartialACK$", "-test.timeout=5m"],
                           env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                           stderr=subprocess.DEVNULL, bufsize=0) as peer:
         try:
-            for phase, action in (("start", start), ("stop", stop), ("start", start), ("stop", stop)):
+            def receive(label, allowed):
                 readable, _, _ = select.select([peer.stdout], [], [], 70)
-                assert readable, f"Snow fixture did not reach {phase}"
+                assert readable, f"Snow fixture did not reach {label}"
                 line = peer.stdout.readline()
-                assert line and json.loads(line) == phase, f"unexpected Snow fixture phase, expected {phase}"
-                payload = json.dumps(action()).encode() + b"\n"
-                peer.stdin.write(payload)
+                phase = json.loads(line) if line.startswith(b'"') else None
+                assert phase in allowed, f"unexpected Snow fixture phase, expected {label}"
+                return phase
+
+            def exchange(phase, action):
+                receive(phase, (phase,))
+                peer.stdin.write(json.dumps(action()).encode() + b"\n")
+
+            exchange("start", start)
+            exchange("stop-overlap", stop_overlap)
+            outcome = receive("admitted history outcome",
+                              ("remote-history-stop-503", "remote-history-stop-local-fallback"))
+            exchange("start", start)
+            exchange("stop", stop)
             stdout, _ = peer.communicate(timeout=30)
             assert peer.returncode == 0 and stdout.strip() == b"PASS", "Snow fixture failed final assertions"
+            return outcome
         finally:
             if peer.poll() is None:
                 peer.kill()
+
+
+def stop_with_admitted_setting(port, command, env, logs, running):
+    settings = request(port, "GET", "/api/settings")
+    settings["debugModelIO"] = not settings["debugModelIO"]
+    body = json.dumps(settings).encode()
+    with socket.create_connection(("127.0.0.1", port), timeout=30) as sock:
+        sock.sendall((f"PUT /api/settings HTTP/1.1\r\nHost: localhost\r\n"
+                      f"Authorization: Bearer {acceptance.TOKEN}\r\nContent-Type: application/json\r\n"
+                      f"Content-Length: {len(body)}\r\nExpect: 100-continue\r\n"
+                      "Connection: close\r\n\r\n").encode())
+        with sock.makefile("rb") as reader:
+            read_continue(reader)
+            with subprocess.Popen(command, env=env, stdout=subprocess.DEVNULL,
+                                  stderr=subprocess.DEVNULL) as stopping:
+                began = time.monotonic()
+                wait_for(lambda: any('"code":"app.shutdown_wait"' in line and '"stage":"http"' in line
+                                     for line in logs().splitlines()),
+                         "Compose stop reached HTTP drain", seconds=20)
+                assert stopping.poll() is None and running()
+                sock.sendall(body)
+                assert reader.readline().startswith(b"HTTP/1.1 200 "), "admitted PUT did not commit"
+                reader.read()
+                assert stopping.wait(timeout=max(0, 30 - (time.monotonic() - began))) == 0
+                assert time.monotonic() - began <= 30, "Compose exceeded its shutdown grace"
+    return settings["debugModelIO"]
 
 
 def run(report, snow_fixture=None):
@@ -110,28 +148,9 @@ def run(report, snow_fixture=None):
         first, port, mounts = boot("compose-start")
         report["checks"].append("installed-compose-envelope")
         report["phase"] = "admit-write-and-compose-stop"
-        settings = request(port, "GET", "/api/settings")
-        settings["debugModelIO"] = not settings["debugModelIO"]
-        expected = settings["debugModelIO"]
-        body = json.dumps(settings).encode()
-        with socket.create_connection(("127.0.0.1", port), timeout=30) as sock:
-            sock.sendall((f"PUT /api/settings HTTP/1.1\r\nHost: localhost\r\n"
-                          f"Authorization: Bearer {acceptance.TOKEN}\r\nContent-Type: application/json\r\n"
-                          f"Content-Length: {len(body)}\r\nExpect: 100-continue\r\n"
-                          "Connection: close\r\n\r\n").encode())
-            with sock.makefile("rb") as reader:
-                read_continue(reader)
-                with subprocess.Popen([*compose, "stop", "humanengine"], env=env,
-                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) as stopping:
-                    began = time.monotonic()
-                    wait_for(lambda: '"stage":"http"' in docker("logs", first),
-                             "Compose stop reached HTTP drain", seconds=20)
-                    assert stopping.poll() is None and inspect(first)["State"]["Running"]
-                    sock.sendall(body)
-                    assert reader.readline().startswith(b"HTTP/1.1 200 "), "admitted PUT did not commit"
-                    reader.read()
-                    assert stopping.wait(timeout=max(0, 30 - (time.monotonic() - began))) == 0
-                    assert time.monotonic() - began <= 30, "Compose exceeded its shutdown grace"
+        stop_command = [*compose, "stop", "humanengine"]
+        expected = stop_with_admitted_setting(port, stop_command, env, lambda: docker("logs", first),
+                                              lambda: inspect(first)["State"]["Running"])
         assert_drained(first)
         report["checks"].append("compose-stop-admitted-write-committed-exit-zero-within-grace")
         report["phase"] = "cold-reopen"
@@ -150,10 +169,10 @@ def run(report, snow_fixture=None):
             report["phase"] = "snow-partial-ack-fixture-network"
             network = json.loads(docker("network", "inspect", project + "_default"))[0]
             gateway = bridge_gateway(project, network)
-            current = None
+            current = current_port = overlap_setting = None
 
             def start_snow():
-                nonlocal current
+                nonlocal current, current_port
                 if current is None:
                     current, current_port = second, port
                 else:
@@ -161,8 +180,18 @@ def run(report, snow_fixture=None):
                     previous = current
                     current, current_port, reopened = boot("snow-cold-reopen")
                     assert current != previous and reopened == mounts
+                    assert request(current_port, "GET", "/api/settings")["debugModelIO"] is overlap_setting
                 report["phase"] = "snow-partial-ack-wire-and-history"
                 return f"127.0.0.1:{current_port}"
+
+            def stop_overlap():
+                nonlocal overlap_setting
+                report["phase"] = "snow-compose-overlap"
+                overlap_setting = stop_with_admitted_setting(
+                    current_port, stop_command, env, lambda: docker("logs", current),
+                    lambda: inspect(current)["State"]["Running"])
+                assert_drained(current)
+                return docker("logs", current)
 
             def stop_snow():
                 report["phase"] = "snow-compose-stop"
@@ -173,8 +202,10 @@ def run(report, snow_fixture=None):
                 report["phase"] = "snow-post-stop-peer-and-trace"
                 return docker("logs", current)
 
-            run_snow_fixture(snow_fixture, gateway, acceptance.TOKEN, start_snow, stop_snow)
-            report["checks"].append("compose-snow-partial-ack-drained-cold-reopen-no-replay")
+            report["admitted_remote_history_at_stop"] = run_snow_fixture(
+                snow_fixture, gateway, acceptance.TOKEN, start_snow, stop_overlap, stop_snow)
+            report["checks"].extend(("compose-snow-partial-ack-drained-cold-reopen-no-replay",
+                                     "compose-overlap-held-snow-history-and-admitted-setting-drained"))
     finally:
         try:
             call("down", "--volumes")

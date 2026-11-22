@@ -22,8 +22,9 @@ import (
 )
 
 type Process struct {
-	Address func() string
-	Stop    func() string // Stop and verify the real owner drain, returning logs.
+	HistoryAtStop func(string) // Report the admitted history outcome alongside the held settings write.
+	Address       func() string
+	Stop          func() string // Stop and verify the real owner drain, returning logs.
 }
 
 type snowSegment struct {
@@ -52,6 +53,8 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	var mu sync.Mutex
 	var acked []any
 	var connectionID, sendCount int
+	var historyHold chan struct{}
+	var historyWitness bool
 	connected := make(chan *websocket.Conn, 8)
 	closed := make(chan int, 8)
 	transmissions := make(chan snowStopSend, 8)
@@ -89,7 +92,20 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 			case "get_group_msg_history":
 				mu.Lock()
 				history := append([]any{}, acked...)
+				hold, witness := historyHold, historyWitness
+				historyHold, historyWitness = nil, false
 				mu.Unlock()
+				if hold != nil {
+					close(hold)
+					// Keep reading but never ACK this accepted remote history call.
+					// Stop must close the connector and complete the HTTP request.
+					continue
+				}
+				if witness {
+					history = append(history, map[string]any{"message_id": 77, "message_type": "group",
+						"group_id": 99, "user_id": 8, "time": time.Now().Add(-time.Minute).Unix(),
+						"message": []any{map[string]any{"type": "text", "data": map[string]any{"text": "Synthetic remote-only history witness."}}}})
+				}
 				data = map[string]any{"messages": history}
 			case "send_group_msg":
 				mu.Lock()
@@ -146,13 +162,12 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	process := start()
 	address := process.Address()
 	client := &http.Client{}
-	request := func(method, path string, value any) []byte {
-		t.Helper()
+	doRequest := func(method, path string, value any) (int, []byte, error) {
 		var body io.Reader
 		if value != nil {
 			wire, err := json.Marshal(value)
 			if err != nil {
-				t.Fatal(err)
+				return 0, nil, err
 			}
 			body = bytes.NewReader(wire)
 		}
@@ -165,7 +180,7 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		defer cancel()
 		req, err := http.NewRequestWithContext(requestCtx, method, "http://"+address+path, body)
 		if err != nil {
-			t.Fatal(err)
+			return 0, nil, err
 		}
 		req.Header.Set("Authorization", "Bearer "+token)
 		if body != nil {
@@ -173,17 +188,22 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		}
 		resp, err := client.Do(req)
 		if err != nil {
-			t.Fatal(err)
+			return 0, nil, err
 		}
 		defer resp.Body.Close()
-		if resp.StatusCode != http.StatusOK {
-			t.Fatalf("%s %s returned %s", method, path, resp.Status)
-		}
-		data, err := io.ReadAll(resp.Body)
+		wire, err := io.ReadAll(resp.Body)
+		return resp.StatusCode, wire, err
+	}
+	request := func(method, path string, value any) []byte {
+		t.Helper()
+		status, wire, err := doRequest(method, path, value)
 		if err != nil {
 			t.Fatal(err)
 		}
-		return data
+		if status != http.StatusOK {
+			t.Fatalf("%s %s returned status %d", method, path, status)
+		}
+		return wire
 	}
 	admin := func(path string, value any) { t.Helper(); request(http.MethodPut, path, value) }
 	var settings map[string]any
@@ -246,30 +266,8 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	}
 	history := func(origin string) map[string]string {
 		t.Helper()
-		type message struct {
-			ID, SenderID string
-			Parts        []struct{ Type, Text string }
-		}
-		var body struct{ Items []message }
 		wire := request(http.MethodGet, scenePath+"/history"+origin, nil)
-		if err := json.Unmarshal(wire, &body); err != nil {
-			t.Fatal(err)
-		}
-		result := map[string]string{}
-		for _, m := range body.Items {
-			if m.SenderID != "bot" {
-				continue
-			}
-			if _, seen := result[m.ID]; seen {
-				t.Fatalf("duplicate bot history %s", m.ID)
-			}
-			for _, p := range m.Parts {
-				if p.Type == "text" {
-					result[m.ID] += p.Text
-				}
-			}
-		}
-		return result
+		return botHistory(t, wire)
 	}
 	firstID := snow.MessageID(scene, "101")
 	firstText := "Synthetic Snow partial segment 1."
@@ -289,7 +287,70 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 		t.Fatalf("peer %d closed before SIGTERM", c)
 	default:
 	}
+	type historyResult struct {
+		status int
+		wire   []byte
+		err    error
+	}
+	var pending chan historyResult
+	if process.HistoryAtStop != nil {
+		mu.Lock()
+		historyWitness = true
+		mu.Unlock()
+		wire := request(http.MethodGet, scenePath+"/history?source=remote", nil)
+		if !bytes.Contains(wire, []byte("Synthetic remote-only history witness.")) ||
+			!reflect.DeepEqual(botHistory(t, wire), wantFirst) {
+			t.Fatal("live history did not deliver the remote-only witness and just the ACKed bot receipt")
+		}
+		wireStarted := make(chan struct{})
+		mu.Lock()
+		historyHold = wireStarted
+		mu.Unlock()
+		pending = make(chan historyResult, 1)
+		go func() {
+			status, wire, err := doRequest(http.MethodGet, scenePath+"/history?source=remote", nil)
+			pending <- historyResult{status, wire, err}
+		}()
+		select {
+		case <-wireStarted:
+		case <-time.After(5 * time.Second):
+			t.Fatal("history GET did not reach the real SnowLuma connector")
+		}
+		select {
+		case result := <-pending:
+			t.Fatalf("remote history completed before stop: status=%d err=%v", result.status, result.err)
+		default:
+		}
+	}
 	logs := process.Stop()
+	if pending != nil {
+		result := <-pending // doRequest already has a deadline
+		if result.err != nil {
+			t.Fatal(result.err)
+		}
+		var body struct {
+			Error, Coverage, Reason string
+		}
+		if err := json.Unmarshal(result.wire, &body); err != nil {
+			t.Fatal(err)
+		}
+		switch result.status {
+		case http.StatusServiceUnavailable:
+			if body.Error != "Request failed; inspect server diagnostics" {
+				t.Fatal("held remote history lacked the explicit failure response")
+			}
+			process.HistoryAtStop("remote-history-stop-503")
+		case http.StatusOK:
+			if (body.Coverage != "partial" && body.Coverage != "unavailable") ||
+				(body.Reason != "adapter_unavailable" && body.Reason != "request_cancelled") ||
+				!reflect.DeepEqual(botHistory(t, result.wire), wantFirst) {
+				t.Fatalf("held remote history reported inaccurate remote coverage: coverage=%q reason=%q", body.Coverage, body.Reason)
+			}
+			process.HistoryAtStop("remote-history-stop-local-fallback")
+		default:
+			t.Fatalf("held remote history returned unexpected status %d", result.status)
+		}
+	}
 	waitPeerClose := func(want int) {
 		t.Helper()
 		select {
@@ -363,6 +424,33 @@ func Run(t *testing.T, bind, token string, v1 bool, start func() Process) {
 	if sendCount != 3 || connectionID != 2 || len(transmissions) != 0 || len(acked) != 2 {
 		t.Fatalf("replay/third action: sends=%d peers=%d pending=%d ACKs=%d", sendCount, connectionID, len(transmissions), len(acked))
 	}
+}
+
+func botHistory(t *testing.T, wire []byte) map[string]string {
+	t.Helper()
+	type message struct {
+		ID, SenderID string
+		Parts        []struct{ Type, Text string }
+	}
+	var body struct{ Items []message }
+	if err := json.Unmarshal(wire, &body); err != nil {
+		t.Fatal(err)
+	}
+	result := map[string]string{}
+	for _, m := range body.Items {
+		if m.SenderID != "bot" {
+			continue
+		}
+		if _, seen := result[m.ID]; seen {
+			t.Fatalf("duplicate bot history %s", m.ID)
+		}
+		for _, p := range m.Parts {
+			if p.Type == "text" {
+				result[m.ID] += p.Text
+			}
+		}
+	}
+	return result
 }
 
 func serveSnowStopModel(t *testing.T, w http.ResponseWriter, r *http.Request, target string, split bool) {

@@ -51,6 +51,27 @@ Rust nightly 2026-09-27 (`1.101.0-nightly`, `75a75c3e0`), cargo-c
 observed upstream build inputs; they are not dependencies of the Go runtime
 or a complete toolchain replay recipe.
 
+### Observed RPM transaction receipt
+
+The same x64 build job's BuildKit step `#7` logged these completed transactions
+on 2026-09-27 (UTC). The final identifiers were independently matched to the
+resolved dependency table for each transaction.
+
+| Receipt group | Final rows | Completed (UTC) |
+| --- | --- | --- |
+| `dnf-update` | 93 upgraded, 16 installed | 11:26:17.9737133 |
+| `epel-bootstrap` | 8 installed | 11:26:21.6117869 |
+| `build-dependencies` | 124 installed | 11:26:57.9406535 |
+
+For the 241-row receipt, extract the final `Upgraded:` and `Installed:`
+identifiers, preserving their printed version epochs and architectures. Emit
+ASCII `group/status<TAB>identifier<LF>` with no header, in the transaction order
+above, with `upgraded` before `installed` within the first transaction and ASCII
+order within each status. Include the final LF. SHA-256:
+`c5307d07de7aa27614f52aef7e1580ad6a07bf8f34a11b793d13383d500d5d89`.
+This is the observed transaction delta, not the complete RPM database, exact RPM
+payload hashes or signatures, or an immutable repository snapshot.
+
 ## Still required before distributing the combined native library
 
 1. Retrieve and archive every source and patch URL in acquisition-manifest.json.

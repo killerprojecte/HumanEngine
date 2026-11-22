@@ -49,22 +49,30 @@ remaining omissions and exact SHA.
 ## P0: hosted evidence and remaining package gate
 
 The [opt-in Docker/Compose recipe and acceptance driver](../../backend/packaging/runtime-preview/README.md)
-exercise the actual packaged application, not a health stub. Two hosted runs
-closed distinct synthetic boundaries on different commits:
+exercise the actual packaged application, not a health stub.
 
-- [44836458981](https://github.com/killerprojecte/HumanEngine/actions/runs/44836458981)
-  at `de94427`: real same-origin Nuxt/Chromium login, dashboard, settings write,
-  reload and logout against the package, alongside the normal package smoke.
-- [44849902431](https://github.com/killerprojecte/HumanEngine/actions/runs/44849902431)
-  at `9e53c0e6`: actual TS → Go → TS on a disposable matching data/authority
-  pair, plus old-backup restore checks for flags, deletion and hold.
+- On exact `6eeeaabc576425b1890eebc7ab615df3e4f6ed5d`, the
+  [package job](https://github.com/killerprojecte/HumanEngine/actions/runs/45010193782/job/137170632028)
+  passed hosted same-origin Chromium, TS → Go → TS with old-backup restore, and
+  Compose stop and cold reopen. All three
+  [evidence records](https://github.com/killerprojecte/HumanEngine/actions/runs/45010193782/artifacts/14749758528)
+  name that commit and the same Go image ID,
+  `sha256:62fdc2a95c3a88db1c38cc396bdc167c0dcef37e6bdf45ace97e3f184e980ac7`.
+  The [separate native compatibility job](https://github.com/killerprojecte/HumanEngine/actions/runs/45010193789/job/137170632089)
+  also passed on that commit.
+- Later, exact `d632903b8078b5718cc010ec8e2c67c1a05b81e9` passed
+  [ordinary package acceptance](https://github.com/killerprojecte/HumanEngine/actions/runs/45014057176/job/137182442132)
+  and [native compatibility](https://github.com/killerprojecte/HumanEngine/actions/runs/45014057114/job/137182441838).
+  Its hosted Chromium, migration/restore, and Compose rehearsals were not run.
 
-Neither certifies the current head. Run the required gates on one exact
-integrated candidate and retain the image/commit identity and evidence. Browser
-and restore rehearsals are scoped opt-in jobs, not coverage on ordinary pushes.
-Do not publish a distributable image until the independent
+These are synthetic milestones, not release-candidate or registry acceptance.
+Rerun the required gates on the exact integrated release candidate; keep
+TypeScript as the production default until the cutover gates pass. The local
+image ID is not an immutable registry pull reference. Do not publish a
+distributable Go image until the independent
 [native image redistribution gate](../../backend/internal/imagecodec/distribution/RELEASE-GATES.md)
-is closed.
+is closed, including immutable offline Rust dependency/toolchain qualification
+and corresponding-source delivery.
 
 ## P1: updated runtime semantics implemented in the Go candidate
 

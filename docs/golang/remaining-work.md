@@ -180,9 +180,18 @@ The [installed SnowLuma test at `4c81311`](https://github.com/killerprojecte/Hum
 covers a three-segment draft across a real loopback WebSocket disconnect and
 reconnect: the first segment is acknowledged, the second is transmitted but its
 receipt is unknown, and the third is not sent. No old segment is replayed and a
-fresh message succeeds on the replacement connection. Combining a partial ACK
-with process shutdown or with recall/policy changes between segments remains
-unproven. Check exact payloads and physical send counts in those cases.
+fresh message succeeds on the replacement connection.
+`TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart` stops the native CLI
+with real SIGTERM after the peer reads segment two but before its ACK. It
+requires a drain receipt and exit zero within 30 seconds, then reopens the
+same data and authority paths. The acknowledged first message is available
+from the peer's history, not the cold process's in-memory cache. No third
+segment or old replay reaches the peer; one fresh send is acknowledged.
+The stopped process reports one sent and one unknown. A deterministic
+runtime regression also holds the unknown receipt until after shutdown
+seals the runtime, to verify it is classified before the ledger is cleared.
+The packaged Compose variant and recall/policy changes between segments
+remain unproven.
 
 ## P2: coverage closure and integration
 

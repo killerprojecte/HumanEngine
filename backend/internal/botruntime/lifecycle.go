@@ -141,7 +141,11 @@ func (r *Runtime) Close() {
 	r.boundaries.Clear()
 	r.operationMu.Lock()
 	for _, e := range r.operations.Entries() {
-		r.deleteOperationLocked(e.Key)
+		// Active turns still own unsettled receipts. Their final outcome
+		// collection removes the entries after both sends and cancellation settle.
+		if e.Value.owner.outcomesCollected {
+			r.deleteOperationLocked(e.Key)
+		}
 	}
 	r.operationMu.Unlock()
 }

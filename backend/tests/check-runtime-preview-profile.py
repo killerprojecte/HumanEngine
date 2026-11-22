@@ -29,6 +29,7 @@ DEFAULT = {
 }
 NATIVE = DEFAULT | {
     "TestRuntimePreviewTCPBootWriteSignalDrainRestart",
+    "TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart",
     "TestRuntimePreviewNativePreflightFailureDoesNotEnroll",
     "TestRuntimePreviewNativePreflightFailureDoesNotEnroll/image",
     "TestRuntimePreviewNativePreflightFailureDoesNotEnroll/node",

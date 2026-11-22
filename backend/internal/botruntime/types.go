@@ -327,6 +327,7 @@ type turn struct {
 	records           map[*Object]*messageRecord
 	operations        topicroute.OrderedMap[string, *receiptOperation]
 	outcomeCount      int
+	outcomesCollected bool // guarded by Runtime.operationMu
 	runtime           *Runtime
 	state             *sceneState
 	topic             *topic

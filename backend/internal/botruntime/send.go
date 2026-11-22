@@ -71,9 +71,16 @@ func segmentsValue(s []dispatch.Segment) []any {
 func (r *Runtime) outcomes(t *turn) []dispatch.Receipt {
 	r.operationMu.Lock()
 	defer r.operationMu.Unlock()
+	entries := t.operations.Entries()
 	out := []dispatch.Receipt{}
-	for _, e := range t.operations.Entries() {
+	for _, e := range entries {
 		out = append(out, e.Value.receipts...)
+	}
+	t.outcomesCollected = true
+	if r.closed.Load() {
+		for _, e := range entries {
+			r.deleteOperationLocked(e.Key)
+		}
 	}
 	return out
 }

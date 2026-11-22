@@ -50,12 +50,23 @@ func (b *commandLog) Write(p []byte) (int, error) {
 func (b *commandLog) snapshot() string { b.Lock(); defer b.Unlock(); return b.buffer.String() }
 func runtimeCommand(t *testing.T, args []string) (*exec.Cmd, *commandLog, <-chan error) {
 	t.Helper()
+	return runtimeCommandWithPlugin(t, args, "", "")
+}
+
+func runtimeCommandWithPlugin(t *testing.T, args []string, plugin, binary string) (*exec.Cmd, *commandLog, <-chan error) {
+	t.Helper()
 	raw, err := json.Marshal(args)
 	if err != nil {
 		t.Fatal(err)
 	}
 	cmd := exec.Command(os.Args[0], "-test.run=^TestRuntimePreviewProcess$")
-	cmd.Env = append(os.Environ(), "HE_RUNTIME_COMMAND_HELPER=1", "HE_RUNTIME_COMMAND_ARGS="+string(raw), "HUMANENGINE_ADMIN_TOKEN=synthetic-launcher-token", "HUMANENGINE_PLUGINS=")
+	env := append(os.Environ(), "HUMANENGINE_ADMIN_TOKEN=synthetic-launcher-token", "HUMANENGINE_PLUGINS="+plugin)
+	if binary != "" {
+		cmd = exec.Command(binary, args...)
+	} else {
+		env = append(env, "HE_RUNTIME_COMMAND_HELPER=1", "HE_RUNTIME_COMMAND_ARGS="+string(raw))
+	}
+	cmd.Env = env
 	logs := new(commandLog)
 	cmd.Stdout = logs
 	cmd.Stderr = logs

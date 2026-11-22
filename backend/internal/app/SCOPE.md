@@ -178,6 +178,28 @@ existing-entity reuse and SQL persistence; this does not establish semantic, wor
 exposure parity; knowledge has its own bounded integration below. This fixture
 did not exercise native platform coverage or the writable launcher.
 
+## Planner memory source receipts
+
+`memory.source` accepts an alias delivered to the Planner in the current turn.
+It resolves the referenced memory under the existing read authority and returns
+original message IDs, not message bodies. The normal support refresh runs once;
+before delivery the exact memory and source references must still match.
+
+`TestInstalledMemorySourceTool` covers the real Planner path and rejects raw,
+foreign, or earlier-turn references. It also exercises personalization policy,
+and revocation by the actual admin endpoints before tool-result delivery. This
+does not introduce new memory exposure or a separate final-wire source guard.
+
+## Planner habit feedback
+
+The Planner can submit `habits.feedback` as a plan action for a learned hint
+exposed to the current turn. Only cited current live nonbot messages provide
+evidence. The existing habit owner checks the scene learning policy and writes
+the feedback through the same session that checks source and read authority.
+If the update changes a hint already delivered to the Planner, the existing
+validation invalidates the old reply plan; the separate feedback write remains.
+This does not implement model-facing `habits.propose`.
+
 ## SnowLuma builtin installation candidate
 
 The explicit native application graph now registers SnowLuma alongside typing-delay.

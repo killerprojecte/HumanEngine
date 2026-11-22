@@ -1,4 +1,6 @@
 import argparse
+from base64 import b64decode
+from hashlib import sha256
 import io
 import json
 from contextlib import redirect_stdout
@@ -6,10 +8,12 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import unicodedata
 import unittest
 from unittest.mock import patch
 
-from migration_drill import AUTHORITY, DATABASE, MODEL, PROVIDER, PROVIDER_PORT, Drill, TS_REVISION, main
+from migration_drill import (AUTHORITY, DATABASE, MEDIA_PNGS, MODEL, PROVIDER, PROVIDER_PORT,
+                             TS_REVISION, UNICODE_MEMORY, Drill, main)
 
 HERE = Path(__file__).resolve().parent
 
@@ -80,13 +84,23 @@ class MigrationDrillTests(unittest.TestCase):
         drill = Drill(argparse.Namespace(ts_image="ts", ts_tools_image="tools", go_image="go",
                                         go_revision="rev"), {"checks": []})
         seen = []
+        unicode_checks = []
 
         def prove(held=False):
             seen.append((drill.phase, held))
 
+        def verify_unicode(memory_id, leg):
+            unicode_checks.append((drill.owner, memory_id, leg))
+
+        def start(owner, **_paths):
+            drill.owner = owner
+
         with patch("migration_drill.docker"), patch.object(drill, "image"), patch.object(drill, "tool"), \
-                patch.object(drill, "start"), patch.object(drill, "stop"), \
+                patch.object(drill, "start", side_effect=start), patch.object(drill, "stop"), \
+                patch.object(drill, "seed_unicode_memory", return_value="unicode-id"), \
+                patch.object(drill, "verify_unicode_memory", side_effect=verify_unicode), \
                 patch.object(drill, "run_snowluma_credential") as snowluma, \
+                patch.object(drill, "run_media_restore") as media, \
                 patch.object(drill, "has_memory", side_effect=[True, True, False, False]), \
                 patch.object(drill, "setting", side_effect=[False, False, True, True]), \
                 patch.object(drill, "verify_restored_data"), patch.object(drill, "prove_credential", side_effect=prove), \
@@ -96,12 +110,40 @@ class MigrationDrillTests(unittest.TestCase):
                 ]):
             drill.run()
             snowluma.assert_called_once_with()
+            media.assert_called_once_with()
         self.assertEqual(seen, [
             ("seed-and-probe-typescript-credential", False),
             ("probe-go-credential", False),
             ("probe-rollback-typescript-credential", False),
             ("probe-restored-model-hold", True),
         ])
+        self.assertEqual(unicode_checks, [
+            ("ts", "unicode-id", "ts-seed"),
+            ("go", "unicode-id", "go-reopen"),
+            ("ts", "unicode-id", "ts-rollback"),
+            ("go", "unicode-id", "restored-go"),
+        ])
+
+    def test_unicode_memory_witness_requires_exact_id_and_code_points(self):
+        drill = Drill(argparse.Namespace(), {"checks": []})
+        row = {"id": "unicode-id", "content": UNICODE_MEMORY}
+        with patch.object(drill, "api", return_value=row) as api:
+            self.assertEqual(drill.seed_unicode_memory(), row["id"])
+            api.assert_called_once_with("POST", "/api/memories", {
+                "scope": {"kind": "sharedPublicKnowledge"}, "kind": "fact",
+                "content": UNICODE_MEMORY,
+            })
+            variants = [dict(row, id="changed-id"),
+                        dict(row, content=unicodedata.normalize("NFC", UNICODE_MEMORY)),
+                        dict(row, content=UNICODE_MEMORY.replace("\u200d", ""))]
+            for different in variants:
+                api.return_value = [different]
+                with self.assertRaisesRegex(RuntimeError, "ID or text changed"):
+                    drill.verify_unicode_memory(row["id"], "go-reopen")
+            api.return_value = [row]
+            drill.verify_unicode_memory(row["id"], "go-reopen")
+            api.assert_called_with("GET", "/api/memories")
+        self.assertEqual(drill.report["checks"], ["go-reopen-unicode-memory-exact-id-and-text"])
 
     def test_snowluma_lane_keeps_a_separate_pair_and_never_enables_restored_data(self):
         drill = Drill(argparse.Namespace(), {"checks": []})
@@ -134,6 +176,58 @@ class MigrationDrillTests(unittest.TestCase):
                 probe.return_value = bad
                 with self.assertRaisesRegex(RuntimeError, "stored credential exactly once"):
                     drill.prove_snowluma_login()
+
+    def test_media_import_receipt_and_original_proof_are_exact(self):
+        drill = Drill(argparse.Namespace(), {})
+        ids = ["a" * 64, "b" * 64]
+        good = dict(enableStatus=200, disableStatus=200, enabledOK=True, disabledOK=True,
+                    received=1, matched=1)
+        files = [{"status": 200, "type": "image/png", "hash": sha256(b64decode(png)).hexdigest()}
+                 for png in MEDIA_PNGS]
+        with patch.object(drill, "verify_snowluma_disabled"), \
+                patch.object(drill, "probe_receipt", return_value=dict(good, mediaIds=ids)) as probe:
+            self.assertEqual(drill.prove_snowluma_login(seed_media=True), ids)
+            self.assertEqual(probe.call_args.args[1]["media"]["eventToken"], drill.snow_event_token)
+            probe.return_value = dict(good, mediaIds=[ids[0], ids[0]])
+            with self.assertRaisesRegex(RuntimeError, "distinct asset IDs"):
+                drill.prove_snowluma_login(seed_media=True)
+            unavailable = {"status": 400, "unavailable": True}
+            probe.side_effect = files + [unavailable, files[1], files[0]]
+            drill.verify_media(ids)
+            drill.verify_media(ids, deleted=True)
+            with self.assertRaisesRegex(RuntimeError, "retained or deleted outcome"):
+                drill.verify_media(ids, deleted=True)
+
+    def test_media_restore_drains_each_runtime_and_reopens_against_cloned_authority(self):
+        drill = Drill(argparse.Namespace(), {"checks": []})
+        ids = ["a" * 64, "b" * 64]
+        events = []
+        with patch.object(drill, "tool", side_effect=lambda *a, **kw: events.append(("tool", a, kw))), \
+                patch.object(drill, "start", side_effect=lambda engine, **kw: events.append((engine, kw))), \
+                patch.object(drill, "stop", side_effect=lambda: events.append("stop")), \
+                patch.object(drill, "seed_snowluma_credential"), \
+                patch.object(drill, "prove_snowluma_login", return_value=ids) as seed, \
+                patch.object(drill, "verify_media", side_effect=lambda *a, **kw: events.append(("verify", kw))), \
+                patch.object(drill, "api", side_effect=[{"ok": True}, {"held": True}]) as api:
+            drill.run_media_restore()
+        paths = {"data": "media-live", "authority": "media-authority"}
+        clone = {"authority": "media-restore-authority"}
+        seed.assert_called_once_with(seed_media=True)
+        self.assertEqual(api.call_args_list[0].args, ("DELETE", "/api/memes/" + ids[0]))
+        self.assertEqual([event for event in events if event == "stop" or event[0] in ("ts", "go", "verify")], [
+            ("ts", paths), ("verify", {}), "stop",
+            ("go", paths), ("verify", {}), ("verify", {"deleted": True}), "stop",
+            ("ts", paths), ("verify", {"deleted": True}), "stop",
+            ("go", dict(clone, data="media-restored")), ("verify", {"deleted": True}), "stop",
+        ])
+        backup = ("tool", ("node", "--import", "tsx", "scripts/backup.ts",
+                           DATABASE, "/app/data/media", "/drill/media-backup"), paths)
+        restore = ("tool", ("node", "--import", "tsx", "scripts/restore.ts",
+                            "/drill/media-backup", "/drill/media-restored", AUTHORITY), clone)
+        self.assertEqual(events[4], backup)
+        self.assertLess(events.index(restore), events.index(("go", dict(clone, data="media-restored"))))
+        self.assertEqual(events[-1][2], clone)
+        self.assertEqual(drill.report["checks"][-1], "restore-replayed-go-media-deletion-and-retained-exact-original")
 
     def test_failure_evidence_reports_fixed_phase_without_error_details(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -82,6 +82,9 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 		if application != nil {
 			return errors.Join(errors.New("runtime_preview_open_failed"), application.ShutdownAndFlush(context.Background()))
 		}
+		if errors.Is(err, app.ErrLegacyMediaRequiresMove) {
+			return app.ErrLegacyMediaRequiresMove
+		}
 		return errors.New("runtime_preview_open_failed")
 	}
 	logs := application.Logger()

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Opt-in packaged TS→Go→TS and old-backup restore using only disposable Docker state."""
 import argparse
+from base64 import b64decode
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -17,6 +19,12 @@ MODEL = "migration-text-fixture"
 PROVIDER_PORT = 41273
 SNOW_ACTION_PORT = 41274
 SNOW_EVENT_PORT = 41275
+# Taipei text, supplementary Han, a ZWJ emoji, and distinct decomposed/composed accents.
+UNICODE_MEMORY = "\u53f0\u5317 \U00020bb7 \U0001f469\u200d\U0001f4bb e\u0301 / \u00e9"
+MEDIA_PNGS = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGP4z8AARAwQCgAf7gP9i18U1AAAAABJRU5ErkJggg==",
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAD0lEQVR4nGNg+M8AQhAKABvyA/1tVLjHAAAAAElFTkSuQmCC",
+)
 NODE_REQUEST = """
 const {method,path,body} = JSON.parse(require('fs').readFileSync(0, 'utf8'));
 fetch('http://127.0.0.1:' + process.argv[1] + path, {
@@ -80,11 +88,18 @@ NODE_SNOWLUMA_LOGIN = """
 const http = require('node:http');
 const fs = require('node:fs');
 async function run() {
-  const {sentinel, actionPort} = JSON.parse(fs.readFileSync(0, 'utf8'));
+  const {sentinel, actionPort, media} = JSON.parse(fs.readFileSync(0, 'utf8'));
   let received = 0, matched = 0;
   const mock = http.createServer((req, res) => {
-    received++;
     req.resume();
+    if (media && req.method === 'POST' && req.url === '/get_group_info' &&
+        req.headers.authorization === 'Bearer ' + sentinel) {
+      res.writeHead(200, {'Content-Type':'application/json'}).end(JSON.stringify({
+        status:'ok', retcode:0, data:{group_id:900, group_name:'Synthetic media group'}
+      }));
+      return;
+    }
+    received++;
     if (req.method !== 'POST' || req.url !== '/get_login_info' ||
         req.headers.authorization !== 'Bearer ' + sentinel) {
       res.writeHead(400).end();
@@ -95,23 +110,89 @@ async function run() {
       status:'ok', retcode:0, data:{user_id:42}
     }));
   });
+  const admin = (method, path, body) => fetch('http://127.0.0.1:' + process.argv[1] + path, {
+    method, headers: {'Content-Type':'application/json',
+      Authorization:'Bearer ' + process.env.HUMANENGINE_ADMIN_TOKEN},
+    body: JSON.stringify(body), signal: AbortSignal.timeout(20000)
+  });
   const toggle = async enabled => {
-    const response = await fetch('http://127.0.0.1:' + process.argv[1] + '/api/plugins/snowluma/enabled', {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json',
-        Authorization:'Bearer ' + process.env.HUMANENGINE_ADMIN_TOKEN},
-      body: JSON.stringify({enabled}), signal: AbortSignal.timeout(20000)
-    });
+    const response = await admin('PUT', '/api/plugins/snowluma/enabled', {enabled});
     return [response.status, (await response.json())?.ok === true];
+  };
+  const seedMedia = async () => {
+    const {createHmac} = require('node:crypto');
+    const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+    const sceneId = 'ob:s:' + encode(['snowluma', '42', 'group', '900']);
+    const scenePath = '/api/scenes/' + encodeURIComponent(sceneId);
+    const ids = [];
+    for (let index = 0; index < media.pngs.length; index++) {
+      const id = index + 1;
+      const messageId = sceneId + ':m:' + encode(String(id));
+      const body = JSON.stringify({post_type:'message', message_type:'group', sub_type:'normal',
+        self_id:42, group_id:900, user_id:7, message_id:id, time:Math.floor(Date.now() / 1000),
+        message:[{type:'text', data:{text:'Synthetic image source ' + id}}],
+        sender:{user_id:7, nickname:'Synthetic sender'}});
+      const signature = createHmac('sha1', media.eventToken).update(body).digest('hex');
+      const admitted = await fetch('http://127.0.0.1:' + media.eventPort + '/onebot/events', {
+        method:'POST', headers:{'Content-Type':'application/json', 'X-Self-ID':'42',
+          'X-Signature':'sha1=' + signature},
+        body, signal:AbortSignal.timeout(5000)
+      });
+      if (admitted.status !== 204) throw new Error('synthetic event was not admitted');
+      const deadline = Date.now() + 3000;
+      let ready = false;
+      while (!ready && Date.now() < deadline) {
+        const response = await admin('GET', scenePath + '/history?source=local');
+        const history = await response.json();
+        ready = response.ok && history?.items?.some(row => row.id === messageId && row.status === 'available');
+        if (!ready) await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      if (!ready) throw new Error('synthetic source was not available');
+      if (index === 0) {
+        const listed = await admin('GET', '/api/scenes');
+        const scene = (await listed.json()).find(row => row.id === sceneId);
+        const updated = await admin('PUT', scenePath, {...scene, learningEnabled:true});
+        if (!updated.ok || (await updated.json())?.learningEnabled !== true)
+          throw new Error('synthetic scene learning was not enabled');
+      }
+      const imported = await admin('POST', '/api/memes/import', {sceneId, messageId, base64:media.pngs[index]});
+      const asset = await imported.json();
+      if (!imported.ok || !/^[a-f0-9]{64}$/.test(asset?.id ?? '')) throw new Error('synthetic import failed');
+      ids.push(asset.id);
+    }
+    return ids;
   };
   await new Promise((resolve, reject) =>
     mock.once('error', reject).listen(actionPort, '127.0.0.1', resolve));
   try {
-    let enableStatus, enabledOK, disableStatus, disabledOK;
-    try { [enableStatus, enabledOK] = await toggle(true); }
+    let enableStatus, enabledOK, disableStatus, disabledOK, mediaIds;
+    try {
+      [enableStatus, enabledOK] = await toggle(true);
+      if (media && enableStatus === 200 && enabledOK) mediaIds = await seedMedia();
+    }
     finally { [disableStatus, disabledOK] = await toggle(false); }
-    console.log(JSON.stringify({enableStatus, enabledOK, disableStatus, disabledOK, received, matched}));
+    console.log(JSON.stringify({enableStatus, enabledOK, disableStatus, disabledOK, received, matched, mediaIds}));
   } finally { mock.closeAllConnections(); mock.close(); }
+}
+run().catch(() => process.exitCode = 1);
+"""
+
+
+NODE_MEDIA_FILE = """
+const {createHash} = require('node:crypto');
+const {readFileSync} = require('node:fs');
+const {id} = JSON.parse(readFileSync(0, 'utf8'));
+async function run() {
+  const response = await fetch('http://127.0.0.1:' + process.argv[1] + '/api/memes/' + id + '/file', {
+    headers:{Authorization:'Bearer ' + process.env.HUMANENGINE_ADMIN_TOKEN},
+    signal:AbortSignal.timeout(5000)
+  });
+  if (response.ok) {
+    const hash = createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex');
+    console.log(JSON.stringify({status:response.status, type:response.headers.get('content-type'), hash}));
+  } else {
+    console.log(JSON.stringify({status:response.status, unavailable:(await response.json())?.error === 'Asset unavailable'}));
+  }
 }
 run().catch(() => process.exitCode = 1);
 """
@@ -265,15 +346,30 @@ class Drill:
             "token": self.snow_token, "eventToken": self.snow_event_token,
         })
 
-    def prove_snowluma_login(self):
+    def prove_snowluma_login(self, seed_media=False):
         self.verify_snowluma_disabled()
-        outcome = self.probe_receipt(NODE_SNOWLUMA_LOGIN, {
-            "sentinel": self.snow_token, "actionPort": SNOW_ACTION_PORT,
-        }, timeout=45)
+        options = {"sentinel": self.snow_token, "actionPort": SNOW_ACTION_PORT}
+        if seed_media:
+            options["media"] = {"pngs": MEDIA_PNGS, "eventToken": self.snow_event_token,
+                                "eventPort": SNOW_EVENT_PORT}
+        outcome = self.probe_receipt(NODE_SNOWLUMA_LOGIN, options, timeout=60 if seed_media else 45)
+        media_ids = outcome.pop("mediaIds", []) if seed_media else []
         require(outcome == {"enableStatus": 200, "disableStatus": 200,
                             "enabledOK": True, "disabledOK": True, "received": 1, "matched": 1},
                 "SnowLuma login did not use its stored credential exactly once")
         self.verify_snowluma_disabled()
+        if seed_media:
+            require(isinstance(media_ids, list) and len(media_ids) == 2
+                    and all(isinstance(value, str) and re.fullmatch(r"[a-f0-9]{64}", value) for value in media_ids)
+                    and media_ids[0] != media_ids[1], "synthetic imports did not return two distinct asset IDs")
+        return media_ids
+
+    def verify_media(self, media_ids, deleted=False):
+        for index, (media_id, png) in enumerate(zip(media_ids, MEDIA_PNGS, strict=True)):
+            file = self.probe_receipt(NODE_MEDIA_FILE, {"id": media_id}, timeout=15)
+            expected = ({"status": 400, "unavailable": True} if deleted and index == 0 else
+                        {"status": 200, "type": "image/png", "hash": sha256(b64decode(png)).hexdigest()})
+            require(file == expected, "media original did not match expected retained or deleted outcome")
 
     def stop(self):
         docker("kill", "--signal=TERM", self.name)
@@ -293,6 +389,19 @@ class Drill:
 
     def has_memory(self, memory_id):
         return any(row["id"] == memory_id for row in self.api("GET", "/api/memories"))
+
+    def seed_unicode_memory(self):
+        return self.api("POST", "/api/memories", {
+            "scope": {"kind": "sharedPublicKnowledge"}, "kind": "fact",
+            "content": UNICODE_MEMORY,
+        })["id"]
+
+    def verify_unicode_memory(self, memory_id, leg):
+        self.phase = f"{leg}-verify-unicode-memory"
+        require(any(row["id"] == memory_id and row["content"] == UNICODE_MEMORY
+                    for row in self.api("GET", "/api/memories")),
+                "surviving Unicode memory ID or text changed")
+        self.record(f"{leg}-unicode-memory-exact-id-and-text")
 
     def verify_restored_data(self, initial, memory_id):
         self.phase = "verify-restored-terminal-deletion"
@@ -325,6 +434,8 @@ class Drill:
         })
         memory_id = memory["id"]
         require(self.has_memory(memory_id), "TS seed assertion missing")
+        unicode_memory_id = self.seed_unicode_memory()
+        self.verify_unicode_memory(unicode_memory_id, "ts-seed")
         self.phase = "seed-and-probe-typescript-credential"
         self.seed_credential()
         self.prove_credential()
@@ -338,6 +449,7 @@ class Drill:
         self.phase = "update-in-go"
         self.start("go")
         require(self.has_memory(memory_id) and self.setting() is initial, "Go did not read TS state")
+        self.verify_unicode_memory(unicode_memory_id, "go-reopen")
         self.phase = "probe-go-credential"
         self.prove_credential()
         self.record("go-reopened-credential-matched-provider-wire")
@@ -352,6 +464,7 @@ class Drill:
         self.start("ts")
         require(self.setting() is not initial and not self.has_memory(memory_id),
                 "TS does not recognize latest Go installation")
+        self.verify_unicode_memory(unicode_memory_id, "ts-rollback")
         self.phase = "probe-rollback-typescript-credential"
         self.prove_credential()
         self.record("rollback-typescript-credential-matched-provider-wire")
@@ -399,6 +512,7 @@ try {
         self.phase = "start-go-on-restored-data"
         self.start("go", data="restored", authority="restore-authority")
         self.verify_restored_data(initial, memory_id)
+        self.verify_unicode_memory(unicode_memory_id, "restored-go")
         self.phase = "verify-restored-model-hold"
         hold = self.api("GET", "/api/budget/recovery")
         require(hold.get("held") is True and hold.get("restorationCoverage") == "unknown"
@@ -413,6 +527,7 @@ try {
                   authority="restore-authority")
         self.record("restore-current-authority-replayed-configuration-and-terminal-deletion-and-held-models")
         self.run_snowluma_credential()
+        self.run_media_restore()
 
     def run_snowluma_credential(self):
         # Enablement changes are security-state mutations. This pair must not
@@ -433,6 +548,78 @@ try {
             self.phase = f"snowluma-{leg}-drain"
             self.stop()
             self.record(f"snowluma-{leg}-matched-login-wire-and-disabled")
+
+    def run_media_restore(self):
+        self.phase = "initialize-media-fixture"
+        self.tool("sh", "-ec",
+                  "mkdir /drill/media-live /drill/media-authority /drill/media-restore-authority; "
+                  "chown 1000:1000 /drill/media-live /drill/media-authority /drill/media-restore-authority",
+                  setup=True)
+        paths = {"data": "media-live", "authority": "media-authority"}
+        self.phase = "seed-typescript-media"
+        self.start("ts", **paths)
+        self.seed_snowluma_credential()
+        media_ids = self.prove_snowluma_login(seed_media=True)
+        self.verify_media(media_ids)
+        self.stop()
+        self.record("typescript-imported-two-scoped-originals")
+
+        # No connector setting or enablement changes after this snapshot.
+        self.phase = "backup-typescript-media"
+        self.tool("node", "--import", "tsx", "scripts/backup.ts",
+                  DATABASE, "/app/data/media", "/drill/media-backup", **paths)
+        self.phase = "go-reopen-and-delete-media"
+        self.start("go", **paths)
+        self.verify_media(media_ids)
+        self.record("go-reopened-two-exact-originals")
+        require(self.api("DELETE", "/api/memes/" + media_ids[0])["ok"] is True,
+                "Go terminal media deletion failed")
+        self.verify_media(media_ids, deleted=True)
+        self.stop()
+        self.phase = "typescript-reopen-go-media"
+        self.start("ts", **paths)
+        self.verify_media(media_ids, deleted=True)
+        self.stop()
+        self.record("rollback-typescript-kept-only-independent-original")
+
+        self.phase = "copy-media-authority"
+        self.tool("sh", "-ec", "cp -a /app/authority/. /drill/media-restore-authority/",
+                  authority="media-authority")
+        restore_authority = "media-restore-authority"
+        self.phase = "verify-media-backup-and-live"
+        self.tool("node", "--input-type=module", "-e", """
+import assert from 'node:assert/strict'
+import {createHash} from 'node:crypto'
+import {existsSync, readFileSync} from 'node:fs'
+const [removed, retained, removedHash, retainedHash] = process.argv.slice(1)
+const root = '/drill/media-backup/'
+const manifest = JSON.parse(readFileSync(root + 'manifest.json', 'utf8'))
+const hash = path => createHash('sha256').update(readFileSync(path)).digest('hex')
+for (const [id, expected] of [[removed, removedHash], [retained, retainedHash]]) {
+  const path = 'media/' + id + '.png'
+  assert.equal(manifest.files.find(row => row.path === path)?.sha256, expected)
+  assert.equal(hash(root + path), expected)
+}
+assert.equal(existsSync('/drill/media-live/media/' + removed + '.png'), false)
+assert.equal(hash('/drill/media-live/media/' + retained + '.png'), retainedHash)
+""", *media_ids, *(sha256(b64decode(png)).hexdigest() for png in MEDIA_PNGS),
+                  authority=restore_authority)
+        self.phase = "restore-old-media-backup"
+        self.tool("node", "--import", "tsx", "scripts/restore.ts",
+                  "/drill/media-backup", "/drill/media-restored", AUTHORITY,
+                  authority=restore_authority)
+        self.phase = "go-reopen-restored-media"
+        self.start("go", data="media-restored", authority=restore_authority)
+        self.verify_media(media_ids, deleted=True)
+        require(self.api("GET", "/api/budget/recovery").get("held") is True,
+                "model admission unexpectedly allowed after media restore")
+        self.stop()
+        self.phase = "verify-physical-restored-media"
+        self.tool("sh", "-ec",
+                  'test ! -e "/drill/media-restored/media/$1.png"; '
+                  'test -f "/drill/media-restored/media/$2.png"',
+                  "check-media", *media_ids, authority=restore_authority)
+        self.record("restore-replayed-go-media-deletion-and-retained-exact-original")
 
     def cleanup(self):
         if self.owner is not None:

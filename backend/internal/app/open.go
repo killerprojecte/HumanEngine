@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/assertionauthority"
@@ -82,6 +83,31 @@ func (o Options) PrepareImageLibrary() (Options, error) {
 	return o, nil
 }
 
+// ErrLegacyMediaRequiresMove is a startup-only migration instruction; no
+// legacy originals are moved or merged while opening the application.
+var ErrLegacyMediaRequiresMove = errors.New("runtime_preview_legacy_media_requires_move")
+
+func (o Options) mediaDirectory() (string, error) {
+	if o.MemeDirectory != "" {
+		return o.MemeDirectory, nil
+	}
+	parent := filepath.Dir(o.Installation.Database)
+	legacy, err := os.Open(filepath.Join(parent, "memes"))
+	if err == nil {
+		defer legacy.Close()
+		_, err = legacy.Readdirnames(1)
+		if err == nil {
+			return "", ErrLegacyMediaRequiresMove
+		}
+		if err != io.EOF {
+			return "", err
+		}
+	} else if !os.IsNotExist(err) {
+		return "", err
+	}
+	return filepath.Join(parent, "media"), nil
+}
+
 // Open owns genuine installation enrollment, database and native application
 // lifetimes. No fixture schema, fake provider, synthetic authority or media fetch
 // implementation is selected here. The production command remains preview-only.
@@ -110,6 +136,10 @@ func Open(ctx context.Context, o Options) (_ *Application, err error) {
 			err = errors.Join(err, installationOwner.Close())
 		}
 	}()
+	memesDir, err := o.mediaDirectory()
+	if err != nil {
+		return nil, err
+	}
 	collator, err = topiccollation.New(o.Locale)
 	if err != nil {
 		return nil, err
@@ -140,10 +170,6 @@ func Open(ctx context.Context, o Options) (_ *Application, err error) {
 	runtimeAuthority, err := sourceevents.NewRuntimeAuthority(sources)
 	if err != nil {
 		return nil, err
-	}
-	memesDir := o.MemeDirectory
-	if memesDir == "" {
-		memesDir = filepath.Join(filepath.Dir(o.Installation.Database), "memes")
 	}
 	memes, err := memeservice.New(ctx, db, a, st, assertionauthority.Options{DateParser: dates, Compare: collator.Compare}, memesDir)
 	if err != nil {

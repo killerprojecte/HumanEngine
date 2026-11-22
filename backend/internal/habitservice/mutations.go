@@ -167,51 +167,52 @@ func (s *Service) Feedback(ctx context.Context, c Context, id string, input *Obj
 		return nil, e
 	}
 	err = s.Transaction(ctx, func(b *Service) error {
-		reason, e := b.validate(ctx, c, get(owned, "sources"))
-		if e != nil {
-			return e
-		}
-		if reason != "" {
-			out = rejected(reason)
-			return nil
-		}
-		r, e := b.get(ctx, id)
-		if e != nil {
-			return e
-		}
-		if r == nil || truthy(get(r, "sceneId")) && str(r, "sceneId") != c.SceneID {
-			out = rejected("not_available")
-			return nil
-		}
-		direction := number(owned, "direction")
-		if truthy(get(r, "locked")) || str(r, "status") == "invalidated" || !validDirection(get(owned, "direction")) {
-			out = rejected("locked_or_invalid_feedback")
-			return nil
-		}
-		if str(r, "kind") == "botExpression" {
-			p, e := b.prepare(ctx, c, obj("kind", "botExpression", "preference", get(r, "preference"), "direction", direction, "sources", get(owned, "sources")))
-			if e != nil {
-				return e
-			}
-			if p.reason != "" || p.scene != str(r, "sceneId") || p.context != str(r, "context") {
-				out = rejected("incompatible_evidence_scope")
-				return nil
-			}
-		}
-		if e = b.add(ctx, c, r, arr(get(owned, "sources")), direction); e != nil {
-			return e
-		}
-		if e = b.save(r); e != nil {
-			return e
-		}
-		out = saved(r)
-		return nil
+		var e error
+		out, e = b.feedback(ctx, c, id, get(owned, "direction"), get(owned, "sources"))
+		return e
 	})
 	if err != nil {
 		return nil, err
 	}
 	return
 }
+
+func (s *Service) feedback(ctx context.Context, c Context, id string, direction, sources any) (*Object, error) {
+	reason, e := s.validate(ctx, c, sources)
+	if e != nil {
+		return nil, e
+	}
+	if reason != "" {
+		return rejected(reason), nil
+	}
+	r, e := s.get(ctx, id)
+	if e != nil {
+		return nil, e
+	}
+	if r == nil || truthy(get(r, "sceneId")) && str(r, "sceneId") != c.SceneID {
+		return rejected("not_available"), nil
+	}
+	if truthy(get(r, "locked")) || str(r, "status") == "invalidated" || !validDirection(direction) {
+		return rejected("locked_or_invalid_feedback"), nil
+	}
+	if str(r, "kind") == "botExpression" {
+		p, e := s.prepare(ctx, c, obj("kind", "botExpression", "preference", get(r, "preference"), "direction", direction, "sources", sources))
+		if e != nil {
+			return nil, e
+		}
+		if p.reason != "" || p.scene != str(r, "sceneId") || p.context != str(r, "context") {
+			return rejected("incompatible_evidence_scope"), nil
+		}
+	}
+	if e = s.add(ctx, c, r, arr(sources), num(direction)); e != nil {
+		return nil, e
+	}
+	if e = s.save(r); e != nil {
+		return nil, e
+	}
+	return saved(r), nil
+}
+
 func (s *Service) Update(ctx context.Context, id string, patch *Object) (out *Object, err error) {
 	owned, e := clone(patch)
 	if e != nil {

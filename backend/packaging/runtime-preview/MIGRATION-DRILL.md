@@ -45,11 +45,14 @@ from other containers. Authenticated text probes must transmit exactly one
 matching synthetic bearer on initial TS, reopened Go, and rollback TS. Only
 the credentialConfigured marker is exposed by the model configuration read.
 
-The TS runtime synthesizes one persisted assertion over HTTP. The driver waits
-for each server's SIGTERM exit (and Go’s real drain receipt) before another
-writer or maintenance process. The TS backup script snapshots the stopped
-installation before Go changes a setting and deletes the assertion via its
-terminal admin API. TS then reopens the latest pair and must see both changes.
+The TS runtime persists two synthetic memories over HTTP. One remains present
+with its exact ID and Unicode code points (including supplementary Han, a ZWJ
+emoji, and both accent forms) on TS seed, Go open, TS rollback, and restored Go.
+The driver waits for each server's SIGTERM exit (and Go’s real drain receipt)
+before another writer or maintenance process. The TS backup script snapshots
+the stopped installation before Go changes a setting and deletes the other
+assertion via its terminal admin API. TS reopens the latest pair and must see
+both changes.
 That is the rollback check, not a restore. Separate cold restore clones the
 **current** authority at its original absolute in-container pathname, inspects
 the known prior/current states read-only, and runs the original restore script
@@ -75,11 +78,22 @@ is never used for this connector test. Plugin configuration and enablement are
 security-state changes; take a fresh backed-up data snapshot after those
 changes, even if the connector ends disabled again.
 
+The media case uses another disposable pair. Before backup, TypeScript receives
+two signed loopback SnowLuma events and imports a different synthetic PNG for
+each available source. The connector is disabled before backup and remains
+disabled. Go verifies both original hashes over the authenticated file API,
+deletes one asset, and drains. TypeScript reopens the latest pair, where the
+deleted original is unavailable and the independent original is byte-identical.
+The earlier backup must contain both original files with matching manifest
+hashes. A separate restore using a copy of the current authority must remove
+the deleted row and physical file, retain the other original unchanged, and
+leave model admission held when Go opens the restored data.
+
 Only exact source/image IDs and completed outcome names are emitted. Container
 logs, data, tokens and request/response bodies are not saved. The hosted package job runs this drill when a push to the existing
 `feat/refactor-golang` branch changes `migration_drill.py` or its test, or opts
 into [both proofs at the exact head](README.md#run-both-proofs-on-one-exact-candidate).
 It reuses the Go image after HTTP/package acceptance. PRs and manual runs do
 not build the TypeScript image for this drill. Passing proves only this Linux/amd64
-synthetic path, not arbitrary historical schemas, media restoration or rotated secrets,
+synthetic path, not arbitrary historical schemas, all media formats or rotated secrets,
 post-backup ledger replay for all event kinds, production rollout, or all APIs.

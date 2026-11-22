@@ -6,10 +6,12 @@ export default {
   setup(ctx) {
     try {
     let api, scene, source, disposed = 0, modelCalls = 0, sourceSerial = 1
-    const sent = [], modelIDs = [], sourceReceipts = []
+    const sent = [], modelIDs = [], sourceReceipts = [], habitReceipts = []
+    let habitFeedback, habitCalls=0, habitTool
     let memorySourceTarget, lastSourceAlias, memorySourceCalls = 0
-    const message = () => ({id:source,sceneId:scene.id,senderId:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
-    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts}))
+    const message = () => ({id:source,sceneId:scene.id,senderId:habitFeedback?'synthetic-feedback-'+sourceSerial:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
+    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts,habitCalls,habitTool,habitReceipts}))
+    ctx.registerAdminAction('habit-feedback', input => {habitFeedback=input;return {ok:true}})
     ctx.registerAdminAction('source-memory', input => {memorySourceTarget=input.id;return {ok:true}})
     ctx.registerAdminAction('new-source',()=>{source=api.messageId(scene,'source-'+(++sourceSerial));api.receive(message(),scene,false);return {ok:true}})
     ctx.registerAdminAction('edit',()=>api.edit({...message(),parts:[{type:'text',text:'Please reply to the edited synthetic request.'}]},scene,{editId:'synthetic-edit-2',order:{kind:'platform_sequence',sequence:2}}))
@@ -40,7 +42,7 @@ export default {
         for(const m of request.messages){if(m.role==='assistant'||m.role==='tool')break;if(m.role==='user')Object.assign(data,JSON.parse(m.content))}
         const response=toolCalls=>({text:'',toolCalls,usage:{inputTokens:0,outputTokens:0,totalTokens:0}})
         const call=(name,args)=>response([{id:'synthetic-call-'+modelCalls,name,arguments:args}])
-        if(names.includes('participation.decide'))return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[data.messages[0].id]})
+        if(names.includes('participation.decide'))return call('participation.decide',{action:'reply',reasonCode:'fixture',targetMessageIds:[(habitFeedback && data.messages.find(m=>m.senderId==='synthetic-feedback-'+sourceSerial)||data.messages[0]).id]})
         const receipts=request.messages.filter(m=>m.role==='tool').flatMap(m=>{try{const v=JSON.parse(m.content);return Array.isArray(v)?v:[v]}catch{return []}})
         if(memorySourceTarget && names.includes('reply.plan')){
           const receipt=receipts.find(v=>v.toolName==='memory.source')
@@ -66,8 +68,21 @@ export default {
         const identityReceipt=receipts.find(v=>v.toolName==='memory.identities'&&Array.isArray(v.value))
         if(ctx.config.memoryMode&&memoryReceipt&&!identityReceipt)return call('memory.identities',{personId:'synthetic-user'})
         if(ctx.config.memoryMode&&identityReceipt?.value.length===0)throw Error('synthetic_identity_page_missing')
-        if(names.includes('reply.plan'))return call('reply.plan',{action:'reply',deliveryTool:'messages.send',targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Answer the selected synthetic request.',constraints:[],facts:[],assets:[],emoji:[],stateEvidenceIds:identityReceipt?[identityReceipt.id]:[],memorySelections:memoryReceipt?[{evidenceId:memoryReceipt.id,memoryIds:memoryReceipt.value.map(m=>m.id)}]:[],expressionGoals:['Compose a concise fixture reply.'],actions:[]})
+        if(habitFeedback && names.includes('reply.plan')){
+          const name=habitFeedback.anchor?'fixture.habitAnchor':'rules.list'
+          const found=receipts.find(v=>v.toolName===name)
+          if(!found && names.includes(name))return call(name,{})
+          habitFeedback.alias=found?.value.learned?.[0]?.id??found?.value.habitId
+          habitFeedback.sourceAlias=found?.value.sourceMessageId
+        }
+        if(names.includes('reply.plan'))return call('reply.plan',{action:'reply',deliveryTool:'messages.send',targetMessageIds:data.planContract.targetMessageIds,contextMessageIds:data.planContract.contextMessageIds,strategy:'Answer the selected synthetic request.',constraints:[],facts:[],assets:[],emoji:[],stateEvidenceIds:identityReceipt?[identityReceipt.id]:[],memorySelections:memoryReceipt?[{evidenceId:memoryReceipt.id,memoryIds:memoryReceipt.value.map(m=>m.id)}]:[],expressionGoals:['Compose a concise fixture reply.'],actions:habitFeedback?(()=> {
+          habitCalls++
+          habitTool=data.actionTools.find(t=>t.name==='habits.feedback')
+          return [{toolName:'habits.feedback',arguments:{id:habitFeedback.alias,direction:habitFeedback.direction,sourceMessageIds:[habitFeedback.sourceAlias??data.planContract.targetMessageIds[0]]}}]
+        })():[]})
         if(names.includes('messages.send')){
+          if(!request.messages.some(m=>m.role==='tool')&&habitFeedback)
+            habitReceipts.push(...(data.actionReceipts??[]).filter(r=>r.toolName==='habits.feedback'))
           if(request.messages.some(m=>m.role==='tool'))return response([])
           return call('messages.send',{operationId:'synthetic-send',segments:[{replyToId:data.plan?.targetMessageIds?.[0]??data.planContract?.targetMessageIds?.[0]??source,parts:[{type:'text',text:'Synthetic native runtime reply.'}]}]})
         }

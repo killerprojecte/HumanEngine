@@ -1,6 +1,6 @@
 # Go migration remaining work and handoff
 
-Status reviewed at Go head `13e8510`. The frozen compatibility oracle remains
+Hosted evidence reviewed through Go commit `95d3d93`. The frozen compatibility oracle remains
 master `24fe8a773d87f2f09996e259fca46524c2c02928`, as recorded in
 `backend/compatibility/baseline.json`. Newer legacy references are intentional
 behavior changes, not replacements for that baseline. This is not a cutover claim.
@@ -51,19 +51,17 @@ remaining omissions and exact SHA.
 The [opt-in Docker/Compose recipe and acceptance driver](../../backend/packaging/runtime-preview/README.md)
 exercise the actual packaged application, not a health stub.
 
-- On exact `6eeeaabc576425b1890eebc7ab615df3e4f6ed5d`, the
-  [package job](https://github.com/killerprojecte/HumanEngine/actions/runs/45010193782/job/137170632028)
-  passed hosted same-origin Chromium, TS → Go → TS with old-backup restore, and
-  Compose stop and cold reopen. All three
-  [evidence records](https://github.com/killerprojecte/HumanEngine/actions/runs/45010193782/artifacts/14749758528)
+- On exact `95d3d93198f7904c6ee62151830561f16e2f0603`, the
+  [package job](https://github.com/killerprojecte/HumanEngine/actions/runs/45035339750/job/137247719491)
+  ran hosted same-origin Chromium, TS → Go → TS with synthetic database-stored
+  model and SnowLuma login credentials, old-backup restore with model traffic
+  held, and Compose stop and cold reopen without replaying a partial ACK.
+  All three passed
+  [evidence records](https://github.com/killerprojecte/HumanEngine/actions/runs/45035339750/artifacts/14760007326)
   name that commit and the same Go image ID,
-  `sha256:62fdc2a95c3a88db1c38cc396bdc167c0dcef37e6bdf45ace97e3f184e980ac7`.
-  The [separate native compatibility job](https://github.com/killerprojecte/HumanEngine/actions/runs/45010193789/job/137170632089)
-  also passed on that commit.
-- Later, exact `d632903b8078b5718cc010ec8e2c67c1a05b81e9` passed
-  [ordinary package acceptance](https://github.com/killerprojecte/HumanEngine/actions/runs/45014057176/job/137182442132)
-  and [native compatibility](https://github.com/killerprojecte/HumanEngine/actions/runs/45014057114/job/137182441838).
-  Its hosted Chromium, migration/restore, and Compose rehearsals were not run.
+  `sha256:6e4d5a3b94355afffab90350c20ff127b086d910387d772bdc60dcf4767f59db`.
+  The [native compatibility job](https://github.com/killerprojecte/HumanEngine/actions/runs/45035339712/job/137247719437)
+  passed the required ICU and bundled WASM race suite on the same commit.
 
 These are synthetic milestones, not release-candidate or registry acceptance.
 Rerun the required gates on the exact integrated release candidate; keep
@@ -236,6 +234,9 @@ connection. Policy changes between segments remain a separate case.
 - **Live graph:** see [the native application scope](../../backend/internal/app/SCOPE.md)
   for installed known-only SnowLuma intake, stored tag reuse, the group proactive
   timer, same-writer recall including habits and read-only Experience feedback.
+  The installed Planner can resolve a current-turn memory receipt to its
+  original message IDs through `memory.source`. This does not expose original
+  message text; `messages.get` remains the separate original-read path.
   The installed inline proof labels fresh authorized SnowLuma sticker pixels
   with scene learning off and a configured native vision route. It sends no source text or persona,
   passes a live original source through the model and write boundaries, and

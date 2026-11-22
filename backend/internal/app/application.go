@@ -179,6 +179,7 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	// Managed and native inline sources share the scene-bound runtime owner.
 	app.Engine.Runtime.Observe(app.observeRuntime)
 	app.composeRules(owners)
+	app.composeHabitFeedback(owners)
 	memory, err := app.composeMemory(ctx, owners, config.settings, collator)
 	if err != nil {
 		return app, err

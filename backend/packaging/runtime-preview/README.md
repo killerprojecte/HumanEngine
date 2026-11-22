@@ -51,6 +51,15 @@ is not embedded in the image. Set installation-specific locale/timezone via an
 explicit command override using the launcher flags in
 [the runtime-preview guide](../../docs/runtime-preview.md).
 
+Original sticker files now use the TypeScript-compatible `media/` directory
+next to the database. Older Go previews wrote to `memes/`. If startup reports
+`runtime_preview_legacy_media_requires_move`, stop the preview and back up its
+data and independent authority. If only `memes/` contains originals, move that
+directory to `media/` offline (the destination must be absent; if it is empty,
+remove only the empty directory first). If both contain originals, do not
+overwrite or combine them blindly: reconcile the files against the database and
+their content hashes before reopening. Startup never moves or removes originals.
+
 The Go executable is PID 1 and owns shutdown. Do not infer successful draining
 from a container being killed. For a deliberate graceful stop without a forced
 Compose stop deadline:

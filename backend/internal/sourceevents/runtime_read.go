@@ -232,38 +232,47 @@ func (r *runtimeReads) PromptAuthority(scene botruntime.Scene, tools []*jsjson.O
 	})
 	return result, err
 }
+func runtimePresentationScene(v *View, id string) (*jsjson.Object, error) {
+	value, _, err := valueRow(v, "SELECT value FROM scenes WHERE id=?", id)
+	scene, _ := value.(*jsjson.Object)
+	return scene, err
+}
+
 func presentRuntimeMessage(v *View, m *jsjson.Object) (*jsjson.Object, error) {
-	sceneValue, _, err := valueRow(v, "SELECT value FROM scenes WHERE id=?", str(m, "sceneId"))
-	if err != nil {
+	scene, err := runtimePresentationScene(v, str(m, "sceneId"))
+	if err != nil || scene == nil || !oneBotScene(scene) {
+		return scene, err
+	}
+	if err := presentRuntimeSender(v, m); err != nil {
 		return nil, err
 	}
-	scene, ok := sceneValue.(*jsjson.Object)
-	if !ok || !oneBotScene(scene) {
-		return scene, nil
-	}
+	return scene, nil
+}
+
+func presentRuntimeSender(v *View, m *jsjson.Object) error {
 	identity, exists, err := valueRow(v, "SELECT value FROM config WHERE key=?", "identity:"+str(m, "sceneId")+":"+str(m, "senderId"))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !exists {
 		identity = obj()
 	}
 	platform, platformPresent, err := coalescedIdentity(m, identity, "senderPlatformId")
 	if err != nil {
-		return nil, err
+		return err
 	}
 	name, namePresent, err := coalescedIdentity(m, identity, "senderDisplayName")
 	if err != nil {
-		return nil, err
+		return err
 	}
 	avatar, err := qqAvatar(platform)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	optionalProperty(m, "senderDisplayName", name, namePresent)
 	optionalProperty(m, "senderPlatformId", platform, platformPresent)
 	optionalProperty(m, "senderAvatarUrl", avatar, avatar != nil)
-	return scene, nil
+	return nil
 }
 func (r *runtimeReads) ProjectDisplay(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled []string) ([]*jsjson.Object, error) {
 	return r.projectDisplay(scene, messages, locallyRecalled, nil)
@@ -335,7 +344,7 @@ func (r *runtimeReads) projectDisplay(scene botruntime.Scene, messages []*jsjson
 
 // ProjectRemoteHistory checks recall in one authority snapshot, keeps only the
 // latest 30 eligible adapter rows, then copies and presents those rows.
-func (r *runtimeReads) ProjectRemoteHistory(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled map[string]bool, bot string, candidate func(*jsjson.Object) botruntime.DisplayImageLinks) ([]*jsjson.Object, map[*jsjson.Object]botruntime.DisplayImageLinks, error) {
+func (r *RuntimeAuthority) ProjectRemoteHistory(scene botruntime.Scene, messages []*jsjson.Object, locallyRecalled map[string]bool, bot string, candidate func(*jsjson.Object) botruntime.DisplayImageLinks) ([]*jsjson.Object, map[*jsjson.Object]botruntime.DisplayImageLinks, error) {
 	var links map[*jsjson.Object]botruntime.DisplayImageLinks
 	out := make([]*jsjson.Object, 0, min(len(messages), botruntime.BrowserHistoryWindow))
 	err := r.read(func(v *View) error {
@@ -354,17 +363,28 @@ func (r *runtimeReads) ProjectRemoteHistory(scene botruntime.Scene, messages []*
 			}
 		}
 		slices.Reverse(out)
-		for _, m := range out {
+		var presentSender, bindingMatches bool
+		for i, m := range out {
 			botruntime.NormalizeOwnedBotIdentity(m, bot)
-			persisted, err := presentRuntimeMessage(v, m)
-			if err != nil {
-				return err
+			// Every kept row belongs to scene.ID in this fixed publication.
+			if i == 0 {
+				persisted, err := runtimePresentationScene(v, scene.ID)
+				if err != nil {
+					return err
+				}
+				presentSender = persisted != nil && oneBotScene(persisted)
+				bindingMatches = candidate != nil && persisted != nil && sameRuntimeBinding(scene, sceneFromValue(persisted))
+			}
+			if presentSender {
+				if err := presentRuntimeSender(v, m); err != nil {
+					return err
+				}
 			}
 			if candidate == nil {
 				continue
 			}
 			proof := candidate(m)
-			if proof == (botruntime.DisplayImageLinks{}) || persisted == nil || !sameRuntimeBinding(scene, sceneFromValue(persisted)) {
+			if proof == (botruntime.DisplayImageLinks{}) || !bindingMatches {
 				continue
 			}
 			unversioned, err := v.notEnrolledBrowserImage(scene.ID, str(m, "id"))

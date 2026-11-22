@@ -88,10 +88,11 @@ func (s *schemas) parseCandidate(v *Object, name string, sourceOnly bool) (*Obje
 			_ = v.Set("confidence", .5)
 		}
 	}
-	if e := s.compiled[name].Validate(native(v)); e != nil {
+	projected := native(v)
+	if e := s.compiled[name].Validate(projected); e != nil {
 		return nil, e
 	}
-	if e := validateLengths(s.raw[name], native(v)); e != nil {
+	if e := validateLengths(s.raw[name], projected); e != nil {
 		return nil, e
 	}
 	if strings.HasPrefix(name, "candidate") {

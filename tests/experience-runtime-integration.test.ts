@@ -451,48 +451,68 @@ test('foreign targets and another person cannot withdraw a scoped exposed policy
   }
 })
 
-test('actual Planner outcome read permits only a candidate action on noReply and never sends or promotes it', async (t) => {
-  clock(t)
-  const h = fixture({ ...flags, memoryExperienceAutoActivateEnabled: false })
-  try {
-    const candidate = await seed(t, h),
-      before = h.stats().transportCalls,
-      beforeReplies = h.replies.length
-    let round = 0
-    await h.ask(t, (messages) => {
-      if (++round === 1) return completion([call('experience.outcomes')])
-      const result = receipt(messages)
-      assert.equal(result.coverage.status, 'complete')
-      assert.equal(result.value.length, 1)
-      return plan(messages, {
-        action: 'noReply',
-        actions: [
-          {
-            toolName: 'experience.propose',
-            arguments: proposal(result.value[0]!, result.value[0]!.source.senderId),
-          },
-        ],
+for (const status of ['candidate', 'active'] as const)
+  test(`actual Planner noReply proposal deduplicates an existing ${status} style policy without sends, new uses or a trial`, async (t) => {
+    clock(t)
+    const h = fixture({ ...flags, memoryExperienceAutoActivateEnabled: status === 'active' })
+    try {
+      const candidate = await seed(t, h),
+        before = h.stats().transportCalls,
+        beforeReplies = h.replies.length
+      assert.equal(candidate.status, status)
+      if (status === 'active') assert.equal(candidate.activationBasis, 'explicit_preference')
+      assert.equal(candidate.trial, undefined)
+      assert.equal(candidate.trialEligible, false)
+      let round = 0
+      let beforeAction: typeof candidate | undefined
+      await h.ask(t, (messages) => {
+        if (++round === 1) return completion([call('experience.outcomes')])
+        const result = receipt(messages)
+        assert.equal(result.coverage.status, 'complete')
+        assert.equal(result.value.length, 1)
+        // An applicable active hint was already exposed to this Planner, before
+        // the proposal action; that ordinary hint use is not a proposal effect.
+        beforeAction = h.rows()[0]!
+        return plan(messages, {
+          action: 'noReply',
+          actions: [
+            {
+              toolName: 'experience.propose',
+              arguments: proposal(result.value[0]!, result.value[0]!.source.senderId),
+            },
+          ],
+        })
       })
-    })
-    assert.equal(round, 2)
-    assert.equal(h.stats().transportCalls, before)
-    assert.equal(h.replies.length, beforeReplies)
-    assert.equal(h.rows()[0]?.version, candidate.version)
-    assert.equal(h.rows()[0]?.status, 'candidate')
-    assert.deepEqual(h.actionResults, [
-      {
-        status: 'candidate',
-        candidateId: candidate.id,
-        duplicate: true,
-        active: false,
-        validationTier: 'mechanical_only',
-      },
-    ])
-    assert.deepEqual(h.actionErrors, [])
-  } finally {
-    await h.close()
-  }
-})
+      assert.equal(round, 2)
+      assert.equal(h.stats().transportCalls, before)
+      assert.equal(h.replies.length, beforeReplies)
+      assert.equal(h.rows().length, 1)
+      const stored = h.rows()[0]!
+      assert.equal(stored.id, candidate.id)
+      assert.equal(stored.version, candidate.version)
+      assert.equal(stored.status, status)
+      assert.ok(beforeAction)
+      assert.deepEqual(beforeAction.uses, {
+        ...candidate.uses,
+        exposed: candidate.uses.exposed + (status === 'active' ? 1 : 0),
+      })
+      assert.deepEqual(stored.uses, beforeAction.uses)
+      assert.equal(stored.trial, undefined)
+      assert.equal(stored.trialEligible, false)
+      assert.deepEqual(h.actionResults, [
+        {
+          status: 'candidate',
+          candidateId: candidate.id,
+          duplicate: true,
+          active: status === 'active',
+          validationTier: 'mechanical_only',
+        },
+      ])
+      assert.deepEqual(h.actionErrors, [])
+    } finally {
+      await h.close()
+    }
+  })
 
 test('known or forged outcome refs without actual delivery and recalled delivered refs cannot authorize a proposal', async (t) => {
   clock(t)

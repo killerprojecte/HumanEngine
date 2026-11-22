@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,6 +21,13 @@ import (
 )
 
 func TestInstalledExperiencePolicyTools(t *testing.T) {
+	for _, status := range []string{"candidate", "active"} {
+		t.Run(status, func(t *testing.T) { testInstalledExperiencePolicyTools(t, status) })
+	}
+}
+
+func testInstalledExperiencePolicyTools(t *testing.T, status string) {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 	options := applicationOptions(t)
@@ -35,6 +43,9 @@ func TestInstalledExperiencePolicyTools(t *testing.T) {
 	}
 	defer release()
 
+	const scene = "experience-tool-fixture"
+	scope := experienceservice.Context{SceneID: scene}
+	beforeProposal := make(chan experienceservice.AdminPolicy, 1)
 	type call struct{ name, code string }
 	calls := make(chan call, 16)
 	var offer atomic.Bool
@@ -136,6 +147,16 @@ func TestInstalledExperiencePolicyTools(t *testing.T) {
 					name = "fixture__experienceRef"
 				}
 			} else if mode := proposalMode.Load(); mode != 0 && len(outcomes) == 1 {
+				if mode == 1 {
+					// The same-user active hint, when selected, was already
+					// exposed before this model continuation and is not a proposal use.
+					view, err := app.Experience.AdminList(r.Context(), scope, experienceservice.ListOptions{})
+					if err != nil || len(view.Items) != 1 {
+						http.Error(w, "expected the pre-proposal policy", 500)
+						return
+					}
+					beforeProposal <- view.Items[0]
+				}
 				out := outcomes[0]
 				arguments := map[string]any{
 					"action":      "conclusion_before_detail",
@@ -172,7 +193,8 @@ func TestInstalledExperiencePolicyTools(t *testing.T) {
 	putSettings := func(enabled bool) {
 		t.Helper()
 		_ = settings.Set("memoryExperienceEnabled", enabled)
-		_ = settings.Set("memoryExperienceAutoActivateEnabled", false)
+		_ = settings.Set("memoryExperienceAutoActivateEnabled", status == "active")
+		_ = settings.Set("memoryExperienceHintsEnabled", status == "active")
 		raw, err := jsjson.Marshal(settings)
 		if err != nil {
 			t.Fatal(err)
@@ -180,7 +202,6 @@ func TestInstalledExperiencePolicyTools(t *testing.T) {
 		appRequest(t, app, "PUT", "/api/settings", json.RawMessage(raw))
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	const scene = "experience-tool-fixture"
 	setScene := func(personal, read bool) {
 		appRequest(t, app, "PUT", "/api/scenes/"+scene, map[string]any{
 			"id": scene, "adapterId": "synthetic", "accountId": "bot", "platformSceneId": scene,
@@ -188,11 +209,13 @@ func TestInstalledExperiencePolicyTools(t *testing.T) {
 			"proactiveEnabled": false, "personalizationEnabled": personal, "memoryReadEnabled": read,
 		})
 	}
-	ingest := func(id, senderID, text string) string {
-		topic, err := app.Engine.Runtime.Ingest(root, scene, memoryToolObject(
-			"id", id, "sceneId", scene, "senderId", senderID, "origin", "live", "status", "available",
-			"sentAt", now, "receivedAt", now, "parts", []any{memoryToolObject("type", "text", "text", text)},
-		), false)
+	ingest := func(id, senderID, text, reply string) string {
+		message := memoryToolObject("id", id, "sceneId", scene, "senderId", senderID, "origin", "live", "status", "available",
+			"sentAt", now, "receivedAt", now, "parts", []any{memoryToolObject("type", "text", "text", text)})
+		if reply != "" {
+			_ = message.Set("replyToId", reply)
+		}
+		topic, err := app.Engine.Runtime.Ingest(root, scene, message, false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -200,19 +223,24 @@ func TestInstalledExperiencePolicyTools(t *testing.T) {
 	}
 	putSettings(true)
 	setScene(true, true)
-	ingest("intro", "bot", "Synthetic introduction.")
-	ingest("instruction", "person", "Keep the conclusion first.")
-	feedback, err := app.Experience.RecordFeedback(root, experienceservice.Context{SceneID: scene}, experienceservice.Feedback{
-		Source: experienceservice.Source{MessageID: "instruction", SenderID: "person"},
-		Target: experienceservice.Target{MessageID: "intro"},
-		Code:   "request_conclusion_first", ObservedAt: now,
-	})
-	if err != nil || feedback == nil {
-		t.Fatalf("persist actual explicit-feedback observation: %v %v", feedback, err)
+	ingest("intro", "bot", "Synthetic introduction.", "")
+	ingest("instruction", "person", "请先说结论", "intro")
+	outcomes, err := app.Experience.ListOutcomes(root, scope, 20)
+	if err != nil || len(outcomes) != 1 || outcomes[0].Source.MessageID != "instruction" {
+		t.Fatalf("actual received feedback did not produce its outcome: %+v, %v", outcomes, err)
 	}
-	outcomeAnchor.Store(memoryToolObject("id", feedback.Outcome.ID, "version", float64(feedback.Outcome.Version),
-		"source", memoryToolObject("senderId", feedback.Outcome.Source.SenderID)))
-	topic := ingest("current", "person", "Please explain the fixture.")
+	outcome := outcomes[0]
+	outcomeAnchor.Store(memoryToolObject("id", outcome.ID, "version", float64(outcome.Version),
+		"source", memoryToolObject("senderId", outcome.Source.SenderID)))
+	initial, err := app.Experience.AdminList(root, scope, experienceservice.ListOptions{})
+	if err != nil || len(initial.Items) != 1 || initial.Items[0].Status != status ||
+		initial.Items[0].Trial != nil || initial.Items[0].TrialEligible ||
+		status == "active" && initial.Items[0].ActivationBasis != "explicit_preference" {
+		t.Fatalf("feedback did not produce the expected policy without a trial: %+v, %v", initial.Items, err)
+	}
+	before := initial.Items[0]
+
+	topic := ingest("current", "person", "Please explain the fixture.", "")
 	run := func(wantError string, want ...call) botruntime.TurnResult {
 		t.Helper()
 		handle, err := app.Engine.Runtime.Run(scene, topic, false)
@@ -247,27 +275,43 @@ func TestInstalledExperiencePolicyTools(t *testing.T) {
 		}
 		return result
 	}
-	putSettings(false)
-	run("", call{"advertised", "false/false"})
-	putSettings(true)
+	if status == "candidate" {
+		putSettings(false)
+		run("", call{"advertised", "false/false"})
+		putSettings(true)
+	}
 	offer.Store(true)
 	proposalMode.Store(1)
 	result := run("", call{"advertised", "true/true"}, call{"result", "visible"})
 	if result.Err != nil || result.Reason != "planner_no_reply" || len(result.Receipts) != 0 {
 		t.Fatalf("exact delivered-outcome proposal did not finish through noReply: %+v", result)
 	}
+	var actionWitness experienceservice.AdminPolicy
+	select {
+	case actionWitness = <-beforeProposal:
+	default:
+		t.Fatal("missing pre-proposal policy witness")
+	}
+	expectedUses := maps.Clone(before.Uses)
+	if status == "active" {
+		expectedUses["exposed"]++
+	}
+	if actionWitness.ID != before.ID || actionWitness.Version != before.Version || actionWitness.Status != before.Status ||
+		actionWitness.Trial != nil || actionWitness.TrialEligible || !maps.Equal(actionWitness.Uses, expectedUses) {
+		t.Fatalf("before proposal: only actual Planner hint exposure may change uses; got %+v, want %v", actionWitness.Uses, expectedUses)
+	}
+	stored, err := app.Experience.AdminList(root, scope, experienceservice.ListOptions{})
+	if err != nil || len(stored.Items) != 1 || stored.Items[0].ID != actionWitness.ID ||
+		stored.Items[0].Version != actionWitness.Version || stored.Items[0].Status != actionWitness.Status ||
+		stored.Items[0].Trial != nil || stored.Items[0].TrialEligible ||
+		!maps.Equal(stored.Items[0].Uses, actionWitness.Uses) || sends.Load() != 0 {
+		t.Fatalf("proposal must leave the same policy, usage and absent trial with zero sends: %+v (sends=%d), %v", stored.Items, sends.Load(), err)
+	}
 	proposalMode.Store(2)
 	run("experience_proposal_invalid", call{"advertised", "true/true"}, call{"result", "visible"})
 	proposalMode.Store(3)
 	run("experience_outcome_not_exposed", call{"advertised", "true/true"}, call{"result", "empty"})
-	if feedback.Candidate == nil || feedback.Candidate.Status != "candidate" {
-		t.Fatalf("expected an inactive seeded candidate: %+v", feedback.Candidate)
-	}
-	stored, err := app.Experience.List(root, experienceservice.Context{SceneID: scene}, experienceservice.ListOptions{})
-	if err != nil || len(stored.Items) != 1 || stored.Items[0].ID != feedback.Candidate.ID ||
-		stored.Items[0].Version != feedback.Candidate.Version || stored.Items[0].Status != "candidate" || sends.Load() != 0 {
-		t.Fatalf("proposal must leave exactly the unchanged inactive candidate and send nothing: %+v (sends=%d), %v", stored.Items, sends.Load(), err)
-	}
+
 	setScene(false, true)
 	run("personalization_disabled", call{"advertised", "true/true"}, call{"result", "empty"})
 	setScene(true, false)

@@ -193,8 +193,12 @@ seals the runtime, to verify it is classified before the ledger is cleared.
 The [packaged Compose proof at `0f9c4f9`](https://github.com/killerprojecte/HumanEngine/actions/runs/44996315426/job/137127994651)
 exercised the same wire assertions through real Compose stop and cold reopen
 on the same disposable volumes. This is synthetic delivery evidence, not
-live platform or release acceptance. Recall/policy changes between segments
-remain unproven.
+live platform or release acceptance. The installed SnowLuma test also holds
+the first ACK while the quoted source is recalled, observes the durable
+tombstone and exactly one unknown receipt, and then releases the late ACK.
+Only peer history reflects the first physical action; no later segment or
+stale local receipt is produced, and a fresh turn succeeds on the same
+connection. Policy changes between segments remain a separate case.
 
 ## P2: coverage closure and integration
 

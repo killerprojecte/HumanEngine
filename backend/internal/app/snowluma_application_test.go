@@ -49,7 +49,8 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	var writes sync.Mutex
 	var sentCount atomic.Int64
 	sentCount.Store(10)
-	var dropAckAt atomic.Int64
+	var dropAckAt, holdAckAt atomic.Int64
+	releasedHistory := make(chan map[string]any, 1)
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer synthetic" {
 			http.Error(w, "synthetic credential missing", 401)
@@ -84,10 +85,23 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 					// EOF after the action was read from the wire, without its echo/ACK.
 					return
 				}
+				if holdAckAt.CompareAndSwap(id, 0) {
+					// The test releases this echo only after the real recall settles.
+					continue
+				}
 				data = map[string]any{"message_id": id}
 			case "get_image", "get_msg":
 				unexpectedMedia <- action
 			case "get_group_msg_history", "get_friend_msg_history":
+				var released map[string]any
+				select {
+				case released = <-releasedHistory:
+				default:
+				}
+				if released != nil {
+					data = map[string]any{"messages": []any{released}}
+					break
+				}
 				data = map[string]any{"messages": []any{}}
 				if browserHistory {
 					browserHistory = false
@@ -482,7 +496,7 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 		appRequest(t, application, http.MethodPut, "/api/plugins/snow-model/config", map[string]any{"media": false, "targetText": marker, "partial": partial})
 		ingress(id, marker)
 	}
-	assertNextWireReply := func(want, text string) {
+	assertNextWireReply := func(want, text string) map[string]any {
 		t.Helper()
 		select {
 		case request := <-sent:
@@ -496,8 +510,10 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 				body["type"] != "text" || body["data"].(map[string]any)["text"] != text {
 				t.Fatalf("expected quote %s with exact draft segment %q, got %v", want, text, request)
 			}
+			return request
 		case <-ctx.Done():
 			t.Fatal("missing wire reply", ctx.Err())
+			return nil
 		}
 	}
 	assertReceiptSet := func(snapshot botruntime.Snapshot, fresh bool) {
@@ -578,6 +594,112 @@ func TestInstalledSnowLumaOwnersAndDispatch(t *testing.T) {
 	assertReceiptSet(waitIdle("15"), true)
 	if sentCount.Load() != 15 {
 		t.Fatal("unexpected number of sends after reconnect", sentCount.Load())
+	}
+
+	// The recalled source is the exact target quoted by all three segments.
+	// Keep the physical first action unacknowledged until cancellation settles.
+	select {
+	case event := <-partialTurn:
+		if event.Status != "completed" || event.Counts["sentSegments"] != 1 {
+			t.Fatalf("unexpected prior reconnect turn: %+v", event)
+		}
+	default:
+		t.Fatal("missing fresh reconnect terminal receipt")
+	}
+	holdAckAt.Store(16)
+	targetedIngress(6, true)
+	partialText := "Synthetic Snow partial segment 1."
+	request := assertNextWireReply("6", partialText)
+	snapshot, err := application.Engine.Runtime.Snapshot(sceneID)
+	if err != nil || snapshot.Active != 1 {
+		t.Fatalf("first wire action was not held in an active turn: %v %v", snapshot.Active, err)
+	}
+	peerWrite := func(event map[string]any) {
+		t.Helper()
+		raw, err := json.Marshal(event)
+		if err != nil {
+			t.Fatal(err)
+		}
+		writes.Lock()
+		err = socket.Write(ctx, websocket.MessageText, raw)
+		writes.Unlock()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	peerWrite(map[string]any{"post_type": "notice", "notice_type": "group_recall", "self_id": 42,
+		"group_id": 99, "message_id": 6, "user_id": 7, "operator_id": 7, "time": time.Now().Unix()})
+	select {
+	case terminal := <-partialTurn:
+		if terminal.Status != "partial" || terminal.Reason != "delivery_unknown" ||
+			terminal.Counts["unknownSegments"] != 1 || terminal.Counts["sentSegments"] != 0 ||
+			terminal.Counts["failedSegments"] != 0 || terminal.Counts["cancelledSegments"] != 0 {
+			t.Fatalf("held wire action was not classified as uncertain: %+v", terminal)
+		}
+	case <-ctx.Done():
+		t.Fatal("recall did not finish the active held turn", ctx.Err())
+	}
+	recalledID := snow.MessageID(sceneID, "6")
+	recallSeen := false
+	snapshot = waitIdle("")
+	for _, row := range snapshot.Messages {
+		if field(row, "id") == recalledID {
+			recallSeen = field(row, "status") == "recalled"
+		}
+	}
+	if !recallSeen {
+		t.Fatal("quoted source recall was not visible before releasing its ACK")
+	}
+	root, release, e = application.Engine.RootContext(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	var durableRecall bool
+	e = application.Engine.Sources.WithRuntimeReads(root, func(reads botruntime.ReadAuthority) error {
+		var err error
+		durableRecall, err = reads.IsRecalled(snapshot.Scene, recalledID)
+		return err
+	})
+	release()
+	if e != nil || !durableRecall {
+		t.Fatalf("source authority did not commit recall before late ACK: recalled=%t err=%v", durableRecall, e)
+	}
+
+	first := snow.MessageID(sceneID, "16")
+	wireParts := request["params"].(map[string]any)["message"]
+	peerWrite(map[string]any{"echo": request["echo"], "status": "ok", "retcode": 0,
+		"data": map[string]any{"message_id": 16}})
+	releasedHistory <- map[string]any{"message_type": "group", "group_id": 99, "user_id": 42, "message_id": 16,
+		"time": time.Now().Unix(), "message": wireParts}
+	if err := socket.Ping(ctx); err != nil {
+		t.Fatal("late ACK barrier", err)
+	}
+	historyPath := "/api/scenes/" + url.PathEscape(sceneID) + "/history"
+	findReceipt := func(source string, target string) *jsjson.Object {
+		t.Helper()
+		history := appRequest(t, application, http.MethodGet, historyPath+"?source="+source, nil)
+		for _, row := range field(history, "items").([]any) {
+			if field(row, "id") == target {
+				return row.(*jsjson.Object)
+			}
+		}
+		return nil
+	}
+	if findReceipt("local", first) != nil {
+		t.Fatal("late ACK became a local successful receipt for the cancelled operation")
+	}
+	if row := findReceipt("remote", first); row == nil || field(row, "senderId") != "bot" ||
+		field(field(row, "parts").([]any)[0], "text") != partialText {
+		t.Fatalf("peer did not independently report the physical first action: %v", row)
+	}
+	if sentCount.Load() != 16 {
+		t.Fatalf("recalled draft sent a second or third segment: %d", sentCount.Load())
+	}
+	targetedIngress(7, false)
+	assertNextWireReply("7", "Synthetic Snow reply.")
+	waitIdle("17")
+	if findReceipt("local", snow.MessageID(sceneID, "17")) == nil || sentCount.Load() != 17 {
+		t.Fatalf("fresh successor did not complete once: sends=%d", sentCount.Load())
 	}
 
 	snowAdmin("/api/plugins/snowluma/enabled", map[string]any{"enabled": false})

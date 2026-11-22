@@ -233,7 +233,8 @@ connection. Policy changes between segments remain a separate case.
   browser coverage for every package commit or arbitrary plugins.
 - **Live graph:** see [the native application scope](../../backend/internal/app/SCOPE.md)
   for installed known-only SnowLuma intake, stored tag reuse, the group proactive
-  timer, same-writer recall including habits and read-only Experience feedback.
+  timer, same-writer recall including habits, and installed Experience outcomes
+  and candidate-only Planner proposals.
   The installed Planner can resolve a current-turn memory receipt to its
   original message IDs through `memory.source`. This does not expose original
   message text; `messages.get` remains the separate original-read path.
@@ -241,8 +242,8 @@ connection. Policy changes between segments remain a separate case.
   with scene learning off and a configured native vision route. It sends no source text or persona,
   passes a live original source through the model and write boundaries, and
   never includes or shares the resulting sticker automatically. URL/history
-  and locator analysis, broader history/cache integration, workspace/semantic
-  exposure, Experience writes/trials and remaining startup/settings effects
+  and locator analysis, broader history/cache integration, workspace exposure,
+  Experience trial activation and remaining startup/settings effects
   are separate gaps. Controlled third-party platform acceptance is
   distinct from loopback protocol fixtures; do not send unrequested traffic.
 

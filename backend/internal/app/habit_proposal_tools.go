@@ -32,14 +32,8 @@ func (a *Application) habitProposal(ctx context.Context, o Owners, input any, c 
 	}
 	// State reads cannot authorize new free-form habits. This is the source
 	// ordering; ordinary message context does not require a model-read ticket.
-	if a.SemanticExposure.CaptureGuard(c) != nil {
-		return reject("semantic_read_not_learning_authority")
-	}
-	if a.IdentityExposure.CaptureGuard(c) != nil {
-		return reject("identity_read_not_learning_authority")
-	}
-	if a.KnowledgeExposure.CaptureGuard(c) != nil {
-		return reject("knowledge_state_not_freeform_learning_authority")
+	if reason := a.freeFormLearningRejection(c); reason != "" {
+		return reject(reason)
 	}
 	data, _ := input.(*jsjson.Object)
 	candidate, err := a.Learning.Runner.ParseHabitProposal(data)
@@ -61,4 +55,19 @@ func (a *Application) habitProposal(ctx context.Context, o Owners, input any, c 
 		return nil, err
 	}
 	return o.Habits.ProposeFromSnapshots(ctx, c.Scene.ID, candidate, ids, messages, captured, o.Sources, o.Dates)
+}
+
+// The source rejects these three already-delivered state domains, in this
+// order, for habits.propose and experience.propose (not queued typed learning).
+func (a *Application) freeFormLearningRejection(c *botruntime.TurnContext) string {
+	if a.SemanticExposure.CaptureGuard(c) != nil {
+		return "semantic_read_not_learning_authority"
+	}
+	if a.IdentityExposure.CaptureGuard(c) != nil {
+		return "identity_read_not_learning_authority"
+	}
+	if a.KnowledgeExposure.CaptureGuard(c) != nil {
+		return "knowledge_state_not_freeform_learning_authority"
+	}
+	return ""
 }

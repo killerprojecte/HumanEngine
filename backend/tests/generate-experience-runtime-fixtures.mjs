@@ -51,3 +51,14 @@ const proposals=[]
 for(const [name,id,person]of [['ascii512','a'.repeat(512),'alice'],['ascii513','a'.repeat(513),'alice'],['astral512','😀'.repeat(512),'alice'],['astral513','😀'.repeat(513),'alice'],['lone512','\ud800'.repeat(512),'alice'],['lone513','\ud800'.repeat(513),'alice'],['person-astral512','o','😀'.repeat(512)],['person-astral513','o','😀'.repeat(513)]]){const input={action:'exact_person_before_semantic',condition:{kind:'person_question',personId:person},outcomeRefs:[{id,version:1}]};proposals.push({name,input,accepted:ExperienceProposalSchema.safeParse(input).success})}
 const hashes=Object.fromEntries(['src/runtime.ts','src/memory/experience/runtime-hints.ts','node_modules/zod/v4/core/checks.js','node_modules/zod/v4/core/util.js','node_modules/zod/package.json'].map(p=>[p,createHash('sha256').update(readFileSync(join(root,p))).digest('hex')]))
 const output=new URL('../internal/experienceservice/testdata/runtime-source.json',import.meta.url);const text=JSON.stringify({node:process.version,hashes,cases,planners,tools,previews,proposals,retentionSequences},null,2)+'\n';if(process.argv.includes('--check'))assert.equal(readFileSync(output,'utf8'),text);else writeFileSync(output,text);console.log(`Verified ${cases.length} exposure, ${planners.length} planner, ${tools.length} use, ${previews.length} exact preview, ${proposals.length} proposal boundary source cases`)
+
+const proposalTool={
+ name:'experience.propose',
+ description:'Organize one actually exposed explicit feedback instruction into a fixed experimental policy candidate. This cannot activate a strategy, create feedback, change permissions or send.',
+ inputSchema:ExperienceProposalSchema.toJSONSchema(),
+ effect:'learningCandidate',
+}
+const schemaOutput=new URL('../internal/app/testdata/experience-proposal-tool-source.json',import.meta.url)
+const schemaText=JSON.stringify(proposalTool,null,2)+'\n'
+if(process.argv.includes('--check'))assert.equal(readFileSync(schemaOutput,'utf8'),schemaText)
+else writeFileSync(schemaOutput,schemaText)

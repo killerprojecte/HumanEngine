@@ -14,11 +14,12 @@ import (
 	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
+	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/experienceservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
-func TestInstalledExperienceOutcomesTool(t *testing.T) {
+func TestInstalledExperiencePolicyTools(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
 	options := applicationOptions(t)
@@ -37,6 +38,22 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 	type call struct{ name, code string }
 	calls := make(chan call, 16)
 	var offer atomic.Bool
+	var proposalMode atomic.Int32
+	var sends atomic.Int32
+	var outcomeAnchor atomic.Pointer[jsjson.Object]
+	app.Engine.Runtime.AddExtension(&botruntime.Extension{
+		Tools: []*jsjson.Object{memoryToolObject("name", "fixture.experienceRef", "description", "A synthetic known reference, not an Experience outcome receipt.",
+			"inputSchema", memoryToolObject("type", "object", "properties", memoryToolObject(), "additionalProperties", false), "effect", "read")},
+		Execute: func(_ context.Context, _ string, _ any, _ *botruntime.TurnContext, done func(any, error)) {
+			done([]any{outcomeAnchor.Load()}, nil)
+		},
+	})
+	app.Engine.Runtime.AddAdapter("synthetic", &botruntime.Adapter{Transport: &dispatch.Adapter{
+		Send: func(dispatch.SceneRef, dispatch.Segment, *dispatch.Signal, func() error) *dispatch.Future[dispatch.Receipt] {
+			sends.Add(1)
+			return dispatch.Rejected[dispatch.Receipt](fmt.Errorf("unexpected Experience transport"))
+		},
+	}})
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req struct {
 			Messages []struct{ Role, Content string }
@@ -50,6 +67,15 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 		var name string
 		args := "{}"
 		advertised := false
+		var contract struct {
+			ActionTools  []struct{ Name, Effect string }
+			PlanContract struct{ TargetMessageIDs, ContextMessageIDs []string }
+		}
+		var outcomes []struct {
+			ID      string
+			Version int64
+			Source  struct{ SenderID string }
+		}
 		for _, f := range req.Tools {
 			if f.Function.Name == "experience__propose" {
 				calls <- call{"unexpected write tool", ""}
@@ -81,11 +107,50 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 					continuePlan = true
 				}
 			}
+			for _, m := range req.Messages {
+				if m.Role == "user" {
+					_ = json.Unmarshal([]byte(m.Content), &contract)
+				}
+				if m.Role != "tool" {
+					continue
+				}
+				var receipt struct {
+					ToolName string
+					Value    json.RawMessage
+				}
+				if json.Unmarshal([]byte(m.Content), &receipt) == nil &&
+					(receipt.ToolName == "experience.outcomes" || receipt.ToolName == "fixture.experienceRef") {
+					_ = json.Unmarshal(receipt.Value, &outcomes)
+				}
+			}
 			if !continuePlan {
-				calls <- call{"advertised", fmt.Sprint(advertised)}
+				writeAdvertised := false
+				for _, tool := range contract.ActionTools {
+					writeAdvertised = writeAdvertised || tool.Name == "experience.propose" && tool.Effect == "learningCandidate"
+				}
+				calls <- call{"advertised", fmt.Sprintf("%t/%t", advertised, writeAdvertised)}
 			}
 			if advertised && offer.Load() && !continuePlan {
 				name = "experience__outcomes"
+				if proposalMode.Load() == 3 {
+					name = "fixture__experienceRef"
+				}
+			} else if mode := proposalMode.Load(); mode != 0 && len(outcomes) == 1 {
+				out := outcomes[0]
+				arguments := map[string]any{
+					"action":      "conclusion_before_detail",
+					"condition":   map[string]any{"kind": "response_style", "personId": out.Source.SenderID},
+					"outcomeRefs": []map[string]any{{"id": out.ID, "version": out.Version}},
+				}
+				if mode == 2 {
+					arguments["extra"] = true
+				}
+				encoded, _ := json.Marshal(map[string]any{
+					"action": "noReply", "targetMessageIds": contract.PlanContract.TargetMessageIDs, "contextMessageIds": contract.PlanContract.ContextMessageIDs,
+					"strategy": "Record only the scoped synthetic policy candidate.", "constraints": []any{}, "facts": []any{}, "assets": []any{}, "emoji": []any{}, "expressionGoals": []any{},
+					"actions": []map[string]any{{"toolName": "experience.propose", "arguments": arguments}},
+				})
+				args = string(encoded)
 			} else {
 				// No final reply/send is needed to qualify the delivered read.
 				w.Header().Set("Content-Type", "application/json")
@@ -107,6 +172,7 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 	putSettings := func(enabled bool) {
 		t.Helper()
 		_ = settings.Set("memoryExperienceEnabled", enabled)
+		_ = settings.Set("memoryExperienceAutoActivateEnabled", false)
 		raw, err := jsjson.Marshal(settings)
 		if err != nil {
 			t.Fatal(err)
@@ -115,11 +181,11 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
 	const scene = "experience-tool-fixture"
-	setScene := func(personal bool) {
+	setScene := func(personal, read bool) {
 		appRequest(t, app, "PUT", "/api/scenes/"+scene, map[string]any{
 			"id": scene, "adapterId": "synthetic", "accountId": "bot", "platformSceneId": scene,
 			"kind": "group", "name": "Fixture", "participationEnabled": true, "learningEnabled": true,
-			"proactiveEnabled": false, "personalizationEnabled": personal,
+			"proactiveEnabled": false, "personalizationEnabled": personal, "memoryReadEnabled": read,
 		})
 	}
 	ingest := func(id, senderID, text string) string {
@@ -133,7 +199,7 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 		return topic
 	}
 	putSettings(true)
-	setScene(true)
+	setScene(true, true)
 	ingest("intro", "bot", "Synthetic introduction.")
 	ingest("instruction", "person", "Keep the conclusion first.")
 	feedback, err := app.Experience.RecordFeedback(root, experienceservice.Context{SceneID: scene}, experienceservice.Feedback{
@@ -144,8 +210,10 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 	if err != nil || feedback == nil {
 		t.Fatalf("persist actual explicit-feedback observation: %v %v", feedback, err)
 	}
+	outcomeAnchor.Store(memoryToolObject("id", feedback.Outcome.ID, "version", float64(feedback.Outcome.Version),
+		"source", memoryToolObject("senderId", feedback.Outcome.Source.SenderID)))
 	topic := ingest("current", "person", "Please explain the fixture.")
-	run := func(wantError string, want ...call) {
+	run := func(wantError string, want ...call) botruntime.TurnResult {
 		t.Helper()
 		handle, err := app.Engine.Runtime.Run(scene, topic, false)
 		if err != nil {
@@ -156,8 +224,8 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 		case <-ctx.Done():
 			t.Fatal(ctx.Err())
 		}
+		result := handle.Wait()
 		if wantError != "" {
-			result := handle.Wait()
 			if result.Err == nil || !strings.Contains(result.Err.Error(), wantError) {
 				t.Fatalf("wanted %s, got %+v", wantError, result)
 			}
@@ -177,37 +245,57 @@ func TestInstalledExperienceOutcomesTool(t *testing.T) {
 			t.Fatalf("unexpected provider call %+v", got)
 		default:
 		}
+		return result
 	}
 	putSettings(false)
-	run("", call{"advertised", "false"})
+	run("", call{"advertised", "false/false"})
 	putSettings(true)
 	offer.Store(true)
-	run("", call{"advertised", "true"}, call{"result", "visible"})
-	setScene(false)
-	run("personalization_disabled", call{"advertised", "true"})
-	setScene(true)
+	proposalMode.Store(1)
+	result := run("", call{"advertised", "true/true"}, call{"result", "visible"})
+	if result.Err != nil || result.Reason != "planner_no_reply" || len(result.Receipts) != 0 {
+		t.Fatalf("exact delivered-outcome proposal did not finish through noReply: %+v", result)
+	}
+	proposalMode.Store(2)
+	run("experience_proposal_invalid", call{"advertised", "true/true"}, call{"result", "visible"})
+	proposalMode.Store(3)
+	run("experience_outcome_not_exposed", call{"advertised", "true/true"}, call{"result", "empty"})
+	if feedback.Candidate == nil || feedback.Candidate.Status != "candidate" {
+		t.Fatalf("expected an inactive seeded candidate: %+v", feedback.Candidate)
+	}
+	stored, err := app.Experience.List(root, experienceservice.Context{SceneID: scene}, experienceservice.ListOptions{})
+	if err != nil || len(stored.Items) != 1 || stored.Items[0].ID != feedback.Candidate.ID ||
+		stored.Items[0].Version != feedback.Candidate.Version || stored.Items[0].Status != "candidate" || sends.Load() != 0 {
+		t.Fatalf("proposal must leave exactly the unchanged inactive candidate and send nothing: %+v (sends=%d), %v", stored.Items, sends.Load(), err)
+	}
+	setScene(false, true)
+	run("personalization_disabled", call{"advertised", "true/true"}, call{"result", "empty"})
+	setScene(true, false)
+	run("memory_read_disabled", call{"advertised", "true/true"}, call{"result", "empty"})
+	proposalMode.Store(0)
+	setScene(true, true)
 	if err := app.Engine.Runtime.Recall(root, scene, "instruction"); err != nil {
 		t.Fatal(err)
 	}
-	run("", call{"advertised", "true"}, call{"result", "empty"})
+	run("", call{"advertised", "true/true"}, call{"result", "empty"})
 }
 
-func TestExperienceOutcomesDispatchOwnerSurvivesFeatureToggle(t *testing.T) {
+func TestExperienceWriteDropsWhileOutcomesOwnerSurvivesFeatureToggle(t *testing.T) {
 	settings := new(settingsSnapshot)
 	a := new(Application)
-	ext := a.experienceOutcomesExtension(settings)
+	ext := a.experienceToolsExtension(settings)
 	off := new(botruntime.TurnContext)
 	if got := ext.ToolsForTurn(off); len(got) != 0 {
 		t.Fatal("disabled feature advertised Experience outcomes")
 	}
 	settings.publish(map[string]any{"memoryExperienceEnabled": true})
 	on := new(botruntime.TurnContext)
-	if got := ext.ToolsForTurn(on); len(got) != 1 || field(got[0], "name") != "experience.outcomes" {
-		t.Fatal("enabled feature did not advertise its read")
+	if got := ext.ToolsForTurn(on); len(got) != 2 || field(got[0], "name") != "experience.outcomes" || field(got[1], "name") != "experience.propose" {
+		t.Fatal("enabled feature did not advertise both tools")
 	}
 	settings.publish(map[string]any{"memoryExperienceEnabled": false})
-	if got := ext.ToolsForTurn(on); len(got) != 1 {
-		t.Fatal("prepared results would bypass delivery after toggle")
+	if got := ext.ToolsForTurn(on); len(got) != 1 || field(got[0], "name") != "experience.outcomes" {
+		t.Fatal("toggle must withdraw the write but retain the read delivery owner")
 	}
 	if got := ext.ToolsForTurn(new(botruntime.TurnContext)); len(got) != 0 {
 		t.Fatal("disabled feature still advertised to a new turn")

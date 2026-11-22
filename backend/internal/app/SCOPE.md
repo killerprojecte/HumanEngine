@@ -54,7 +54,10 @@ This is not a claim of complete TypeScript Engine compatibility.
   retained source recall, same-writer invalidation and physical callback drain.
   The experimental read-only `experience.outcomes` tool exposes persisted outcomes
   for the current scene when enabled. Model-read and personalization gates apply,
-  and recalled sources no longer contribute outcomes.
+  and recalled sources no longer contribute outcomes. The separately advertised
+  `experience.propose` action can submit an inactive policy candidate using
+  an exact outcome exposed in the current turn. Its live fixture confirms an
+  existing candidate stays unchanged and no message is sent on a no-reply plan.
 - The source default `learningEnabled=false` scene update is a normal successful
   HTTP path. Experience pause precedes runtime scene registration; semantic
   configuration precedes ordinary-learning, semantic, contextual and media-task
@@ -78,13 +81,11 @@ This is not a claim of complete TypeScript Engine compatibility.
 - The writable launcher and packaged Compose profile are opt-in previews, not
   production cutover. A redistributable native image and production release
   acceptance remain open.
-- Remaining source model tools, complete prompt/manual-rule composition and all
-  exposure domains are not all wired. Workspace and semantic exposure guards
-  are not implied by the composed memory, identity, commitment and historical
-  guards. Contextual `learning.propose` is available in this bounded graph.
-  Experience proposal writes and starting trials are not provided by
-  `experience.outcomes`. The installed recall and proactive paths do not establish
-  parity for all Engine startup hooks.
+- Remaining source model tools, complete prompt/manual-rule composition and
+  workspace exposure are not all wired. Contextual `learning.propose` uses its
+  own bounded graph. The Planner proposal action does not activate an Experience
+  candidate or start a trial. The installed recall and proactive paths do not
+  establish parity for all Engine startup hooks.
 - Four real built-in WASM artifacts are built and required by the native test
   profile, but this graph's V1 integration does not prove all four built-ins have
   their complete product capabilities installed. Native OneBot and full SnowLuma

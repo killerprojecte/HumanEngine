@@ -1,0 +1,105 @@
+{
+  "name": "experience.propose",
+  "description": "Organize one actually exposed explicit feedback instruction into a fixed experimental policy candidate. This cannot activate a strategy, create feedback, change permissions or send.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": [
+          "exact_person_before_semantic",
+          "verify_plan_qualifiers",
+          "conclusion_before_detail"
+        ]
+      },
+      "condition": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "person_question"
+              },
+              "personId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "kind",
+              "personId"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "plan_question"
+              }
+            },
+            "required": [
+              "kind"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "response_style"
+              },
+              "personId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": [
+              "kind",
+              "personId"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "outcomeRefs": {
+        "minItems": 1,
+        "maxItems": 1,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            "version": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "id",
+            "version"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "action",
+      "condition",
+      "outcomeRefs"
+    ],
+    "additionalProperties": false
+  },
+  "effect": "learningCandidate"
+}

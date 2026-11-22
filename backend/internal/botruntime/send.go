@@ -462,9 +462,11 @@ func (r *Runtime) send(t *turn, ctx context.Context, input any, retained ...bool
 					}
 				}
 				if receipt.Status == dispatch.Sent {
-					id := newID()
+					var id string
 					if receipt.MessageID != nil {
 						id = *receipt.MessageID
+					} else {
+						id = newID()
 					}
 					exists := s.byID[id] != nil
 					if !exists {

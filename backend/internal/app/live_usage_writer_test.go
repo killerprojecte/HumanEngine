@@ -1,7 +1,9 @@
 package app
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,7 +18,16 @@ import (
 )
 
 func TestApplicationLiveModelUsageActualSource(t *testing.T) {
-	raw, err := os.ReadFile("testdata/live-usage-source.json")
+	testApplicationLiveModelUsageActualSource(t, false, "testdata/live-usage-source.json")
+}
+
+func TestApplicationLiveSSEModelUsageActualSource(t *testing.T) {
+	testApplicationLiveModelUsageActualSource(t, true, "testdata/live-usage-sse-source.json")
+}
+
+func testApplicationLiveModelUsageActualSource(t *testing.T, stream bool, fixture string) {
+	t.Helper()
+	raw, err := os.ReadFile(fixture)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,17 +50,42 @@ func TestApplicationLiveModelUsageActualSource(t *testing.T) {
 	local := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
-		var body struct{ Model string }
+		var body struct {
+			Model         string
+			Stream        bool
+			StreamOptions struct {
+				IncludeUsage bool `json:"include_usage"`
+			} `json:"stream_options"`
+		}
 		if r.URL.Path != "/v1/chat/completions" || json.NewDecoder(r.Body).Decode(&body) != nil ||
-			next >= len(source.Calls) || body.Model != source.Calls[next].ModelID {
+			next >= len(source.Calls) || body.Model != source.Calls[next].ModelID ||
+			stream && (!body.Stream || !body.StreamOptions.IncludeUsage) {
 			t.Errorf("unexpected synthetic provider call %s %q at %d", r.URL.Path, body.Model, next)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+		usage := source.Calls[next].Raw
+		next++
+		if stream {
+			w.Header().Set("Content-Type", "text/event-stream")
+			fmt.Fprint(w, "data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ok\"}}]}\n\n")
+			fmt.Fprint(w, "data: {\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\n")
+			// Some successful streams never report usage. A supported provider
+			// otherwise sends its usage after the finish chunk with no choices.
+			if string(usage) != "null" {
+				compact, err := json.Marshal(usage)
+				if err != nil {
+					t.Errorf("invalid usage fixture: %v", err)
+					return
+				}
+				fmt.Fprintf(w, "data: {\"choices\":[],\"usage\":%s}\n\n", compact)
+			}
+			fmt.Fprint(w, "data: [DONE]\n\n")
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"ok"},"finish_reason":"stop"}],"usage":` +
-			string(source.Calls[next].Raw) + "}"))
-		next++
+			string(usage) + "}"))
 	}))
 	defer local.Close()
 
@@ -60,8 +96,12 @@ func TestApplicationLiveModelUsageActualSource(t *testing.T) {
 		"models":    []any{},
 		"routes":    []any{},
 	}
-	for _, call := range []int{0, 2} {
-		c := source.Calls[call]
+	wantCalls := map[string]int{}
+	for _, c := range source.Calls {
+		wantCalls[c.Role]++
+		if wantCalls[c.Role] != 1 {
+			continue
+		}
 		models["models"] = append(models["models"].([]any), map[string]any{
 			"id": c.ModelID, "providerId": source.ProviderID, "displayName": c.ModelID, "apiModelName": c.ModelID,
 			"capabilities": []string{"text"}, "inputUsdPerMillion": 2, "outputUsdPerMillion": 4, "cacheReadUsdPerMillion": 1,
@@ -76,6 +116,9 @@ func TestApplicationLiveModelUsageActualSource(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		if reply.Text != "ok" {
+			t.Errorf("fixture completion %q", reply.Text)
+		}
 		reply.Release()
 	}
 	if err := app.models.CloseAndWait(ctx); err != nil {
@@ -84,13 +127,49 @@ func TestApplicationLiveModelUsageActualSource(t *testing.T) {
 	mu.Lock()
 	received := next
 	mu.Unlock()
-	if received != 3 {
+	if received != len(source.Calls) {
 		t.Fatalf("provider saw %d calls", received)
 	}
-	for role, want := range map[string]int{"planner": 2, "replyer": 1} {
+	for role, want := range wantCalls {
 		var observed int
 		if err := db.QueryRowContext(ctx, "SELECT count(*) FROM model_calls WHERE role=? AND status='completed'", role).Scan(&observed); err != nil || observed != want {
 			t.Fatalf("after physical drain model_calls %s=%d, want %d: %v", role, observed, want, err)
+		}
+	}
+	if stream {
+		rows, err := db.QueryContext(ctx, `SELECT role, status, transport_mode, first_token_kind,
+			input_tokens, output_tokens, cache_read_tokens FROM model_calls ORDER BY id`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer rows.Close()
+		for _, c := range source.Calls {
+			var reported *struct {
+				Input  *int64 `json:"prompt_tokens"`
+				Output *int64 `json:"completion_tokens"`
+				Read   *int64 `json:"prompt_cache_hit_tokens"`
+			}
+			if err := json.Unmarshal(c.Raw, &reported); err != nil || !rows.Next() {
+				t.Fatalf("missing durable attempt for %s %s: %v %v", c.Role, c.Raw, err, rows.Err())
+			}
+			var role, status, mode, kind string
+			var tokens, want [3]sql.NullInt64
+			if err := rows.Scan(&role, &status, &mode, &kind, &tokens[0], &tokens[1], &tokens[2]); err != nil {
+				t.Fatal(err)
+			}
+			if reported != nil {
+				for i, counter := range []*int64{reported.Input, reported.Output, reported.Read} {
+					if counter != nil {
+						want[i] = sql.NullInt64{Int64: *counter, Valid: true}
+					}
+				}
+			}
+			if role != c.Role || status != "completed" || mode != "stream" || kind != "text" || tokens != want {
+				t.Fatalf("durable attempt %s/%s/%s/%s has counters %v; want %s completed/stream/text with %v", role, status, mode, kind, tokens, c.Role, want)
+			}
+		}
+		if rows.Next() || rows.Err() != nil {
+			t.Fatalf("unexpected durable attempt after clean EOF: %v", rows.Err())
 		}
 	}
 	for _, view := range source.Views {
@@ -109,7 +188,7 @@ func TestApplicationLiveModelUsageActualSource(t *testing.T) {
 				delete(row, "durationMs")
 			}
 			if !reflect.DeepEqual(rows, view.Body) {
-				t.Errorf("live usage missing or not equivalent after three observed real attempts: got %s; want %+v", encoded, view.Body)
+				t.Errorf("live usage missing or not equivalent after drained observed attempts: got %s; want %+v", encoded, view.Body)
 			}
 		})
 	}

@@ -24,20 +24,22 @@ var (
 // JS insertion order, property presence, or Number conversion semantics.
 // Cycles are errors; repeated noncyclic references are allowed.
 func Stringify(value any) (string, error) {
-	b, err := Marshal(value)
-	return string(b), err
-}
-
-// Marshal encodes the same data as Stringify and returns an owned byte slice.
-func Marshal(value any) ([]byte, error) {
 	if IsUndefined(value) {
-		return nil, ErrUndefinedRoot
+		return "", ErrUndefinedRoot
 	}
 	e := encoder{active: make(map[reference]bool)}
 	if err := e.value(value); err != nil {
+		return "", err
+	}
+	return string(e.out), nil
+}
+
+func Marshal(value any) ([]byte, error) {
+	s, err := Stringify(value)
+	if err != nil {
 		return nil, err
 	}
-	return e.out, nil
+	return []byte(s), nil
 }
 
 type reference struct {

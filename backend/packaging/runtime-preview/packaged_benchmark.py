@@ -14,7 +14,9 @@ from migration_drill import AUTHORITY, DATABASE, SNOW_ACTION_PORT, SNOW_EVENT_PO
 
 HERE = Path(__file__).resolve().parent
 ORDER = ("ts", "go", "go", "ts")
-LIMITS = ("--no-healthcheck", "--cpus", "2", "--memory", "1536m")
+MEMORY_MIB = 1536
+CPU_COUNTERS = {"cpu_usage_usec": "usage_usec", "cpu_throttled_usec": "throttled_usec",
+                "cpu_nr_periods": "nr_periods", "cpu_nr_throttled": "nr_throttled"}
 VERIFY_PAIR = r"""
 import Database from 'better-sqlite3'
 import { metadata, RecoveryAuthority, sameHead } from './src/memory/recovery/ledger.ts'
@@ -32,20 +34,36 @@ def owner_cgroup(name):
     ident, pid = docker("inspect", "--format", "{{.Id}} {{.State.Pid}}", name).split()
     require(re.fullmatch(r"[0-9a-f]{64}", ident) and pid.isdecimal() and int(pid) > 0,
             "benchmark owner process unavailable")
-    lines = Path(f"/proc/{pid}/cgroup").read_text().splitlines()
+    proc = Path("/proc") / pid
+    lines = (proc / "cgroup").read_text().splitlines()
     matches = [line.removeprefix("0::") for line in lines if line.startswith("0::/")]
     require(len(matches) == 1 and ident in Path(matches[0]).name, "benchmark requires a local cgroup v2 owner")
     relative = Path(matches[0].lstrip("/"))
     require(".." not in relative.parts, "invalid owner cgroup")
     path = Path("/sys/fs/cgroup") / relative
     require((path / "cgroup.procs").is_file(), "benchmark owner cgroup missing")
-    return path
+    affinity = next((line.split(":", 1)[1].strip() for line in (proc / "status").read_text().splitlines()
+                     if line.startswith("Cpus_allowed_list:")), "")
+    require(re.fullmatch(r"\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*", affinity), "benchmark owner affinity missing")
+    return path, affinity
+
+
+def go_parallelism(logs):
+    ready = []
+    for line in logs.splitlines():
+        _, found, record = line.partition(" | ")
+        if found and '"code":"server.listening"' in record:
+            event = json.loads(record)
+            if event["code"] == "server.listening":
+                ready.append(event["gomaxprocs"])
+    require(len(ready) == 1 and type(ready[0]) is int and ready[0] > 0,
+            "expected one Go startup scheduler receipt")
+    return ready[0]
 
 
 def counters(root):
     cpu = dict(line.split() for line in (root / "cpu.stat").read_text().splitlines())
-    return {"cpu_usage_usec": int(cpu["usage_usec"]),
-            "cpu_throttled_usec": int(cpu["throttled_usec"]),
+    return {**{key: int(cpu[field]) for key, field in CPU_COUNTERS.items()},
             "memory_current_bytes": int((root / "memory.current").read_text()),
             "memory_peak_boot_inclusive_bytes": int((root / "memory.peak").read_text())}
 
@@ -58,6 +76,7 @@ class Paired(Drill):
         self.active_volume = self.seed
         self.created = []
         self.peer_started = False
+        self.limits = ("--no-healthcheck", "--cpus", str(args.cpus), "--memory", f"{MEMORY_MIB}m")
 
     def mount(self, target, child=""):
         suffix = f",volume-subpath={child}" if child else ""
@@ -103,7 +122,7 @@ class Paired(Drill):
         self.tool("sh", "-ec",
                   "mkdir /drill/live /drill/authority; chown 1000:1000 /drill/live /drill/authority",
                   setup=True)
-        self.start("ts", network="container:" + self.peer, runtime_args=LIMITS)
+        self.start("ts", network="container:" + self.peer, runtime_args=self.limits)
         settings = self.api("GET", "/api/settings")
         settings.update(timezone="UTC", sourceEventRevisionsEnabled=True, debugModelIO=False)
         self.api("PUT", "/api/settings", settings)
@@ -134,14 +153,17 @@ class Paired(Drill):
     def window(self, engine, timestamp, index):
         label = f"{engine}-{index}"
         self.phase = f"start-{label}"
-        self.start(engine, network="container:" + self.peer, runtime_args=LIMITS)
+        self.start(engine, network="container:" + self.peer, runtime_args=self.limits)
         self.phase = f"qualify-history-{label}"
         self.require_history("before", timestamp)
         self.phase = f"cgroup-before-{label}"
-        cage = owner_cgroup(self.name)
+        cage, affinity = owner_cgroup(self.name)
         quota, period = [int(value) for value in (cage / "cpu.max").read_text().split()]
-        require(quota == 2 * period and int((cage / "memory.max").read_text()) == 1536 * 1024**2,
+        require(quota == self.args.cpus * period and int((cage / "memory.max").read_text()) == MEMORY_MIB * 1024**2,
                 "unexpected cgroup CPU or memory limit")
+        cpu = {"cpu_max_usec": {"quota": quota, "period": period}, "leader_cpu_affinity": affinity}
+        if engine == "go":
+            cpu["gomaxprocs_at_ready"] = go_parallelism(docker("logs", self.name))
         before = counters(cage)
         self.phase = f"measure-{label}"
         receipt = json.loads(docker("exec", self.peer, "python3", "/benchmark.py", "--single", engine,
@@ -150,8 +172,8 @@ class Paired(Drill):
                                     "--timeout", str(self.args.timeout), timeout=240))
         self.phase = f"cgroup-after-{label}"
         after = counters(cage)
-        require(after["cpu_usage_usec"] >= before["cpu_usage_usec"] and
-                after["cpu_throttled_usec"] >= before["cpu_throttled_usec"], "owner counters regressed")
+        deltas = {key: after[key] - before[key] for key in CPU_COUNTERS}
+        require(all(delta >= 0 for delta in deltas.values()), "owner counters regressed")
         self.phase = f"drain-{label}"
         self.stop()
         self.phase = f"compare-receipt-{label}"
@@ -163,8 +185,7 @@ class Paired(Drill):
         return digest, receipt["configuration"], {
             **windows[0], "owner_cgroup": {
                 "scope": "includes preflight and warmup; Docker inspect and cgroup reads outside latency window",
-                "cpu_usage_usec": after["cpu_usage_usec"] - before["cpu_usage_usec"],
-                "cpu_throttled_usec": after["cpu_throttled_usec"] - before["cpu_throttled_usec"],
+                **cpu, **deltas,
                 "memory_current_after_bytes": after["memory_current_bytes"],
                 "memory_peak_boot_inclusive_bytes": after["memory_peak_boot_inclusive_bytes"],
             },
@@ -179,7 +200,7 @@ class Paired(Drill):
         self.report["runner"] = {"architecture": platform.machine(), "kernel": platform.release(),
                                  "logical_cpus": os.cpu_count(), "image_os": os.getenv("ImageOS"),
                                  "image_version": os.getenv("ImageVersion"),
-                                 "limits": {"cpus": 2, "memory_mib": 1536, "healthcheck": False}}
+                                 "limits": {"cpus": self.args.cpus, "memory_mib": MEMORY_MIB, "healthcheck": False}}
         require(Path("/sys/fs/cgroup/cgroup.controllers").is_file(), "benchmark requires host cgroup v2")
         timestamp = int(time.time())
         self.phase = "start-loopback-peer"
@@ -231,6 +252,8 @@ def main():
     for name, low, high, default in (("window", 1, 120, 20), ("warmup", 1, 30, 2),
                                      ("rate", 2, 30, 6), ("timeout", 1, 10, 3)):
         parser.add_argument("--" + name, type=bounded(low, high), default=default)
+    parser.add_argument("--cpus", type=int, choices=(1, 2, 4), default=2,
+                        help="identical Docker CPU bandwidth quota for both engines")
     args = parser.parse_args()
     if not re.fullmatch(r"[0-9a-f]{40}", args.go_revision):
         parser.error("--go-revision must be a full SHA")

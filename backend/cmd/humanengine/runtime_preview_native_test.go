@@ -53,12 +53,13 @@ func runtimeAddress(t *testing.T, logs *commandLog, done <-chan error) string {
 			continue
 		}
 		var event struct {
-			Code    string `json:"code"`
-			Address string `json:"address"`
+			Code       string `json:"code"`
+			Address    string `json:"address"`
+			GoMaxProcs int    `json:"gomaxprocs"`
 		}
 		if json.Unmarshal([]byte(flat), &event) == nil && event.Code == "server.listening" {
-			if prefix == "" || event.Address == "" {
-				t.Fatal("source listening event lacks prefix/flat address", line)
+			if prefix == "" || event.Address == "" || event.GoMaxProcs < 1 {
+				t.Fatal("source listening event lacks prefix, address, or effective Go parallelism", line)
 			}
 			return event.Address
 		}

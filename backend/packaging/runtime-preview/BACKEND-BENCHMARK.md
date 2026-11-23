@@ -69,9 +69,19 @@ volume is mounted read-only during copies. Setup, cold start, connector
 readiness, projection checks outside individual samples and cleanup are not
 latency samples.
 
-Both owners use two CPU quotas, 1536 MiB memory and no Docker healthcheck.
-Owner cgroup CPU deltas cover the whole driver invocation (including preflight
-and warmup); the memory high-water includes bootstrap. They are not window-only
-RSS, allocation or lock counters. The two GETs, row parity, cgroup and timing
+Both owners use the same CPU bandwidth quota (default: two; set
+`--cpus 1`, `--cpus 2` or `--cpus 4`), a 1536 MiB memory limit and no Docker
+healthcheck. Compare separate four-leg trials on the same runner, with enough
+effective CPU capacity for the quotas being compared. The evidence records
+`cpu.max`, the owner process leader's actual CPU affinity, and, for Go only,
+the effective `GOMAXPROCS` reported at startup. A one-CPU quota does not
+necessarily yield `GOMAXPROCS=1`; the baseline does not override it.
+
+Owner cgroup CPU deltas (including total and throttled periods and
+throttled microseconds) cover the driver invocation including preflight and
+warmup. Throttling is resource context, not proof of the cause of request
+latency. `memory.peak` includes boot, page cache, and owners in the same
+cgroup; it is not process RSS and excludes the separate fixture peer. These
+are not allocation or lock counters. The two GETs, row parity, cgroup and timing
 evidence do not qualify the broader mixed-load, recovery or cutover gates.
 This runner is explicit opt-in; the package workflow does not call it.

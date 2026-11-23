@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/app"
 	"github.com/killerprojecte/HumanEngine/backend/internal/installation"
@@ -95,7 +96,7 @@ func runRuntimePreview(ctx context.Context, database, address string, config run
 	server := &http.Server{Handler: handler}
 	done := make(chan error, 1)
 	go func() { done <- server.Serve(listener) }()
-	_ = logs.Emit(observability.Event{Level: "info", Module: "server", Code: "server.listening", Message: "Go writable runtime preview ready; migration is incomplete", Fields: map[string]any{"address": listener.Addr().String()}})
+	_ = logs.Emit(observability.Event{Level: "info", Module: "server", Code: "server.listening", Message: "Go writable runtime preview ready; migration is incomplete", Fields: map[string]any{"address": listener.Addr().String(), "gomaxprocs": runtime.GOMAXPROCS(0)}})
 	var serveErr error
 	select {
 	case <-ctx.Done():

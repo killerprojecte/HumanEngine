@@ -75,14 +75,14 @@ func assertSlowVisionSceneIsolation(t *testing.T, parent context.Context, app *A
 	ingress := func(group, id int, part map[string]any) {
 		emit(map[string]any{"self_id": 42, "post_type": "message", "message_type": "group", "group_id": group, "user_id": 7, "message_id": id, "time": time.Now().Unix(), "message": []any{part}})
 	}
-	await := func(scene, message string) botruntime.Snapshot {
+	await := func(scene, message string, requireTopic bool) botruntime.Snapshot {
 		t.Helper()
 		tick := time.NewTicker(5 * time.Millisecond)
 		defer tick.Stop()
 		for {
 			if s, err := app.Engine.Runtime.Snapshot(scene); err == nil {
 				for _, row := range s.Messages {
-					if field(row, "id") == message {
+					if field(row, "id") == message && (!requireTopic || len(s.Topics) != 0) {
 						return s
 					}
 				}
@@ -90,14 +90,15 @@ func assertSlowVisionSceneIsolation(t *testing.T, parent context.Context, app *A
 			select {
 			case <-tick.C:
 			case <-ctx.Done():
-				t.Fatalf("retained message absent: %s", message)
+				t.Fatalf("retained message not ready: %s (require topic: %t)", message, requireTopic)
 			}
 		}
 	}
 	begin := func(group, id string) (*botruntime.TurnHandle, string, string) {
 		t.Helper()
 		scene := snow.SceneID("snowluma", "42", "group", group)
-		snapshot := await(scene, snow.MessageID(scene, id))
+		// Ingress retains the message before it creates the runnable topic.
+		snapshot := await(scene, snow.MessageID(scene, id), true)
 		if len(snapshot.Topics) != 1 {
 			t.Fatalf("expected one fixture topic: %+v", snapshot.Topics)
 		}
@@ -133,7 +134,7 @@ func assertSlowVisionSceneIsolation(t *testing.T, parent context.Context, app *A
 	// The same scene may accept a new source while its topic turn is busy.
 	ingress(143, 2, map[string]any{"type": "text", "data": map[string]any{"text": "Second same-scene source"}})
 	second := snow.MessageID(sceneA, "2")
-	snapshot := await(sceneA, second)
+	snapshot := await(sceneA, second, false)
 	for _, row := range snapshot.Messages {
 		if field(row, "id") == second && field(row, "sourceEventRef") == nil {
 			t.Fatal("second source did not retain its source-event reference")
@@ -157,7 +158,7 @@ func assertSlowVisionSceneIsolation(t *testing.T, parent context.Context, app *A
 	case <-ctx.Done():
 		t.Fatal("independent text turn blocked behind foreign VLM")
 	}
-	await(sceneB, snow.MessageID(sceneB, "1499"))
+	await(sceneB, snow.MessageID(sceneB, "1499"), false)
 	select {
 	case <-a.Done:
 		t.Fatal("held A unexpectedly ended before release")

@@ -206,22 +206,75 @@ func (w *blockedWriter) Write(b []byte) (int, error) {
 func TestCancellationAndCloseDrainPublication(t *testing.T) {
 	s, _, _ := fixture(t)
 	w := &blockedWriter{make(http.Header), make(chan struct{}), make(chan struct{})}
+	releaseWriter := sync.OnceFunc(func() { close(w.release) })
+	defer releaseWriter()
 	r := httptest.NewRequest("GET", "/api/settings", nil)
 	r.Header.Set("Authorization", "Bearer test")
 	done := make(chan struct{})
 	go func() { s.ServeHTTP(w, r); close(done) }()
-	<-w.entered
+	const deadline = 5 * time.Second
+	select {
+	case <-w.entered:
+	case <-time.After(deadline):
+		t.Fatal("first response did not reach emission")
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := s.SetSettings(ctx, settings(t)); !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancel: %v", err)
 	}
-	entered, finished := make(chan struct{}), make(chan struct{})
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { close(entered); s.ServeHTTP(w, r); close(finished) }))
+	waitState := func(ready func() bool, failure string) {
+		t.Helper()
+		timer := time.NewTimer(deadline)
+		defer timer.Stop()
+		tick := time.NewTicker(time.Millisecond)
+		defer tick.Stop()
+		for {
+			s.mu.Lock()
+			ok := ready()
+			s.mu.Unlock()
+			if ok {
+				return
+			}
+			select {
+			case <-tick.C:
+			case <-timer.C:
+				t.Fatal(failure)
+			}
+		}
+	}
+	finished := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer close(finished)
+		s.ServeHTTP(w, r)
+	}))
 	defer server.Close()
+	// Hold authority before the real HTTP request can publish response headers.
+	s.main.SetMaxOpenConns(2)
+	held, releaseAuthority := make(chan struct{}), make(chan struct{})
+	unblockAuthority := sync.OnceFunc(func() { close(releaseAuthority) })
+	defer unblockAuthority()
+	publicationDone := make(chan error, 1)
+	go func() {
+		publicationDone <- s.authority.Publish(context.Background(), s.main, func(*sql.Conn) ([]byte, error) {
+			close(held)
+			<-releaseAuthority
+			return nil, nil
+		}, func([]byte) error { return nil })
+	}()
+	select {
+	case <-held:
+	case err := <-publicationDone:
+		t.Fatalf("authority did not reach hold: %v", err)
+	case <-time.After(deadline):
+		t.Fatal("authority did not reach hold")
+	}
 	requestCtx, cancelRequest := context.WithCancel(context.Background())
 	defer cancelRequest()
-	request, _ := http.NewRequestWithContext(requestCtx, "GET", server.URL+"/api/settings", nil)
+	request, err := http.NewRequestWithContext(requestCtx, "GET", server.URL+"/api/settings", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	request.Header.Set("Authorization", "Bearer test")
 	requestDone := make(chan error, 1)
 	go func() {
@@ -231,31 +284,50 @@ func TestCancellationAndCloseDrainPublication(t *testing.T) {
 		}
 		requestDone <- err
 	}()
-	<-entered
+	waitState(func() bool { return s.active == 2 && s.main.Stats().InUse == 2 }, "HTTP request did not wait for held authority")
 	cancelRequest()
-	if err := <-requestDone; !errors.Is(err, context.Canceled) {
-		t.Fatalf("HTTP cancel: %v", err)
+	select {
+	case err := <-requestDone:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("HTTP cancel: %v", err)
+		}
+	case <-time.After(deadline):
+		t.Fatal("HTTP client did not observe cancellation")
 	}
 	select {
 	case <-finished:
-	case <-time.After(5 * time.Second):
-		t.Fatal("cancelled HTTP waiter did not release")
+	case <-time.After(deadline):
+		t.Fatal("cancelled HTTP waiter did not release held authority wait")
+	}
+	unblockAuthority()
+	select {
+	case err := <-publicationDone:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(deadline):
+		t.Fatal("authority publication did not drain")
 	}
 	closing := make(chan error, 1)
 	go func() { closing <- s.Close() }()
+	waitState(func() bool { return s.closed }, "Close did not stop admission")
 	select {
 	case err := <-closing:
 		t.Fatalf("closed during emission: %v", err)
 	case <-time.After(20 * time.Millisecond):
 	}
-	close(w.release)
-	<-done
+	releaseWriter()
+	select {
+	case <-done:
+	case <-time.After(deadline):
+		t.Fatal("first response did not finish after release")
+	}
 	select {
 	case err := <-closing:
 		if err != nil {
 			t.Fatal(err)
 		}
-	case <-time.After(5 * time.Second):
+	case <-time.After(deadline):
 		t.Fatal("close deadlocked")
 	}
 }

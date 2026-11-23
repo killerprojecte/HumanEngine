@@ -36,9 +36,6 @@ func (a *Application) bindSnowLuma(ctx context.Context, owners Owners) error {
 	hasSecret := func(ctx context.Context, name string) (bool, error) {
 		return owners.Credentials.Has(ctx, "plugin:snowluma", name)
 	}
-	if err = a.Plugins.WithBuiltinPolicy("snowluma", snow.TransientPolicy(a.WASM, "snowluma-policy", artifact, hasSecret)); err != nil {
-		return err
-	}
 	registry := snow.NewRegistry(a.Engine.Runtime)
 	ingress := snow.EngineIngress{Engine: a.Engine, Identity: identity, Compare: owners.Compare}
 	log := func(level, code string) {
@@ -49,7 +46,7 @@ func (a *Application) bindSnowLuma(ctx context.Context, owners Owners) error {
 	if lookup == nil {
 		lookup = os.LookupEnv
 	}
-	if err = a.Plugins.WithBuiltinRuntime("snowluma", snow.Factory(ports, lookup)); err != nil {
+	if err = a.registerBuiltin("snowluma", snow.Factory(ports, lookup), snow.TransientPolicy(a.WASM, "snowluma-policy", artifact, hasSecret)); err != nil {
 		return err
 	}
 	a.snowRegistry = registry

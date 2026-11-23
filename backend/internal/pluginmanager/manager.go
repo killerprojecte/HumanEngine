@@ -26,6 +26,9 @@ type item struct {
 	hostGeneration     uint64
 	builtin            bool
 	manifest           *jsjson.Object
+	artifact           func() ([]byte, error)
+	factory            BuiltinRuntimeFactory
+	policy             BuiltinPolicy
 	path               string
 	enabled, desired   bool
 	revision           uint64
@@ -39,8 +42,6 @@ type item struct {
 	failure, requestID string
 }
 type Manager struct {
-	builtinPolicies    map[string]BuiltinPolicy
-	builtinFactories   map[string]BuiltinRuntimeFactory
 	removeHostObserver func()
 	credentials        *credentials.Store
 	wasm               *plugins.WASMHost
@@ -206,7 +207,7 @@ func (m *Manager) inspect(ctx context.Context, id string, i *item, operation str
 		return plugins.Inspection{}, err
 	}
 	if i.builtin {
-		return m.inspectBuiltin(ctx, i, operation, incoming, previous, requestID)
+		return inspectBuiltinPolicy(ctx, i, i.policy, operation, incoming, previous, requestID)
 	}
 	request := plugins.InspectionRequest{Operation: operation, ID: id, Path: i.path, Config: raw, Previous: old}
 	m.mu.Lock()

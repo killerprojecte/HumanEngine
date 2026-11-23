@@ -26,9 +26,12 @@ for name in ids:
     for path in (root / "core").glob("*.go"):
         assert "/plugins/metadata" not in path.read_text(), f"aggregate dependency creates cycle: {path}"
 assert (plugins / "typing-delay/host/delay.go").is_file(), "typing host ownership missing"
-manager = (backend / "internal/pluginmanager/builtin.go").read_text()
-assert "typinghost.Delay(" in manager
-assert "time.NewTimer" not in manager and "invalid_typing_delay_policy" not in manager
+typing_factory = (plugins / "typing-delay/host/factory.go").read_text()
+assert "Delay(Ports{" in typing_factory
+for path in (backend / "internal/pluginmanager").glob("*.go"):
+    if path.name.endswith("_test.go"):
+        continue
+    assert not any(f"/plugins/{name}" in path.read_text() for name in (*ids, "metadata")), f"plugin dependency in generic manager: {path}"
 for root in (backend, backend.parent / ".github"):
     for path in root.rglob("*"):
         if not path.is_file() or path == Path(__file__).resolve():

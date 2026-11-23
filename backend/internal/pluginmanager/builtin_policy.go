@@ -2,7 +2,6 @@ package pluginmanager
 
 import (
 	"context"
-	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/credentials"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
@@ -18,23 +17,4 @@ type BuiltinPolicy struct {
 	// Prepare transfers ownership of its change list; the host assigns its namespace.
 	Prepare func(context.Context, *jsjson.Object, *jsjson.Object) (*jsjson.Object, []credentials.Change, error)
 	Secrets func(context.Context) (*jsjson.Object, error)
-}
-
-func (m *Manager) WithBuiltinPolicy(id string, policy BuiltinPolicy) error {
-	if policy.Validate == nil || policy.Prepare == nil || policy.Secrets == nil {
-		return errors.New("builtin_policy_incomplete")
-	}
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	if m.closed || m.items[id] != nil {
-		return errors.New("builtin_policy_already_registered")
-	}
-	if m.builtinPolicies == nil {
-		m.builtinPolicies = map[string]BuiltinPolicy{}
-	}
-	if _, ok := m.builtinPolicies[id]; ok {
-		return errors.New("builtin_policy_already_bound")
-	}
-	m.builtinPolicies[id] = policy
-	return nil
 }

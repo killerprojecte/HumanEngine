@@ -22,8 +22,5 @@ func (a *Application) bindWebRead(ctx context.Context) error {
 	if err = policy.Validate(ctx, new(jsjson.Object)); err != nil {
 		return err
 	}
-	if err = a.Plugins.WithBuiltinPolicy("web-read", policy); err != nil {
-		return err
-	}
-	return a.Plugins.WithBuiltinRuntime("web-read", webread.Factory(a.Plugins))
+	return a.registerBuiltin("web-read", webread.Factory(a.Plugins), policy)
 }

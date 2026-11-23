@@ -19,9 +19,7 @@ type configurationSession struct {
 // second validator's newly preserved object is passed to prepare.
 func (m *Manager) beginConfiguration(ctx context.Context, id string, i *item, input, previous *jsjson.Object, requestID string) (*configurationSession, error) {
 	if i.builtin {
-		m.mu.Lock()
-		policy := m.builtinPolicies[id]
-		m.mu.Unlock()
+		policy := i.policy
 		closePolicy := func() {}
 		if policy.Configure != nil {
 			policy, closePolicy = policy.Configure()

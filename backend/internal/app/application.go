@@ -277,24 +277,8 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err = app.Plugins.WithWASM(app.WASM); err != nil {
 		return app, err
 	}
-	builtins := options.Builtins
-	if builtins == nil {
-		builtins = []string{"typing-delay", "snowluma"}
-	}
-	for _, id := range builtins {
-		if id == "web-read" {
-			if err = app.bindWebRead(ctx); err != nil {
-				return app, err
-			}
-		}
-		if id == "snowluma" {
-			if err = app.bindSnowLuma(ctx, owners); err != nil {
-				return app, err
-			}
-		}
-		if err = app.Plugins.RegisterBuiltin(id); err != nil {
-			return app, err
-		}
+	if err = app.bindBuiltins(ctx, owners, options.Builtins); err != nil {
+		return app, err
 	}
 	app.readPublisher, err = recovery.NewReadPublisherWithInitializer(ctx, owners.Main, owners.Authority, installation.UsageReadInitializer(owners.Dates))
 	if err != nil {

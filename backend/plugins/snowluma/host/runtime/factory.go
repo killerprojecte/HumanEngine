@@ -9,7 +9,7 @@ import (
 )
 
 // Factory borrows one application Registry and the application's actual media,
-// receive and stopped owners. The caller binds it once before RegisterBuiltin.
+// receive and stopped owners. The application supplies it in the guest descriptor.
 // No default/mock receive or media port can turn this into an enabled adapter.
 func Factory(ports InstallationPorts, environment func(string) (string, bool)) pluginmanager.BuiltinRuntimeFactory {
 	return func(ctx context.Context, in pluginmanager.BuiltinRuntimeInput) (pluginmanager.BuiltinLifetime, error) {

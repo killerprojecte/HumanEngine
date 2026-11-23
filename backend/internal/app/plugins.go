@@ -3,12 +3,17 @@ package app
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"os"
 	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
+	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
+	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
+	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
+	typing "github.com/killerprojecte/HumanEngine/backend/plugins/typing-delay/host"
 )
 
 func (a *Application) restorePlugins(ctx context.Context, owners Owners) error {
@@ -106,4 +111,39 @@ func localEntries(ctx context.Context, owners Owners, options Options) ([]string
 		return nil, nil
 	}, func([]byte) error { return nil })
 	return out, err
+}
+
+// bindBuiltins is the distribution's static composition. RegisterBuiltin does
+// not know whether a descriptor comes from here or another package.
+func (a *Application) bindBuiltins(ctx context.Context, owners Owners, ids []string) error {
+	if ids == nil {
+		ids = []string{"typing-delay", "snowluma"}
+	}
+	for _, id := range ids {
+		var err error
+		switch id {
+		case "typing-delay":
+			err = a.registerBuiltin(id, typing.Factory(a.Engine.Runtime.InstallTypingDelay), pluginmanager.BuiltinPolicy{})
+		case "snowluma":
+			err = a.bindSnowLuma(ctx, owners)
+		case "web-read":
+			err = a.bindWebRead(ctx)
+		default:
+			return errors.New("builtin_runtime_not_implemented")
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *Application) registerBuiltin(id string, start pluginmanager.BuiltinRuntimeFactory, policy pluginmanager.BuiltinPolicy) error {
+	manifest, ok := metadata.Manifest(id).(json.RawMessage)
+	if !ok {
+		return errors.New("builtin_manifest_invalid")
+	}
+	return a.Plugins.RegisterBuiltin(pluginmanager.BuiltinDescriptor{
+		Manifest: manifest, LoadArtifact: func() ([]byte, error) { return plugins.BuiltinArtifact(id) }, Start: start, Policy: policy,
+	})
 }

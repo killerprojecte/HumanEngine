@@ -11,6 +11,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
+	typing "github.com/killerprojecte/HumanEngine/backend/plugins/typing-delay"
+	typinghost "github.com/killerprojecte/HumanEngine/backend/plugins/typing-delay/host"
 	"io"
 	"testing"
 	"time"
@@ -39,7 +41,7 @@ func TestTypingBuiltinRealWASMAndPendingCancellation(t *testing.T) {
 	if err = manager.WithWASM(wasm); err != nil {
 		t.Fatal(err)
 	}
-	if err = manager.RegisterBuiltin("typing-delay"); err != nil {
+	if err = manager.RegisterBuiltin(pluginmanager.BuiltinDescriptor{Manifest: typing.Manifest().(json.RawMessage), LoadArtifact: typing.Artifact, Start: typinghost.Factory(runtime.InstallTypingDelay)}); err != nil {
 		t.Fatal(err)
 	}
 	config, _ := jsjson.Parse(`{"speedFactor":10}`)

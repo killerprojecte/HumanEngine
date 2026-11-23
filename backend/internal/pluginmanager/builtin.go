@@ -7,8 +7,6 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginconfig"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
-	typinghost "github.com/killerprojecte/HumanEngine/backend/plugins/typing-delay/host"
 )
 
 // WithWASM borrows the application's one WASM host before registration/serving.
@@ -22,24 +20,36 @@ func (m *Manager) WithWASM(host *plugins.WASMHost) error {
 	return nil
 }
 
-// RegisterBuiltin admits only guests with a native runtime composition.
-// Other policy guests are not presented as working runtime plugins.
-func (m *Manager) RegisterBuiltin(id string) error {
-	m.mu.Lock()
-	bound := m.builtinFactories[id] != nil
-	m.mu.Unlock()
-	if id != "typing-delay" && !bound {
-		return errors.New("builtin_runtime_not_implemented")
-	}
-	raw, ok := metadata.Manifest(id).(json.RawMessage)
-	if !ok {
-		return errors.New("builtin_manifest_invalid")
-	}
-	parsed, err := jsjson.Parse(string(raw))
+// BuiltinDescriptor supplies distribution-owned resources and host bindings.
+type BuiltinDescriptor struct {
+	Manifest     json.RawMessage
+	LoadArtifact func() ([]byte, error)
+	Start        BuiltinRuntimeFactory
+	Policy       BuiltinPolicy
+}
+
+// RegisterBuiltin admits a composed V2 guest without opening its artifact.
+func (m *Manager) RegisterBuiltin(descriptor BuiltinDescriptor) error {
+	parsed, err := jsjson.Parse(string(descriptor.Manifest))
 	if err != nil {
 		return err
 	}
-	manifest := parsed.(*jsjson.Object)
+	manifest, ok := parsed.(*jsjson.Object)
+	if !ok || prop(manifest, "apiVersion") != float64(2) {
+		return errors.New("builtin_manifest_invalid")
+	}
+	id := text(manifest, "id")
+	if !validID(id) {
+		return errors.New("invalid_plugin_id")
+	}
+	if descriptor.LoadArtifact == nil || descriptor.Start == nil {
+		return errors.New("builtin_runtime_not_implemented")
+	}
+	policy := descriptor.Policy
+	if (policy.Configure != nil || policy.CredentialFailure != nil || policy.Validate != nil || policy.Prepare != nil || policy.Secrets != nil) &&
+		(policy.Validate == nil || policy.Prepare == nil || policy.Secrets == nil) {
+		return errors.New("builtin_policy_incomplete")
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.closed || m.wasm == nil {
@@ -51,16 +61,9 @@ func (m *Manager) RegisterBuiltin(id string) error {
 	tail := make(chan struct{})
 	close(tail)
 	life, cancel := context.WithCancel(context.Background())
-	m.items[id] = &item{builtin: true, manifest: manifest, tail: tail, ctx: life, cancel: cancel, pages: []any{}, actions: map[string]string{}}
+	m.items[id] = &item{builtin: true, manifest: manifest, artifact: descriptor.LoadArtifact, factory: descriptor.Start, policy: policy, tail: tail, ctx: life, cancel: cancel, pages: []any{}, actions: map[string]string{}}
 	m.order = append(m.order, id)
 	return nil
-}
-func (m *Manager) inspectBuiltin(ctx context.Context, i *item, operation string, input, previous *jsjson.Object, requestID string) (plugins.Inspection, error) {
-	id, _ := i.manifest.Get("id")
-	m.mu.Lock()
-	policy := m.builtinPolicies[id.(string)]
-	m.mu.Unlock()
-	return inspectBuiltinPolicy(ctx, i, policy, operation, input, previous, requestID)
 }
 
 func inspectBuiltinPolicy(ctx context.Context, i *item, policy BuiltinPolicy, operation string, input, previous *jsjson.Object, requestID string) (plugins.Inspection, error) {
@@ -99,10 +102,8 @@ func (m *Manager) startBuiltin(ctx context.Context, id string, i *item, revision
 	if err != nil {
 		return err
 	}
-	m.mu.Lock()
-	policy, bound := m.builtinPolicies[id]
-	m.mu.Unlock()
-	if bound {
+	policy := i.policy
+	if policy.Validate != nil {
 		object, ok := value.(*jsjson.Object)
 		if !ok {
 			return &ConfigurationError{Issues: []Issue{}}
@@ -113,7 +114,7 @@ func (m *Manager) startBuiltin(ctx context.Context, id string, i *item, revision
 	} else if err = pluginconfig.ValidateBuiltin(value, schema(i)); err != nil {
 		return &ConfigurationError{Issues: []Issue{}}
 	}
-	artifact, err := plugins.BuiltinArtifact(id)
+	artifact, err := i.artifact()
 	if err != nil {
 		return err
 	}
@@ -127,15 +128,5 @@ func (m *Manager) startBuiltin(ctx context.Context, id string, i *item, revision
 	m.mu.Lock()
 	life := i.ctx
 	m.mu.Unlock()
-	if id != "typing-delay" {
-		return m.startBoundBuiltin(ctx, id, i, revision, config, life, callGuest)
-	}
-	remove, err := m.runtime.InstallTypingDelay(life, typinghost.Delay(typinghost.Ports{Life: life, Config: config, BeginWork: m.work.Start, Current: func() bool { return current(m, i, revision) }, Lifetime: lifetime, CallGuest: callGuest}))
-	if err != nil {
-		return err
-	}
-	m.mu.Lock()
-	i.cleanups = append(i.cleanups, remove)
-	m.mu.Unlock()
-	return nil
+	return m.startBoundBuiltin(ctx, id, i, revision, config, life, callGuest)
 }

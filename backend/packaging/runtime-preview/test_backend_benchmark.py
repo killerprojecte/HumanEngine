@@ -126,7 +126,25 @@ class BackendBenchmarkTests(unittest.TestCase):
         with patch.object(bench.time, "monotonic_ns", lambda: state.now), patch.object(bench.time, "sleep", sleep):
             result = bench.lane(SimpleNamespace(get=get), "settings", 0, 0, 2, 8, TIME, FIXTURE_SETTINGS)
         self.assertEqual(state.calls, [0, 750_000_000, 1_500_000_000])
-        self.assertEqual(result[3:], (5, 3, 2))
+        self.assertEqual(result[3:], (5, 3, 2, [0, 0, 0]))
+
+    def test_dispatch_lateness_is_distinct_from_http_latency_and_omits_misses(self):
+        state = SimpleNamespace(now=0)
+
+        def sleep(seconds):
+            state.now += round(seconds * bench.NS) + 20_000_000
+
+        def get(_):
+            elapsed = 260_000_000
+            state.now += elapsed
+            return 200, elapsed, state.now, json.dumps(FIXTURE_SETTINGS), None
+
+        with patch.object(bench.time, "monotonic_ns", lambda: state.now), patch.object(bench.time, "sleep", sleep):
+            samples, _, _, missed, sent, _, arrivals = bench.lane(
+                SimpleNamespace(get=get), "settings", 1, 0, 1, 10, TIME, FIXTURE_SETTINGS)
+        self.assertEqual((missed, sent), (2, 3))
+        self.assertEqual(samples, [260_000_000] * 3)
+        self.assertEqual(arrivals, [20_000_000] * 3)
 
     def test_single_owner_only_probes_selected_port(self):
         args = ["driver", "--single", "go", "--fixture-timestamp", str(TIME)]
@@ -157,6 +175,7 @@ class BackendBenchmarkTests(unittest.TestCase):
                 self.assertEqual((route["issued"], route["successful"], route["missed_ticks"]), (2, 2, 0))
                 self.assertEqual(route["status"], {"200": 2})
                 self.assertGreater(route["p99_ms"], 0)
+                self.assertGreaterEqual(route["arrival_delay_ms"]["p99"], 0)
         for calls in (ts_calls, go_calls):
             # 3 preflight, then four worker connections per each of two windows.
             self.assertEqual(len(calls), 3 + 2 * (4 + 4))

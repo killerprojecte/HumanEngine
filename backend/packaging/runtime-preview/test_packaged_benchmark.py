@@ -49,6 +49,7 @@ class BenchmarkTests(unittest.TestCase):
                 engine = args[args.index("--single") + 1]
                 self.assertEqual(live, engine)
                 actual.append(engine)
+                (peer_cage / "cpu.stat").write_text(f"usage_usec {100 + 7 * len(actual)}\n")
                 (cage / "cpu.stat").write_text("usage_usec 11\nthrottled_usec 22\nnr_periods 30\nnr_throttled 4\n")
                 return json.dumps({"status": "passed", "windows": [{"engine": engine, "routes": {}}],
                                    "configuration": {"test": True},
@@ -69,13 +70,17 @@ class BenchmarkTests(unittest.TestCase):
             return ""
         with tempfile.TemporaryDirectory() as folder:
             cage = Path(folder)
+            peer_cage = cage / "peer"
+            peer_cage.mkdir()
+            (peer_cage / "cpu.stat").write_text("usage_usec 100\n")
             for name, value in {"cpu.max": f"{cpus * 100000} 100000", "memory.max": str(1536 * 1024**2),
                                 "cpu.stat": "usage_usec 1\nthrottled_usec 0\n",
                                 "memory.current": "1200", "memory.peak": "1300"}.items():
                 (cage / name).write_text(value)
             with patch("packaged_benchmark.docker", side_effect=docker), \
                     patch("migration_drill.docker", side_effect=docker), \
-                    patch("packaged_benchmark.owner_cgroup", return_value=(cage, "0-3")), \
+                    patch("packaged_benchmark.container_cgroup",
+                          side_effect=lambda name: (peer_cage, "2-3") if name == trial.peer else (cage, "0-3")), \
                     patch.object(Path, "is_file", return_value=True):
                 if mismatch:
                     with self.assertRaisesRegex(RuntimeError, "settings or workload differ"):
@@ -110,6 +115,8 @@ class BenchmarkTests(unittest.TestCase):
             with self.subTest(cpus=cpus):
                 _, report, _, _, _ = self.run_mock(cpus=cpus)
                 self.assertEqual(report["runner"]["limits"]["cpus"], cpus)
+                self.assertEqual(report["runner"]["cpu_topology"], "shared_host")
+                self.assertIn("without_participation_or_learning", report["runner"]["workload"])
                 for win in report["windows"]:
                     cpu = win["owner_cgroup"]
                     self.assertEqual(cpu["cpu_max_usec"], {"quota": cpus * 100000, "period": 100000})
@@ -118,6 +125,9 @@ class BenchmarkTests(unittest.TestCase):
                                       cpu["cpu_nr_periods"], cpu["cpu_nr_throttled"]), (10, 22, 25, 3))
                     self.assertEqual(cpu.get("gomaxprocs_at_ready"), 2 if win["engine"] == "go" else None)
                     self.assertEqual(cpu["memory_peak_boot_inclusive_bytes"], 1300)
+                    self.assertGreaterEqual(win["driver_invocation_elapsed_ns"], 0)
+                    self.assertEqual(win["peer_cgroup"]["leader_cpu_affinity"], "2-3")
+                    self.assertEqual(win["peer_cgroup"]["cpu_usage_usec"], 7)
 
     def test_go_startup_receipt_must_be_unique_positive_integer(self):
         event = 'preview ready | {"code":"server.listening","gomaxprocs":2}'

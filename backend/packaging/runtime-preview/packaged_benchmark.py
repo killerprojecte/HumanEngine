@@ -30,21 +30,21 @@ try {
 """
 
 
-def owner_cgroup(name):
+def container_cgroup(name):
     ident, pid = docker("inspect", "--format", "{{.Id}} {{.State.Pid}}", name).split()
     require(re.fullmatch(r"[0-9a-f]{64}", ident) and pid.isdecimal() and int(pid) > 0,
-            "benchmark owner process unavailable")
+            "benchmark container process unavailable")
     proc = Path("/proc") / pid
     lines = (proc / "cgroup").read_text().splitlines()
     matches = [line.removeprefix("0::") for line in lines if line.startswith("0::/")]
-    require(len(matches) == 1 and ident in Path(matches[0]).name, "benchmark requires a local cgroup v2 owner")
+    require(len(matches) == 1 and ident in Path(matches[0]).name, "benchmark requires a local cgroup v2 container")
     relative = Path(matches[0].lstrip("/"))
-    require(".." not in relative.parts, "invalid owner cgroup")
+    require(".." not in relative.parts, "invalid container cgroup")
     path = Path("/sys/fs/cgroup") / relative
-    require((path / "cgroup.procs").is_file(), "benchmark owner cgroup missing")
+    require((path / "cgroup.procs").is_file(), "benchmark container cgroup missing")
     affinity = next((line.split(":", 1)[1].strip() for line in (proc / "status").read_text().splitlines()
                      if line.startswith("Cpus_allowed_list:")), "")
-    require(re.fullmatch(r"\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*", affinity), "benchmark owner affinity missing")
+    require(re.fullmatch(r"\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*", affinity), "benchmark container affinity missing")
     return path, affinity
 
 
@@ -61,11 +61,15 @@ def go_parallelism(logs):
     return ready[0]
 
 
-def counters(root):
+def cpu_counters(root, keys=CPU_COUNTERS):
     cpu = dict(line.split() for line in (root / "cpu.stat").read_text().splitlines())
-    return {**{key: int(cpu[field]) for key, field in CPU_COUNTERS.items()},
-            "memory_current_bytes": int((root / "memory.current").read_text()),
-            "memory_peak_boot_inclusive_bytes": int((root / "memory.peak").read_text())}
+    return {key: int(cpu[CPU_COUNTERS[key]]) for key in keys}
+
+
+def cpu_delta(before, after):
+    delta = {key: after[key] - value for key, value in before.items()}
+    require(all(value >= 0 for value in delta.values()), "benchmark CPU counters regressed")
+    return delta
 
 
 class Paired(Drill):
@@ -157,23 +161,29 @@ class Paired(Drill):
         self.phase = f"qualify-history-{label}"
         self.require_history("before", timestamp)
         self.phase = f"cgroup-before-{label}"
-        cage, affinity = owner_cgroup(self.name)
+        cage, affinity = container_cgroup(self.name)
+        peer, peer_affinity = container_cgroup(self.peer)
         quota, period = [int(value) for value in (cage / "cpu.max").read_text().split()]
         require(quota == self.args.cpus * period and int((cage / "memory.max").read_text()) == MEMORY_MIB * 1024**2,
                 "unexpected cgroup CPU or memory limit")
         cpu = {"cpu_max_usec": {"quota": quota, "period": period}, "leader_cpu_affinity": affinity}
         if engine == "go":
             cpu["gomaxprocs_at_ready"] = go_parallelism(docker("logs", self.name))
-        before = counters(cage)
+        before = cpu_counters(cage)
+        peer_keys = ("cpu_usage_usec",)
+        peer_before = cpu_counters(peer, peer_keys)
+        sample_start = time.monotonic_ns()
         self.phase = f"measure-{label}"
         receipt = json.loads(docker("exec", self.peer, "python3", "/benchmark.py", "--single", engine,
                                     "--fixture-timestamp", str(timestamp), "--window", str(self.args.window),
                                     "--warmup", str(self.args.warmup), "--rate", str(self.args.rate),
                                     "--timeout", str(self.args.timeout), timeout=240))
         self.phase = f"cgroup-after-{label}"
-        after = counters(cage)
-        deltas = {key: after[key] - before[key] for key in CPU_COUNTERS}
-        require(all(delta >= 0 for delta in deltas.values()), "owner counters regressed")
+        elapsed = time.monotonic_ns() - sample_start
+        deltas = cpu_delta(before, cpu_counters(cage))
+        peer_deltas = cpu_delta(peer_before, cpu_counters(peer, peer_keys))
+        memory = {"memory_current_after_bytes": int((cage / "memory.current").read_text()),
+                  "memory_peak_boot_inclusive_bytes": int((cage / "memory.peak").read_text())}
         self.phase = f"drain-{label}"
         self.stop()
         self.phase = f"compare-receipt-{label}"
@@ -183,11 +193,12 @@ class Paired(Drill):
         digest = receipt["settings_sha256"]
         require(re.fullmatch(r"[0-9a-f]{64}", digest), "benchmark missing projection digest")
         return digest, receipt["configuration"], {
-            **windows[0], "owner_cgroup": {
+            **windows[0], "driver_invocation_elapsed_ns": elapsed,
+            "peer_cgroup": {"scope": "synthetic platform and load generator share this host with the owner",
+                            "leader_cpu_affinity": peer_affinity, **peer_deltas},
+            "owner_cgroup": {
                 "scope": "includes preflight and warmup; Docker inspect and cgroup reads outside latency window",
-                **cpu, **deltas,
-                "memory_current_after_bytes": after["memory_current_bytes"],
-                "memory_peak_boot_inclusive_bytes": after["memory_peak_boot_inclusive_bytes"],
+                **cpu, **deltas, **memory,
             },
         }
 
@@ -197,7 +208,9 @@ class Paired(Drill):
             "ts_tools": self.image(self.args.ts_tools_image, TS_REVISION),
             "go": self.image(self.args.go_image, self.args.go_revision),
         }
-        self.report["runner"] = {"architecture": platform.machine(), "kernel": platform.release(),
+        self.report["runner"] = {"cpu_topology": "shared_host",
+                                 "workload": "read_only_snapshot_without_participation_or_learning",
+                                 "architecture": platform.machine(), "kernel": platform.release(),
                                  "logical_cpus": os.cpu_count(), "image_os": os.getenv("ImageOS"),
                                  "image_version": os.getenv("ImageVersion"),
                                  "limits": {"cpus": self.args.cpus, "memory_mib": MEMORY_MIB, "healthcheck": False}}

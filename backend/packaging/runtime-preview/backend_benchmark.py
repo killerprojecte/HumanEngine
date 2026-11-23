@@ -162,7 +162,7 @@ def rank(samples, percentile):
 
 
 def lane(client, route, index, start, seconds, rate, timestamp, expected_settings):
-    samples, statuses, errors = [], Counter(), Counter()
+    samples, arrivals, statuses, errors = [], [], Counter(), Counter()
     missed = issued = in_window = 0
     end = start + seconds * NS
     ready = start
@@ -174,10 +174,12 @@ def lane(client, route, index, start, seconds, rate, timestamp, expected_setting
         delay = due - time.monotonic_ns()
         if delay > 0:
             time.sleep(delay / NS)
-        if time.monotonic_ns() >= min(end, due + (2 * NS) // rate):
+        dispatch = time.monotonic_ns()
+        if dispatch >= min(end, due + (2 * NS) // rate):
             missed += 1
             continue
         issued += 1
+        arrivals.append(dispatch - due)
         status, elapsed, finish, body, error = client.get(ROUTES[route])
         if status is not None:
             statuses[status] += 1
@@ -194,7 +196,7 @@ def lane(client, route, index, start, seconds, rate, timestamp, expected_setting
                 samples.append(elapsed)
                 in_window += finish < end
         ready = time.monotonic_ns()
-    return samples, statuses, errors, missed, issued, in_window
+    return samples, statuses, errors, missed, issued, in_window, arrivals
 
 
 def worker(port, token, route, index, start, args, expected_settings):
@@ -216,13 +218,14 @@ def engine_window(port, token, args, expected_settings):
         out = {}
         for route, futures in work.items():
             warm_errors, statuses, errors = Counter(), Counter(), Counter()
-            samples, missed, issued, successful_in_window = [], 0, 0, 0
+            samples, arrivals, missed, issued, successful_in_window = [], [], 0, 0, 0
             for future in futures:
-                warm, (latency, codes, failures, skipped, sent, in_window) = future.result()
+                warm, (latency, codes, failures, skipped, sent, in_window, dispatch_delays) = future.result()
                 warm_errors.update(warm)
                 errors.update(failures)
                 statuses.update(codes)
                 samples.extend(latency)
+                arrivals.extend(dispatch_delays)
                 missed += skipped
                 issued += sent
                 successful_in_window += in_window
@@ -231,6 +234,8 @@ def engine_window(port, token, args, expected_settings):
                 "successful": len(samples), "successful_in_window": successful_in_window,
                 "successful_rps_in_window": successful_in_window / args.window,
                 "status": dict(statuses), "errors": dict(errors), "warmup_errors": dict(warm_errors),
+                "arrival_delay_ms": {"p50": rank(arrivals, 50), "p95": rank(arrivals, 95),
+                                     "p99": rank(arrivals, 99)},
                 "p50_ms": rank(samples, 50), "p95_ms": rank(samples, 95), "p99_ms": rank(samples, 99),
             }
         return out

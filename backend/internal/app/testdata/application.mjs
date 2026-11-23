@@ -9,10 +9,10 @@ export default {
     const sent = [], modelIDs = [], sourceReceipts = [], habitReceipts = [], proposalReceipts = []
     let habitFeedback, habitCalls=0, habitTool, habitProposal, proposalCalls=0, proposalTool
     let memorySourceTarget, lastSourceAlias, memorySourceCalls = 0
-    let episodesMode, episodeBarrier
+    let episodesMode, episodeBarrier, episodePlannerInput
     const episodeReads=[],episodeBundles=[],episodeAds=[]
     const message = () => ({id:source,sceneId:scene.id,senderId:habitFeedback||habitProposal?'synthetic-feedback-'+sourceSerial:'synthetic-user',sentAt:ctx.config.timestamp,receivedAt:ctx.config.timestamp,origin:'live',status:'available',parts:[{type:'text',text:habitProposal?.text||sourceSerial>1&&ctx.config.followupText||'I prefer concise replies.'}]})
-    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts,habitCalls,habitTool,habitReceipts,proposalCalls,proposalTool,proposalReceipts,episodeReads,episodeBundles,episodeAds}))
+    ctx.registerAdminAction('inspect',()=>({scene,source,sent,disposed,modelCalls,modelIDs,memorySourceCalls,sourceReceipts,habitCalls,habitTool,habitReceipts,proposalCalls,proposalTool,proposalReceipts,episodeReads,episodeBundles,episodeAds,episodePlannerInput}))
     ctx.registerAdminAction('episode-mode',input=>{episodesMode=input.mode;return {ok:true}})
     ctx.registerAdminAction('episode-hold-send',input=>{episodeBarrier=input;return {ok:true}})
     ctx.registerAdminAction('habit-proposal', input => {habitProposal=input;return {ok:true}})
@@ -58,13 +58,14 @@ export default {
           if(!episode.length){
             episodeAds.push(names.includes(tool))
             if(!names.includes(tool))return call('reply.plan',{...plan,action:'noReply'})
-            const args=episodesMode==='person'?{personId:'synthetic-user'}:
+            const args=['person','temporal'].includes(episodesMode)?{personId:'synthetic-user'}:
               episodesMode==='working-cold-only'?{personId:'cold-user'}:
               episodesMode==='working-include-cold'?{personId:'cold-user',includeCold:true}:
               episodesMode==='working-second'?{personId:'second',includeCold:true}:{}
             if(episodesMode==='selected'||episodesMode==='working-selected')return response([1,2].map(i=>({id:'workspace-'+modelCalls+'-'+i,name:tool,arguments:args})))
             return call(tool,args)
           }
+          if(episodesMode==='temporal')episodePlannerInput=data
           episodeReads.push(episode.map(v=>v.value))
           const selected=episode.filter(v=>v.value.length).map(v=>v.id)
           const id=data.planContract.targetMessageIds[0]

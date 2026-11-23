@@ -22,14 +22,18 @@ import (
 )
 
 func TestInstalledEpisodesWholeReceipt(t *testing.T) {
-	testInstalledWorkspaceWholeReceipt(t, false)
+	testInstalledWorkspaceWholeReceipt(t, false, false)
 }
 
 func TestInstalledWorkingSetWholeReceipt(t *testing.T) {
-	testInstalledWorkspaceWholeReceipt(t, true)
+	testInstalledWorkspaceWholeReceipt(t, true, false)
 }
 
-func testInstalledWorkspaceWholeReceipt(t *testing.T, working bool) {
+func TestInstalledTemporalPlannerEvidence(t *testing.T) {
+	testInstalledWorkspaceWholeReceipt(t, false, true)
+}
+
+func testInstalledWorkspaceWholeReceipt(t *testing.T, working, temporal bool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 40*time.Second)
 	defer cancel()
@@ -64,7 +68,12 @@ func testInstalledWorkspaceWholeReceipt(t *testing.T, working bool) {
 	setSettings(map[string]any{"sourceEventRevisionsEnabled": true, "memoryEpisodesEnabled": false, "memoryCommitmentsEnabled": true, "memoryCommitmentsAnswerEnabled": true, "promptContextWindowEnabled": false, "debounceMs": float64(0), "groupTurnCooldownMs": float64(0)})
 	req("PUT", "/api/models", json.RawMessage(`{"providers":[{"id":"p","name":"Synthetic","protocol":"runtime-fixture:deterministic","baseUrl":"https://synthetic.invalid","retryCount":0,"timeoutMs":10000}],"models":[{"id":"m","displayName":"Synthetic","providerId":"p","apiModelName":"synthetic","capabilities":["text","tools"]}],"routes":[{"role":"planner","orderedModelIds":["m"],"timeoutMs":10000},{"role":"replyer","orderedModelIds":["m"],"timeoutMs":10000}]}`))
 	plugin := "/api/plugins/runtime-fixture/"
-	req("PUT", plugin+"config", map[string]any{"timestamp": now})
+	const question = "What did I drink in this group on October 5, and did I specify sugar?"
+	config := map[string]any{"timestamp": now}
+	if temporal {
+		config["followupText"] = question
+	}
+	req("PUT", plugin+"config", config)
 	req("PUT", plugin+"enabled", map[string]bool{"enabled": true})
 	action := func(name string, value any) any { t.Helper(); return req("POST", plugin+"actions/"+name, value) }
 	inspect := func() any { return action("inspect", map[string]any{}) }
@@ -89,7 +98,7 @@ func testInstalledWorkspaceWholeReceipt(t *testing.T, working bool) {
 		req("PUT", scenePath, wire(scene))
 	}
 	sceneFlags(map[string]bool{"learningEnabled": true, "participationEnabled": false})
-	record := func(id, sender, kind, content string, commitment *jsjson.Object, proposalOptions memoryservice.ProposalOptions) memoryservice.ProposalResult {
+	recordIn := func(sceneID, id, sender, kind, content, occurredAt string, commitment *jsjson.Object, proposalOptions memoryservice.ProposalOptions) memoryservice.ProposalResult {
 		t.Helper()
 		snapshot, err := app.Engine.Runtime.Snapshot(sceneID)
 		if err != nil {
@@ -108,6 +117,9 @@ func testInstalledWorkspaceWholeReceipt(t *testing.T, working bool) {
 			t.Fatal(err)
 		}
 		candidate := memoryToolObject("content", content, "kind", kind, "epistemicKind", "explicit", "sources", []any{memoryToolObject("sceneId", sceneID, "messageId", id, "senderId", sender)}, "subject", memoryToolObject("kind", "self", "sourceMessageId", id))
+		if occurredAt != "" {
+			_ = candidate.Set("occurredAt", occurredAt)
+		}
 		if commitment != nil {
 			_ = candidate.Set("commitment", commitment)
 		}
@@ -117,13 +129,94 @@ func testInstalledWorkspaceWholeReceipt(t *testing.T, working bool) {
 		}
 		return out
 	}
-	ingest := func(id, sender, text string, extra ...any) {
+	record := func(id, sender, kind, content string, commitment *jsjson.Object, opts memoryservice.ProposalOptions) memoryservice.ProposalResult {
+		t.Helper()
+		return recordIn(sceneID, id, sender, kind, content, "", commitment, opts)
+	}
+	ingestIn := func(sceneID, id, sender, text, sentAt string, extra ...any) {
 		t.Helper()
 		parts := append([]any{memoryToolObject("type", "text", "text", text)}, extra...)
-		_, err := app.Engine.Runtime.Ingest(ctx, sceneID, memoryToolObject("id", id, "sceneId", sceneID, "senderId", sender, "sentAt", now, "receivedAt", now, "origin", "live", "status", "available", "parts", parts), false)
+		_, err := app.Engine.Runtime.Ingest(ctx, sceneID, memoryToolObject("id", id, "sceneId", sceneID, "senderId", sender, "sentAt", sentAt, "receivedAt", now, "origin", "live", "status", "available", "parts", parts), false)
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+	ingest := func(id, sender, text string, extra ...any) {
+		t.Helper()
+		ingestIn(sceneID, id, sender, text, now, extra...)
+	}
+	if temporal {
+		const person = "synthetic-user"
+		other := scene.Clone()
+		otherID := sceneID + "-temporal-control"
+		_ = other.Set("id", otherID)
+		_ = other.Set("platformSceneId", "temporal-control")
+		_ = other.Set("memoryReadEnabled", true)
+		_ = other.Set("personalizationEnabled", true)
+		req("PUT", "/api/scenes/"+url.PathEscape(otherID), wire(other))
+		const tea = "On October 1 I drank jasmine tea without sugar."
+		const coffee = "On October 5 I drank black coffee."
+		const foreign = "CROSS_GROUP_MARKER: on October 5 I added two sugars."
+		const oct1 = "2026-10-01T04:00:00.000Z"
+		const oct5 = "2026-10-05T04:00:00.000Z"
+		for _, row := range []struct{ scene, id, text, at string }{
+			{sceneID, "oct-1", tea, oct1}, {sceneID, "oct-5", coffee, oct5}, {otherID, "foreign-oct-5", foreign, oct5},
+		} {
+			ingestIn(row.scene, row.id, person, row.text, row.at)
+			recordIn(row.scene, row.id, person, "experience", row.text, row.at, nil, memoryservice.ProposalOptions{})
+		}
+		setSettings(map[string]any{"memoryEpisodesEnabled": true})
+		sceneFlags(map[string]bool{"participationEnabled": true, "memoryReadEnabled": true, "personalizationEnabled": true})
+		action("episode-mode", map[string]any{"mode": "temporal"})
+		action("new-source", map[string]any{})
+		for app.Engine.Runtime.ActiveTasks() != 0 || len(field(inspect(), "episodeBundles").([]any)) == 0 {
+			select {
+			case <-ctx.Done():
+				t.Fatal("temporal Planner and Replyer receipts missing", ctx.Err())
+			case <-time.After(5 * time.Millisecond):
+			}
+		}
+		got := inspect()
+		if raw := field(got, "episodePlannerInput"); !strings.Contains(string(wire(raw.(*jsjson.Object))), question) {
+			t.Fatal("date-specific query missing from actual Planner input")
+		}
+		if strings.Contains(string(wire(got.(*jsjson.Object))), "CROSS_GROUP_MARKER") {
+			t.Fatal("same person from an unrelated group crossed the model boundary")
+		}
+		checkTemporalPage := func(p any) {
+			t.Helper()
+			if field(p, "interpretation") != "independent_qualified_records_not_synthesized_episodes" {
+				t.Fatal("lost declaration interpretation")
+			}
+			rows := field(p, "items").([]any)
+			expected := map[string][2]string{tea: {oct1, "oct-1"}, coffee: {oct5, "oct-5"}}
+			for _, row := range rows {
+				record := field(row, "record")
+				content := field(record, "content").(string)
+				want, ok := expected[content]
+				if !ok || field(row, "kind") != "reported_experience" || field(field(row, "time"), "occurredAt") != want[0] {
+					t.Fatalf("unexpected temporal statement or attached date: %v", row)
+				}
+				sources := field(record, "sources").([]any)
+				if len(sources) != 1 || field(sources[0], "messageId") != want[1] || field(sources[0], "senderId") != person {
+					t.Fatalf("unexpected source for %q: %v", content, sources)
+				}
+				delete(expected, content)
+			}
+			if len(expected) != 0 {
+				t.Fatal("missing original statements", expected)
+			}
+		}
+		reads := field(got, "episodeReads").([]any)
+		checkTemporalPage(field(reads[0].([]any)[0].([]any)[0], "page"))
+		bundles := field(got, "episodeBundles").([]any)
+		for _, evidence := range field(bundles[0], "evidence").([]any) {
+			if field(evidence, "toolName") == "memory.episodes" {
+				checkTemporalPage(field(field(evidence, "states").([]any)[0], "page"))
+				return
+			}
+		}
+		t.Fatal("selected evidence missing from actual Replyer input")
 	}
 	source := field(started, "source").(string)
 	first := record(source, "synthetic-user", "experience", "EPISODE_ORIGINAL: I attended one qualified fixture event.", nil, memoryservice.ProposalOptions{})

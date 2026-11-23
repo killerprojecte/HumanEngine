@@ -435,15 +435,23 @@ async function load() {
     busy.value = false
   }
 }
-let usageRequest = 0
+let usageRequest: AbortController | undefined
+function cancelUsage() {
+  usageRequest?.abort()
+  usageRequest = undefined
+  usageBusy.value = false
+}
 async function loadUsage() {
   usageTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone
   const range = usageRange(usagePreset.value, new Date(), customStart.value, customEnd.value)
   if (!range) {
+    cancelUsage()
     usageError.value = t('usageInvalidRange')
     return
   }
-  const request = ++usageRequest
+  usageRequest?.abort()
+  const request = (usageRequest = new AbortController())
+  const { signal } = request
   usageBusy.value = true
   usageError.value = ''
   usageIncomplete.value = false
@@ -456,9 +464,10 @@ async function loadUsage() {
   const bucket = Date.parse(range.end) - Date.parse(range.start) <= 2 * 86400000 ? 'hour' : 'day'
   try {
     const [result, points] = await Promise.all([
-      client.GET('/api/usage', { params: { query: range } }),
+      client.GET('/api/usage', { params: { query: range }, signal }),
       client.GET('/api/usage', {
         params: { query: { ...range, bucket, timeZone: usageTimezone.value } },
+        signal,
       }),
     ])
     if (request !== usageRequest) return
@@ -477,20 +486,26 @@ async function loadUsage() {
       (points.response.headers.get('X-Usage-Planner-Incomplete') ??
         String(timelineIncomplete.value)) === 'true'
   } catch {
-    if (request === usageRequest) usageError.value = t('networkError')
+    if (request === usageRequest) {
+      request.abort()
+      usageError.value = t('networkError')
+    }
   } finally {
-    if (request === usageRequest) usageBusy.value = false
+    if (request === usageRequest) {
+      usageRequest = undefined
+      usageBusy.value = false
+    }
   }
 }
-watch(usagePreset, () => {
-  if (usagePreset.value !== 'custom') void loadUsage()
+watch(section, (current) => {
+  if (current === 'usage') void loadUsage()
+  else cancelUsage()
+})
+watch(usagePreset, (preset) => {
+  if (section.value === 'usage' && preset !== 'custom') void loadUsage()
 })
 
-onMounted(() => {
-  usageTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone
-  void load()
-  void loadUsage()
-})
+onMounted(() => void load())
 function addFirstProvider() {
   section.value = 'providers'
   beginEdit('provider')
@@ -593,6 +608,7 @@ function warnBeforeUnload(event: BeforeUnloadEvent) {
 }
 onMounted(() => window.addEventListener('beforeunload', warnBeforeUnload))
 onBeforeUnmount(() => {
+  cancelUsage()
   pendingNavigation?.(false)
   window.removeEventListener('beforeunload', warnBeforeUnload)
 })
@@ -796,7 +812,7 @@ async function runProbe() {
     })
     if (result.data) probeResults.value[id] = result.data
     else editorError.value = result.error?.error ?? t('networkError')
-    await loadUsage()
+    if (section.value === 'usage') await loadUsage()
   } catch (cause) {
     editorError.value = cause instanceof Error ? cause.message : t('networkError')
   } finally {

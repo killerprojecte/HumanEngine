@@ -15,9 +15,12 @@ const code = transformSync(compileScript(descriptor, { id: 'usage-page-test' }).
   format: 'cjs',
 }).code
 const require = createRequire(filename)
-function page(get: (...args: any[]) => Promise<any>) {
+type Transport = (...args: any[]) => Promise<any>
+function page(get: Transport, post?: Transport) {
   const module = { exports: {} as any }
   const noop = () => undefined
+  const mounted: Array<() => void> = []
+  const unmounting: Array<() => void> = []
   new Function(
     'require',
     'module',
@@ -28,6 +31,7 @@ function page(get: (...args: any[]) => Promise<any>) {
     'onMounted',
     'onBeforeUnmount',
     'onBeforeRouteLeave',
+    'window',
     'useI18n',
     'useApi',
     code,
@@ -38,9 +42,10 @@ function page(get: (...args: any[]) => Promise<any>) {
     ref,
     computed,
     watch,
+    (callback: () => void) => mounted.push(callback),
+    (callback: () => void) => unmounting.push(callback),
     noop,
-    noop,
-    noop,
+    { addEventListener: noop, removeEventListener: noop },
     () => ({
       t: (key: string, args?: Record<string, unknown>) =>
         key === 'usagePartialCounter'
@@ -48,12 +53,16 @@ function page(get: (...args: any[]) => Promise<any>) {
           : key,
       locale: ref('en'),
     }),
-    () => ({ client: { GET: get } }),
+    () => ({ client: { GET: get, POST: post } }),
   )
   const scope = effectScope()
   return {
     state: scope.run(() => module.exports.default.setup({}, { expose: noop })),
-    close: () => scope.stop(),
+    mount: () => mounted.forEach((callback) => callback()),
+    close: () => {
+      unmounting.forEach((callback) => callback())
+      scope.stop()
+    },
   }
 }
 function reply(calls: number, incomplete = false) {
@@ -84,18 +93,94 @@ function reply(calls: number, incomplete = false) {
   }
 }
 
+const settle = () => new Promise<void>((resolve) => setImmediate(resolve))
+
+test('usage queries start only upon entering Usage, not on the initial Models page or a hidden probe', async () => {
+  const models = {
+    providers: [{ id: 'provider-a' }],
+    models: [{ id: 'model-a', providerId: 'provider-a', capabilities: ['text'] }],
+    routes: [],
+  }
+  const requests: string[] = []
+  const { state, mount, close } = page(
+    async (path: string) => {
+      requests.push(path)
+      if (path === '/api/models') return { data: models }
+      if (path === '/api/model-protocols') return { data: [] }
+      return reply(1)
+    },
+    async (path: string) => {
+      requests.push(path)
+      return { data: {} }
+    },
+  )
+  try {
+    mount()
+    await settle()
+    assert.equal(state.section.value, 'models')
+    assert.deepEqual(requests, ['/api/models', '/api/model-protocols'])
+    state.beginEdit('model', 'model-a')
+    state.pendingProbe.value = true
+    await state.runProbe()
+    assert.deepEqual(requests.slice(2), ['/api/models', '/api/models/{id}/probe'])
+    state.section.value = 'usage'
+    await settle()
+    assert.deepEqual(requests.slice(4), ['/api/usage', '/api/usage'])
+    assert.equal(state.usage.value[0].calls, 1)
+  } finally {
+    close()
+  }
+})
+
+test('leaving Usage and unmounting cancel both reads without an error', async () => {
+  const signals: AbortSignal[] = []
+  const { state, close } = page(async (_path, { signal }: { signal: AbortSignal }) => {
+    signals.push(signal)
+    return new Promise((_resolve, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), { once: true })
+    })
+  })
+  try {
+    state.section.value = 'usage'
+    await nextTick()
+    assert.equal(state.usageBusy.value, true)
+    assert.equal(signals.length, 2)
+    state.section.value = 'models'
+    await settle()
+    assert.ok(signals.every((signal) => signal.aborted))
+    assert.equal(state.usageBusy.value, false)
+    assert.equal(state.usageError.value, '')
+    state.section.value = 'usage'
+    await nextTick()
+    assert.equal(signals.length, 4)
+    assert.ok(signals.slice(2).every((signal) => !signal.aborted))
+  } finally {
+    close()
+  }
+  await settle()
+  assert.ok(signals.every((signal) => signal.aborted))
+  assert.equal(state.usageError.value, '')
+})
+
 test('range switching ignores out-of-order results and keeps totals/timeline on the latest response', async () => {
   const pending: Array<(value: any) => void> = []
   const queries: any[] = []
+  const signals: AbortSignal[] = []
   const { state, close } = page(async (_path, options) => {
     queries.push(options.params.query)
+    signals.push(options.signal)
     return new Promise((resolve) => pending.push(resolve))
   })
   try {
-    const first = state.loadUsage()
+    state.section.value = 'usage'
+    await nextTick()
     state.usagePreset.value = '7d'
     await nextTick()
     assert.equal(pending.length, 4)
+    assert.equal(signals[0], signals[1])
+    assert.equal(signals[0]!.aborted, true)
+    assert.equal(signals[2], signals[3])
+    assert.equal(signals[2]!.aborted, false)
     assert.equal(queries[1].bucket, 'hour')
     assert.equal(queries[3].bucket, 'day')
     pending[2]!(reply(7))
@@ -105,7 +190,7 @@ test('range switching ignores out-of-order results and keeps totals/timeline on 
     assert.equal(state.usageBusy.value, false)
     pending[0]!(reply(24, true))
     pending[1]!(reply(24, true))
-    await first
+    await settle()
     assert.equal(state.usage.value[0].calls, 7)
     assert.equal(state.timeline.value[0].calls, 7)
     assert.equal(state.usageIncomplete.value, false)
@@ -182,6 +267,7 @@ test('rendered chart marks unknown counters instead of drawing zero bars, and la
   const { state, close } = page(async () => reply(2))
   try {
     state.section.value = 'usage'
+    await settle()
     state.chartMode.value = 'bar'
     const unknown = {
       ...reply(2).data[0],

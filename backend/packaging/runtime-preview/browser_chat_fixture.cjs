@@ -3,13 +3,13 @@ const assert = require('node:assert/strict')
 const { createHmac } = require('node:crypto')
 const { createServer } = require('node:http')
 const fixture = JSON.parse(process.env.HE_BROWSER_CHAT)
-const { actionPort, eventPort, eventToken, actionToken, timestamp, group, name, local, remote } = fixture
+const { actionPort, eventPort, eventToken, actionToken, timestamp, group, sender, name, local, remote } = fixture
 const origin = port => 'http://127.0.0.1:' + port
 const message = (id, text, time) => ({
   post_type: 'message', message_type: 'group', sub_type: 'normal', self_id: 42,
-  group_id: group, user_id: 7, message_id: id, time,
+  group_id: group, user_id: sender, message_id: id, time,
   message: [{ type: 'text', data: { text } }],
-  sender: { user_id: 7, nickname: 'Synthetic sender' },
+  sender: { user_id: sender, nickname: 'Synthetic sender' },
 })
 const historyAction = '/get_group_msg_history'
 

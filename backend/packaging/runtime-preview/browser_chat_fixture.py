@@ -13,6 +13,11 @@ from uuid import uuid4
 from acceptance import docker, wait_for
 
 GROUP = 901
+SENDER = 7
+AVATAR_URLS = frozenset({
+    f"https://p.qlogo.cn/gh/{GROUP}/{GROUP}/100",
+    f"https://q1.qlogo.cn/g?b=qq&nk={SENDER}&s=100",
+})
 NAME = "Synthetic dense group"
 LOCAL = "Synthetic retained message witness."
 REMOTE = "Synthetic remote-only history witness."
@@ -27,7 +32,7 @@ ACTION_PORT, EVENT_PORT = 41274, 41275
 def peer(name, image, port, request):
     sidecar = name + "-chat-peer"
     script = Path(__file__).with_name("browser_chat_fixture.cjs").read_text()
-    params = dict(group=GROUP, name=NAME, local=LOCAL, remote=REMOTE,
+    params = dict(group=GROUP, sender=SENDER, name=NAME, local=LOCAL, remote=REMOTE,
                   actionPort=ACTION_PORT, eventPort=EVENT_PORT, timestamp=int(time.time()),
                   actionToken=uuid4().hex, eventToken=uuid4().hex)
 

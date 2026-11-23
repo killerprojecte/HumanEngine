@@ -123,6 +123,21 @@ def assert_usage_today(page, origin, start, expect, phase):
     assert len(today_queries) == 2 and summary_query in today_queries and hourly_query in today_queries
 
 
+def browser_request_guard(origin, fixture_avatars, blocked):
+    def intercept(route):
+        request = route.request
+        if request.url.startswith(origin + "/"):
+            return route.continue_()
+        if request.method == "GET" and request.resource_type == "image" and request.url in fixture_avatars:
+            blocked["fixture_avatars"] += 1
+        else:
+            blocked["unexpected_external"] += 1
+        # The synthetic avatar exception is only to the assertion, not the network block.
+        route.abort()
+
+    return intercept
+
+
 def run(port, token, evidence, usage_start, chat_history=None):
     # Kept out of normal package runs and out of both runtime images.
     from playwright.sync_api import expect, sync_playwright
@@ -131,6 +146,12 @@ def run(port, token, evidence, usage_start, chat_history=None):
     evidence.update({"playwright": version("playwright"), "outcomes": [], "status": "failed"})
     evidence.update(host_evidence())
     outcomes = evidence["outcomes"]
+    fixture_avatars = frozenset()
+    if chat_history is not None:
+        import browser_chat_fixture
+        fixture_avatars = browser_chat_fixture.AVATAR_URLS
+    blocked = {"fixture_avatars": 0, "unexpected_external": 0}
+    evidence["blocked_browser_requests"] = blocked
     phase = "launch"
     try:
         with sync_playwright() as driver:
@@ -139,16 +160,7 @@ def run(port, token, evidence, usage_start, chat_history=None):
                 if re.fullmatch(r"[0-9]+(?:\.[0-9]+){3}", browser.version):
                     evidence["chromium"] = browser.version
                 context = browser.new_context(locale="en-US", timezone_id="Asia/Taipei", viewport={"width": 1440, "height": 960})
-                external = [0]
-
-                def on_request(route):
-                    if route.request.url.startswith(origin + "/"):
-                        route.continue_()
-                    else:
-                        external[0] += 1
-                        route.abort()
-
-                context.route("**/*", on_request)
+                context.route("**/*", browser_request_guard(origin, fixture_avatars, blocked))
                 context.set_default_timeout(15000)
                 page = context.new_page()
                 page_errors = []
@@ -249,24 +261,30 @@ def run(port, token, evidence, usage_start, chat_history=None):
 
                 if chat_history is not None:
                     phase = "dense-chat-local-before-platform"
-                    import browser_chat_fixture
                     browser_chat_fixture.assert_history(page, origin, expect, chat_history)
                     outcomes.append({"action": "dense-chat-local-before-platform", "status": 200})
 
-                phase = "logout"
+                phase = "logout-submit"
                 with page.expect_response(match("DELETE", "/api/auth/session")) as logout:
                     page.get_by_role("button", name="Disconnect", exact=True).click()
+                    phase = "logout-response"
                 assert logout.value.status == 200
+                phase = "logout-signed-out"
                 expect(connect).to_be_visible()
+                phase = "logout-protected-api"
                 assert page.evaluate(
                     "async () => (await fetch('/api/status', {"
                     "headers:{'X-HumanEngine-Session':'1'},credentials:'same-origin'})).status"
                 ) == 401
+                phase = "logout-cookie-removed"
                 assert not any(c["name"] == "humanengine-session"
                                for c in context.cookies(origin + "/api/status"))
-                assert not page_errors and not external[0]
                 outcomes.append({"action": "logout", "status": 200})
                 outcomes.append({"action": "protected-api-after-logout", "status": 401})
+                phase = "browser-page-errors"
+                assert not page_errors
+                phase = "browser-unexpected-external"
+                assert not blocked["unexpected_external"]
             finally:
                 browser.close()
         evidence["status"] = "passed"

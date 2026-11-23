@@ -6,10 +6,41 @@ import shutil
 import socket
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
 import unittest
+from unittest.mock import Mock
 
 from acceptance import wait_for
-from browser_chat_fixture import GROUP, LOCAL, NAME, REMOTE
+from browser_chat_fixture import AVATAR_URLS, GROUP, LOCAL, NAME, REMOTE, SENDER
+from browser_smoke import browser_request_guard
+
+
+class BrowserRequestGuardTests(unittest.TestCase):
+    def test_fixture_avatar_attempts_are_blocked_without_hiding_other_egress(self):
+        origin = "http://127.0.0.1:3001"
+        avatars = [f"https://p.qlogo.cn/gh/{GROUP}/{GROUP}/100",
+                   f"https://q1.qlogo.cn/g?b=qq&nk={SENDER}&s=100"]
+        blocked = {"fixture_avatars": 0, "unexpected_external": 0}
+        guard = browser_request_guard(origin, AVATAR_URLS, blocked)
+
+        def route(method, kind, url, same_origin=False):
+            intercepted = Mock(request=SimpleNamespace(method=method, resource_type=kind, url=url))
+            guard(intercepted)
+            if same_origin:
+                intercepted.continue_.assert_called_once_with()
+                intercepted.abort.assert_not_called()
+            else:
+                intercepted.abort.assert_called_once_with()
+                intercepted.continue_.assert_not_called()
+
+        route("GET", "fetch", origin + "/api/status", same_origin=True)
+        for avatar in avatars:
+            route("GET", "image", avatar)
+        route("GET", "fetch", avatars[0])
+        route("POST", "image", avatars[0])
+        route("GET", "image", avatars[0] + "?other=1")
+        route("GET", "image", "https://q1.qlogo.cn/g?b=qq&nk=8&s=100")
+        self.assertEqual(blocked, {"fixture_avatars": 2, "unexpected_external": 4})
 
 
 @unittest.skipUnless(shutil.which("node"), "Node is required for the standalone action peer")
@@ -18,7 +49,7 @@ class ChatPeerTests(unittest.TestCase):
         with socket.socket() as endpoint:
             endpoint.bind(("127.0.0.1", 0))
             port = endpoint.getsockname()[1]
-        config = dict(actionPort=port, group=GROUP, name=NAME, local=LOCAL, remote=REMOTE,
+        config = dict(actionPort=port, group=GROUP, sender=SENDER, name=NAME, local=LOCAL, remote=REMOTE,
                       timestamp=1_900_000_000, actionToken="synthetic-peer-test", eventToken="unused")
 
         def request(method, path, auth=True, value=None):

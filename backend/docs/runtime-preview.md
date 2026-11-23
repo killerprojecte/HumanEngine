@@ -13,11 +13,13 @@ installation must retain its matching authority and recovery gates. This mode
 never repairs or bypasses them. Writable startup may initialize a new database,
 keys and authority, load configured plugins, and perform their real work.
 
-Build the command with the native ICU, FTS5 and builtin artifact profile described
-by the backend Makefile/native ICU documentation. Runtime preview requires:
+Build the command with the native ICU and FTS5 profile described by the backend
+Makefile/native ICU documentation. Runtime preview requires:
 
-- `sqlite_fts5`, `humanengine_icu`, and `bundled_wasm` build tags and their real
-  native build inputs. The ordinary Makefile build is not silently promoted.
+- `sqlite_fts5` and `humanengine_icu` build tags and their real native build inputs.
+  The packaged preview additionally uses `bundled_wasm` and verifies its four
+  shipped artifacts. A native host built without that tag registers no builtins
+  and still uses the existing configuration for local V1 plugins.
 - The pinned libvips library, passed as an absolute `--image-library` path.
 - The pinned sqlite-vec extension passed as an absolute `--vector-extension`
   path, or a binary built with `bundled_sqlite_vec` when that option is omitted.
@@ -43,9 +45,9 @@ Example, with paths to already-provisioned pinned native assets:
 
 The listener is reserved before installation enrollment. Native preflight checks
 FTS5, ICU, image integrity/loading, sqlite-vec integrity/loading/version, Node
-executable resolution, plugin directory and distributed builtin availability.
-No builtin is added or implicitly enabled by the launcher. Application Open
-performs its own validation again and owns all business services.
+executable resolution and the plugin directory. Bundled builds also check
+distributed builtin availability; the application still owns what it enables.
+Application Open performs its own validation again and owns all business services.
 
 SIGINT, SIGTERM and Serve errors all enter the same real shutdown boundary.
 HTTP acceptance stops while the application's admission barrier seals and its
@@ -67,14 +69,15 @@ mode/refusal checks remain in the ordinary `sqlite_fts5` profile. Real startup,
 HTTP authentication, native dependency failures and cross-process ownership live
 in a separate Linux `sqlite_fts5,humanengine_icu,bundled_wasm` test file. Those
 native tests fail on missing dependencies; they never skip or use a health stub.
+They also build a separate unbundled command and verify real settings and empty
+plugin-list responses before normal signal-driven drain.
 
 `make test` first checks the ordinary launcher profile with native fixture paths
 unset, then runs the full ordinary race suite and vet. `make native-icu-test`
 requires `native-runtime-preview-test` before the full native race suite and vet.
 The explicit launcher gates verify exact test names, successful completion and
-zero skips: four ordinary top-level tests (including the process helper), eight
-native top-level tests, and both native dependency-failure subtests. Removing a
-native build tag or accidentally selecting no tests cannot produce a green gate.
+zero skips. Removing a native build tag or accidentally selecting no tests
+cannot produce a green gate.
 
 CI installs Node 24.22.1 and lockfile dependencies with `npm ci`; the native target
 builds the exact ICU provider and builtin WASM first. It sets `HE_SOURCE_ROOT` to

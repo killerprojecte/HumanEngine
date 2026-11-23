@@ -124,6 +124,27 @@ func waitCommandExit(t *testing.T, logs *commandLog, done <-chan error) {
 		t.Fatal("credential printed")
 	}
 }
+func TestRuntimePreviewUnbundledHostBootsWithoutPlugins(t *testing.T) {
+	binary := filepath.Join(t.TempDir(), "humanengine")
+	build := exec.CommandContext(t.Context(), "go", "build", "-tags=sqlite_fts5,humanengine_icu", "-o", binary, ".")
+	if output, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build host without bundled WASM: %v\n%s", err, output)
+	}
+
+	cmd, logs, done := runtimeCommandWithPlugin(t, launcherArgs(t), "", binary)
+	address := runtimeAddress(t, logs, done)
+	commandRequest(t, address, http.MethodGet, "/api/settings", nil, http.StatusOK)
+	body := commandRequest(t, address, http.MethodGet, "/api/plugins", nil, http.StatusOK)
+	var plugins []json.RawMessage
+	if err := json.Unmarshal(body, &plugins); err != nil || plugins == nil || len(plugins) != 0 {
+		t.Fatalf("unbundled host must expose an empty plugin array: %s (%v)", body, err)
+	}
+	if err := cmd.Process.Signal(syscall.SIGTERM); err != nil {
+		t.Fatal(err)
+	}
+	waitCommandExit(t, logs, done)
+}
+
 func TestRuntimePreviewTCPBootWriteSignalDrainRestart(t *testing.T) {
 	args := launcherArgs(t)
 	cmd, logs, done := runtimeCommand(t, args)

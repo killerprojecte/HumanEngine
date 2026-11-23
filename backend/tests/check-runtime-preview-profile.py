@@ -28,6 +28,7 @@ DEFAULT = {
     "TestRuntimePreviewUIUnavailableBeforeEnrollment",
 }
 NATIVE = DEFAULT | {
+    "TestRuntimePreviewUnbundledHostBootsWithoutPlugins",
     "TestRuntimePreviewTCPBootWriteSignalDrainRestart",
     "TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart",
     "TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart/v1",

@@ -20,7 +20,6 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsdate"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability/logdelivery"
-	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/storage"
 	"github.com/killerprojecte/HumanEngine/backend/internal/topiccollation"
@@ -178,11 +177,9 @@ func (c runtimeConfig) preflight(ctx context.Context, database string) (app.Opti
 	if err = checkRuntimeVector(ctx, c.vector); err != nil {
 		return fail("runtime_preview_sqlite_vec_invalid")
 	}
-	// Verify shipped modules without enabling any extra builtin or owner.
-	for _, id := range []string{"typing-delay", "web-read", "web-search", "snowluma"} {
-		if artifact, err := plugins.BuiltinArtifact(id); err != nil || len(artifact) == 0 {
-			return fail("runtime_preview_builtin_artifact_required")
-		}
+	options.Builtins, err = previewBuiltins()
+	if err != nil {
+		return app.Options{}, err
 	}
 	options.Installation = installation.Options{Database: db, AuthorityDirectory: authority, VectorExtension: c.vector, SourceTimezone: c.timezone}
 	options.Locale, options.Node, options.PluginRoot = c.locale, node, root

@@ -76,12 +76,13 @@ func (s *Store) ApplyWith(ctx context.Context, changes []Change, apply func(*rec
 		}
 		prepared = append(prepared, entry)
 	}
-	return s.authority.PrepareWrite(ctx, s.main, func(read *recovery.MainRead) (recovery.WritePlan, error) {
+	return s.authority.PrepareOrderedWrite(ctx, s.main, func(read *recovery.MainRead) (recovery.OrderedWritePlan, error) {
 		type operation struct {
 			preparedChange
 			revision string
 		}
 		ops := []operation{}
+		createSchema := false
 		intents := []recovery.Revocation{}
 		type key struct{ namespace, name string }
 		exists := map[key]bool{}
@@ -91,25 +92,27 @@ func (s *Store) ApplyWith(ctx context.Context, changes []Change, apply func(*rec
 			if entry.action == "clear" && !known[k] {
 				rows, err := read.Query("SELECT 1 FROM secrets WHERE namespace=? AND name=?", entry.namespace, entry.name)
 				if err != nil {
-					return recovery.WritePlan{}, err
+					return recovery.OrderedWritePlan{}, err
 				}
 				exists[k] = rows.Next()
 				known[k] = true
 				if err = errors.Join(rows.Err(), rows.Close()); err != nil {
-					return recovery.WritePlan{}, err
+					return recovery.OrderedWritePlan{}, err
 				}
 			}
 			if entry.action == "clear" && !exists[k] {
 				continue
 			}
 			if len(ops) == 0 {
-				if err := requireSecretSecuritySchema(read); err != nil {
-					return recovery.WritePlan{}, err
+				var err error
+				createSchema, err = secretSecuritySchemaMissing(read)
+				if err != nil {
+					return recovery.OrderedWritePlan{}, err
 				}
 			}
 			var b [16]byte
 			if _, err := rand.Read(b[:]); err != nil {
-				return recovery.WritePlan{}, err
+				return recovery.OrderedWritePlan{}, err
 			}
 			b[6] = b[6]&15 | 64
 			b[8] = b[8]&63 | 128
@@ -119,7 +122,7 @@ func (s *Store) ApplyWith(ctx context.Context, changes []Change, apply func(*rec
 			exists[k] = entry.action == "set"
 			known[k] = true
 		}
-		return recovery.WritePlan{MinimumReader: 1, Intents: intents, Apply: func(tx *recovery.MainMutation) error {
+		step := recovery.OrderedWriteStep{EnsureSecurityState: createSchema, Intents: intents, Apply: func(tx *recovery.MainMutation) error {
 			for _, op := range ops {
 				if _, err := tx.Exec("INSERT INTO main.recovery_security_state VALUES(1,?) ON CONFLICT(id) DO UPDATE SET revision=excluded.revision", op.revision); err != nil {
 					return err
@@ -138,6 +141,7 @@ func (s *Store) ApplyWith(ctx context.Context, changes []Change, apply func(*rec
 				return apply(tx)
 			}
 			return nil
-		}}, nil
+		}}
+		return recovery.OrderedWritePlan{MinimumReader: 1, Steps: []recovery.OrderedWriteStep{step}}, nil
 	})
 }

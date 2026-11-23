@@ -46,11 +46,16 @@ The source constructor creates secrets even before domain-ready operations.
 NewStore likewise performs that exact DDL explicitly at initialization, outside
 restricted mutation. It requires the caller to supply an already bound authority;
 it does not enroll a new installation. The source lazily creates security-state
-inside advanceSecurityState. The candidate instead requires its canonical schema
+inside advanceSecurityState. The standalone `Apply` candidate instead requires its canonical schema
 before a security-changing write, since MainMutation correctly denies DDL.
 A missing/noncanonical security table returns secret_security_schema_unsupported
 before intent or main mutations. Encryption/key loading still precede that error.
 This bootstrap gap is tested and is not claimed equivalent to TS lazy creation.
+Builtin plugin settings use `ApplyWith`: the coordinator ensures the canonical
+schema inside the same main transaction before the first real credential intent,
+without requiring a setting or model mutation to prime a fresh installation.
+An unchanged credential set does not prepare the schema, and an incompatible
+existing schema fails before any credential intent.
 
 One installation should reuse one Store and authority coordinator. Admission is
 context-aware and serializes key caching and operations. Multiple Stores sharing

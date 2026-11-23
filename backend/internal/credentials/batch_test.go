@@ -56,3 +56,47 @@ func TestCredentialBatchConfigTransaction(t *testing.T) {
 		})
 	}
 }
+
+func TestFreshCredentialBatchLazilyEnsuresAndRollsBackSecuritySchema(t *testing.T) {
+	ctx := context.Background()
+	s := secretFixtureStore(t, false)
+	hasSchema := func() bool {
+		t.Helper()
+		var exists bool
+		if err := s.main.QueryRow("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='recovery_security_state')").Scan(&exists); err != nil {
+			t.Fatal(err)
+		}
+		return exists
+	}
+	missing := []Change{{"plugin:test", "missing", &Mutation{Action: "clear"}}}
+	head, err := s.ApplyWith(ctx, missing, nil)
+	if err != nil || head.Sequence != 0 || hasSchema() {
+		t.Fatal("no-op clear created security state or issued an intent", head, err)
+	}
+	stopped := errors.New("synthetic_configuration_failure")
+	change := []Change{{"plugin:test", "credential", &Mutation{Action: "set", Value: "synthetic"}}}
+	_, err = s.ApplyWith(ctx, change, func(*recovery.MainMutation) error { return stopped })
+	if !errors.Is(err, stopped) || hasSchema() {
+		t.Fatal("failed configuration did not roll back new security schema", err)
+	}
+	if _, err := s.Has(ctx, "plugin:test", "credential"); err == nil {
+		t.Fatal("durable intent gap was silently repaired")
+	}
+}
+
+func TestCredentialBatchDoesNotRepairIncompatibleSecuritySchema(t *testing.T) {
+	ctx := context.Background()
+	s := secretFixtureStore(t, false)
+	if _, err := s.main.Exec("CREATE TABLE recovery_security_state(id INTEGER PRIMARY KEY,revision TEXT)"); err != nil {
+		t.Fatal(err)
+	}
+	change := []Change{{"plugin:test", "credential", &Mutation{Action: "set", Value: "synthetic"}}}
+	_, err := s.ApplyWith(ctx, change, nil)
+	if !errors.Is(err, recovery.ErrSecuritySchemaUnsupported) {
+		t.Fatal("incompatible security schema was accepted", err)
+	}
+	found, err := s.Has(ctx, "plugin:test", "credential")
+	if found || err != nil {
+		t.Fatal("incompatible security schema wrote a credential or issued an intent", found, err)
+	}
+}

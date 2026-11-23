@@ -267,8 +267,12 @@ func (s *Store) Apply(ctx context.Context, namespace, name string, mutation *Mut
 				return noop, nil
 			}
 		}
-		if err := requireSecretSecuritySchema(read); err != nil {
+		missing, err := secretSecuritySchemaMissing(read)
+		if err != nil {
 			return recovery.WritePlan{}, err
+		}
+		if missing {
+			return recovery.WritePlan{}, ErrSecuritySchemaUnsupported
 		}
 		var b [16]byte
 		if _, err := rand.Read(b[:]); err != nil {
@@ -290,10 +294,13 @@ func (s *Store) Apply(ctx context.Context, namespace, name string, mutation *Mut
 		}}, nil
 	})
 }
-func requireSecretSecuritySchema(read *recovery.MainRead) error {
+
+// The main writer reservation prevents schema changes before the plan runs.
+// Distinguish absence (the batch may lazily create it) from invalid schema.
+func secretSecuritySchemaMissing(read *recovery.MainRead) (bool, error) {
 	rows, err := read.Query("SELECT type,sql FROM main.sqlite_master WHERE name='recovery_security_state'")
 	if err != nil {
-		return err
+		return false, err
 	}
 	var kind, definition string
 	exists := rows.Next()
@@ -301,14 +308,14 @@ func requireSecretSecuritySchema(read *recovery.MainRead) error {
 		err = rows.Scan(&kind, &definition)
 	}
 	err = errors.Join(err, rows.Err(), rows.Close())
-	if err != nil {
-		return err
+	if err != nil || !exists {
+		return !exists, err
 	}
 	normalized := strings.Replace(strings.ToLower(strings.Join(strings.Fields(definition), "")), "ifnotexists", "", 1)
-	if !exists || kind != "table" || normalized != "createtablerecovery_security_state(idintegerprimarykeycheck(id=1),revisiontextnotnull)" {
-		return ErrSecuritySchemaUnsupported
+	if kind != "table" || normalized != "createtablerecovery_security_state(idintegerprimarykeycheck(id=1),revisiontextnotnull)" {
+		return false, ErrSecuritySchemaUnsupported
 	}
-	return nil
+	return false, nil
 }
 
 func (s *Store) lock(ctx context.Context) error {

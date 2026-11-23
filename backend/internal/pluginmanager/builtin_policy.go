@@ -15,8 +15,9 @@ type BuiltinPolicy struct {
 	Configure         func() (BuiltinPolicy, func())
 	CredentialFailure func(context.Context, error) error
 	Validate          func(context.Context, *jsjson.Object) error
-	Prepare           func(context.Context, *jsjson.Object, *jsjson.Object) (*jsjson.Object, []credentials.Change, error)
-	Secrets           func(context.Context) (*jsjson.Object, error)
+	// Prepare transfers ownership of its change list; the host assigns its namespace.
+	Prepare func(context.Context, *jsjson.Object, *jsjson.Object) (*jsjson.Object, []credentials.Change, error)
+	Secrets func(context.Context) (*jsjson.Object, error)
 }
 
 func (m *Manager) WithBuiltinPolicy(id string, policy BuiltinPolicy) error {

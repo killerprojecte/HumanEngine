@@ -21,8 +21,8 @@ type policyGuestHost interface {
 // a fresh immutable binding, including every continuation, and synchronously
 // unloads it before returning. The stable wrapper never captures a retired call.
 // It cannot borrow or retire the enabled adapter's separate guest generation.
-func TransientPolicy(host *plugins.WASMHost, id string, artifact []byte, store *credentials.Store) pluginmanager.BuiltinPolicy {
-	return transientPolicy(host, id, artifact, store, func(ctx context.Context, artifact []byte) (compiledPolicy, error) {
+func TransientPolicy(host *plugins.WASMHost, id string, artifact []byte, hasSecret func(context.Context, string) (bool, error)) pluginmanager.BuiltinPolicy {
+	return transientPolicy(host, id, artifact, hasSecret, func(ctx context.Context, artifact []byte) (compiledPolicy, error) {
 		return host.Compile(ctx, artifact)
 	})
 }
@@ -32,15 +32,15 @@ type compiledPolicy interface {
 	Close()
 }
 
-func transientPolicy(host policyGuestHost, id string, artifact []byte, store *credentials.Store, compile func(context.Context, []byte) (compiledPolicy, error)) pluginmanager.BuiltinPolicy {
+func transientPolicy(host policyGuestHost, id string, artifact []byte, hasSecret func(context.Context, string) (bool, error), compile func(context.Context, []byte) (compiledPolicy, error)) pluginmanager.BuiltinPolicy {
 	artifact = append([]byte(nil), artifact...)
 	gate := make(chan struct{}, 1)
 	gate <- struct{}{}
-	policy := newTransientPolicy(host, id, artifact, store, gate, host.Enable)
+	policy := newTransientPolicy(host, id, artifact, hasSecret, gate, host.Enable)
 	if compile != nil {
 		policy.Configure = func() (pluginmanager.BuiltinPolicy, func()) {
 			var compiled compiledPolicy
-			scoped := newTransientPolicy(host, id, artifact, store, gate, func(ctx context.Context, id string, artifact []byte) error {
+			scoped := newTransientPolicy(host, id, artifact, hasSecret, gate, func(ctx context.Context, id string, artifact []byte) error {
 				if compiled == nil {
 					var err error
 					compiled, err = compile(ctx, artifact)
@@ -62,7 +62,7 @@ func transientPolicy(host policyGuestHost, id string, artifact []byte, store *cr
 
 // The operation lease substitutes only the code loader; both paths use the
 // same gate, fresh module, call binding and physical disable.
-func newTransientPolicy(host policyGuestHost, id string, artifact []byte, store *credentials.Store, gate chan struct{}, enable func(context.Context, string, []byte) error) pluginmanager.BuiltinPolicy {
+func newTransientPolicy(host policyGuestHost, id string, artifact []byte, hasSecret func(context.Context, string) (bool, error), gate chan struct{}, enable func(context.Context, string, []byte) error) pluginmanager.BuiltinPolicy {
 	run := func(ctx context.Context, fn func(pluginmanager.BuiltinPolicy) error) (err error) {
 		if err = ctx.Err(); err != nil {
 			return
@@ -86,7 +86,7 @@ func newTransientPolicy(host policyGuestHost, id string, artifact []byte, store 
 		if err != nil {
 			return err
 		}
-		return fn(Policy(call, ctx, store))
+		return fn(Policy(call, ctx, hasSecret))
 	}
 	return pluginmanager.BuiltinPolicy{
 		Validate: func(ctx context.Context, value *jsjson.Object) error {

@@ -33,7 +33,10 @@ func (a *Application) bindSnowLuma(ctx context.Context, owners Owners) error {
 	if err != nil {
 		return err
 	}
-	if err = a.Plugins.WithBuiltinPolicy("snowluma", snow.TransientPolicy(a.WASM, "snowluma-policy", artifact, owners.Credentials)); err != nil {
+	hasSecret := func(ctx context.Context, name string) (bool, error) {
+		return owners.Credentials.Has(ctx, "plugin:snowluma", name)
+	}
+	if err = a.Plugins.WithBuiltinPolicy("snowluma", snow.TransientPolicy(a.WASM, "snowluma-policy", artifact, hasSecret)); err != nil {
 		return err
 	}
 	registry := snow.NewRegistry(a.Engine.Runtime)

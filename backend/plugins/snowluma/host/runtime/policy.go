@@ -10,7 +10,7 @@ import (
 
 // Policy uses an immutable, separately loaded policy guest, not the adapter's
 // enabled generation. Its caller owns the whole operation and physical lifetime.
-func Policy(call func(context.Context, []byte) ([]byte, error), life context.Context, store *credentials.Store) pluginmanager.BuiltinPolicy {
+func Policy(call func(context.Context, []byte) ([]byte, error), life context.Context, hasSecret func(context.Context, string) (bool, error)) pluginmanager.BuiltinPolicy {
 	invoke := func(ctx context.Context, input *jsjson.Object) (*jsjson.Object, error) {
 		if err := ctx.Err(); err != nil {
 			return nil, err
@@ -78,7 +78,7 @@ func Policy(call func(context.Context, []byte) ([]byte, error), life context.Con
 					}
 					return config, changes, nil
 				case "secret_apply":
-					changes = append(changes, credentials.Change{Namespace: "plugin:snowluma", Name: str(result, "key"), Mutation: &credentials.Mutation{Action: str(result, "action"), Value: str(result, "value")}})
+					changes = append(changes, credentials.Change{Name: str(result, "key"), Mutation: &credentials.Mutation{Action: str(result, "action"), Value: str(result, "value")}})
 					// This is an ordered transaction plan, not an executed mutation. The
 					// credential owner encrypts/commits in this order and stops on first error.
 					input = obj("operation", "configuration_applied", "state", get(result, "state"))
@@ -88,7 +88,7 @@ func Policy(call func(context.Context, []byte) ([]byte, error), life context.Con
 			}
 		},
 		Secrets: func(ctx context.Context) (*jsjson.Object, error) {
-			if store == nil {
+			if hasSecret == nil {
 				return nil, errors.New("plugin_credential_owner_missing")
 			}
 			input := obj("operation", "configuration_secrets")
@@ -107,7 +107,7 @@ func Policy(call func(context.Context, []byte) ([]byte, error), life context.Con
 				if str(result, "kind") != "secret_has" {
 					return nil, errors.New("invalid_guest_secret_step")
 				}
-				present, e := store.Has(ctx, "plugin:snowluma", str(result, "key"))
+				present, e := hasSecret(ctx, str(result, "key"))
 				if e != nil {
 					return nil, e
 				}

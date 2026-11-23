@@ -22,6 +22,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 func memeHTTP(t *testing.T) (*Server, *sql.DB, *memeengine.Service) {
@@ -152,12 +154,38 @@ func TestMemeCatalogPublicationFiltersOrderAndAuthority(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	request := func(path, token string) *httptest.ResponseRecorder {
+	// Each authority reservation starts one main snapshot. The test uses a
+	// single physical main connection to observe preparations on every request.
+	db.SetMaxOpenConns(1)
+	conn, err := db.Conn(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	snapshots := 0
+	if err = conn.Raw(func(driver any) error {
+		driver.(*sqlite3.SQLiteConn).RegisterAuthorizer(func(op int, arg, _, _ string) int {
+			if op == sqlite3.SQLITE_TRANSACTION && arg == "BEGIN" {
+				snapshots++
+			}
+			return sqlite3.SQLITE_OK
+		})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err = conn.Close(); err != nil {
+		t.Fatal(err)
+	}
+	request := func(path, token string, wantSnapshots int) *httptest.ResponseRecorder {
 		t.Helper()
+		snapshots = 0
 		r := httptest.NewRequest("GET", path, nil)
 		r.Header.Set("Authorization", "Bearer "+token)
 		w := httptest.NewRecorder()
 		server.ServeHTTP(w, r)
+		if snapshots != wantSnapshots {
+			t.Fatalf("catalog SQLite snapshots: got %d, want %d", snapshots, wantSnapshots)
+		}
 		return w
 	}
 	assertPage := func(path string, total, page, size int, first string) {
@@ -166,7 +194,7 @@ func TestMemeCatalogPublicationFiltersOrderAndAuthority(t *testing.T) {
 			Total, Page, PageSize int
 			Items                 []struct{ ID string }
 		}
-		w := request(path, fixtureToken)
+		w := request(path, fixtureToken, 1)
 		if err := json.Unmarshal(w.Body.Bytes(), &payload); err != nil || w.Code != 200 ||
 			payload.Total != total || payload.Page != page || payload.PageSize != size || len(payload.Items) != 1 || payload.Items[0].ID != first {
 			t.Fatalf("invalid catalog publication: %d %s (%v)", w.Code, w.Body.String(), err)
@@ -176,13 +204,20 @@ func TestMemeCatalogPublicationFiltersOrderAndAuthority(t *testing.T) {
 	filtered := "/api/memes?query=literal%25tag&scope=local&state=known&pageSize=1"
 	assertPage(filtered, 2, 1, 1, "newer")
 	assertPage(filtered+"&page=99", 2, 2, 1, "older")
-	if w := request(filtered, "wrong-token"); w.Code != 401 || strings.Contains(w.Body.String(), "newer") {
+	if w := request(filtered, "wrong-token", 0); w.Code != 401 || strings.Contains(w.Body.String(), "newer") {
 		t.Fatalf("catalog auth was bypassed: %d %s", w.Code, w.Body.String())
+	}
+	invalid := "/api/memes?state=invalid"
+	if w := request(invalid, fixtureToken, 1); w.Code != 400 || w.Body.String() != `{"error":"Invalid request"}` {
+		t.Fatalf("invalid catalog query: %d %s", w.Code, w.Body.String())
 	}
 	if _, err := db.Exec("UPDATE recovery_gate SET value=json_set(value,'$.state','quarantined') WHERE id=1"); err != nil {
 		t.Fatal(err)
 	}
-	if w := request(filtered, fixtureToken); w.Code != 503 || !strings.Contains(w.Body.String(), "Request failed; inspect server diagnostics") || strings.Contains(w.Body.String(), "newer") {
+	if w := request(filtered, fixtureToken, 1); w.Code != 503 || !strings.Contains(w.Body.String(), "Request failed; inspect server diagnostics") || strings.Contains(w.Body.String(), "newer") {
 		t.Fatalf("catalog escaped a closed authority: %d %s", w.Code, w.Body.String())
+	}
+	if w := request(invalid, fixtureToken, 1); w.Code != 503 || !strings.Contains(w.Body.String(), "Request failed; inspect server diagnostics") {
+		t.Fatalf("invalid query escaped a closed authority: %d %s", w.Code, w.Body.String())
 	}
 }

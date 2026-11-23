@@ -271,10 +271,13 @@ func (s *Server) serveMemes(w http.ResponseWriter, r *http.Request, available bo
 		response.header.Set("Content-Type", "text/plain; charset=UTF-8")
 		e = publish(404, []byte("404 Not Found"))
 	} else {
-		e = s.authority.Publish(ctx, s.main, func(*sql.Conn) ([]byte, error) { return nil, nil }, func([]byte) error { return nil })
-		if e != nil {
-			fail(e)
-			return
+		// Listing prepares only URL parameters before its owning publication.
+		if operation != "list" {
+			e = s.authority.Publish(ctx, s.main, func(*sql.Conn) ([]byte, error) { return nil, nil }, func([]byte) error { return nil })
+			if e != nil {
+				fail(e)
+				return
+			}
 		}
 		var input *jsjson.Object
 		if operation == "update" || operation == "import" || operation == "analyze" || operation == "inclusion" {

@@ -41,11 +41,7 @@ func (o *runtimeStatusOwner) remoteHistory(ctx context.Context, id string, scene
 	}
 	// An ordinary recall can advance the gate while the adapter is pending.
 	// Fence the fresh display read from here, never from before the network wait.
-	err = o.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
-		gate, err := recovery.ReadGate(ctx, q)
-		if err != nil {
-			return nil, err
-		}
+	err = o.publisher.PublishWithGate(ctx, func(q *sql.Conn, gate recovery.Gate) ([]byte, error) {
 		current, err := browserScene(ctx, q, id)
 		if err != nil {
 			return nil, err

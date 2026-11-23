@@ -103,7 +103,12 @@ func (a *Authority) Scans() uint64 { a.mu.Lock(); defer a.mu.Unlock(); return a.
 // socket or wait for another worker. A successful emit is irrevocable even if
 // later rollback fails; the returned error must not be used to replay output.
 // It never calls a bot owner or waits for a main acknowledgement.
-func (a *Authority) Publish(ctx context.Context, main *sql.DB, read func(*sql.Conn) ([]byte, error), emit func([]byte) error) (err error) {
+func (a *Authority) Publish(ctx context.Context, main *sql.DB, read func(*sql.Conn) ([]byte, error), emit func([]byte) error) error {
+	return a.publish(ctx, main, func(conn *sql.Conn, _ Gate) ([]byte, error) {
+		return read(conn)
+	}, emit)
+}
+func (a *Authority) publish(ctx context.Context, main *sql.DB, read func(*sql.Conn, Gate) ([]byte, error), emit func([]byte) error) (err error) {
 	// A pool checkout is not a SQLite snapshot. Do it before authority so a
 	// bounded shared pool cannot form a main-connection/authority-mutex cycle.
 	conn, err := main.Conn(ctx)
@@ -155,7 +160,7 @@ func (a *Authority) Publish(ctx context.Context, main *sql.DB, read func(*sql.Co
 	if gate.Authority != a.path || gate.Head != head {
 		return errors.New("recovery_authority_head_changed")
 	}
-	bytes, err := read(conn)
+	bytes, err := read(conn, gate)
 	if err != nil {
 		return err
 	}

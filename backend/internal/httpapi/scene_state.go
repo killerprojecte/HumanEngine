@@ -67,18 +67,16 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 	var kind string
 	var scene botruntime.Scene
 	var observed recovery.Gate
-	err = owner.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
-		var err error
-		if observed, err = recovery.ReadGate(ctx, q); err != nil {
-			return nil, err
-		}
+	err = owner.publisher.PublishWithGate(ctx, func(q *sql.Conn, gate recovery.Gate) ([]byte, error) {
+		observed = gate
 		switch operation {
 		case "state":
 			return nil, q.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM scenes WHERE id=?)", sqlID).Scan(&exists)
 		case "history":
 			return nil, q.QueryRowContext(ctx, "SELECT COALESCE((SELECT json_extract(value,'$.kind') FROM scenes WHERE id=?),'')", sqlID).Scan(&kind)
 		case "history-remote":
-			scene, err = browserScene(ctx, q, sqlID)
+			value, err := browserScene(ctx, q, sqlID)
+			scene = value
 			return nil, err
 		}
 		return nil, nil
@@ -124,11 +122,7 @@ func (s *Server) serveSceneRead(w http.ResponseWriter, r *http.Request, availabl
 		fail()
 		return
 	}
-	err = owner.publisher.Publish(ctx, func(q *sql.Conn) ([]byte, error) {
-		current, err := recovery.ReadGate(ctx, q)
-		if err != nil {
-			return nil, err
-		}
+	err = owner.publisher.PublishWithGate(ctx, func(_ *sql.Conn, current recovery.Gate) ([]byte, error) {
 		if current != observed {
 			return nil, errors.New("response_materialization_stale_or_unbound")
 		}

@@ -78,12 +78,20 @@ func (r *ReadPublisher) OwnedBy(main *sql.DB, authority *Authority) bool {
 	return r != nil && r.originMain == main && r.originAuthority == authority
 }
 func (r *ReadPublisher) Publish(ctx context.Context, read func(*sql.Conn) ([]byte, error), emit func([]byte) error) error {
+	return r.PublishWithGate(ctx, func(conn *sql.Conn, _ Gate) ([]byte, error) {
+		return read(conn)
+	}, emit)
+}
+
+// PublishWithGate passes the verified gate from the projection's own WAL snapshot.
+// Each publication still checks the current authority and validates again before emit.
+func (r *ReadPublisher) PublishWithGate(ctx context.Context, read func(*sql.Conn, Gate) ([]byte, error), emit func([]byte) error) error {
 	done, ok := r.work.Start()
 	if !ok {
 		return errors.New("recovery_read_publisher_closed")
 	}
 	defer done()
-	return r.authority.Publish(ctx, r.main, read, emit)
+	return r.authority.publish(ctx, r.main, read, emit)
 }
 func (r *ReadPublisher) CloseAndWait(ctx context.Context) error {
 	if err := r.work.Wait(ctx); err != nil {

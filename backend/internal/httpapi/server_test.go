@@ -26,7 +26,7 @@ import (
 const fixtureToken = "synthetic-http-test-token"
 const fixtureSecret = "synthetic-presence-only-value-not-for-wire"
 
-func fixtureServer(t *testing.T) (*Server, *sql.DB, *sql.DB, recovery.Gate) {
+func fixtureServer(t testing.TB) (*Server, *sql.DB, *sql.DB, recovery.Gate) {
 	t.Helper()
 	root := t.TempDir()
 	authorityPath := filepath.Join(root, "authority")

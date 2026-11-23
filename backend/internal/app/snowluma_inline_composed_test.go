@@ -108,6 +108,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 				Params struct {
 					File      string
 					MessageID any `json:"message_id"`
+					GroupID   any `json:"group_id"`
 				}
 			}
 			if json.Unmarshal(wire, &request) != nil {
@@ -115,6 +116,12 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 			}
 			var data any = map[string]any{}
 			switch request.Action {
+			case "send_group_msg":
+				if fmt.Sprint(request.Params.GroupID) != "144" {
+					unexpected <- request.Action
+					return
+				}
+				data = map[string]any{"message_id": 1499}
 			case "get_login_info":
 				data = map[string]any{"user_id": 42}
 			case "get_group_msg_history":
@@ -389,6 +396,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 	socket = currentSocket
 	assertNativeStickerPersonalization(t, ctx, app, emit, scene, mediaTokens.encoded)
 	assertNativeStickerTagReuse(t, ctx, app, emit, scene, mediaTokens.encoded)
+	assertSlowVisionSceneIsolation(t, ctx, app, owners.Main, emit, mediaTokens.encoded)
 	assetID, png, calls := assertAutomaticStickerAnalysisHeldRecall(t, ctx, app, emit, scene)
 	if err := second.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)

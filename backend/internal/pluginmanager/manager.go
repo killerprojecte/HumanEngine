@@ -206,7 +206,7 @@ func (m *Manager) inspect(ctx context.Context, id string, i *item, operation str
 	if err != nil {
 		return plugins.Inspection{}, err
 	}
-	if i.builtin {
+	if i.wasm() {
 		return inspectBuiltinPolicy(ctx, i, i.policy, operation, incoming, previous, requestID)
 	}
 	request := plugins.InspectionRequest{Operation: operation, ID: id, Path: i.path, Config: raw, Previous: old}
@@ -267,7 +267,7 @@ func (m *Manager) List(ctx context.Context) ([]any, error) {
 		m.mu.Lock()
 		entry := clone(i.manifest)
 		version := float64(1)
-		if i.builtin {
+		if i.wasm() {
 			version = 2
 		}
 		_ = entry.Set("apiVersion", version)
@@ -351,7 +351,7 @@ func (m *Manager) Configure(ctx context.Context, id string, input *jsjson.Object
 	prior, finish := reserve(i)
 	m.mu.Unlock()
 	releaseGate()
-	if !i.builtin {
+	if !i.wasm() {
 		m.host.AbortPlugin(id)
 	}
 	select {
@@ -360,7 +360,7 @@ func (m *Manager) Configure(ctx context.Context, id string, input *jsjson.Object
 	case <-ctx.Done():
 		// Keep the queue fence ordered after the cancelled operation's predecessor.
 		// Release builtin code before a successor can leave the queue.
-		if i.builtin {
+		if i.wasm() {
 			operation.close()
 		}
 		done, _ := m.work.Child()
@@ -379,7 +379,7 @@ func (m *Manager) Configure(ctx context.Context, id string, input *jsjson.Object
 	}
 	err = operation.validate(previous)
 	if err == nil {
-		if i.builtin {
+		if i.wasm() {
 			var value any
 			value, err = operation.prepare()
 			if err == nil {
@@ -503,7 +503,7 @@ func (m *Manager) disable(ctx context.Context, id string, persist bool) error {
 	i.enabled = false
 	prior, finish := reserve(i)
 	m.mu.Unlock()
-	if !i.builtin {
+	if !i.wasm() {
 		m.host.DetachConfigurationModule(id)
 	}
 	i.admissionGate.Unlock()
@@ -559,7 +559,7 @@ func (m *Manager) cleanup(id string, i *item) error {
 	m.mu.Lock()
 	i.physicalCleanups = nil
 	m.mu.Unlock()
-	if i.builtin {
+	if i.wasm() {
 		return m.wasm.Disable(context.Background(), id)
 	}
 	return m.host.RetireManagedRuntime(context.Background(), id)
@@ -607,7 +607,7 @@ func (m *Manager) startWithSession(ctx context.Context, id string, i *item, revi
 	if life.Err() != nil {
 		cancelLoad()
 	}
-	if i.builtin {
+	if i.wasm() {
 		if admitted != nil {
 			admitted()
 		}

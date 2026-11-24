@@ -7,6 +7,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/mediatasks"
 	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/runtime"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
@@ -340,7 +341,12 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 		return app, err
 	}
 	for _, entry := range entries {
-		if err = app.Plugins.RegisterV1(ctx, entry); err != nil {
+		if strings.HasSuffix(entry, ".v2.json") {
+			err = app.Plugins.RegisterExternalV2(entry)
+		} else {
+			err = app.Plugins.RegisterV1(ctx, entry)
+		}
+		if err != nil {
 			if ctx.Err() != nil {
 				return app, ctx.Err()
 			}

@@ -30,6 +30,10 @@ type BuiltinDescriptor struct {
 
 // RegisterBuiltin admits a composed V2 guest without opening its artifact.
 func (m *Manager) RegisterBuiltin(descriptor BuiltinDescriptor) error {
+	return m.registerWASM(descriptor, true)
+}
+
+func (m *Manager) registerWASM(descriptor BuiltinDescriptor, builtin bool) error {
 	parsed, err := jsjson.Parse(string(descriptor.Manifest))
 	if err != nil {
 		return err
@@ -61,7 +65,7 @@ func (m *Manager) RegisterBuiltin(descriptor BuiltinDescriptor) error {
 	tail := make(chan struct{})
 	close(tail)
 	life, cancel := context.WithCancel(context.Background())
-	m.items[id] = &item{builtin: true, manifest: manifest, artifact: descriptor.LoadArtifact, factory: descriptor.Start, policy: policy, tail: tail, ctx: life, cancel: cancel, pages: []any{}, actions: map[string]string{}}
+	m.items[id] = &item{builtin: builtin, manifest: manifest, artifact: descriptor.LoadArtifact, factory: descriptor.Start, policy: policy, tail: tail, ctx: life, cancel: cancel, pages: []any{}, actions: map[string]string{}}
 	m.order = append(m.order, id)
 	return nil
 }

@@ -230,3 +230,19 @@ call cancellation, subsequent sends, independent ingress, and idempotent disposa
 The additional native registration failure is a new internal fallible boundary;
 its rollback coverage is an actual Node/Go integration fixture, not a claim that
 the original TypeScript runtime has a native Installed callback.
+
+### External V2 read tools
+
+Add a manifest whose filename ends in `.v2.json` to the existing explicit local
+plugin entries. The manifest contains `id`, `name`, `version`, `apiVersion: 2`,
+`capabilities: ["tool"]`, and an `artifact` path to a `.wasm` file relative to
+that manifest. Both paths must stay inside the configured plugin root. This
+entry type does not use the V1 Node helper and does not support configuration,
+credentials, or adapters.
+
+The existing plugin enable/disable control starts or unloads the guest;
+enabled entries are restored on startup as usual. The guest implements the
+existing V2 WASI JSON call ABI. The `registrations` operation returns a list of
+`read` definitions named under its own plugin ID. A
+`{"operation":"toolExecute","tool":"example.read","input":{}}` request returns
+the tool result as JSON. V1 local entries remain unchanged.

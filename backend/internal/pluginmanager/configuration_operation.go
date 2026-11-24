@@ -18,7 +18,7 @@ type configurationSession struct {
 // module; an opted-in builtin retains only code, not guest state. Only the
 // second validator's newly preserved object is passed to prepare.
 func (m *Manager) beginConfiguration(ctx context.Context, id string, i *item, input, previous *jsjson.Object, requestID string) (*configurationSession, error) {
-	if i.builtin {
+	if i.wasm() {
 		policy := i.policy
 		closePolicy := func() {}
 		if policy.Configure != nil {

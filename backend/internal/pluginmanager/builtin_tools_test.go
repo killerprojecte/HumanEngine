@@ -58,7 +58,13 @@ func builtinToolManager(t *testing.T) (*Manager, *item, context.Context, *botrun
 	life, cancel := context.WithCancel(context.Background())
 	tail := make(chan struct{})
 	close(tail)
-	i := &item{builtin: true, ctx: life, cancel: cancel, revision: 1, desired: true, enabled: true, tail: tail}
+	i := &item{
+		builtin: true, ctx: life, cancel: cancel, revision: 1, desired: true, enabled: true, tail: tail,
+		artifact: func() ([]byte, error) {
+			t.Error("bridge fixture must not load an artifact")
+			return nil, errors.New("unexpected_fixture_artifact_load")
+		},
+	}
 	m.items["web-read"] = i
 	m.order = append(m.order, "web-read")
 	if host.PID() != 0 {

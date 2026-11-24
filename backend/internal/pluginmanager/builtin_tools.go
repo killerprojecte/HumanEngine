@@ -52,7 +52,7 @@ func (b *builtinToolWork) CloseAndWait(ctx context.Context) error {
 func (m *Manager) installBuiltinTools(in BuiltinRuntimeInput, raw json.RawMessage, execute BuiltinToolExecutor) (*botruntime.Extension, func(), error) {
 	m.mu.Lock()
 	i := m.items[in.ID]
-	valid := i != nil && i.builtin && i.ctx == in.Life && i.revision == in.Revision && i.desired && !m.closed
+	valid := i != nil && i.wasm() && i.ctx == in.Life && i.revision == in.Revision && i.desired && !m.closed
 	m.mu.Unlock()
 	if !valid || in.Life == nil || in.Life.Err() != nil || execute == nil {
 		return nil, nil, NewStartupError("plugin_disabled", nil)
@@ -95,7 +95,7 @@ func (m *Manager) builtinToolExtension(id string, i *item, revision uint64, life
 		name, effect := text(tool, "name"), text(tool, "effect")
 		// This bridge exposes only the existing read/planned-action continuation.
 		// Sending chat messages requires a different, explicitly bound capability.
-		if !strings.HasPrefix(name, id+".") || name == id+"." || tools[name] != nil || effect != "read" && effect != "learningCandidate" {
+		if !strings.HasPrefix(name, id+".") || name == id+"." || tools[name] != nil || effect != "read" && !(i.builtin && effect == "learningCandidate") {
 			return nil, errors.New("invalid_builtin_tool_registration")
 		}
 		if _, ok := prop(tool, "inputSchema").(*jsjson.Object); !ok {

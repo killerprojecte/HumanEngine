@@ -20,6 +20,7 @@ func free(ptr uint32) { abi.Free(ptr) }
 func pluginCall(ptr, size uint32) uint64 { return abi.Invoke(ptr, size, call) }
 
 var reads int
+var marker = "external read fixture"
 
 func call(raw []byte) any {
 	var request struct {
@@ -41,7 +42,7 @@ func call(raw []byte) any {
 	case "toolExecute":
 		if request.Tool == "stationary-fixture.read" && request.Input.Key == "sample" {
 			reads++
-			return map[string]any{"marker": "external read fixture", "reads": reads}
+			return map[string]any{"marker": marker, "reads": reads}
 		}
 	}
 	return map[string]string{"error": "unexpected_request"}

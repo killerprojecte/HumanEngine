@@ -2,6 +2,8 @@ package pluginmanager
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"os"
@@ -43,6 +45,15 @@ func (m *Manager) RegisterExternalV2(entry string) error {
 		return errors.New("invalid_local_plugin_path")
 	}
 	path := filepath.Join(filepath.Dir(entry), artifact)
+	var expected []byte
+	if value, found := manifest.Get("artifactSha256"); found {
+		encoded, _ := value.(string)
+		expected, err = hex.DecodeString(encoded)
+		if err != nil || len(expected) != sha256.Size {
+			return errors.New("external_v2_manifest_invalid")
+		}
+		manifest.Delete("artifactSha256")
+	}
 	manifest.Delete("artifact")
 	if _, found := manifest.Get("configSchema"); found {
 		return errors.New("external_v2_configuration_unsupported")
@@ -59,7 +70,14 @@ func (m *Manager) RegisterExternalV2(entry string) error {
 				return nil, err
 			}
 			defer root.Close()
-			return root.ReadFile(path)
+			artifact, err := root.ReadFile(path)
+			if err != nil {
+				return nil, err
+			}
+			if expected != nil && sha256.Sum256(artifact) != [sha256.Size]byte(expected) {
+				return nil, NewStartupError("plugin_artifact_digest_mismatch", nil)
+			}
+			return artifact, nil
 		}, Start: m.startExternalV2,
 	}, false)
 }

@@ -60,6 +60,7 @@ var startupCodes = map[string]bool{
 	"secret_key_permissions":           true,
 	"secret_key_invalid":               true,
 	"secret_decryption_failed":         true,
+	"plugin_artifact_digest_mismatch":  true,
 	"plugin_setup_failed":              true,
 	"plugin_disabled":                  true,
 	"invalid_plugin_configuration":     true,

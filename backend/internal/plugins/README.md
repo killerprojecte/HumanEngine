@@ -246,3 +246,16 @@ existing V2 WASI JSON call ABI. The `registrations` operation returns a list of
 `read` definitions named under its own plugin ID. A
 `{"operation":"toolExecute","tool":"example.read","input":{}}` request returns
 the tool result as JSON. V1 local entries remain unchanged.
+
+To switch versions, stage a new manifest and separately built guest at distinct
+versioned paths, stop the host, select the new manifest instead of the old one
+in the explicit local entries, then restart the same executable. Do not list
+both manifests for the same ID. The catalog shows the selected version and
+restores the saved enabled setting for that ID. Removing the entry and
+restarting removes it from the catalog and Planner.
+
+Set `artifactSha256` in each new manifest to the SHA-256 hex digest of its
+guest. The host checks the bytes when activating the plugin, not during tool
+calls. Existing manifests without the field are still accepted and rely on
+leaving the configured artifact unchanged. An activation failure leaves the
+plugin disabled; there is no automatic rollback or live manifest reload.

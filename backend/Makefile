@@ -222,8 +222,9 @@ native-icu-build: native-icu-builder-test $(ICU_ARCHIVE)
 # checkout and lockfile-installed dependencies provided by the CI job's npm ci.
 NATIVE_TEST_ENV = REQUIRE_ICU=1 HE_SOURCE_ROOT="$(abspath ..)" HE_IMAGE_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)"
 
+# The required uncached launcher gate already runs the full cold SnowLuma transport case.
 native-icu-test: native-runtime-preview-test
-	. "$(ICU_WORK_DIR)/env.sh" && $(NATIVE_TEST_ENV) go test -timeout 15m -race -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
+	. "$(ICU_WORK_DIR)/env.sh" && $(NATIVE_TEST_ENV) go test -timeout 15m -race -tags sqlite_fts5,humanengine_icu,bundled_wasm -skip '^TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart$$' ./...
 	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
 
 native-icu-source-free: native-icu-build

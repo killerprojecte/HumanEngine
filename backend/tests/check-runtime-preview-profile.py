@@ -32,6 +32,7 @@ NATIVE = DEFAULT | {
     "TestRuntimePreviewExternalV2ColdReplacement",
     "TestRuntimePreviewTCPBootWriteSignalDrainRestart",
     "TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart",
+    "TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart",
     "TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart/v1",
     "TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart/openai-chat",
     "TestRuntimePreviewNativePreflightFailureDoesNotEnroll",

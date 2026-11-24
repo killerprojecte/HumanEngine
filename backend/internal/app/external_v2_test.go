@@ -23,8 +23,6 @@ import (
 )
 
 func TestInstalledExternalV2ReadTool(t *testing.T) {
-	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
-	defer cancel()
 	root := t.TempDir()
 	pluginRoot := filepath.Join(root, "plugins")
 	if err := os.Mkdir(pluginRoot, 0700); err != nil {
@@ -38,9 +36,12 @@ func TestInstalledExternalV2ReadTool(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(pluginRoot, entry), []byte(manifest), 0600); err != nil {
 		t.Fatal(err)
 	}
-	build := exec.CommandContext(ctx, "go", "build", "-trimpath", "-buildmode=c-shared", "-o", filepath.Join(pluginRoot, artifact), "./testdata/externalv2")
+	buildCtx, cancelBuild := context.WithTimeout(t.Context(), time.Minute)
+	build := exec.CommandContext(buildCtx, "go", "build", "-trimpath", "-buildmode=c-shared", "-o", filepath.Join(pluginRoot, artifact), "./testdata/externalv2")
 	build.Env = append(os.Environ(), "GOOS=wasip1", "GOARCH=wasm", "CGO_ENABLED=0")
-	if output, err := build.CombinedOutput(); err != nil {
+	output, err := build.CombinedOutput()
+	cancelBuild()
+	if err != nil {
 		t.Fatalf("build independent WASI guest: %v\n%s", err, output)
 	}
 	node := filepath.Join(root, "node-witness")
@@ -62,6 +63,8 @@ func TestInstalledExternalV2ReadTool(t *testing.T) {
 		t.Fatal(err)
 	}
 	var logs applicationLogBuffer
+	ctx, cancel := context.WithTimeout(t.Context(), time.Minute)
+	defer cancel()
 	app, err := Open(ctx, Options{
 		Installation: installation.Options{Database: database,
 			AuthorityDirectory: authority, VectorExtension: extension, SourceTimezone: "UTC"},
@@ -179,14 +182,16 @@ func TestInstalledExternalV2ReadTool(t *testing.T) {
 	}
 	run := func(want witness) {
 		t.Helper()
+		turnCtx, cancelTurn := context.WithTimeout(t.Context(), 15*time.Second)
+		defer cancelTurn()
 		handle, err := app.Engine.Runtime.Run(scene, topic, false)
 		if err != nil {
 			t.Fatal(err)
 		}
 		select {
 		case <-handle.Done:
-		case <-ctx.Done():
-			t.Fatal(ctx.Err())
+		case <-turnCtx.Done():
+			t.Fatalf("turn expecting %+v did not finish: %v", want, turnCtx.Err())
 		}
 		if result := handle.Wait(); result.Err != nil || result.Reason != "planner_no_reply" || len(result.Receipts) != 0 {
 			t.Fatalf("expected noReply without an outbound receipt, got %+v", result)

@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -18,7 +19,11 @@ import (
 // Missing assets fail; these tests never substitute a graph or skip a dependency.
 func waitRuntimeLog(t *testing.T, logs *commandLog, contains string, done <-chan error) string {
 	t.Helper()
-	timer := time.NewTimer(30 * time.Second)
+	return waitRuntimeLogFor(t, logs, contains, done, 30*time.Second)
+}
+func waitRuntimeLogFor(t *testing.T, logs *commandLog, contains string, done <-chan error, timeout time.Duration) string {
+	t.Helper()
+	timer := time.NewTimer(timeout)
 	defer timer.Stop()
 	ticker := time.NewTicker(5 * time.Millisecond)
 	defer ticker.Stop()
@@ -38,7 +43,11 @@ func waitRuntimeLog(t *testing.T, logs *commandLog, contains string, done <-chan
 }
 func runtimeAddress(t *testing.T, logs *commandLog, done <-chan error) string {
 	t.Helper()
-	s := waitRuntimeLog(t, logs, `"code":"server.listening"`, done)
+	return runtimeAddressFor(t, logs, done, 30*time.Second)
+}
+func runtimeAddressFor(t *testing.T, logs *commandLog, done <-chan error, timeout time.Duration) string {
+	t.Helper()
+	s := waitRuntimeLogFor(t, logs, `"code":"server.listening"`, done, timeout)
 	for _, line := range strings.Split(s, "\n") {
 		prefix, flat, ok := strings.Cut(line, " | ")
 		if !ok {
@@ -61,14 +70,19 @@ func runtimeAddress(t *testing.T, logs *commandLog, done <-chan error) string {
 }
 func commandRequest(t *testing.T, address, method, path string, body []byte, want int) []byte {
 	t.Helper()
-	request, err := http.NewRequest(method, "http://"+address+path, bytes.NewReader(body))
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+	return commandRequestContext(t, ctx, address, method, path, body, want)
+}
+func commandRequestContext(t *testing.T, ctx context.Context, address, method, path string, body []byte, want int) []byte {
+	t.Helper()
+	request, err := http.NewRequestWithContext(ctx, method, "http://"+address+path, bytes.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
 	request.Header.Set("Authorization", "Bearer synthetic-launcher-token")
 	request.Header.Set("Content-Type", "application/json")
-	client := &http.Client{Timeout: 10 * time.Second}
-	response, err := client.Do(request)
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		t.Fatal(err)
 	}

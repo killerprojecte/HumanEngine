@@ -454,7 +454,8 @@ func (h *HTTP) event(w http.ResponseWriter, r *http.Request) {
 		finish(401)
 		return
 	}
-	decision, err := h.decision("http_event", bufferText(body))
+	raw := bufferText(body)
+	decision, err := h.decision("http_event", raw)
 	if err != nil {
 		finish(400)
 		return
@@ -470,7 +471,7 @@ func (h *HTTP) event(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if h.callbacks.Receive != nil {
-		if err = h.callbacks.Receive(h.life, bufferText(body)); err != nil {
+		if err = h.callbacks.Receive(h.life, raw); err != nil {
 			// OneBotAdapter.receive swallows normalization/callback errors, while the
 			// authenticated event endpoint still acknowledges without a quick action.
 			if h.callbacks.Error != nil {

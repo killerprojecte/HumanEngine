@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 )
 
 // SceneChanged is invoked only after a definite source scene commit. This
@@ -33,10 +34,61 @@ func (a *Application) SceneChanged(ctx context.Context, value *jsjson.Object) er
 		return err
 	}
 	if !scene.LearningEnabled {
-		a.Learning.Coordinator.CancelScene(scene.ID)
-		a.Semantic.CancelScene(scene.ID)
-		a.Contextual.CancelScene(scene.ID)
-		a.MediaTasks.CancelScene(scene.ID)
+		a.cancelSceneWork(scene.ID)
+	}
+	return nil
+}
+
+func (a *Application) cancelSceneWork(id string) {
+	a.Learning.Coordinator.CancelScene(id)
+	a.Semantic.CancelScene(id)
+	a.Contextual.CancelScene(id)
+	a.MediaTasks.CancelScene(id)
+}
+
+// The registration has already withdrawn the adapter; here the application
+// revokes background work for its durably enrolled scenes.
+func (a *Application) cancelAdapterScenes(adapterID string) error {
+	root, release, err := a.Engine.RootContext(context.Background())
+	if err != nil {
+		return err
+	}
+	defer release()
+	scenes := []string{}
+	err = a.Engine.Sources.WithRuntimeReads(root, func(reads botruntime.ReadAuthority) error {
+		return a.Engine.Sources.UseRuntimeReadScope(reads, func(scope sourceevents.RuntimeReadScope) error {
+			rows, err := scope.Query("SELECT value FROM scenes")
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+			for rows.Next() {
+				var raw string
+				if err = rows.Scan(&raw); err != nil {
+					return err
+				}
+				value, e := jsjson.Parse(raw)
+				if e != nil {
+					return e
+				}
+				if scene, ok := value.(*jsjson.Object); ok {
+					adapter, _ := scene.Get("adapterId")
+					if adapter == adapterID {
+						id, _ := scene.Get("id")
+						if text, ok := id.(string); ok {
+							scenes = append(scenes, text)
+						}
+					}
+				}
+			}
+			return rows.Err()
+		})
+	})
+	if err != nil {
+		return err
+	}
+	for _, id := range scenes {
+		a.cancelSceneWork(id)
 	}
 	return nil
 }

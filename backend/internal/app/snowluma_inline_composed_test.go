@@ -222,7 +222,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 					return err
 				}, nil
 			},
-			Stopped: target.snowStopped,
+			Stopped: target.cancelAdapterScenes,
 			Error:   func(code string, err error) { t.Logf("native fixture transport %s: %v", code, err) },
 		}, func(string) (string, bool) { return "", false })
 		life, stop := context.WithCancel(ctx)
@@ -386,9 +386,47 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 
 	assertInlineVisionModel(t, ctx, app, emit, counter)
 	verifyTokenRetired := mediaTokens.assertImages(t, ctx, app, emit)
+	// The guest's ID is distinct from its registered adapter ID. Stop must
+	// revoke the durable Snow scene's work, not all application media work.
+	const unrelated = "independent-adapter-scene"
+	appRequest(t, app, http.MethodPut, "/api/scenes/"+unrelated, map[string]any{
+		"id": unrelated, "adapterId": "isolated", "accountId": "42", "platformSceneId": "100",
+		"kind": "group", "name": "Independent Fixture", "participationEnabled": false,
+		"learningEnabled": false, "proactiveEnabled": false,
+	})
+	admit := func(sceneID string) context.Context {
+		t.Helper()
+		entered := make(chan context.Context, 1)
+		task, err := app.MediaTasks.Accept(sceneID, "stop-witness", func(work context.Context) error {
+			entered <- work
+			<-work.Done()
+			return work.Err()
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() {
+			app.MediaTasks.CancelMessage(sceneID, "stop-witness")
+			if err := task.Wait(context.Background()); !errors.Is(err, context.Canceled) {
+				t.Errorf("media work did not drain: %v", err)
+			}
+		})
+		select {
+		case work := <-entered:
+			return work
+		case <-ctx.Done():
+			t.Fatal("media stop witness was not admitted")
+			return nil
+		}
+	}
+	targetWork, unrelatedWork := admit(scene), admit(unrelated)
 	if err := first.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
 	}
+	if targetWork.Err() != context.Canceled || unrelatedWork.Err() != nil {
+		t.Fatalf("adapter stop revoked wrong work: target=%v unrelated=%v", targetWork.Err(), unrelatedWork.Err())
+	}
+	app.MediaTasks.CancelMessage(unrelated, "stop-witness")
 	second, currentSocket := activate(app, 2)
 	defer second.CloseAndWait(context.Background())
 	verifyRetired()

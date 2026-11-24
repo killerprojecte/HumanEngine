@@ -17,14 +17,14 @@ type InstallationPorts struct {
 	Registry     *Registry
 	Sender       Ports
 	BuildReceive func(*Sender) (func(context.Context, string) error, error)
-	Stopped      func() error
+	Stopped      func(adapterID string) error
 	Status       func(string)
 	Error        func(string, error)
 }
 type Installation struct {
 	sender       *Sender
 	registration *Registration
-	stopped      func() error
+	stopped      func(adapterID string) error
 	stoppedErr   error
 	once         sync.Once
 	detach       func() bool
@@ -122,7 +122,7 @@ func (i *Installation) Dispose() {
 		} else {
 			i.sender.Dispose()
 		}
-		i.stoppedErr = i.stopped()
+		i.stoppedErr = i.stopped(i.sender.adapter)
 	})
 }
 func (i *Installation) CloseAndWait(ctx context.Context) error {

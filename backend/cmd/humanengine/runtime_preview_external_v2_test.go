@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"syscall"
 	"testing"
 
@@ -93,17 +92,18 @@ func TestRuntimePreviewExternalV2ColdReplacement(t *testing.T) {
 
 	var address string
 	var logs *commandLog
+	var done <-chan error
 	boot := func(entry string) func() {
 		t.Helper()
-		process, processLogs, done := runtimeCommandWithPlugin(t, args, entry, binary)
-		logs = processLogs
+		process, processLogs, processDone := runtimeCommandWithPlugin(t, args, entry, binary)
+		logs, done = processLogs, processDone
 		address = runtimeAddress(t, logs, done)
 		return func() {
 			t.Helper()
 			if err := process.Process.Signal(syscall.SIGTERM); err != nil {
 				t.Fatal(err)
 			}
-			waitCommandExit(t, logs, done)
+			waitCommandExit(t, processLogs, processDone)
 		}
 	}
 	catalog := func(version string, enabled bool, failure string) {
@@ -146,9 +146,8 @@ func TestRuntimePreviewExternalV2ColdReplacement(t *testing.T) {
 		default:
 			t.Fatalf("actual Planner did not observe expected read state: %+v\n%s", want, logs.snapshot())
 		}
-		if !strings.Contains(logs.snapshot(), fmt.Sprintf(`"code":"runtime.turn.skipped","sceneId":%q`, simulation.ID)) {
-			t.Fatalf("missing completed skipped turn for %s\n%s", simulation.ID, logs.snapshot())
-		}
+		// The turn response does not wait for diagnostics to reach the child log pipe.
+		waitRuntimeLog(t, logs, fmt.Sprintf(`"code":"runtime.turn.skipped","sceneId":%q`, simulation.ID), done)
 	}
 	stop := boot("")
 	catalog("", false, "")

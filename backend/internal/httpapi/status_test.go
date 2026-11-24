@@ -16,6 +16,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 	"github.com/killerprojecte/HumanEngine/backend/internal/scheduler"
+	"github.com/mattn/go-sqlite3"
 )
 
 func TestStatusActualSourceHTTP(t *testing.T) {
@@ -121,6 +122,54 @@ func TestStatusActualSourceHTTP(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestStatusModelCountsDoNotReadCredentials(t *testing.T) {
+	ctx := t.Context()
+	s, db, a, _, _ := configurationFixture(t)
+	const modelConfig = `{"providers":[{"id":"provider","name":"Synthetic","protocol":"openai-chat","baseUrl":"https://fixture.invalid/v1"}],"models":[{"id":"model","displayName":"Synthetic","providerId":"provider","apiModelName":"synthetic","capabilities":["text"]}],"routes":[{"role":"planner","orderedModelIds":["model"],"timeoutMs":30000}]}`
+	save := func(value string) {
+		t.Helper()
+		if _, err := db.Exec("INSERT OR REPLACE INTO config(key,value) VALUES('models',?)", value); err != nil {
+			t.Fatal(err)
+		}
+	}
+	save(modelConfig)
+	logs := observability.New(nil, nil)
+	t.Cleanup(func() { _ = logs.Close(context.Background()) })
+	s.logs = logs
+	publisher, err := recovery.NewReadPublisherWithInitializer(ctx, db, a, func(conn *sqlite3.SQLiteConn) error {
+		conn.RegisterAuthorizer(func(op int, table, _, _ string) int {
+			if op == sqlite3.SQLITE_READ && table == "secrets" {
+				return sqlite3.SQLITE_DENY
+			}
+			return sqlite3.SQLITE_OK
+		})
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = publisher.CloseAndWait(context.Background()) })
+	if err = s.WithRuntimeStatus(new(botruntime.Runtime), scheduler.NewModelScheduler(), publisher, "synthetic", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	status := func() *httptest.ResponseRecorder {
+		r := httptest.NewRequest("GET", "/api/status", nil)
+		r.Header.Set("Authorization", "Bearer "+s.token)
+		w := httptest.NewRecorder()
+		s.ServeHTTP(w, r)
+		return w
+	}
+	w := status()
+	var got statusSnapshot
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &got) != nil || got.ProviderCount != 1 || got.ModelCount != 1 {
+		t.Fatalf("unexpected status: %d %s", w.Code, w.Body)
+	}
+	save(`{"providers":[{}],"models":[],"routes":[]}`)
+	if w = status(); w.Code != 503 {
+		t.Fatalf("invalid stored models returned %d: %s", w.Code, w.Body)
 	}
 }
 

@@ -424,6 +424,14 @@ func config(ctx context.Context, q *sql.Conn, key string, fallback []byte) ([]by
 	}
 	return []byte(value), err
 }
+func (s *Server) readModelConfig(ctx context.Context, q *sql.Conn) (map[string]any, error) {
+	raw, err := config(ctx, q, "models", []byte(`{"providers":[],"models":[],"routes":[]}`))
+	if err != nil {
+		return nil, err
+	}
+	return s.schemas.Parse("ModelConfig", raw)
+}
+
 func (s *Server) projection(ctx context.Context, q *sql.Conn, path string) ([]byte, error) {
 	switch path {
 	case "/api/rules", "/api/persona/versions":
@@ -451,11 +459,7 @@ func (s *Server) projection(ctx context.Context, q *sql.Conn, path string) ([]by
 		}
 		return marshalProjection(value)
 	case "/api/models":
-		raw, err := config(ctx, q, "models", []byte(`{"providers":[],"models":[],"routes":[]}`))
-		if err != nil {
-			return nil, err
-		}
-		value, err := s.schemas.Parse("ModelConfig", raw)
+		value, err := s.readModelConfig(ctx, q)
 		if err != nil {
 			return nil, err
 		}

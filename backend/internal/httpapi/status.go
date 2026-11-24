@@ -54,19 +54,24 @@ type statusSnapshot struct {
 
 func (s *Server) statusConfiguration(ctx context.Context, q *sql.Conn, result *statusSnapshot) error {
 	var settings struct{ Name string }
-	var models struct{ Providers, Models []json.RawMessage }
+	data, err := s.projection(ctx, q, "/api/settings")
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(data, &settings); err != nil {
+		return err
+	}
+	models, err := s.readModelConfig(ctx, q)
+	if err != nil {
+		return err
+	}
 	var scenes []struct{ ParticipationEnabled bool }
-	for _, entry := range []struct {
-		path   string
-		target any
-	}{{"/api/settings", &settings}, {"/api/models", &models}, {"/api/scenes", &scenes}} {
-		data, err := s.projection(ctx, q, entry.path)
-		if err != nil {
-			return err
-		}
-		if err = json.Unmarshal(data, entry.target); err != nil {
-			return err
-		}
+	data, err = s.projection(ctx, q, "/api/scenes")
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(data, &scenes); err != nil {
+		return err
 	}
 	result.Name = settings.Name
 	result.SceneCount = len(scenes)
@@ -75,8 +80,8 @@ func (s *Server) statusConfiguration(ctx context.Context, q *sql.Conn, result *s
 			result.EnabledScenes++
 		}
 	}
-	result.ProviderCount = len(models.Providers)
-	result.ModelCount = len(models.Models)
+	result.ProviderCount = len(models["providers"].([]any))
+	result.ModelCount = len(models["models"].([]any))
 	return nil
 }
 func (s *Server) serveRuntimeStatus(w http.ResponseWriter, r *http.Request, available bool, id string) {

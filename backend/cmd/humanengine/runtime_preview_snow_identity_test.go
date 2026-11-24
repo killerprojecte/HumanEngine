@@ -227,7 +227,11 @@ func TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart(t *testing.T) {
 	scene, other := canonical(group), canonical(otherGroup)
 	id := func(s string, m int) string { return s + ":m:" + encoded([]byte(fmt.Sprintf(`"%d"`, m))) }
 	originalID, quoteID, otherID := id(scene, original), id(scene, quoted), id(other, original)
-	type row struct{ ID, SceneID, ReplyToID, Status string }
+	senderID := "ob:u:" + encoded([]byte(`["snowluma","42","7"]`))
+	type row struct{ ID, SceneID, SenderID, ReplyToID, Status string }
+	sceneOriginal := row{originalID, scene, senderID, "", "available"}
+	sceneQuote := row{quoteID, scene, senderID, originalID, "available"}
+	independentOriginal := row{otherID, other, senderID, "", "available"}
 	read := func(sceneID, source string) []row {
 		t.Helper()
 		body := request(http.MethodGet, "/api/scenes/"+sceneID+"/history?source="+source, nil)
@@ -279,8 +283,8 @@ func TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart(t *testing.T) {
 	enable(true)
 	httpEvent(message(group, original))
 	httpEvent(message(otherGroup, original))
-	waitHistory(scene, "local", func(rows []row) bool { return slices.Contains(rows, row{originalID, scene, "", "available"}) })
-	waitHistory(other, "local", func(rows []row) bool { return slices.Contains(rows, row{otherID, other, "", "available"}) })
+	waitHistory(scene, "local", func(rows []row) bool { return slices.Contains(rows, sceneOriginal) })
+	waitHistory(other, "local", func(rows []row) bool { return slices.Contains(rows, independentOriginal) })
 
 	enable(false)
 	put(configPath, map[string]any{"transport": "websocket", "url": "ws" + strings.TrimPrefix(peer.URL, "http") + "/snow", "accountId": "42", "token": actionToken})
@@ -288,23 +292,30 @@ func TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart(t *testing.T) {
 	stop = boot()
 	enable(true)
 	socket := waitSocket()
-	exact(scene, row{originalID, scene, "", "available"}, row{quoteID, scene, originalID, "available"})
+	exact(scene, sceneOriginal, sceneQuote)
 	wsEvent(socket, message(group, quoted))
-	waitHistory(scene, "local", func(rows []row) bool { return slices.Contains(rows, row{quoteID, scene, originalID, "available"}) })
+	waitHistory(scene, "local", func(rows []row) bool { return slices.Contains(rows, sceneQuote) })
 	wsEvent(socket, map[string]any{"post_type": "notice", "notice_type": "group_recall", "self_id": 42, "group_id": group,
 		"user_id": 7, "operator_id": 7, "message_id": original, "time": now})
 	// The HTTP original was never replayed into local memory on restart.
 	// Wait for the real remote fetch to suppress it despite the peer returning it.
 	waitHistory(scene, "remote", func(rows []row) bool {
-		return len(rows) == 1 && rows[0] == (row{quoteID, scene, originalID, "available"})
+		return len(rows) == 1 && rows[0] == sceneQuote
 	})
-	exact(other, row{otherID, other, "", "available"})
+	exact(other, independentOriginal)
 	stop()
 
 	stop = boot()
 	_ = waitSocket()
-	exact(scene, row{quoteID, scene, originalID, "available"})
-	exact(other, row{otherID, other, "", "available"})
+	// The cold local transcript is empty. Remote rows retain their canonical
+	// identities and respect the durable, scene-scoped recall.
+	for _, sceneID := range []string{scene, other} {
+		if rows := read(sceneID, "local"); len(rows) != 0 {
+			t.Fatalf("cold local history replayed rows for %s: %+v", sceneID, rows)
+		}
+	}
+	exact(scene, sceneQuote)
+	exact(other, independentOriginal)
 	stop()
 
 	db, err := storage.OpenExisting(database, false)
@@ -328,6 +339,19 @@ func TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart(t *testing.T) {
 		query := "SELECT count(*) FROM " + check.table + " WHERE scene_id=? AND message_id=?"
 		if err := db.QueryRowContext(ctx, query, check.sceneID, check.messageID).Scan(&got); err != nil || got != check.want {
 			t.Fatalf("persisted %s for %s/%s: %d, want %d: %v", check.table, check.sceneID, check.messageID, got, check.want, err)
+		}
+	}
+	for _, want := range []row{sceneQuote, independentOriginal} {
+		var got row
+		query := `SELECT json_extract(value, '$.metadata.identity.messageId'),
+		                 json_extract(value, '$.metadata.identity.sceneId'),
+		                 json_extract(value, '$.metadata.identity.senderId')
+		          FROM source_event_heads WHERE scene_id=? AND message_id=?`
+		if err := db.QueryRowContext(ctx, query, want.SceneID, want.ID).Scan(&got.ID, &got.SceneID, &got.SenderID); err != nil {
+			t.Fatal(err)
+		}
+		if got.ID != want.ID || got.SceneID != want.SceneID || got.SenderID != want.SenderID {
+			t.Fatalf("persisted source identity %+v does not match %s/%s/%s", got, want.SceneID, want.ID, want.SenderID)
 		}
 	}
 }

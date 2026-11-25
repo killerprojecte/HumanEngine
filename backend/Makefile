@@ -1,4 +1,4 @@
-.PHONY: builtin-source-check plugin-source-check plugin-layout-check clean-wasm clean contextual-source-check
+.PHONY: builtin-source-check plugin-source-check plugin-layout-check unbundled-plugin-graph-check clean-wasm clean contextual-source-check
 .PHONY: test build differential wasm bundle test-bundle test-sqlite-profile test-projection-source-free native-icu-fetch native-icu-builder-test native-icu-build native-icu-test native-icu-source-free
 
 # Native ICU is opt-in: default build/startup and the TypeScript image are unchanged.
@@ -14,8 +14,15 @@ test: test-runtime-preview-profile
 build:
 	go build -tags sqlite_fts5 -o bin/humanengine ./cmd/humanengine
 
-plugin-layout-check:
+plugin-layout-check: unbundled-plugin-graph-check
 	python3 plugins/check-layout.py
+
+# Check import paths, actual package paths and local module replacements.
+unbundled-plugin-graph-check:
+	@deps=$$(go list -buildvcs=false -tags sqlite_fts5,humanengine_icu -deps -f '{{.ImportPath}} {{.Dir}}{{with .Module}}{{with .Replace}} {{.Dir}}{{end}}{{end}}' ./cmd/humanengine) || exit $$?; \
+	if printf '%s\n' "$$deps" | grep -E '/plugins/snowluma(/|[[:space:]]|$$)'; then \
+		echo 'unbundled command depends on SnowLuma' >&2; exit 1; \
+	fi
 
 clean: clean-wasm
 	rm -f bin/humanengine

@@ -1,22 +1,31 @@
+//go:build bundled_wasm
+
 package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"github.com/killerprojecte/HumanEngine/backend/internal/ingressrouting"
-	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
-	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
-	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/runtime"
 	"os"
 	"time"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/ingressrouting"
+	"github.com/killerprojecte/HumanEngine/backend/internal/observability"
+	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
+	resource "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma"
+	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/runtime"
 )
 
-// bindSnowLuma owns the application's sole Snow registry. Policy inspection is
-// a temporary independently bound WASM module for each complete explicit policy
-// operation. No policy guest remains loaded while idle or after plugin disable.
-func (a *Application) bindSnowLuma(ctx context.Context, owners Owners) error {
-	if a.snowRegistry != nil {
-		return errors.New("snowluma_application_already_bound")
+func distributionBuiltins() []string { return []string{"typing-delay", "snowluma"} }
+
+// Only the compatibility distribution statically links the legacy Snow host.
+func (a *Application) bindDistributionBuiltin(ctx context.Context, owners Owners, id string) error {
+	if id != "snowluma" {
+		return errors.New("builtin_runtime_not_implemented")
+	}
+	manifest, ok := resource.Manifest().(json.RawMessage)
+	if !ok {
+		return errors.New("builtin_manifest_invalid")
 	}
 	repository, err := ingressrouting.NewSQLiteRepository(owners.Main, owners.Authority)
 	if err != nil {
@@ -26,7 +35,7 @@ func (a *Application) bindSnowLuma(ctx context.Context, owners Owners) error {
 	if err != nil {
 		return err
 	}
-	artifact, err := plugins.BuiltinArtifact("snowluma")
+	artifact, err := resource.Artifact()
 	if err != nil {
 		return err
 	}
@@ -43,9 +52,9 @@ func (a *Application) bindSnowLuma(ctx context.Context, owners Owners) error {
 	if lookup == nil {
 		lookup = os.LookupEnv
 	}
-	if err = a.registerBuiltin("snowluma", snow.Factory(ports, lookup), snow.TransientPolicy(a.WASM, "snowluma-policy", artifact, hasSecret)); err != nil {
-		return err
-	}
-	a.snowRegistry = registry
-	return nil
+	return a.Plugins.RegisterBuiltin(pluginmanager.BuiltinDescriptor{
+		Manifest: manifest, LoadArtifact: resource.Artifact,
+		Start:  snow.Factory(ports, lookup),
+		Policy: snow.TransientPolicy(a.WASM, "snowluma-policy", artifact, hasSecret),
+	})
 }

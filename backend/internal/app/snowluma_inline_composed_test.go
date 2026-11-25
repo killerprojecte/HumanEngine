@@ -199,12 +199,12 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		err   error
 	}
 	received := make(chan completedProbe, 1)
-	activate := func(target *Application, revision uint64) (pluginmanager.BuiltinLifetime, *websocket.Conn) {
+	activate := func(target *Application, registry *snowhost.Registry, revision uint64) (pluginmanager.BuiltinLifetime, *websocket.Conn) {
 		t.Helper()
 		t.Logf("connect authenticated native generation %d", revision)
 		buildReceive := ingress.ReceiverFactory(func() {}, time.Now)
 		factory := snowhost.Factory(snowhost.InstallationPorts{
-			Registry: target.snowRegistry, Sender: snowhost.Ports{ReadOriginal: snowhost.OriginalReader(target.Engine)},
+			Registry: registry, Sender: snowhost.Ports{ReadOriginal: snowhost.OriginalReader(target.Engine)},
 			BuildReceive: func(sender *snowhost.Sender) (func(context.Context, string) error, error) {
 				receive, err := buildReceive(sender)
 				if err != nil {
@@ -251,7 +251,8 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 			return nil, nil
 		}
 	}
-	first, socket := activate(app, 1)
+	registry := snowhost.NewRegistry(app.Engine.Runtime)
+	first, socket := activate(app, registry, 1)
 	defer first.CloseAndWait(context.Background())
 	t.Log("exercise native ingress and original-byte browser route")
 	emit := func(event any) {
@@ -427,7 +428,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		t.Fatalf("adapter stop revoked wrong work: target=%v unrelated=%v", targetWork.Err(), unrelatedWork.Err())
 	}
 	app.MediaTasks.CancelMessage(unrelated, "stop-witness")
-	second, currentSocket := activate(app, 2)
+	second, currentSocket := activate(app, registry, 2)
 	defer second.CloseAndWait(context.Background())
 	verifyRetired()
 	verifyTokenRetired()
@@ -454,7 +455,7 @@ func TestSnowLumaInlineImageComposed(t *testing.T) {
 		t.Fatalf("tag-only disposition was not restored: %v", err)
 	}
 	ingress, call = bind(reopened)
-	third, currentSocket := activate(reopened, 3)
+	third, currentSocket := activate(reopened, snowhost.NewRegistry(reopened.Engine.Runtime), 3)
 	defer third.CloseAndWait(context.Background())
 	socket = currentSocket
 	visionCalls := assertStickerReuseRequests(t, ctx, reopened, emit, scene, png, "verified-automatic-label", nil)

@@ -18,8 +18,11 @@ Makefile/native ICU documentation. Runtime preview requires:
 
 - `sqlite_fts5` and `humanengine_icu` build tags and their real native build inputs.
   The packaged preview additionally uses `bundled_wasm` and verifies its four
-  shipped artifacts. A native host built without that tag registers no builtins
-  and still uses the existing configuration for local V1 plugins.
+  shipped artifacts. Compatibility SnowLuma is linked only in that distribution.
+  A native host without the tag registers no builtins and still loads configured
+  local V1 and V2 plugins. Its build does not require the SnowLuma source tree;
+  CI verifies import, filesystem and replacement-module paths. This does not
+  make the legacy SnowLuma adapter independently installable yet.
 - The pinned libvips library, passed as an absolute `--image-library` path.
 - The pinned sqlite-vec extension passed as an absolute `--vector-extension`
   path, or a binary built with `bundled_sqlite_vec` when that option is omitted.

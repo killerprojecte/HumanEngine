@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contextuallearning"
 	"github.com/killerprojecte/HumanEngine/backend/internal/mediatasks"
-	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/runtime"
 	"net/http"
 	"strings"
 	"time"
@@ -42,7 +41,6 @@ import (
 // exposure domains and builtins are recorded in SCOPE.md, not replaced by stubs.
 // Consumers use Application as HTTP handler, never bypass its admission barrier.
 type Application struct {
-	snowRegistry        *snow.Registry
 	StateExposures      *stateExposureOwners
 	IdentityExposure    *memoryservice.IdentityExposure
 	MemoryExposure      *memoryservice.ModelMemoryExposure

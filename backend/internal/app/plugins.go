@@ -117,19 +117,17 @@ func localEntries(ctx context.Context, owners Owners, options Options) ([]string
 // not know whether a descriptor comes from here or another package.
 func (a *Application) bindBuiltins(ctx context.Context, owners Owners, ids []string) error {
 	if ids == nil {
-		ids = []string{"typing-delay", "snowluma"}
+		ids = distributionBuiltins()
 	}
 	for _, id := range ids {
 		var err error
 		switch id {
 		case "typing-delay":
 			err = a.registerBuiltin(id, typing.Factory(a.Engine.Runtime.InstallTypingDelay), pluginmanager.BuiltinPolicy{})
-		case "snowluma":
-			err = a.bindSnowLuma(ctx, owners)
 		case "web-read":
 			err = a.bindWebRead(ctx)
 		default:
-			return errors.New("builtin_runtime_not_implemented")
+			err = a.bindDistributionBuiltin(ctx, owners, id)
 		}
 		if err != nil {
 			return err

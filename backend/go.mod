@@ -19,4 +19,4 @@ require (
 
 require github.com/coder/websocket v1.8.15
 
-replace github.com/coder/websocket => ./plugins/snowluma/host/third_party/coder-websocket
+replace github.com/coder/websocket => ./third_party/coder-websocket

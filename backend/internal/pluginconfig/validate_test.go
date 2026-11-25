@@ -4,13 +4,19 @@ import (
 	"encoding/json"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"github.com/killerprojecte/HumanEngine/backend/plugins/metadata"
+	snow "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma"
 	"testing"
 )
 
 func TestBuiltinManifestVocabulary(t *testing.T) {
 	for _, id := range []string{"snowluma", "typing-delay", "web-read", "web-search"} {
 		t.Run(id, func(t *testing.T) {
-			raw := metadata.Manifest(id).(json.RawMessage)
+			var raw json.RawMessage
+			if id == "snowluma" {
+				raw = snow.Manifest().(json.RawMessage)
+			} else {
+				raw = metadata.Manifest(id).(json.RawMessage)
+			}
 			manifest := parse(t, string(raw)).(*jsjson.Object)
 			schema := object(field(manifest, "configSchema"))
 			if schema == nil {

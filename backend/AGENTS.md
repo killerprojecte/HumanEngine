@@ -16,3 +16,5 @@ This branch implements the user-requested Go backend migration; it supersedes th
 
 - Backend SQLite builds require the `sqlite_fts5` profile. Use Makefile targets or explicitly pass that tag; bundle and native ICU builds combine it with their own tags. An untagged backend must reject database startup clearly rather than silently omit projections. WASI plugin builds remain separate.
 - Disk-backed writer fixtures must put the main database and authority in independent sibling directories (for example `root/live/main.sqlite` and `root/authority`) and validate `recovery.AuthorityPath` during setup. A read-only fixture layout is not sufficient evidence that real writer operations can run; never relax the production independence check to make a test pass.
+
+- Keep the default Go command build independent of SnowLuma: neither its import graph nor a replacement module may resolve inside `plugins/snowluma`. The `bundled_wasm` compatibility distribution is the only static SnowLuma composition until external package parity is verified. Run `make unbundled-plugin-graph-check` when editing this boundary.

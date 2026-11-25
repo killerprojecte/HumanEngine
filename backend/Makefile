@@ -28,7 +28,7 @@ clean: clean-wasm
 	rm -f bin/humanengine
 
 clean-wasm:
-	rm -f plugins/typing-delay/dist/typing-delay.wasm plugins/web-read/dist/web-read.wasm plugins/web-search/dist/web-search.wasm plugins/snowluma/dist/snowluma.wasm
+	rm -f $(foreach plugin,$(WASM_PLUGINS),plugins/$(plugin)/dist/$(plugin).wasm)
 
 plugin-source-check: plugin-layout-check builtin-source-check
 	cd .. && node --import tsx backend/internal/plugins/generate-configuration-errors.mjs --check
@@ -195,12 +195,14 @@ differential: build plugin-source-check contextual-source-check runtime-producer
 	cd .. && node --import tsx backend/tests/generate-turnwait-fixtures.mjs --check
 	cd .. && node --import tsx backend/tests/config-differential.mjs backend/bin/humanengine
 
+WASM_PLUGINS := typing-delay web-read web-search snowluma
+
 wasm:
-	mkdir -p plugins/typing-delay/dist plugins/web-read/dist plugins/web-search/dist plugins/snowluma/dist
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/typing-delay/dist/typing-delay.wasm ./plugins/typing-delay/wasm
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/web-read/dist/web-read.wasm ./plugins/web-read/wasm
-	GOOS=wasip1 GOARCH=wasm go build -trimpath -buildmode=c-shared -ldflags='-s -w' -o plugins/web-search/dist/web-search.wasm ./plugins/web-search/wasm
-	sh plugins/snowluma/build-artifact-v1.sh
+	@set -e; for plugin in $(WASM_PLUGINS); do \
+		mkdir -p "plugins/$$plugin/dist"; \
+		CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' \
+			-o "plugins/$$plugin/dist/$$plugin.wasm" "./plugins/$$plugin/wasm"; \
+	done
 
 bundle: wasm
 	go build -trimpath -tags sqlite_fts5,bundled_wasm -o bin/humanengine ./cmd/humanengine

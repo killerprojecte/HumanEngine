@@ -80,18 +80,16 @@ Full default/native CI and complete application composition remain pending.
 
 ## WASM build products
 
-No compiled WASM binary is committed by this slice. The existing project target
-builds the four guest artifacts from their sources:
+All four guest binaries are generated from source with the Go toolchain in
+`backend/go.mod`. Their `dist/` directories and generated artifact checksums
+are not source-controlled. A published artifact's checksum belongs with the
+release, not in the source tree.
 
     make -C backend wasm
 
-The typing guest source is backend/plugins/typing-delay/wasm/main.go with its policy
-in backend/plugins/typing-delay/core/policy.go. The existing target uses GOOS=wasip1,
-GOARCH=wasm and go build -trimpath -buildmode=c-shared -ldflags='-s -w'.
-The focused guest test adds -buildvcs=false for an independent archive workspace.
-The existing bundled/source-free checks inspect manifest IDs and API version 2,
-not a pinned typing binary hash; make wasm regenerates all four before bundling.
-Those manifest checks alone do not prove the unfinished three runtime compositions.
+The build targets WASI preview 1 and embeds its guests only for the tagged
+bundle. The bundled/source-free tests execute the linked guest bytes and check
+the manifest IDs and API version.
 
 Builtin source and resources are grouped under backend/plugins/<plugin-id>/.
 Each directory owns its manifest.json, core/ business code and fixtures, wasm/

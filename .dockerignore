@@ -19,6 +19,7 @@ logs
 backups
 coverage
 plugins
+backend/plugins/*/dist
 *.log
 .DS_Store
 .npmrc

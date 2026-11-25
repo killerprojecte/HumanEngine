@@ -3,7 +3,9 @@ package app
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"errors"
+	"sync"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/contextuallearning"
@@ -14,19 +16,35 @@ import (
 //go:embed testdata/contextual-tools-source.json
 var contextualToolsSource string
 
+// Keep the original JSON slices so each turn builds only its own definition.
+var contextualToolDefinitions = sync.OnceValue(func() [8]string {
+	var source struct{ Definitions []json.RawMessage }
+	if err := json.Unmarshal([]byte(contextualToolsSource), &source); err != nil {
+		panic(err)
+	}
+	if len(source.Definitions) != 8 {
+		panic("unexpected contextual tool schema count")
+	}
+	var definitions [8]string
+	for i, raw := range source.Definitions {
+		definitions[i] = string(raw)
+	}
+	return definitions
+})
+
 func contextualToolSchema(snapshot *settingsSnapshot) *jsjson.Object {
+	settings, _ := snapshot.value.Load().(map[string]any)
 	flags := 0
 	for i, key := range []string{"memoryGraphEnabled", "memoryCommitmentsEnabled", "memoryKnowledgeEnabled"} {
-		if snapshot.enabled(key) {
+		if settings[key] == true {
 			flags |= 1 << i
 		}
 	}
-	raw, err := jsjson.Parse(contextualToolsSource)
+	raw, err := jsjson.Parse(contextualToolDefinitions()[flags])
 	if err != nil {
 		panic(err)
 	}
-	definitions, _ := raw.(*jsjson.Object).Get("definitions")
-	return definitions.([]any)[flags].(*jsjson.Object)
+	return raw.(*jsjson.Object)
 }
 
 // Source advertises learning.propose after identity and before state history.

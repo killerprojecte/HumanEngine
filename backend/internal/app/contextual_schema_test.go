@@ -2,9 +2,10 @@ package app
 
 import (
 	"encoding/json"
-	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"reflect"
 	"testing"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
 func TestContextualActualSourceDefinitions(t *testing.T) {
@@ -38,8 +39,20 @@ func TestContextualActualSourceDefinitions(t *testing.T) {
 		}
 		// A caller cannot poison a future turn's freshly built advertisement.
 		definition.Set("description", "mutated")
-		if field(contextualToolSchema(snapshot), "description") == "mutated" {
+		inputSchema := field(definition, "inputSchema").(*jsjson.Object)
+		inputSchema.Set("type", "mutated")
+		next := contextualToolSchema(snapshot)
+		if field(next, "description") == "mutated" || field(field(next, "inputSchema"), "type") == "mutated" {
 			t.Fatal("definition leaked between turns")
 		}
+	}
+}
+
+func BenchmarkContextualToolSchema(b *testing.B) {
+	snapshot := new(settingsSnapshot)
+	snapshot.publish(map[string]any{"memoryGraphEnabled": true, "memoryCommitmentsEnabled": true, "memoryKnowledgeEnabled": true})
+	b.ReportAllocs()
+	for b.Loop() {
+		_ = contextualToolSchema(snapshot)
 	}
 }

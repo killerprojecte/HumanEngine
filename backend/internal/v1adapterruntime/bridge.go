@@ -23,13 +23,14 @@ import (
 type registration struct {
 	generation uint64
 	cancel     context.CancelFunc
-	adapter    *botruntime.Adapter
+	adapter    *botruntime.AdapterRegistration
 }
 type Bridge struct {
 	Host      *plugins.V1Host
 	engine    *memeengine.Service
 	mu        sync.Mutex
 	adapters  map[string]*registration
+	owner     *botruntime.AdapterOwner
 	callbacks quiescence.Group
 	closing   bool
 }
@@ -47,7 +48,7 @@ func New(engine *memeengine.Service, node string, diagnostics io.Writer, options
 	if options.AdapterServices.Installed != nil || options.AdapterServices.Stopped != nil || options.AdapterServices.Receive != nil || options.AdapterServices.Edit != nil || options.AdapterServices.Recall != nil || options.AdapterServices.IsRecalled != nil || options.AdapterServices.Media != nil {
 		return nil, errors.New("adapter_runtime_services_already_bound")
 	}
-	b := &Bridge{engine: engine, adapters: map[string]*registration{}}
+	b := &Bridge{engine: engine, adapters: map[string]*registration{}, owner: engine.Runtime.NewAdapterOwner()}
 	options.AdapterServices = b.adapterServices()
 	host, e := plugins.NewV1HostWithOptions(node, diagnostics, options)
 	if e != nil {
@@ -129,7 +130,6 @@ func (b *Bridge) install(ctx context.Context, meta plugins.AdapterMetadata) erro
 	}
 	// Deliberately no ReadImage: actual legacy installAdapter omits that optional
 	// factory method. The explicit legacy public-media fallback belongs to Engine.
-	entry.adapter = adapter
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if e := ctx.Err(); e != nil {
@@ -140,8 +140,18 @@ func (b *Bridge) install(ctx context.Context, meta plugins.AdapterMetadata) erro
 		cancel()
 		return errBridgeClosed
 	}
+	lease, err := b.owner.Claim(meta.ID)
+	if err != nil {
+		cancel()
+		return err
+	}
+	if err = lease.Publish(adapter); err != nil {
+		lease.Release()
+		cancel()
+		return err
+	}
+	entry.adapter = lease
 	b.adapters[meta.ID] = entry
-	b.engine.Runtime.AddAdapter(meta.ID, adapter)
 	return nil
 }
 func (b *Bridge) stop(meta plugins.AdapterMetadata) {
@@ -153,7 +163,8 @@ func (b *Bridge) stop(meta plugins.AdapterMetadata) {
 	}
 	delete(b.adapters, meta.ID)
 	entry.cancel()
-	b.engine.Runtime.RemoveAdapter(meta.ID)
+	entry.adapter.Detach()
+	entry.adapter.Release()
 }
 func object(raw []byte) (*jsjson.Object, error) {
 	v, e := jsjson.ParseBytes(raw)

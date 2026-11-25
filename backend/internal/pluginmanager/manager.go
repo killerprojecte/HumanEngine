@@ -520,7 +520,11 @@ func (m *Manager) failure(i *item, err error, requestID, operation, phase string
 	if errors.As(err, &config) {
 		config.RequestID = requestID
 	} else if !errors.As(err, &failure) {
-		failure = NewStartupError("plugin_setup_failed", nil)
+		code := "plugin_setup_failed"
+		if errors.Is(err, botruntime.ErrAdapterIDInUse) {
+			code = "adapter_id_in_use"
+		}
+		failure = NewStartupError(code, nil)
 		failure.RequestID = requestID
 		err = failure
 	} else {

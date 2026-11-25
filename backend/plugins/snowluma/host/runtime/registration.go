@@ -15,21 +15,23 @@ import (
 // mutable guest ID during dispatch, and stale cleanup cannot remove a replacement.
 type Registry struct {
 	mu      sync.Mutex
-	runtime *botruntime.Runtime
 	current *Registration
+	slot    *botruntime.AdapterOwner
 }
 type Registration struct {
-	owner   *Registry
-	sender  *Sender
-	adapter *botruntime.Adapter
-	detach  func() bool
+	owner     *Registry
+	sender    *Sender
+	withdrawn bool
+	detach    func() bool
+	lease     *botruntime.AdapterRegistration
 }
 
 // NewRegistry must be called once by the application owner, not once per plugin
-// generation. That owner must route every SnowLuma install/removal through this
-// registry; direct competing Runtime.AddAdapter/RemoveAdapter calls violate the
-// ownership contract. The application assembly is responsible for this binding.
-func NewRegistry(runtime *botruntime.Runtime) *Registry { return &Registry{runtime: runtime} }
+// generation. The runtime arbitrates the same actual dispatch ID against every
+// other installer.
+func NewRegistry(runtime *botruntime.Runtime) *Registry {
+	return &Registry{slot: runtime.NewAdapterOwner()}
+}
 func jsonObject(value any) (*jsjson.Object, error) {
 	wire, err := json.Marshal(value)
 	if err != nil {
@@ -46,9 +48,6 @@ func jsonObject(value any) (*jsjson.Object, error) {
 	return o, nil
 }
 func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
-	if r.runtime == nil {
-		return nil, errors.New("runtime_required")
-	}
 	identity, err := s.call(obj("operation", "identifiers", "adapter", s.adapter, "account", s.account, "platform", s.account))
 	if err != nil {
 		return nil, err
@@ -117,7 +116,6 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 			s.queries.run(ctx, scene, obj("messageId", id), true, before, complete)
 		}
 	}
-	entry.adapter = adapter
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if err = s.current(); err != nil {
@@ -126,25 +124,43 @@ func (r *Registry) RegisterAdapter(s *Sender) (*Registration, error) {
 	if r.current != nil && r.current.sender.adapter != s.adapter {
 		return nil, errors.New("registry_adapter_mismatch")
 	}
-	r.runtime.AddAdapter(s.adapter, adapter)
+	entry.lease, err = r.slot.Install(s.adapter, adapter)
+	if err != nil {
+		return nil, err
+	}
 	s.registered.Store(adapter)
 	r.current = entry
 	entry.detach = context.AfterFunc(s.life, entry.Remove)
 	return entry, nil
 }
-func (r *Registration) Remove() {
+func (r *Registration) Remove() { r.withdraw() }
+
+func (r *Registration) withdraw() bool {
 	r.owner.mu.Lock()
 	if r.detach != nil {
 		r.detach()
 	}
 	if r.owner.current == r {
 		r.owner.current = nil
-		r.owner.runtime.RemoveAdapter(r.sender.adapter)
+		r.withdrawn = true
+		r.lease.Detach()
 	}
+	withdrawn := r.withdrawn
 	r.owner.mu.Unlock()
 	r.sender.Dispose()
+	return withdrawn
 }
 func (r *Registration) CloseAndWait(ctx context.Context) error {
 	r.Remove()
-	return r.sender.CloseAndWait(ctx)
+	return r.wait(ctx)
+}
+
+func (r *Registration) wait(ctx context.Context) error {
+	err := r.sender.CloseAndWait(ctx)
+	select {
+	case <-r.sender.closed:
+		r.lease.Release()
+	default:
+	}
+	return err
 }

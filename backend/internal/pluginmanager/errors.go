@@ -55,6 +55,7 @@ func SafeNetworkDetails(value map[string]any) NetworkDetails {
 }
 
 var startupCodes = map[string]bool{
+	"adapter_id_in_use":                true,
 	"secret_key_unavailable":           true,
 	"secret_key_missing":               true,
 	"secret_key_permissions":           true,

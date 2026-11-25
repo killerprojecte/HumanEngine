@@ -36,7 +36,7 @@ type Installation struct {
 // Receive/history/profile and original-file authority ports.
 // A nonnil owner is returned even on connect failure so Manager can drain it.
 func InstallPrepared(ctx context.Context, host *plugins.WASMHost, guestID string, plan *jsjson.Object, ports InstallationPorts) (*Installation, error) {
-	if ports.Registry == nil || ports.Registry.runtime == nil || ports.BuildReceive == nil || ports.Stopped == nil || ports.Sender.ReadOriginal == nil {
+	if ports.Registry == nil || ports.BuildReceive == nil || ports.Stopped == nil || ports.Sender.ReadOriginal == nil {
 		return nil, errors.New("snowluma_installation_ports_incomplete")
 	}
 	if str(plan, "kind") != "install" {
@@ -117,18 +117,22 @@ func InstallPrepared(ctx context.Context, host *plugins.WASMHost, guestID string
 }
 func (i *Installation) Dispose() {
 	i.once.Do(func() {
-		if i.registration != nil {
-			i.registration.Remove()
-		} else {
+		if i.registration == nil {
 			i.sender.Dispose()
+			return
 		}
-		i.stoppedErr = i.stopped(i.sender.adapter)
+		if i.registration.withdraw() {
+			i.stoppedErr = i.stopped(i.sender.adapter)
+		}
 	})
 }
 func (i *Installation) CloseAndWait(ctx context.Context) error {
 	i.Dispose()
 	if i.detach != nil {
 		i.detach()
+	}
+	if i.registration != nil && i.stoppedErr == nil {
+		return i.registration.wait(ctx)
 	}
 	return errors.Join(i.sender.CloseAndWait(ctx), i.stoppedErr)
 }

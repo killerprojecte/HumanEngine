@@ -15,13 +15,14 @@ type adapterEntry struct {
 type adapterRegistry struct {
 	mu      sync.Mutex
 	entries []adapterEntry
+	claims  map[string]*AdapterRegistration
 }
 
 func (m *adapterRegistry) Load(key any) (any, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, entry := range m.entries {
-		if entry.id == key {
+		if entry.id == key && entry.value != nil {
 			return entry.value, true
 		}
 	}
@@ -30,7 +31,9 @@ func (m *adapterRegistry) Load(key any) (any, bool) {
 func (m *adapterRegistry) Store(key, value any) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	id, adapter := key.(string), value.(*Adapter)
+	m.storeLocked(key.(string), value.(*Adapter))
+}
+func (m *adapterRegistry) storeLocked(id string, adapter *Adapter) {
 	for i := range m.entries {
 		if m.entries[i].id == id {
 			m.entries[i].value = adapter
@@ -42,8 +45,11 @@ func (m *adapterRegistry) Store(key, value any) {
 func (m *adapterRegistry) LoadAndDelete(key any) (any, bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	return m.deleteLocked(key.(string))
+}
+func (m *adapterRegistry) deleteLocked(id string) (any, bool) {
 	for i, entry := range m.entries {
-		if entry.id == key {
+		if entry.id == id {
 			copy(m.entries[i:], m.entries[i+1:])
 			m.entries[len(m.entries)-1] = adapterEntry{}
 			m.entries = m.entries[:len(m.entries)-1]
@@ -58,13 +64,6 @@ func (m *adapterRegistry) snapshot() []adapterEntry {
 	defer m.mu.Unlock()
 	return append([]adapterEntry(nil), m.entries...)
 }
-func (m *adapterRegistry) Range(f func(any, any) bool) {
-	for _, entry := range m.snapshot() {
-		if !f(entry.id, entry.value) {
-			return
-		}
-	}
-}
 
 type AdapterStatus struct {
 	ID     string `json:"id"`
@@ -78,6 +77,9 @@ func (r *Runtime) AdapterStatuses(ctx context.Context) ([]AdapterStatus, error) 
 	entries := r.adapters.snapshot()
 	result := make([]AdapterStatus, 0, len(entries))
 	for _, entry := range entries {
+		if entry.value == nil {
+			continue
+		}
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}

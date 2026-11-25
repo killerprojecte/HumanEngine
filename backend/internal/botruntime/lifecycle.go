@@ -72,16 +72,9 @@ func (r *Runtime) endSimulation(s *sceneState) {
 	}
 	r.operationMu.Unlock()
 }
-func (r *Runtime) AddAdapter(id string, a *Adapter) {
-	if old, loaded := r.adapters.Load(id); loaded {
-		if r.config().TopicAdmissionEnabled {
-			r.cancelAdapter(id)
-		}
-		if f := old.(*Adapter).Dispose; f != nil {
-			f()
-		}
-	}
-	r.adapters.Store(id, a)
+func (r *Runtime) AddAdapter(id string, a *Adapter) error {
+	_, err := r.defaultAdapterOwner.Install(id, a)
+	return err
 }
 func (r *Runtime) cancelAdapter(id string) {
 	r.scenes.Range(func(k, v any) bool {
@@ -92,9 +85,12 @@ func (r *Runtime) cancelAdapter(id string) {
 	})
 }
 func (r *Runtime) RemoveAdapter(id string) {
-	r.cancelAdapter(id)
-	if old, ok := r.adapters.LoadAndDelete(id); ok && old.(*Adapter).Dispose != nil {
-		old.(*Adapter).Dispose()
+	r.adapters.mu.Lock()
+	current := r.adapters.claims[id]
+	r.adapters.mu.Unlock()
+	if current != nil && current.owner == &r.defaultAdapterOwner {
+		current.Detach()
+		current.Release()
 	}
 }
 func (r *Runtime) Close() {
@@ -128,13 +124,7 @@ func (r *Runtime) Close() {
 		return true
 	})
 	r.transports.Range(func(k, v any) bool { r.transports.Delete(k); return true })
-	r.adapters.Range(func(k, v any) bool {
-		r.adapters.Delete(k)
-		if f := v.(*Adapter).Dispose; f != nil {
-			f()
-		}
-		return true
-	})
+	r.closeAdapters()
 	r.cacheMu.Lock()
 	r.windows.Clear()
 	r.cacheMu.Unlock()

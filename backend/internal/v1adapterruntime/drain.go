@@ -96,7 +96,8 @@ func (b *Bridge) CloseAndWait(ctx context.Context) error {
 	for id, entry := range b.adapters {
 		delete(b.adapters, id)
 		entry.cancel()
-		b.engine.Runtime.RemoveAdapter(id)
+		entry.adapter.Detach()
+		entry.adapter.Release()
 	}
 	b.mu.Unlock()
 	return errors.Join(hostErr, b.callbacks.Wait(ctx))

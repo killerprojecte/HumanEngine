@@ -365,14 +365,17 @@ func registeredDispatchPeer(t *testing.T, host *plugins.WASMHost, mode, scenario
 	sourceID := str(identity, "messageId")
 	authority := new(dispatchAuthority)
 	runtime := newDispatchRuntime(t, scenario, authority)
-	// Exactly one Registry owns this application's SnowLuma adapter, including all
-	// replacements. No external AddAdapter/RemoveAdapter competes with this owner.
+	// Install through the same ID authority used by other adapter origins.
 	registry := NewRegistry(runtime)
 	registration, err := registry.RegisterAdapter(sender)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer registration.CloseAndWait(context.Background())
+	other := runtime.NewAdapterOwner()
+	if _, err = other.Claim("snowluma"); !errors.Is(err, botruntime.ErrAdapterIDInUse) {
+		t.Fatalf("accepted a second owner while the real transport was live: %v", err)
+	}
 	if scenario == "replacement" {
 		replacementLife, stopReplacement := context.WithCancel(context.Background())
 		defer stopReplacement()
@@ -443,7 +446,20 @@ func registeredDispatchPeer(t *testing.T, host *plugins.WASMHost, mode, scenario
 			t.Fatal("no peer wire")
 		}
 	}
+	if scenario == "sent" {
+		registration.Remove()
+		if _, err = other.Claim("snowluma"); !errors.Is(err, botruntime.ErrAdapterIDInUse) {
+			t.Fatalf("released the ID without finishing the real transport: %v", err)
+		}
+	}
 	if err = registration.CloseAndWait(ctx); err != nil {
 		t.Fatal(err)
+	}
+	if scenario == "sent" {
+		claim, err := other.Claim("snowluma")
+		if err != nil {
+			t.Fatalf("ID still occupied after physical drain: %v", err)
+		}
+		claim.Release()
 	}
 }

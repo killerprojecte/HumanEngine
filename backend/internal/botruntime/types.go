@@ -260,6 +260,7 @@ type Runtime struct {
 	transports                    sync.Map        // string -> *sceneRegistration, metadata without runtime state
 	scenes                        sync.Map        // string -> *sceneState, never held over external work
 	adapters                      adapterRegistry // ordered, immutable registration identity
+	defaultAdapterOwner           AdapterOwner
 	extensionMu                   sync.RWMutex
 	extensions                    []*Extension
 	hooks                         []registeredHook
@@ -498,6 +499,7 @@ func New(settings Settings, services Services) (*Runtime, error) {
 	}
 
 	r := &Runtime{services: services}
+	r.defaultAdapterOwner.runtime = r
 	settings.ParticipationWindows = append([]ParticipationWindow{}, settings.ParticipationWindows...)
 	r.settings.Store(&settings)
 	r.armCleanup()

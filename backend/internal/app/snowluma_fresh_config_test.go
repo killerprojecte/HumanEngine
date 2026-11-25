@@ -3,12 +3,15 @@ package app
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 	"github.com/killerprojecte/HumanEngine/backend/internal/recovery"
 )
 
@@ -89,5 +92,31 @@ func TestFreshSnowLumaHTTPConfigurationStoresBothCredentials(t *testing.T) {
 	}
 	if payload != `{"kind":"security_state","revision":"`+revision+`"}` {
 		t.Fatal("database revision does not match the final authority intent")
+	}
+
+	// A distinct host origin already owns the actual dispatch ID. Enabling
+	// real SnowLuma must fail before connecting, without replacing the route
+	// or leaving the failed WASM generation alive.
+	claim, err := a.Engine.Runtime.NewAdapterOwner().Claim("snowluma")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = claim.Publish(&botruntime.Adapter{Status: func(context.Context) (string, error) {
+		return "connected", nil
+	}}); err != nil {
+		t.Fatal(err)
+	}
+	defer claim.Release()
+	defer claim.Detach()
+	var collision *pluginmanager.StartupError
+	if err := a.Plugins.Enable(ctx, "snowluma", "synthetic-collision"); !errors.As(err, &collision) || collision.Code != "adapter_id_in_use" {
+		t.Fatalf("wrong SnowLuma failure for an occupied ID: %v", err)
+	}
+	status, err := a.Engine.Runtime.AdapterStatuses(ctx)
+	if err != nil || len(status) != 1 || status[0] != (botruntime.AdapterStatus{ID: "snowluma", Status: "connected"}) {
+		t.Fatalf("live owner changed after denied installation: %v %v", status, err)
+	}
+	if a.WASM.Loaded("snowluma") || a.WASM.Loaded("snowluma-policy") {
+		t.Fatal("failed installation leaked a guest")
 	}
 }

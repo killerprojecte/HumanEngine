@@ -39,6 +39,7 @@ func (a *Application) bindDistributionBuiltin(ctx context.Context, owners Owners
 	if err != nil {
 		return err
 	}
+	loadArtifact := func() ([]byte, error) { return artifact, nil }
 	hasSecret := func(ctx context.Context, name string) (bool, error) {
 		return owners.Credentials.Has(ctx, "plugin:snowluma", name)
 	}
@@ -53,8 +54,8 @@ func (a *Application) bindDistributionBuiltin(ctx context.Context, owners Owners
 		lookup = os.LookupEnv
 	}
 	return a.Plugins.RegisterBuiltin(pluginmanager.BuiltinDescriptor{
-		Manifest: manifest, LoadArtifact: resource.Artifact,
+		Manifest: manifest, LoadArtifact: loadArtifact,
 		Start:  snow.Factory(ports, lookup),
-		Policy: snow.TransientPolicy(a.WASM, "snowluma-policy", artifact, hasSecret),
+		Policy: pluginmanager.WASMConfigurationPolicy(a.WASM, id, loadArtifact, hasSecret),
 	})
 }

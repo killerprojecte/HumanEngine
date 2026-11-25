@@ -340,9 +340,10 @@ func assemble(ctx context.Context, owners Owners, options Options, collator *top
 	if err != nil {
 		return app, err
 	}
+	resolveAdapter := app.externalAdapterResolver(owners)
 	for _, entry := range entries {
 		if strings.HasSuffix(entry, ".v2.json") {
-			err = app.Plugins.RegisterExternalV2(entry)
+			err = app.Plugins.RegisterExternalV2(entry, resolveAdapter)
 		} else {
 			err = app.Plugins.RegisterV1(ctx, entry)
 		}

@@ -223,7 +223,12 @@ connection. Policy changes between segments remain a separate case.
   adapter coverage, retries for other statuses or complete vision parity.
 - **V1/V2 and builtins:** retain lazy shared Node, actual isolate unload, original
   callback/protocol identity and physical drain. Verify remaining capabilities
-  against actual plugin consumers. The tagged outbound WebRead transport and
+  against actual plugin consumers. A separately built
+  [external signed HTTP adapter](../../backend/internal/externaladapter/README.md)
+  now supports native text ingress, physical sends and scoped recall with no
+  Node or bundled plugin. SnowLuma is still composed into the application;
+  its WebSocket, history, media and existing OneBot identities must survive
+  migration to an independent package. The tagged outbound WebRead transport and
   disable tests do not enable its default admission or prove public browser
   upgrade behavior.
 - **Plugin API V1/V2 badge acceptance:** the packaged

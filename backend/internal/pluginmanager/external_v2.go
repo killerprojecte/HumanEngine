@@ -16,9 +16,23 @@ import (
 
 func (i *item) wasm() bool { return i.artifact != nil }
 
-// RegisterExternalV2 loads only an explicitly configured, read-tool manifest.
-// The artifact is resolved within the plugin root again when a generation starts.
-func (m *Manager) RegisterExternalV2(entry string) error {
+type V2AdapterDescriptor struct {
+	PluginID  string
+	AdapterID string
+	Wire      string
+}
+
+type V2AdapterBinding struct {
+	Schema *jsjson.Object
+	Start  BuiltinRuntimeFactory
+	Policy BuiltinPolicy
+}
+
+type V2AdapterResolver func(V2AdapterDescriptor) (V2AdapterBinding, error)
+
+// RegisterExternalV2 resolves an explicitly configured manifest within the
+// plugin root again when a generation starts.
+func (m *Manager) RegisterExternalV2(entry string, resolve V2AdapterResolver) error {
 	if !filepath.IsLocal(entry) || !strings.HasSuffix(entry, ".v2.json") {
 		return errors.New("invalid_local_plugin_path")
 	}
@@ -37,7 +51,8 @@ func (m *Manager) RegisterExternalV2(entry string) error {
 	}
 	manifest, ok := parsed.(*jsjson.Object)
 	capabilities, _ := prop(manifest, "capabilities").([]any)
-	if !ok || text(manifest, "name") == "" || text(manifest, "version") == "" || len(capabilities) != 1 || capabilities[0] != "tool" {
+	if !ok || !validID(text(manifest, "id")) || text(manifest, "name") == "" || text(manifest, "version") == "" ||
+		len(capabilities) != 1 || (capabilities[0] != "tool" && capabilities[0] != "adapter") {
 		return errors.New("external_v2_manifest_invalid")
 	}
 	artifact := text(manifest, "artifact")
@@ -58,7 +73,25 @@ func (m *Manager) RegisterExternalV2(entry string) error {
 	if _, found := manifest.Get("configSchema"); found {
 		return errors.New("external_v2_configuration_unsupported")
 	}
-	_ = manifest.Set("configSchema", objectJSON(map[string]any{"type": "object", "additionalProperties": false}))
+	binding := V2AdapterBinding{
+		Schema: objectJSON(map[string]any{"type": "object", "additionalProperties": false}),
+		Start:  m.startExternalV2,
+	}
+	if capabilities[0] == "adapter" {
+		adapter, _ := prop(manifest, "adapter").(*jsjson.Object)
+		descriptor := V2AdapterDescriptor{
+			PluginID: text(manifest, "id"), AdapterID: text(adapter, "id"), Wire: text(adapter, "wire"),
+		}
+		if resolve == nil || descriptor.AdapterID == "" || descriptor.Wire == "" {
+			return errors.New("external_v2_adapter_descriptor_invalid")
+		}
+		binding, err = resolve(descriptor)
+		if err != nil {
+			return err
+		}
+		manifest.Delete("adapter")
+	}
+	_ = manifest.Set("configSchema", binding.Schema)
 	wire, err := jsjson.Marshal(manifest)
 	if err != nil {
 		return err
@@ -78,7 +111,7 @@ func (m *Manager) RegisterExternalV2(entry string) error {
 				return nil, NewStartupError("plugin_artifact_digest_mismatch", nil)
 			}
 			return artifact, nil
-		}, Start: m.startExternalV2,
+		}, Start: binding.Start, Policy: binding.Policy,
 	}, false)
 }
 

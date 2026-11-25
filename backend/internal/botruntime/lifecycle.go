@@ -73,7 +73,7 @@ func (r *Runtime) endSimulation(s *sceneState) {
 	r.operationMu.Unlock()
 }
 func (r *Runtime) AddAdapter(id string, a *Adapter) error {
-	_, err := r.defaultAdapterOwner.Install(id, a)
+	_, err := r.installAdapter(nil, id, a)
 	return err
 }
 func (r *Runtime) cancelAdapter(id string) {
@@ -88,7 +88,7 @@ func (r *Runtime) RemoveAdapter(id string) {
 	r.adapters.mu.Lock()
 	current := r.adapters.claims[id]
 	r.adapters.mu.Unlock()
-	if current != nil && current.owner == &r.defaultAdapterOwner {
+	if current != nil && current.owner == nil {
 		current.Detach()
 		current.Release()
 	}

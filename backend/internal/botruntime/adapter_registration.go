@@ -14,6 +14,7 @@ func (r *Runtime) NewAdapterOwner() *AdapterOwner { return &AdapterOwner{runtime
 // withdrawing dispatch and draining transport IO. A stale generation cannot
 // publish over, detach, or release its replacement.
 type AdapterRegistration struct {
+	runtime   *Runtime
 	owner     *AdapterOwner
 	id        string
 	value     *Adapter // protected by the registry mutex
@@ -23,11 +24,10 @@ type AdapterRegistration struct {
 // Claim reserves an ID without making it dispatchable. An external adapter
 // claims before starting physical IO and releases only after it has drained.
 func (o *AdapterOwner) Claim(id string) (*AdapterRegistration, error) {
-	return o.claim(id, false)
+	return o.runtime.claimAdapter(o, id, false)
 }
 
-func (o *AdapterOwner) claim(id string, replace bool) (*AdapterRegistration, error) {
-	r := o.runtime
+func (r *Runtime) claimAdapter(owner *AdapterOwner, id string, replace bool) (*AdapterRegistration, error) {
 	m := &r.adapters
 	m.mu.Lock()
 	if r.closed.Load() {
@@ -35,11 +35,11 @@ func (o *AdapterOwner) claim(id string, replace bool) (*AdapterRegistration, err
 		return nil, code("runtime_closed")
 	}
 	prior := m.claims[id]
-	if prior != nil && (!replace || prior.owner != o || prior.value == nil) {
+	if prior != nil && (!replace || prior.owner != owner || prior.value == nil) {
 		m.mu.Unlock()
 		return nil, ErrAdapterIDInUse
 	}
-	next := &AdapterRegistration{owner: o, id: id}
+	next := &AdapterRegistration{runtime: r, owner: owner, id: id}
 	if m.claims == nil {
 		m.claims = make(map[string]*AdapterRegistration)
 	}
@@ -64,7 +64,11 @@ func (o *AdapterOwner) claim(id string, replace bool) (*AdapterRegistration, err
 // Install is the synchronous bridge for established same-origin replacement
 // semantics. New external packages use Claim, Publish, Detach, then Release.
 func (o *AdapterOwner) Install(id string, value *Adapter) (*AdapterRegistration, error) {
-	next, err := o.claim(id, true)
+	return o.runtime.installAdapter(o, id, value)
+}
+
+func (r *Runtime) installAdapter(owner *AdapterOwner, id string, value *Adapter) (*AdapterRegistration, error) {
+	next, err := r.claimAdapter(owner, id, true)
 	if err != nil {
 		return nil, err
 	}
@@ -76,10 +80,10 @@ func (o *AdapterOwner) Install(id string, value *Adapter) (*AdapterRegistration,
 }
 
 func (a *AdapterRegistration) Publish(value *Adapter) error {
-	m := &a.owner.runtime.adapters
+	m := &a.runtime.adapters
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if m.claims[a.id] != a || a.withdrawn || a.value != nil || a.owner.runtime.closed.Load() {
+	if m.claims[a.id] != a || a.withdrawn || a.value != nil || a.runtime.closed.Load() {
 		return code("adapter_registration_not_current")
 	}
 	a.value = value
@@ -90,7 +94,7 @@ func (a *AdapterRegistration) Publish(value *Adapter) error {
 // Detach withdraws routing and cancels local scene work, but leaves the
 // registration occupied while its owner finishes physical shutdown.
 func (a *AdapterRegistration) Detach() {
-	r := a.owner.runtime
+	r := a.runtime
 	m := &r.adapters
 	m.mu.Lock()
 	var old *Adapter
@@ -108,7 +112,7 @@ func (a *AdapterRegistration) Detach() {
 
 // Release is called only after Detach and the owning transport has drained.
 func (a *AdapterRegistration) Release() {
-	m := &a.owner.runtime.adapters
+	m := &a.runtime.adapters
 	m.mu.Lock()
 	if m.claims[a.id] == a && a.value == nil {
 		m.deleteLocked(a.id) // also removes an unpublished replacement slot

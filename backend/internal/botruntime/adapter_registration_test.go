@@ -113,3 +113,18 @@ func TestAdapterIDHasOneConcurrentOwner(t *testing.T) {
 		t.Fatal("closed runtime admitted a new owner")
 	}
 }
+
+func TestZeroRuntimeLegacyAdapterRegistration(t *testing.T) {
+	r := new(Runtime)
+	value := new(Adapter)
+	if err := r.AddAdapter("zero", value); err != nil {
+		t.Fatal(err)
+	}
+	if got, ok := r.adapters.Load("zero"); !ok || got != value {
+		t.Fatal("legacy route missing")
+	}
+	r.RemoveAdapter("zero")
+	if _, ok := r.adapters.Load("zero"); ok {
+		t.Fatal("legacy route retained")
+	}
+}

@@ -231,9 +231,11 @@ native-icu-build: native-icu-builder-test $(ICU_ARCHIVE)
 # checkout and lockfile-installed dependencies provided by the CI job's npm ci.
 NATIVE_TEST_ENV = REQUIRE_ICU=1 HE_SOURCE_ROOT="$(abspath ..)" HE_IMAGE_LIBRARY="$(IMAGE_LIBRARY)" HUMANENGINE_VIPS_LIBRARY="$(IMAGE_LIBRARY)"
 
-# The required uncached launcher gate already runs the full cold SnowLuma transport case.
+# The uncached gate above runs every preview test. Keep the full app suite
+# under race with headroom for the slower hosted runner.
+NATIVE_RUNTIME_PREVIEW_TESTS := ^TestRuntimePreview
 native-icu-test: native-runtime-preview-test
-	. "$(ICU_WORK_DIR)/env.sh" && $(NATIVE_TEST_ENV) go test -timeout 15m -race -tags sqlite_fts5,humanengine_icu,bundled_wasm -skip '^TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart$$' ./...
+	. "$(ICU_WORK_DIR)/env.sh" && $(NATIVE_TEST_ENV) go test -timeout 20m -race -tags sqlite_fts5,humanengine_icu,bundled_wasm -skip '$(NATIVE_RUNTIME_PREVIEW_TESTS)' ./...
 	. "$(ICU_WORK_DIR)/env.sh" && go vet -tags sqlite_fts5,humanengine_icu,bundled_wasm ./...
 
 native-icu-source-free: native-icu-build
@@ -308,5 +310,5 @@ test-runtime-preview-profile:
 # Node resolution uses PATH populated by actions/setup-node; no fake executable.
 native-runtime-preview-test: native-icu-build wasm
 	@set -eu; . "$(ICU_WORK_DIR)/env.sh"; log=$$(mktemp); trap 'rm -f "$$log"' EXIT; status=0; \
-	  $(NATIVE_TEST_ENV) go test -json -race -count=1 -tags sqlite_fts5,humanengine_icu,bundled_wasm ./cmd/humanengine -run '^TestRuntimePreview' > "$$log" || status=$$?; \
+	  $(NATIVE_TEST_ENV) go test -json -race -count=1 -tags sqlite_fts5,humanengine_icu,bundled_wasm ./cmd/humanengine -run '$(NATIVE_RUNTIME_PREVIEW_TESTS)' > "$$log" || status=$$?; \
 	  cat "$$log"; test "$$status" = 0 && $(PYTHON) tests/check-runtime-preview-profile.py native "$$log"

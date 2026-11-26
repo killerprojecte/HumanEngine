@@ -10,9 +10,9 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/outboundmedia"
 	"github.com/killerprojecte/HumanEngine/backend/internal/plugins"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/outboundmedia"
 	transport "github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/transport"
 )
 

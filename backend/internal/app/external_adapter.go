@@ -8,6 +8,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/externaladapter"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 	"github.com/killerprojecte/HumanEngine/backend/internal/sourceevents"
 )
@@ -16,6 +17,14 @@ func (a *Application) externalAdapterResolver(owners Owners) pluginmanager.V2Ada
 	return externaladapter.Resolve(externaladapter.BindingPorts{
 		Runtime: a.Engine.Runtime, HasSecret: owners.Credentials.Has, Stopped: a.cancelAdapterScenes,
 		Ingest: a.ingestExternalAdapter,
+		Original: func(ctx context.Context, scene, asset string) (memeservice.Original, error) {
+			root, release, err := a.Engine.RootContext(ctx)
+			if err != nil {
+				return memeservice.Original{}, err
+			}
+			defer release()
+			return a.Engine.Memes.Original(root, memeservice.Context{SceneID: scene}, asset)
+		},
 		Recall: func(ctx context.Context, ref dispatch.SceneRef, id string) error {
 			root, release, err := a.Engine.RootContext(ctx)
 			if err != nil {

@@ -9,7 +9,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/outboundmedia"
+	"github.com/killerprojecte/HumanEngine/backend/internal/outboundmedia"
 	"io"
 	"net"
 	"net/http"
@@ -357,20 +357,12 @@ func (h *HTTP) actionPrepared(ctx context.Context, name string, params *jsjson.O
 		request.Header.Set("Authorization", token)
 	}
 	if lease != nil {
-		hold, e := lease.Hold()
-		if e != nil {
-			return nil, classify(e)
+		if err := lease.BindRequest(request, &h.work); err != nil {
+			if errors.Is(err, outboundmedia.ErrTransportStopped) {
+				return nil, failure("adapter_disposed", false)
+			}
+			return nil, classify(err)
 		}
-		physicalDone, ok := h.work.Child()
-		if !ok {
-			_ = hold.Close()
-			return nil, failure("adapter_disposed", false)
-		}
-		body := &heldBody{Reader: bytes.NewReader(wire), hold: hold, done: physicalDone}
-		request.Body = body
-		request.ContentLength = int64(len(wire))
-		// Redirects are disabled; never permit an unowned automatic replay.
-		request.GetBody = nil
 	}
 	response, err := h.client.Do(request)
 	if err != nil {

@@ -1,4 +1,4 @@
-# SnowLuma outbound IO encoder
+# OneBot outbound IO encoder
 
 This package implements only native outbound encoding and its bounded memory/IO
 ownership. It is not the full SnowLuma sender: source resolution, remote fetching,

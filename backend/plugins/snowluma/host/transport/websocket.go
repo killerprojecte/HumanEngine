@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/killerprojecte/HumanEngine/backend/plugins/snowluma/host/outboundmedia"
+	"github.com/killerprojecte/HumanEngine/backend/internal/outboundmedia"
 	"io"
 	"net/http"
 	"sync"

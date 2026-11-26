@@ -97,10 +97,22 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 				}
 			}
 			if json.NewDecoder(r.Body).Decode(&action) != nil || (r.URL.Path == "/send_group_msg" && action.Group != "901") ||
-				(r.URL.Path == "/send_private_msg" && action.User != "901") || len(action.Message) != 2 ||
+				(r.URL.Path == "/send_private_msg" && action.User != "901") || len(action.Message) < 2 ||
 				action.Message[0].Type != "reply" || action.Message[0].Data["id"] != "9" ||
 				action.Message[1].Type != "text" || action.Message[1].Data["text"] != "Independent reply." {
 				t.Errorf("invalid physical request: %s %+v", r.URL.Path, action)
+				w.WriteHeader(400)
+				return
+			}
+			if r.URL.Path == "/send_group_msg" {
+				if len(action.Message) != 3 || action.Message[2].Type != "image" ||
+					action.Message[2].Data["file"] != "base64://"+base64.StdEncoding.EncodeToString(original.Bytes()) {
+					t.Error("physical group outbound image is not the exact imported original")
+					w.WriteHeader(400)
+					return
+				}
+			} else if len(action.Message) != 2 {
+				t.Error("private reply should contain only quote and text")
 				w.WriteHeader(400)
 				return
 			}
@@ -128,9 +140,11 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		}
 	}()
 	args = append(args, "--node", node)
+	var runtimeLogs *commandLog
 	boot := func(entry string) (string, func()) {
 		t.Helper()
 		proc, logs, done := runtimeCommandWithPlugin(t, args, entry, binary)
+		runtimeLogs = logs
 		return runtimeAddress(t, logs, done), func() {
 			t.Helper()
 			if err := proc.Process.Signal(syscall.SIGTERM); err != nil {
@@ -156,7 +170,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !want && len(rows) == 0 {
 			return
 		}
-		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.3.0-http-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
+		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.4.0-http-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
 			t.Fatalf("unexpected catalog: %s", body)
 		}
 	}
@@ -284,6 +298,25 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	history(group, "available")
 	history(direct, "available")
+	outboundGroup := "ob:s:" + encode(`["snowluma","42","group","901"]`)
+	sourceSetup := fmt.Sprintf(`{"id":%q,"adapterId":"snowluma","accountId":"42","platformSceneId":"901","kind":"group","name":"Outbound media source","participationEnabled":false,"learningEnabled":true,"proactiveEnabled":false}`, outboundGroup)
+	commandRequest(t, addr, "PUT", "/api/scenes/"+url.PathEscape(outboundGroup), []byte(sourceSetup), 200)
+	sourceID := outboundGroup + ":m:" + encode(`"8"`)
+	post(fmt.Sprintf(`{"post_type":"message","message_type":"group","self_id":42,"group_id":901,"user_id":901,"message_id":8,"time":%d,"message":[{"type":"text","data":{"text":"outbound asset source"}}]}`, time.Now().Unix()-60), eventToken, 204)
+	imported := commandRequest(t, addr, "POST", "/api/memes/import", []byte(fmt.Sprintf(`{"sceneId":%q,"messageId":%q,"base64":%q}`, outboundGroup, sourceID, base64.StdEncoding.EncodeToString(original.Bytes()))), 200)
+	var asset struct {
+		ID   string
+		Tags map[string]any
+	}
+	if err := json.Unmarshal(imported, &asset); err != nil || asset.ID == "" {
+		t.Fatalf("managed asset import failed: %s", imported)
+	}
+	asset.Tags["intent"] = []string{"celebrate"}
+	patch, err := json.Marshal(map[string]any{"available": true, "tags": asset.Tags})
+	if err != nil {
+		t.Fatal(err)
+	}
+	commandRequest(t, addr, "PATCH", "/api/memes/"+asset.ID, patch, 200)
 	model := httptest.NewServer(http.HandlerFunc(portableSnowHTTPModel))
 	defer model.Close()
 	models := fmt.Sprintf(`{"providers":[{"id":"fixture","name":"Loopback","protocol":"openai-chat","baseUrl":%q,"retryCount":0,"timeoutMs":4000}],"models":[{"id":"fixture","displayName":"Deterministic","providerId":"fixture","apiModelName":"fixture","capabilities":["text","tools"]}],"routes":[{"role":"planner","orderedModelIds":["fixture"],"timeoutMs":5000},{"role":"replyer","orderedModelIds":["fixture"],"timeoutMs":5000}]}`, model.URL+"/v1")
@@ -297,7 +330,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		select {
 		case <-replies:
 		case <-time.After(10 * time.Second):
-			t.Fatalf("no physical %s reply", kind)
+			t.Fatalf("no physical %s reply: %s", kind, strings.NewReplacer(token, "[test credential]", eventToken, "[test credential]").Replace(runtimeLogs.snapshot()))
 		}
 		deadline := time.Now().Add(5 * time.Second)
 		for {
@@ -363,11 +396,22 @@ func portableSnowHTTPModel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var in struct {
+		SceneKind    string
 		Messages     []struct{ ID string }
 		PlanContract struct{ TargetMessageIDs []string }
-		Plan         struct{ TargetMessageIDs []string }
+		Plan         struct {
+			TargetMessageIDs []string
+			Assets           []struct{ AssetID string }
+		}
+	}
+	var receipt struct {
+		ID    string
+		Value struct{ Items []struct{ ID string } }
 	}
 	for _, row := range req.Messages {
+		if row.Role == "tool" {
+			_ = json.Unmarshal([]byte(row.Content), &receipt)
+		}
 		if row.Role == "user" {
 			_ = json.Unmarshal([]byte(row.Content), &in)
 		}
@@ -375,19 +419,37 @@ func portableSnowHTTPModel(w http.ResponseWriter, r *http.Request) {
 	names := make([]string, 0, len(req.Tools))
 	for _, tool := range req.Tools {
 		names = append(names, tool.Function.Name)
+
 	}
 	var name string
 	var input map[string]any
 	switch {
-	case slices.Contains(names, "participation__decide") && len(in.Messages) == 1:
+	case slices.Contains(names, "participation__decide") && len(in.Messages) != 0:
 		name = "participation__decide"
-		input = map[string]any{"action": "reply", "reasonCode": "fixture", "targetMessageIds": []string{in.Messages[0].ID}}
+		input = map[string]any{"action": "reply", "reasonCode": "fixture", "targetMessageIds": []string{in.Messages[len(in.Messages)-1].ID}}
 	case slices.Contains(names, "reply__plan") && len(in.PlanContract.TargetMessageIDs) == 1:
+		var chosen = []any{}
+		if in.SceneKind == "group" {
+			if receipt.ID == "" {
+				name = "memes__search"
+				input = map[string]any{"query": "celebrate"}
+				break
+			}
+			if len(receipt.Value.Items) != 1 || receipt.Value.Items[0].ID == "" {
+				http.Error(w, "expected synthetic sticker evidence", 400)
+				return
+			}
+			chosen = append(chosen, map[string]string{"assetId": receipt.Value.Items[0].ID, "evidenceId": receipt.ID})
+		}
 		name = "reply__plan"
-		input = map[string]any{"action": "reply", "deliveryTool": "messages.send", "strategy": "Return the fixture reply.", "targetMessageIds": in.PlanContract.TargetMessageIDs, "contextMessageIds": in.PlanContract.TargetMessageIDs, "constraints": []any{}, "facts": []any{}, "assets": []any{}, "emoji": []any{}, "actions": []any{}}
+		input = map[string]any{"action": "reply", "deliveryTool": "messages.send", "strategy": "Return the fixture reply.", "targetMessageIds": in.PlanContract.TargetMessageIDs, "contextMessageIds": in.PlanContract.TargetMessageIDs, "constraints": []any{}, "facts": []any{}, "assets": chosen, "emoji": []any{}, "actions": []any{}}
 	case slices.Contains(names, "messages__send") && len(in.Plan.TargetMessageIDs) == 1:
 		name = "messages__send"
-		input = map[string]any{"operationId": "portable-reply", "segments": []any{map[string]any{"replyToId": in.Plan.TargetMessageIDs[0], "parts": []any{map[string]any{"type": "text", "text": "Independent reply."}}}}}
+		parts := []any{map[string]any{"type": "text", "text": "Independent reply."}}
+		if len(in.Plan.Assets) == 1 {
+			parts = append(parts, map[string]any{"type": "media", "mediaType": "image", "assetId": in.Plan.Assets[0].AssetID})
+		}
+		input = map[string]any{"operationId": "portable-reply", "segments": []any{map[string]any{"replyToId": in.Plan.TargetMessageIDs[0], "parts": parts}}}
 	default:
 		w.WriteHeader(400)
 		return

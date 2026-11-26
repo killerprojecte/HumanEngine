@@ -25,6 +25,7 @@ import (
 const (
 	oneBotHTTPWire            = "onebot11-http-1"
 	oneBotHTTPMediaWire       = "onebot11-http-2"
+	oneBotHTTPOutboundWire    = "onebot11-http-3"
 	oneBotActionResponseLimit = 8 * 1024 * 1024
 )
 
@@ -48,6 +49,7 @@ const oneBotHTTPSchema = `{
 type oneBotHTTP struct {
 	eventPath string
 	media     bool
+	outbound  bool
 	token     string
 	eventKey  []byte
 }
@@ -99,8 +101,8 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			port, _ := cfg.Get("eventPort")
 			p := httpProfile{scope: scope{adapter: desc.AdapterID, account: account, onebot: true},
 				botID: account, listen: net.JoinHostPort(host, strconv.Itoa(int(port.(float64)))), action: text(cfg, "url"),
-				onebotHTTP: &oneBotHTTP{eventPath: route, token: token, eventKey: []byte(eventToken), media: desc.Wire == oneBotHTTPMediaWire}}
-			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped})
+				onebotHTTP: &oneBotHTTP{eventPath: route, token: token, eventKey: []byte(eventToken), media: desc.Wire != oneBotHTTPWire, outbound: desc.Wire == oneBotHTTPOutboundWire}}
+			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original})
 		},
 		Policy: pluginmanager.BuiltinPolicy{
 			Validate: func(_ context.Context, in *jsjson.Object) error {
@@ -175,17 +177,25 @@ func (p *oneBotHTTP) signEvent(raw []byte) []byte {
 	return mac.Sum(nil)
 }
 
-func (*oneBotHTTP) action(base string, wire []byte) (string, []byte, error) {
-	var envelope struct {
-		Action string
-		Params json.RawMessage
-	}
+type actionOriginal struct {
+	Part  int
+	Index int
+}
+
+type oneBotAction struct {
+	Action    string
+	Params    json.RawMessage
+	Originals []actionOriginal
+}
+
+func oneBotActionEnvelope(wire []byte) (oneBotAction, error) {
+	var envelope oneBotAction
 	if err := json.Unmarshal(wire, &envelope); err != nil || envelope.Action == "" || len(envelope.Params) == 0 || strings.IndexFunc(envelope.Action, func(r rune) bool {
 		return !(r == '_' || r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9')
 	}) >= 0 {
-		return "", nil, errors.New("external_adapter_action_invalid")
+		return oneBotAction{}, errors.New("external_adapter_action_invalid")
 	}
-	return strings.TrimRight(base, "/") + "/" + envelope.Action, envelope.Params, nil
+	return envelope, nil
 }
 
 func (s *httpSession) oneBotLogin(ctx context.Context, p *oneBotHTTP) error {

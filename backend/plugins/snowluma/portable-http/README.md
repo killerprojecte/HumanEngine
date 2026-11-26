@@ -4,7 +4,12 @@ This is an opt-in proof for a **disposable installation**, not a replacement
 for the bundled SnowLuma adapter. Do not select it on an existing installation:
 it deliberately uses the same plugin/adapter ID and credential names to exercise
 canonical identity, but does not yet implement WebSocket, legacy environment
-credentials, remote history, outgoing images, or full OneBot message-part parity.
+credentials, remote history or full OneBot message-part parity.
+
+Outgoing image parts can use scene-visible originals selected from the managed
+sticker library. The guest chooses the wire segment; the host resolves and
+encodes the original, then rechecks it at transmission. Raw image paths and
+bytes never cross into the guest.
 
 Incoming text and still images keep their order. An image may be inline or
 resolved from an opaque token with an authenticated OneBot `get_image` call.

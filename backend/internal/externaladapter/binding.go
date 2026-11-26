@@ -11,6 +11,7 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/credentials"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginconfig"
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 )
@@ -37,11 +38,12 @@ type BindingPorts struct {
 	Recall    func(context.Context, dispatch.SceneRef, string) error
 	Stopped   func(string) error
 	HasSecret func(context.Context, string, string) (bool, error)
+	Original  func(context.Context, string, string) (memeservice.Original, error)
 }
 
 func Resolve(ports BindingPorts) pluginmanager.V2AdapterResolver {
 	return func(desc pluginmanager.V2AdapterDescriptor) (pluginmanager.V2AdapterBinding, error) {
-		if (desc.Wire == oneBotHTTPWire || desc.Wire == oneBotHTTPMediaWire) && validWireIdentity(desc.AdapterID) {
+		if (desc.Wire == oneBotHTTPWire || desc.Wire == oneBotHTTPMediaWire || desc.Wire == oneBotHTTPOutboundWire) && validWireIdentity(desc.AdapterID) {
 			return bindOneBotHTTP(ports, desc)
 		}
 		if desc.Wire != wireProfile || !validWireIdentity(desc.AdapterID) {

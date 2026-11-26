@@ -42,7 +42,7 @@ func invoke(raw []byte) any {
 	in := obj(get(q, "input"))
 	switch str(q, "operation") {
 	case "adapterProtocol":
-		return map[string]string{"wire": "onebot11-http-2"}
+		return map[string]string{"wire": "onebot11-http-3"}
 	case "adapterLogin":
 		account := str(in, "account")
 		response := obj(get(in, "response"))
@@ -176,12 +176,22 @@ func send(in *jsjson.Object) any {
 	if reply := str(in, "replyTo"); reply != "" {
 		segments = append(segments, segment("reply", "id", reply))
 	}
-	for _, row := range parts {
+	var originals []map[string]int
+	for i, row := range parts {
 		part := obj(row)
-		if str(part, "type") != "text" {
+		switch str(part, "type") {
+		case "text":
+			segments = append(segments, segment("text", "text", str(part, "text")))
+		case "media":
+			originals = append(originals, map[string]int{"part": i, "index": len(segments)})
+			segments = append(segments, segment("image", "file", ""))
+		default:
 			return nil
 		}
-		segments = append(segments, segment("text", "text", str(part, "text")))
 	}
-	return map[string]any{"action": action, "params": map[string]any{field: str(peer, "id"), "message": segments}}
+	out := map[string]any{"action": action, "params": map[string]any{field: str(peer, "id"), "message": segments}}
+	if len(originals) != 0 {
+		out["originals"] = originals
+	}
+	return out
 }

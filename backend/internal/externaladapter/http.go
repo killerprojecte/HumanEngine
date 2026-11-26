@@ -18,6 +18,8 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/memeservice"
+	"github.com/killerprojecte/HumanEngine/backend/internal/outboundmedia"
 	"github.com/killerprojecte/HumanEngine/backend/internal/quiescence"
 )
 
@@ -37,9 +39,10 @@ type httpProfile struct {
 type guestCall func(context.Context, context.Context, []byte) ([]byte, error)
 
 type sourcePorts struct {
-	ingest  func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
-	recall  func(context.Context, dispatch.SceneRef, string) error
-	stopped func(string) error
+	ingest   func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
+	recall   func(context.Context, dispatch.SceneRef, string) error
+	stopped  func(string) error
+	original func(context.Context, string, string) (memeservice.Original, error)
 }
 
 type httpSession struct {
@@ -50,6 +53,7 @@ type httpSession struct {
 	cancel   context.CancelFunc
 	lease    *botruntime.AdapterRegistration
 	client   *http.Client
+	encoder  *outboundmedia.Encoder
 	server   http.Server
 	listener net.Listener
 	adapter  botruntime.Adapter
@@ -106,6 +110,16 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 		Dispose:   cancel,
 		Transport: dispatch.AbortContainedAdapter(&dispatch.Adapter{Send: s.send}),
 	}
+	if p := profile.onebotHTTP; p != nil && p.outbound {
+		s.encoder, err = outboundmedia.NewEncoder()
+		if err != nil {
+			cancel()
+			_ = listener.Close()
+			s.client.CloseIdleConnections()
+			lease.Release()
+			return nil, err
+		}
+	}
 	if p := profile.onebotHTTP; p != nil && p.media {
 		s.adapter.InlineImage = &botruntime.InlineImageAdapter{
 			Read: readOneBotInline, Classify: classifyOneBotImage,
@@ -115,6 +129,9 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 		s.adapter.PrepareVisionImage = s.prepareOneBotImage
 	}
 	if err := lease.Publish(&s.adapter); err != nil {
+		if s.encoder != nil {
+			s.encoder.Dispose()
+		}
 		cancel()
 		_ = listener.Close()
 		lease.Release()
@@ -133,6 +150,9 @@ func (s *httpSession) Dispose() {
 	s.stop.Do(func() {
 		s.cancel()
 		s.work.Seal()
+		if s.encoder != nil {
+			s.encoder.Dispose()
+		}
 		s.lease.Detach()
 		_ = s.listener.Close()
 		_ = s.server.Close()
@@ -140,6 +160,9 @@ func (s *httpSession) Dispose() {
 		go func() {
 			<-s.served
 			s.closeErr = errors.Join(s.work.Wait(context.Background()), s.source.stopped(s.profile.adapter))
+			if s.encoder != nil {
+				s.closeErr = errors.Join(s.closeErr, s.encoder.CloseAndWait(context.Background()))
+			}
 			if s.closeErr == nil {
 				s.lease.Release()
 			}
@@ -328,15 +351,28 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 	if err != nil {
 		return dispatch.Receipt{}, err
 	}
-	if !json.Valid(body) {
-		return dispatch.Receipt{}, errors.New("external_adapter_action_invalid")
-	}
 	address := s.profile.action
+	var encoded *outboundmedia.Lease
+	var originals []resolvedOriginal
 	if p := s.profile.onebotHTTP; p != nil {
-		address, body, err = p.action(s.profile.action, body)
+		action, err := oneBotActionEnvelope(body)
 		if err != nil {
 			return dispatch.Receipt{}, err
 		}
+		address, body = strings.TrimRight(address, "/")+"/"+action.Action, action.Params
+		if len(action.Originals) != 0 {
+			if !p.outbound {
+				return dispatch.Receipt{}, errors.New("external_adapter_action_invalid")
+			}
+			encoded, originals, err = s.prepareOriginals(ctx, known, segment, action)
+			if err != nil {
+				return dispatch.Receipt{}, err
+			}
+			defer encoded.Release()
+			body = encoded.Bytes
+		}
+	} else if !json.Valid(body) {
+		return dispatch.Receipt{}, errors.New("external_adapter_action_invalid")
 	}
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, address, bytes.NewReader(body))
 	if err != nil {
@@ -353,8 +389,18 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 			return dispatch.Receipt{}, err
 		}
 	}
+	if encoded != nil {
+		if err := s.qualifyOriginals(ctx, known.ID, originals); err != nil {
+			return dispatch.Receipt{}, err
+		}
+	}
 	if err := s.life.Err(); err != nil {
 		return dispatch.Receipt{}, err
+	}
+	if encoded != nil {
+		if err := encoded.BindRequest(request, &s.work); err != nil {
+			return dispatch.Receipt{}, err
+		}
 	}
 	witness := dispatch.Receipt{Status: dispatch.Unknown}
 	response, err := s.client.Do(request)

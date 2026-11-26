@@ -9,6 +9,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -48,9 +51,20 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	run(".", "go", "build", "-tags=sqlite_fts5,humanengine_icu", "-o", binary, ".")
 	const token, eventToken = "synthetic-portable-action", "synthetic-portable-event"
-	var logins atomic.Int32
+	var logins, imageLookups, unexpectedDownloads atomic.Int32
+	pixels := image.NewNRGBA(image.Rect(0, 0, 3, 2))
+	pixels.SetNRGBA(1, 0, color.NRGBA{R: 13, G: 95, B: 200, A: 255})
+	var original bytes.Buffer
+	if err := png.Encode(&original, pixels); err != nil {
+		t.Fatal(err)
+	}
 	replies := make(chan struct{}, 2)
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/must-not-fetch" {
+			unexpectedDownloads.Add(1)
+			w.WriteHeader(400)
+			return
+		}
 		if r.Method != http.MethodPost || r.Header.Get("Authorization") != "Bearer "+token {
 			t.Error("unauthorized synthetic peer request")
 			w.WriteHeader(401)
@@ -60,6 +74,19 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		case "/get_login_info":
 			logins.Add(1)
 			fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"user_id":42}}`)
+		case "/get_image":
+			var request struct{ File string }
+			if json.NewDecoder(r.Body).Decode(&request) != nil || (request.File != "fixture-image-token" && request.File != "fixture-url-token") {
+				t.Error("unexpected physical image token")
+				w.WriteHeader(400)
+				return
+			}
+			imageLookups.Add(1)
+			if request.File == "fixture-url-token" {
+				fmt.Fprintf(w, `{"status":"ok","retcode":0,"data":{"url":%q}}`, "http://"+r.Host+"/must-not-fetch")
+				return
+			}
+			fmt.Fprintf(w, `{"status":"ok","retcode":0,"data":{"file":%q}}`, "base64://"+base64.StdEncoding.EncodeToString(original.Bytes()))
 		case "/send_group_msg", "/send_private_msg":
 			var action struct {
 				Group   string `json:"group_id"`
@@ -129,7 +156,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !want && len(rows) == 0 {
 			return
 		}
-		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.2.0-http-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
+		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.3.0-http-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
 			t.Fatalf("unexpected catalog: %s", body)
 		}
 	}
@@ -187,6 +214,54 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	encode := func(s string) string { return base64.RawURLEncoding.EncodeToString([]byte(s)) }
 	group := "ob:s:" + encode(`["snowluma","42","group","900"]`)
 	direct := "ob:s:" + encode(`["snowluma","42","private","900"]`)
+	mediaScene := "ob:s:" + encode(`["snowluma","42","group","902"]`)
+	mediaID := mediaScene + ":m:" + encode(`"11"`)
+	mediaRaw := fmt.Sprintf(`{"post_type":"message","message_type":"group","self_id":42,"group_id":902,"user_id":900,"message_id":11,"time":%d,"message":[{"type":"text","data":{"text":"Independent caption"}},{"type":"image","data":{"file":"fixture-image-token"}}]}`, time.Now().Unix())
+	post(mediaRaw, eventToken, 204)
+	post(mediaRaw, eventToken, 204)
+	mediaPath := "/api/scenes/" + url.PathEscape(mediaScene)
+	var mediaHistory struct {
+		Items []struct {
+			ID    string
+			Parts []struct {
+				Type, Text, MediaURL string
+			}
+		}
+	}
+	mediaRows := commandRequest(t, addr, "GET", mediaPath+"/history?source=local", nil, 200)
+	if err := json.Unmarshal(mediaRows, &mediaHistory); err != nil {
+		t.Fatal(err)
+	}
+	items := mediaHistory.Items
+	if len(items) != 1 || items[0].ID != mediaID || len(items[0].Parts) != 2 ||
+		items[0].Parts[0].Type != "text" || items[0].Parts[0].Text != "Independent caption" ||
+		items[0].Parts[1].Type != "media" || items[0].Parts[1].MediaURL == "" ||
+		bytes.Contains(mediaRows, []byte(`"assetId"`)) {
+		t.Fatalf("caption and opaque image must form one ordered row: %s", mediaRows)
+	}
+	if got := commandRequest(t, addr, "GET", items[0].Parts[1].MediaURL, nil, 200); !bytes.Equal(got, original.Bytes()) {
+		t.Fatal("opaque image did not return original bytes")
+	}
+	if got := imageLookups.Load(); got != 1 {
+		t.Fatalf("opaque image lookups = %d, want 1", got)
+	}
+	mediaURL := func(rawID string) string {
+		return mediaPath + "/messages/" + url.PathEscape(mediaScene+":m:"+encode(rawID)) + "/media/1"
+	}
+	post(strings.ReplaceAll(strings.Replace(mediaRaw, `"message_id":11`, `"message_id":12`, 1),
+		"fixture-image-token", "base64://"+base64.StdEncoding.EncodeToString(original.Bytes())), eventToken, 204)
+	if got := commandRequest(t, addr, "GET", mediaURL(`"12"`), nil, 200); !bytes.Equal(got, original.Bytes()) {
+		t.Fatal("inline image did not return original bytes")
+	}
+	post(strings.ReplaceAll(strings.Replace(mediaRaw, `"message_id":11`, `"message_id":13`, 1),
+		"fixture-image-token", "fixture-url-token"), eventToken, 204)
+	commandRequest(t, addr, "GET", mediaURL(`"13"`), nil, 404)
+	post(fmt.Sprintf(`{"post_type":"notice","notice_type":"group_recall","self_id":42,"group_id":902,"message_id":11,"time":%d}`, time.Now().Unix()), eventToken, 204)
+	commandRequest(t, addr, "GET", mediaURL(`"11"`), nil, 404)
+	if got := imageLookups.Load(); got != 2 || unexpectedDownloads.Load() != 0 {
+		t.Fatalf("image transport escaped token custody: lookups=%d downloads=%d", got, unexpectedDownloads.Load())
+	}
+
 	for _, kind := range []string{"group", "private"} {
 		raw := fmt.Sprintf(`{"post_type":"message","message_type":%q,"sub_type":"normal","self_id":42,"group_id":900,"user_id":900,"message_id":7,"time":%d,"message":[{"type":"text","data":{"text":"portable receipt"}}]}`, kind, time.Now().Unix())
 		post(raw, "incorrect", 401)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/onebotimage"
 )
 
 type imageTokenLookup func(context.Context, string) (any, error)
@@ -43,7 +44,7 @@ func readPublicImageWithTokenRefresh(ctx context.Context, media *jsjson.Object, 
 	}
 	token := str(media, "fileId")
 	// Token syntax excludes the colon in the original HTTP(S) URL.
-	if !validOpaqueToken(token) {
+	if !onebotimage.ValidOpaqueToken(token) {
 		return image, err
 	}
 	return fetchImageToken(ctx, token, lookup, browserTokenContinuation(true, public))
@@ -89,10 +90,10 @@ func readTokenOrInlineImage(ctx context.Context, scene botruntime.Scene, referen
 }
 
 func readTokenOrInlineDescriptor(ctx context.Context, media *jsjson.Object, file string, lookup imageTokenLookup, readSelected selectedImageRead) ([]byte, error) {
-	if payload, inline := inlineImagePayload(file); inline {
-		return decodeInlinePayload(payload)
+	if payload, inline := onebotimage.InlinePayload(file); inline {
+		return onebotimage.DecodePayload(payload)
 	}
-	token := opaqueImageToken(media, file)
+	token := onebotimage.OpaqueToken(media, file)
 	if token == "" {
 		return nil, botruntime.ErrDisplayImageUnavailable
 	}
@@ -159,7 +160,7 @@ func (s *Sender) prepareVisionImage(scene botruntime.Scene, reference string) bo
 			return s.readPublicBrowserImage(ctx, file, before)
 		}
 	}
-	token := opaqueImageToken(media, file)
+	token := onebotimage.OpaqueToken(media, file)
 	if token == "" {
 		return nil
 	}
@@ -168,29 +169,6 @@ func (s *Sender) prepareVisionImage(scene botruntime.Scene, reference string) bo
 			return s.lookupImageToken(call, token, before)
 		}, inlineTokenContinuation)
 	}
-}
-
-func opaqueImageToken(media *jsjson.Object, file string) string {
-	// Direct locators are never opaque tokens; their transport is independent.
-	if directImageLocator(file) {
-		return ""
-	}
-	token, present := get(media, "fileId").(string)
-	if !present {
-		token = file
-	}
-	if !validOpaqueToken(token) {
-		return ""
-	}
-	return token
-}
-
-func validOpaqueToken(token string) bool {
-	if token == "" || token == "." || token == ".." || strings.ContainsAny(token, "/\\:%\x00") {
-		return false
-	}
-	units, err := jsjson.UTF16Len(token)
-	return err == nil && units <= 16384
 }
 
 func publicImageLocator(value string) bool {

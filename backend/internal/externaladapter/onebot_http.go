@@ -20,9 +20,13 @@ import (
 	"github.com/killerprojecte/HumanEngine/backend/internal/pluginmanager"
 )
 
-// onebot11-http-1 provides the HTTP action and event envelopes and identity ABI.
+// The OneBot HTTP profiles provide the HTTP action and event envelopes and identity ABI.
 // The installed guest supplies login, event and action response interpretation.
-const oneBotHTTPWire = "onebot11-http-1"
+const (
+	oneBotHTTPWire            = "onebot11-http-1"
+	oneBotHTTPMediaWire       = "onebot11-http-2"
+	oneBotActionResponseLimit = 8 * 1024 * 1024
+)
 
 const oneBotHTTPSchema = `{
 	"type":"object","additionalProperties":false,
@@ -43,11 +47,13 @@ const oneBotHTTPSchema = `{
 
 type oneBotHTTP struct {
 	eventPath string
+	media     bool
 	token     string
 	eventKey  []byte
 }
 
 type oneBotIngress struct {
+	Adapter string          `json:"adapter,omitempty"`
 	Account string          `json:"account"`
 	Event   json.RawMessage `json:"event"`
 }
@@ -68,7 +74,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				return nil, err
 			}
 			protocol, err := guestObject(raw)
-			if err != nil || text(protocol, "wire") != oneBotHTTPWire {
+			if err != nil || text(protocol, "wire") != desc.Wire {
 				return nil, errors.New("external_adapter_wire_mismatch")
 			}
 			token, err := oneBotSecret(ctx, in, "token", "credential_not_configured")
@@ -93,7 +99,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			port, _ := cfg.Get("eventPort")
 			p := httpProfile{scope: scope{adapter: desc.AdapterID, account: account, onebot: true},
 				botID: account, listen: net.JoinHostPort(host, strconv.Itoa(int(port.(float64)))), action: text(cfg, "url"),
-				onebotHTTP: &oneBotHTTP{eventPath: route, token: token, eventKey: []byte(eventToken)}}
+				onebotHTTP: &oneBotHTTP{eventPath: route, token: token, eventKey: []byte(eventToken), media: desc.Wire == oneBotHTTPMediaWire}}
 			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped})
 		},
 		Policy: pluginmanager.BuiltinPolicy{
@@ -198,8 +204,8 @@ func (s *httpSession) oneBotLogin(ctx context.Context, p *oneBotHTTP) error {
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		return pluginmanager.NewStartupError("http_action_failed", map[string]any{"httpStatus": res.StatusCode})
 	}
-	raw, err := io.ReadAll(io.LimitReader(res.Body, 8*1024*1024+1))
-	if err != nil || len(raw) > 8*1024*1024 {
+	raw, err := io.ReadAll(io.LimitReader(res.Body, oneBotActionResponseLimit+1))
+	if err != nil || len(raw) > oneBotActionResponseLimit {
 		return pluginmanager.NewStartupError("invalid_http_response", nil)
 	}
 	out, err := s.invoke(ctx, op, struct {

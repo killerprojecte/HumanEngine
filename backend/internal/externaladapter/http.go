@@ -37,7 +37,7 @@ type httpProfile struct {
 type guestCall func(context.Context, context.Context, []byte) ([]byte, error)
 
 type sourcePorts struct {
-	ingest  func(context.Context, dispatch.SceneRef, *jsjson.Object) error
+	ingest  func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
 	recall  func(context.Context, dispatch.SceneRef, string) error
 	stopped func(string) error
 }
@@ -105,6 +105,14 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 		},
 		Dispose:   cancel,
 		Transport: dispatch.AbortContainedAdapter(&dispatch.Adapter{Send: s.send}),
+	}
+	if p := profile.onebotHTTP; p != nil && p.media {
+		s.adapter.InlineImage = &botruntime.InlineImageAdapter{
+			Read: readOneBotInline, Classify: classifyOneBotImage,
+			Current: func() bool { return bound.Err() == nil },
+		}
+		s.adapter.BrowserImage = s.readOneBotImage
+		s.adapter.PrepareVisionImage = s.prepareOneBotImage
 	}
 	if err := lease.Publish(&s.adapter); err != nil {
 		cancel()
@@ -215,15 +223,20 @@ func (s *httpSession) receive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var input any = json.RawMessage(raw)
-	if s.profile.onebotHTTP != nil {
-		input = oneBotIngress{s.profile.account, json.RawMessage(raw)}
+	p := s.profile.onebotHTTP
+	if p != nil {
+		envelope := oneBotIngress{Account: s.profile.account, Event: json.RawMessage(raw)}
+		if p.media {
+			envelope.Adapter = s.profile.adapter
+		}
+		input = envelope
 	}
 	output, err := s.invoke(r.Context(), "adapterIngress", input)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
-	ev, err := projectEvent(output)
+	ev, err := projectEvent(output, p != nil && p.media)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
@@ -244,7 +257,7 @@ func (s *httpSession) receive(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}
-		err = s.source.ingest(r.Context(), scene, message)
+		err = s.source.ingest(r.Context(), &s.adapter, scene, message)
 	case "recall":
 		err = s.source.recall(r.Context(), scene, messageID(scene, ev.Message))
 	}
@@ -354,10 +367,10 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 	}
 	var reader io.Reader = response.Body
 	if s.profile.onebotHTTP != nil {
-		reader = io.LimitReader(reader, 8*1024*1024+1)
+		reader = io.LimitReader(reader, oneBotActionResponseLimit+1)
 	}
 	raw, err := io.ReadAll(reader)
-	if err != nil || s.profile.onebotHTTP != nil && len(raw) > 8*1024*1024 {
+	if err != nil || s.profile.onebotHTTP != nil && len(raw) > oneBotActionResponseLimit {
 		return witness, nil
 	}
 	if s.profile.onebotHTTP == nil {

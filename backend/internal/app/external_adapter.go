@@ -27,7 +27,7 @@ func (a *Application) externalAdapterResolver(owners Owners) pluginmanager.V2Ada
 	})
 }
 
-func (a *Application) ingestExternalAdapter(ctx context.Context, ref dispatch.SceneRef, message *jsjson.Object) error {
+func (a *Application) ingestExternalAdapter(ctx context.Context, owner *botruntime.Adapter, ref dispatch.SceneRef, message *jsjson.Object) error {
 	root, release, err := a.Engine.RootContext(ctx)
 	if err != nil {
 		return err
@@ -56,6 +56,6 @@ func (a *Application) ingestExternalAdapter(ctx context.Context, ref dispatch.Sc
 	}); err != nil {
 		return err
 	}
-	_, err = a.Engine.Runtime.IngestScene(root, scene, message, true)
+	_, err = a.Engine.Runtime.IngestNativeMedia(root, owner, scene, message, true)
 	return err
 }

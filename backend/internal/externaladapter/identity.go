@@ -83,9 +83,10 @@ func encode(values ...string) string {
 	return base64.RawURLEncoding.EncodeToString(raw)
 }
 
-// event is the versioned guest projection of a signed peer event. It has no raw
-// host IDs, origin, source authority refs, or peer-controlled receipt clock.
-// This first transport profile intentionally supports text ingress and recall.
+// event is the versioned guest projection of a signed peer event. The host
+// derives message identities and owns origin, source authority and receive time.
+// The signed-json and initial OneBot profile provide text; the newer OneBot
+// profile carries ordered message parts.
 type event struct {
 	Type    string
 	Peer    peer
@@ -93,7 +94,7 @@ type event struct {
 	Sender  string
 	ReplyTo string
 	SentAt  time.Time
-	Text    string
+	Parts   []any
 }
 
 func validWireIdentity(value string) bool { return value != "" && utf8.ValidString(value) }
@@ -122,7 +123,7 @@ func guestObject(raw []byte) (*jsjson.Object, error) {
 	return o, nil
 }
 
-func projectEvent(raw []byte) (event, error) {
+func projectEvent(raw []byte, structured bool) (event, error) {
 	o, err := guestObject(raw)
 	if err != nil {
 		return event{}, err
@@ -136,9 +137,20 @@ func projectEvent(raw []byte) (event, error) {
 		}
 		ev.Peer = peer{Kind: text(p, "kind"), ID: text(p, "id")}
 		if ev.Type == "message" {
-			ev.Sender, ev.ReplyTo, ev.Text = text(o, "sender"), text(o, "replyTo"), text(o, "text")
+			ev.Sender, ev.ReplyTo = text(o, "sender"), text(o, "replyTo")
 			ev.SentAt, err = time.Parse(time.RFC3339Nano, text(o, "sentAt"))
-			if err != nil || !validWireIdentity(ev.Sender) || (ev.ReplyTo != "" && !validWireIdentity(ev.ReplyTo)) || ev.Text == "" {
+			if err != nil || !validWireIdentity(ev.Sender) || (ev.ReplyTo != "" && !validWireIdentity(ev.ReplyTo)) {
+				return event{}, errors.New("external_adapter_message_invalid")
+			}
+			if structured {
+				value, _ := o.Get("parts")
+				ev.Parts, err = projectParts(value)
+				if err != nil {
+					return event{}, err
+				}
+			} else if body := text(o, "text"); body != "" {
+				ev.Parts = []any{messagePart("text", jsjson.Member{Key: "text", Value: body})}
+			} else {
 				return event{}, errors.New("external_adapter_message_invalid")
 			}
 		}
@@ -151,7 +163,6 @@ func projectEvent(raw []byte) (event, error) {
 
 func (s scope) message(scene dispatch.SceneRef, in event, now time.Time) (*jsjson.Object, error) {
 	const clock = "2006-01-02T15:04:05.000Z"
-	part, _ := jsjson.NewObject(jsjson.Member{Key: "type", Value: "text"}, jsjson.Member{Key: "text", Value: in.Text})
 	out, err := jsjson.NewObject(
 		jsjson.Member{Key: "id", Value: messageID(scene, in.Message)},
 		jsjson.Member{Key: "sceneId", Value: scene.ID},
@@ -161,10 +172,48 @@ func (s scope) message(scene dispatch.SceneRef, in event, now time.Time) (*jsjso
 		jsjson.Member{Key: "status", Value: "available"},
 		jsjson.Member{Key: "sentAt", Value: in.SentAt.UTC().Format(clock)},
 		jsjson.Member{Key: "receivedAt", Value: now.UTC().Format(clock)},
-		jsjson.Member{Key: "parts", Value: []any{part}},
+		jsjson.Member{Key: "parts", Value: in.Parts},
 	)
 	if err == nil && in.ReplyTo != "" {
 		err = out.Set("replyToId", messageID(scene, in.ReplyTo))
 	}
 	return out, err
+}
+
+// projectParts copies only the supported wire fields into the live row. In
+// particular guests cannot manufacture a managed asset or a browser URL.
+func projectParts(value any) ([]any, error) {
+	rows, _ := value.([]any)
+	if len(rows) == 0 {
+		return nil, errors.New("external_adapter_parts_invalid")
+	}
+	parts := make([]any, 0, len(rows))
+	for _, v := range rows {
+		o, _ := v.(*jsjson.Object)
+		if o == nil {
+			return nil, errors.New("external_adapter_parts_invalid")
+		}
+		switch text(o, "type") {
+		case "text":
+			parts = append(parts, messagePart("text", jsjson.Member{Key: "text", Value: text(o, "text")}))
+		case "unsupported":
+			parts = append(parts, messagePart("unsupported", jsjson.Member{Key: "description", Value: text(o, "description")}))
+		case "media":
+			asset, media := text(o, "assetId"), text(o, "mediaType")
+			if !strings.HasPrefix(asset, "ob:media:") || media != "image/unknown" {
+				return nil, errors.New("external_adapter_parts_invalid")
+			}
+			parts = append(parts, messagePart("media",
+				jsjson.Member{Key: "assetId", Value: asset}, jsjson.Member{Key: "mediaType", Value: media}))
+		default:
+			return nil, errors.New("external_adapter_parts_invalid")
+		}
+	}
+	return parts, nil
+}
+
+func messagePart(kind string, fields ...jsjson.Member) *jsjson.Object {
+	part, _ := jsjson.NewObject(fields...)
+	_ = part.Set("type", kind)
+	return part
 }

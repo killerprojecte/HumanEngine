@@ -33,7 +33,7 @@ const rawSchema = `{
 
 type BindingPorts struct {
 	Runtime   *botruntime.Runtime
-	Ingest    func(context.Context, dispatch.SceneRef, *jsjson.Object) error
+	Ingest    func(context.Context, *botruntime.Adapter, dispatch.SceneRef, *jsjson.Object) error
 	Recall    func(context.Context, dispatch.SceneRef, string) error
 	Stopped   func(string) error
 	HasSecret func(context.Context, string, string) (bool, error)
@@ -41,7 +41,7 @@ type BindingPorts struct {
 
 func Resolve(ports BindingPorts) pluginmanager.V2AdapterResolver {
 	return func(desc pluginmanager.V2AdapterDescriptor) (pluginmanager.V2AdapterBinding, error) {
-		if desc.Wire == oneBotHTTPWire && validWireIdentity(desc.AdapterID) {
+		if (desc.Wire == oneBotHTTPWire || desc.Wire == oneBotHTTPMediaWire) && validWireIdentity(desc.AdapterID) {
 			return bindOneBotHTTP(ports, desc)
 		}
 		if desc.Wire != wireProfile || !validWireIdentity(desc.AdapterID) {

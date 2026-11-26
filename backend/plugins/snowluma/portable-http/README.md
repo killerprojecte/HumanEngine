@@ -4,7 +4,13 @@ This is an opt-in proof for a **disposable installation**, not a replacement
 for the bundled SnowLuma adapter. Do not select it on an existing installation:
 it deliberately uses the same plugin/adapter ID and credential names to exercise
 canonical identity, but does not yet implement WebSocket, legacy environment
-credentials, remote history, media, or full OneBot message-part parity.
+credentials, remote history, outgoing images, or full OneBot message-part parity.
+
+Incoming text and still images keep their order. An image may be inline or
+resolved from an opaque token with an authenticated OneBot `get_image` call.
+This preview reads inline bytes from that response; it does not download a
+returned URL or open a local path. The browser uses the host's authenticated
+message media route and a recalled message no longer serves its image.
 
 From `backend`, use the pinned Go toolchain and run:
 

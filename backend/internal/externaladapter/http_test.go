@@ -92,7 +92,7 @@ func TestIndependentLetterboxWASMWireAndPhysicalRetirement(t *testing.T) {
 	}()
 	var ingested, stopped atomic.Int32
 	source := sourcePorts{
-		ingest: func(_ context.Context, id dispatch.SceneRef, m *jsjson.Object) error {
+		ingest: func(_ context.Context, _ *botruntime.Adapter, id dispatch.SceneRef, m *jsjson.Object) error {
 			origin, _ := m.Get("origin")
 			message, _ := m.Get("id")
 			if id.AccountID != "actual-account" || id.AdapterID != "installed-letterbox" || id.PlatformSceneID != "mailbox" || origin != "live" || message != messageID(id, "letter-1") {

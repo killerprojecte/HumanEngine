@@ -11,7 +11,7 @@ func TestHostDerivesPortableIdentityAndOwnsOrigin(t *testing.T) {
 		"message":"8", "sender":"bot", "replyTo":"7", "sentAt":"2026-11-25T06:03:45Z", "text":"ordinary text",
 		"sceneId":"sim:foreign", "id":"ob:spoof", "origin":"history", "receivedAt":"1900-01-01T00:00:00Z"
 	}`)
-	ev, err := projectEvent(raw)
+	ev, err := projectEvent(raw, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,11 +55,11 @@ func TestHostDerivesPortableIdentityAndOwnsOrigin(t *testing.T) {
 
 func TestPortableIdentityDoesNotCollapseInvalidUnicode(t *testing.T) {
 	raw := []byte(`{"type":"recall","peer":{"kind":"group","id":"新聊天室"},"message":"\ud800"}`)
-	if _, err := projectEvent(raw); err == nil {
+	if _, err := projectEvent(raw, false); err == nil {
 		t.Fatal("accepted a surrogate in a platform identity")
 	}
 	raw = []byte(`{"type":"recall","peer":{"kind":"group","id":"新聊天室"},"message":"源消息"}`)
-	ev, err := projectEvent(raw)
+	ev, err := projectEvent(raw, false)
 	if err != nil {
 		t.Fatal(err)
 	}

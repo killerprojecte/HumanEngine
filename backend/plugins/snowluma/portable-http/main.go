@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"strings"
 
@@ -41,7 +42,7 @@ func invoke(raw []byte) any {
 	in := obj(get(q, "input"))
 	switch str(q, "operation") {
 	case "adapterProtocol":
-		return map[string]string{"wire": "onebot11-http-1"}
+		return map[string]string{"wire": "onebot11-http-2"}
 	case "adapterLogin":
 		account := str(in, "account")
 		response := obj(get(in, "response"))
@@ -51,7 +52,16 @@ func invoke(raw []byte) any {
 			return map[string]string{"account": account}
 		}
 	case "adapterIngress":
-		return ingress(str(in, "account"), obj(get(in, "event")))
+		return ingress(str(in, "adapter"), str(in, "account"), obj(get(in, "event")))
+	case "adapterImage":
+		if get(in, "status") == "ok" && get(in, "retcode") == float64(0) {
+			data := obj(get(in, "data"))
+			source := str(data, "url")
+			if source == "" {
+				source = str(data, "file")
+			}
+			return map[string]string{"source": source}
+		}
 	case "adapterSend":
 		return send(in)
 	case "adapterReceipt":
@@ -64,7 +74,7 @@ func invoke(raw []byte) any {
 	return nil
 }
 
-func ingress(account string, event *jsjson.Object) any {
+func ingress(adapter, account string, event *jsjson.Object) any {
 	bot, valid := snow.RawID(get(event, "self_id"))
 	if !valid || bot != account {
 		return nil
@@ -98,25 +108,36 @@ func ingress(account string, event *jsjson.Object) any {
 	}
 	// Only the peer and normalized business fields cross the ABI. The host
 	// derives canonical IDs and stamps the actual receive time.
-	message, scene, err := snow.Normalize("portable", account, event, "live", "", false, nil)
+	message, scene, err := snow.Normalize(adapter, account, event, "live", "", false, nil)
 	if err != nil {
 		return nil
 	}
 	parts, _ := get(message, "parts").([]any)
-	var body strings.Builder
-	for _, value := range parts {
+	for i, value := range parts {
 		part := obj(value)
-		if str(part, "type") != "text" {
-			return nil
+		switch str(part, "type") {
+		case "text", "unsupported":
+			continue
+		case "media":
+			if str(part, "mediaType") == "image/unknown" {
+				continue
+			}
 		}
-		body.WriteString(str(part, "text"))
+		fallback := new(jsjson.Object)
+		_ = fallback.Set("type", "unsupported")
+		_ = fallback.Set("description", "OneBot part unavailable in the HTTP preview")
+		parts[i] = fallback
 	}
-	if body.Len() == 0 {
+	if len(parts) == 0 {
 		return map[string]string{"type": "ignore"}
+	}
+	wire, err := jsjson.Marshal(parts)
+	if err != nil {
+		return nil
 	}
 	out := map[string]any{"type": "message", "message": messageID,
 		"peer":   map[string]string{"kind": str(scene, "kind"), "id": str(scene, "platformSceneId")},
-		"sender": str(message, "senderPlatformId"), "text": body.String(), "sentAt": str(message, "sentAt")}
+		"sender": str(message, "senderPlatformId"), "parts": json.RawMessage(wire), "sentAt": str(message, "sentAt")}
 	if reply, err := platformReply(str(scene, "id"), str(message, "replyToId")); err == nil && reply != "" {
 		out["replyTo"] = reply
 	}

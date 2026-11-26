@@ -128,6 +128,17 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 		s.adapter.BrowserImage = s.readOneBotImage
 		s.adapter.PrepareVisionImage = s.prepareOneBotImage
 	}
+	if p := profile.onebotHTTP; p != nil && p.history {
+		s.adapter.History = func(ctx context.Context, scene botruntime.Scene, limit int, settle func(*jsjson.Object, error)) {
+			s.queryOneBotHistory(ctx, scene.SceneRef, limit, "", nil, settle)
+		}
+		s.adapter.GetMessage = func(ctx context.Context, scene botruntime.Scene, id string, settle func(*jsjson.Object, error)) {
+			s.queryOneBotHistory(ctx, scene.SceneRef, 0, id, nil, settle)
+		}
+		s.adapter.BrowserMessage = func(ctx context.Context, scene botruntime.Scene, id string, before func(context.Context) error, settle func(*jsjson.Object, error)) {
+			s.queryOneBotHistory(ctx, scene.SceneRef, 0, id, before, settle)
+		}
+	}
 	if err := lease.Publish(&s.adapter); err != nil {
 		if s.encoder != nil {
 			s.encoder.Dispose()

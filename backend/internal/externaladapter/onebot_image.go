@@ -1,12 +1,8 @@
 package externaladapter
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"io"
-	"net/http"
-	"strings"
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/botruntime"
 	"github.com/killerprojecte/HumanEngine/backend/internal/onebotimage"
@@ -77,28 +73,11 @@ func (s *httpSession) lookupOneBotImage(ctx context.Context, token string, befor
 	payload, _ := json.Marshal(struct {
 		File string `json:"file"`
 	}{token})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(s.profile.action, "/")+"/get_image", bytes.NewReader(payload))
+	raw, err := s.oneBotRead(ctx, "get_image", payload, before)
 	if err != nil {
-		return nil, botruntime.ErrDisplayImageUnavailable
-	}
-	req.Header.Set("Authorization", "Bearer "+s.profile.onebotHTTP.token)
-	req.Header.Set("Content-Type", "application/json")
-	if err := before(ctx); err != nil {
-		return nil, err
-	}
-	if s.life.Err() != nil {
-		return nil, botruntime.ErrDisplayImageUnavailable
-	}
-	res, err := s.client.Do(req)
-	if err != nil {
-		return nil, botruntime.ErrDisplayImageUnavailable
-	}
-	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return nil, botruntime.ErrDisplayImageUnavailable
-	}
-	raw, err := io.ReadAll(io.LimitReader(res.Body, oneBotActionResponseLimit+1))
-	if err != nil || len(raw) > oneBotActionResponseLimit {
+		if err != errOneBotRead {
+			return nil, err
+		}
 		return nil, botruntime.ErrDisplayImageUnavailable
 	}
 	answer, err := s.invoke(ctx, "adapterImage", json.RawMessage(raw))

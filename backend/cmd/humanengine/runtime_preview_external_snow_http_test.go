@@ -51,13 +51,18 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	run(".", "go", "build", "-tags=sqlite_fts5,humanengine_icu", "-o", binary, ".")
 	const token, eventToken = "synthetic-portable-action", "synthetic-portable-event"
-	var logins, imageLookups, unexpectedDownloads atomic.Int32
+	var logins, imageLookups, unexpectedDownloads, messageLookups atomic.Int32
+	var recalledPage atomic.Bool
 	pixels := image.NewNRGBA(image.Rect(0, 0, 3, 2))
 	pixels.SetNRGBA(1, 0, color.NRGBA{R: 13, G: 95, B: 200, A: 255})
 	var original bytes.Buffer
 	if err := png.Encode(&original, pixels); err != nil {
 		t.Fatal(err)
 	}
+	const groupRemote = `{"message_type":"group","self_id":42,"group_id":900,"user_id":900,"message_id":21,"time":1700000001,"message":[{"type":"text","data":{"text":"Group history witness"}}]}`
+	const friendRemote = `{"message_type":"private","self_id":42,"target_id":900,"user_id":42,"message_id":21,"time":1700000002,"message":[{"type":"text","data":{"text":"Private history witness"}},{"type":"image","data":{"file":"fixture-image-token"}}]}`
+	const friendWrongScope = `{"message_type":"private","self_id":42,"target_id":900,"user_id":42,"message_id":22,"time":1700000003,"message":[{"type":"image","data":{"file":"fixture-image-token"}}]}`
+	const recalledRemote = `{"message_type":"private","self_id":42,"user_id":900,"message_id":7,"time":1700000000,"message":[{"type":"text","data":{"text":"Do not show recalled history"}}]}`
 	replies := make(chan struct{}, 2)
 	peer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/must-not-fetch" {
@@ -74,6 +79,49 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		case "/get_login_info":
 			logins.Add(1)
 			fmt.Fprint(w, `{"status":"ok","retcode":0,"data":{"user_id":42}}`)
+		case "/get_group_msg_history", "/get_friend_msg_history":
+			var request struct {
+				Group   string `json:"group_id"`
+				User    string `json:"user_id"`
+				Count   int
+				Reverse bool `json:"reverse_order"`
+			}
+			if json.NewDecoder(r.Body).Decode(&request) != nil || request.Count != 30 || !request.Reverse {
+				t.Error("invalid history window request")
+				w.WriteHeader(400)
+				return
+			}
+			var rows string
+			switch {
+			case r.URL.Path == "/get_group_msg_history" && request.Group == "900":
+				rows = groupRemote + "," + groupRemote
+			case r.URL.Path == "/get_friend_msg_history" && request.User == "900":
+				rows = recalledRemote
+				if !recalledPage.Load() {
+					rows = friendWrongScope + "," + friendRemote + "," + rows
+				}
+			default:
+				t.Error("history action was not scoped to the requested peer")
+				w.WriteHeader(400)
+				return
+			}
+			fmt.Fprintf(w, `{"status":"ok","retcode":0,"data":{"messages":[%s]}}`, rows)
+		case "/get_msg":
+			var request struct {
+				Message string `json:"message_id"`
+			}
+			if json.NewDecoder(r.Body).Decode(&request) != nil || (request.Message != "21" && request.Message != "22") {
+				t.Error("unexpected get_msg target")
+				w.WriteHeader(400)
+				return
+			}
+			messageLookups.Add(1)
+			row := friendRemote
+			if request.Message == "22" {
+				// Global get_msg returns a group event with the requested raw ID.
+				row = strings.Replace(groupRemote, `"message_id":21`, `"message_id":22`, 1)
+			}
+			fmt.Fprintf(w, `{"status":"ok","retcode":0,"data":%s}`, row)
 		case "/get_image":
 			var request struct{ File string }
 			if json.NewDecoder(r.Body).Decode(&request) != nil || (request.File != "fixture-image-token" && request.File != "fixture-url-token") {
@@ -170,7 +218,7 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		if !want && len(rows) == 0 {
 			return
 		}
-		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.4.0-http-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
+		if !want || len(rows) != 1 || rows[0].ID != "snowluma" || rows[0].Version != "0.5.0-http-preview" || rows[0].Builtin || rows[0].Enabled != enabled {
 			t.Fatalf("unexpected catalog: %s", body)
 		}
 	}
@@ -355,6 +403,48 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	}
 	history(group, "")
 	history(direct, "")
+	type remoteRow struct {
+		ID, SceneID, Origin, SenderID string
+		Parts                         []struct{ Type, Text, MediaURL string }
+	}
+	type remoteWindow struct {
+		Items                []remoteRow
+		Coverage, NextCursor string
+	}
+	remote := func(scene string) remoteWindow {
+		t.Helper()
+		body := commandRequest(t, addr, "GET", "/api/scenes/"+url.PathEscape(scene)+"/history?source=remote", nil, 200)
+		var rows remoteWindow
+		if err := json.Unmarshal(body, &rows); err != nil {
+			t.Fatal(err)
+		}
+		return rows
+	}
+	g := remote(group)
+	if len(g.Items) != 1 || g.Items[0].ID != group+":m:"+encode(`"21"`) ||
+		g.Items[0].Origin != "history" || g.Items[0].Parts[0].Text != "Group history witness" || g.Coverage != "partial" {
+		t.Fatalf("remote group deduplication: %+v", g)
+	}
+	d := remote(direct)
+	if len(d.Items) != 2 || d.Items[0].ID != direct+":m:"+encode(`"21"`) || d.Items[1].ID != direct+":m:"+encode(`"22"`) ||
+		d.Items[0].SenderID != "bot" || d.Items[0].SceneID != direct || d.Items[0].Parts[0].Text != "Private history witness" ||
+		d.NextCursor != direct+":m:"+encode(`"7"`) || d.Items[0].Parts[1].MediaURL == "" || d.Items[1].Parts[0].MediaURL == "" {
+		t.Fatalf("remote private ordering, sender scope or recalled cursor: %+v", d)
+	}
+	if got := commandRequest(t, addr, "GET", d.Items[0].Parts[1].MediaURL, nil, 200); !bytes.Equal(got, original.Bytes()) {
+		t.Fatal("scoped get_msg did not recover the exact history image")
+	}
+	commandRequest(t, addr, "GET", d.Items[1].Parts[0].MediaURL, nil, 404)
+	if messageLookups.Load() != 2 || imageLookups.Load() != 3 {
+		t.Fatalf("unexpected remote image transport: messages=%d images=%d", messageLookups.Load(), imageLookups.Load())
+	}
+	recalledPage.Store(true)
+	d = remote(direct)
+	if len(d.Items) != 0 || d.Coverage != "partial" || d.NextCursor != direct+":m:"+encode(`"7"`) {
+		t.Fatalf("recall-only remote window did not retain its cursor: %+v", d)
+	}
+	history(group, "")
+	history(direct, "")
 	stop()
 	for _, name := range []string{entry, "snowluma-http.wasm"} {
 		if err := os.Remove(filepath.Join(root, name)); err != nil {
@@ -370,6 +460,12 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
+	for _, scope := range []string{group, direct} {
+		var count int
+		if err := db.QueryRow("SELECT count(*) FROM source_event_heads WHERE scene_id=? AND message_id IN (?,?)", scope, scope+":m:"+encode(`"21"`), scope+":m:"+encode(`"22"`)).Scan(&count); err != nil || count != 0 {
+			t.Fatalf("remote history must not enroll live source rows: count=%d err=%v", count, err)
+		}
+	}
 	for _, check := range []struct {
 		table, scene string
 		want         int

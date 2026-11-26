@@ -26,6 +26,7 @@ const (
 	oneBotHTTPWire            = "onebot11-http-1"
 	oneBotHTTPMediaWire       = "onebot11-http-2"
 	oneBotHTTPOutboundWire    = "onebot11-http-3"
+	oneBotHTTPHistoryWire     = "onebot11-http-4"
 	oneBotActionResponseLimit = 8 * 1024 * 1024
 )
 
@@ -50,6 +51,7 @@ type oneBotHTTP struct {
 	eventPath string
 	media     bool
 	outbound  bool
+	history   bool
 	token     string
 	eventKey  []byte
 }
@@ -101,7 +103,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			port, _ := cfg.Get("eventPort")
 			p := httpProfile{scope: scope{adapter: desc.AdapterID, account: account, onebot: true},
 				botID: account, listen: net.JoinHostPort(host, strconv.Itoa(int(port.(float64)))), action: text(cfg, "url"),
-				onebotHTTP: &oneBotHTTP{eventPath: route, token: token, eventKey: []byte(eventToken), media: desc.Wire != oneBotHTTPWire, outbound: desc.Wire == oneBotHTTPOutboundWire}}
+				onebotHTTP: &oneBotHTTP{eventPath: route, token: token, eventKey: []byte(eventToken), media: desc.Wire != oneBotHTTPWire, outbound: desc.Wire == oneBotHTTPOutboundWire || desc.Wire == oneBotHTTPHistoryWire, history: desc.Wire == oneBotHTTPHistoryWire}}
 			return openHTTP(ctx, in.Life, owner, p, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped, original: ports.Original})
 		},
 		Policy: pluginmanager.BuiltinPolicy{

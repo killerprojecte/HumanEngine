@@ -4,7 +4,12 @@ This is an opt-in proof for a **disposable installation**, not a replacement
 for the bundled SnowLuma adapter. Do not select it on an existing installation:
 it deliberately uses the same plugin/adapter ID and credential names to exercise
 canonical identity, but does not yet implement WebSocket, legacy environment
-credentials, remote history or full OneBot message-part parity.
+credentials or full OneBot message-part parity.
+
+Remote group and friend history use the existing bounded history window.
+Single-message lookups validate the exact requested conversation, so an equal
+platform message ID in another conversation cannot supply a history image.
+History reads do not ingest or replay messages.
 
 Outgoing image parts can use scene-visible originals selected from the managed
 sticker library. The guest chooses the wire segment; the host resolves and

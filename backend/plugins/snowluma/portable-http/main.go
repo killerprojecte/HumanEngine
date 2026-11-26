@@ -42,7 +42,7 @@ func invoke(raw []byte) any {
 	in := obj(get(q, "input"))
 	switch str(q, "operation") {
 	case "adapterProtocol":
-		return map[string]string{"wire": "onebot11-http-3"}
+		return map[string]string{"wire": "onebot11-http-4"}
 	case "adapterLogin":
 		account := str(in, "account")
 		response := obj(get(in, "response"))
@@ -62,6 +62,10 @@ func invoke(raw []byte) any {
 			}
 			return map[string]string{"source": source}
 		}
+	case "adapterHistoryAction":
+		return historyAction(in)
+	case "adapterHistoryResult":
+		return historyResult(in)
 	case "adapterSend":
 		return send(in)
 	case "adapterReceipt":
@@ -106,9 +110,16 @@ func ingress(adapter, account string, event *jsjson.Object) any {
 	if !valid {
 		return nil
 	}
-	// Only the peer and normalized business fields cross the ABI. The host
-	// derives canonical IDs and stamps the actual receive time.
-	message, scene, err := snow.Normalize(adapter, account, event, "live", "", false, nil)
+	projected := normalizedMessage(adapter, account, event, "live", messageID)
+	if projected == nil {
+		return nil
+	}
+	return projected
+}
+
+func normalizedMessage(adapter, account string, event *jsjson.Object, origin, messageID string) map[string]any {
+	// Canonical message IDs, origin, and authority are owned by the host.
+	message, scene, err := snow.Normalize(adapter, account, event, origin, "", false, nil)
 	if err != nil {
 		return nil
 	}
@@ -129,7 +140,7 @@ func ingress(adapter, account string, event *jsjson.Object) any {
 		parts[i] = fallback
 	}
 	if len(parts) == 0 {
-		return map[string]string{"type": "ignore"}
+		return map[string]any{"type": "ignore"}
 	}
 	wire, err := jsjson.Marshal(parts)
 	if err != nil {

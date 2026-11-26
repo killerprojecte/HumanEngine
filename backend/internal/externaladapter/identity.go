@@ -128,6 +128,11 @@ func projectEvent(raw []byte, structured bool) (event, error) {
 	if err != nil {
 		return event{}, err
 	}
+	return projectParsedEvent(o, structured)
+}
+
+func projectParsedEvent(o *jsjson.Object, structured bool) (event, error) {
+	var err error
 	p := fieldObject(o, "peer")
 	ev := event{Type: text(o, "type"), Message: text(o, "message")}
 	switch ev.Type {
@@ -162,13 +167,17 @@ func projectEvent(raw []byte, structured bool) (event, error) {
 }
 
 func (s scope) message(scene dispatch.SceneRef, in event, now time.Time) (*jsjson.Object, error) {
+	return s.messageWithOrigin(scene, in, now, "live")
+}
+
+func (s scope) messageWithOrigin(scene dispatch.SceneRef, in event, now time.Time, origin string) (*jsjson.Object, error) {
 	const clock = "2006-01-02T15:04:05.000Z"
 	out, err := jsjson.NewObject(
 		jsjson.Member{Key: "id", Value: messageID(scene, in.Message)},
 		jsjson.Member{Key: "sceneId", Value: scene.ID},
 		jsjson.Member{Key: "senderId", Value: s.sender(in.Sender)},
 		jsjson.Member{Key: "senderPlatformId", Value: in.Sender},
-		jsjson.Member{Key: "origin", Value: "live"},
+		jsjson.Member{Key: "origin", Value: origin},
 		jsjson.Member{Key: "status", Value: "available"},
 		jsjson.Member{Key: "sentAt", Value: in.SentAt.UTC().Format(clock)},
 		jsjson.Member{Key: "receivedAt", Value: now.UTC().Format(clock)},

@@ -2,8 +2,9 @@
 package pluginmanager
 
 import (
-	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 	"math"
+
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
 )
 
 type Issue struct {
@@ -48,8 +49,15 @@ func SafeNetworkDetails(value map[string]any) NetworkDetails {
 	if code, ok := code.(string); ok && systemCodes[code] {
 		result.SystemCode = code
 	}
-	if status, ok := value["httpStatus"].(float64); ok && status >= 100 && status <= 599 && math.Trunc(status) == status {
-		result.HTTPStatus = int(status)
+	switch status := value["httpStatus"].(type) {
+	case int:
+		if status >= 100 && status <= 599 {
+			result.HTTPStatus = status
+		}
+	case float64:
+		if status >= 100 && status <= 599 && math.Trunc(status) == status {
+			result.HTTPStatus = int(status)
+		}
 	}
 	return result
 }

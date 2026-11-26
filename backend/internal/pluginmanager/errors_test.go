@@ -7,11 +7,17 @@ func TestSafeFailureVocabulary(t *testing.T) {
 	if e.Code != "plugin_setup_failed" || e.SystemCode != "ECONNRESET" || e.HTTPStatus != 503 {
 		t.Fatal(e)
 	}
+	if e := NewStartupError("http_action_failed", map[string]any{"httpStatus": 401}); e.Code != "http_action_failed" || e.HTTPStatus != 401 {
+		t.Fatalf("native startup diagnostic: %+v", e)
+	}
 	for _, v := range []map[string]any{
 		{"systemCode": "private", "code": "ECONNRESET"},
 		{"systemCode": false, "cause": map[string]any{"code": "ECONNRESET"}},
 		{"httpStatus": float64(599.5)},
 		{"httpStatus": float64(600)},
+		{"httpStatus": 99},
+		{"httpStatus": 600},
+		{"httpStatus": "401"},
 	} {
 		if d := SafeNetworkDetails(v); d != (NetworkDetails{}) {
 			t.Fatalf("unsafe details: %+v", d)

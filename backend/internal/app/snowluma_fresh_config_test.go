@@ -1,10 +1,12 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -46,8 +48,18 @@ func TestFreshSnowLumaHTTPConfigurationStoresBothCredentials(t *testing.T) {
 	const path = "/api/plugins/snowluma/config"
 	const actionToken = "synthetic-fresh-snow-action-token"
 	const eventToken = "synthetic-fresh-snow-event-token"
+	const upstreamBody = "synthetic peer response must not be exposed"
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost || r.URL.Path != "/get_login_info" || r.Header.Get("Authorization") != "Bearer "+actionToken {
+			t.Error("unexpected SnowLuma login request")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		http.Error(w, upstreamBody, http.StatusUnauthorized)
+	}))
+	defer upstream.Close()
 	appRequest(t, a, http.MethodPut, path, map[string]any{
-		"transport": "http", "url": "http://127.0.0.1:41274", "accountId": "42",
+		"transport": "http", "url": upstream.URL, "accountId": "42",
 		"eventHost": "127.0.0.1", "eventPort": 41275, "token": actionToken, "eventToken": eventToken,
 	})
 
@@ -92,6 +104,17 @@ func TestFreshSnowLumaHTTPConfigurationStoresBothCredentials(t *testing.T) {
 	}
 	if payload != `{"kind":"security_state","revision":"`+revision+`"}` {
 		t.Fatal("database revision does not match the final authority intent")
+	}
+
+	request := httptest.NewRequest(http.MethodPut, "/api/plugins/snowluma/enabled", bytes.NewBufferString(`{"enabled":true}`))
+	sourceFixtureAuth(request, true)
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	a.ServeHTTP(response, request)
+	result, err := jsjson.ParseBytes(response.Body.Bytes())
+	if err != nil || response.Code != http.StatusServiceUnavailable || field(result, "error") != "http_action_failed" ||
+		field(result, "httpStatus") != float64(http.StatusUnauthorized) || strings.Contains(response.Body.String(), upstreamBody) {
+		t.Fatalf("enable did not expose only the upstream status: %d %s (%v)", response.Code, response.Body.String(), err)
 	}
 
 	// A distinct host origin already owns the actual dispatch ID. Enabling

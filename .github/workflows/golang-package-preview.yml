@@ -37,7 +37,7 @@ jobs:
       - name: Build opt-in candidate (no push)
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
       - name: Verify opt-in host excludes SnowLuma (no push)
-        if: steps.proofs.outputs.standalone == 'true'
+        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true'
         run: |
           set -o pipefail
           docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
@@ -72,6 +72,11 @@ jobs:
           ref: 39d8deb8922684298bab8ecb139be04555e8474a
           path: .migration-legacy
           persist-credentials: false
+      - uses: actions/setup-go@v6
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.compose == 'true'
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
       - name: Verify packaged migration and restore (no push)
         if: steps.proofs.outputs.restore == 'true'
         run: |
@@ -79,16 +84,16 @@ jobs:
           revision=$(git -C "$legacy" rev-parse HEAD)
           docker build --platform linux/amd64 --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts:local "$legacy"
           docker build --platform linux/amd64 --target build --label org.opencontainers.image.revision="$revision" -t humanengine-drill-ts-tools:local "$legacy"
+          package=$(mktemp -d "$RUNNER_TEMP/snowluma-http.XXXXXX")
+          trap 'rm -rf "$package"' EXIT
+          chmod 755 "$package"
+          make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$package"
           python3 backend/packaging/runtime-preview/migration_drill.py \
             --ts-image humanengine-drill-ts:local \
             --ts-tools-image humanengine-drill-ts-tools:local \
             --go-image humanengine-go-preview:local --go-revision "$GITHUB_SHA" \
+            --external-snow-image humanengine-go-external:local --external-snow-package "$package" \
             --evidence "$RUNNER_TEMP/package-evidence/migration-drill.json"
-      - uses: actions/setup-go@v6
-        if: steps.proofs.outputs.compose == 'true'
-        with:
-          go-version-file: backend/go.mod
-          cache-dependency-path: backend/go.sum
       - name: Rehearse actual Compose stop and cold reopen
         if: steps.proofs.outputs.compose == 'true'
         run: |

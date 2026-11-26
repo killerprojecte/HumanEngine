@@ -240,6 +240,7 @@ class MigrationDrillTests(unittest.TestCase):
 
     def test_recall_uses_one_isolated_mock_and_unmodified_protected_settings(self):
         drill = Drill(argparse.Namespace(), {"checks": [], "images": {"ts_tools": "tools"}})
+        drill.external_snow = ("external", Path("/temporary/standalone"), "test-version")
         trace = []
         seeded = {"scene": "synthetic", "ids": ["withdrawn", "independent"]}
 
@@ -249,6 +250,8 @@ class MigrationDrillTests(unittest.TestCase):
 
         def api(method, route, body=None):
             trace.append(("api", (method, route, body)))
+            if (method, route) == ("GET", "/api/plugins"):
+                return [{"id": "snowluma", "builtin": False, "enabled": True, "version": "test-version"}]
             return {"ok": True, "held": True}
 
         def tool(*args, **kwargs):
@@ -272,13 +275,25 @@ class MigrationDrillTests(unittest.TestCase):
         self.assertEqual(calls[-1], ("rm", "-f", drill.name + "-recall"))
         self.assertEqual([item[1]["network"] for item in trace if item[0] in ("ts", "go")],
                          ["container:" + drill.name + "-recall"] * 4)
+        for owner, args in (row for row in trace if row[0] in ("ts", "go")):
+            if owner == "ts":
+                self.assertNotIn("runtime_args", args)
+                self.assertNotIn("image", args)
+            else:
+                self.assertEqual(args["image"], "external")
+                self.assertEqual(args["runtime_args"], (
+                    "--mount", "type=bind,source=/temporary/standalone,target=/app/plugins,readonly",
+                    "-e", "HUMANENGINE_PLUGINS=snowluma-http.v2.json",
+                ))
+        self.assertEqual(trace.count(("api", ("GET", "/api/plugins", None))), 2)
         backup = next(i for i, call in enumerate(trace) if call[0] == "tool" and "scripts/backup.ts" in call[1])
         self.assertEqual(trace[backup - 1], ("stop",))
         self.assertFalse(any(row[0] == "api" and row[1][0] != "GET" for row in trace[backup:]))
         self.assertEqual([step[1] for step in trace if step[0] == "probe"],
                          ["seed", "before", "recall", "after", "after"])
         self.assertEqual(drill.report["checks"],
-                         ["go-cold-source-recall-persisted-through-rollback-and-old-restore"])
+                         ["go-cold-source-recall-persisted-through-rollback-and-old-restore",
+                          "external-snowluma-reopened-ts-credentials-and-preserved-recall"])
 
     def test_failure_evidence_reports_fixed_phase_without_error_details(self):
         with tempfile.TemporaryDirectory() as temp:

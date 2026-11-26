@@ -18,6 +18,7 @@ PROVIDER = "migration-credential-fixture"
 MODEL = "migration-text-fixture"
 PROVIDER_PORT = 41273
 SNOW_ACTION_PORT = 41274
+SNOW_HTTP_MANIFEST = "snowluma-http.v2.json"
 SNOW_EVENT_PORT = 41275
 # Taipei text, supplementary Han, a ZWJ emoji, and distinct decomposed/composed accents.
 UNICODE_MEMORY = "\u53f0\u5317 \U00020bb7 \U0001f469\u200d\U0001f4bb e\u0301 / \u00e9"
@@ -221,6 +222,7 @@ class Drill:
         self.sentinel = uuid4().hex + uuid4().hex
         self.snow_token = uuid4().hex + uuid4().hex
         self.snow_event_token = uuid4().hex + uuid4().hex
+        self.external_snow = None
         self.owner = None
         self.volume = False
         self.phase = "verify-images"
@@ -250,7 +252,7 @@ class Drill:
                "--user", user, *mounts, "--entrypoint", args[0],
                self.report["images"]["ts_tools"], *args[1:])
 
-    def start(self, engine, data="live", authority="authority", network="none", runtime_args=()):
+    def start(self, engine, data="live", authority="authority", network="none", runtime_args=(), image=None):
         require(self.owner is None, "overlapping server owners")
         self.owner = engine
         self.port = "3000" if engine == "ts" else "3001"
@@ -264,7 +266,7 @@ class Drill:
         docker("run", "-d", "--name", self.name, "--network", network, *runtime_args,
                "--mount", self.mount("/app/data", data),
                "--mount", self.mount(AUTHORITY, authority),
-               "-e", "HUMANENGINE_ADMIN_TOKEN", self.report["images"][engine], *flags,
+               "-e", "HUMANENGINE_ADMIN_TOKEN", image or self.report["images"][engine], *flags,
                env=self.env)
         deadline = time.monotonic() + 90
         while time.monotonic() < deadline:
@@ -418,6 +420,13 @@ class Drill:
             "ts_tools": self.image(self.args.ts_tools_image, TS_REVISION),
             "go": self.image(self.args.go_image, self.args.go_revision),
         }
+        if getattr(self.args, "external_snow_image", None):
+            image = self.image(self.args.external_snow_image, self.args.go_revision)
+            self.report["images"]["go_external_snow"] = image
+            package = self.args.external_snow_package.resolve(strict=True)
+            manifest = json.loads((package / SNOW_HTTP_MANIFEST).read_text())
+            self.report["external_snow_version"] = manifest["version"]
+            self.external_snow = (image, package, manifest["version"])
         self.phase = "initialize-fixture"
         docker("volume", "create", self.name)
         self.volume = True
@@ -640,6 +649,21 @@ assert.equal(hash('/drill/media-live/media/' + retained + '.png'), retainedHash)
         paths = dict(data="recall-live", authority="recall-authority")
         network = "container:" + name
 
+        def start_go(**volumes):
+            if self.external_snow is None:
+                self.start("go", **volumes, network=network)
+                return
+            image, package, version = self.external_snow
+            self.start("go", **volumes, network=network, image=image, runtime_args=(
+                "--mount", f"type=bind,source={package},target=/app/plugins,readonly",
+                "-e", f"HUMANENGINE_PLUGINS={SNOW_HTTP_MANIFEST}",
+            ))
+            row = next((row for row in self.api("GET", "/api/plugins")
+                        if row.get("id") == "snowluma"), {})
+            require(row.get("builtin") is False and row.get("enabled") is True
+                    and row.get("version") == version,
+                    "TS-enabled SnowLuma was not restored as the expected external package")
+
         def probe(phase):
             return self.probe_receipt(script, dict(phase=phase, eventPort=SNOW_EVENT_PORT,
                                       eventToken=self.snow_event_token, timestamp=timestamp), timeout=25)
@@ -671,7 +695,7 @@ assert.equal(hash('/drill/media-live/media/' + retained + '.png'), retainedHash)
             self.tool("node", "--import", "tsx", "scripts/backup.ts", DATABASE,
                       "/app/data/media", "/drill/recall-backup", **paths)
             self.phase = "go-cold-source-recall"
-            self.start("go", **paths, network=network)
+            start_go(**paths)
             require(probe("before") == seeded and probe("recall") == seeded,
                     "source recall did not withdraw its exact target")
             self.stop()
@@ -688,12 +712,14 @@ assert.equal(hash('/drill/media-live/media/' + retained + '.png'), retainedHash)
             self.phase = "verify-durable-source-recall"
             self.verify_source_recall(seeded, restore)
             self.phase = "go-reopen-restored-source-recall"
-            self.start("go", data="recall-restored", authority=restore, network=network)
+            start_go(data="recall-restored", authority=restore)
             require(probe("after") == seeded, "Go restored recalled source")
             require(self.api("GET", "/api/budget/recovery").get("held") is True,
                     "model admission unexpectedly allowed after source restore")
             self.stop()
             self.record("go-cold-source-recall-persisted-through-rollback-and-old-restore")
+            if self.external_snow is not None:
+                self.record("external-snowluma-reopened-ts-credentials-and-preserved-recall")
         finally:
             docker("rm", "-f", name, check=False)
 
@@ -781,7 +807,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("ts-image", "ts-tools-image", "go-image", "go-revision", "evidence"):
         parser.add_argument("--" + name, required=True)
+    parser.add_argument("--external-snow-image")
+    parser.add_argument("--external-snow-package", type=Path)
     args = parser.parse_args()
+    if bool(args.external_snow_image) != bool(args.external_snow_package):
+        parser.error("--external-snow-image and --external-snow-package must be used together")
     if not re.fullmatch(r"[0-9a-f]{40}", args.go_revision):
         parser.error("--go-revision must be a full commit SHA")
     report = {"ts_revision": TS_REVISION, "go_revision": args.go_revision,
@@ -790,7 +820,7 @@ def main():
     try:
         drill.run()
         report["status"] = "passed"
-    except (RuntimeError, ValueError, TypeError, KeyError, subprocess.SubprocessError):
+    except (OSError, RuntimeError, ValueError, TypeError, KeyError, subprocess.SubprocessError):
         report["failure_phase"] = drill.phase
         print(f"Packaged migration drill failed in phase: {drill.phase}")
     finally:

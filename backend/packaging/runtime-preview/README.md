@@ -33,6 +33,11 @@ The default `compatibility` image still includes SnowLuma. The optional local
 binary and its default plugin list. The other embedded WASM artifacts are
 unchanged. This profile is a comparison host for external package testing,
 not a SnowLuma installer. Use a separate image tag and disposable data.
+The optional migration job retains the bundled image for general state coverage.
+Its recall/rollback case selects the SnowLuma-free Go image and mounts a separately
+built HTTP plugin manifest and WASM read-only on the Go legs only. The same seeded
+TypeScript data and authority are reopened under both engines without replacing
+credentials. A catalog receipt identifies the installed external version.
 
 For an interactive preview, supply `HUMANENGINE_ADMIN_TOKEN` in your environment
 and run the independent Compose project:

@@ -41,6 +41,9 @@ type BindingPorts struct {
 
 func Resolve(ports BindingPorts) pluginmanager.V2AdapterResolver {
 	return func(desc pluginmanager.V2AdapterDescriptor) (pluginmanager.V2AdapterBinding, error) {
+		if desc.Wire == oneBotHTTPWire && validWireIdentity(desc.AdapterID) {
+			return bindOneBotHTTP(ports, desc)
+		}
 		if desc.Wire != wireProfile || !validWireIdentity(desc.AdapterID) {
 			return pluginmanager.V2AdapterBinding{}, errors.New("external_adapter_wire_unsupported")
 		}
@@ -76,7 +79,7 @@ func Resolve(ports BindingPorts) pluginmanager.V2AdapterResolver {
 					return nil, err
 				}
 				s, err := openHTTP(ctx, in.Life, owner, httpProfile{
-					scope: scope{desc.AdapterID, config.Account}, botID: config.Bot,
+					scope: scope{adapter: desc.AdapterID, account: config.Account}, botID: config.Bot,
 					listen: config.Listen, action: config.Action, key: []byte(key),
 				}, call, sourcePorts{ingest: ports.Ingest, recall: ports.Recall, stopped: ports.Stopped})
 				if err != nil {

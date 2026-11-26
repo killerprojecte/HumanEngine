@@ -11,6 +11,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,10 +27,11 @@ const signatureHeader = "X-HumanEngine-Signature"
 // the WASI guest. No guest method receives a credential, socket or SQL owner.
 type httpProfile struct {
 	scope
-	botID  string
-	listen string
-	action string
-	key    []byte
+	botID      string
+	listen     string
+	action     string
+	key        []byte
+	onebotHTTP *oneBotHTTP
 }
 
 type guestCall func(context.Context, context.Context, []byte) ([]byte, error)
@@ -76,6 +78,20 @@ func openHTTP(ctx, life context.Context, owner *botruntime.AdapterOwner, profile
 		profile: profile, call: call, source: source, life: bound, cancel: cancel,
 		lease: lease, listener: listener, served: make(chan struct{}), done: make(chan struct{}),
 		client: &http.Client{Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }},
+	}
+	if p := profile.onebotHTTP; p != nil {
+		s.client.Timeout = 20 * time.Second
+		s.server.SetKeepAlivesEnabled(false)
+		s.server.MaxHeaderBytes = 16384
+		s.server.ReadHeaderTimeout = 10 * time.Second
+		s.server.ReadTimeout = 15 * time.Second
+		if err := s.oneBotLogin(ctx, p); err != nil {
+			cancel()
+			_ = listener.Close()
+			s.client.CloseIdleConnections()
+			lease.Release()
+			return nil, err
+		}
 	}
 	s.server.BaseContext = func(net.Listener) context.Context { return bound }
 	s.server.Handler = http.HandlerFunc(s.receive)
@@ -142,7 +158,11 @@ func sign(key []byte, purpose string, raw []byte) []byte {
 }
 
 func (s *httpSession) receive(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/event" || r.Method != http.MethodPost {
+	path := "/event"
+	if p := s.profile.onebotHTTP; p != nil {
+		path = p.eventPath
+	}
+	if (s.profile.onebotHTTP != nil && r.RequestURI != path || r.URL.Path != path) || r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -152,21 +172,53 @@ func (s *httpSession) receive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer done()
-	present, err := hex.DecodeString(r.Header.Get(signatureHeader))
-	if err != nil || len(present) != sha256.Size {
+	signature := r.Header.Get(signatureHeader)
+	width := sha256.Size
+	if p := s.profile.onebotHTTP; p != nil {
+		var ok bool
+		signature, width, ok = p.eventSignature(r, s.profile.account)
+		if !ok {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+	}
+	present, err := hex.DecodeString(signature)
+	if err != nil || len(present) != width {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	raw, err := io.ReadAll(r.Body)
+	var reader io.Reader = r.Body
+	if s.profile.onebotHTTP != nil {
+		if strings.TrimSpace(strings.SplitN(r.Header.Get("Content-Type"), ";", 2)[0]) != "application/json" {
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			return
+		}
+		reader = io.LimitReader(reader, 1024*1024+1)
+	}
+	raw, err := io.ReadAll(reader)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if !hmac.Equal(present, sign(s.profile.key, "event", raw)) {
+	if s.profile.onebotHTTP != nil && len(raw) > 1024*1024 {
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
+		return
+	}
+	var expected []byte
+	if p := s.profile.onebotHTTP; p != nil {
+		expected = p.signEvent(raw)
+	} else {
+		expected = sign(s.profile.key, "event", raw)
+	}
+	if !hmac.Equal(present, expected) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	output, err := s.invoke(r.Context(), "adapterIngress", json.RawMessage(raw))
+	var input any = json.RawMessage(raw)
+	if s.profile.onebotHTTP != nil {
+		input = oneBotIngress{s.profile.account, json.RawMessage(raw)}
+	}
+	output, err := s.invoke(r.Context(), "adapterIngress", input)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
@@ -266,12 +318,23 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 	if !json.Valid(body) {
 		return dispatch.Receipt{}, errors.New("external_adapter_action_invalid")
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, s.profile.action, bytes.NewReader(body))
+	address := s.profile.action
+	if p := s.profile.onebotHTTP; p != nil {
+		address, body, err = p.action(s.profile.action, body)
+		if err != nil {
+			return dispatch.Receipt{}, err
+		}
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, address, bytes.NewReader(body))
 	if err != nil {
 		return dispatch.Receipt{}, err
 	}
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set(signatureHeader, hex.EncodeToString(sign(s.profile.key, "action", body)))
+	if p := s.profile.onebotHTTP; p != nil {
+		request.Header.Set("Authorization", "Bearer "+p.token)
+	} else {
+		request.Header.Set(signatureHeader, hex.EncodeToString(sign(s.profile.key, "action", body)))
+	}
 	if before != nil {
 		if err = before(); err != nil {
 			return dispatch.Receipt{}, err
@@ -289,13 +352,19 @@ func (s *httpSession) transmit(ctx context.Context, scene dispatch.SceneRef, seg
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return witness, nil
 	}
-	raw, err := io.ReadAll(response.Body)
-	if err != nil {
+	var reader io.Reader = response.Body
+	if s.profile.onebotHTTP != nil {
+		reader = io.LimitReader(reader, 8*1024*1024+1)
+	}
+	raw, err := io.ReadAll(reader)
+	if err != nil || s.profile.onebotHTTP != nil && len(raw) > 8*1024*1024 {
 		return witness, nil
 	}
-	signed, err := hex.DecodeString(response.Header.Get(signatureHeader))
-	if err != nil || !hmac.Equal(signed, sign(s.profile.key, "receipt", raw)) {
-		return witness, nil
+	if s.profile.onebotHTTP == nil {
+		signed, err := hex.DecodeString(response.Header.Get(signatureHeader))
+		if err != nil || !hmac.Equal(signed, sign(s.profile.key, "receipt", raw)) {
+			return witness, nil
+		}
 	}
 	raw, err = s.invoke(ctx, "adapterReceipt", json.RawMessage(raw))
 	if err != nil {

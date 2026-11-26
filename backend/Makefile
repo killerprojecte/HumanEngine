@@ -312,3 +312,12 @@ native-runtime-preview-test: native-icu-build wasm
 	@set -eu; . "$(ICU_WORK_DIR)/env.sh"; log=$$(mktemp); trap 'rm -f "$$log"' EXIT; status=0; \
 	  $(NATIVE_TEST_ENV) go test -json -race -count=1 -tags sqlite_fts5,humanengine_icu,bundled_wasm ./cmd/humanengine -run '$(NATIVE_RUNTIME_PREVIEW_TESTS)' > "$$log" || status=$$?; \
 	  cat "$$log"; test "$$status" = 0 && $(PYTHON) tests/check-runtime-preview-profile.py native "$$log"
+
+# Opt-in external HTTP preview. The packaged pair is never tracked in Git.
+SNOW_HTTP_PACKAGE_DIR ?= plugins/snowluma/dist/portable-http
+.PHONY: wasm-snowluma-http-preview
+wasm-snowluma-http-preview:
+	mkdir -p "$(SNOW_HTTP_PACKAGE_DIR)"
+	CGO_ENABLED=0 GOOS=wasip1 GOARCH=wasm go build -trimpath -buildvcs=false -buildmode=c-shared -ldflags='-s -w' \
+		-o "$(SNOW_HTTP_PACKAGE_DIR)/snowluma-http.wasm" ./plugins/snowluma/portable-http
+	python3 -c 'import hashlib,json,pathlib,sys; p=pathlib.Path(sys.argv[1]); m=json.loads(pathlib.Path("plugins/snowluma/portable-http/manifest.json").read_text()); m["artifactSha256"]=hashlib.sha256((p/m["artifact"]).read_bytes()).hexdigest(); (p/"snowluma-http.v2.json").write_text(json.dumps(m,indent=2)+"\n")' "$(SNOW_HTTP_PACKAGE_DIR)"

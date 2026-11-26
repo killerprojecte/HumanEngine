@@ -1,0 +1,10 @@
+{
+  "apiVersion": 2,
+  "id": "snowluma",
+  "name": "SnowLuma",
+  "version": "0.2.0-http-preview",
+  "description": "External OneBot HTTP preview for text and recall. Not a replacement for the bundled adapter.",
+  "capabilities": ["adapter"],
+  "adapter": {"id": "snowluma", "wire": "onebot11-http-1"},
+  "artifact": "snowluma-http.wasm"
+}

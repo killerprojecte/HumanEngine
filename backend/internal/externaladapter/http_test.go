@@ -80,7 +80,7 @@ func TestIndependentLetterboxWASMWireAndPhysicalRetirement(t *testing.T) {
 
 	engine := new(botruntime.Runtime)
 	holder := engine.NewAdapterOwner()
-	profile := httpProfile{scope: scope{"installed-letterbox", "actual-account"}, botID: "letterbot",
+	profile := httpProfile{scope: scope{adapter: "installed-letterbox", account: "actual-account"}, botID: "letterbot",
 		listen: "127.0.0.1:0", action: remote.URL + "/deliver", key: key}
 	inside, release := make(chan struct{}), make(chan struct{})
 	defer func() {

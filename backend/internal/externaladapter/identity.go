@@ -10,6 +10,7 @@ import (
 
 	"github.com/killerprojecte/HumanEngine/backend/internal/dispatch"
 	"github.com/killerprojecte/HumanEngine/backend/internal/jsjson"
+	"github.com/killerprojecte/HumanEngine/backend/internal/jsoncompat"
 )
 
 // scope is established by the native installer from its descriptor and active
@@ -17,6 +18,7 @@ import (
 type scope struct {
 	adapter string
 	account string
+	onebot  bool
 }
 
 type peer struct {
@@ -28,21 +30,46 @@ func (s scope) scene(p peer) (dispatch.SceneRef, error) {
 	if !validWireIdentity(p.ID) || (p.Kind != "group" && p.Kind != "private") {
 		return dispatch.SceneRef{}, errors.New("external_adapter_peer_invalid")
 	}
-	id := "v2:s:" + encode(s.adapter, s.account, p.Kind, p.ID)
+	var id string
+	if s.onebot {
+		id = "ob:s:" + encodeOneBot(s.adapter, s.account, p.Kind, p.ID)
+	} else {
+		id = "v2:s:" + encode(s.adapter, s.account, p.Kind, p.ID)
+	}
 	return dispatch.SceneRef{ID: id, Kind: p.Kind, AdapterID: s.adapter, AccountID: s.account, PlatformSceneID: p.ID}, nil
 }
 
 func (s scope) sender(id string) string {
+	if s.onebot {
+		return "ob:u:" + encodeOneBot(s.adapter, s.account, id)
+	}
 	return "v2:u:" + encode(s.adapter, s.account, id)
 }
 
-func messageID(scene dispatch.SceneRef, id string) string { return scene.ID + ":m:" + encode(id) }
+func messageID(scene dispatch.SceneRef, id string) string {
+	if strings.HasPrefix(scene.ID, "ob:s:") {
+		raw := jsoncompat.StringArray(id)
+		return scene.ID + ":m:" + base64.RawURLEncoding.EncodeToString(raw[1:len(raw)-1])
+	}
+	return scene.ID + ":m:" + encode(id)
+}
+
+func encodeOneBot(values ...string) string {
+	return base64.RawURLEncoding.EncodeToString(jsoncompat.StringArray(values...))
+}
 
 func platformMessage(scene dispatch.SceneRef, id string) (string, error) {
 	prefix := scene.ID + ":m:"
 	opaque, ok := strings.CutPrefix(id, prefix)
 	if ok {
 		raw, err := base64.RawURLEncoding.DecodeString(opaque)
+		if strings.HasPrefix(scene.ID, "ob:s:") {
+			var value string
+			if err == nil && json.Unmarshal(raw, &value) == nil && value != "" && messageID(scene, value) == id {
+				return value, nil
+			}
+			return "", errors.New("external_adapter_reply_scope_mismatch")
+		}
 		var values [1]string
 		if err == nil && json.Unmarshal(raw, &values) == nil && values[0] != "" && encode(values[0]) == opaque {
 			return values[0], nil

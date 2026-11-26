@@ -20,7 +20,8 @@ for name in ids:
     manifest = json.loads((root / "manifest.json").read_text())
     assert manifest["id"] == name and manifest["apiVersion"] == 2
     embedding = (root / "artifact_bundled.go").read_text()
-    assert embedding.startswith("//go:build bundled_wasm\n")
+    tag = "bundled_wasm && !without_snowluma" if name == "snowluma" else "bundled_wasm"
+    assert embedding.startswith(f"//go:build {tag}\n")
     assert f"//go:embed dist/{name}.wasm" in embedding
     assert f"/plugins/{name}/core" in (root / "wasm/main.go").read_text()
     for path in (root / "core").glob("*.go"):

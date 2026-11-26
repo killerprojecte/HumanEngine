@@ -18,10 +18,11 @@ plugin-layout-check: unbundled-plugin-graph-check
 	python3 plugins/check-layout.py
 
 # Check import paths, actual package paths and local module replacements.
+SNOW_FREE_TAGS ?= sqlite_fts5,humanengine_icu
 unbundled-plugin-graph-check:
-	@deps=$$(go list -buildvcs=false -tags sqlite_fts5,humanengine_icu -deps -f '{{.ImportPath}} {{.Dir}}{{with .Module}}{{with .Replace}} {{.Dir}}{{end}}{{end}}' ./cmd/humanengine) || exit $$?; \
+	@deps=$$(go list -buildvcs=false -tags '$(SNOW_FREE_TAGS)' -deps -f '{{.ImportPath}} {{.Dir}}{{with .Module}}{{with .Replace}} {{.Dir}}{{end}}{{end}}' ./cmd/humanengine) || exit $$?; \
 	if printf '%s\n' "$$deps" | grep -E '/plugins/snowluma(/|[[:space:]]|$$)'; then \
-		echo 'unbundled command depends on SnowLuma' >&2; exit 1; \
+		echo 'SnowLuma-free command depends on SnowLuma' >&2; exit 1; \
 	fi
 
 clean: clean-wasm

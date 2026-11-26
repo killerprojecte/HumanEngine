@@ -1,4 +1,4 @@
-//go:build bundled_wasm
+//go:build bundled_wasm && !without_snowluma
 
 package snowluma
 

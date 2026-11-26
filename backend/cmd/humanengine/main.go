@@ -84,6 +84,11 @@ func run() (result error) {
 }
 
 func inspectBuiltins() error {
+	ids := plugins.BundledArtifactIDs()
+	if len(ids) == 0 {
+		_, err := plugins.BuiltinArtifact("")
+		return err
+	}
 	ctx := context.Background()
 	host, err := plugins.NewWASMHost(ctx)
 	if err != nil {
@@ -91,7 +96,7 @@ func inspectBuiltins() error {
 	}
 	defer host.Close(ctx)
 	manifests := []json.RawMessage{}
-	for _, id := range []string{"typing-delay", "web-read", "web-search", "snowluma"} {
+	for _, id := range ids {
 		artifact, err := plugins.BuiltinArtifact(id)
 		if err != nil {
 			return err

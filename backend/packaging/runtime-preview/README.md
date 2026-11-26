@@ -28,6 +28,12 @@ python3 backend/packaging/runtime-preview/acceptance.py \
   --evidence /tmp/humanengine-package-evidence
 ```
 
+The default `compatibility` image still includes SnowLuma. The optional local
+`--build-arg PREVIEW_PLUGIN_PROFILE=without-snowluma` excludes it from both the
+binary and its default plugin list. The other embedded WASM artifacts are
+unchanged. This profile is a comparison host for external package testing,
+not a SnowLuma installer. Use a separate image tag and disposable data.
+
 For an interactive preview, supply `HUMANENGINE_ADMIN_TOKEN` in your environment
 and run the independent Compose project:
 

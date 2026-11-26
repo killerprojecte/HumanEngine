@@ -18,11 +18,11 @@ RUN HUMANENGINE_BUILD_GO_PREVIEW_UI=1 ./node_modules/.bin/nuxt generate \
     && test -s .output/public/index.html && test -s .output/public/200.html \
     && test -d .output/public/_nuxt && test ! -e .output/public/api \
     && test ! -e .output/server && test ! -e data
-RUN make -C backend plugin-layout-check && make -C backend wasm && make -C backend native-icu-build
+RUN make -C backend native-icu-build
 RUN python3 backend/scripts/prepare-sqlite-vec.py --repository /src
+ARG PREVIEW_PLUGIN_PROFILE=compatibility
 RUN mkdir -p /out && cd backend && . .native-build/icu/env.sh \
-    && go build -trimpath -tags sqlite_fts5,humanengine_icu,bundled_wasm,bundled_sqlite_vec \
-       -o /out/humanengine ./cmd/humanengine
+    && sh packaging/runtime-preview/build-host.sh "$PREVIEW_PLUGIN_PROFILE" /out/humanengine
 # Copy the existing provenance/source/notices without claiming its still-open
 # redistribution gate has been satisfied. ICU data and V1 workers are embedded.
 RUN mkdir -p /out/licenses /out/lib \

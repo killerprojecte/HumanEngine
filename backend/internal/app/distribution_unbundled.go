@@ -1,4 +1,4 @@
-//go:build !bundled_wasm
+//go:build !bundled_wasm || without_snowluma
 
 package app
 
@@ -6,8 +6,6 @@ import (
 	"context"
 	"errors"
 )
-
-func distributionBuiltins() []string { return nil }
 
 func (*Application) bindDistributionBuiltin(context.Context, Owners, string) error {
 	return errors.New("builtin_runtime_not_implemented")

@@ -36,6 +36,15 @@ jobs:
             python3 -c 'import json, sys; c = json.load(sys.stdin); p, = c["services"]["humanengine"]["ports"]; assert c["name"] == "humanengine-go-local" and p["host_ip"] == "127.0.0.1" and int(p["published"]) == 3002'
       - name: Build opt-in candidate (no push)
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
+      - name: Verify opt-in host excludes SnowLuma (no push)
+        if: steps.proofs.outputs.standalone == 'true'
+        run: |
+          set -o pipefail
+          docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
+            --build-arg PREVIEW_PLUGIN_PROFILE=without-snowluma -f backend/packaging/runtime-preview/Dockerfile \
+            -t humanengine-go-external:local .
+          docker run --rm --network none humanengine-go-external:local --inspect-builtins |
+            python3 -c 'import json, sys; rows = json.load(sys.stdin); assert [(p["id"], p["apiVersion"]) for p in rows] == [("typing-delay", 2), ("web-read", 2), ("web-search", 2)]'
       - name: Select Python for the opt-in browser smoke
         if: steps.proofs.outputs.browser == 'true'
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6

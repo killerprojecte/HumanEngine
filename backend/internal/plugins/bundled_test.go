@@ -17,7 +17,7 @@ func TestDistributedArtifactsLoadWithoutSources(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer host.Close(ctx)
-	for _, id := range []string{"typing-delay", "web-read", "web-search", "snowluma"} {
+	for _, id := range BundledArtifactIDs() {
 		bytes, err := BuiltinArtifact(id)
 		if err != nil {
 			t.Fatal(err)
@@ -48,13 +48,13 @@ func TestUnknownBuiltinArtifactFilesystemError(t *testing.T) {
 	if !errors.Is(err, fs.ErrNotExist) || !errors.As(err, &pathError) || pathError.Op != "open" || pathError.Path != "builtins/missing.wasm" {
 		t.Fatalf("filesystem error shape changed: %v", err)
 	}
-	first, err := BuiltinArtifact("snowluma")
+	first, err := BuiltinArtifact("typing-delay")
 	if err != nil {
 		t.Fatal(err)
 	}
 	original := first[0]
 	first[0] ^= 255
-	second, err := BuiltinArtifact("snowluma")
+	second, err := BuiltinArtifact("typing-delay")
 	if err != nil || second[0] != original {
 		t.Fatal("artifact data was shared with caller", err)
 	}

@@ -3,6 +3,9 @@ import { mkdtempSync, copyFileSync, chmodSync, rmSync, existsSync } from 'node:f
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
+const expected = process.argv.length > 3
+  ? process.argv.slice(3)
+  : ['typing-delay', 'web-read', 'web-search', 'snowluma']
 const root = mkdtempSync(join(tmpdir(), 'humanengine-go-bundle-'))
 try {
   const binary = join(root, 'humanengine')
@@ -17,12 +20,12 @@ try {
   const plugins = JSON.parse(result.stdout)
   assert.deepEqual(
     plugins.map((p) => p.id),
-    ['typing-delay', 'web-read', 'web-search', 'snowluma'],
+    expected,
   )
   assert.ok(plugins.every((p) => p.apiVersion === 2))
   assert.equal(existsSync(join(root, 'plugins')), false, 'distribution must not require plugin source/dist directories')
   console.log(
-    'PASS: standalone Go binary executes all four embedded WASM manifests with no source tree, Node or Go compiler on PATH',
+    `PASS: standalone Go binary executes exactly ${expected.join(', ')} with no source tree, Node or Go compiler on PATH`,
   )
 } finally {
   rmSync(root, { recursive: true, force: true })

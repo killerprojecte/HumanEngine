@@ -30,6 +30,7 @@ DEFAULT = {
 NATIVE = DEFAULT | {
     "TestRuntimePreviewUnbundledHostBootsWithoutPlugins",
     "TestRuntimePreviewExternalV2ColdReplacement",
+    "TestRuntimePreviewExternalSnowHTTP",
     "TestRuntimePreviewTCPBootWriteSignalDrainRestart",
     "TestRuntimePreviewSnowLumaPartialACKSignalDrainRestart",
     "TestRuntimePreviewSnowLumaTransportIdentityAcrossRestart",

@@ -86,8 +86,7 @@ func run() (result error) {
 func inspectBuiltins() error {
 	ids := plugins.BundledArtifactIDs()
 	if len(ids) == 0 {
-		_, err := plugins.BuiltinArtifact("")
-		return err
+		return json.NewEncoder(os.Stdout).Encode([]json.RawMessage{})
 	}
 	ctx := context.Background()
 	host, err := plugins.NewWASMHost(ctx)

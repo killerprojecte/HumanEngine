@@ -1,0 +1,48 @@
+name: Go external-only Docker plugin lifecycle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/refactor-golang]
+    paths:
+      - '.github/workflows/golang-package-external-only.yml'
+      - 'backend/packaging/runtime-preview/external_only_rehearsal.py'
+      - 'backend/packaging/runtime-preview/build-host.sh'
+      - 'backend/packaging/runtime-preview/Dockerfile'
+      - 'backend/internal/pluginmanager/external_v2.go'
+      - 'backend/internal/pluginmanager/send_delay.go'
+      - 'backend/plugins/typing-delay/**'
+
+permissions:
+  contents: read
+
+jobs:
+  external-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Build exact host without embedded plugins
+        run: |
+          docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
+            --build-arg PREVIEW_PLUGIN_PROFILE=external-only \
+            -f backend/packaging/runtime-preview/Dockerfile -t humanengine-external-only:local .
+      - name: Build the separate typing-delay package and verify its physical Docker lifecycle
+        run: |
+          make -C backend wasm-typing-delay-package TYPING_DELAY_PACKAGE_DIR="$RUNNER_TEMP/typing-delay"
+          python3 backend/packaging/runtime-preview/external_only_rehearsal.py \
+            --image humanengine-external-only:local --revision "$GITHUB_SHA" \
+            --package "$RUNNER_TEMP/typing-delay" --evidence "$RUNNER_TEMP/external-only-proof.json"
+      - name: Preserve only synthetic lifecycle evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-only-plugin-lifecycle
+          path: ${{ runner.temp }}/external-only-proof.json
+          if-no-files-found: ignore

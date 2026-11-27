@@ -1,7 +1,8 @@
 # Explicit writable runtime preview
 
 The normal command still refuses to replace production. `--read-only-preview`
-and `--inspect-builtins` retain their previous behavior. `--runtime-preview` is
+and `--inspect-builtins` remain available. Inspecting an unbundled host returns
+an empty inventory and does not open a database. `--runtime-preview` is
 an explicit, mutually exclusive migration mode, not a declaration of parity.
 Docker, package startup scripts, frontend and the session/WebSocket gateway are
 unchanged. Missing APIs still return 503; HTTP 101 parity remains pending.

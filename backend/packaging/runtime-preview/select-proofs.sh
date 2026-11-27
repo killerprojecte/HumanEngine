@@ -47,4 +47,4 @@ detect standalone "$root/Dockerfile" "$root/build-host.sh" "$root/select-proofs.
   .github/workflows/golang-package-preview.yml backend/Makefile backend/cmd/humanengine/runtime_preview_bundled.go \
   backend/internal/app/distribution_without_snowluma.go backend/internal/app/snowluma_bundled.go backend/plugins/metadata
 
-detect bind "$root/bind_compose_drill.py" "$root/compose-bind-mount.yaml" "$root/compose-rehearsal.yaml"
+detect bind "$root/bind_compose_drill.py" "$root/compose-go-candidate.yaml"

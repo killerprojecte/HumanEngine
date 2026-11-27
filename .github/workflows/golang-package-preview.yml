@@ -38,7 +38,7 @@ jobs:
         run: docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" -f backend/packaging/runtime-preview/Dockerfile -t humanengine-go-preview:local .
       - name: Verify opt-in host excludes SnowLuma (no push)
         id: external-host
-        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true' || steps.proofs.outputs.bind == 'true'
+        if: steps.proofs.outputs.standalone == 'true' || steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true'
         run: |
           set -o pipefail
           docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
@@ -53,7 +53,7 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: Build the separate SnowLuma test package
         id: snow-package
-        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true' || steps.proofs.outputs.bind == 'true'
+        if: steps.proofs.outputs.restore == 'true' || steps.proofs.outputs.browser == 'true' || steps.proofs.outputs.compose == 'true'
         run: make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$RUNNER_TEMP/snowluma-preview"
       - name: Select Python for the opt-in browser smoke
         if: steps.proofs.outputs.browser == 'true'
@@ -111,12 +111,23 @@ jobs:
             --image humanengine-go-external:local --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
             --snow-fixture "$RUNNER_TEMP/snow-stop-fixture" \
             --evidence "$RUNNER_TEMP/package-evidence/compose-rehearsal.json"
+      - name: Build the operator candidate without embedded plugins (no push)
+        if: steps.proofs.outputs.bind == 'true'
+        run: |
+          docker build --platform linux/amd64 --build-arg SOURCE_REVISION="$GITHUB_SHA" \
+            --build-arg PREVIEW_PLUGIN_PROFILE=external-only -f backend/packaging/runtime-preview/Dockerfile \
+            -t humanengine-operator-candidate:local .
+          dir="$RUNNER_TEMP/operator-plugins"
+          make -C backend wasm-snowluma-http-preview SNOW_HTTP_PACKAGE_DIR="$dir"
+          make -C backend wasm-typing-delay-package TYPING_DELAY_PACKAGE_DIR="$dir"
+          make -C backend wasm-web-read-request-package WEB_READ_REQUEST_PACKAGE_DIR="$dir"
+          make -C backend wasm-web-search-structured-package WEB_SEARCH_PROFILE=routed-profile.json WEB_SEARCH_STRUCTURED_PACKAGE_DIR="$dir"
       - name: Rehearse operator-shaped data bind with Go and TypeScript rollback
         if: steps.proofs.outputs.bind == 'true'
         run: |
           python3 backend/packaging/runtime-preview/bind_compose_drill.py \
-            --ts-image humanengine-drill-ts:local --go-image humanengine-go-external:local \
-            --go-revision "$GITHUB_SHA" --external-snow-package "$RUNNER_TEMP/snowluma-preview" \
+            --ts-image humanengine-drill-ts:local --go-image humanengine-operator-candidate:local \
+            --go-revision "$GITHUB_SHA" --external-package-dir "$RUNNER_TEMP/operator-plugins" \
             --evidence "$RUNNER_TEMP/package-evidence/bind-compose-drill.json"
       - name: Preserve synthetic acceptance evidence
         if: always()

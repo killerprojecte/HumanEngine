@@ -1,0 +1,21 @@
+# Apply only over a verified copy of the existing Compose service.
+# Project, ports and mounts deliberately remain owned by the original file.
+services:
+  humanengine:
+    image: ${HE_COMPOSE_IMAGE:?Set the tested local Go candidate image}
+    environment:
+      HUMANENGINE_PLUGINS: ${HE_COMPOSE_PLUGIN_ENTRIES:-}
+    command:
+      - --runtime-preview
+      - --database
+      - /app/data/humanengine.sqlite
+      - --authority
+      - /app/authority
+      - --listen
+      - 0.0.0.0:3000
+      - --plugin-root
+      - /app/plugins
+      - --ui-root
+      - /opt/humanengine/ui
+      - --image-library
+      - /opt/humanengine/lib/libvips-cpp.so.8.18.7

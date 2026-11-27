@@ -13,29 +13,56 @@ from migration_drill import AUTHORITY, DATABASE, SNOW_HTTP_MANIFEST, TS_REVISION
 
 HERE = Path(__file__).resolve().parent
 TARGET = "/app/data"
+PACKAGES = {
+    "snowluma": SNOW_HTTP_MANIFEST,
+    "typing-delay": "typing-delay.v2.json",
+    "web-read": "web-read.v2.json",
+    "web-search": "web-search.v2.json",
+}
+
+
+def fixture_service(image, data, plugins, port):
+    # Copy the operator's resource layout, but confine the fixture network and
+    # published host port. The candidate overlay does not own these resources.
+    return {
+        "services": {"humanengine": {
+            "image": image, "platform": "linux/amd64", "init": True, "restart": "unless-stopped",
+            "ports": [{"target": 3000, "published": port, "host_ip": "127.0.0.1"}],
+            "environment": {
+                "HUMANENGINE_ADMIN_TOKEN": "${HUMANENGINE_ADMIN_TOKEN:?Set a synthetic token}",
+                "HUMANENGINE_DB": DATABASE, "PORT": "3000",
+                "HUMANENGINE_LOG_DIR": "/app/data/logs",
+                "HUMANENGINE_RECOVERY_AUTHORITY_DIRECTORY": AUTHORITY,
+                "HUMANENGINE_PLUGINS": "",
+            },
+            "volumes": [
+                {"type": "bind", "source": str(data), "target": TARGET, "bind": {"create_host_path": False}},
+                {"type": "volume", "source": "humanengine-authority", "target": AUTHORITY},
+                {"type": "bind", "source": str(plugins), "target": "/app/plugins", "read_only": True,
+                 "bind": {"create_host_path": False}},
+            ],
+            "read_only": True, "tmpfs": ["/tmp:rw,noexec,nosuid,size=64m"], "cap_drop": ["ALL"],
+            "security_opt": ["no-new-privileges:true"], "stop_grace_period": "30s",
+        }},
+        "volumes": {"humanengine-authority": {}},
+        "networks": {"default": {"internal": True}},
+    }
 
 
 class BindDrill(Drill):
     def compose(self, *args, check=True, timeout=90):
-        return docker("compose", "--env-file", "/dev/null", "-p", self.project,
-                      "-f", str(HERE / "compose-rehearsal.yaml"),
-                      "-f", str(HERE / "compose-bind-mount.yaml"),
-                      "-f", str(self.override), *args,
-                      check=check, timeout=timeout, env=self.env)
+        files = ("-f", str(self.baseline))
+        if self.candidate:
+            files += ("-f", str(HERE / "compose-go-candidate.yaml"))
+        return docker("compose", "--env-file", "/dev/null", "-p", self.project, *files,
+                      *args, check=check, timeout=timeout, env=self.env)
 
-    def start(self, engine):
+    def start(self, engine, installed=True):
         require(self.owner is None, "overlapping Compose writers")
-        image = self.args.go_image if engine == "go" else self.args.ts_image
-        # Keep the fixture off the public network even if the old image
-        # has ambient defaults. All provider traffic is a loopback fixture.
-        config = {"networks": {"default": {"internal": True}}}
-        if engine == "ts":
-            config["services"] = {"humanengine": {
-                "command": ["node", ".output/server/index.mjs"],
-                "environment": {"HUMANENGINE_PLUGINS": ""},
-            }}
-        self.override.write_text(json.dumps(config))
-        self.env.update(HE_COMPOSE_IMAGE=image, HE_COMPOSE_PORT=self.published)
+        self.candidate = engine == "go"
+        image = self.args.go_image if self.candidate else self.args.ts_image
+        self.env.update(HE_COMPOSE_IMAGE=self.args.go_image,
+                        HE_COMPOSE_PLUGIN_ENTRIES=",".join(PACKAGES.values()) if installed else "")
         self.phase = f"{self.leg}-compose-config"
         resolved = json.loads(self.compose("config", "--format", "json"))["services"]["humanengine"]
         volumes = {v["target"]: v for v in resolved["volumes"]}
@@ -45,6 +72,10 @@ class BindDrill(Drill):
                 volumes["/app/plugins"]["read_only"] is True and
                 volumes["/app/plugins"]["source"] == str(self.package),
                 "Compose did not resolve the expected protected mounts")
+        shape = tuple(resolved[key] for key in ("ports", "volumes", "read_only", "security_opt", "cap_drop", "restart"))
+        if self.resource_shape is None:
+            self.resource_shape = shape
+        require(shape == self.resource_shape, "candidate changed the original Compose resources")
         if engine == "go":
             cmd = resolved["command"]
             require(all(cmd[cmd.index(flag) + 1] == value for flag, value in (
@@ -70,7 +101,8 @@ class BindDrill(Drill):
         authority = mounts[AUTHORITY]["Name"]
         if self.authority is None:
             self.authority = authority
-        require(self.authority == authority, "Compose replaced the enrolled authority")
+        require(self.authority == authority == self.project + "_humanengine-authority",
+                "Compose replaced the enrolled authority")
         deadline = time.monotonic() + 90
         while time.monotonic() < deadline:
             response = self.exchange("GET", "/api/status", None, check=False)
@@ -95,14 +127,26 @@ class BindDrill(Drill):
         initial = self.setting()
         self.seed_credential()
         self.prove_credential()
+        self.seed_snowluma_credential()
+        self.verify_snowluma_disabled()
+        self.stop()
+        self.leg = "go-bare"
+        self.start("go", installed=False)
+        require(self.api("GET", "/api/plugins") == [], "bare candidate catalog not empty")
         self.stop()
         self.leg = "go-reopen"
         self.start("go")
         self.verify_unicode_memory(marker, self.leg)
         self.prove_credential()
-        plugin = next((p for p in self.api("GET", "/api/plugins") if p["id"] == "snowluma"), {})
-        require(plugin.get("apiVersion") == 2 and plugin.get("builtin") is False and
-                plugin.get("enabled") is False, "separate read-only plugin did not load as an inactive external package")
+        self.phase = "independent-catalog"
+        rows = self.api("GET", "/api/plugins")
+        require(sorted(p["id"] for p in rows) == sorted(PACKAGES) and
+                all(p["builtin"] is False and p["apiVersion"] == 2 and p["enabled"] is False for p in rows),
+                "expected exactly one inactive external package per plugin ID")
+        self.phase = "loopback-snowluma-exchange"
+        media = self.prove_snowluma_login(seed_media=True)
+        self.verify_media(media)
+        self.record("operator-bind-four-external-packages-and-active-synthetic-snowluma")
         require(self.setting(not initial) is not initial, "Go settings write did not persist")
         self.record("go-bind-identity-external-plugin-and-encrypted-key")
         self.stop()
@@ -110,6 +154,7 @@ class BindDrill(Drill):
         self.start("ts")
         self.verify_unicode_memory(marker, self.leg)
         self.prove_credential()
+        self.verify_snowluma_disabled()
         require(self.setting() is not initial, "TypeScript rollback did not read the latest Go state")
         self.stop()
         self.record("bind-compose-ts-go-ts-no-parallel-main-sqlite")
@@ -120,25 +165,29 @@ class BindDrill(Drill):
             "go": self.image(self.args.go_image, self.args.go_revision),
         }
         self.phase = "prepare-synthetic-bind"
-        self.package = self.args.external_snow_package.resolve(strict=True)
-        require((self.package / SNOW_HTTP_MANIFEST).is_file(), "missing external fixture package")
+        self.package = self.args.external_package_dir.resolve(strict=True)
+        require(all((self.package / manifest).is_file() for manifest in PACKAGES.values()),
+                "missing independent package")
+        require(json.loads(docker("run", "--rm", "--network", "none", self.report["images"]["go"],
+                                  "--inspect-builtins")) == [], "Go candidate embeds plugins")
         self.project = self.name + "-bind"
-        self.authority = None
+        self.authority = self.resource_shape = None
+        self.candidate = False
         # Hosted, serialized test. An occupied port fails rather than falling back.
         self.published = "31079"
         with tempfile.TemporaryDirectory(prefix="he-bind-") as tmp:
             work = Path(tmp).resolve()
-            self.override = work / "fixture.yaml"
+            self.baseline = work / "fixture.yaml"
             self.data = work / "data"
             self.data.mkdir()
             # The fixture container is uid 1000; this directory has synthetic data only.
             self.data.chmod(0o777)
-            self.env.update(HE_COMPOSE_DATA_DIR=str(self.data), HE_COMPOSE_PLUGIN_DIR=str(self.package),
-                            HE_COMPOSE_PLUGIN_ENTRIES=SNOW_HTTP_MANIFEST)
+            self.baseline.write_text(json.dumps(fixture_service(self.args.ts_image, self.data, self.package,
+                                                                self.published)))
             try:
                 self.rehearse()
             finally:
-                if self.override.is_file():
+                if self.baseline.is_file():
                     self.compose("down", "--volumes", check=False, timeout=120)
                 # Remove test data unreadable to the runner, never a user directory.
                 docker("run", "--rm", "--network", "none", "--user", "0:0",
@@ -151,7 +200,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for key in ("ts-image", "go-image", "go-revision"):
         parser.add_argument("--" + key, required=True)
-    parser.add_argument("--external-snow-package", required=True, type=Path)
+    parser.add_argument("--external-package-dir", required=True, type=Path)
     parser.add_argument("--evidence", required=True, type=Path)
     args = parser.parse_args()
     report = {"status": "failed", "ts_revision": TS_REVISION, "go_revision": args.go_revision, "checks": []}

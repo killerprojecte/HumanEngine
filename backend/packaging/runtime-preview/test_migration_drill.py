@@ -369,9 +369,9 @@ class MigrationDrillTests(unittest.TestCase):
                 "browser_chat_fixture.cjs": "browser", "browser_chat_fixture.py": "browser",
                 "migration_drill.py": "restore", "test_migration_drill.py": "restore",
                 "recall_fixture.cjs": "restore",
-                "compose-rehearsal.yaml": ("compose", "bind"), "compose_rehearsal.py": "compose",
+                "compose-rehearsal.yaml": "compose", "compose_rehearsal.py": "compose",
                 "test_compose_rehearsal.py": "compose", "ordinary.py": None,
-                "bind_compose_drill.py": "bind", "compose-bind-mount.yaml": "bind",
+                "bind_compose_drill.py": "bind", "compose-go-candidate.yaml": "bind",
                 "Dockerfile": "standalone", "build-host.sh": "standalone",
             }
             for file, proof in files.items():

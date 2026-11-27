@@ -449,7 +449,23 @@ func TestRuntimePreviewExternalSnowHTTP(t *testing.T) {
 	history(group, "")
 	history(direct, "")
 	recalledPage.Store(false)
-	saved := portableSnowSocket(t, addr, peer.Config.Handler, token, eventPath, peer.URL, group, direct, original.Bytes())
+	saved := portableSnowSocket(t, addr, peer.Config.Handler, token, eventPath, peer.URL, group, direct, original.Bytes(), func() string {
+		stop()
+		db, err := storage.OpenExisting(database, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// Recreate the persisted TypeScript shape, keeping the original
+		// action credential in the installation's separate secret store.
+		_, err = db.Exec("UPDATE config SET value=json_remove(value, '$.transport') WHERE key='plugin:snowluma'")
+		closeErr := db.Close()
+		if err != nil || closeErr != nil {
+			t.Fatalf("seed legacy WebSocket config: update=%v close=%v", err, closeErr)
+		}
+		addr, stop = boot(entry)
+		catalog(addr, true, true)
+		return addr
+	})
 	var returned map[string]json.RawMessage
 	if err := json.Unmarshal(saved, &returned); err != nil {
 		t.Fatal(err)
@@ -525,7 +541,7 @@ func snowSocketHistory(t *testing.T, addr, kind string, peer, want int, forbid .
 	}
 }
 
-func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token, eventPath, httpURL, historyGroup, historyDirect string, original []byte) []byte {
+func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token, eventPath, httpURL, historyGroup, historyDirect string, original []byte, reopenLegacy func() string) []byte {
 	t.Helper()
 	var connections, sent atomic.Int32
 	sockets := make(chan *websocket.Conn, 3)
@@ -630,10 +646,10 @@ func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token,
 		t.Fatalf("invalid websocket value changed the active config: %s", previous)
 	}
 
-	good := fmt.Sprintf(`{"transport":"websocket","url":%q,"accountId":"42"}`, "ws"+strings.TrimPrefix(server.URL, "http")+"/socket")
+	good := fmt.Sprintf(`{"url":%q,"accountId":"42"}`, "ws"+strings.TrimPrefix(server.URL, "http")+"/socket")
 	saved := commandRequest(t, addr, "PUT", config, []byte(good), 200)
-	if !bytes.Contains(saved, []byte(eventPath)) || bytes.Contains(saved, []byte(token)) {
-		t.Fatalf("mode switch lost HTTP settings or disclosed a token: %s", saved)
+	if !bytes.Contains(saved, []byte(`"transport":"websocket"`)) || !bytes.Contains(saved, []byte(eventPath)) || bytes.Contains(saved, []byte(token)) {
+		t.Fatalf("legacy config was not normalized, lost HTTP settings or disclosed a token: %s", saved)
 	}
 	next := func() *websocket.Conn {
 		select {
@@ -685,6 +701,13 @@ func portableSnowSocket(t *testing.T, addr string, httpPeer http.Handler, token,
 	snowSocketHistory(t, addr, "group", 904, 83, 81, 82)
 	if sent.Load() != 2 || connections.Load() != 2 {
 		t.Fatalf("unexpected playback: sends=%d sockets=%d", sent.Load(), connections.Load())
+	}
+	coldAddr := reopenLegacy()
+	third := next()
+	send(third, snowSocketEvent("group", 908, 86))
+	snowSocketHistory(t, coldAddr, "group", 908, 86)
+	if sent.Load() != 2 || connections.Load() != 3 {
+		t.Fatalf("unexpected legacy reopen: sends=%d sockets=%d", sent.Load(), connections.Load())
 	}
 	return saved
 }

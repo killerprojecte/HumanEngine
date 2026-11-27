@@ -71,8 +71,15 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 	if forward {
 		properties, _ := schema.Get("properties")
 		transport, _ := properties.(*jsjson.Object).Get("transport")
-		_ = transport.(*jsjson.Object).Set("enum", []any{"http", "websocket"})
-		_ = schema.Set("required", []any{"transport", "url", "accountId"})
+		field := transport.(*jsjson.Object)
+		_ = field.Set("enum", []any{"http", "websocket"})
+		_ = field.Set("default", "websocket")
+		_ = schema.Set("required", []any{"url", "accountId"})
+	}
+	useWebSocket := func(config *jsjson.Object) bool {
+		transport, present := config.Get("transport")
+		// TypeScript saved legacy forward WebSocket settings without transport.
+		return transport == "websocket" || forward && !present
 	}
 	owner := ports.Runtime.NewAdapterOwner()
 	return pluginmanager.V2AdapterBinding{
@@ -94,7 +101,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 			if err != nil {
 				return nil, err
 			}
-			websocket := text(cfg, "transport") == "websocket"
+			websocket := useWebSocket(cfg)
 			var eventToken string
 			if !websocket {
 				eventToken, err = oneBotSecret(ctx, in, "eventToken", "event_credential_not_configured")
@@ -133,7 +140,7 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				}
 				address := text(in, "url")
 				u, err := url.Parse(address)
-				websocket := text(in, "transport") == "websocket"
+				websocket := useWebSocket(in)
 				if websocket && (u == nil || u.Scheme != "ws" && u.Scheme != "wss") {
 					return &pluginmanager.ConfigurationError{Issues: []pluginmanager.Issue{{Field: "url", Reason: "websocket_scheme_required"}}}
 				}
@@ -155,7 +162,8 @@ func bindOneBotHTTP(ports BindingPorts, desc pluginmanager.V2AdapterDescriptor) 
 				return nil
 			},
 			Prepare: func(_ context.Context, input, previous *jsjson.Object) (*jsjson.Object, []credentials.Change, error) {
-				if text(input, "transport") == "websocket" {
+				if useWebSocket(input) {
+					_ = input.Set("transport", "websocket")
 					for _, key := range [...]string{"eventHost", "eventPort", "eventPath"} {
 						input.Delete(key)
 						if previous != nil {

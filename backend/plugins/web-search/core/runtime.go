@@ -27,6 +27,10 @@ func PlanSearch(provider, query string, limit *int, maxResults int) (SearchPlan,
 		}
 		maxResults = min(maxResults, *limit)
 	}
+	if provider == "bing" {
+		query, err := json.Marshal(trimmed)
+		return SearchPlan{Limit: maxResults, Body: query}, err
+	}
 	body, err := apiBody(provider, trimmed, maxResults)
 	return SearchPlan{Limit: maxResults, Body: body}, err
 }
@@ -77,7 +81,18 @@ func FinishSearch(in SearchObservation) SearchResponse {
 		response.Status = "partial"
 		return response
 	}
-	items, err := ParseAPI(in.Provider, in.Text)
+	var items []Result
+	var err error
+	if in.Provider == "bing" {
+		items, err = parseBing(in.Text)
+		if errors.Is(err, errHTMLLimit) {
+			*response.ParseLimited = true
+			response.Status = "partial"
+			return response
+		}
+	} else {
+		items, err = ParseAPI(in.Provider, in.Text)
+	}
 	if err == nil {
 		response.Results = Unique(items, in.Limit)
 		response.Status = "no_results"

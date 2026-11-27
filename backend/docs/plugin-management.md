@@ -168,3 +168,21 @@ unchanged. To go back, repeat the process with the original package. The
 manifest is loaded at startup; toggling enablement does not reload it. Both
 profiles can have the same version and WASM digest, so identify the installed
 profile by its manifest, not by the guest digest alone.
+
+### External Bing HTML search preview
+
+Build the opt-in package with
+`make -C backend wasm-web-search-bing-package WEB_SEARCH_BING_PACKAGE_DIR=/tmp/web-search-bing`.
+Install its manifest and WASM together, as an alternative to the Tavily
+manifest for the same `web-search` ID. Select `provider: bing` explicitly and
+enable `allowExperimentalHtml`; a different fallback provider keeps the
+package inactive. No default or saved provider selection is rewritten. The
+profile preserves the saved Tavily credential for rollback but never loads it
+for a Bing request.
+
+The active profile makes a fixed public HTTPS GET with only the search query.
+It parses inert HTML, rejects challenge pages, and decodes supported citation
+wrappers without visiting the linked site. Empty results, an unavailable page,
+and a partial parse remain distinct. The complete response is separately
+available by range through the turn cache when caching succeeds. This is a
+best-effort public HTML preview, not a search API or a live-access guarantee.

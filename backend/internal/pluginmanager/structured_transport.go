@@ -3,6 +3,7 @@ package pluginmanager
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"net"
 	"net/http"
@@ -98,6 +99,22 @@ func (s *structuredTransport) post(ctx context.Context, body []byte) (*http.Resp
 	req.Header.Set("Accept", "application/json")
 	// RoundTrip never follows a redirect. The pool's standard gzip handling
 	// hands the cache the decoded entity, matching the TypeScript result.
+	return s.pool.RoundTrip(req)
+}
+
+// get sends only the normalized search term to the admitted endpoint.
+func (s *structuredTransport) get(ctx context.Context, body []byte) (*http.Response, error) {
+	var query string
+	if err := json.Unmarshal(body, &query); err != nil || query == "" {
+		return nil, errors.New("structured_query_invalid")
+	}
+	address := string(s.endpoint) + "?" + url.Values{"q": {query}}.Encode()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "text/html")
+	req.Header.Set("User-Agent", "HumanEngine-WebSearch/1.0")
 	return s.pool.RoundTrip(req)
 }
 

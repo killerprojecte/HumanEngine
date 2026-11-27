@@ -22,19 +22,26 @@ type structuredRoute struct {
 	provider   string
 	credential string
 	clear      string
+	consent    string
 }
 
 func (m *Manager) bindStructuredSearch(id string, schema, route *jsjson.Object) (V2AdapterBinding, error) {
 	endpoint, err := parseStructuredEndpoint(text(route, "endpoint"))
 	out := structuredRoute{endpoint: endpoint, provider: text(route, "provider"), credential: text(route, "credential"), clear: text(route, "clear")}
+	out.consent = text(route, "consent")
 	properties, _ := prop(schema, "properties").(*jsjson.Object)
 	keyField, _ := prop(properties, out.credential).(*jsjson.Object)
 	clearField, _ := prop(properties, out.clear).(*jsjson.Object)
+	consentField, _ := prop(properties, out.consent).(*jsjson.Object)
+	method := text(route, "method")
 	if err != nil || m.credentials == nil || !validID(out.provider) ||
 		out.credential == "" || out.clear == "" ||
 		text(schema, "type") != "object" || prop(schema, "additionalProperties") != false || prop(schema, "secret") == true ||
 		text(keyField, "type") != "string" || prop(keyField, "secret") != true ||
-		text(clearField, "type") != "boolean" {
+		text(clearField, "type") != "boolean" ||
+		(method != "" && method != http.MethodGet) ||
+		(method == http.MethodGet && text(consentField, "type") != "boolean") ||
+		(method == "" && out.consent != "") {
 		return V2AdapterBinding{}, errors.New("external_v2_structured_configuration_invalid")
 	}
 	for _, field := range properties.Members() {
@@ -57,7 +64,8 @@ func (m *Manager) bindStructuredSearch(id string, schema, route *jsjson.Object) 
 			provider, fallback := text(config, "provider"), text(config, "fallbackProvider")
 			// An implicit TypeScript default is Bing, not this endpoint.
 			// Never substitute the preview for an absent or different route.
-			if provider != out.provider || fallback != "" && fallback != "none" && fallback != out.provider {
+			if provider != out.provider || fallback != "" && fallback != "none" && fallback != out.provider ||
+				out.consent != "" && prop(config, out.consent) != true {
 				return errPluginProfileUnsupported
 			}
 			return nil
@@ -109,12 +117,17 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 		config.ParserBudget > 16777216 || config.MaxConcurrency < 1 || config.MaxConcurrency > 4 {
 		return nil, NewStartupError("invalid_plugin_configuration", nil)
 	}
-	key, found, err := in.Secret(ctx, route.credential)
-	if err != nil {
-		return nil, NewStartupError(err.Error(), nil)
-	}
-	if !found || key == "" || !httpguts.ValidHeaderFieldValue(key) {
-		return nil, NewStartupError("credential_not_configured", nil)
+	var key string
+	if route.consent == "" {
+		var found bool
+		var err error
+		key, found, err = in.Secret(ctx, route.credential)
+		if err != nil {
+			return nil, NewStartupError(err.Error(), nil)
+		}
+		if !found || key == "" || !httpguts.ValidHeaderFieldValue(key) {
+			return nil, NewStartupError("credential_not_configured", nil)
+		}
 	}
 	definitions, err := in.CallGuest(ctx, []byte(`{"operation":"search_registrations"}`))
 	if err != nil {
@@ -125,6 +138,10 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 		return nil, err
 	}
 	owner := newStructuredTransport(in.Life, route.endpoint, key)
+	request, defaultType := owner.post, "application/json"
+	if route.consent != "" {
+		request, defaultType = owner.get, "text/html"
+	}
 	var active atomic.Int32
 	_, err = m.InstallBuiltinTools(in, definitions, func(ctx context.Context, _ string, raw json.RawMessage, cache func(context.Context, toolresults.Source, toolresults.Options) (toolresults.Result, error)) (json.RawMessage, error) {
 		for {
@@ -161,7 +178,7 @@ func (m *Manager) startStructuredSearch(ctx context.Context, in BuiltinRuntimeIn
 			plan.Limit < 1 || plan.Limit > config.MaxResults {
 			return []byte(`{"status":"invalid_response","ok":false}`), nil
 		}
-		return executeStructuredSearch(timed, route.provider, plan.Limit, config.ParserBudget, plan.Body, owner.post, cache,
+		return executeStructuredSearch(timed, route.provider, plan.Limit, config.ParserBudget, plan.Body, defaultType, request, cache,
 			func(raw []byte) ([]byte, error) { return call(timed, in.Life, raw) })
 	})
 	return owner, err
@@ -215,19 +232,19 @@ func (s *searchBody) Next(ctx context.Context) ([]byte, error) {
 
 func (s *searchBody) Destroy() { _ = s.reader.Close() }
 
-func executeStructuredSearch(ctx context.Context, provider string, limit, budget int, body []byte,
-	post func(context.Context, []byte) (*http.Response, error),
+func executeStructuredSearch(ctx context.Context, provider string, limit, budget int, body []byte, defaultType string,
+	requestUpstream func(context.Context, []byte) (*http.Response, error),
 	cache func(context.Context, toolresults.Source, toolresults.Options) (toolresults.Result, error),
 	finish func([]byte) ([]byte, error),
 ) (json.RawMessage, error) {
 	observation := structuredResponse{Attempted: []string{provider}, Provider: provider, Limit: limit}
-	response, err := post(ctx, body)
+	response, err := requestUpstream(ctx, body)
 	if err == nil {
 		defer response.Body.Close()
 		if response.StatusCode >= 200 && response.StatusCode < 300 {
 			contentType := response.Header.Get("Content-Type")
 			if contentType == "" {
-				contentType = "application/json"
+				contentType = defaultType
 			}
 			source := &searchBody{reader: response.Body, budget: budget}
 			preview := 1024.0

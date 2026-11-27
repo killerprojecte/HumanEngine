@@ -6,6 +6,7 @@ on:
     branches: [feat/refactor-golang]
     paths:
       - '.github/workflows/golang-package-structured-search.yml'
+      - 'backend/Makefile'
       - 'backend/internal/app/external_web_search_test.go'
       - 'backend/internal/app/testdata/web-search-rollback.mjs'
       - 'backend/internal/pluginmanager/manager.go'
@@ -33,6 +34,7 @@ jobs:
       - name: Build separate guest and native application test
         run: |
           make -C backend wasm-web-search-structured-package WEB_SEARCH_STRUCTURED_PACKAGE_DIR="$RUNNER_TEMP/independent-search-plugin"
+          make -C backend wasm-web-search-bing-package WEB_SEARCH_BING_PACKAGE_DIR="$RUNNER_TEMP/independent-bing-plugin"
           docker build --platform linux/amd64 --target build -f backend/packaging/runtime-preview/Dockerfile -t humanengine-search-fixture:local .
           mkdir "$RUNNER_TEMP/search-test-build"
           docker run --rm \
@@ -51,7 +53,7 @@ jobs:
           cert="$RUNNER_TEMP/search-fixture-cert"
           mkdir "$cert"
           openssl req -x509 -newkey rsa:2048 -noenc -days 1 -subj /CN=api.tavily.com \
-            -addext subjectAltName=DNS:api.tavily.com -keyout "$cert/key.pem" -out "$cert/cert.pem" >/dev/null 2>&1
+            -addext subjectAltName=DNS:api.tavily.com,DNS:www.bing.com -keyout "$cert/key.pem" -out "$cert/cert.pem" >/dev/null 2>&1
           trap 'docker rm -f "$peer" >/dev/null 2>&1 || true; docker network rm "$net" >/dev/null 2>&1 || true' EXIT
           docker network create --internal --subnet 192.0.1.0/29 "$net"
           docker run -d --name "$peer" --network "$net" --ip 192.0.1.2 \
@@ -63,12 +65,26 @@ jobs:
               payload:"x".repeat(9000) + "搜索缓存里的原始字节"
             }));
             const compressed = zlib.gzipSync(reply);
+            const html = Buffer.from("<html><ol><li class=\"b_algo\"><h2><a href=\"/ck/a?u=a1aHR0cHM6Ly9leGFtcGxlLmNvbS9kb2M\">Fixture result</a></h2><div class=\"b_caption\">Fixture snippet</div></li></ol><div>" +
+              "x".repeat(9000) + "搜索缓存里的原始字节" + "</div></html>");
+            const compressedHTML = zlib.gzipSync(html);
             https.createServer({
               cert:fs.readFileSync("/cert/cert.pem"),key:fs.readFileSync("/cert/key.pem")
             }, async (req, res) => {
               const chunks = [];
               for await (const chunk of req) chunks.push(chunk);
               try {
+                if (req.headers.host === "www.bing.com") {
+                  const url = new URL(req.url, "https://www.bing.com");
+                  if (req.method !== "GET" || url.pathname !== "/search" ||
+                      JSON.stringify([...url.searchParams]) !== JSON.stringify([["q","Go 搜索"]]) ||
+                      req.headers.authorization || req.headers.cookie || req.headers.accept !== "text/html" || chunks.length) {
+                    throw Error("wrong Bing fixture request");
+                  }
+                  console.log("bing-get");
+                  res.writeHead(200, {"content-type":"text/html","content-encoding":"gzip","content-length":compressedHTML.length}).end(compressedHTML);
+                  return;
+                }
                 const input = JSON.parse(Buffer.concat(chunks));
                 if (req.method !== "POST" || req.headers.host !== "api.tavily.com" || req.url !== "/search" ||
                     req.headers.authorization !== "Bearer synthetic-tavily-key" || req.headers.cookie ||
@@ -106,6 +122,23 @@ jobs:
           test "$(docker logs "$peer" | grep -cx search-post)" = 1
           ! docker logs "$peer" | grep -q unexpected-request
           printf '%s\n' 'one-provider-post-exact-cached-range' | tee -a "$proof"
+          docker run --rm --network "$net" --add-host www.bing.com:192.0.1.2 \
+            --mount "type=bind,source=$cert/cert.pem,target=/fixture-cert.pem,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/independent-bing-plugin,target=/independent-search-plugin,readonly" \
+            --mount "type=bind,source=$RUNNER_TEMP/search-test-build,target=/search-test-build,readonly" \
+            -e SSL_CERT_FILE=/fixture-cert.pem \
+            -e HE_SEARCH_PACKAGE=/independent-search-plugin -e HE_SEARCH_MODE=bing-fixture \
+            -e HE_SOURCE_ROOT=/src \
+            -e HE_IMAGE_LIBRARY=/src/node_modules/@img/sharp-libvips-linux-x64/lib/libvips-cpp.so.8.18.7 \
+            --entrypoint sh humanengine-search-fixture:local -ec '
+              cd /src/backend/internal/app
+              /search-test-build/search-fixture -test.v -test.run "^TestInstalledStructuredSearchAndByteRange$"
+            ' | tee -a "$proof"
+          grep -Fq bing-structured-search-and-range "$proof"
+          test "$(docker logs "$peer" | grep -cx bing-get)" = 1
+          test "$(docker logs "$peer" | grep -cx search-post)" = 1
+          ! docker logs "$peer" | grep -q unexpected-request
+          printf '%s\n' 'one-bing-get-no-credentials-or-fallback-exact-cached-range' | tee -a "$proof"
       - name: Prove existing TypeScript search settings and enablement survive Go and rollback
         run: |
           set -euo pipefail

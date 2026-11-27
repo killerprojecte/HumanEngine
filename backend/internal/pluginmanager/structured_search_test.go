@@ -86,7 +86,7 @@ func TestStructuredTransportFixedTLSAndStream(t *testing.T) {
 	finish := func(raw []byte) ([]byte, error) { return raw, nil }
 	search := func() structuredResponse {
 		t.Helper()
-		raw, err := executeStructuredSearch(t.Context(), "tavily", 5, 4096, []byte(`{"query":"synthetic"}`), owner.post, cache, finish)
+		raw, err := executeStructuredSearch(t.Context(), "tavily", 5, 4096, []byte(`{"query":"synthetic"}`), "application/json", owner.post, cache, finish)
 		if err != nil || strings.Contains(string(raw), secret) {
 			t.Fatalf("search failed or included its credential: %v", err)
 		}
@@ -122,5 +122,43 @@ func TestStructuredTransportRefusesPrivateAddressBeforeAuthentication(t *testing
 		if _, err := parseStructuredEndpoint(raw); err == nil {
 			t.Fatal("unexpected endpoint", raw)
 		}
+	}
+}
+
+func TestStructuredHTMLGETOnlyUsesTheFixedOrigin(t *testing.T) {
+	const query = "x&url=http://127.0.0.1"
+	var calls atomic.Int32
+	tls := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		if r.Method != http.MethodGet || r.Host != "example.com" || r.URL.Path != "/search" ||
+			len(r.URL.Query()) != 1 || r.URL.Query().Get("q") != query || r.ContentLength != 0 ||
+			r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" ||
+			r.Header.Get("Accept") != "text/html" || r.Header.Get("User-Agent") != "HumanEngine-WebSearch/1.0" {
+			t.Errorf("unexpected HTML query request: %s %s", r.Method, r.URL)
+		}
+		http.Redirect(w, r, "/must-not-follow", http.StatusTemporaryRedirect)
+	}))
+	defer tls.Close()
+	endpoint, err := parseStructuredEndpoint("https://example.com/search")
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner := newStructuredTransport(t.Context(), endpoint, "synthetic-never-use")
+	defer owner.CloseAndWait(t.Context())
+	owner.pool.TLSClientConfig = tls.Client().Transport.(*http.Transport).TLSClientConfig.Clone()
+	owner.pool.DialContext = func(ctx context.Context, network, _ string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, network, tls.Listener.Addr().String())
+	}
+	body, err := json.Marshal(query)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := owner.get(t.Context(), body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusTemporaryRedirect || calls.Load() != 1 {
+		t.Fatal("HTML origin redirect was followed", response.StatusCode, calls.Load())
 	}
 }

@@ -28,10 +28,19 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	if pkg == "" {
 		t.Skip("explicit independent web search package required")
 	}
+	bing := strings.HasPrefix(mode, "bing-")
+	mode = strings.TrimPrefix(mode, "bing-")
+	provider, host := "tavily", "api.tavily.com"
+	prefix := `{"results":[{"title":"Fixture result","url":"https://example.com/doc","content":"Fixture snippet"}],"payload":"`
+	if bing {
+		provider, host = "bing", "www.bing.com"
+		// The synthetic peer uses the normal Bing tracking wrapper.
+		prefix = `<html><ol><li class="b_algo"><h2><a href="/ck/a?u=a1aHR0cHM6Ly9leGFtcGxlLmNvbS9kb2M">Fixture result</a></h2><div class="b_caption">Fixture snippet</div></li></ol><div>`
+	}
 	switch mode {
 	case "private":
 	case "fixture":
-		addrs, err := (&net.Resolver{PreferGo: true}).LookupHost(t.Context(), "api.tavily.com")
+		addrs, err := (&net.Resolver{PreferGo: true}).LookupHost(t.Context(), host)
 		if err != nil || !slices.Equal(addrs, []string{"192.0.1.2"}) {
 			t.Fatal("test requires its isolated TLS fixture host", err)
 		}
@@ -41,7 +50,6 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	const id = "web-search"
 	const secret = "synthetic-tavily-key"
 	const tail = "搜索缓存里的原始字节"
-	const prefix = `{"results":[{"title":"Fixture result","url":"https://example.com/doc","content":"Fixture snippet"}],"payload":"`
 	offset := len(prefix) + 9000
 	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 	defer cancel()
@@ -68,7 +76,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 	if field(field(catalog[0], "configuredSecrets"), "tavilyKey") != false {
 		t.Fatal("fixture starts without a key")
 	}
-	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"provider": "tavily", "tavilyKey": secret})
+	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"provider": provider, "tavilyKey": secret})
 	config := appRequest(t, a, http.MethodGet, "/api/plugins/web-search/config", nil)
 	catalog = appRequest(t, a, http.MethodGet, "/api/plugins", nil).([]any)
 	if field(config, "tavilyKey") != nil || field(field(catalog[0], "configuredSecrets"), "tavilyKey") != true {
@@ -88,6 +96,23 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 		t.Fatal("ordinary configuration stored a key", err)
 	}
 	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"tavilyKey": "", "maxResults": 2})
+	if bing {
+		for _, changes := range []map[string]any{
+			{"allowExperimentalHtml": false},
+			{"allowExperimentalHtml": true, "fallbackProvider": "tavily"},
+		} {
+			appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", changes)
+			r := httptest.NewRequest(http.MethodPut, "/api/plugins/web-search/enabled", strings.NewReader(`{"enabled":true}`))
+			r.Header.Set("Authorization", "Bearer synthetic-token")
+			r.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			a.ServeHTTP(w, r)
+			if w.Code == http.StatusOK || !strings.Contains(w.Body.String(), "plugin_profile_unsupported") || a.WASM.Loaded(id) {
+				t.Fatal("Bing consent or fallback admission bypassed", w.Code, w.Body.String())
+			}
+		}
+		appRequest(t, a, http.MethodPut, "/api/plugins/web-search/config", map[string]any{"allowExperimentalHtml": true, "fallbackProvider": "none"})
+	}
 	appRequest(t, a, http.MethodPut, "/api/plugins/web-search/enabled", map[string]any{"enabled": true})
 	if !a.WASM.Loaded(id) || a.Bridge.Host.PID() != 0 {
 		t.Fatal("expected actual WASM without Node")
@@ -157,7 +182,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 				Body                        toolresults.Result
 			}
 			if json.Unmarshal(search.Value, &result) != nil || strings.Contains(string(search.Value), secret) ||
-				!slices.Equal(result.AttemptedProviders, []string{"tavily"}) || result.Trust != "untrusted_web_content" {
+				!slices.Equal(result.AttemptedProviders, []string{provider}) || result.Trust != "untrusted_web_content" {
 				http.Error(w, "invalid search result", 400)
 				return
 			}
@@ -168,8 +193,8 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 				}
 				observed <- "private-search-origin-not-fetched"
 			} else {
-				if result.Status != "ok" || result.BodyProvider != "tavily" || len(result.Results) != 1 ||
-					result.Results[0].Provider != "tavily" || result.Results[0].Title != "Fixture result" ||
+				if result.Status != "ok" || result.BodyProvider != provider || len(result.Results) != 1 ||
+					result.Results[0].Provider != provider || result.Results[0].Title != "Fixture result" ||
 					result.Results[0].URL != "https://example.com/doc" || result.Results[0].Snippet != "Fixture snippet" ||
 					result.Body.ResultID == "" || result.Body.TotalBytes <= int64(offset) || strings.Contains(result.Body.Content, tail) {
 					http.Error(w, "wrong search result or body reference", 400)
@@ -229,7 +254,7 @@ func TestInstalledStructuredSearchAndByteRange(t *testing.T) {
 		if got != want {
 			t.Fatal(got, want)
 		}
-		t.Log(got)
+		t.Log(provider + "-" + got)
 	default:
 		t.Fatal("Planner did not receive the tool evidence")
 	}

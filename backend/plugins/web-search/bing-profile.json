@@ -1,0 +1,13 @@
+{
+  "description": "Bing experimental HTML only. Queries go to Bing only after explicit opt-in. This external Go profile does not use the saved Tavily credential or a fallback.",
+  "toolWire": "structured-search-v1",
+  "service": {
+    "provider": "bing",
+    "endpoint": "https://www.bing.com/search",
+    "method": "GET",
+    "consent": "allowExperimentalHtml",
+    "credential": "tavilyKey",
+    "clear": "clearTavilyKey"
+  },
+  "properties": ["provider", "fallbackProvider", "allowExperimentalHtml", "maxResults", "timeoutMs", "maxResponseBytes", "maxConcurrency", "tavilyKey", "clearTavilyKey"]
+}
